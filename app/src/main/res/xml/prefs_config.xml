@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 全局帧数设置 -->
+    <androidx.preference.ListPreference android:key="global_frame_rate"
+        android:title="@string/pref_global_frame_rate"
+        android:summary="@string/pref_global_frame_rate_summary" android:defaultValue="60"
+        android:entries="@array/frame_rate_entries" android:entryValues="@array/frame_rate_values"
+        android:layout="@layout/preference_modern_item" />
+    <androidx.preference.ListPreference android:key="weather_update_minutes"
+        android:title="@string/pref_weather_update_interval"
+        android:entries="@array/weather_update_entries"
+        android:entryValues="@array/weather_update_values" android:defaultValue="30"
+        android:summary="%s" android:layout="@layout/preference_modern_item" />
+    <androidx.preference.EditTextPreference android:key="openweather_api_key"
+        android:title="@string/pref_openweather_api_key_title"
+        android:dialogTitle="@string/pref_openweather_api_key_dialog"
+        android:summary="@string/pref_openweather_api_key_summary_unset"
+        android:layout="@layout/preference_modern_item" />
+    <androidx.preference.EditTextPreference
+        android:key="pref_preview_ratio"
+        android:title="@string/pref_preview_ratio"
+        android:dialogTitle="@string/pref_preview_ratio_dialog"
+        android:summary="@string/pref_preview_ratio_summary"
+        android:defaultValue="9:16"
+        android:layout="@layout/preference_modern_item" />
+    <Preference android:key="pref_apply_api" android:title="@string/pref_apply_api_title"
+        android:layout="@layout/preference_modern_item" />
+</PreferenceScreen>

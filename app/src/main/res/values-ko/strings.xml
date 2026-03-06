@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+/*
+* Copyright (C) 2008 The Android Open Source Project
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*      http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+ -->
+
+<resources xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="wallpapers" msgid="7890805662847963863">"Android 라이브 배경화면"</string>
+    <string name="wallpaper_walkaround" msgid="5548084303782181478">"투명"</string>
+    <string name="wallpaper_walkaround_author" msgid="7292960549371044078">"Google"</string>
+    <string name="wallpaper_walkaround_desc" msgid="1714824320382778730">"전화가 항상 시야에 들어오게 하여 사고를 당할 위험 없이 안전하게 돌아다니세요."</string>
+    <string name="wallpaper_grass" msgid="4753389782988032116">"풀밭"</string>
+    <string name="wallpaper_grass_author" msgid="9197652780831360471">"Google"</string>
+    <string name="wallpaper_grass_desc" msgid="7808225799564607409">"풀잎들이 낮이나 밤하늘을 배경으로 하여 부드럽게 흔들립니다."</string>
+    <string name="wallpaper_galaxy" msgid="4698294375306738428">"은하수"</string>
+    <string name="wallpaper_galaxy_author" msgid="5455561260819111338">"Google"</string>
+    <string name="wallpaper_galaxy_desc" msgid="6816969378845338629">"부드럽게 소용돌이치는 별들로 이루어진 은하수입니다."</string>
+    <string name="wallpaper_fall" msgid="1500920940722360941">"물"</string>
+    <string name="wallpaper_fall_author" msgid="8860429843949521342">"Google"</string>
+    <string name="wallpaper_fall_desc" msgid="595888373487204297">"찰랑거리는 연못으로&lt;br&gt; 떨어지는 가을 낙엽:&lt;br&gt; 투명한 배경"</string>
+    <string name="wallpaper_clock" msgid="6555051461698958610">"중심축 시계"</string>
+    <string name="wallpaper_clock_author" msgid="8779094427834551330">"Google"</string>
+    <string name="wallpaper_clock_desc" msgid="6767980298898740026">"날짜와 시간을 시계방향 원호(월, 일, 시, 분, 초)로 표시합니다."</string>
+    <string name="wallpaper_nexus" msgid="3789061608411260304">"넥서스"</string>
+    <string name="wallpaper_nexus_author" msgid="8492858637541249441">"Google"</string>
+    <string name="wallpaper_nexus_desc" msgid="5562598238151885905">"신경망 들여다보기"</string>
+    <string name="clock_settings" msgid="7837858747417927288">"중심축 시계 설정"</string>
+    <string name="show_seconds" msgid="8525899907567218168">"초 표시"</string>
+    <string name="variable_line_width" msgid="8487094734462263605">"다양한 고리 너비"</string>
+    <string name="palette" msgid="1636154448241520718">"색상 팔레트"</string>
+    <string name="palette_gray" msgid="4575370050214496017">"아이언"</string>
+    <string name="palette_violet" msgid="6124851215872884048">"자정"</string>
+    <string name="palette_matrix" msgid="2755109999115087511">"블루 스크린"</string>
+    <string name="palette_white_c" msgid="3846812107437715188">"북극곰(동적)"</string>
+    <string name="palette_black_c" msgid="1521258571661038231">"블랙홀(동적)"</string>
+    <string name="palette_halloween" msgid="1502590278217616811">"호박 파이"</string>
+    <string name="palette_zenburn" msgid="5537306782860767365">"이국적인 과일 샐러드"</string>
+    <string name="palette_oceanic" msgid="7336134088073550028">"파란 레이저"</string>
+    <string name="wallpaper_fireworks">"불꽃놀이"</string>
+    <string name="wallpaper_fireworks_author">"MediaTek"</string>
+    <string name="wallpaper_fireworks_desc">"밤하늘에 화려한 불꽃이 피어납니다."</string>
+    <string name="wallpaper_wildworld">"와일드 월드"</string>
+    <string name="wallpaper_wildworld_author">"MediaTek"</string>
+    <string name="wallpaper_wildworld_desc">"겹겹이 움직이는 레이어와 장난기 있는 생명체가 있는 선사시대 풍경입니다."</string>
+    <string name="wallpaper_windmill">"풍차"</string>
+    <string name="wallpaper_windmill_author">"MediaTek"</string>
+    <string name="wallpaper_windmill_desc">"역동적인 날씨 아래의 구릉과 회전하는 풍차."</string>
+    <string name="wallpaper_ocean">"해양 날씨"</string>
+    <string name="wallpaper_ocean_author">"MediaTek"</string>
+    <string name="wallpaper_ocean_desc">"실제 날씨에 따라 파도와 하늘이 변합니다."</string>
+    <string name="wallpaper_galaxy4">"갤럭시 4"</string>
+    <string name="wallpaper_galaxy4_author">"Google"</string>
+    <string name="wallpaper_description_galaxy4">"소용돌이치는 구름과 반짝이는 별이 있는 아름다운 은하."</string>
+    <string name="wallpaper_noisefield">"노이즈 필드"</string>
+    <string name="wallpaper_noisefield_author">"Google"</string>
+    <string name="wallpaper_noisefield_desc">"부드러운 그라데이션 위로 빛나는 거품이 흐르는 필드."</string>
+    <string name="wallpaper_phasebeam">"페이즈 빔"</string>
+    <string name="wallpaper_phasebeam_author">"Google"</string>
+    <string name="wallpaper_phasebeam_desc">"선명한 배경 위로 부드러운 빔과 입자가 흐릅니다."</string>
+    <string name="wallpaper_vis2">"파형"</string>
+    <string name="wallpaper_vis3">"스펙트럼"</string>
+    <string name="wallpaper_vis4">"VU 미터"</string>
+    <string name="wallpaper_vis5">"다중"</string>
+    <string name="vis2_desc">"현재 재생 중인 음악 트랙의 파형을 그립니다."</string>
+    <string name="vis3_desc">"현재 재생 중인 음악 트랙의 주파수 스펙트럼을 표시합니다."</string>
+    <string name="vis4_desc">"아날로그 사운드 미터를 시뮬레이션합니다."</string>
+    <string name="vis5_desc">"모든 음악 시각화를 3D로 천천히 회전하여 표시합니다."</string>
+    <string name="musicvis_author">"Google"</string>
+    <string name="musicvis_permission_granted">"오디오 권한이 허용됨"</string>
+    <string name="musicvis_permission_denied">"오디오 권한이 거부되었습니다. 음악 시각화가 작동하지 않습니다."</string>
+    <string name="settings_title">"라이브 배경화면 설정"</string>
+    <string name="settings_entry_config">"구성"</string>
+    <string name="settings_entry_fall">"수면 위 낙엽"</string>
+    <string name="settings_entry_grass">"하늘과 풀"</string>
+    <string name="settings_entry_wildworld">"와일드 월드"</string>
+    <string name="settings_entry_fireworks">"불꽃놀이"</string>
+    <string name="settings_entry_windmill">"풍차"</string>
+    <string name="settings_entry_ocean">"해양 날씨"</string>
+    <string name="settings_entry_galaxy4">"갤럭시 4"</string>
+    <string name="settings_entry_galaxy">"갤럭시"</string>
+    <string name="settings_entry_phasebeam">"페이즈 빔"</string>
+    <string name="settings_entry_clock">"폴라 시계"</string>
+    <string name="settings_entry_noisefield">"노이즈 필드"</string>
+    <string name="settings_entry_vis2">"파형"</string>
+    <string name="settings_entry_vis3">"스펙트럼"</string>
+    <string name="settings_entry_vis4">"VU 미터"</string>
+    <string name="settings_entry_vis5">"다중"</string>
+    <string name="settings_entry_bluesea">"블루 시"</string>
+    <string name="pref_fall_leaf_count">"낙엽 수"</string>
+    <string name="pref_fall_leaf_count_summary">"낙엽의 수를 조정（성능에 영향）"</string>
+    <string name="pref_fall_green_leaves">"초록 잎"</string>
+    <string name="pref_fall_green_leaves_summary">"활성화하면 일부 잎이 녹색이 됩니다"</string>
+    <string name="pref_fall_max_drops">"최대 물결 수"</string>
+    <string name="pref_fall_max_drops_summary">"화면에 동시에 표시되는 최대 물결 수（성능에 영향）"</string>
+    <string name="pref_grass_enabled">"풀 표시"</string>
+    <string name="pref_grass_enabled_summary">"풀 효과를 표시하거나 숨기기"</string>
+    <string name="pref_grass_count">"풀 수"</string>
+    <string name="pref_grass_count_summary">"풀의 수를 조정（성능에 영향）"</string>
+    <string name="pref_grass_height">"풀 높이"</string>
+    <string name="pref_grass_height_summary">"풀의 높이를 조정"</string>
+    <string name="pref_grass_width">"풀 너비"</string>
+    <string name="pref_grass_width_summary">"풀의 너비를 조정"</string>
+    <string name="pref_grass_color">"풀 색상"</string>
+    <string name="pref_grass_color_summary">"풀의 색상을 변경하여 다양한 시각 효과 구현"</string>
+    <string name="pref_grass_night_invert">"밤하늘 반전"</string>
+    <string name="pref_grass_night_desaturate">"밤에 잔디 색 제거"</string>
+    <string name="pref_grass_accurate_sun">"정확한 일출/일몰"</string>
+    <string name="pref_grass_accurate_sun_summary">"실제 시간과 지리적 위치를 기반으로 태양과 달의 위치를 계산（성능에 영향）"</string>
+    <string name="pref_grass_sun">"태양 표시"</string>
+    <string name="pref_grass_sun_summary">"태양을 표시하거나 숨기기"</string>
+    <string name="pref_grass_moon">"달 표시(정확한 일출/일몰 필요)"</string>
+    <string name="pref_grass_moon_summary">"실제 월상으로 달을 표시하거나 숨기기"</string>
+    <string name="pref_grass_dandelion">"민들레 표시(낮)"</string>
+    <string name="pref_grass_dandelion_summary">"낮 동안 떠다니는 민들레 표시"</string>
+    <string name="pref_grass_firefly">"반딧불이 표시(밤)"</string>
+    <string name="pref_grass_firefly_summary">"밤 동안 날아다니는 반딧불이 표시"</string>
+    <string name="pref_grass_dandelion_count">"민들레 수"</string>
+    <string name="pref_grass_firefly_count">"반딧불이 수"</string>
+    <string name="pref_grass_dandelion_speed">"민들레 속도"</string>
+    <string name="pref_open_wallpaper_picker">"시스템 미리보기 열기"</string>
+    <string name="pref_open_wallpaper_chooser">"배경화면 선택기 열기"</string>
+    <string name="pref_live_preview">"라이브 미리보기"</string>
+    <string name="pref_weather_update_interval">"날씨 업데이트 간격"</string>
+    <string name="pref_weather_api_notice">"날씨 기반 변화를 사용하려면 구성에서 API 키를 설정하세요."</string>
+    <string name="pref_apply_api_title">"API 신청"</string>
+    <string name="pref_openweather_api_key_title">"OpenWeather API 키"</string>
+    <string name="pref_openweather_api_key_dialog">"OpenWeather API 키 입력"</string>
+    <string name="pref_openweather_api_key_summary_set">"API 키가 설정됨"</string>
+    <string name="pref_openweather_api_key_summary_unset">"API 키가 설정되지 않음"</string>
+    <string name="pref_musicvis_mesh_mode_title">"기존 삼각 스트립 메쉬 사용"</string>
+    <string name="pref_musicvis_mesh_mode_summary">"켬: 원본 RS 메쉬/프리미티브(삼각 스트립). 끔: 현재 라인 메쉬."</string>
+    <string name="miui_permission_title">"권한 필요"</string>
+    <string name="miui_permission_message">"MIUI에서는 미리보기를 열기 위해 \"라이브 배경화면 서비스\" 권한을 수동으로 활성화해야 합니다.\n\nOK를 누른 뒤 권한 관리에서 활성화하세요."</string>
+    <string name="phasebeam_ssion_message">"MIUI에서는 미리보기를 열기 위해 \"라이브 배경화면 서비스\" 권한을 수동으로 활성화해야 합니다.\n\nOK를 누른 뒤 권한 관리에서 활성화하세요."</string>
+    <string name="miui_permission_go_settings">"설정으로 이동"</string>
+    <string name="miui_permission_continue">"계속"</string>
+    <string name="miui_permission_open_failed">"설정을 열 수 없음"</string>
+    <string name="wallpaper_preview_not_supported">"배경화면 미리보기는 지원되지 않습니다"</string>
+    <string name="pref_galaxy_particle_count">"입자 수"</string>
+    <string name="pref_galaxy_particle_count_summary">"은하의 입자 수(성능에 영향)"</string>
+    <string name="pref_galaxenable_recolor_summary">"활성화하면 빔 색상을 사용자 지정할 수 있습니다"</string>
+    <string name="miui_permienable_recolor_summary">"활성화하면 빔 색상을 사용자 지정할 수 있습니다"</string>
+    <string name="phasebeam_y4_bg_star_count">"배경 별 수"</string>
+    <string name="pref_galaxy4_bg_star_count_summary">"은하 배경 별 수(성능에 영향)"</string>
+    <string name="pref_galaxy4_space_cloud_count">"우주 구름 수"</string>
+    <string name="pref_galaxy4_space_cloud_count_summary">"은하의 구름 수"</string>
+    <string name="phasebeam_enable_recolor">"빔 색상 조정"</string>
+    <string name="phasebeam_color_label">"색상"</string>
+    <string name="phasebeam_saturation_label">"채도"</string>
+    <string name="phasebeam_brightness_label">"밝기"</string>
+    <string name="pref_global_frame_rate">"전체 프레임 속도"</string>
+    <string name="pref_global_frame_rate_summary">"모든 배경화면의 프레임 속도 설정(높을수록 배터리 소모)"</string>
+    <string name="pref_preview_ratio">"라이브 미리보기 비율"</string>
+    <string name="pref_preview_ratio_dialog">"라이브 미리보기 비율"</string>
+    <string name="pref_preview_ratio_summary">"형식: 가로:세로 (예: 9:16)"</string>
+    <string name="pref_preview_ratio_invalid">"비율이 올바르지 않습니다. 가로:세로 (예: 9:16)"</string>
+    <string name="grass_color_default">"기본"</string>
+    <string name="grass_color_green">"초록"</string>
+    <string name="grass_color_blue">"파랑"</string>
+    <string name="grass_color_red">"빨강"</string>
+    <string name="grass_color_pink">"분홍"</string>
+    <string name="grass_color_purple">"보라"</string>
+    <string name="grass_color_yellow">"노랑"</string>
+    <string name="grass_color_black">"검정"</string>
+    <string name="pref_walkaround_use_front_summary">"전면 카메라와 후면 카메라 사이를 전환합니다."</string>
+    <string name="pref_walkaround_mirror_front_summary">"전면 화면을 좌우 반전합니다."</string>
+    <string name="grass_color_white">"흰색"</string>
+    <string name="openweather_api_key">"YOUR_OPENWEATHER_API_KEY"</string>
+    <string name="wallpaper_bluesea">"Blue sea"</string>
+    <string name="wallpaper_bluesea_author">"TAT"</string>
+    <string name="wallpaper_bluesea_desc">"푸른 바다에 떠다니는 반투명 바다 생물"</string>
+    <!-- Nexus 고급 설정 -->
+    <string name="pref_nexus_background_title">배경</string>
+    <string name="pref_nexus_custom_background_title">맞춤 배경</string>
+    <string name="pref_nexus_custom_background_summary">배경 이미지 선택</string>
+    <string name="pref_nexus_custom_background_set_summary">맞춤 배경이 설정됨</string>
+    <string name="pref_nexus_reset_background_title">기본 배경으로 복원</string>
+    <string name="pref_nexus_reset_background_summary">맞춤 배경을 지우고 내장 배경을 사용</string>
+    <string name="nexus_bg_pyramid">기본</string>
+    <string name="nexus_bg_pyramid_1">이전 버전 1</string>
+    <string name="nexus_bg_pyramid_2">이전 버전 2</string>
+    <string name="nexus_bg_pyramid_3">이전 버전 3</string>
+    <string name="nexus_bg_pyramid_4">미니멀</string>
+    <string name="pref_nexus_advanced_title">고급 설정</string>
+    <string name="pref_nexus_max_pulses">최대 일반 펄스 수</string>
+    <string name="pref_nexus_max_pulses_summary">화면에 동시에 표시되는 일반 펄스 수(기본값:20)</string>
+    <string name="pref_nexus_max_extras">최대 추가 펄스 수</string>
+    <string name="pref_nexus_max_extras_summary">터치로 발생하는 추가 펄스 수(기본값:40)</string>
+    <string name="pref_nexus_pulse_size">펄스 크기</string>
+    <string name="pref_nexus_pulse_size_summary">펄스 텍스처 픽셀 크기(기본값:14)</string>
+    <string name="pref_nexus_glow_size">글로우 크기</string>
+    <string name="pref_nexus_glow_size_summary">글로우 텍스처 픽셀 크기(기본값:64)</string>
+    <string name="pref_nexus_speed">이동 속도</string>
+    <string name="pref_nexus_speed_summary">펄스 기본 이동 속도(기본값:20 = 0.2)</string>
+    <string name="pref_nexus_speed_delta_min">속도 계수 최소값</string>
+    <string name="pref_nexus_speed_delta_min_summary">속도 무작위 변동 최소 배수(기본값:70 = 0.7)</string>
+    <string name="pref_nexus_speed_delta_max">속도 계수 최대값</string>
+    <string name="pref_nexus_speed_delta_max_summary">속도 무작위 변동 최대 배수(기본값:170 = 1.7)</string>
+    <string name="pref_nexus_trail_size">트레일 길이</string>
+    <string name="pref_nexus_trail_size_summary">펄스 트레일 효과 길이(기본값:40)</string>
+    <string name="pref_nexus_mode">색상 모드</string>
+    <string name="pref_nexus_mode_summary">펄스 색상 구성표 선택</string></resources>

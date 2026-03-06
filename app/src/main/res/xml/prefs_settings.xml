@@ -1,0 +1,73 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <Preference android:key="pref_config" android:title="@string/settings_entry_config"
+        app:fragment="com.reandroid.wallpaper.settings.ConfigSettingsFragment"
+        android:layout="@layout/preference_modern_item" />
+    <Preference android:key="pref_fall" android:title="@string/settings_entry_fall"
+        app:fragment="com.reandroid.wallpaper.settings.FallSettingsFragment"
+        android:layout="@layout/preference_modern_item" />
+    <Preference android:key="pref_grass" android:title="@string/settings_entry_grass"
+        app:fragment="com.reandroid.wallpaper.settings.GrassSettingsFragment"
+        android:layout="@layout/preference_modern_item" />
+    <Preference android:key="pref_wildworld" android:title="@string/settings_entry_wildworld"
+        app:fragment="com.reandroid.wallpaper.settings.WildWorldSettingsFragment"
+        android:layout="@layout/preference_modern_item" />
+    <Preference android:key="pref_windmill" android:title="@string/settings_entry_windmill"
+        app:fragment="com.reandroid.wallpaper.settings.WindmillSettingsFragment"
+        android:layout="@layout/preference_modern_item" />
+    <Preference android:key="pref_ocean" android:title="@string/settings_entry_ocean"
+        app:fragment="com.reandroid.wallpaper.settings.OceanSettingsFragment"
+        android:layout="@layout/preference_modern_item" />
+    <Preference android:key="pref_fireworks" android:title="@string/settings_entry_fireworks"
+        app:fragment="com.reandroid.wallpaper.settings.FireworksSettingsFragment"
+        android:layout="@layout/preference_modern_item" />
+    <Preference android:key="pref_galaxy4" android:title="@string/settings_entry_galaxy4"
+        app:fragment="com.reandroid.wallpaper.settings.Galaxy4SettingsFragment"
+        android:layout="@layout/preference_modern_item" />
+    <Preference android:key="pref_galaxy" android:title="@string/settings_entry_galaxy"
+        app:fragment="com.reandroid.wallpaper.settings.GalaxySettingsFragment"
+        android:layout="@layout/preference_modern_item" />
+    <Preference android:key="pref_walkaround" android:title="@string/settings_entry_walkaround"
+        app:fragment="com.reandroid.wallpaper.settings.WalkAroundSettingsFragment"
+        android:layout="@layout/preference_modern_item" />
+    <Preference android:key="pref_phasebeam" android:title="@string/settings_entry_phasebeam"
+        app:fragment="com.reandroid.wallpaper.settings.PhaseBeamSettingsFragment"
+        android:layout="@layout/preference_modern_item" />
+    <Preference android:key="pref_noisefield" android:title="@string/settings_entry_noisefield"
+        app:fragment="com.reandroid.wallpaper.settings.NoiseFieldSettingsFragment"
+        android:layout="@layout/preference_modern_item" />
+    <Preference android:key="pref_vis2" android:title="@string/settings_entry_vis2"
+        app:fragment="com.reandroid.wallpaper.settings.MusicVis2SettingsFragment"
+        android:layout="@layout/preference_modern_item" />
+    <Preference android:key="pref_vis3" android:title="@string/settings_entry_vis3"
+        app:fragment="com.reandroid.wallpaper.settings.MusicVis3SettingsFragment"
+        android:layout="@layout/preference_modern_item" />
+    <Preference android:key="pref_vis4" android:title="@string/settings_entry_vis4"
+        app:fragment="com.reandroid.wallpaper.settings.MusicVis4SettingsFragment"
+        android:layout="@layout/preference_modern_item" />
+    <Preference android:key="pref_vis5" android:title="@string/settings_entry_vis5"
+        app:fragment="com.reandroid.wallpaper.settings.MusicVis5SettingsFragment"
+        android:layout="@layout/preference_modern_item" />
+    <Preference android:key="pref_nexus" android:title="@string/wallpaper_nexus"
+        app:fragment="com.reandroid.wallpaper.settings.NexusSettingsFragment"
+        android:layout="@layout/preference_modern_item" />
+    <Preference android:key="pref_clock" android:title="@string/settings_entry_clock"
+        app:fragment="com.reandroid.wallpaper.settings.PolarClockSettingsFragment"
+        android:layout="@layout/preference_modern_item" />
+    <Preference android:key="pref_magicsmoke" android:title="@string/settings_entry_magicsmoke"
+        app:fragment="com.reandroid.wallpaper.settings.MagicSmokeSettingsFragment"
+        android:layout="@layout/preference_modern_item" />
+    <Preference android:key="pref_holospiral" android:title="@string/settings_entry_holospiral"
+        app:fragment="com.reandroid.wallpaper.settings.HoloSpiralSettingsFragment"
+        android:layout="@layout/preference_modern_item" />
+    <Preference android:key="pref_bluesea" android:title="@string/settings_entry_bluesea"
+        app:fragment="com.reandroid.wallpaper.settings.BlueSeaSettingsFragment"
+        android:layout="@layout/preference_modern_item" />
+    <Preference android:key="pref_deepsea" android:title="@string/settings_entry_deepsea"
+        app:fragment="com.reandroid.wallpaper.settings.DeepSeaSettingsFragment"
+        android:layout="@layout/preference_modern_item" />
+    <Preference android:key="pref_open_wallpaper_chooser"
+        android:title="@string/pref_open_wallpaper_chooser"
+        android:layout="@layout/preference_modern_item" />
+</PreferenceScreen>

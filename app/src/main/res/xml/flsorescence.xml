@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wallpaper
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:thumbnail="@drawable/flsorescence_thumb"
+    android:author="@string/wallpaper_flsorescence_author"
+    android:description="@string/wallpaper_flsorescence_desc"
+    android:showMetadataInPreview="true"
+    android:settingsActivity="com.reandroid.wallpaper.settings.FlsorescenceSettingsActivity" />

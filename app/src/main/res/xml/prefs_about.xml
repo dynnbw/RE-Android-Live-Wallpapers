@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!-- 应用信息卡片 -->
+    <PreferenceCategory android:title="@string/about_app_info" />
+    <Preference
+        android:icon="@mipmap/ic_launcher"
+        android:title="@string/app_name"
+        android:summary="@string/app_version_summary"
+        android:selectable="false"
+        android:key="about_version" />
+
+    <!-- 项目简介 -->
+    <PreferenceCategory android:title="@string/about_project_intro" />
+    <Preference
+        android:title="@string/about_project_one_liner"
+        android:summary="@string/about_project_description"
+        android:selectable="false" />
+    <Preference
+        android:title="@string/about_project_highlights"
+        android:summary="@string/about_project_highlights_detail"
+        android:selectable="false" />
+
+    <!-- 跳转链接与联系方式 -->
+    <PreferenceCategory android:title="@string/about_links" />
+    <Preference
+        android:title="@string/about_email"
+        android:summary="@string/about_email_address"
+        android:key="about_email" />
+    <Preference
+        android:title="@string/about_email"
+        android:summary="xujiekai508@gmail.com"
+        android:key="about_email2" />
+    <Preference
+        android:title="@string/about_bilibili"
+        android:summary="https://space.bilibili.com/470023065"
+        android:key="about_bilibili" />
+    <Preference
+        android:title="@string/about_qq"
+        android:summary="@string/about_qq_number"
+        android:key="about_qq" />
+    <Preference
+        android:title="@string/about_feedback"
+        android:summary="@string/about_feedback_contact"
+        android:key="about_feedback" />
+
+    <!-- 鸣谢与开源说明 -->
+    <PreferenceCategory android:title="@string/about_thanks" />
+    <Preference
+        android:title="@string/about_thanks_original"
+        android:summary="@string/about_thanks_original_detail"
+        android:selectable="false" />
+
+
+    <!-- 开发者信息 -->
+    <PreferenceCategory android:title="@string/about_developer" />
+    <Preference
+        android:title="@string/about_author"
+        android:summary="@string/about_author_detail"
+        android:selectable="false" />
+
+    <!-- 免责声明 -->
+    <PreferenceCategory android:title="@string/about_disclaimer" />
+    <Preference
+        android:title="@string/about_disclaimer_title"
+        android:summary="@string/about_disclaimer_detail"
+        android:selectable="false" />
+
+</PreferenceScreen>

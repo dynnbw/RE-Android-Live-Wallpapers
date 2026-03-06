@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <com.reandroid.wallpaper.settings.PreviewPreference
+        android:key="pref_preview"
+        android:title="@string/pref_live_preview" />
+
+
+    <Preference
+        android:key="pref_open_wallpaper_picker"
+        android:title="@string/pref_open_wallpaper_picker"
+        android:layout="@layout/preference_modern_item" />
+
+    <androidx.preference.SeekBarPreference
+        android:key="unitscale"
+        android:title="@string/title_unit_scale"
+        android:summary="@string/summary_unit_scale"
+        android:defaultValue="0"
+        android:max="5"
+        app:min="-5"
+        app:showSeekBarValue="true"
+        android:layout="@layout/preference_modern_seekbar" />
+
+    <androidx.preference.SeekBarPreference
+        android:key="unitnumber"
+        android:title="@string/title_unit_number"
+        android:summary="@string/summary_unit_number"
+        android:defaultValue="0"
+        android:max="5"
+        app:min="-5"
+        app:showSeekBarValue="true"
+        android:layout="@layout/preference_modern_seekbar" />
+
+    <androidx.preference.SeekBarPreference
+        android:key="backgroundbrightness"
+        android:title="@string/title_background_brightness"
+        android:summary="@string/summary_background_brightness"
+        android:defaultValue="0"
+        android:max="5"
+        app:min="-5"
+        app:showSeekBarValue="true"
+        android:layout="@layout/preference_modern_seekbar" />
+
+    <androidx.preference.SeekBarPreference
+        android:key="backgroundlighting"
+        android:title="@string/title_background_lighting"
+        android:summary="@string/summary_background_lighting"
+        android:defaultValue="0"
+        android:max="5"
+        app:min="-5"
+        app:showSeekBarValue="true"
+        android:layout="@layout/preference_modern_seekbar" />
+
+    <Preference
+        android:key="pref_deepsea_custom_background"
+        android:title="@string/deepsea_custom_background_title"
+        android:summary="@string/deepsea_custom_background_summary"
+        android:layout="@layout/preference_modern_item" />
+
+    <Preference
+        android:key="pref_deepsea_reset_background"
+        android:title="@string/deepsea_reset_background_title"
+        android:summary="@string/deepsea_reset_background_summary"
+        android:layout="@layout/preference_modern_item" />
+
+    <ListPreference
+        android:key="particlecolor"
+        android:title="@string/title_particle_color"
+        android:summary="@string/summary_particle_color"
+        android:entries="@array/deepsea_particle_color_entries"
+        android:entryValues="@array/deepsea_particle_color_values"
+        android:defaultValue="8"
+        android:layout="@layout/preference_modern_item" />
+</PreferenceScreen>

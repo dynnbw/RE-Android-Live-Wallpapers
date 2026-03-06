@@ -1,0 +1,102 @@
+plugins {
+    id 'com.android.application'
+}
+
+import java.math.RoundingMode
+import java.util.Properties
+
+def versionPropsFile = rootProject.file('gradle.properties')
+def versionProps = new Properties()
+if (versionPropsFile.exists()) {
+    versionPropsFile.withInputStream { versionProps.load(it) }
+}
+
+def appVersionCode = (versionProps.getProperty('APP_VERSION_CODE', '1') as String).toInteger()
+def appVersionName = versionProps.getProperty('APP_VERSION_NAME', '1.0') as String
+
+def bumpAppVersion = {
+    Properties props = new Properties()
+    if (versionPropsFile.exists()) {
+        versionPropsFile.withInputStream { props.load(it) }
+    }
+
+    int currentCode = (props.getProperty('APP_VERSION_CODE', '1') as String).toInteger()
+    String currentName = props.getProperty('APP_VERSION_NAME', '1.0') as String
+
+    BigDecimal nextName = new BigDecimal(currentName)
+            .add(new BigDecimal('0.1'))
+            .setScale(1, RoundingMode.HALF_UP)
+
+    props.setProperty('APP_VERSION_CODE', String.valueOf(currentCode + 1))
+    props.setProperty('APP_VERSION_NAME', nextName.toPlainString())
+
+    versionPropsFile.withOutputStream { output ->
+        props.store(output, 'App version managed by Gradle')
+    }
+
+    println("[version] Release built. Next versionName=${nextName.toPlainString()}, versionCode=${currentCode + 1}")
+}
+
+android {
+	compileSdk 33
+	namespace "com.reandroid.wallpaper"
+
+    buildFeatures {
+        buildConfig true
+    }
+
+    defaultConfig {
+        applicationId "com.reandroid.wallpaper"
+        minSdk 19
+        targetSdk 33
+        versionCode appVersionCode
+        versionName appVersionName
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    signingConfigs {
+        release {
+            // 使用 gradle.properties 中定义的变量（安全访问，避免未定义属性抛出异常）
+            def releaseStoreFile = project.hasProperty('RELEASE_STORE_FILE') ? project.property('RELEASE_STORE_FILE') : "${rootDir}/NNBW666.jks"
+            storeFile file(releaseStoreFile)
+
+            storePassword project.hasProperty('RELEASE_STORE_PASSWORD') ? project.property('RELEASE_STORE_PASSWORD') : ''
+            keyAlias project.hasProperty('RELEASE_KEY_ALIAS') ? project.property('RELEASE_KEY_ALIAS') : ''
+            keyPassword project.hasProperty('RELEASE_KEY_PASSWORD') ? project.property('RELEASE_KEY_PASSWORD') : ''
+        }
+    }
+
+    buildTypes {
+        release {
+            signingConfig signingConfigs.release
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            // 使用与 release 相同的 signingConfig（可改为单独的 debug keystore）
+            signingConfig signingConfigs.release
+        }
+    }
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.3.1'
+    implementation 'com.google.android.material:material:1.4.0'
+    implementation 'androidx.preference:preference:1.1.1'
+    implementation 'androidx.viewpager2:viewpager2:1.0.0'
+}
+
+def shouldBumpAfterBuild = false
+gradle.taskGraph.whenReady { graph ->
+    shouldBumpAfterBuild = graph.hasTask(':app:assembleRelease') || graph.hasTask('assembleRelease')
+}
+
+gradle.buildFinished { result ->
+    if (shouldBumpAfterBuild && result.failure == null) {
+        bumpAppVersion()
+    }
+}

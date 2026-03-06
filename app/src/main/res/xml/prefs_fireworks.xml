@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <com.reandroid.wallpaper.settings.PreviewPreference android:key="pref_preview"
+        android:title="@string/pref_live_preview" />
+    <Preference android:key="pref_open_wallpaper_picker"
+        android:title="@string/pref_open_wallpaper_picker"
+        android:layout="@layout/preference_modern_item" />
+    <Preference android:key="pref_custom_background" android:title="自定义背景图片"
+        android:summary="点击选择自定义背景图片" android:layout="@layout/preference_modern_item" />
+    <Preference android:key="pref_reset_background" android:title="恢复默认背景"
+        android:summary="清除自定义背景，使用默认背景" android:layout="@layout/preference_modern_item" />
+</PreferenceScreen>

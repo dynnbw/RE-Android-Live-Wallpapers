@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wallpaper xmlns:android="http://schemas.android.com/apk/res/android"
+    android:description="@string/wallpaper_wildworld_desc"
+    android:thumbnail="@drawable/ww_pterosaur"
+    android:author="@string/wallpaper_wildworld_author"
+    android:showMetadataInPreview="true"
+    android:settingsActivity="com.reandroid.wallpaper.settings.WildWorldSettingsActivity" />

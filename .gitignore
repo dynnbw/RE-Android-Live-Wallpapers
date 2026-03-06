@@ -1,0 +1,37 @@
+# IDE / Editor
+.idea/
+.vscode/
+
+# Gradle / Android build artifacts
+.gradle/
+**/build/
+captures/
+*.apk
+*.aab
+*.ap_
+*.dex
+
+# Local machine config / secrets
+local.properties
+gradle.properties
+*.jks
+*.keystore
+
+# Logs and temp files
+*.log
+build_output.txt
+luminousdots_log.txt
+luminousdots_full_log.txt
+
+# Project local backups / copies
+safety_backup/
+app/src - 副本/
+app/src - 副本 (2)/
+app/src - 副本 (3)/
+
+# Large local-only resources / notes
+RESOURCE/
+png/
+DebugTools/
+strings.txt
+cank.txt

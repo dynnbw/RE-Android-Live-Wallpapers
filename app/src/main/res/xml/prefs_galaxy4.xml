@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
+    <com.reandroid.wallpaper.settings.PreviewPreference android:key="pref_preview" android:title="@string/pref_live_preview" />
+    <Preference android:key="pref_open_wallpaper_picker" android:title="@string/pref_open_wallpaper_picker" android:layout="@layout/preference_modern_item" />
+    <androidx.preference.SeekBarPreference android:key="galaxy4_bg_star_count" android:title="@string/pref_galaxy4_bg_star_count" android:summary="@string/pref_galaxy4_bg_star_count_summary" android:defaultValue="11000" android:max="19000" app:min="1000" app:seekBarIncrement="1000" app:showSeekBarValue="true" android:layout="@layout/preference_modern_seekbar" />
+    <androidx.preference.SeekBarPreference android:key="galaxy4_space_cloud_count" android:title="@string/pref_galaxy4_space_cloud_count" android:summary="@string/pref_galaxy4_space_cloud_count_summary" android:defaultValue="25" android:max="95" app:min="5" app:seekBarIncrement="5" app:showSeekBarValue="true" android:layout="@layout/preference_modern_seekbar" />
+</PreferenceScreen>

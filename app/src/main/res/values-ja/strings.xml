@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+/*
+* Copyright (C) 2008 The Android Open Source Project
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*      http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+ -->
+
+<resources xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="wallpapers" msgid="7890805662847963863">"Androidライブ壁紙"</string>
+    <string name="wallpaper_walkaround" msgid="5548084303782181478">"シースルー"</string>
+    <string name="wallpaper_walkaround_author" msgid="7292960549371044078">"Google"</string>
+    <string name="wallpaper_walkaround_desc" msgid="1714824320382778730">"電話をシースルーにして足もとを見ながら歩けるようにします。"</string>
+    <string name="wallpaper_grass" msgid="4753389782988032116">"草"</string>
+    <string name="wallpaper_grass_author" msgid="9197652780831360471">"Google"</string>
+    <string name="wallpaper_grass_desc" msgid="7808225799564607409">"昼や夜の空に穏やかにたなびく草葉を表示します。"</string>
+    <string name="wallpaper_galaxy" msgid="4698294375306738428">"星雲"</string>
+    <string name="wallpaper_galaxy_author" msgid="5455561260819111338">"Google"</string>
+    <string name="wallpaper_galaxy_desc" msgid="6816969378845338629">"旋回する星々によってゆっくりと形成された星雲"</string>
+    <string name="wallpaper_fall" msgid="1500920940722360941">"水"</string>
+    <string name="wallpaper_fall_author" msgid="8860429843949521342">"Google"</string>
+    <string name="wallpaper_fall_desc" msgid="595888373487204297">"秋の落葉が&lt;br&gt;池に落ちて波打っている&lt;br&gt;水辺の風景と禅"</string>
+    <string name="wallpaper_clock" msgid="6555051461698958610">"ポーラークロック"</string>
+    <string name="wallpaper_clock_author" msgid="8779094427834551330">"Google"</string>
+    <string name="wallpaper_clock_desc" msgid="6767980298898740026">"時計回りに伸びる月、日、時、分、秒の円弧で日時を表します。"</string>
+    <string name="wallpaper_nexus" msgid="3789061608411260304">"ネクサス"</string>
+    <string name="wallpaper_nexus_author" msgid="8492858637541249441">"Google"</string>
+    <string name="wallpaper_nexus_desc" msgid="5562598238151885905">"ニューラルネットワークの内部"</string>
+    <string name="clock_settings" msgid="7837858747417927288">"ポーラークロックの設定"</string>
+    <string name="show_seconds" msgid="8525899907567218168">"秒を表示"</string>
+    <string name="variable_line_width" msgid="8487094734462263605">"いろいろな幅のリング"</string>
+    <string name="palette" msgid="1636154448241520718">"カラーパレット"</string>
+    <string name="palette_gray" msgid="4575370050214496017">"鉄"</string>
+    <string name="palette_violet" msgid="6124851215872884048">"真夜中"</string>
+    <string name="palette_matrix" msgid="2755109999115087511">"グリーンスクリーン"</string>
+    <string name="palette_white_c" msgid="3846812107437715188">"シロクマ（ダイナミック）"</string>
+    <string name="palette_black_c" msgid="1521258571661038231">"ブラックホール（ダイナミック）"</string>
+    <string name="palette_halloween" msgid="1502590278217616811">"パンプキンパイ"</string>
+    <string name="palette_zenburn" msgid="5537306782860767365">"エイリアンフルーツサラダ"</string>
+    <string name="palette_oceanic" msgid="7336134088073550028">"青のレーザー"</string>
+    <string name="wallpaper_fireworks">"花火"</string>
+    <string name="wallpaper_fireworks_author">"MediaTek"</string>
+    <string name="wallpaper_fireworks_desc">"夜空に色鮮やかな花火が咲きます。"</string>
+    <string name="wallpaper_wildworld">"ワイルドワールド"</string>
+    <string name="wallpaper_wildworld_author">"MediaTek"</string>
+    <string name="wallpaper_wildworld_desc">"重なり合う動きと遊び心のある生き物がいる先史時代の風景。"</string>
+    <string name="wallpaper_windmill">"風車"</string>
+    <string name="wallpaper_windmill_author">"MediaTek"</string>
+    <string name="wallpaper_windmill_desc">"動的な天候の下で回る風車と起伏の丘。"</string>
+    <string name="wallpaper_ocean">"海洋天気"</string>
+    <string name="wallpaper_ocean_author">"MediaTek"</string>
+    <string name="wallpaper_ocean_desc">"現実の天候に合わせて波と空が変化します。"</string>
+    <string name="wallpaper_galaxy4">"ギャラクシー4"</string>
+    <string name="wallpaper_galaxy4_author">"Google"</string>
+    <string name="wallpaper_description_galaxy4">"渦巻く雲ときらめく星がある美しい銀河。"</string>
+    <string name="wallpaper_noisefield">"ノイズフィールド"</string>
+    <string name="wallpaper_noisefield_author">"Google"</string>
+    <string name="wallpaper_noisefield_desc">"柔らかなグラデーション上を発光する泡が流れるフィールド。"</string>
+    <string name="wallpaper_phasebeam">"フェーズビーム"</string>
+    <string name="wallpaper_phasebeam_author">"Google"</string>
+    <string name="wallpaper_phasebeam_desc">"鮮やかな背景に柔らかなビームと粒子が流れます。"</string>
+    <string name="wallpaper_vis2">"波形"</string>
+    <string name="wallpaper_vis3">"スペクトラム"</string>
+    <string name="wallpaper_vis4">"VUメーター"</string>
+    <string name="wallpaper_vis5">"複数"</string>
+    <string name="vis2_desc">"現在再生中の音楽トラックの波形を描画します。"</string>
+    <string name="vis3_desc">"現在再生中の音楽トラックの周波数スペクトラムを表示します。"</string>
+    <string name="vis4_desc">"アナログの音量メーターをシミュレートします。"</string>
+    <string name="vis5_desc">"すべての音楽ビジュアライゼーションを3Dでゆっくり回転表示します。"</string>
+    <string name="musicvis_author">"Google"</string>
+    <string name="musicvis_permission_granted">"オーディオ権限が許可されました"</string>
+    <string name="musicvis_permission_denied">"オーディオ権限が許可されていないため、音楽ビジュアライゼーションは動作しません。"</string>
+    <string name="settings_title">"ライブ壁紙の設定"</string>
+    <string name="settings_entry_config">"設定"</string>
+    <string name="settings_entry_fall">"水面の落ち葉"</string>
+    <string name="settings_entry_grass">"空と草"</string>
+    <string name="settings_entry_wildworld">"ワイルドワールド"</string>
+    <string name="settings_entry_fireworks">"花火"</string>
+    <string name="settings_entry_windmill">"風車"</string>
+    <string name="settings_entry_ocean">"海洋天気"</string>
+    <string name="settings_entry_galaxy4">"ギャラクシー4"</string>
+    <string name="settings_entry_galaxy">"ギャラクシー"</string>
+    <string name="settings_entry_phasebeam">"フェーズビーム"</string>
+    <string name="settings_entry_clock">"ポーラークロック"</string>
+    <string name="settings_entry_noisefield">"ノイズフィールド"</string>
+    <string name="settings_entry_vis2">"波形"</string>
+    <string name="settings_entry_vis3">"スペクトラム"</string>
+    <string name="settings_entry_vis4">"VUメーター"</string>
+    <string name="settings_entry_vis5">"複数"</string>
+    <string name="pref_fall_leaf_count">"葉の数"</string>
+    <string name="pref_fall_leaf_count_summary">"落ち葉の数を調整（性能に影響）"</string>
+    <string name="pref_fall_green_leaves">"緑の葉"</string>
+    <string name="pref_fall_green_leaves_summary">"有効にすると一部の葉が緑になります"</string>
+    <string name="pref_fall_max_drops">"最大の波紋数"</string>
+    <string name="pref_fall_max_drops_summary">"画面に同時表示される最大水波紋数（性能に影響）"</string>
+    <string name="pref_grass_enabled">"草を表示"</string>
+    <string name="pref_grass_enabled_summary">"草の効果を表示または非表示"</string>
+    <string name="pref_grass_count">"草の数"</string>
+    <string name="pref_grass_count_summary">"草の数を調整（性能に影響）"</string>
+    <string name="pref_grass_height">"草の高さ"</string>
+    <string name="pref_grass_height_summary">"草の高さを調整"</string>
+    <string name="pref_grass_width">"草の幅"</string>
+    <string name="pref_grass_width_summary">"草の幅を調整"</string>
+    <string name="pref_grass_color">"草の色"</string>
+    <string name="pref_grass_color_summary">"草の色を変更して異なる視覚効果を実現"</string>
+    <string name="pref_grass_night_invert">"夜空を反転"</string>
+    <string name="pref_grass_night_desaturate">"夜間は草の色を落とす"</string>
+    <string name="pref_grass_accurate_sun">"正確な日の出/日の入り"</string>
+    <string name="pref_grass_accurate_sun_summary">"実際の時刻と地理的位置に基づいて太陽と月の位置を計算（性能に影響）"</string>
+    <string name="pref_grass_sun">"太陽を表示"</string>
+    <string name="pref_grass_sun_summary">"太陽を表示または非表示"</string>
+    <string name="pref_grass_moon">"月を表示（正確な日の出/日の入りが必要）"</string>
+    <string name="pref_grass_moon_summary">"リアルな月相で月を表示または非表示"</string>
+    <string name="pref_grass_dandelion">"たんぽぽを表示（昼）"</string>
+    <string name="pref_grass_dandelion_summary">"昼間に漂うたんぽぽを表示"</string>
+    <string name="pref_grass_firefly">"ホタルを表示（夜）"</string>
+    <string name="pref_grass_firefly_summary">"夜間に飛ぶホタルを表示"</string>
+    <string name="pref_grass_dandelion_count">"たんぽぽの数"</string>
+    <string name="pref_grass_firefly_count">"ホタルの数"</string>
+    <string name="pref_grass_dandelion_speed">"たんぽぽの速度"</string>
+    <string name="pref_open_wallpaper_picker">"システムプレビューを開く"</string>
+    <string name="pref_open_wallpaper_chooser">"壁紙選択を開く"</string>
+    <string name="pref_live_preview">"ライブプレビュー"</string>
+    <string name="pref_weather_update_interval">"天気更新間隔"</string>
+    <string name="pref_weather_api_notice">"天気による変化を有効にするには、設定で API キーを設定してください。"</string>
+    <string name="pref_apply_api_title">"API を申請"</string>
+    <string name="pref_openweather_api_key_title">"OpenWeather API キー"</string>
+    <string name="pref_openweather_api_key_dialog">"OpenWeather API キーを入力"</string>
+    <string name="pref_openweather_api_key_summary_set">"API キーが設定されています"</string>
+    <string name="pref_openweather_api_key_summary_unset">"API キーが未設定です"</string>
+    <string name="pref_musicvis_mesh_mode_title">"従来の三角ストリップメッシュを使用"</string>
+    <string name="pref_musicvis_mesh_mode_summary">"オン: 旧RSメッシュ/プリミティブ（三角ストリップ）。オフ: 現在のラインメッシュ。"</string>
+    <string name="miui_permission_title">"権限が必要です"</string>
+    <string name="miui_permission_message">"MIUI では、プレビューを開くために「ライブ壁紙サービス」権限を手動で有効にする必要があります。\n\nOK をタップし、権限管理で有効にしてください。"</string>
+    <string name="phasebeam_ssion_message">"MIUI では、プレビューを開くために「ライブ壁紙サービス」権限を手動で有効にする必要があります。\n\nOK をタップし、権限管理で有効にしてください。"</string>
+    <string name="miui_permission_go_settings">"設定へ"</string>
+    <string name="miui_permission_continue">"続行"</string>
+    <string name="miui_permission_open_failed">"設定を開けません"</string>
+    <string name="wallpaper_preview_not_supported">"壁紙プレビューはサポートされていません"</string>
+    <string name="pref_galaxy_particle_count">"パーティクル数"</string>
+    <string name="pref_galaxy_particle_count_summary">"銀河内のパーティクル数（性能に影響）"</string>
+    <string name="pref_galaxenable_recolor_summary">"有効にするとビームの色をカスタマイズできます"</string>
+    <string name="miui_permienable_recolor_summary">"有効にするとビームの色をカスタマイズできます"</string>
+    <string name="phasebeam_y4_bg_star_count">"背景の星の数"</string>
+    <string name="pref_galaxy4_bg_star_count_summary">"銀河内の背景星の数（性能に影響）"</string>
+    <string name="pref_galaxy4_space_cloud_count">"宇宙雲の数"</string>
+    <string name="pref_galaxy4_space_cloud_count_summary">"銀河内の雲の数"</string>
+    <string name="phasebeam_enable_recolor">"ビームの色を調整"</string>
+    <string name="phasebeam_color_label">"色"</string>
+    <string name="phasebeam_saturation_label">"彩度"</string>
+    <string name="phasebeam_brightness_label">"明るさ"</string>
+    <string name="pref_global_frame_rate">"全体フレームレート"</string>
+    <string name="pref_global_frame_rate_summary">"すべての壁紙のフレームレートを設定（高いほど電池消費）"</string>
+    <string name="pref_preview_ratio">"ライブプレビュー比率"</string>
+    <string name="pref_preview_ratio_dialog">"ライブプレビュー比率"</string>
+    <string name="pref_preview_ratio_summary">"形式: 幅:高さ (例: 9:16)"</string>
+    <string name="pref_preview_ratio_invalid">"比率が無効です。幅:高さ (例: 9:16)"</string>
+    <string name="grass_color_default">"デフォルト"</string>
+    <string name="grass_color_green">"緑"</string>
+    <string name="grass_color_blue">"青"</string>
+    <string name="grass_color_red">"赤"</string>
+    <string name="grass_color_pink">"ピンク"</string>
+    <string name="grass_color_purple">"紫"</string>
+    <string name="grass_color_yellow">"黄色"</string>
+    <string name="grass_color_black">"黒"</string>
+    <string name="grass_color_white">"白"</string>
+    <string name="pref_walkaround_use_front_summary">"フロントカメラとバックカメラを切り替えます。"</string>
+    <string name="pref_walkaround_mirror_front_summary">"フロント画面を左右反転します。"</string>
+    <string name="openweather_api_key">"YOUR_OPENWEATHER_API_KEY"</string>
+    <!-- Nexus詳細設定 -->
+    <string name="pref_nexus_background_title">背景</string>
+    <string name="pref_nexus_custom_background_title">カスタム背景</string>
+    <string name="pref_nexus_custom_background_summary">背景画像を選択</string>
+    <string name="pref_nexus_custom_background_set_summary">カスタム背景が設定されています</string>
+    <string name="pref_nexus_reset_background_title">デフォルト背景に戻す</string>
+    <string name="pref_nexus_reset_background_summary">カスタム背景をクリアして内蔵背景を使用</string>
+    <string name="nexus_bg_pyramid">デフォルト</string>
+    <string name="nexus_bg_pyramid_1">旧版 1</string>
+    <string name="nexus_bg_pyramid_2">旧版 2</string>
+    <string name="nexus_bg_pyramid_3">旧版 3</string>
+    <string name="nexus_bg_pyramid_4">ミニマル</string>
+    <string name="pref_nexus_advanced_title">詳細設定</string>
+    <string name="pref_nexus_max_pulses">最大通常パルス数</string>
+    <string name="pref_nexus_max_pulses_summary">画面に同時表示される通常パルスの数（デフォルト:20）</string>
+    <string name="pref_nexus_max_extras">最大追加パルス数</string>
+    <string name="pref_nexus_max_extras_summary">タッチで発生する追加パルスの数（デフォルト:40）</string>
+    <string name="pref_nexus_pulse_size">パルスサイズ</string>
+    <string name="pref_nexus_pulse_size_summary">パルステクスチャのピクセルサイズ（デフォルト:14）</string>
+    <string name="pref_nexus_glow_size">グローサイズ</string>
+    <string name="pref_nexus_glow_size_summary">グローテクスチャのピクセルサイズ（デフォルト:64）</string>
+    <string name="pref_nexus_speed">移動速度</string>
+    <string name="pref_nexus_speed_summary">パルスの基本移動速度（デフォルト:20 = 0.2）</string>
+    <string name="pref_nexus_speed_delta_min">速度係数最小値</string>
+    <string name="pref_nexus_speed_delta_min_summary">速度ランダム変動の最小倍数（デフォルト:70 = 0.7）</string>
+    <string name="pref_nexus_speed_delta_max">速度係数最大値</string>
+    <string name="pref_nexus_speed_delta_max_summary">速度ランダム変動の最大倍数（デフォルト:170 = 1.7）</string>
+    <string name="pref_nexus_trail_size">トレイル長さ</string>
+    <string name="pref_nexus_trail_size_summary">パルストレイルエフェクトの長さ（デフォルト:40）</string>
+    <string name="pref_nexus_mode">配色モード</string>
+    <string name="pref_nexus_mode_summary">パルスのカラースキームを選択</string>
+    <string name="about_title">このアプリについて</string>
+    <string name="about_app_info">アプリ情報</string>
+    <string name="about_project_intro">プロジェクト紹介</string>
+    <string name="about_project_one_liner">クラシックライブ壁紙リマスター</string>
+    <string name="about_project_description">クラシックなAndroidライブ壁紙を完全リマスターし新端末に最適化。RenderScript→OpenGL ES 2.0、高い互換性・低消費電力・GPU加速。</string>
+    <string name="about_project_highlights">特徴</string>
+    <string name="about_project_highlights_detail">低消費電力・高互換性・オリジナル再現・GPU加速・長期保守</string>
+    <string name="about_links">リンク・連絡先</string>
+    <string name="about_official_website">公式サイト</string>
+    <string name="about_official_website_url">https://github.com/zyfxv/android-live-wallpapers</string>
+    <string name="about_email">メール</string>
+    <string name="about_email_address">3471348199@qq.com</string>
+    <string name="about_qq">QQグループ</string>
+    <string name="about_qq_number">3471348199</string>
+    <string name="about_feedback">フィードバック</string>
+    <string name="about_bilibili">Bilibiliホーム</string>
+    <string name="about_feedback_contact">ご意見・ご要望は上記の連絡先までお寄せください。</string>
+    <string name="about_thanks">謝辞</string>
+    <string name="about_thanks_original">オリジナル作者に感謝</string>
+    <string name="about_thanks_original_detail">オリジナル：Androidオープンソースプロジェクト（AOSP）と全ての貢献者</string>
+
+    <string name="about_developer">開発者</string>
+    <string name="about_author">作者</string>
+    <string name="about_author_detail">念. およびコントリビューター</string>
+    <string name="about_disclaimer">免責事項</string>
+    <string name="about_disclaimer_title">学習・交流目的のみ</string>
+    <string name="about_disclaimer_detail">本プロジェクトは非商用・学習交流目的のみ利用可能です。全ての権利は原著作権者に帰属します。</string>
+    <string name="app_version_summary">バージョン：%1$s</string>
+    <string name="copied_to_clipboard">クリップボードにコピーしました</string>
+    <string name="no_browser_found">ブラウザが見つかりません</string>
+    <string name="no_email_found">メールアプリが見つかりません</string>
+</resources>

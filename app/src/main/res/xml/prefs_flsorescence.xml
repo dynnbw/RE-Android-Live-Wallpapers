@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" 
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <com.reandroid.wallpaper.settings.PreviewPreference 
+        android:key="pref_preview" 
+        android:title="@string/pref_live_preview" />
+    <Preference 
+        android:key="pref_open_wallpaper_picker" 
+        android:title="@string/pref_open_wallpaper_picker" 
+        android:layout="@layout/preference_modern_item" />
+    <!-- 荧光形状 -->
+    <androidx.preference.ListPreference 
+        android:key="flsorescence_shape"
+        android:title="@string/pref_flsorescence_shape"
+        android:summary="@string/pref_flsorescence_shape_summary"
+        android:defaultValue="0"
+        android:entries="@array/flsorescence_shape_entries"
+        android:entryValues="@array/flsorescence_shape_values"
+        android:layout="@layout/preference_modern_item" />
+    <!-- 荧光颜色方案 -->
+    <androidx.preference.ListPreference 
+        android:key="flsorescence_color"
+        android:title="@string/pref_flsorescence_color"
+        android:summary="@string/pref_flsorescence_color_summary"
+        android:defaultValue="0"
+        android:entries="@array/flsorescence_color_entries"
+        android:entryValues="@array/flsorescence_color_values"
+        android:layout="@layout/preference_modern_item" />
+    <!-- 荧光缩放 -->
+    <androidx.preference.SeekBarPreference 
+        android:key="flsorescence_scale"
+        android:title="@string/pref_flsorescence_scale"
+        android:summary="@string/pref_flsorescence_scale_summary"
+        android:defaultValue="80"
+        android:max="150"
+        app:min="50"
+        app:seekBarIncrement="10"
+        app:showSeekBarValue="true"
+        android:layout="@layout/preference_modern_seekbar" />
+    <!-- 运动速度 -->
+    <androidx.preference.SeekBarPreference 
+        android:key="flsorescence_speed"
+        android:title="@string/pref_flsorescence_speed"
+        android:summary="@string/pref_flsorescence_speed_summary"
+        android:defaultValue="50"
+        android:max="100"
+        app:min="10"
+        app:seekBarIncrement="10"
+        app:showSeekBarValue="true"
+        android:layout="@layout/preference_modern_seekbar" />
+    <!-- 荧光数量 -->
+    <androidx.preference.SeekBarPreference 
+        android:key="flsorescence_amount"
+        android:title="@string/pref_flsorescence_amount"
+        android:summary="@string/pref_flsorescence_amount_summary"
+        android:defaultValue="50"
+        android:max="200"
+        app:min="10"
+        app:seekBarIncrement="10"
+        app:showSeekBarValue="true"
+        android:layout="@layout/preference_modern_seekbar" />
+    <!-- 运动模式 -->
+    <androidx.preference.ListPreference 
+        android:key="flsorescence_pattern"
+        android:title="@string/pref_flsorescence_pattern"
+        android:summary="@string/pref_flsorescence_pattern_summary"
+        android:defaultValue="0"
+        android:entries="@array/flsorescence_pattern_entries"
+        android:entryValues="@array/flsorescence_pattern_values"
+        android:layout="@layout/preference_modern_item" />
+</PreferenceScreen>

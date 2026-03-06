@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+/*
+* Copyright (C) 2010 The Android Open Source Project
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*      http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+-->
+
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <bool name="config_enable_grass_wallpaper">true</bool>
+    <bool name="config_enable_galaxy_wallpaper">true</bool>
+    <bool name="config_enable_galaxy4_wallpaper">true</bool>
+    <bool name="config_enable_fall_wallpaper">true</bool>
+    <bool name="config_enable_nexus_wallpaper">true</bool>
+    <bool name="config_enable_polar_clock_wallpaper">true</bool>
+    <bool name="config_enable_wildworld_wallpaper">true</bool>
+    <bool name="config_enable_windmill_wallpaper">true</bool>
+    <bool name="config_enable_ocean_wallpaper">true</bool>
+    <bool name="config_enable_fireworks_wallpaper">true</bool>
+    <bool name="config_enable_phasebeam_wallpaper">true</bool>
+    <bool name="config_enable_noisefield_wallpaper">true</bool>
+    <bool name="config_enable_vis2_wallpaper">true</bool>
+    <bool name="config_enable_vis3_wallpaper">true</bool>
+    <bool name="config_enable_vis4_wallpaper">true</bool>
+    <bool name="config_enable_vis5_wallpaper">true</bool>
+    <bool name="config_enable_walkaround_wallpaper">true</bool>
+    <bool name="config_enable_magicsmoke_wallpaper">true</bool>
+    <bool name="config_enable_holospiral_wallpaper">true</bool>
+    <bool name="config_enable_bluesea_wallpaper">true</bool>
+    <bool name="config_enable_deepsea_wallpaper">true</bool>
+
+    <!-- Phase Beam defaults -->
+    <bool name="recolor_enabled">false</bool>
+    <item name="hue" format="float" type="string">0.0</item>
+    <item name="saturation" format="float" type="string">1.0</item>
+    <item name="brightness" format="float" type="string">1.0</item>
+    <bool name="scrolling_enabled">true</bool>
+</resources>

@@ -1,0 +1,461 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+/*
+* Copyright (C) 2008 The Android Open Source Project
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*      http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+-->
+
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+
+    <string name="pref_grass_legacy_particles">原版蒲公英、萤火虫</string>
+    <string name="pref_grass_legacy_particles_summary">切换为MTK原版蒲公英和萤火虫的视觉效果</string>
+    <!-- Application name -->
+    <string name="wallpapers">REAndroid Live Wallpapers</string>
+    <string name="app_name">REAndroid Live Wallpapers</string>
+
+
+    <!-- Flsorescence (荧光) Wallpaper -->
+    <string name="wallpaper_flsorescence">Flsorescence</string>
+    <string name="wallpaper_flsorescence_author">念.</string>
+    <string name="wallpaper_flsorescence_desc">Glowing dots move smoothly across the screen as if
+        alive.</string>
+    <string name="pref_flsorescence_shape">Dot shape</string>
+    <string name="pref_flsorescence_shape_summary">Change the shape of each dot</string>
+    <string name="pref_flsorescence_color">Dot colour scheme</string>
+    <string name="pref_flsorescence_color_summary">Change the colour scheme</string>
+    <string name="pref_flsorescence_scale">Dot scale</string>
+    <string name="pref_flsorescence_scale_summary">Change the scale of each dot</string>
+    <string name="pref_flsorescence_speed">Motion speed</string>
+    <string name="pref_flsorescence_speed_summary">Change the speed of movement</string>
+    <string name="pref_flsorescence_amount">Dot quantity</string>
+    <string name="pref_flsorescence_amount_summary">Change quantity of dots</string>
+    <string name="pref_flsorescence_pattern">Motion pattern</string>
+    <string name="pref_flsorescence_pattern_summary">Change motion pattern</string>
+
+    <!-- Wallpapers: -->
+    <skip />
+
+    <!-- Wallpaper showing the camera preview -->
+    <string name="wallpaper_walkaround">See Through</string>
+    <string name="wallpaper_walkaround_author">Google</string>
+    <string name="wallpaper_walkaround_desc">
+        See through your phone and walk around without risking accidents.
+    </string>
+
+    <!-- Wallpaper showing grass and the sky -->
+    <string name="wallpaper_grass">Grass</string>
+    <string name="wallpaper_grass_author">Google</string>
+    <string name="wallpaper_grass_desc">
+        Blades of grass wave gently in front of a day or night sky.
+    </string>
+
+    <!-- Wallpaper showing a galaxy -->
+    <string name="wallpaper_galaxy">Galaxy</string>
+    <string name="wallpaper_galaxy_author">Google</string>
+    <string name="wallpaper_galaxy_desc">
+        A galaxy made of slowly swirling stars.
+    </string>
+
+    <!-- Wallpaper showing Galaxy 4 -->
+
+    <string name="wallpaper_galaxy4">Galaxy 4</string>
+    <string name="wallpaper_galaxy4_author">Google</string>
+    <string name="wallpaper_description_galaxy4">
+        A beautiful galaxy with swirling clouds and twinkling stars.
+    </string>
+
+    <!-- Wallpaper showing leaves floating on water -->
+    <string name="wallpaper_fall">Water Leaves</string>
+    <string name="wallpaper_fall_author">Google</string>
+    <string name="wallpaper_fall_desc">
+        Autumn leaves tumble&lt;br&gt;
+        To the rippling pond below:&lt;br&gt;
+        Liquid background Zen
+    </string>
+
+    <!-- Wallpaper showing wild world -->
+    <string name="wallpaper_wildworld">Wild World</string>
+    <string name="wallpaper_wildworld_author">MediaTek</string>
+    <string name="wallpaper_wildworld_desc">
+        A prehistoric landscape with layered motion and playful creatures.
+    </string>
+
+    <!-- Wallpaper showing fireworks -->
+    <string name="wallpaper_fireworks">Fireworks</string>
+    <string name="wallpaper_fireworks_author">MediaTek</string>
+    <string name="wallpaper_fireworks_desc">
+        Colorful fireworks bloom against the night sky.
+    </string>
+
+    <!-- Wallpaper showing windmills -->
+    <string name="wallpaper_windmill">Windmills</string>
+    <string name="wallpaper_windmill_author">MediaTek</string>
+    <string name="wallpaper_windmill_desc">Rolling hills with animated windmills under dynamic
+        weather.</string>
+
+    <!-- Wallpaper showing ocean weather -->
+    <string name="wallpaper_ocean">Ocean Weather</string>
+    <string name="wallpaper_ocean_author">MediaTek</string>
+    <string name="wallpaper_ocean_desc">Waves and sky that shift with real-world conditions.</string>
+
+    <!-- Wallpaper showing deep sea -->
+    <string name="wallpaper_deepsea">Deep Sea</string>
+    <string name="wallpaper_deepsea_author">Samsung</string>
+    <string name="wallpaper_deepsea_desc">Translucent jellyfish swim through the deep sea.</string>
+
+    <!-- Wallpaper showing a clock -->
+    <string name="wallpaper_clock">Polar Clock</string>
+    <string name="wallpaper_clock_author">Google</string>
+    <string name="wallpaper_clock_desc">
+        Presents the date and time as clockwise arcs: month,
+        day, hour, minute, and second.
+    </string>
+
+    <!-- Wallpaper showing nexus -->
+    <string name="wallpaper_nexus">Nexus</string>
+    <string name="wallpaper_nexus_author">Google</string>
+    <string name="wallpaper_nexus_desc">
+        A peek inside the neural network.
+    </string>
+
+    <!-- Wallpaper showing noise field -->
+    <string name="wallpaper_noisefield">Noise Field</string>
+    <string name="wallpaper_noisefield_author">Google</string>
+    <string name="wallpaper_noisefield_desc">A flowing field of luminous bubbles drifting across a
+        soft gradient.</string>
+
+    <!-- Music visualization wallpapers -->
+    <string name="musicvis_author">Google</string>
+    <string name="wallpaper_vis2">Waveform</string>
+    <string name="wallpaper_vis3">Spectrum</string>
+    <string name="wallpaper_vis4">VU Meter</string>
+    <string name="wallpaper_vis5">Many</string>
+    <string name="vis2_desc">Draws the sound wave of any currently playing music track.</string>
+    <string name="vis3_desc">Shows the frequency spectrum of any currently playing music track.</string>
+    <string name="vis4_desc">Simulates an analog sound meter.</string>
+    <string name="vis5_desc">All music visualizations together, slowly revolving in 3D.</string>
+
+    <!-- Polar clock: title of settings activity -->
+    <string name="clock_settings">Polar clock settings</string>
+    <!-- Polar clock: label for "show seconds" pref -->
+    <string name="show_seconds">Show seconds</string>
+    <!-- Polar clock: label for "variable widths" pref -->
+    <string name="variable_line_width">Vary ring widths</string>
+    <!-- Polar clock: label for "palette" pref -->
+    <string name="palette">Color palette</string>
+
+    <!-- Polar clock: palette name -->
+    <string name="palette_gray">Iron</string>
+    <!-- Polar clock: palette name -->
+    <string name="palette_violet">Midnight</string>
+    <!-- Polar clock: palette name -->
+    <string name="palette_matrix">Green Screen</string>
+    <!-- Polar clock: palette name -->
+    <string name="palette_white_c">Polar Bear (dynamic)</string>
+    <!-- Polar clock: palette name -->
+    <string name="palette_black_c">Black Hole (dynamic)</string>
+    <!-- Polar clock: palette name -->
+    <string name="palette_halloween">Pumpkin Pie</string>
+    <!-- Polar clock: palette name -->
+    <string name="palette_zenburn">Alien Fruit Salad</string>
+    <!-- Polar clock: palette name -->
+    <string name="palette_oceanic">Blue Laser</string>
+
+    <!-- Settings UI -->
+    <string name="settings_title">Live Wallpaper Settings</string>
+    <string name="settings_entry_config">Configuration</string>
+    <string name="settings_entry_fall">Water Surface Leaves</string>
+    <string name="settings_entry_grass">Sky &amp; Grass</string>
+    <string name="settings_entry_wildworld">Wild World</string>
+    <string name="settings_entry_fireworks">Fireworks</string>
+    <string name="settings_entry_windmill">Windmill</string>
+    <string name="settings_entry_ocean">Ocean Weather</string>
+    <string name="settings_entry_galaxy4">Galaxy 4</string>
+    <string name="settings_entry_galaxy">Galaxy</string>
+    <string name="settings_entry_walkaround">See Through</string>
+    <string name="settings_entry_phasebeam">Phase Beam</string>
+    <string name="settings_entry_clock">Polar Clock</string>
+    <string name="settings_entry_noisefield">Noise Field</string>
+    <string name="settings_entry_vis2">Waveform</string>
+    <string name="settings_entry_vis3">Spectrum</string>
+    <string name="settings_entry_vis4">VU Meter</string>
+    <string name="settings_entry_vis5">Many</string>
+    <string name="settings_entry_magicsmoke">Magic Smoke</string>
+    <string name="settings_entry_holospiral">Holo Spiral</string>
+    <string name="settings_entry_bluesea">Blue Sea</string>
+    <string name="settings_entry_deepsea">Deep Sea</string>
+
+    <string name="pref_fall_leaf_count">Leaf count</string>
+    <string name="pref_fall_leaf_count_summary">Adjust the number of falling leaves (affects
+        performance)</string>
+    <string name="pref_fall_green_leaves">Green leaves</string>
+    <string name="pref_fall_green_leaves_summary">When enabled, some leaves will be green</string>
+    <string name="pref_fall_max_drops">Max ripple drops</string>
+    <string name="pref_fall_max_drops_summary">Maximum number of water ripples displayed
+        simultaneously on screen (affects performance)</string>
+
+    <string name="pref_grass_enabled">Show grass</string>
+    <string name="pref_grass_enabled_summary">Show or hide grass effect</string>
+    <string name="pref_grass_count">Grass count</string>
+    <string name="pref_grass_count_summary">Adjust the number of grass blades (affects performance)</string>
+    <string name="pref_grass_height">Grass height</string>
+    <string name="pref_grass_height_summary">Adjust the height of grass</string>
+    <string name="pref_grass_width">Grass width</string>
+    <string name="pref_grass_width_summary">Adjust the width of grass</string>
+    <string name="pref_grass_color">Grass color</string>
+    <string name="pref_grass_color_summary">Adjust grass color for different visual effects</string>
+    <string name="pref_grass_night_invert">Invert night sky</string>
+    <string name="pref_grass_night_desaturate">Desaturate grass at night</string>
+    <string name="pref_grass_accurate_sun">Accurate calculation (affects performance)</string>
+    <string name="pref_grass_accurate_sun_summary">Calculate sun and moon positions based on
+        real-time and geographic location (affects performance)</string>
+    <string name="pref_grass_sun">Show sun</string>
+    <string name="pref_grass_sun_summary">Show or hide the sun</string>
+    <string name="pref_grass_moon">Show moon (requires accurate sunrise/sunset)</string>
+    <string name="pref_grass_moon_summary">Show or hide the moon with realistic lunar phases</string>
+    <string name="pref_grass_dandelion">Show dandelion (day)</string>
+    <string name="pref_grass_dandelion_summary">Display floating dandelions during daytime</string>
+    <string name="pref_grass_firefly">Show fireflies (night)</string>
+    <string name="pref_grass_firefly_summary">Display flying fireflies during nighttime</string>
+    <string name="pref_grass_dandelion_count">Dandelion count</string>
+    <string name="pref_grass_firefly_count">Firefly count</string>
+    <string name="pref_grass_dandelion_speed">Dandelion speed</string>
+    <string name="pref_open_wallpaper_picker">Open system preview</string>
+    <string name="pref_open_wallpaper_picker_failed">Wallpaper preview not supported</string>
+    <string name="pref_open_wallpaper_chooser">Open wallpaper chooser</string>
+    <string name="pref_live_preview">Live preview</string>
+    <string name="pref_nexus_background_title">Background</string>
+    <string name="pref_nexus_custom_background_title">Custom background</string>
+    <string name="pref_nexus_custom_background_summary">Select a background image</string>
+    <string name="pref_nexus_custom_background_set_summary">Custom background set</string>
+    <string name="pref_nexus_reset_background_title">Reset background</string>
+    <string name="pref_nexus_reset_background_summary">Clear custom background and use built-in</string>
+    <string name="nexus_bg_pyramid">Pyramid</string>
+    <string name="nexus_bg_pyramid_1">Pyramid 1</string>
+    <string name="nexus_bg_pyramid_2">Pyramid 2</string>
+    <string name="nexus_bg_pyramid_3">Pyramid 3</string>
+    <string name="nexus_bg_pyramid_4">Pyramid 4</string>
+    <string name="nexus_custom_background_set_toast">Custom background set. Reapply wallpaper to
+        take effect.</string>
+    <string name="nexus_background_changed_title">Background updated</string>
+    <string name="nexus_background_changed_message">Background saved. Apply changes now?</string>
+    <string name="nexus_background_reset_toast">Custom background cleared</string>
+    <string name="nexus_background_reset_title">Background reset</string>
+    <string name="nexus_background_reset_message">Custom background cleared. Apply changes now?</string>
+    <string name="action_apply_now">Apply now</string>
+    <string name="action_later">Later</string>
+
+    <!-- Deep Sea settings -->
+    <string name="title_unit_scale">Jellyfish size</string>
+    <string name="summary_unit_scale">Change the size of the jellyfish</string>
+    <string name="title_unit_number">Number of jellyfish</string>
+    <string name="summary_unit_number">Change number of jellyfish</string>
+    <string name="title_background_image_type">Background</string>
+    <string name="summary_background_image_type">Change background</string>
+    <string name="title_background_brightness">Background brightness</string>
+    <string name="summary_background_brightness">Change background brightness</string>
+    <string name="title_background_lighting">Background lighting</string>
+    <string name="summary_background_lighting">Change the lighting of background</string>
+    <string name="title_particle_color">Jellyfish core color</string>
+    <string name="summary_particle_color">Change color of core</string>
+    <string name="deepsea_custom_background_title">Custom background</string>
+    <string name="deepsea_custom_background_summary">Select a background image</string>
+    <string name="deepsea_custom_background_set_summary">Custom background set</string>
+    <string name="deepsea_reset_background_title">Reset background</string>
+    <string name="deepsea_reset_background_summary">Clear custom background and use built-in</string>
+    <string name="deepsea_background_changed_title">Background updated</string>
+    <string name="deepsea_background_changed_message">Background saved. Apply changes now?</string>
+    <string name="deepsea_background_reset_title">Background reset</string>
+    <string name="deepsea_background_reset_message">Custom background cleared. Apply changes now?</string>
+    <string name="deepsea_apply_now">Apply now</string>
+    <string name="deepsea_apply_later">Later</string>
+    <string name="deepsea_custom_background_failed">Unable to save background image</string>
+
+    <!-- Nexus advanced settings -->
+    <string name="pref_nexus_advanced_title">Advanced Settings</string>
+    <string name="pref_nexus_max_pulses">Max pulses</string>
+    <string name="pref_nexus_max_pulses_summary">Maximum number of regular pulses displayed
+        simultaneously on screen (Default: 20)</string>
+    <string name="pref_nexus_max_extras">Max extra pulses</string>
+    <string name="pref_nexus_max_extras_summary">Number of extra pulses triggered by touch (Default:
+        40)</string>
+    <string name="pref_nexus_pulse_size">Pulse size</string>
+    <string name="pref_nexus_pulse_size_summary">Pulse texture pixel size (Default: 14)</string>
+    <string name="pref_nexus_glow_size">Glow size</string>
+    <string name="pref_nexus_glow_size_summary">Glow texture pixel size (Default: 64)</string>
+    <string name="pref_nexus_speed">Speed</string>
+    <string name="pref_nexus_speed_summary">Base movement speed of pulses (Default: 20 = 0.2)</string>
+    <string name="pref_nexus_speed_delta_min">Speed delta min</string>
+    <string name="pref_nexus_speed_delta_min_summary">Minimum multiplier for speed random variation
+        (Default: 70 = 0.7)</string>
+    <string name="pref_nexus_speed_delta_max">Speed delta max</string>
+    <string name="pref_nexus_speed_delta_max_summary">Maximum multiplier for speed random variation
+        (Default: 170 = 1.7)</string>
+    <string name="pref_nexus_trail_size">Trail size</string>
+    <string name="pref_nexus_trail_size_summary">Length of pulse trail effect (Default: 40)</string>
+    <string name="pref_nexus_mode">Color mode</string>
+    <string name="pref_nexus_mode_summary">Select pulse color scheme</string>
+
+    <string name="pref_walkaround_use_front">Use front camera</string>
+    <string name="pref_walkaround_use_front_summary">Switch between front and back camera.</string>
+    <string name="pref_walkaround_mirror_front">Mirror front camera</string>
+    <string name="pref_walkaround_mirror_front_summary">Flip the front camera horizontally.</string>
+    <string name="walkaround_permission_granted">Camera permission granted</string>
+    <string name="walkaround_permission_denied">Camera permission denied. Live camera preview will
+        not work.</string>
+    <string name="pref_weather_update_interval">Weather update interval</string>
+    <string name="pref_openweather_api_key_title">OpenWeather API key</string>
+    <string name="pref_openweather_api_key_dialog">Enter OpenWeather API key</string>
+    <string name="pref_openweather_api_key_summary_set">API key set</string>
+    <string name="pref_openweather_api_key_summary_unset">API key not set</string>
+    <string name="pref_weather_api_notice">Enable weather-based changes by setting the API key in
+        Configuration.</string>
+    <string name="pref_apply_api_title">Apply for API</string>
+    <string name="pref_musicvis_mesh_mode_title">Use legacy triangle strip mesh</string>
+    <string name="pref_musicvis_mesh_mode_summary">On: original RS mesh/primitive (triangle strip).
+        Off: current line mesh.</string>
+
+    <string name="musicvis_permission_granted">Audio permission granted</string>
+    <string name="musicvis_permission_denied">Audio permission denied. Audio visualization will not
+        work.</string>
+    <string name="wallpaper_preview_not_supported">Wallpaper preview not supported</string>
+    <string name="miui_permission_title">Permission required</string>
+    <string name="miui_permission_message">MIUI requires enabling the "Live wallpaper service"
+        permission manually to open preview.\n\nTap OK, then enable it in permission management.</string>
+    <string name="miui_permission_go_settings">Go to settings</string>
+    <string name="miui_permission_continue">Continue</string>
+    <string name="miui_permission_open_failed">Unable to open settings</string>
+    <string name="phasebeam_ssion_message">MIUI requires enabling the "Live wallpaper service"
+        permission manually to open preview.\n\nTap OK, then enable it in permission management.</string>
+    <string name="no_live_wallpaper_support">Live wallpaper is not supported on this device</string>
+    <string name="about_title">About</string>
+    <string name="about_body">Author: 念.\nEmail: 3471348199@qq.com,\n
+        xujiekai508@gmail.com\nOriginal project author: The Android Open Source Project
+        (AOSP)\n\nProject overview:\nThis project migrates and maintains classic Android live
+        wallpapers. The goal is to fully preserve original visuals while modernizing the rendering
+        stack for compatibility, performance, and stability on current Android versions.\n\nCore
+        goals:\n1) Visual fidelity: faithfully reproduce leaf drift, water ripples, colors, and
+        timing.\n2) Performance and stability: reduce CPU/GPU load and improve high-refresh
+        smoothness.\n3) Long-term compatibility: work on Android 10+ and keep a future migration
+        path.\n\nWhy migrate from RenderScript to OpenGL ES 2.0:\n- RenderScript is deprecated and
+        removed from recent SDK/NDK toolchains.\n- It is fragile across devices and ROMs with
+        frequent rendering failures.\n- OpenGL ES 2.0 is widely supported and enables GPU-based
+        optimization.</string>
+
+    <!-- Galaxy wallpaper preferences -->
+    <string name="pref_galaxy_particle_count">Particle count</string>
+    <string name="pref_galaxy_particle_count_summary">Number of particles in the galaxy (affects
+        performance)</string>
+    <string name="pref_galaxenable_recolor_summary">When enabled, you can customize beam colors</string>
+
+    <!-- Galaxy 4 wallpaper preferences -->
+    <string name="pref_galaxy4_bg_star_count">Background star count</string>
+    <string name="pref_galaxy4_bg_star_count_summary">Number of background stars in the galaxy
+        (affects performance)</string>
+    <string name="phasebeam_y4_bg_star_count">Background star count</string>
+    <string name="pref_galaxy4_space_cloud_count">Space cloud count</string>
+    <string name="pref_galaxy4_space_cloud_count_summary">Number of clouds in the galaxy</string>
+
+    <!-- Phase Beam wallpaper -->
+    <string name="wallpaper_phasebeam">Phase Beam</string>
+    <string name="wallpaper_enable_recolor_summary">When enabled, you can customize beam colors</string>
+    <string name="phasebeam_phasebeam">Phase Beam</string>
+    <string name="wallpaper_phasebeam_author">Google</string>
+    <string name="wallpaper_phasebeam_desc">Soft beams and particles sweeping across a vivid
+        background.</string>
+
+    <string name="phasebeam_enable_recolor">Adjust beam colors</string>
+    <string name="phasebeam_enable_recolor_summary">When enabled, you can customize beam colors</string>
+    <string name="miui_permienable_recolor_summary">When enabled, you can customize beam colors</string>
+    <string name="phasebeam_color_label">Color</string>
+    <string name="phasebeam_saturation_label">Saturation</string>
+    <string name="phasebeam_brightness_label">Brightness</string>
+
+
+    <!-- Global frame rate settings -->
+    <string name="pref_global_frame_rate">Global Frame Rate</string>
+    <string name="pref_global_frame_rate_summary">Set frame rate for all wallpapers (higher values
+        use more battery)</string>
+    <string name="pref_preview_ratio">Live preview ratio</string>
+    <string name="pref_preview_ratio_dialog">Live preview ratio</string>
+    <string name="pref_preview_ratio_summary">Format: W:H, e.g. 9:16</string>
+    <string name="pref_preview_ratio_invalid">Invalid ratio. Use W:H, e.g. 9:16</string>
+
+    <string name="grass_color_default">Default</string>
+    <string name="grass_color_green">Green</string>
+    <string name="grass_color_blue">Blue</string>
+    <string name="grass_color_red">Red</string>
+    <string name="grass_color_pink">Pink</string>
+    <string name="grass_color_purple">Purple</string>
+    <string name="grass_color_yellow">Yellow</string>
+    <string name="grass_color_black">Black</string>
+    <string name="grass_color_white">White</string>
+
+    <!-- Magic Smoke Wallpaper -->
+    <string name="wallpaper_magicsmoke">Magic Smoke</string>
+    <string name="wallpaper_magicsmoke_author">Google</string>
+    <string name="pref_magicsmoke_preset">Visual Theme</string>
+    <string name="pref_magicsmoke_preset_summary">Choose from 20 different smoke/cloud/plasma
+        effects</string>
+
+    <!-- Holo Spiral Wallpaper -->
+    <string name="wallpaper_holospiral">Holo Spiral</string>
+    <string name="wallpaper_holospiral_author">Google</string>
+    <string name="wallpaper_holospiral_desc">Holo themed spiral wallpaper.</string>
+
+    <!-- Blue Sea Wallpaper -->
+    <string name="wallpaper_bluesea">Blue Sea</string>
+    <string name="wallpaper_bluesea_author">TAT</string>
+    <string name="wallpaper_bluesea_desc">Translucent sea creatures floating in brilliant blue sea.</string>
+
+
+    <string name="openweather_api_key">YOUR_OPENWEATHER_API_KEY</string>
+
+    <!-- About/关于界面专用 -->
+    <string name="about_app_info">App Info</string>
+    <string name="about_project_intro">Project Introduction</string>
+    <string name="about_project_one_liner">Classic live wallpaper remaster</string>
+    <string name="about_project_description">Classic Android live wallpapers, fully remastered and
+        modernized for new devices. RenderScript → OpenGL ES 2.0, high compatibility, low power, GPU
+        acceleration.</string>
+    <string name="about_project_highlights">Highlights</string>
+    <string name="about_project_highlights_detail">Low power, high compatibility, original visual
+        fidelity, GPU acceleration, long-term maintenance.</string>
+    <string name="about_links">Links and Contact</string>
+    <string name="about_official_website">Official Website</string>
+    <string name="about_official_website_url">https://github.com/zyfxv/android-live-wallpapers</string>
+    <string name="about_email">Email</string>
+    <string name="about_email_address">3471348199@qq.com</string>
+    <string name="about_qq">QQ Group</string>
+    <string name="about_qq_number">3471348199</string>
+    <string name="about_bilibili">Bilibili</string>
+    <string name="about_feedback">Feedback</string>
+    <string name="about_feedback_contact">For feedback, please use the above contact information.</string>
+    <string name="about_thanks">Acknowledgements</string>
+    <string name="about_thanks_original">Thanks to the original authors</string>
+    <string name="about_thanks_original_detail">Original: MediaTek、Google、Samsung</string>
+
+    <string name="about_developer">Developer</string>
+    <string name="about_author">Author</string>
+    <string name="about_author_detail">念. and contributors</string>
+    <string name="about_disclaimer">Disclaimer</string>
+    <string name="about_disclaimer_title">For learning and communication only</string>
+    <string name="about_disclaimer_detail">This project is for non-commercial, educational use only.
+        All rights belong to the original copyright holders.</string>
+    <string name="app_version_summary">Version: %1$s</string>
+    <string name="copied_to_clipboard">Copied to clipboard</string>
+    <string name="no_browser_found">No browser found</string>
+    <string name="no_email_found">No email app found</string>
+</resources>

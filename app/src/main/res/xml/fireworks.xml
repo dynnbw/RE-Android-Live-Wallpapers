@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wallpaper xmlns:android="http://schemas.android.com/apk/res/android"
+    android:description="@string/wallpaper_fireworks_desc"
+    android:thumbnail="@drawable/fireworks_thumb"
+    android:author="@string/wallpaper_fireworks_author"
+    android:showMetadataInPreview="true"
+    android:settingsActivity="com.reandroid.wallpaper.settings.FireworksSettingsActivity" />

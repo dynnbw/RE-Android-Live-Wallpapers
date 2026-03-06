@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="nexus_mode_entries">
+        <item>默认</item>
+        <item>红</item>
+        <item>绿</item>
+        <item>蓝</item>
+        <item>白</item>
+        <item>青</item>
+        <item>紫</item>
+        <item>粉</item>
+    </string-array>
+
+    <string-array name="magicsmoke_preset_names">
+        <item>黑白（经典）</item>
+        <item>蓝白</item>
+        <item>绿白</item>
+        <item>绿（预乘）</item>
+        <item>绿色光晕</item>
+        <item>红色火焰</item>
+        <item>黑色直通</item>
+        <item>蓝黄渐变</item>
+        <item>绿色光晕 2</item>
+        <item>红色火焰（预乘）</item>
+        <item>灰色（预乘）</item>
+        <item>蓝色（预乘）</item>
+        <item>蓝黄静态</item>
+        <item>蓝黄旋转</item>
+        <item>蓝黄旋转 2</item>
+        <item>灰色经典</item>
+        <item>黑色交换（默认）</item>
+        <item>深蓝等离子</item>
+        <item>浅蓝等离子</item>
+        <item>白色等离子</item>
+    </string-array>
+
+    <string-array name="weather_update_entries">
+        <item>15 分钟</item>
+        <item>30 分钟</item>
+        <item>1 小时</item>
+        <item>3 小时</item>
+    </string-array>
+
+    <string-array name="deepsea_background_type">
+        <item>默认</item>
+        <item>自定义图片</item>
+    </string-array>
+    
+    <string-array name="deepsea_background_type_values" translatable="false">
+        <item>0</item>
+        <item>1</item>
+    </string-array>
+ 
+    <string-array name="deepsea_particle_color_entries" translatable="false">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+        <item>8</item>
+        <item>9</item>
+        <item>10</item>
+        <item>11</item>
+        <item>12</item>
+        <item>13</item>
+        <item>14</item>
+        <item>15</item>
+    </string-array>
+ 
+    <string-array name="deepsea_particle_color_values" translatable="false">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+        <item>8</item>
+        <item>9</item>
+        <item>10</item>
+        <item>11</item>
+        <item>12</item>
+        <item>13</item>
+        <item>14</item>
+    </string-array>
+    <!-- Flsorescence Shape Options -->
+    <string-array name="flsorescence_shape_entries" translatable="false">
+        <item>圆点</item>
+        <item>发光圆点</item>
+        <item>圆角</item>
+        <item>发光圆角</item>
+    </string-array>
+    <string-array name="flsorescence_shape_values" translatable="false">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+    </string-array>
+    <!-- Flsorescence Color Options -->
+    <string-array name="flsorescence_color_entries" translatable="false">
+        <item>蓝色</item>
+        <item>绿色</item>
+        <item>橙色</item>
+    </string-array>
+    <string-array name="flsorescence_color_values" translatable="false">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+    <!-- Flsorescence Pattern Options -->
+    <string-array name="flsorescence_pattern_entries" translatable="false">
+        <item>模式 1</item>
+        <item>模式 2</item>
+        <item>模式 3</item>
+        <item>模式 4</item>
+        <item>模式 5</item>
+    </string-array>
+    <string-array name="flsorescence_pattern_values" translatable="false">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+    </string-array>
+    
+</resources>

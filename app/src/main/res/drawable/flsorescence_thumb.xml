@@ -1,0 +1,15 @@
+<!-- 荧光（flsorescence）壁纸缩略图，复制自 luminousdots_thumb.xml -->
+<!-- 如需自定义缩略图，请替换此文件内容 -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <!-- 这里的内容建议与 luminousdots_thumb.xml 保持一致，后续可自定义 -->
+    <path
+        android:fillColor="#FF00FF"
+        android:pathData="M24,4a20,20 0 1,0 0,40a20,20 0 1,0 0,-40z"/>
+    <path
+        android:fillColor="#80FFFFFF"
+        android:pathData="M24,12a12,12 0 1,0 0,24a12,12 0 1,0 0,-24z"/>
+</vector>
