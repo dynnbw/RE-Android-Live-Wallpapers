@@ -202,6 +202,8 @@
     <string name="pref_fall_green_leaves_summary">启用后部分落叶将为绿色</string>
     <string name="pref_fall_max_drops">最大涟漪数量</string>
     <string name="pref_fall_max_drops_summary">屏幕上同时显示的最大水波涟漪数量（影响性能）</string>
+    <string name="pref_fall_precise_calc">精确计算</string>
+    <string name="pref_fall_precise_calc_summary">启用基于波传播与衰减的物理涟漪模拟</string>
 
     <string name="pref_grass_enabled">显示草地</string>
     <string name="pref_grass_enabled_summary">显示或隐藏草地效果</string>
@@ -211,6 +213,8 @@
     <string name="pref_grass_height_summary">修改草的高度</string>
     <string name="pref_grass_width">草地宽度</string>
     <string name="pref_grass_width_summary">修改草的宽度</string>
+    <string name="pref_grass_hardness">草叶柔软度</string>
+    <string name="pref_grass_hardness_summary">修改草叶柔软度（越高越容易弯曲）</string>
     <string name="pref_grass_color">草地颜色</string>
     <string name="pref_grass_color_summary">修改草的颜色，呈现不同效果</string>
     <string name="pref_grass_night_invert">反转夜空</string>
@@ -238,6 +242,28 @@
     <!-- Galaxy 壁纸偏好设置 -->
     <string name="pref_galaxy_particle_count">粒子数量</string>
     <string name="pref_galaxy_particle_count_summary">星系中的粒子数量（影响性能）</string>
+    <string name="pref_galaxy_particle_alpha">粒子透明度</string>
+    <string name="pref_galaxy_particle_alpha_summary">调整粒子透明度（两种计算模式均生效）</string>
+    <string name="pref_galaxy_precise_calc">精确螺旋计算</string>
+    <string name="pref_galaxy_precise_calc_summary">启用后使用基于 M31 参数的对数螺旋初始化，关闭则使用当前随机角度逻辑</string>
+    <string name="pref_galaxy_arm_count">旋臂数量</string>
+    <string name="pref_galaxy_arm_count_summary">对数旋臂数量（仅精确计算模式生效）</string>
+    <string name="pref_galaxy_arm_offset">旋臂偏移（弧度×1000）</string>
+    <string name="pref_galaxy_arm_offset_summary">旋臂之间的角度间隔（0 ~ 2π，仅精确计算生效）</string>
+    <string name="pref_galaxy_pitch_angle">螺距角（度×10）</string>
+    <string name="pref_galaxy_pitch_angle_summary">旋臂螺距角（0 ~ 30°，仅精确计算生效）</string>
+    <string name="pref_galaxy_inner_scatter">内部散射（×100）</string>
+    <string name="pref_galaxy_inner_scatter_summary">靠近核心的旋臂散射强度（仅精确计算生效）</string>
+    <string name="pref_galaxy_outer_scatter">外部散射（×100）</string>
+    <string name="pref_galaxy_outer_scatter_summary">外围旋臂散射强度（仅精确计算生效）</string>
+    <string name="pref_galaxy_turbulence">湍流强度（×100）</string>
+    <string name="pref_galaxy_turbulence_summary">精确旋臂形变的随机湍流强度</string>
+    <string name="pref_galaxy_forbidden_radius">中心禁区半径（kpc×100）</string>
+    <string name="pref_galaxy_forbidden_radius_summary">对数旋臂拟合排除的内核半径（仅精确计算生效）</string>
+    <string name="pref_galaxy_ellipse_ratio">椭圆比率（×1000）</string>
+    <string name="pref_galaxy_ellipse_ratio_summary">旋臂椭圆形态比率（0.5 ~ 1.0，仅精确计算生效）</string>
+    <string name="pref_galaxy_ellipse_twist">椭圆扭曲（×1000）</string>
+    <string name="pref_galaxy_ellipse_twist_summary">椭圆形态扭曲偏移（-0.1 ~ 0.1，仅精确计算生效）</string>
 
     <!-- Galaxy 4 壁纸偏好设置 -->
     <string name="pref_galaxy4_bg_star_count">粒子数量</string>
@@ -409,4 +435,19 @@
     <string name="copied_to_clipboard">已复制到剪贴板</string>
     <string name="no_browser_found">未找到浏览器</string>
     <string name="no_email_found">未找到邮件应用</string>
+    <string name="galaxy_enable_precise_calc_first">请先开启精确螺旋计算</string>
+    <string name="grass_disable_dandelion_firefly_first">请先关闭蒲公英和萤火虫</string>
+    <string name="grass_disable_legacy_particles_first">请先关闭传统(MTK)粒子运动方式</string>
+    <string name="grass_enable_dandelion_first">请先开启蒲公英</string>
+    <string name="grass_enable_firefly_first">请先开启萤火虫</string>
+    <string name="phasebeam_enable_recolor_first">请先开启调整光束颜色</string>
+    <string name="config_open_browser_failed">无法打开浏览器</string>
+    <string name="fireworks_custom_background_set_toast">自定义背景已设置，请重新设置壁纸以应用更改</string>
+    <string name="fireworks_background_changed_title">背景已更换</string>
+    <string name="fireworks_background_changed_message">新背景已保存。是否立即重新设置壁纸以应用更改？</string>
+    <string name="fireworks_background_reset_toast">已恢复默认背景</string>
+    <string name="fireworks_background_reset_title">背景已重置</string>
+    <string name="fireworks_background_reset_message">已恢复为默认背景。是否立即重新设置壁纸以应用更改？</string>
+    <string name="fireworks_custom_background_set_summary">已设置自定义背景</string>
+    <string name="fireworks_custom_background_click_summary">点击选择自定义背景图片</string>
 </resources>

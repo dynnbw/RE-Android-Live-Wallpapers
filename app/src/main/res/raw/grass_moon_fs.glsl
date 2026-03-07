@@ -14,14 +14,21 @@ uniform float uEclipsePhase;
 uniform vec2 uShadowOffset;
 uniform vec3 uShadowColor;
 uniform vec3 uPenumbraColor;
+uniform float uSolarOcclusion;
 varying vec2 vTexCoord;
 void main() {
   vec2 uv = vTexCoord * 2.0 - 1.0;
-  vec4 base = texture2D(uMoonBase, vTexCoord);
   float mask = texture2D(uMoonMask, vTexCoord).a;
   float circle = smoothstep(1.0, 0.97, length(uv));
   float alphaMask = mask * circle;
   if (alphaMask <= 0.001) discard;
+
+  if (uSolarOcclusion > 0.5) {
+    gl_FragColor = vec4(0.0, 0.0, 0.0, alphaMask * uMoonAlpha);
+    return;
+  }
+
+  vec4 base = texture2D(uMoonBase, vTexCoord);
 
   float phaseRad = radians(uPhaseAngle);
   float dir = (sin(phaseRad) >= 0.0) ? 1.0 : -1.0;

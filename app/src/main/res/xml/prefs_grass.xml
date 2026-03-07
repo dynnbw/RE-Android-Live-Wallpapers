@@ -19,6 +19,10 @@
         android:summary="@string/pref_grass_width_summary" android:min="50" android:max="600"
         android:defaultValue="100" app:showSeekBarValue="true"
         android:layout="@layout/preference_modern_seekbar" />
+    <SeekBarPreference android:key="pref_grass_hardness" android:title="@string/pref_grass_hardness"
+        android:summary="@string/pref_grass_hardness_summary" android:min="30" android:max="300"
+        android:defaultValue="100" app:showSeekBarValue="true"
+        android:layout="@layout/preference_modern_seekbar" />
     <ListPreference android:key="pref_grass_color" android:title="@string/pref_grass_color"
         android:summary="@string/pref_grass_color_summary"
         android:entries="@array/grass_color_entries" android:entryValues="@array/grass_color_values"

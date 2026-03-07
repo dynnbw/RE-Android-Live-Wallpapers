@@ -12,10 +12,12 @@ public class WallpaperSettings {
     public static final String KEY_FALL_LEAF_COUNT = "pref_fall_leaf_count";
     public static final String KEY_FALL_GREEN_LEAVES = "pref_fall_green_leaves";
     public static final String KEY_FALL_MAX_DROPS = "pref_fall_max_drops";
+    public static final String KEY_FALL_PRECISE_CALC = "pref_fall_precise_calc";
     public static final String KEY_GRASS_ENABLED = "pref_grass_enabled";
     public static final String KEY_GRASS_COUNT = "pref_grass_count";
     public static final String KEY_GRASS_HEIGHT = "pref_grass_height";
     public static final String KEY_GRASS_WIDTH = "pref_grass_width";
+    public static final String KEY_GRASS_HARDNESS = "pref_grass_hardness";
     public static final String KEY_GRASS_COLOR = "pref_grass_color";
     public static final String KEY_GRASS_NIGHT_INVERT = "pref_grass_night_invert";
     public static final String KEY_GRASS_NIGHT_DESATURATE = "pref_grass_night_desaturate";
@@ -61,6 +63,12 @@ public class WallpaperSettings {
         return p.getInt(KEY_FALL_MAX_DROPS, defValue);
     }
 
+    public static boolean isFallPreciseCalcEnabled(boolean defValue) {
+        SharedPreferences p = prefs();
+        if (p == null) return defValue;
+        return p.getBoolean(KEY_FALL_PRECISE_CALC, defValue);
+    }
+
     public static boolean isGrassEnabled(boolean defValue) {
         SharedPreferences p = prefs();
         if (p == null) return defValue;
@@ -86,6 +94,14 @@ public class WallpaperSettings {
         if (p == null) return defValue;
         int percent = p.getInt(KEY_GRASS_WIDTH, Math.round(defValue * 100.0f));
         if (percent < 10) percent = 10;
+        return percent / 100.0f;
+    }
+
+    public static float getGrassHardnessScale(float defValue) {
+        SharedPreferences p = prefs();
+        if (p == null) return defValue;
+        int percent = p.getInt(KEY_GRASS_HARDNESS, Math.round(defValue * 100.0f));
+        if (percent < 30) percent = 30;
         return percent / 100.0f;
     }
 

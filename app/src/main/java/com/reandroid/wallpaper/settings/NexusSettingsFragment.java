@@ -158,7 +158,7 @@ public class NexusSettingsFragment extends PreferenceFragmentCompat {
             intent.putExtra("android.service.wallpaper.extra.LIVE_WALLPAPER_COMPONENT", componentName);
             startActivity(intent);
         } catch (ActivityNotFoundException e) {
-            Toast.makeText(requireContext(), "不支持壁纸预览", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), R.string.pref_open_wallpaper_picker_failed, Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -191,23 +191,23 @@ public class NexusSettingsFragment extends PreferenceFragmentCompat {
 
     private void showMIUIPermissionDialog(Class<?> wallpaperClass) {
         new AlertDialog.Builder(requireContext())
-                .setTitle("需要授予权限")
-                .setMessage("小米系统需要手动授予\"动态壁纸服务\"权限，否则无法正常打开壁纸预览。\n\n点击确定后，请在权限管理页面找到\"动态壁纸服务\"并开启。")
-                .setPositiveButton("去设置", (dialog, which) -> {
+                .setTitle(R.string.miui_permission_title)
+                .setMessage(R.string.miui_permission_message)
+                .setPositiveButton(R.string.miui_permission_go_settings, (dialog, which) -> {
                     setMIUIPermissionDialogShown();
                     try {
                         Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
                         intent.setData(Uri.parse("package:" + requireContext().getPackageName()));
                         startActivity(intent);
                     } catch (Exception e) {
-                        Toast.makeText(requireContext(), "无法打开设置页面", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(), R.string.miui_permission_open_failed, Toast.LENGTH_SHORT).show();
                     }
                 })
-                .setNeutralButton("继续", (dialog, which) -> {
+                .setNeutralButton(R.string.miui_permission_continue, (dialog, which) -> {
                     setMIUIPermissionDialogShown();
                     launchLivePreview(wallpaperClass);
                 })
-                .setNegativeButton("取消", null)
+                .setNegativeButton(android.R.string.cancel, null)
                 .show();
     }
 

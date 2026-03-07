@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2009 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.reandroid.wallpaper.grass;
 
 import android.content.res.Resources;
@@ -99,6 +115,10 @@ public class GrassGL extends GLESScene {
     private static final float MAX_BEND = 0.09f; // 草叶最大弯曲程度
     private static final float SECONDS_IN_DAY = 86400.0f; // 一天的秒数
     private static final float HALF_PI = 1.570796326f; // π/2
+    private static final float SOLAR_MEAN_ANGULAR_RADIUS_DEG = 0.2665f; // 太阳平均视半径（度）
+    private static final float LUNAR_MEAN_ANGULAR_RADIUS_DEG = 0.2727f; // 月亮平均视半径（度）
+    private static final float SOLAR_ECLIPSE_MODEL_TOLERANCE_DEG = 0.75f; // 低阶天文模型容差（度）
+    private static final float SUN_PHOTOSPHERE_SCALE = 0.88f; // 太阳贴图中可遮挡光球占比
 
     private static final int B = 0x100;
     private static final int BM = 0xff;
@@ -142,10 +162,12 @@ public class GrassGL extends GLESScene {
     private int mSkySamplerSunriseHandle;
     private int mSkySamplerSunsetHandle;
     private int mSkySamplerSkyHandle;
+    private int mSkySamplerSolarEclipseHandle;
     private int mSkyWeightNightHandle;
     private int mSkyWeightSunriseHandle;
     private int mSkyWeightSunsetHandle;
     private int mSkyWeightSkyHandle;
+    private int mSkyWeightSolarEclipseHandle;
     private int mSkyNightInvertHandle;
 
     private int mGrassPositionHandle;
@@ -172,11 +194,13 @@ public class GrassGL extends GLESScene {
     private int mMoonShadowOffsetHandle;
     private int mMoonShadowColorHandle;
     private int mMoonPenumbraColorHandle;
+    private int mMoonSolarOcclusionHandle;
 
     private int mTexNight;
     private int mTexSunrise;
     private int mTexSunset;
     private int mTexSky;
+    private int mTexSolarEclipse;
     private int mTexSun;
     private int mTexAA;
     private int mTexDandelion;
@@ -211,6 +235,7 @@ public class GrassGL extends GLESScene {
     private boolean mMoonEnabled = false; // 是否显示月亮
     private float mGrassHeightScale = 1.0f; // 草地高度缩放
     private float mGrassWidthScale = 1.0f; // 草地宽度缩放
+    private float mGrassHardnessScale = 1.0f; // 草叶硬度缩放
     private boolean mUseGrassTint = false; // 是否启用草地颜色调节
     private float mGrassTintR = 1.0f; // 草地颜色调节 RGB 分量
     private float mGrassTintG = 1.0f; // 草地颜色调节 RGB 分量
@@ -228,6 +253,8 @@ public class GrassGL extends GLESScene {
     private double mLastSunriseOfficialHour = -1.0; // 官方日出日落时间
     private double mLastSunsetOfficialHour = -1.0; // 官方日出日落时间
     private long mLastLocationUpdateMs = 0L; // 上次位置更新时间
+    private long mLastSolarEclipseUpdateMs = 0L; // 上次日食状态更新时间
+    private float mSolarEclipseWeight = 0.0f; // 日食过渡权重
 
     private static final int DEFAULT_DANDELION_COUNT = 10; // 蒲公英数量
     private static final int DEFAULT_FIREFLY_COUNT = 16; // 萤火虫数量
@@ -317,7 +344,7 @@ public class GrassGL extends GLESScene {
         // 释放纹理资源
         int[] tex = new int[] {
                 mTexNight, mTexSunrise, mTexSunset, mTexSky,
-                mTexSun, mTexAA, mTexDandelion, mTexFirefly,
+            mTexSolarEclipse, mTexSun, mTexAA, mTexDandelion, mTexFirefly,
                 mTexMoonBase, mTexMoonMask
         };
         GLES20.glDeleteTextures(tex.length, tex, 0);
@@ -325,6 +352,7 @@ public class GrassGL extends GLESScene {
         mTexSunrise = 0;
         mTexSunset = 0;
         mTexSky = 0;
+        mTexSolarEclipse = 0;
         mTexSun = 0;
         mTexAA = 0;
         mTexDandelion = 0;
@@ -412,10 +440,12 @@ public class GrassGL extends GLESScene {
         mSkySamplerSunriseHandle = GLES20.glGetUniformLocation(mSkyProgram, "uTexSunrise");
         mSkySamplerSunsetHandle = GLES20.glGetUniformLocation(mSkyProgram, "uTexSunset");
         mSkySamplerSkyHandle = GLES20.glGetUniformLocation(mSkyProgram, "uTexSky");
+        mSkySamplerSolarEclipseHandle = GLES20.glGetUniformLocation(mSkyProgram, "uTexSolarEclipse");
         mSkyWeightNightHandle = GLES20.glGetUniformLocation(mSkyProgram, "uWeightNight");
         mSkyWeightSunriseHandle = GLES20.glGetUniformLocation(mSkyProgram, "uWeightSunrise");
         mSkyWeightSunsetHandle = GLES20.glGetUniformLocation(mSkyProgram, "uWeightSunset");
         mSkyWeightSkyHandle = GLES20.glGetUniformLocation(mSkyProgram, "uWeightSky");
+        mSkyWeightSolarEclipseHandle = GLES20.glGetUniformLocation(mSkyProgram, "uWeightSolarEclipse");
         mSkyNightInvertHandle = GLES20.glGetUniformLocation(mSkyProgram, "uNightInvert");
     }
 
@@ -455,6 +485,7 @@ public class GrassGL extends GLESScene {
         mMoonShadowOffsetHandle = GLES20.glGetUniformLocation(mMoonProgram, "uShadowOffset");
         mMoonShadowColorHandle = GLES20.glGetUniformLocation(mMoonProgram, "uShadowColor");
         mMoonPenumbraColorHandle = GLES20.glGetUniformLocation(mMoonProgram, "uPenumbraColor");
+        mMoonSolarOcclusionHandle = GLES20.glGetUniformLocation(mMoonProgram, "uSolarOcclusion");
     }
 
     private int createProgram(String vertexSource, String fragmentSource) {
@@ -497,6 +528,7 @@ public class GrassGL extends GLESScene {
         mTexSunrise = loadTexture(R.drawable.sunrise, true, false);
         mTexSunset = loadTexture(R.drawable.sunset, true, false);
         mTexSky = loadTexture(R.drawable.sky, true, false);
+        mTexSolarEclipse = loadTexture(R.drawable.solar_eclipse, false, false);
         mTexSun = loadTexture(R.drawable.sun, false, false);
         mTexAA = createAlphaTexture();
         mTexDandelion = loadTexture(R.drawable.dandelion, false, false);
@@ -726,6 +758,8 @@ public class GrassGL extends GLESScene {
                 .getGrassHeightScale(1.0f);
         float newWidthScale = com.reandroid.wallpaper.settings.WallpaperSettings
                 .getGrassWidthScale(1.0f);
+        float newHardnessScale = com.reandroid.wallpaper.settings.WallpaperSettings
+            .getGrassHardnessScale(1.0f);
         boolean newDandelionEnabled = com.reandroid.wallpaper.settings.WallpaperSettings
                 .isDandelionEnabled(false);
         boolean newFireflyEnabled = com.reandroid.wallpaper.settings.WallpaperSettings
@@ -747,6 +781,7 @@ public class GrassGL extends GLESScene {
         hash = 31 * hash + (newMoonEnabled ? 1 : 0);
         hash = 31 * hash + Float.floatToIntBits(newHeightScale);
         hash = 31 * hash + Float.floatToIntBits(newWidthScale);
+        hash = 31 * hash + Float.floatToIntBits(newHardnessScale);
         hash = 31 * hash + (newDandelionEnabled ? 1 : 0);
         hash = 31 * hash + (newFireflyEnabled ? 1 : 0);
         hash = 31 * hash + newDandelionCount;
@@ -768,6 +803,7 @@ public class GrassGL extends GLESScene {
         mMoonEnabled = newMoonEnabled;
         mGrassHeightScale = newHeightScale;
         mGrassWidthScale = newWidthScale;
+        mGrassHardnessScale = newHardnessScale;
         mDandelionEnabled = newDandelionEnabled;
         mFireflyEnabled = newFireflyEnabled;
         mDandelionCount = Math.max(1, newDandelionCount);
@@ -1073,11 +1109,15 @@ public class GrassGL extends GLESScene {
         GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
         GLES20.glUniformMatrix4fv(mGrassMatrixHandle, 1, false, mProjectionMatrix, 0);
 
+        float eclipseImpact = mUseAccurateSun ? clamp(mSolarEclipseWeight, 0.0f, 1.0f) : 0.0f;
         float grassBrightness = newB;
         float nightDesat = 0.0f;
         if (mNightDesaturateGrass) {
-            grassBrightness = 1.0f;
-            nightDesat = mUseAccurateSun ? mAccurateWeights[0] : clamp(1.0f - newB, 0.0f, 1.0f);
+            grassBrightness = mix(1.0f, 0.72f, eclipseImpact);
+            float baseNightDesat = mUseAccurateSun ? mAccurateWeights[0] : clamp(1.0f - newB, 0.0f, 1.0f);
+            nightDesat = clamp(baseNightDesat + eclipseImpact * 0.85f, 0.0f, 1.0f);
+        } else {
+            grassBrightness *= mix(1.0f, 0.62f, eclipseImpact);
         }
         drawBlades(grassBrightness, x, nightDesat);
 
@@ -1678,6 +1718,8 @@ public class GrassGL extends GLESScene {
                     .order(ByteOrder.nativeOrder()).asFloatBuffer();
         }
 
+        updateSolarEclipseState();
+
         float[] verts = new float[] {
                 0.0f, 0.0f, 0.0f, 0.0f,
                 0.0f, mHeight, 0.0f, 1.0f,
@@ -1711,10 +1753,15 @@ public class GrassGL extends GLESScene {
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTexSky);
         GLES20.glUniform1i(mSkySamplerSkyHandle, 3);
 
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE4);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTexSolarEclipse);
+        GLES20.glUniform1i(mSkySamplerSolarEclipseHandle, 4);
+
         GLES20.glUniform1f(mSkyWeightNightHandle, mAccurateWeights[0]);
         GLES20.glUniform1f(mSkyWeightSunriseHandle, mAccurateWeights[1]);
         GLES20.glUniform1f(mSkyWeightSunsetHandle, mAccurateWeights[2]);
         GLES20.glUniform1f(mSkyWeightSkyHandle, mAccurateWeights[3]);
+        GLES20.glUniform1f(mSkyWeightSolarEclipseHandle, mSolarEclipseWeight);
         GLES20.glUniform1f(mSkyNightInvertHandle, mNightInvert ? 1.0f : 0.0f);
 
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, 4);
@@ -1732,22 +1779,8 @@ public class GrassGL extends GLESScene {
         }
 
         Calendar now = Calendar.getInstance(mTimeZone);
-        float sunX;
-        double sunrise = mLastSunriseOfficialHour;
-        double sunset = mLastSunsetOfficialHour;
-        if (sunrise >= 0.0 && sunrise < 24.0 && sunset > 0.0 && sunset <= 24.0 && sunset > sunrise) {
-            float nowHours = now.get(Calendar.HOUR_OF_DAY)
-                    + now.get(Calendar.MINUTE) / 60.0f// 当前时间分钟数
-                    + now.get(Calendar.SECOND) / 3600.0f;// 当前时间小时数
-            float ratio = clamp((nowHours - (float) sunrise) / (float) (sunset - sunrise), -0.1f, 1.1f);// 太阳X位置
-            float ratioX = ratio * 1.4f - 0.1f;
-            sunX = mWidth * clamp(ratioX, -0.1f, 1.1f);
-        } else {
-            double hourAngleDeg = mSunCalculator.computeHourAngle(now);
-            float ratioX = clamp((float) ((hourAngleDeg + 180.0) / 360.0), -0.1f, 1.1f);// 太阳X位置
-            float ratioExtended = ratioX * 1.4f - 0.1f;
-            sunX = mWidth * clamp(ratioExtended, -0.1f, 1.1f);
-        }
+        double hourAngleDeg = mSunCalculator.computeHourAngle(now);
+        float sunX = celestialXFromHourAngle(hourAngleDeg);
         float clampedAlt = clamp((float) mLastSunAltitude, 0.0f, 90.0f);// 太阳高度角
         float sunY = mHeight * (1.0f - clampedAlt / 90.0f);// 太阳Y位置
 
@@ -1758,6 +1791,76 @@ public class GrassGL extends GLESScene {
         GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
         GLES20.glUniformMatrix4fv(mBgMatrixHandle, 1, false, mProjectionMatrix, 0);// 设置矩阵
         drawSprite(mTexSun, sunX, sunY, size, alpha, false, 0.0f);// 绘制太阳
+
+        drawSolarEclipseOcclusion(now, sunX, sunY, size, alpha);
+    }
+
+    private float celestialXFromHourAngle(double hourAngleDeg) {
+        float ratio = (float) ((hourAngleDeg + 180.0) / 360.0);
+        float ratioExtended = ratio * 1.4f - 0.1f;
+        return mWidth * clamp(ratioExtended, -0.1f, 1.1f);
+    }
+
+    private float moonXFromHourAngle(double hourAngleDeg) {
+        float ratio = (float) ((hourAngleDeg + 180.0) / 360.0);
+        return mWidth * clamp(ratio, -0.1f, 1.1f);
+    }
+
+    private void drawSolarEclipseOcclusion(Calendar now, float sunX, float sunY, float sunSize, float sunAlpha) {
+        if (!mUseAccurateSun || mTexMoonMask == 0) {
+            return;
+        }
+
+        MoonCalculator.MoonData data = MoonCalculator.compute(now, mLocation.getLatitude(), mLocation.getLongitude());
+        if (data == null) {
+            return;
+        }
+
+        SolarEclipse eclipse = computeSolarEclipse(data, now);
+        if (eclipse.fraction <= 0.001f) {
+            return;
+        }
+
+        float moonX = moonXFromHourAngle(data.moonHourAngleDeg);
+        float clampedAlt = clamp((float) data.moonAltitudeDeg, 0.0f, 90.0f);
+        float moonY = mHeight * (1.0f - clampedAlt / 90.0f);
+
+        float sunDiscSize = sunSize * SUN_PHOTOSPHERE_SCALE;
+        float sunRadius = sunDiscSize * 0.5f;
+        float moonSize = sunDiscSize * eclipse.moonRadiusRatio;
+        float moonRadius = moonSize * 0.5f;
+        float dx = moonX - sunX;
+        float dy = moonY - sunY;
+        float distance = (float) Math.sqrt(dx * dx + dy * dy);
+        if (distance >= (sunRadius + moonRadius)) {
+            return;
+        }
+
+        float overlapFactor = 1.0f - clamp(distance / (sunRadius + moonRadius), 0.0f, 1.0f);
+        float maskAlpha = clamp(sunAlpha * (0.45f + 0.55f * eclipse.fraction) * overlapFactor, 0.0f, 1.0f);
+        if (maskAlpha <= 0.001f) {
+            return;
+        }
+
+        GLES20.glUseProgram(mMoonProgram);
+        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+        GLES20.glUniformMatrix4fv(mMoonMatrixHandle, 1, false, mProjectionMatrix, 0);
+        GLES20.glUniform1f(mMoonPhaseHandle, 0.0f);
+        GLES20.glUniform1f(mMoonBrightnessHandle, 1.0f);
+        GLES20.glUniform1f(mMoonAlphaHandle, maskAlpha);
+        GLES20.glUniform1i(mMoonIsDaytimeHandle, 1);
+        GLES20.glUniform1f(mMoonContrastHandle, 1.0f);
+        GLES20.glUniform1f(mMoonSaturationHandle, 1.0f);
+        GLES20.glUniform1f(mMoonBlueTintHandle, 0.0f);
+        GLES20.glUniform1i(mMoonEclipseTypeHandle, 0);
+        GLES20.glUniform1f(mMoonEclipseFractionHandle, 0.0f);
+        GLES20.glUniform1f(mMoonEclipsePhaseHandle, 0.0f);
+        GLES20.glUniform2f(mMoonShadowOffsetHandle, 0.0f, 0.0f);
+        GLES20.glUniform3f(mMoonShadowColorHandle, 0.0f, 0.0f, 0.0f);
+        GLES20.glUniform3f(mMoonPenumbraColorHandle, 0.0f, 0.0f, 0.0f);
+        GLES20.glUniform1f(mMoonSolarOcclusionHandle, 1.0f);
+        drawMoonSprite(moonX, moonY, moonSize);
+        GLES20.glUniform1f(mMoonSolarOcclusionHandle, 0.0f);
     }
 
     private void drawMoon() {
@@ -1788,8 +1891,7 @@ public class GrassGL extends GLESScene {
 
         MoonEclipse eclipse = computeMoonEclipse(data);
 
-        float ratioX = (float) ((data.moonHourAngleDeg + 180.0) / 360.0);
-        float moonX = mWidth * clamp(ratioX, -0.1f, 1.1f);
+        float moonX = moonXFromHourAngle(data.moonHourAngleDeg);
         float clampedAlt = clamp((float) data.moonAltitudeDeg, 0.0f, 90.0f);
         float moonY = mHeight * (1.0f - clampedAlt / 90.0f);
         float size = mWidth * 0.24f;
@@ -1814,6 +1916,7 @@ public class GrassGL extends GLESScene {
         GLES20.glUniform2f(mMoonShadowOffsetHandle, eclipse.shadowOffsetX, eclipse.shadowOffsetY);
         GLES20.glUniform3f(mMoonShadowColorHandle, 0.6f, 0.2f, 0.1f);
         GLES20.glUniform3f(mMoonPenumbraColorHandle, 0.2f, 0.2f, 0.2f);
+        GLES20.glUniform1f(mMoonSolarOcclusionHandle, 0.0f);
 
         drawMoonSprite(moonX, moonY, size);
     }
@@ -1890,6 +1993,186 @@ public class GrassGL extends GLESScene {
             this.shadowOffsetX = shadowOffsetX;
             this.shadowOffsetY = shadowOffsetY;
         }
+    }
+
+    private static class SolarEclipse {
+        final float fraction;
+        final float phase;
+        final float moonRadiusRatio;
+
+        SolarEclipse(float fraction, float phase, float moonRadiusRatio) {
+            this.fraction = fraction;
+            this.phase = phase;
+            this.moonRadiusRatio = moonRadiusRatio;
+        }
+    }
+
+    private void updateSolarEclipseState() {
+        if (!mUseAccurateSun || mTexSolarEclipse == 0) {
+            mSolarEclipseWeight = 0.0f;
+            return;
+        }
+
+        long nowMs = System.currentTimeMillis();
+        if (mLastSolarEclipseUpdateMs != 0L && (nowMs - mLastSolarEclipseUpdateMs) < 15000L) {
+            return;
+        }
+
+        Calendar now = Calendar.getInstance(mTimeZone);
+        MoonCalculator.MoonData data = MoonCalculator.compute(now, mLocation.getLatitude(), mLocation.getLongitude());
+        if (data == null) {
+            mSolarEclipseWeight = 0.0f;
+            mLastSolarEclipseUpdateMs = nowMs;
+            return;
+        }
+
+        SolarEclipse eclipse = computeSolarEclipse(data, now);
+        float dayVisibility = clamp(mAccurateWeights[3] + 0.45f * (mAccurateWeights[1] + mAccurateWeights[2]), 0.0f,
+                1.0f);
+        float eased = smoothstep(0.0f, 1.0f, eclipse.fraction);
+        mSolarEclipseWeight = clamp(eased * dayVisibility, 0.0f, 1.0f);
+        mLastSolarEclipseUpdateMs = nowMs;
+    }
+
+    private SolarEclipse computeSolarEclipse(MoonCalculator.MoonData data, Calendar now) {
+        float defaultRatio = LUNAR_MEAN_ANGULAR_RADIUS_DEG / SOLAR_MEAN_ANGULAR_RADIUS_DEG;
+        if (data.sunAltitudeDeg <= -0.8 || data.moonAltitudeDeg <= -2.0) {
+            return new SolarEclipse(0.0f, 0.0f, defaultRatio);
+        }
+
+        float phase = (float) data.phaseAngleUtcDeg;
+        float phaseDelta = Math.min(Math.abs(phase), Math.abs(360.0f - phase));
+        float nodeLatitude = Math.abs((float) data.moonLatitudeLocalDeg);
+        if (phaseDelta > 20.0f || nodeLatitude > 7.0f) {
+            return new SolarEclipse(0.0f, 0.0f, defaultRatio);
+        }
+
+        float[] angularRadii = computeApparentAngularRadii(now);
+        float sunRadiusDeg = angularRadii[0];
+        float moonRadiusDeg = angularRadii[1];
+
+        double separationDeg = angularSeparationDeg(
+                data.sunAltitudeDeg,
+                data.sunAzimuthDeg,
+                data.moonAltitudeDeg,
+                data.moonAzimuthDeg);
+
+        float orbitalSeparationDeg = (float) Math.hypot(phaseDelta, nodeLatitude);
+        float separationCandidate = Math.min((float) separationDeg, orbitalSeparationDeg);
+
+        float moonAltRad = (float) Math.toRadians(clamp((float) data.moonAltitudeDeg, 0.0f, 90.0f));
+        float parallaxCorrection = 0.65f * (float) Math.cos(moonAltRad);
+        float effectiveSeparationDeg = Math.max(0.0f,
+            separationCandidate - SOLAR_ECLIPSE_MODEL_TOLERANCE_DEG - 0.35f * parallaxCorrection);
+
+        float overlapObscuration = computeDiscOverlapFraction(sunRadiusDeg, moonRadiusDeg, effectiveSeparationDeg);
+
+        float solarVisible = smoothstep(-0.5f, 5.0f, (float) data.sunAltitudeDeg);
+        float lunarVisible = smoothstep(-2.0f, 4.0f, (float) data.moonAltitudeDeg);
+        float horizonAttenuation = smoothstep(1.5f, 12.0f, (float) Math.min(data.sunAltitudeDeg, data.moonAltitudeDeg));
+        float conjunctionAttenuation = 1.0f - smoothstep(8.0f, 22.0f, phaseDelta);
+        float nodeAttenuation = 1.0f - smoothstep(3.0f, 9.0f, nodeLatitude);
+
+        float fraction = clamp(
+            overlapObscuration * solarVisible * lunarVisible * horizonAttenuation * conjunctionAttenuation
+                * nodeAttenuation,
+            0.0f,
+            1.0f);
+
+        float signedAzDelta = normalizeSignedDegrees((float) (data.moonAzimuthDeg - data.sunAzimuthDeg));
+        float phaseProgress = clamp((signedAzDelta + 12.0f) / 24.0f, 0.0f, 1.0f);
+        float moonRadiusRatio = moonRadiusDeg / sunRadiusDeg;
+        return new SolarEclipse(fraction, phaseProgress, moonRadiusRatio);
+    }
+
+    private float[] computeApparentAngularRadii(Calendar now) {
+        float d = (float) ((now.getTimeInMillis() / 86400000.0) - 10957.5); // J2000以来天数
+
+        float sunMeanAnomaly = (float) Math.toRadians(normalizeDegreesFloat(357.5291f + 0.98560028f * d));
+        float moonMeanAnomaly = (float) Math.toRadians(normalizeDegreesFloat(134.9634f + 13.064993f * d));
+
+        float sunRadiusDeg = SOLAR_MEAN_ANGULAR_RADIUS_DEG * (1.0f + 0.0167f * (float) Math.cos(sunMeanAnomaly));
+        float moonRadiusDeg = LUNAR_MEAN_ANGULAR_RADIUS_DEG * (1.0f + 0.0549f * (float) Math.cos(moonMeanAnomaly));
+
+        sunRadiusDeg = clamp(sunRadiusDeg, 0.258f, 0.275f);
+        moonRadiusDeg = clamp(moonRadiusDeg, 0.245f, 0.285f);
+        return new float[] { sunRadiusDeg, moonRadiusDeg };
+    }
+
+    private double angularSeparationDeg(double alt1Deg, double az1Deg, double alt2Deg, double az2Deg) {
+        double alt1 = Math.toRadians(alt1Deg);
+        double alt2 = Math.toRadians(alt2Deg);
+        double deltaAz = Math.toRadians(az1Deg - az2Deg);
+        double cosD = Math.sin(alt1) * Math.sin(alt2)
+                + Math.cos(alt1) * Math.cos(alt2) * Math.cos(deltaAz);
+        cosD = Math.max(-1.0, Math.min(1.0, cosD));
+        return Math.toDegrees(Math.acos(cosD));
+    }
+
+    private float computeDiscOverlapFraction(float sunRadiusDeg, float moonRadiusDeg, float centerDistanceDeg) {
+        if (sunRadiusDeg <= 0.0f || moonRadiusDeg <= 0.0f) {
+            return 0.0f;
+        }
+
+        double r1 = sunRadiusDeg;
+        double r2 = moonRadiusDeg;
+        double d = centerDistanceDeg;
+
+        if (d >= r1 + r2) {
+            return 0.0f;
+        }
+
+        double overlapArea;
+        if (d <= Math.abs(r1 - r2)) {
+            double minR = Math.min(r1, r2);
+            overlapArea = Math.PI * minR * minR;
+        } else {
+            overlapArea = circleIntersectionArea(r1, r2, d);
+        }
+
+        double sunArea = Math.PI * r1 * r1;
+        if (sunArea <= 0.0) {
+            return 0.0f;
+        }
+        return clamp((float) (overlapArea / sunArea), 0.0f, 1.0f);
+    }
+
+    private double circleIntersectionArea(double r1, double r2, double d) {
+        double r1Sq = r1 * r1;
+        double r2Sq = r2 * r2;
+
+        double alpha = Math.acos(clampDouble((d * d + r1Sq - r2Sq) / (2.0 * d * r1), -1.0, 1.0));
+        double beta = Math.acos(clampDouble((d * d + r2Sq - r1Sq) / (2.0 * d * r2), -1.0, 1.0));
+
+        double part1 = r1Sq * alpha;
+        double part2 = r2Sq * beta;
+        double part3 = 0.5 * Math.sqrt(clampDouble(
+                (-d + r1 + r2) * (d + r1 - r2) * (d - r1 + r2) * (d + r1 + r2),
+                0.0,
+                Double.MAX_VALUE));
+        return part1 + part2 - part3;
+    }
+
+    private float normalizeSignedDegrees(float deg) {
+        float normalized = deg % 360.0f;
+        if (normalized > 180.0f) {
+            normalized -= 360.0f;
+        } else if (normalized < -180.0f) {
+            normalized += 360.0f;
+        }
+        return normalized;
+    }
+
+    private float normalizeDegreesFloat(float deg) {
+        float normalized = deg % 360.0f;
+        if (normalized < 0.0f) {
+            normalized += 360.0f;
+        }
+        return normalized;
+    }
+
+    private double clampDouble(double val, double min, double max) {
+        return Math.max(min, Math.min(max, val));
     }
 
     private MoonEclipse computeMoonEclipse(MoonCalculator.MoonData data) {
@@ -2009,7 +2292,7 @@ public class GrassGL extends GLESScene {
         float currentAngle = HALF_PI;
         float bottomX = xpos;
         float bottomY = blade.yPos;
-        float d = angle * blade.hardness;
+        float d = angle * blade.hardness * mGrassHardnessScale;
 
         float si = size * scale;
         float bottomLeft = bottomX - si;

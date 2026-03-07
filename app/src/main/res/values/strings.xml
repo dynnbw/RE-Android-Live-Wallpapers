@@ -205,6 +205,8 @@
     <string name="pref_fall_max_drops">Max ripple drops</string>
     <string name="pref_fall_max_drops_summary">Maximum number of water ripples displayed
         simultaneously on screen (affects performance)</string>
+    <string name="pref_fall_precise_calc">Precise calculation</string>
+    <string name="pref_fall_precise_calc_summary">Use physics-inspired ripple simulation (wave propagation and decay)</string>
 
     <string name="pref_grass_enabled">Show grass</string>
     <string name="pref_grass_enabled_summary">Show or hide grass effect</string>
@@ -216,6 +218,8 @@
     <string name="pref_grass_width_summary">Adjust the width of grass</string>
     <string name="pref_grass_color">Grass color</string>
     <string name="pref_grass_color_summary">Adjust grass color for different visual effects</string>
+    <string name="pref_grass_hardness">Grass softness</string>
+    <string name="pref_grass_hardness_summary">Adjust blade softness (higher values bend more)</string>
     <string name="pref_grass_night_invert">Invert night sky</string>
     <string name="pref_grass_night_desaturate">Desaturate grass at night</string>
     <string name="pref_grass_accurate_sun">Accurate calculation (affects performance)</string>
@@ -358,6 +362,28 @@
     <string name="pref_galaxy_particle_count">Particle count</string>
     <string name="pref_galaxy_particle_count_summary">Number of particles in the galaxy (affects
         performance)</string>
+    <string name="pref_galaxy_particle_alpha">Particle opacity</string>
+    <string name="pref_galaxy_particle_alpha_summary">Adjust particle transparency (applies to both calculation modes)</string>
+    <string name="pref_galaxy_precise_calc">Precise spiral calculation</string>
+    <string name="pref_galaxy_precise_calc_summary">Use M31-inspired logarithmic spiral initialization instead of the legacy random-angle model</string>
+    <string name="pref_galaxy_arm_count">Arm count</string>
+    <string name="pref_galaxy_arm_count_summary">Number of spiral arms (effective only in precise mode)</string>
+    <string name="pref_galaxy_arm_offset">Arm offset (rad ×1000)</string>
+    <string name="pref_galaxy_arm_offset_summary">Angular spacing between arms in radians (0 ~ 2π, precise mode only)</string>
+    <string name="pref_galaxy_pitch_angle">Pitch angle (deg ×10)</string>
+    <string name="pref_galaxy_pitch_angle_summary">Spiral pitch angle in degrees (0 ~ 30, precise mode only)</string>
+    <string name="pref_galaxy_inner_scatter">Inner scatter (×100)</string>
+    <string name="pref_galaxy_inner_scatter_summary">Arm scatter strength near the core (precise mode only)</string>
+    <string name="pref_galaxy_outer_scatter">Outer scatter (×100)</string>
+    <string name="pref_galaxy_outer_scatter_summary">Arm scatter strength in outer regions (precise mode only)</string>
+    <string name="pref_galaxy_turbulence">Turbulence (×100)</string>
+    <string name="pref_galaxy_turbulence_summary">Random turbulence intensity for precise arm deformation</string>
+    <string name="pref_galaxy_forbidden_radius">Core forbidden radius (kpc ×100)</string>
+    <string name="pref_galaxy_forbidden_radius_summary">Inner radius excluded from logarithmic arm fitting (precise mode only)</string>
+    <string name="pref_galaxy_ellipse_ratio">Ellipse ratio (×1000)</string>
+    <string name="pref_galaxy_ellipse_ratio_summary">Ellipticity of arm morphology (0.5 ~ 1.0, precise mode only)</string>
+    <string name="pref_galaxy_ellipse_twist">Ellipse twist (×1000)</string>
+    <string name="pref_galaxy_ellipse_twist_summary">Twist offset for arm ellipticity (-0.1 ~ 0.1, precise mode only)</string>
     <string name="pref_galaxenable_recolor_summary">When enabled, you can customize beam colors</string>
 
     <!-- Galaxy 4 wallpaper preferences -->
@@ -458,4 +484,19 @@
     <string name="copied_to_clipboard">Copied to clipboard</string>
     <string name="no_browser_found">No browser found</string>
     <string name="no_email_found">No email app found</string>
+    <string name="galaxy_enable_precise_calc_first">Please enable precise spiral calculation first</string>
+    <string name="grass_disable_dandelion_firefly_first">Please disable dandelion and fireflies first</string>
+    <string name="grass_disable_legacy_particles_first">Please disable legacy (MTK) particle motion first</string>
+    <string name="grass_enable_dandelion_first">Please enable dandelion first</string>
+    <string name="grass_enable_firefly_first">Please enable fireflies first</string>
+    <string name="phasebeam_enable_recolor_first">Please enable beam color adjustment first</string>
+    <string name="config_open_browser_failed">Unable to open browser</string>
+    <string name="fireworks_custom_background_set_toast">Custom background set. Reapply wallpaper to take effect.</string>
+    <string name="fireworks_background_changed_title">Background updated</string>
+    <string name="fireworks_background_changed_message">Background saved. Apply changes now?</string>
+    <string name="fireworks_background_reset_toast">Default background restored</string>
+    <string name="fireworks_background_reset_title">Background reset</string>
+    <string name="fireworks_background_reset_message">Default background restored. Apply changes now?</string>
+    <string name="fireworks_custom_background_set_summary">Custom background set</string>
+    <string name="fireworks_custom_background_click_summary">Tap to choose custom background image</string>
 </resources>

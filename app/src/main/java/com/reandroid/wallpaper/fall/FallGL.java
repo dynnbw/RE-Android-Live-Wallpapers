@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2009 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.reandroid.wallpaper.fall;
 
 import android.content.res.Resources;
@@ -87,6 +103,10 @@ public class FallGL extends GLESScene {
     private float mRippleTime = 0.0f;
     // 涟漪动画速度
     private static final float RIPPLE_SPEED = 0.3f;
+    // 精确涟漪模式下的视觉强度缩放
+    private static final float PRECISE_RIPPLE_STRENGTH = 0.18f;
+    // 精确涟漪模式下的覆盖范围缩放（>1 表示波纹占屏幕范围更大）
+    private static final float PRECISE_RIPPLE_SIZE_SCALE = 1.65f;
 
     // 水面网格相关（涟漪效果的核心）
     // 网格分辨率（越高涟漪越精细）
@@ -113,6 +133,10 @@ public class FallGL extends GLESScene {
     private int mWaterDropCount = DEFAULT_WATER_MESH_DROPS;
     // 上一次的涟漪水滴数量（用于检测变化）
     private int mLastWaterDropCount = DEFAULT_WATER_MESH_DROPS;
+    // 是否启用精确涟漪计算
+    private boolean mUsePreciseRippleCalc = false;
+    // 上一次精确涟漪开关状态
+    private boolean mLastUsePreciseRippleCalc = false;
 
     /**
      * 叶子数据模型
@@ -181,6 +205,19 @@ public class FallGL extends GLESScene {
         // 坐标（网格坐标系）
         float x, y;
 
+        // 精确模型参数
+        float initAmplitude;
+        float currentAmplitude;
+        float wavelength;
+        float frequency;
+        float waveNumber;
+        float angularFrequency;
+        float phase;
+        float timeDecay;
+        float spatialDecay;
+        long birthTimeMs;
+        float waveSpeed;
+
         /**
          * 初始化水滴属性
          */
@@ -188,6 +225,17 @@ public class FallGL extends GLESScene {
             ampS = 0;
             ampE = 0;
             spread = 1;
+            initAmplitude = 0;
+            currentAmplitude = 0;
+            wavelength = 0;
+            frequency = 0;
+            waveNumber = 0;
+            angularFrequency = 0;
+            phase = 0;
+            timeDecay = 0;
+            spatialDecay = 0;
+            birthTimeMs = 0;
+            waveSpeed = 0;
         }
 
         /**
@@ -204,6 +252,73 @@ public class FallGL extends GLESScene {
                 // 直接替换原有 ampE 计算逻辑
                 ampE = ampS * (float) Math.exp(-0.02f * spread) / (1 + 0.01f * spread);
             }
+        }
+
+        void activateLegacy(float meshX, float meshY, float amplitude) {
+            x = meshX;
+            y = meshY;
+            ampS = amplitude;
+            spread = 0;
+            ampE = amplitude;
+            initAmplitude = 0;
+            currentAmplitude = 0;
+            birthTimeMs = 0;
+        }
+
+        void activatePrecise(float meshX, float meshY, float energy, Random random, long nowMs) {
+            x = meshX;
+            y = meshY;
+            initAmplitude = energy * 1.0f;
+            currentAmplitude = initAmplitude;
+            wavelength = 4.0f + random.nextFloat() * 2.5f;
+            frequency = 2.2f;
+            waveNumber = (float) (2.0f * Math.PI / wavelength);
+            angularFrequency = (float) (2.0f * Math.PI * frequency);
+            phase = 0.0f;
+            timeDecay = 0.30f;
+            spatialDecay = 0.045f;
+            birthTimeMs = nowMs;
+            waveSpeed = Math.max(wavelength * frequency, 18.0f);
+
+            ampS = 0;
+            ampE = currentAmplitude;
+            spread = 1;
+        }
+
+        void updatePrecise(long nowMs) {
+            if (initAmplitude <= 0.0f || birthTimeMs <= 0) {
+                currentAmplitude = 0.0f;
+                return;
+            }
+            float elapsedTimeSec = Math.max(0.0f, (nowMs - birthTimeMs) / 1000.0f);
+            currentAmplitude = (float) (initAmplitude * Math.exp(-timeDecay * elapsedTimeSec));
+            ampE = currentAmplitude;
+        }
+
+        float getDisplacementAt(float px, float py, long nowMs) {
+            if (currentAmplitude <= 0.1f || birthTimeMs <= 0) {
+                return 0.0f;
+            }
+
+            float dx = px - x;
+            float dy = py - y;
+            float r = (float) Math.sqrt(dx * dx + dy * dy);
+            float scaledR = r / PRECISE_RIPPLE_SIZE_SCALE;
+
+            float timeSinceBirth = (nowMs - birthTimeMs) / 1000.0f;
+            if (timeSinceBirth <= 0.0f) {
+                return 0.0f;
+            }
+
+            float waveFrontRadius = waveSpeed * timeSinceBirth;
+            if (scaledR > waveFrontRadius + 1.0f) {
+                return 0.0f;
+            }
+
+            float decay = (float) Math.exp(-timeDecay * timeSinceBirth - spatialDecay * scaledR);
+            float oscillation = (float) Math.cos(waveNumber * scaledR - angularFrequency * timeSinceBirth + phase);
+            float geometricAttenuation = 1.0f / (float) Math.sqrt(scaledR + 1.0f);
+            return currentAmplitude * decay * oscillation * geometricAttenuation;
         }
     }
 
@@ -302,6 +417,9 @@ public class FallGL extends GLESScene {
                 com.reandroid.wallpaper.settings.WallpaperSettings
                         .getFallMaxDrops(DEFAULT_WATER_MESH_DROPS));
         mLastWaterDropCount = mWaterDropCount;
+        mUsePreciseRippleCalc = com.reandroid.wallpaper.settings.WallpaperSettings
+            .isFallPreciseCalcEnabled(false);
+        mLastUsePreciseRippleCalc = mUsePreciseRippleCalc;
         mWaterDrops = new Drop[mWaterDropCount];
         for (int i = 0; i < mWaterDropCount; i++) {
             mWaterDrops[i] = new Drop();
@@ -915,11 +1033,18 @@ public class FallGL extends GLESScene {
         if (mWaterDrops == null || mWaterDropCount <= 0)
             return;
 
-        // 更新水滴/涟漪的振幅
-        for (Drop drop : mWaterDrops) {
-            drop.spread += 30.0f * mDeltaTime;
-            // 原版衰减公式
-            drop.ampE = drop.ampS / drop.spread;
+        long nowMs = System.currentTimeMillis();
+        if (mUsePreciseRippleCalc) {
+            for (Drop drop : mWaterDrops) {
+                drop.updatePrecise(nowMs);
+            }
+        } else {
+            // 更新水滴/涟漪的振幅
+            for (Drop drop : mWaterDrops) {
+                drop.spread += 30.0f * mDeltaTime;
+                // 原版衰减公式
+                drop.ampE = drop.ampS / drop.spread;
+            }
         }
 
         // 计算网格分辨率
@@ -970,21 +1095,44 @@ public class FallGL extends GLESScene {
                 float posScaledX = (posX + 1.0f) * scaleX;
                 float posScaledY = ((posY / (mGlHeight * 0.5f)) + 1.0f) * scaleY;
 
-                // 应用所有水滴/涟漪的变形
-                for (Drop drop : mWaterDrops) {
-                    float dx = drop.x - posScaledX;
-                    float dy = drop.y - posScaledY;
-                    dx *= dxMul;
-                    float dist = (float) Math.sqrt(dx * dx + dy * dy);
-                    // 仅处理涟漪范围内的顶点
-                    if (dist < drop.spread) {
-                        // 计算涟漪振幅
-                        float amp = drop.ampE * 0.12f * dist;
-                        amp /= (drop.spread * drop.spread);
-                        amp *= (float) Math.sin(drop.spread - dist);
-                        // 变形纹理坐标（产生涟漪效果）
-                        varU += dx * amp;
-                        varV += dy * amp;
+                if (mUsePreciseRippleCalc) {
+                    float uOffset = 0.0f;
+                    float vOffset = 0.0f;
+                    for (Drop drop : mWaterDrops) {
+                        float displacement = drop.getDisplacementAt(posScaledX, posScaledY, nowMs);
+                        if (Math.abs(displacement) < 0.00001f) {
+                            continue;
+                        }
+                        float ddx = drop.x - posScaledX;
+                        float ddy = drop.y - posScaledY;
+                        float rr = (float) Math.sqrt(ddx * ddx + ddy * ddy);
+                        if (rr < 0.0001f) {
+                            continue;
+                        }
+                        float invR = 1.0f / rr;
+                        float waveOffset = displacement * PRECISE_RIPPLE_STRENGTH;
+                        uOffset += (ddx * dxMul) * invR * waveOffset * 0.35f;
+                        vOffset += ddy * invR * waveOffset;
+                    }
+                    varU += uOffset;
+                    varV += vOffset;
+                } else {
+                    // 应用所有水滴/涟漪的变形
+                    for (Drop drop : mWaterDrops) {
+                        float dx = drop.x - posScaledX;
+                        float dy = drop.y - posScaledY;
+                        dx *= dxMul;
+                        float dist = (float) Math.sqrt(dx * dx + dy * dy);
+                        // 仅处理涟漪范围内的顶点
+                        if (dist < drop.spread) {
+                            // 计算涟漪振幅
+                            float amp = drop.ampE * 0.12f * dist;
+                            amp /= (drop.spread * drop.spread);
+                            amp *= (float) Math.sin(drop.spread - dist);
+                            // 变形纹理坐标（产生涟漪效果）
+                            varU += dx * amp;
+                            varV += dy * amp;
+                        }
                     }
                 }
 
@@ -1026,12 +1174,17 @@ public class FallGL extends GLESScene {
         int desired = Math.max(1,
                 com.reandroid.wallpaper.settings.WallpaperSettings
                         .getFallMaxDrops(DEFAULT_WATER_MESH_DROPS));
-        if (desired == mLastWaterDropCount && mWaterDrops != null) {
+        boolean desiredPrecise = com.reandroid.wallpaper.settings.WallpaperSettings
+            .isFallPreciseCalcEnabled(false);
+
+        if (desired == mLastWaterDropCount && desiredPrecise == mLastUsePreciseRippleCalc && mWaterDrops != null) {
             return;
         }
 
         mWaterDropCount = desired;
         mLastWaterDropCount = desired;
+        mUsePreciseRippleCalc = desiredPrecise;
+        mLastUsePreciseRippleCalc = desiredPrecise;
 
         mWaterDrops = new Drop[mWaterDropCount];
         for (int i = 0; i < mWaterDropCount; i++) {
@@ -1039,7 +1192,7 @@ public class FallGL extends GLESScene {
             mWaterDrops[i].init();
         }
 
-        Log.d(TAG, "更新最大涟漪水滴数量: " + mWaterDropCount);
+        Log.d(TAG, "更新涟漪配置: maxDrops=" + mWaterDropCount + ", precise=" + mUsePreciseRippleCalc);
     }
 
     /**
@@ -1120,18 +1273,20 @@ public class FallGL extends GLESScene {
         if (mWaterDrops == null || mWaterDropCount <= 0)
             return;
         for (int ct = 0; ct < mWaterDropCount; ct++) {
-            if (mWaterDrops[ct].ampE < minAmp) {
+            float score = mUsePreciseRippleCalc ? mWaterDrops[ct].currentAmplitude : mWaterDrops[ct].ampE;
+            if (score < minAmp) {
                 iMin = ct;
-                minAmp = mWaterDrops[ct].ampE;
+                minAmp = score;
             }
         }
 
         // 初始化新涟漪
         Drop drop = mWaterDrops[iMin];
-        drop.ampS = amplitude;
-        drop.spread = 0;
-        drop.x = meshX;
-        drop.y = meshY;
+        if (mUsePreciseRippleCalc) {
+            drop.activatePrecise(meshX, meshY, amplitude, mRandom, System.currentTimeMillis());
+        } else {
+            drop.activateLegacy(meshX, meshY, amplitude);
+        }
         Log.i(TAG, "叶子落水，网格坐标: (" + meshX + ", " + meshY + "), 振幅: " + amplitude);
     }
 
@@ -1276,8 +1431,9 @@ public class FallGL extends GLESScene {
         if (mWaterDrops == null || mWaterDropCount <= 0)
             return;
         for (int i = 0; i < mWaterDropCount; i++) {
-            if (mWaterDrops[i].ampE < minAmp) {
-                minAmp = mWaterDrops[i].ampE;
+            float score = mUsePreciseRippleCalc ? mWaterDrops[i].currentAmplitude : mWaterDrops[i].ampE;
+            if (score < minAmp) {
+                minAmp = score;
                 minIdx = i;
             }
         }
@@ -1296,10 +1452,11 @@ public class FallGL extends GLESScene {
 
         // 初始化新涟漪
         Drop drop = mWaterDrops[minIdx];
-        drop.ampS = 1.2f;
-        drop.spread = 0;
-        drop.x = dropX;
-        drop.y = dropY;
+        if (mUsePreciseRippleCalc) {
+            drop.activatePrecise(dropX, dropY, 1.2f, mRandom, System.currentTimeMillis());
+        } else {
+            drop.activateLegacy(dropX, dropY, 1.2f);
+        }
         Log.i(TAG, "触摸产生涟漪，网格坐标: (" + dropX + ", " + dropY + ")");
     }
 

@@ -55,7 +55,7 @@ public class ConfigSettingsFragment extends PreferenceFragmentCompat {
                     Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://zhuanlan.zhihu.com/p/656012235"));
                     startActivity(intent);
                 } catch (ActivityNotFoundException e) {
-                    Toast.makeText(requireContext(), "无法打开浏览器", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), R.string.config_open_browser_failed, Toast.LENGTH_SHORT).show();
                 }
                 return true;
             });

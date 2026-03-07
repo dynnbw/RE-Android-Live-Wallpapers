@@ -28,6 +28,7 @@ final class MoonCalculator {
         final double moonLongitudeLocalDeg;// 本地时间月球黄经（度）
         final double moonLatitudeLocalDeg; // 本地时间月球黄纬（度）
         final double sunAltitudeDeg;       // 太阳高度（度，用于日夜判定）
+        final double sunAzimuthDeg;        // 太阳方位角（度，用于日食几何判定）
 
         // UTC时间基准 - 月食判定核心参数
         final double phaseAngleUtcDeg;     // UTC日月黄经差（满月/月相判定）
@@ -42,12 +43,14 @@ final class MoonCalculator {
          * @param moonLongitudeLocalDeg 本地月球黄经
          * @param moonLatitudeLocalDeg 本地月球黄纬
          * @param sunAltitudeDeg 本地太阳高度
+            * @param sunAzimuthDeg 本地太阳方位角
          * @param phaseAngleUtcDeg UTC日月黄经差
          * @param moonLongitudeUtcDeg UTC月球黄经
          * @param moonLatitudeUtcDeg UTC月球黄纬
          */
         MoonData(double moonAltitudeDeg, double moonAzimuthDeg, double moonHourAngleDeg,
-                 double moonLongitudeLocalDeg, double moonLatitudeLocalDeg, double sunAltitudeDeg,
+                  double moonLongitudeLocalDeg, double moonLatitudeLocalDeg, double sunAltitudeDeg,
+                  double sunAzimuthDeg,
                  double phaseAngleUtcDeg, double moonLongitudeUtcDeg, double moonLatitudeUtcDeg) {
             this.moonAltitudeDeg = moonAltitudeDeg;
             this.moonAzimuthDeg = moonAzimuthDeg;
@@ -55,6 +58,7 @@ final class MoonCalculator {
             this.moonLongitudeLocalDeg = moonLongitudeLocalDeg;
             this.moonLatitudeLocalDeg = moonLatitudeLocalDeg;
             this.sunAltitudeDeg = sunAltitudeDeg;
+              this.sunAzimuthDeg = sunAzimuthDeg;
             this.phaseAngleUtcDeg = phaseAngleUtcDeg;
             this.moonLongitudeUtcDeg = moonLongitudeUtcDeg;
             this.moonLatitudeUtcDeg = moonLatitudeUtcDeg;
@@ -99,6 +103,7 @@ final class MoonCalculator {
         double moonAz = azimuthDeg(latDeg, moonDecLocal, moonHourAngle);
         double sunHourAngle = normalizeDegrees180(lstLocal - sunRaLocal);
         double sunAlt = altitudeDeg(latDeg, sunDecLocal, sunHourAngle);
+        double sunAz = azimuthDeg(latDeg, sunDecLocal, sunHourAngle);
 
         // ========== 2. UTC时间基准计算：月食判定核心参数 ==========
         double jdUtc = julianDateUtc(calendar); // UTC儒略日（核心修复：正确转换）
@@ -119,7 +124,7 @@ final class MoonCalculator {
         // ========== 3. 返回双基准月球数据 ==========
         return new MoonData(
                 moonAlt, moonAz, moonHourAngle,
-                moonLonLocal, moonLatLocal, sunAlt,
+            moonLonLocal, moonLatLocal, sunAlt, sunAz,
                 phaseAngleUtc, moonLonUtc, moonLatUtc
         );
     }

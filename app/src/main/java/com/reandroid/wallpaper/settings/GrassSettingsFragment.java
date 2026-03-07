@@ -19,17 +19,25 @@ import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.SeekBarPreference;
 import androidx.preference.SwitchPreferenceCompat;
 
 import com.reandroid.wallpaper.R;
 import com.reandroid.wallpaper.grass.GrassGL;
 import com.reandroid.wallpaper.grass.GrassWallpaper;
 
-public class GrassSettingsFragment extends PreferenceFragmentCompat {
+public class GrassSettingsFragment extends PreferenceFragmentCompat
+    implements Preference.OnPreferenceChangeListener {
     private static final int REQ_LOCATION = 1001;
     private SwitchPreferenceCompat mAccurateSunPref;
     private SwitchPreferenceCompat mSunPref;
     private SwitchPreferenceCompat mMoonPref;
+    private SwitchPreferenceCompat mLegacyParticlesPref;
+    private SwitchPreferenceCompat mDandelionPref;
+    private SwitchPreferenceCompat mFireflyPref;
+    private SeekBarPreference mDandelionCountPref;
+    private SeekBarPreference mDandelionSpeedPref;
+    private SeekBarPreference mFireflyCountPref;
 
     @Override
     public void onCreatePreferences(@Nullable Bundle savedInstanceState, @Nullable String rootKey) {
@@ -44,32 +52,30 @@ public class GrassSettingsFragment extends PreferenceFragmentCompat {
         mSunPref = findPreference("pref_grass_sun");
         mMoonPref = findPreference("pref_grass_moon");
 
-        // 新增互斥逻辑
-        SwitchPreferenceCompat legacyParticlesPref = findPreference("pref_grass_legacy_particles");
-        SwitchPreferenceCompat dandelionPref = findPreference("pref_grass_dandelion");
-        SwitchPreferenceCompat fireflyPref = findPreference("pref_grass_firefly");
+        mLegacyParticlesPref = findPreference("pref_grass_legacy_particles");
+        mDandelionPref = findPreference("pref_grass_dandelion");
+        mFireflyPref = findPreference("pref_grass_firefly");
+        mDandelionCountPref = findPreference("pref_grass_dandelion_count");
+        mDandelionSpeedPref = findPreference("pref_grass_dandelion_speed");
+        mFireflyCountPref = findPreference("pref_grass_firefly_count");
 
-        if (legacyParticlesPref != null) {
-            legacyParticlesPref.setOnPreferenceChangeListener((preference, newValue) -> {
-                boolean enabled = newValue instanceof Boolean && (Boolean) newValue;
-                if (dandelionPref != null) dandelionPref.setEnabled(!enabled);
-                if (fireflyPref != null) fireflyPref.setEnabled(!enabled);
-                return true;
-            });
+        if (mLegacyParticlesPref != null) {
+            mLegacyParticlesPref.setOnPreferenceChangeListener(this);
         }
-        if (dandelionPref != null) {
-            dandelionPref.setOnPreferenceChangeListener((preference, newValue) -> {
-                boolean enabled = newValue instanceof Boolean && (Boolean) newValue;
-                if (legacyParticlesPref != null) legacyParticlesPref.setEnabled(!enabled);
-                return true;
-            });
+        if (mDandelionPref != null) {
+            mDandelionPref.setOnPreferenceChangeListener(this);
         }
-        if (fireflyPref != null) {
-            fireflyPref.setOnPreferenceChangeListener((preference, newValue) -> {
-                boolean enabled = newValue instanceof Boolean && (Boolean) newValue;
-                if (legacyParticlesPref != null) legacyParticlesPref.setEnabled(!enabled);
-                return true;
-            });
+        if (mFireflyPref != null) {
+            mFireflyPref.setOnPreferenceChangeListener(this);
+        }
+        if (mDandelionCountPref != null) {
+            mDandelionCountPref.setOnPreferenceChangeListener(this);
+        }
+        if (mDandelionSpeedPref != null) {
+            mDandelionSpeedPref.setOnPreferenceChangeListener(this);
+        }
+        if (mFireflyCountPref != null) {
+            mFireflyCountPref.setOnPreferenceChangeListener(this);
         }
 
         // 保持原有太阳/月亮互斥逻辑
@@ -139,7 +145,7 @@ public class GrassSettingsFragment extends PreferenceFragmentCompat {
             intent.putExtra("android.service.wallpaper.extra.LIVE_WALLPAPER_COMPONENT", componentName);
             startActivity(intent);
         } catch (ActivityNotFoundException e) {
-            Toast.makeText(requireContext(), "不支持壁纸预览", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), R.string.pref_open_wallpaper_picker_failed, Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -172,23 +178,23 @@ public class GrassSettingsFragment extends PreferenceFragmentCompat {
 
     private void showMIUIPermissionDialog(Class<?> wallpaperClass) {
         new AlertDialog.Builder(requireContext())
-                .setTitle("需要授予权限")
-                .setMessage("小米系统需要手动授予\"动态壁纸服务\"权限，否则无法正常打开壁纸预览。\n\n点击确定后，请在权限管理页面找到\"动态壁纸服务\"并开启。")
-                .setPositiveButton("去设置", (dialog, which) -> {
+                .setTitle(R.string.miui_permission_title)
+                .setMessage(R.string.miui_permission_message)
+                .setPositiveButton(R.string.miui_permission_go_settings, (dialog, which) -> {
                     setMIUIPermissionDialogShown();
                     try {
                         Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
                         intent.setData(Uri.parse("package:" + requireContext().getPackageName()));
                         startActivity(intent);
                     } catch (Exception e) {
-                        Toast.makeText(requireContext(), "无法打开设置页面", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(), R.string.miui_permission_open_failed, Toast.LENGTH_SHORT).show();
                     }
                 })
-                .setNeutralButton("继续", (dialog, which) -> {
+                .setNeutralButton(R.string.miui_permission_continue, (dialog, which) -> {
                     setMIUIPermissionDialogShown();
                     launchLivePreview(wallpaperClass);
                 })
-                .setNegativeButton("取消", null)
+                .setNegativeButton(android.R.string.cancel, null)
                 .show();
     }
 
@@ -229,5 +235,66 @@ public class GrassSettingsFragment extends PreferenceFragmentCompat {
         } else {
             mMoonPref.setEnabled(true);
         }
+    }
+
+    private boolean isLegacyParticlesEnabled() {
+        return mLegacyParticlesPref != null && mLegacyParticlesPref.isChecked();
+    }
+
+    private boolean isDandelionEnabled() {
+        return mDandelionPref != null && mDandelionPref.isChecked();
+    }
+
+    private boolean isFireflyEnabled() {
+        return mFireflyPref != null && mFireflyPref.isChecked();
+    }
+
+    @Override
+    public boolean onPreferenceChange(Preference preference, Object newValue) {
+        String key = preference.getKey();
+
+        if ("pref_grass_legacy_particles".equals(key)) {
+            boolean enableLegacy = newValue instanceof Boolean && (Boolean) newValue;
+            if (enableLegacy && (isDandelionEnabled() || isFireflyEnabled())) {
+                Toast.makeText(requireContext(), R.string.grass_disable_dandelion_firefly_first, Toast.LENGTH_SHORT).show();
+                return false;
+            }
+            return true;
+        }
+
+        if ("pref_grass_dandelion".equals(key) || "pref_grass_firefly".equals(key)) {
+            boolean enableParticle = newValue instanceof Boolean && (Boolean) newValue;
+            if (enableParticle && isLegacyParticlesEnabled()) {
+                Toast.makeText(requireContext(), R.string.grass_disable_legacy_particles_first, Toast.LENGTH_SHORT).show();
+                return false;
+            }
+            return true;
+        }
+
+        if ("pref_grass_dandelion_count".equals(key) || "pref_grass_dandelion_speed".equals(key)) {
+            if (isLegacyParticlesEnabled()) {
+                Toast.makeText(requireContext(), R.string.grass_disable_legacy_particles_first, Toast.LENGTH_SHORT).show();
+                return false;
+            }
+            if (!isDandelionEnabled()) {
+                Toast.makeText(requireContext(), R.string.grass_enable_dandelion_first, Toast.LENGTH_SHORT).show();
+                return false;
+            }
+            return true;
+        }
+
+        if ("pref_grass_firefly_count".equals(key)) {
+            if (isLegacyParticlesEnabled()) {
+                Toast.makeText(requireContext(), R.string.grass_disable_legacy_particles_first, Toast.LENGTH_SHORT).show();
+                return false;
+            }
+            if (!isFireflyEnabled()) {
+                Toast.makeText(requireContext(), R.string.grass_enable_firefly_first, Toast.LENGTH_SHORT).show();
+                return false;
+            }
+            return true;
+        }
+
+        return true;
     }
 }

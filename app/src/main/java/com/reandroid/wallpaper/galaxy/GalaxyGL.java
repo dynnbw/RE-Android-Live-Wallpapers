@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2009 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.reandroid.wallpaper.galaxy;
 
 import android.content.Context;
@@ -34,6 +50,10 @@ public class GalaxyGL extends GLESScene {
     private static final int MIN_PARTICLE_COUNT = 1000;       // 最小粒子数量
     private static final int MAX_PARTICLE_COUNT = 20000;      // 最大粒子数量
     private int mParticleCount = DEFAULT_PARTICLE_COUNT;      // 当前粒子数量
+    private static final int DEFAULT_PARTICLE_ALPHA_PERCENT = 100;
+    private static final int MIN_PARTICLE_ALPHA_PERCENT = 10;
+    private static final int MAX_PARTICLE_ALPHA_PERCENT = 100;
+    private int mParticleAlphaPercent = DEFAULT_PARTICLE_ALPHA_PERCENT;
     
     // 椭圆轨道相关常量（源自原始galaxy.rs）
     private static final float ELLIPSE_RATIO = 0.892f;        // 椭圆比例
@@ -41,9 +61,61 @@ public class GalaxyGL extends GLESScene {
     private static final float PI = 3.1415f;                  // 圆周率近似值
     private static final float TWO_PI = 6.283f;               // 2π
     private static final int GALAXY_RADIUS = 300;             // 星系半径
+
+    // 精确星系参数（依据M31观测值）
+    private static final float PITCH_ANGLE_DEG = 6.7f;
+    private static final float PITCH_ANGLE_RAD = PITCH_ANGLE_DEG * PI / 180.0f;
+    private static final float FORBIDDEN_RADIUS_KPC = 2.82f;
+    private static final float GALAXY_RADIUS_KPC = 25.0f;
+    private static final int ARM_COUNT = 2;
+    private static final float ARM_OFFSET = PI;
+    private static final float PRECISE_INNER_SCATTER = 1.35f;
+    private static final float PRECISE_OUTER_SCATTER = 0.75f;
+    private static final float PRECISE_TURBULENCE = 0.28f;
+    private static final float PRECISE_PATTERN_SPEED = 0.0018f;
+
+    private static final int DEFAULT_ARM_COUNT = 2;
+    private static final float DEFAULT_ARM_OFFSET = PI;
+    private static final float DEFAULT_PITCH_ANGLE_DEG = 6.7f;
+    private static final float DEFAULT_FORBIDDEN_RADIUS_KPC = 2.82f;
+    private static final float DEFAULT_PRECISE_INNER_SCATTER = 1.35f;
+    private static final float DEFAULT_PRECISE_OUTER_SCATTER = 0.75f;
+    private static final float DEFAULT_PRECISE_TURBULENCE = 0.28f;
+    private static final float DEFAULT_ELLIPSE_RATIO = ELLIPSE_RATIO;
+    private static final float DEFAULT_ELLIPSE_TWIST = ELLIPSE_TWIST;
+
+    private static final int MIN_ARM_COUNT = 1;
+    private static final int MAX_ARM_COUNT = 6;
+
+    private static final float MIN_ARM_OFFSET = 0.0f;
+    private static final float MAX_ARM_OFFSET = TWO_PI;
+    private static final float MIN_PITCH_ANGLE_DEG = 0.0f;
+    private static final float MAX_PITCH_ANGLE_DEG = 30.0f;
+    private static final float MIN_FORBIDDEN_RADIUS_KPC = 0.0f;
+    private static final float MAX_FORBIDDEN_RADIUS_KPC = 10.0f;
+    private static final float MIN_SCATTER = 0.0f;
+    private static final float MAX_SCATTER = 5.0f;
+    private static final float MIN_TURBULENCE = 0.0f;
+    private static final float MAX_TURBULENCE = 2.0f;
+    private static final float MIN_ELLIPSE_RATIO = 0.5f;
+    private static final float MAX_ELLIPSE_RATIO = 1.0f;
+    private static final float MIN_ELLIPSE_TWIST = -0.1f;
+    private static final float MAX_ELLIPSE_TWIST = 0.1f;
+
+    private static final String KEY_ARM_COUNT = "galaxy_arm_count";
+    private static final String KEY_ARM_OFFSET = "galaxy_arm_offset";
+    private static final String KEY_PITCH_ANGLE_DEG = "galaxy_pitch_angle_deg";
+    private static final String KEY_INNER_SCATTER = "galaxy_inner_scatter";
+    private static final String KEY_OUTER_SCATTER = "galaxy_outer_scatter";
+    private static final String KEY_TURBULENCE = "galaxy_turbulence";
+    private static final String KEY_FORBIDDEN_RADIUS = "galaxy_forbidden_radius";
+    private static final String KEY_ELLIPSE_RATIO = "galaxy_ellipse_ratio";
+    private static final String KEY_ELLIPSE_TWIST = "galaxy_ellipse_twist";
+    private static final int ELLIPSE_TWIST_STORAGE_OFFSET = 100;
     
     private boolean mGLInitialized = false;  // GL环境是否初始化完成
     private Context mContext;                // 上下文对象
+    private boolean mUsePreciseCalculation = false;
     
     // 着色器程序句柄
     private int mBgProgram;      // 背景着色器程序
@@ -71,6 +143,19 @@ public class GalaxyGL extends GLESScene {
     
     private Random mRandom = new Random();        // 随机数生成器
     private long mLastTime = 0;                   // 上一帧时间戳
+    private long mLastSettingsSyncTime = 0;       // 上次配置同步时间
+    private static final long SETTINGS_SYNC_INTERVAL_MS = 500L;
+
+    private int mArmCount = DEFAULT_ARM_COUNT;
+    private float mArmOffset = DEFAULT_ARM_OFFSET;
+    private float mPitchAngleDeg = DEFAULT_PITCH_ANGLE_DEG;
+    private float mPitchAngleRad = DEFAULT_PITCH_ANGLE_DEG * PI / 180.0f;
+    private float mForbiddenRadiusKpc = DEFAULT_FORBIDDEN_RADIUS_KPC;
+    private float mPreciseInnerScatter = DEFAULT_PRECISE_INNER_SCATTER;
+    private float mPreciseOuterScatter = DEFAULT_PRECISE_OUTER_SCATTER;
+    private float mPreciseTurbulence = DEFAULT_PRECISE_TURBULENCE;
+    private float mEllipseRatio = DEFAULT_ELLIPSE_RATIO;
+    private float mEllipseTwist = DEFAULT_ELLIPSE_TWIST;
     
     // 滚动偏移量（用于响应屏幕滑动）
     private float mXOffset = 0.5f;
@@ -88,7 +173,7 @@ public class GalaxyGL extends GLESScene {
     public GalaxyGL(int width, int height, Context context) {
         super(width, height);
         mContext = context;
-        loadParticleCountFromPreferences(); // 从配置读取粒子数量
+        loadSettingsFromPreferences(); // 从配置读取设置
     }
     
     /**
@@ -132,7 +217,7 @@ public class GalaxyGL extends GLESScene {
     /**
      * 从SharedPreferences加载粒子数量配置
      */
-    private void loadParticleCountFromPreferences() {
+    private void loadSettingsFromPreferences() {
         if (mContext != null) {
             Context appContext = mContext.getApplicationContext() != null ? mContext.getApplicationContext() : mContext;
             SharedPreferences defaultPrefs = PreferenceManager.getDefaultSharedPreferences(appContext);
@@ -145,9 +230,240 @@ public class GalaxyGL extends GLESScene {
                     defaultPrefs.edit().putInt("galaxy_particle_count", mParticleCount).apply();
                 }
             }
+
+            if (defaultPrefs.contains("galaxy_particle_alpha")) {
+                mParticleAlphaPercent = defaultPrefs.getInt("galaxy_particle_alpha", DEFAULT_PARTICLE_ALPHA_PERCENT);
+            } else {
+                SharedPreferences legacyPrefs = appContext.getSharedPreferences("wallpaper_settings", Context.MODE_PRIVATE);
+                mParticleAlphaPercent = legacyPrefs.getInt("galaxy_particle_alpha", DEFAULT_PARTICLE_ALPHA_PERCENT);
+                if (legacyPrefs.contains("galaxy_particle_alpha")) {
+                    defaultPrefs.edit().putInt("galaxy_particle_alpha", mParticleAlphaPercent).apply();
+                }
+            }
+
+            if (defaultPrefs.contains("galaxy_precise_calc")) {
+                mUsePreciseCalculation = defaultPrefs.getBoolean("galaxy_precise_calc", false);
+            } else {
+                SharedPreferences legacyPrefs = appContext.getSharedPreferences("wallpaper_settings", Context.MODE_PRIVATE);
+                mUsePreciseCalculation = legacyPrefs.getBoolean("galaxy_precise_calc", false);
+                if (legacyPrefs.contains("galaxy_precise_calc")) {
+                    defaultPrefs.edit().putBoolean("galaxy_precise_calc", mUsePreciseCalculation).apply();
+                }
+            }
+
+            loadPreciseShapeSettings(defaultPrefs, appContext);
+
             // 限制在有效范围内（MIN~MAX）
             mParticleCount = Math.max(MIN_PARTICLE_COUNT, Math.min(MAX_PARTICLE_COUNT, mParticleCount));
+            mParticleAlphaPercent = Math.max(MIN_PARTICLE_ALPHA_PERCENT, Math.min(MAX_PARTICLE_ALPHA_PERCENT, mParticleAlphaPercent));
             Log.d(TAG, "加载的粒子数量: " + mParticleCount);
+            Log.d(TAG, "加载的粒子透明度: " + mParticleAlphaPercent + "%");
+            Log.d(TAG, "精确计算开关: " + mUsePreciseCalculation);
+        }
+    }
+
+            private void loadPreciseShapeSettings(SharedPreferences defaultPrefs, Context appContext) {
+            SharedPreferences legacyPrefs = appContext.getSharedPreferences("wallpaper_settings", Context.MODE_PRIVATE);
+            SharedPreferences.Editor migrateEditor = defaultPrefs.edit();
+
+            mArmCount = clampInt(readIntWithLegacy(defaultPrefs, legacyPrefs, KEY_ARM_COUNT, DEFAULT_ARM_COUNT, migrateEditor),
+                MIN_ARM_COUNT, MAX_ARM_COUNT);
+            mArmOffset = clampFloat(readScaledFloatWithLegacy(defaultPrefs, legacyPrefs, KEY_ARM_OFFSET, DEFAULT_ARM_OFFSET,
+                1000.0f, migrateEditor), MIN_ARM_OFFSET, MAX_ARM_OFFSET);
+            mPitchAngleDeg = clampFloat(readScaledFloatWithLegacy(defaultPrefs, legacyPrefs, KEY_PITCH_ANGLE_DEG,
+                DEFAULT_PITCH_ANGLE_DEG, 10.0f, migrateEditor), MIN_PITCH_ANGLE_DEG, MAX_PITCH_ANGLE_DEG);
+            mForbiddenRadiusKpc = clampFloat(readScaledFloatWithLegacy(defaultPrefs, legacyPrefs, KEY_FORBIDDEN_RADIUS,
+                DEFAULT_FORBIDDEN_RADIUS_KPC, 100.0f, migrateEditor), MIN_FORBIDDEN_RADIUS_KPC,
+                MAX_FORBIDDEN_RADIUS_KPC);
+            mPreciseInnerScatter = clampFloat(readScaledFloatWithLegacy(defaultPrefs, legacyPrefs, KEY_INNER_SCATTER,
+                DEFAULT_PRECISE_INNER_SCATTER, 100.0f, migrateEditor), MIN_SCATTER, MAX_SCATTER);
+            mPreciseOuterScatter = clampFloat(readScaledFloatWithLegacy(defaultPrefs, legacyPrefs, KEY_OUTER_SCATTER,
+                DEFAULT_PRECISE_OUTER_SCATTER, 100.0f, migrateEditor), MIN_SCATTER, MAX_SCATTER);
+            mPreciseTurbulence = clampFloat(readScaledFloatWithLegacy(defaultPrefs, legacyPrefs, KEY_TURBULENCE,
+                DEFAULT_PRECISE_TURBULENCE, 100.0f, migrateEditor), MIN_TURBULENCE, MAX_TURBULENCE);
+            mEllipseRatio = clampFloat(readScaledFloatWithLegacy(defaultPrefs, legacyPrefs, KEY_ELLIPSE_RATIO,
+                DEFAULT_ELLIPSE_RATIO, 1000.0f, migrateEditor), MIN_ELLIPSE_RATIO, MAX_ELLIPSE_RATIO);
+            mEllipseTwist = clampFloat(readEllipseTwistWithLegacy(defaultPrefs, legacyPrefs, migrateEditor),
+                MIN_ELLIPSE_TWIST, MAX_ELLIPSE_TWIST);
+
+            mPitchAngleRad = mPitchAngleDeg * PI / 180.0f;
+
+            migrateEditor.apply();
+            }
+
+            private int readIntWithLegacy(SharedPreferences defaultPrefs, SharedPreferences legacyPrefs, String key,
+                int fallback, SharedPreferences.Editor migrateEditor) {
+            if (defaultPrefs.contains(key)) {
+                return defaultPrefs.getInt(key, fallback);
+            }
+            if (legacyPrefs.contains(key)) {
+                int value = legacyPrefs.getInt(key, fallback);
+                migrateEditor.putInt(key, value);
+                return value;
+            }
+            return fallback;
+            }
+
+            private float readScaledFloatWithLegacy(SharedPreferences defaultPrefs, SharedPreferences legacyPrefs, String key,
+                float fallback, float scale, SharedPreferences.Editor migrateEditor) {
+            if (defaultPrefs.contains(key)) {
+                return defaultPrefs.getInt(key, Math.round(fallback * scale)) / scale;
+            }
+            if (legacyPrefs.contains(key)) {
+                    Object legacyValue = legacyPrefs.getAll().get(key);
+                    float legacyFloat;
+                    if (legacyValue instanceof Number) {
+                        legacyFloat = ((Number) legacyValue).floatValue();
+                    } else {
+                        legacyFloat = fallback;
+                    }
+                migrateEditor.putInt(key, Math.round(legacyFloat * scale));
+                return legacyFloat;
+            }
+            return fallback;
+            }
+
+        private float readEllipseTwistWithLegacy(SharedPreferences defaultPrefs, SharedPreferences legacyPrefs,
+                SharedPreferences.Editor migrateEditor) {
+            if (defaultPrefs.contains(KEY_ELLIPSE_TWIST)) {
+                int raw = defaultPrefs.getInt(KEY_ELLIPSE_TWIST,
+                        encodeEllipseTwist(DEFAULT_ELLIPSE_TWIST));
+                return decodeEllipseTwist(raw);
+            }
+
+            if (legacyPrefs.contains(KEY_ELLIPSE_TWIST)) {
+                Object legacyValue = legacyPrefs.getAll().get(KEY_ELLIPSE_TWIST);
+                float legacyFloat;
+                if (legacyValue instanceof Number) {
+                    legacyFloat = ((Number) legacyValue).floatValue();
+                } else {
+                    legacyFloat = DEFAULT_ELLIPSE_TWIST;
+                }
+                migrateEditor.putInt(KEY_ELLIPSE_TWIST, encodeEllipseTwist(legacyFloat));
+                return legacyFloat;
+            }
+
+            return DEFAULT_ELLIPSE_TWIST;
+        }
+
+        private int encodeEllipseTwist(float twist) {
+            return Math.round(clampFloat(twist, MIN_ELLIPSE_TWIST, MAX_ELLIPSE_TWIST) * 1000.0f)
+                    + ELLIPSE_TWIST_STORAGE_OFFSET;
+        }
+
+        private float decodeEllipseTwist(int raw) {
+            if (raw >= 0 && raw <= 200) {
+                return (raw - ELLIPSE_TWIST_STORAGE_OFFSET) / 1000.0f;
+            }
+            return raw / 1000.0f;
+        }
+
+    private void syncSettingsFromPreferencesIfNeeded() {
+        if (mContext == null) {
+            return;
+        }
+
+        long now = System.currentTimeMillis();
+        if (mLastSettingsSyncTime != 0L && (now - mLastSettingsSyncTime) < SETTINGS_SYNC_INTERVAL_MS) {
+            return;
+        }
+        mLastSettingsSyncTime = now;
+
+        Context appContext = mContext.getApplicationContext() != null ? mContext.getApplicationContext() : mContext;
+        SharedPreferences defaultPrefs = PreferenceManager.getDefaultSharedPreferences(appContext);
+
+        int prefParticleCount = defaultPrefs.getInt("galaxy_particle_count", mParticleCount);
+        int prefParticleAlpha = defaultPrefs.getInt("galaxy_particle_alpha", mParticleAlphaPercent);
+        boolean prefPreciseCalc = defaultPrefs.getBoolean("galaxy_precise_calc", mUsePreciseCalculation);
+
+        int prefArmCount = clampInt(defaultPrefs.getInt(KEY_ARM_COUNT, Math.round(mArmCount)), MIN_ARM_COUNT,
+            MAX_ARM_COUNT);
+        float prefArmOffset = clampFloat(defaultPrefs.getInt(KEY_ARM_OFFSET, Math.round(mArmOffset * 1000.0f)) / 1000.0f,
+            MIN_ARM_OFFSET, MAX_ARM_OFFSET);
+        float prefPitchAngleDeg = clampFloat(
+            defaultPrefs.getInt(KEY_PITCH_ANGLE_DEG, Math.round(mPitchAngleDeg * 10.0f)) / 10.0f,
+            MIN_PITCH_ANGLE_DEG, MAX_PITCH_ANGLE_DEG);
+        float prefInnerScatter = clampFloat(
+            defaultPrefs.getInt(KEY_INNER_SCATTER, Math.round(mPreciseInnerScatter * 100.0f)) / 100.0f,
+            MIN_SCATTER, MAX_SCATTER);
+        float prefOuterScatter = clampFloat(
+            defaultPrefs.getInt(KEY_OUTER_SCATTER, Math.round(mPreciseOuterScatter * 100.0f)) / 100.0f,
+            MIN_SCATTER, MAX_SCATTER);
+        float prefTurbulence = clampFloat(
+            defaultPrefs.getInt(KEY_TURBULENCE, Math.round(mPreciseTurbulence * 100.0f)) / 100.0f,
+            MIN_TURBULENCE, MAX_TURBULENCE);
+        float prefForbiddenRadius = clampFloat(
+            defaultPrefs.getInt(KEY_FORBIDDEN_RADIUS, Math.round(mForbiddenRadiusKpc * 100.0f)) / 100.0f,
+            MIN_FORBIDDEN_RADIUS_KPC, MAX_FORBIDDEN_RADIUS_KPC);
+        float prefEllipseRatio = clampFloat(
+            defaultPrefs.getInt(KEY_ELLIPSE_RATIO, Math.round(mEllipseRatio * 1000.0f)) / 1000.0f,
+            MIN_ELLIPSE_RATIO, MAX_ELLIPSE_RATIO);
+        float prefEllipseTwist = clampFloat(
+            decodeEllipseTwist(defaultPrefs.getInt(KEY_ELLIPSE_TWIST, encodeEllipseTwist(mEllipseTwist))),
+            MIN_ELLIPSE_TWIST, MAX_ELLIPSE_TWIST);
+
+        prefParticleCount = Math.max(MIN_PARTICLE_COUNT, Math.min(MAX_PARTICLE_COUNT, prefParticleCount));
+        prefParticleAlpha = Math.max(MIN_PARTICLE_ALPHA_PERCENT, Math.min(MAX_PARTICLE_ALPHA_PERCENT, prefParticleAlpha));
+
+        boolean needRebuildParticles = false;
+
+        if (prefParticleCount != mParticleCount) {
+            mParticleCount = prefParticleCount;
+            needRebuildParticles = true;
+            Log.d(TAG, "检测到桌面粒子数量变更: " + mParticleCount);
+        }
+
+        if (prefPreciseCalc != mUsePreciseCalculation) {
+            mUsePreciseCalculation = prefPreciseCalc;
+            needRebuildParticles = true;
+            Log.d(TAG, "检测到桌面精确计算开关变更: " + mUsePreciseCalculation);
+        }
+
+        if (prefArmCount != mArmCount) {
+            mArmCount = prefArmCount;
+            needRebuildParticles = true;
+        }
+        if (prefArmOffset != mArmOffset) {
+            mArmOffset = prefArmOffset;
+            needRebuildParticles = true;
+        }
+        if (prefPitchAngleDeg != mPitchAngleDeg) {
+            mPitchAngleDeg = prefPitchAngleDeg;
+            mPitchAngleRad = mPitchAngleDeg * PI / 180.0f;
+            needRebuildParticles = true;
+        }
+        if (prefInnerScatter != mPreciseInnerScatter) {
+            mPreciseInnerScatter = prefInnerScatter;
+            needRebuildParticles = true;
+        }
+        if (prefOuterScatter != mPreciseOuterScatter) {
+            mPreciseOuterScatter = prefOuterScatter;
+            needRebuildParticles = true;
+        }
+        if (prefTurbulence != mPreciseTurbulence) {
+            mPreciseTurbulence = prefTurbulence;
+            needRebuildParticles = true;
+        }
+        if (prefForbiddenRadius != mForbiddenRadiusKpc) {
+            mForbiddenRadiusKpc = prefForbiddenRadius;
+            needRebuildParticles = true;
+        }
+        if (prefEllipseRatio != mEllipseRatio) {
+            mEllipseRatio = prefEllipseRatio;
+            needRebuildParticles = true;
+        }
+        if (prefEllipseTwist != mEllipseTwist) {
+            mEllipseTwist = prefEllipseTwist;
+            needRebuildParticles = true;
+        }
+
+        if (prefParticleAlpha != mParticleAlphaPercent) {
+            mParticleAlphaPercent = prefParticleAlpha;
+            Log.d(TAG, "检测到桌面粒子透明度变更: " + mParticleAlphaPercent + "%");
+        }
+
+        if (needRebuildParticles) {
+            mGLInitialized = false;
         }
     }
     
@@ -171,6 +487,128 @@ public class GalaxyGL extends GLESScene {
             mGLInitialized = false;
             Log.d(TAG, "粒子数量已修改为: " + mParticleCount);
         }
+    }
+
+    public void setPreciseCalculation(boolean enabled) {
+        if (enabled != mUsePreciseCalculation) {
+            mUsePreciseCalculation = enabled;
+            if (mContext != null) {
+                Context appContext = mContext.getApplicationContext() != null ? mContext.getApplicationContext() : mContext;
+                PreferenceManager.getDefaultSharedPreferences(appContext)
+                        .edit()
+                        .putBoolean("galaxy_precise_calc", mUsePreciseCalculation)
+                        .apply();
+            }
+            mGLInitialized = false;
+            Log.d(TAG, "精确计算已切换为: " + mUsePreciseCalculation);
+        }
+    }
+
+    public void setParticleAlphaPercent(int alphaPercent) {
+        alphaPercent = Math.max(MIN_PARTICLE_ALPHA_PERCENT, Math.min(MAX_PARTICLE_ALPHA_PERCENT, alphaPercent));
+        if (alphaPercent != mParticleAlphaPercent) {
+            mParticleAlphaPercent = alphaPercent;
+            if (mContext != null) {
+                Context appContext = mContext.getApplicationContext() != null ? mContext.getApplicationContext() : mContext;
+                PreferenceManager.getDefaultSharedPreferences(appContext)
+                        .edit()
+                        .putInt("galaxy_particle_alpha", mParticleAlphaPercent)
+                        .apply();
+            }
+            Log.d(TAG, "粒子透明度已修改为: " + mParticleAlphaPercent + "%");
+        }
+    }
+
+    public void setArmCount(int armCount) {
+        int clamped = clampInt(armCount, MIN_ARM_COUNT, MAX_ARM_COUNT);
+        if (clamped != mArmCount) {
+            mArmCount = clamped;
+            persistInt(KEY_ARM_COUNT, mArmCount);
+            if (mUsePreciseCalculation) mGLInitialized = false;
+        }
+    }
+
+    public void setArmOffset(float armOffset) {
+        float clamped = clampFloat(armOffset, MIN_ARM_OFFSET, MAX_ARM_OFFSET);
+        if (clamped != mArmOffset) {
+            mArmOffset = clamped;
+            persistScaledFloat(KEY_ARM_OFFSET, mArmOffset, 1000.0f);
+            if (mUsePreciseCalculation) mGLInitialized = false;
+        }
+    }
+
+    public void setPitchAngleDeg(float pitchAngleDeg) {
+        float clamped = clampFloat(pitchAngleDeg, MIN_PITCH_ANGLE_DEG, MAX_PITCH_ANGLE_DEG);
+        if (clamped != mPitchAngleDeg) {
+            mPitchAngleDeg = clamped;
+            mPitchAngleRad = mPitchAngleDeg * PI / 180.0f;
+            persistScaledFloat(KEY_PITCH_ANGLE_DEG, mPitchAngleDeg, 10.0f);
+            if (mUsePreciseCalculation) mGLInitialized = false;
+        }
+    }
+
+    public void setInnerScatter(float innerScatter) {
+        float clamped = clampFloat(innerScatter, MIN_SCATTER, MAX_SCATTER);
+        if (clamped != mPreciseInnerScatter) {
+            mPreciseInnerScatter = clamped;
+            persistScaledFloat(KEY_INNER_SCATTER, mPreciseInnerScatter, 100.0f);
+            if (mUsePreciseCalculation) mGLInitialized = false;
+        }
+    }
+
+    public void setOuterScatter(float outerScatter) {
+        float clamped = clampFloat(outerScatter, MIN_SCATTER, MAX_SCATTER);
+        if (clamped != mPreciseOuterScatter) {
+            mPreciseOuterScatter = clamped;
+            persistScaledFloat(KEY_OUTER_SCATTER, mPreciseOuterScatter, 100.0f);
+            if (mUsePreciseCalculation) mGLInitialized = false;
+        }
+    }
+
+    public void setTurbulence(float turbulence) {
+        float clamped = clampFloat(turbulence, MIN_TURBULENCE, MAX_TURBULENCE);
+        if (clamped != mPreciseTurbulence) {
+            mPreciseTurbulence = clamped;
+            persistScaledFloat(KEY_TURBULENCE, mPreciseTurbulence, 100.0f);
+            if (mUsePreciseCalculation) mGLInitialized = false;
+        }
+    }
+
+    public void setForbiddenRadius(float forbiddenRadius) {
+        float clamped = clampFloat(forbiddenRadius, MIN_FORBIDDEN_RADIUS_KPC, MAX_FORBIDDEN_RADIUS_KPC);
+        if (clamped != mForbiddenRadiusKpc) {
+            mForbiddenRadiusKpc = clamped;
+            persistScaledFloat(KEY_FORBIDDEN_RADIUS, mForbiddenRadiusKpc, 100.0f);
+            if (mUsePreciseCalculation) mGLInitialized = false;
+        }
+    }
+
+    public void setEllipseRatio(float ellipseRatio) {
+        float clamped = clampFloat(ellipseRatio, MIN_ELLIPSE_RATIO, MAX_ELLIPSE_RATIO);
+        if (clamped != mEllipseRatio) {
+            mEllipseRatio = clamped;
+            persistScaledFloat(KEY_ELLIPSE_RATIO, mEllipseRatio, 1000.0f);
+            if (mUsePreciseCalculation) mGLInitialized = false;
+        }
+    }
+
+    public void setEllipseTwist(float ellipseTwist) {
+        float clamped = clampFloat(ellipseTwist, MIN_ELLIPSE_TWIST, MAX_ELLIPSE_TWIST);
+        if (clamped != mEllipseTwist) {
+            mEllipseTwist = clamped;
+            persistInt(KEY_ELLIPSE_TWIST, encodeEllipseTwist(mEllipseTwist));
+            if (mUsePreciseCalculation) mGLInitialized = false;
+        }
+    }
+
+    private void persistInt(String key, int value) {
+        if (mContext == null) return;
+        Context appContext = mContext.getApplicationContext() != null ? mContext.getApplicationContext() : mContext;
+        PreferenceManager.getDefaultSharedPreferences(appContext).edit().putInt(key, value).apply();
+    }
+
+    private void persistScaledFloat(String key, float value, float scale) {
+        persistInt(key, Math.round(value * scale));
     }
     
     /**
@@ -389,17 +827,28 @@ public class GalaxyGL extends GLESScene {
             
             // 将距离映射到投影坐标
             // 对应galaxy.rs line117
-            d = mapf(-4.0f, GALAXY_RADIUS + 4.0f, 0.0f, scale, d);
+            float mappedDistance = mapf(-4.0f, GALAXY_RADIUS + 4.0f, 0.0f, scale, d);
+
+            float angle;
+            if (mUsePreciseCalculation) {
+                angle = calculatePreciseInitialAngle(d, i);
+            } else {
+                angle = mRandom.nextFloat() * TWO_PI;
+            }
             
             // 存储粒子位置数据
             int posIdx = i * 3;
-            mParticlePositions[posIdx] = mRandom.nextFloat() * TWO_PI;  // 随机初始角度（0~2π）
-            mParticlePositions[posIdx + 1] = d;                         // 距离
+            mParticlePositions[posIdx] = angle;
+            mParticlePositions[posIdx + 1] = mappedDistance;
             mParticlePositions[posIdx + 2] = z / 5.0f;                  // Z轴坐标（缩放）
             
             // 计算粒子旋转速度
             // 对应galaxy.rs line119: rsRand(0.0015f, 0.0025f) * (0.5f + (scale / d)) * 0.8f
-            mParticleSpeeds[i] = (mRandom.nextFloat() * 0.001f + 0.0015f) * (0.5f + (scale / d)) * 0.8f;
+            if (mUsePreciseCalculation) {
+                mParticleSpeeds[i] = PRECISE_PATTERN_SPEED;
+            } else {
+                mParticleSpeeds[i] = (mRandom.nextFloat() * 0.001f + 0.0015f) * (0.5f + (scale / mappedDistance)) * 0.8f;
+            }
         }
         
         // 创建粒子位置缓冲区
@@ -444,6 +893,67 @@ public class GalaxyGL extends GLESScene {
         Matrix.multiplyMM(mMVPMatrix, 0, mProjMatrix, 0, rotMatrix, 0);
         
         Log.d(TAG, "粒子初始化完成");
+    }
+
+    private float calculatePreciseInitialAngle(float radiusInScreenSpace, int particleIndex) {
+        float radiusKpc = radiusInScreenSpace * (GALAXY_RADIUS_KPC / GALAXY_RADIUS);
+        float safeForbiddenRadius = Math.max(0.001f, mForbiddenRadiusKpc);
+        float radiusRatio = radiusKpc / safeForbiddenRadius;
+        float angle;
+
+        if (radiusRatio > 1.0f) {
+            float tanI = (float) Math.tan(mPitchAngleRad);
+            if (Math.abs(tanI) < 1.0e-4f) {
+                tanI = 1.0e-4f;
+            }
+            float baseAngle = (1.0f / tanI) * (float) Math.log(radiusRatio);
+
+            int armCount = Math.max(1, mArmCount);
+            int armIndex = mRandom.nextInt(armCount);
+            float armAngleOffset = armIndex * mArmOffset;
+
+            float radiusLerp = (radiusKpc - safeForbiddenRadius) / (GALAXY_RADIUS_KPC - safeForbiddenRadius);
+            radiusLerp = Math.max(0.0f, Math.min(1.0f, radiusLerp));
+            float scatterAmp = mPreciseInnerScatter + (mPreciseOuterScatter - mPreciseInnerScatter) * radiusLerp;
+
+            float uniformScatter = (mRandom.nextFloat() - 0.5f) * scatterAmp;
+            float gaussianScatter = randomGauss() * (scatterAmp * 0.42f);
+            float turbulence = (mRandom.nextFloat() - 0.5f) * mPreciseTurbulence * (1.0f - radiusLerp);
+            float armJitter = (mRandom.nextFloat() - 0.5f) * 0.28f;
+            armAngleOffset += armJitter;
+
+            float ellipseStrength = (1.0f - mEllipseRatio) * 1.3f;
+            float twistTerm = mEllipseTwist * radiusKpc * 8.0f;
+            armAngleOffset += ellipseStrength * (float) Math.sin(2.0f * (baseAngle + armAngleOffset) + twistTerm);
+            baseAngle += mEllipseTwist * radiusLerp * 0.9f;
+
+            if (radiusKpc < 5.0f) {
+                float ellipticityFactor = 0.14f * (1.0f - radiusKpc / 5.0f);
+                float sin2theta = (float) Math.sin(2.0f * (baseAngle + armAngleOffset));
+                armAngleOffset += ellipticityFactor * sin2theta;
+
+                float innerChaos = randomGauss() * 0.36f * (1.0f - radiusKpc / 5.0f);
+                turbulence += innerChaos;
+            }
+
+            angle = baseAngle + armAngleOffset + uniformScatter + gaussianScatter + turbulence;
+        } else {
+            angle = mRandom.nextFloat() * TWO_PI;
+        }
+
+        angle = angle % TWO_PI;
+        if (angle < 0.0f) {
+            angle += TWO_PI;
+        }
+        return angle;
+    }
+
+    private int clampInt(int value, int min, int max) {
+        return Math.max(min, Math.min(max, value));
+    }
+
+    private float clampFloat(float value, float min, float max) {
+        return Math.max(min, Math.min(max, value));
     }
     
     /**
@@ -546,6 +1056,8 @@ public class GalaxyGL extends GLESScene {
      */
     @Override
     public void drawFrame(long timeMs) {
+        syncSettingsFromPreferencesIfNeeded();
+
         if (!mGLInitialized) {
             initGL(); // 未初始化则先初始化GL环境
             return;
@@ -628,9 +1140,11 @@ public class GalaxyGL extends GLESScene {
         int colorHandle = GLES20.glGetAttribLocation(mParticleProgram, "aColor");
         int mvpHandle = GLES20.glGetUniformLocation(mParticleProgram, "uMVPMatrix");
         int samplerHandle = GLES20.glGetUniformLocation(mParticleProgram, "uTexture");
+        int alphaHandle = GLES20.glGetUniformLocation(mParticleProgram, "uAlphaMultiplier");
         
         // 设置MVP矩阵
         GLES20.glUniformMatrix4fv(mvpHandle, 1, false, mMVPMatrix, 0);
+        GLES20.glUniform1f(alphaHandle, mParticleAlphaPercent / 100.0f);
         
         // 启用顶点属性数组
         GLES20.glEnableVertexAttribArray(posHandle);

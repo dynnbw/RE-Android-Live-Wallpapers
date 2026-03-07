@@ -3,6 +3,7 @@
     <com.reandroid.wallpaper.settings.PreviewPreference android:key="pref_preview" android:title="@string/pref_live_preview" />
     <SeekBarPreference android:key="pref_fall_leaf_count" android:title="@string/pref_fall_leaf_count" android:summary="@string/pref_fall_leaf_count_summary" android:min="1" android:max="40" android:defaultValue="14" app:showSeekBarValue="true" android:layout="@layout/preference_modern_seekbar" />
     <SeekBarPreference android:key="pref_fall_max_drops" android:title="@string/pref_fall_max_drops" android:summary="@string/pref_fall_max_drops_summary" android:min="1" android:max="30" android:defaultValue="10" app:showSeekBarValue="true" android:layout="@layout/preference_modern_seekbar" />
+    <SwitchPreferenceCompat android:key="pref_fall_precise_calc" android:title="@string/pref_fall_precise_calc" android:summary="@string/pref_fall_precise_calc_summary" android:defaultValue="false" android:layout="@layout/preference_modern_item" />
     <SwitchPreferenceCompat android:key="pref_fall_green_leaves" android:title="@string/pref_fall_green_leaves" android:summary="@string/pref_fall_green_leaves_summary" android:defaultValue="false" android:layout="@layout/preference_modern_item" />
     <Preference android:key="pref_open_wallpaper_picker" android:title="@string/pref_open_wallpaper_picker" android:layout="@layout/preference_modern_item" />
 </PreferenceScreen>

@@ -1,4 +1,5 @@
 uniform mat4 uMVPMatrix;
+uniform float uAlphaMultiplier;
 attribute vec3 aPosition;
 attribute vec4 aColor;
 varying vec4 vColor;
@@ -18,5 +19,5 @@ void main() {
   gl_Position = uMVPMatrix * pos;
   gl_PointSize = aColor.a;
   vColor.rgb = aColor.rgb / 255.0;
-  vColor.a = 1.0;
+  vColor.a = uAlphaMultiplier;
 }
