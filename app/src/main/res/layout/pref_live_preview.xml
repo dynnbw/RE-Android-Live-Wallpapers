@@ -12,7 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:foreground="?attr/selectableItemBackground"
-        app:cardBackgroundColor="?android:attr/colorBackground"
+        app:cardBackgroundColor="@color/md_theme_surface"
         app:cardCornerRadius="14dp"
         app:cardElevation="4dp"
         app:cardUseCompatPadding="true">
@@ -30,7 +30,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceMedium"
-                android:textColor="?android:attr/textColorPrimary"
+                android:textColor="@color/md_theme_onSurface"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -40,7 +40,7 @@
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 android:layout_marginTop="10dp"
-                android:background="@android:color/black"
+                android:background="?attr/colorSurface"
                 android:clipChildren="false"
                 android:clipToPadding="false"
                 app:layout_constraintBottom_toBottomOf="parent"

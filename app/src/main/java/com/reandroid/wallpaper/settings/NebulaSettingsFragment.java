@@ -1,56 +1,48 @@
 package com.reandroid.wallpaper.settings;
 
 import android.app.AlertDialog;
-import android.app.WallpaperManager;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
-import android.content.pm.ServiceInfo;
 import android.net.Uri;
-import android.os.Build;
+import android.os.Bundle;
 import android.provider.Settings;
 import android.widget.Toast;
-import android.os.Bundle;
 
 import androidx.annotation.Nullable;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 
 import com.reandroid.wallpaper.R;
-import com.reandroid.wallpaper.fall.FallGL;
-import com.reandroid.wallpaper.fall.FallWallpaper;
+import com.reandroid.wallpaper.nebula.NebulaGL;
+import com.reandroid.wallpaper.nebula.NebulaWallpaper;
 
-public class FallSettingsFragment extends PreferenceFragmentCompat {
-    private Class<?> mPendingWallpaperClass = null;
-
+public class NebulaSettingsFragment extends PreferenceFragmentCompat {
     @Override
     public void onCreatePreferences(@Nullable Bundle savedInstanceState, @Nullable String rootKey) {
-        setPreferencesFromResource(R.xml.prefs_fall, rootKey);
-        SettingsResetHelper.attachResetPreference(this, SettingsResetHelper.TARGET_FALL);
+        setPreferencesFromResource(R.xml.prefs_nebula, rootKey);
+        SettingsResetHelper.attachResetPreference(this, SettingsResetHelper.TARGET_NEBULA);
 
         PreviewPreference preview = findPreference("pref_preview");
         if (preview != null) {
-            preview.setSceneFactory((width, height) -> new FallGL(width, height));
+            preview.setSceneFactory((width, height) -> new NebulaGL(width, height));
         }
 
         Preference openPicker = findPreference("pref_open_wallpaper_picker");
         if (openPicker != null) {
             openPicker.setOnPreferenceClickListener(pref -> {
-                launchLivePreview(FallWallpaper.class);
+                launchLivePreview(NebulaWallpaper.class);
                 return true;
             });
         }
     }
 
     private void launchLivePreview(Class<?> wallpaperClass) {
-        // 检测MIUI系统，仅第一次提示用户授予权限
         if (isMIUI() && !hasShownMIUIPermissionDialog()) {
             showMIUIPermissionDialog(wallpaperClass);
             return;
         }
-        
+
         try {
             Intent intent = new Intent();
             ComponentName componentName = new ComponentName(requireContext(), wallpaperClass);

@@ -18,6 +18,7 @@ public class HoloSpiralSettingsFragment extends PreferenceFragmentCompat {
     @Override
     public void onCreatePreferences(@Nullable Bundle savedInstanceState, @Nullable String rootKey) {
         setPreferencesFromResource(R.xml.prefs_holospiral, rootKey);
+        SettingsResetHelper.attachResetPreference(this, SettingsResetHelper.TARGET_HOLOSPIRAL);
 
         PreviewPreference preview = findPreference("pref_preview");
         if (preview != null) {

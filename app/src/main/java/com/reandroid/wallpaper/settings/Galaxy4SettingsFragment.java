@@ -25,6 +25,7 @@ public class Galaxy4SettingsFragment extends PreferenceFragmentCompat
     @Override
     public void onCreatePreferences(@Nullable Bundle savedInstanceState, @Nullable String rootKey) {
         setPreferencesFromResource(R.xml.prefs_galaxy4, rootKey);
+        SettingsResetHelper.attachResetPreference(this, SettingsResetHelper.TARGET_GALAXY4);
 
         previewPreference = findPreference("pref_preview");
         if (previewPreference != null) {

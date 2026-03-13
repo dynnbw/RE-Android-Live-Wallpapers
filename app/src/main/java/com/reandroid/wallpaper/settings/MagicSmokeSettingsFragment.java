@@ -29,6 +29,7 @@ public class MagicSmokeSettingsFragment extends PreferenceFragmentCompat {
         // 设置使用magicsmoke作为SharedPreferences名称 (与原版一致)
         getPreferenceManager().setSharedPreferencesName("magicsmoke");
         setPreferencesFromResource(R.xml.prefs_magicsmoke, rootKey);
+        SettingsResetHelper.attachResetPreference(this, SettingsResetHelper.TARGET_MAGICSMOKE);
 
         // 设置预览
         PreviewPreference preview = findPreference("pref_preview");

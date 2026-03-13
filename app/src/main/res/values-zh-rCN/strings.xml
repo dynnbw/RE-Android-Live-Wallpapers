@@ -133,6 +133,9 @@
     <string name="wallpaper_noisefield">泡泡</string>
     <string name="wallpaper_noisefield_author">Google</string>
     <string name="wallpaper_noisefield_desc">柔和渐变背景上的发光泡泡流动。</string>
+    <string name="wallpaper_nebula">星云</string>
+    <string name="wallpaper_nebula_author">念.</string>
+    <string name="wallpaper_nebula_desc">基于公式实时体积渲染的猎户座大星云视觉效果。</string>
 
     <!-- Music visualization wallpapers -->
     <string name="musicvis_author">Google</string>
@@ -188,6 +191,7 @@
     <string name="settings_entry_galaxy">星系</string>
     <string name="settings_entry_walkaround">透视</string>
     <string name="settings_entry_phasebeam">镭光</string>
+    <string name="settings_entry_nebula">星云</string>
     <string name="settings_entry_noisefield">泡泡</string>
     <string name="settings_entry_vis2">声波</string>
     <string name="settings_entry_vis3">频谱</string>
@@ -450,4 +454,12 @@
     <string name="fireworks_background_reset_message">已恢复为默认背景。是否立即重新设置壁纸以应用更改？</string>
     <string name="fireworks_custom_background_set_summary">已设置自定义背景</string>
     <string name="fireworks_custom_background_click_summary">点击选择自定义背景图片</string>
+    <string name="reset_all_settings_title">恢复全部默认配置</string>
+    <string name="reset_all_settings_message">确定要将所有壁纸和全局设置恢复为默认值吗？</string>
+    <string name="reset_all_settings_done">已恢复全部默认配置</string>
+    <string name="reset_current_settings_title">恢复默认配置</string>
+    <string name="reset_current_settings_summary">恢复当前壁纸的默认配置</string>
+    <string name="reset_current_settings_message">确定要将当前壁纸设置恢复为默认值吗？</string>
+    <string name="reset_current_settings_done">已恢复当前壁纸默认配置</string>
+    <string name="reset_action_confirm">恢复</string>
 </resources>

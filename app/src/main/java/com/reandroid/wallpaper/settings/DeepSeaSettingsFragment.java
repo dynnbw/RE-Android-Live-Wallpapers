@@ -58,6 +58,7 @@ public class DeepSeaSettingsFragment extends PreferenceFragmentCompat {
     public void onCreatePreferences(@Nullable Bundle savedInstanceState, @Nullable String rootKey) {
         getPreferenceManager().setSharedPreferencesName(DeepSeaGL.PREFS_NAME);
         setPreferencesFromResource(R.xml.prefs_deepsea, rootKey);
+        SettingsResetHelper.attachResetPreference(this, SettingsResetHelper.TARGET_DEEPSEA);
 
         PreviewPreference preview = findPreference("pref_preview");
         if (preview != null) {

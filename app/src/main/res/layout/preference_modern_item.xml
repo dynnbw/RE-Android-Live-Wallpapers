@@ -12,7 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:foreground="?attr/selectableItemBackground"
-        app:cardBackgroundColor="?android:attr/colorBackground"
+        app:cardBackgroundColor="@color/md_theme_surface"
         app:cardCornerRadius="14dp"
         app:cardElevation="4dp"
         app:cardUseCompatPadding="true">
@@ -56,7 +56,7 @@
                     android:ellipsize="end"
                     android:maxLines="2"
                     android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:textColor="?android:attr/textColorPrimary" />
+                    android:textColor="@color/md_theme_onSurface" />
 
                 <TextView
                     android:id="@android:id/summary"
@@ -66,7 +66,7 @@
                     android:ellipsize="end"
                     android:maxLines="3"
                     android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:textColor="?android:attr/textColorSecondary"
+                    android:textColor="@color/md_theme_onSurface"
                     android:visibility="gone" />
             </LinearLayout>
 

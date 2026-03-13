@@ -135,6 +135,9 @@
     <string name="wallpaper_noisefield_author">Google</string>
     <string name="wallpaper_noisefield_desc">A flowing field of luminous bubbles drifting across a
         soft gradient.</string>
+    <string name="wallpaper_nebula">Nebula</string>
+    <string name="wallpaper_nebula_author">念.</string>
+    <string name="wallpaper_nebula_desc">A physically inspired Orion Nebula volume rendered entirely from formulas.</string>
 
     <!-- Music visualization wallpapers -->
     <string name="musicvis_author">Google</string>
@@ -186,6 +189,7 @@
     <string name="settings_entry_galaxy">Galaxy</string>
     <string name="settings_entry_walkaround">See Through</string>
     <string name="settings_entry_phasebeam">Phase Beam</string>
+    <string name="settings_entry_nebula">Nebula</string>
     <string name="settings_entry_clock">Polar Clock</string>
     <string name="settings_entry_noisefield">Noise Field</string>
     <string name="settings_entry_vis2">Waveform</string>
@@ -499,4 +503,12 @@
     <string name="fireworks_background_reset_message">Default background restored. Apply changes now?</string>
     <string name="fireworks_custom_background_set_summary">Custom background set</string>
     <string name="fireworks_custom_background_click_summary">Tap to choose custom background image</string>
+    <string name="reset_all_settings_title">Restore all defaults</string>
+    <string name="reset_all_settings_message">Restore all wallpaper and global settings to their default values?</string>
+    <string name="reset_all_settings_done">All settings restored to defaults</string>
+    <string name="reset_current_settings_title">Restore default settings</string>
+    <string name="reset_current_settings_summary">Restore this wallpaper settings to defaults</string>
+    <string name="reset_current_settings_message">Restore this wallpaper settings to their default values?</string>
+    <string name="reset_current_settings_done">Wallpaper settings restored to defaults</string>
+    <string name="reset_action_confirm">Restore</string>
 </resources>

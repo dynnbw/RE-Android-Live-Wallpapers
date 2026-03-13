@@ -7,13 +7,11 @@
         <item name="colorSecondary">@color/md_theme_secondary</item>
         <item name="colorOnSecondary">@color/md_theme_onSecondary</item>
         <item name="android:statusBarColor">@color/md_theme_primary</item>
-        <item name="colorAccent">@color/md_theme_control</item>
+        <item name="colorAccent">@color/md_theme_secondary</item>
         <item name="colorControlActivated">@color/md_theme_control</item>
         <item name="colorControlHighlight">@color/md_theme_controlHighlight</item>
-        <item name="android:colorAccent">@color/md_theme_control</item>
-        <item name="android:colorBackground">@color/md_theme_background</item>
+        <item name="android:colorAccent">@color/md_theme_secondary</item>
         <item name="colorOnBackground">@color/md_theme_onBackground</item>
-        <item name="colorSurface">@color/md_theme_surface</item>
         <item name="colorOnSurface">@color/md_theme_onSurface</item>
         <item name="android:textColorPrimary">@color/md_theme_onSurface</item>
         <item name="android:textColorSecondary">@color/md_theme_onSurface</item>

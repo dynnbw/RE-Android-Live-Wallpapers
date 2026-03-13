@@ -28,6 +28,7 @@ public class PolarClockSettingsFragment extends PreferenceFragmentCompat {
     public void onCreatePreferences(@Nullable Bundle savedInstanceState, @Nullable String rootKey) {
         getPreferenceManager().setSharedPreferencesName(PolarClockWallpaper.SHARED_PREFS_NAME);
         setPreferencesFromResource(R.xml.polar_clock_prefs, rootKey);
+        SettingsResetHelper.attachResetPreference(this, SettingsResetHelper.TARGET_POLARCLOCK);
 
         previewPreference = findPreference("pref_preview");
         if (previewPreference != null) {

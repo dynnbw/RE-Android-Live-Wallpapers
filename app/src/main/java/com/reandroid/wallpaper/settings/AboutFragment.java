@@ -13,17 +13,19 @@ import androidx.preference.PreferenceFragmentCompat;
 import com.reandroid.wallpaper.BuildConfig;
 import com.reandroid.wallpaper.R;
 
+import android.content.Context;
+import com.google.android.material.theme.overlay.MaterialThemeOverlay;
+
 public class AboutFragment extends PreferenceFragmentCompat {
+
     @Override
     public void onCreatePreferences(@Nullable Bundle savedInstanceState, @Nullable String rootKey) {
         setPreferencesFromResource(R.xml.prefs_about, rootKey);
-
         // 版本号
         Preference versionPref = findPreference("about_version");
         if (versionPref != null) {
             versionPref.setSummary(BuildConfig.VERSION_NAME);
         }
-
         // 官网
         Preference website = findPreference("about_official_website");
         if (website != null) {
@@ -66,6 +68,8 @@ public class AboutFragment extends PreferenceFragmentCompat {
             });
         }
     }
+
+    // 保持Material2风格，无需包裹overlay
 
     private void openUrl(String url) {
         try {

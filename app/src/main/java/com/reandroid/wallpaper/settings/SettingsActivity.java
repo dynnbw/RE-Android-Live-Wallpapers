@@ -1,3 +1,4 @@
+
 package com.reandroid.wallpaper.settings;
 
 import android.os.Bundle;
@@ -16,8 +17,10 @@ import com.google.android.material.appbar.MaterialToolbar;
 public class SettingsActivity extends AppCompatActivity
     implements PreferenceFragmentCompat.OnPreferenceStartFragmentCallback {
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // 高版本自动应用 Monet 动态取色
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
 
@@ -51,6 +54,10 @@ public class SettingsActivity extends AppCompatActivity
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.action_reset_all) {
+            SettingsResetHelper.showResetAllDialog(this);
+            return true;
+        }
         if (item.getItemId() == R.id.action_about) {
             startActivity(new Intent(this, AboutActivity.class));
             return true;

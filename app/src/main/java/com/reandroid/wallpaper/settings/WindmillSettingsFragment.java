@@ -21,6 +21,7 @@ public class WindmillSettingsFragment extends PreferenceFragmentCompat {
     @Override
     public void onCreatePreferences(@Nullable Bundle savedInstanceState, @Nullable String rootKey) {
         setPreferencesFromResource(R.xml.prefs_windmill, rootKey);
+        SettingsResetHelper.attachResetPreference(this, SettingsResetHelper.TARGET_WINDMILL);
 
         PreviewPreference preview = findPreference("pref_preview");
         if (preview != null) {

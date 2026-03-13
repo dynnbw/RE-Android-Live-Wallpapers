@@ -18,6 +18,7 @@ public class FlsorescenceSettingsFragment extends PreferenceFragmentCompat {
     @Override
     public void onCreatePreferences(@Nullable Bundle savedInstanceState, @Nullable String rootKey) {
         setPreferencesFromResource(R.xml.prefs_flsorescence, rootKey);
+        SettingsResetHelper.attachResetPreference(this, SettingsResetHelper.TARGET_FLSORESCENCE);
         PreviewPreference preview = findPreference("pref_preview");
         if (preview != null) {
             preview.setSceneFactory((width, height) -> new FlsorescenceGL(width, height));

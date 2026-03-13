@@ -72,6 +72,7 @@ public class NexusSettingsFragment extends PreferenceFragmentCompat {
         migrateOldPreferences();
         
         setPreferencesFromResource(R.xml.prefs_nexus, rootKey);
+        SettingsResetHelper.attachResetPreference(this, SettingsResetHelper.TARGET_NEXUS);
 
         previewPreference = findPreference("pref_preview");
         if (previewPreference != null) {

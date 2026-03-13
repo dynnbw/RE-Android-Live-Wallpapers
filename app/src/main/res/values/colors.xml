@@ -12,4 +12,10 @@
     <color name="md_theme_onBackground">#2F4F4F</color>
     <color name="md_theme_surface">#F0FFFF</color>
     <color name="md_theme_onSurface">#2F4F4F</color>
+    <color name="colorPrimary">#2196F3</color>
+    <color name="colorPrimaryDark">#1976D2</color>
+    <color name="colorAccent">#FF4081</color>
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="cardview_light_background">#FFFFFFFF</color>
 </resources>

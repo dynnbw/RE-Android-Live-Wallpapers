@@ -26,6 +26,7 @@ public class WildWorldSettingsFragment extends PreferenceFragmentCompat {
     @Override
     public void onCreatePreferences(@Nullable Bundle savedInstanceState, @Nullable String rootKey) {
         setPreferencesFromResource(R.xml.prefs_wildworld, rootKey);
+        SettingsResetHelper.attachResetPreference(this, SettingsResetHelper.TARGET_WILDWORLD);
 
         PreviewPreference preview = findPreference("pref_preview");
         if (preview != null) {

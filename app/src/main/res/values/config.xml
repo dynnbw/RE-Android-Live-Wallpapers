@@ -30,6 +30,7 @@
     <bool name="config_enable_fireworks_wallpaper">true</bool>
     <bool name="config_enable_phasebeam_wallpaper">true</bool>
     <bool name="config_enable_noisefield_wallpaper">true</bool>
+    <bool name="config_enable_nebula_wallpaper">true</bool>
     <bool name="config_enable_vis2_wallpaper">true</bool>
     <bool name="config_enable_vis3_wallpaper">true</bool>
     <bool name="config_enable_vis4_wallpaper">true</bool>

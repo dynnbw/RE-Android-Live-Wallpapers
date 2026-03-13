@@ -42,6 +42,7 @@ public class GrassSettingsFragment extends PreferenceFragmentCompat
     @Override
     public void onCreatePreferences(@Nullable Bundle savedInstanceState, @Nullable String rootKey) {
         setPreferencesFromResource(R.xml.prefs_grass, rootKey);
+        SettingsResetHelper.attachResetPreference(this, SettingsResetHelper.TARGET_GRASS);
 
         PreviewPreference preview = findPreference("pref_preview");
         if (preview != null) {
