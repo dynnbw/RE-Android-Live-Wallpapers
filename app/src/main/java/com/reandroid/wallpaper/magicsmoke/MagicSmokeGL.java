@@ -47,6 +47,7 @@ public class MagicSmokeGL extends GLESScene {
     private int mPositionHandle5;
     private int mLayer0Handle5, mLayer1Handle5, mLayer2Handle5, mLayer3Handle5, mLayer4Handle5;
     private int mPanOffsetHandle5;
+    private int mAspectScaleHandle5;
     private int mClearColorHandle5;
     private int mTexture0Handle5, mTexture1Handle5, mTexture2Handle5, mTexture3Handle5, mTexture4Handle5;
     
@@ -54,6 +55,7 @@ public class MagicSmokeGL extends GLESScene {
     private int mPositionHandle4;
     private int mLayer0Handle4, mLayer1Handle4, mLayer2Handle4, mLayer3Handle4;
     private int mPanOffsetHandle4;
+    private int mAspectScaleHandle4;
     private int mClearColorHandle4;
     private int mTexture0Handle4, mTexture1Handle4, mTexture2Handle4, mTexture3Handle4;
     
@@ -80,6 +82,8 @@ public class MagicSmokeGL extends GLESScene {
     
     private Context mContext;
     private SharedPreferences mPrefs;
+
+    private static final float REF_ASPECT = 3.0f / 4.0f;
     
     // Noise texture resources
     private static final int[] NOISE_RES_IDS = {
@@ -275,6 +279,7 @@ public class MagicSmokeGL extends GLESScene {
         mLayer3Handle5 = GLES20.glGetUniformLocation(mProgram5Tex, "uLayer3");
         mLayer4Handle5 = GLES20.glGetUniformLocation(mProgram5Tex, "uLayer4");
         mPanOffsetHandle5 = GLES20.glGetUniformLocation(mProgram5Tex, "uPanOffset");
+        mAspectScaleHandle5 = GLES20.glGetUniformLocation(mProgram5Tex, "uAspectScale");
         mClearColorHandle5 = GLES20.glGetUniformLocation(mProgram5Tex, "uClearColor");
         mTexture0Handle5 = GLES20.glGetUniformLocation(mProgram5Tex, "uTexture0");
         mTexture1Handle5 = GLES20.glGetUniformLocation(mProgram5Tex, "uTexture1");
@@ -289,6 +294,7 @@ public class MagicSmokeGL extends GLESScene {
         mLayer2Handle4 = GLES20.glGetUniformLocation(mProgram4Tex, "uLayer2");
         mLayer3Handle4 = GLES20.glGetUniformLocation(mProgram4Tex, "uLayer3");
         mPanOffsetHandle4 = GLES20.glGetUniformLocation(mProgram4Tex, "uPanOffset");
+        mAspectScaleHandle4 = GLES20.glGetUniformLocation(mProgram4Tex, "uAspectScale");
         mClearColorHandle4 = GLES20.glGetUniformLocation(mProgram4Tex, "uClearColor");
         mTexture0Handle4 = GLES20.glGetUniformLocation(mProgram4Tex, "uTexture0");
         mTexture1Handle4 = GLES20.glGetUniformLocation(mProgram4Tex, "uTexture1");
@@ -554,6 +560,11 @@ public class MagicSmokeGL extends GLESScene {
         
         // Set pan offset
         GLES20.glUniform2f(mPanOffsetHandle5, mXOffset, -mYOffset);
+
+        // Keep visual proportions consistent with the original 3:4 tuning.
+        float aspect = (float) mWidth / Math.max(1.0f, (float) mHeight);
+        float aspectScaleX = aspect / REF_ASPECT;
+        GLES20.glUniform2f(mAspectScaleHandle5, aspectScaleX, 1.0f);
         
         // Set clear color
         GLES20.glUniform4fv(mClearColorHandle5, 1, mClearColor, 0);
@@ -581,6 +592,11 @@ public class MagicSmokeGL extends GLESScene {
         
         // Set pan offset
         GLES20.glUniform2f(mPanOffsetHandle4, mXOffset, -mYOffset);
+
+        // Keep visual proportions consistent with the original 3:4 tuning.
+        float aspect = (float) mWidth / Math.max(1.0f, (float) mHeight);
+        float aspectScaleX = aspect / REF_ASPECT;
+        GLES20.glUniform2f(mAspectScaleHandle4, aspectScaleX, 1.0f);
         
         // Set clear color
         GLES20.glUniform4fv(mClearColorHandle4, 1, mClearColor, 0);

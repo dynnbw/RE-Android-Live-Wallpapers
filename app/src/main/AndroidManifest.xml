@@ -93,8 +93,32 @@
 
         <activity
             android:exported="true"
+            android:label="@string/wallpaper_galaxy_vk"
+            android:name="com.reandroid.wallpaper.galaxy.GalaxyVK"
+            android:theme="@android:style/Theme.NoTitleBar"
+            android:enabled="@bool/config_enable_galaxy_wallpaper">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.TEST" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:exported="true"
             android:label="@string/wallpaper_fall"
             android:name="com.reandroid.wallpaper.fall.Fall"
+            android:theme="@android:style/Theme.NoTitleBar"
+            android:enabled="@bool/config_enable_fall_wallpaper">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.TEST" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:exported="true"
+            android:label="@string/wallpaper_fall_vk"
+            android:name="com.reandroid.wallpaper.fall.FallVK"
             android:theme="@android:style/Theme.NoTitleBar"
             android:enabled="@bool/config_enable_fall_wallpaper">
             <intent-filter>
@@ -186,6 +210,18 @@
 
         <service
             android:exported="true"
+            android:label="@string/wallpaper_galaxy_vk"
+            android:name="com.reandroid.wallpaper.galaxy.GalaxyVKWallpaper"
+            android:permission="android.permission.BIND_WALLPAPER"
+            android:enabled="@bool/config_enable_galaxy_wallpaper">
+            <intent-filter>
+                <action android:name="android.service.wallpaper.WallpaperService" />
+            </intent-filter>
+            <meta-data android:name="android.service.wallpaper" android:resource="@xml/galaxy_vk" />
+        </service>
+
+        <service
+            android:exported="true"
             android:label="@string/wallpaper_fall"
             android:name="com.reandroid.wallpaper.fall.FallWallpaper"
             android:permission="android.permission.BIND_WALLPAPER"
@@ -194,6 +230,18 @@
                 <action android:name="android.service.wallpaper.WallpaperService" />
             </intent-filter>
             <meta-data android:name="android.service.wallpaper" android:resource="@xml/fall" />
+        </service>
+
+        <service
+            android:exported="true"
+            android:label="@string/wallpaper_fall_vk"
+            android:name="com.reandroid.wallpaper.fall.FallVKWallpaper"
+            android:permission="android.permission.BIND_WALLPAPER"
+            android:enabled="@bool/config_enable_fall_wallpaper">
+            <intent-filter>
+                <action android:name="android.service.wallpaper.WallpaperService" />
+            </intent-filter>
+            <meta-data android:name="android.service.wallpaper" android:resource="@xml/fall_vk" />
         </service>
 
         <service

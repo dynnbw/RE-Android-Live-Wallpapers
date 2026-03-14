@@ -7,6 +7,7 @@ uniform vec4 uLayer2;
 uniform vec4 uLayer3;
 uniform vec4 uLayer4;
 uniform vec2 uPanOffset;
+uniform vec2 uAspectScale;
 
 varying vec2 vTexCoord0;
 varying vec2 vTexCoord1;
@@ -16,8 +17,10 @@ varying vec2 vTexCoord4;
 
 vec2 computeTexCoord(vec4 layer, vec2 position, float depth, vec2 panOffset) {
     float invZ = 0.5 + depth * 0.05;
-    float x = 0.5 + 0.5 * invZ * (layer.z * (layer.y * (position.x + panOffset.x) + layer.x * (position.y + panOffset.y))) + layer.w;
-    float y = 0.5 + 0.5 * invZ * (layer.z * (-layer.x * (position.x + panOffset.x) + layer.y * (position.y + panOffset.y)));
+    vec2 p = vec2((position.x + panOffset.x) * uAspectScale.x,
+                  (position.y + panOffset.y) * uAspectScale.y);
+    float x = 0.5 + 0.5 * invZ * (layer.z * (layer.y * p.x + layer.x * p.y)) + layer.w;
+    float y = 0.5 + 0.5 * invZ * (layer.z * (-layer.x * p.x + layer.y * p.y));
     return vec2(x, y);
 }
 

@@ -17,16 +17,11 @@
 package com.reandroid.wallpaper.galaxy4;
 
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
-import android.opengl.Matrix;
 import android.util.Log;
-
-import androidx.preference.PreferenceManager;
 
 import com.reandroid.wallpaper.R;
 import com.reandroid.wallpaper.gles.GLESScene;
@@ -35,7 +30,6 @@ import com.reandroid.wallpaper.gles.RawResourceLoader;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
-import java.util.Random;
 
 /**
  * Galaxy4动态壁纸的OpenGL ES 2.0渲染核心类
@@ -43,62 +37,20 @@ import java.util.Random;
  * 负责壁纸的OpenGL初始化、着色器编译、纹理加载、粒子系统（星星/星云）的绘制与动画
  */
 public class Galaxy4GL extends GLESScene {
-    // 日志标签
     private static final String TAG = "Galaxy4GL";
-    
-    // 背景星星数量配置
-    private static final int DEFAULT_BG_STAR_COUNT = 11000;  // 默认背景星星数量
-    private static final int MIN_BG_STAR_COUNT = 1000;       // 背景星星最小数量
-    private static final int MAX_BG_STAR_COUNT = 20000;      // 背景星星最大数量
-    private int mBgStarCount = DEFAULT_BG_STAR_COUNT;        // 当前背景星星数量
-    
-    // 太空星云数量配置
-    private static final int DEFAULT_SPACE_CLOUD_COUNT = 25; // 默认太空星云数量
-    private static final int MIN_SPACE_CLOUD_COUNT = 5;      // 太空星云最小数量
-    private static final int MAX_SPACE_CLOUD_COUNT = 100;    // 太空星云最大数量
-    private int mSpaceCloudCount = DEFAULT_SPACE_CLOUD_COUNT;// 当前太空星云数量
-    
-    private Context mContext;  // 上下文对象，用于获取资源和SharedPreferences
-    
-    // 原版壁纸定义的粒子数量常量（参考值）
-    private static final int BG_STAR_COUNT = 11000;    // 背景星星数量（原版）
-    private static final int SPACE_CLOUD_COUNT = 25;   // 太空星云数量（原版）
-    private static final int STATIC_STAR_COUNT = 50;   // 静态星星数量（原版）
-    private static final int GALAXY_RADIUS = 300;      // 银河半径（布局计算用）
-    
-    private boolean mGLInitialized = false;  // OpenGL初始化状态标记
-    
-    // 着色器程序句柄
-    private int mBgProgram;          // 背景纹理绘制着色器程序
-    private int mCloudProgram;       // 星云粒子绘制着色器程序
-    private int mBgStarProgram;      // 背景星星绘制着色器程序
-    private int mStaticStarProgram;  // 静态星星（脉冲效果）绘制着色器程序
-    
-    // 纹理句柄
-    private int mTexBg;              // 背景纹理
-    private int mTexCloud;           // 星云纹理
-    private int mTexStaticStar;      // 静态星星纹理1
-    private int mTexStaticStar2;     // 静态星星纹理2（用于混合动画）
-    
-    // 粒子数据数组（存储每个粒子的位置+大小等信息）
-    private float[] mSpaceClouds;    // 星云粒子：x, y, z, size 每个粒子4个浮点数
-    private float[] mBgStars;        // 背景星星粒子：x, y, z 每个粒子3个浮点数
-    private float[] mStaticStars;    // 静态星星粒子：x, y, size 每个粒子3个浮点数
-    
-    // 粒子数据缓冲区（OpenGL绘制用，直接映射到原生内存提升性能）
-    private FloatBuffer mSpaceCloudBuffer;  // 星云粒子缓冲区
-    private FloatBuffer mBgStarBuffer;      // 背景星星缓冲区
-    private FloatBuffer mStaticStarBuffer;  // 静态星星缓冲区
-    
-    // 矩阵相关
-    private float[] mMVPMatrix = new float[16];  // 模型视图投影矩阵（MVP）
-    private float[] mProjMatrix = new float[16]; // 投影矩阵
-    
-    private Random mRandom = new Random();  // 随机数生成器，用于粒子位置随机化
-    
-    // 屏幕尺寸
-    private float mScreenWidth;  // 屏幕宽度（适配后）
-    private float mScreenHeight; // 屏幕高度（适配后）
+    private boolean mGLInitialized = false;
+    private int mBgProgram;
+    private int mCloudProgram;
+    private int mBgStarProgram;
+    private int mStaticStarProgram;
+    private int mTexBg;
+    private int mTexCloud;
+    private int mTexStaticStar;
+    private int mTexStaticStar2;
+    private FloatBuffer mSpaceCloudBuffer;
+    private FloatBuffer mBgStarBuffer;
+    private FloatBuffer mStaticStarBuffer;
+    private final Galaxy4Scene mScene;
     
     /**
      * 构造方法：初始化Galaxy4GL渲染器
@@ -108,8 +60,7 @@ public class Galaxy4GL extends GLESScene {
      */
     public Galaxy4GL(int width, int height, Context context) {
         super(width, height);
-        mContext = context;
-        loadParticleCountsFromPreferences(); // 从配置文件加载粒子数量
+        mScene = new Galaxy4Scene(width, height, context);
     }
     
     /**
@@ -155,85 +106,12 @@ public class Galaxy4GL extends GLESScene {
         mGLInitialized = false;
     }
     
-    /**
-     * 从SharedPreferences加载粒子数量配置
-     * 读取用户设置的背景星星/星云数量，并限制在有效范围内
-     */
-    private void loadParticleCountsFromPreferences() {
-        if (mContext != null) {
-            Context appContext = mContext.getApplicationContext() != null ? mContext.getApplicationContext() : mContext;
-            SharedPreferences defaultPrefs = PreferenceManager.getDefaultSharedPreferences(appContext);
-
-            if (defaultPrefs.contains("galaxy4_bg_star_count")) {
-                mBgStarCount = defaultPrefs.getInt("galaxy4_bg_star_count", DEFAULT_BG_STAR_COUNT);
-            } else {
-                SharedPreferences legacyPrefs = appContext.getSharedPreferences("wallpaper_settings", Context.MODE_PRIVATE);
-                mBgStarCount = legacyPrefs.getInt("galaxy4_bg_star_count", DEFAULT_BG_STAR_COUNT);
-                if (legacyPrefs.contains("galaxy4_bg_star_count")) {
-                    defaultPrefs.edit().putInt("galaxy4_bg_star_count", mBgStarCount).apply();
-                }
-            }
-
-            if (defaultPrefs.contains("galaxy4_space_cloud_count")) {
-                mSpaceCloudCount = defaultPrefs.getInt("galaxy4_space_cloud_count", DEFAULT_SPACE_CLOUD_COUNT);
-            } else {
-                SharedPreferences legacyPrefs = appContext.getSharedPreferences("wallpaper_settings", Context.MODE_PRIVATE);
-                mSpaceCloudCount = legacyPrefs.getInt("galaxy4_space_cloud_count", DEFAULT_SPACE_CLOUD_COUNT);
-                if (legacyPrefs.contains("galaxy4_space_cloud_count")) {
-                    defaultPrefs.edit().putInt("galaxy4_space_cloud_count", mSpaceCloudCount).apply();
-                }
-            }
-            
-            // 限制数值在有效范围内（最小-最大值之间）
-            mBgStarCount = Math.max(MIN_BG_STAR_COUNT, Math.min(MAX_BG_STAR_COUNT, mBgStarCount));
-            mSpaceCloudCount = Math.max(MIN_SPACE_CLOUD_COUNT, Math.min(MAX_SPACE_CLOUD_COUNT, mSpaceCloudCount));
-            
-            Log.d(TAG, "加载粒子数量 - 背景星星: " + mBgStarCount + ", 星云: " + mSpaceCloudCount);
-        }
-    }
-    
-    /**
-     * 设置背景星星数量并保存到配置
-     * @param count 目标星星数量（会自动限制在MIN/MAX范围内）
-     */
     public void setBgStarCount(int count) {
-        // 限制数值范围
-        count = Math.max(MIN_BG_STAR_COUNT, Math.min(MAX_BG_STAR_COUNT, count));
-        if (count != mBgStarCount) {
-            mBgStarCount = count;
-            if (mContext != null) {
-                Context appContext = mContext.getApplicationContext() != null ? mContext.getApplicationContext() : mContext;
-                PreferenceManager.getDefaultSharedPreferences(appContext)
-                        .edit()
-                        .putInt("galaxy4_bg_star_count", mBgStarCount)
-                        .apply();
-            }
-            // 标记OpenGL需要重新初始化（粒子数量变化）
-            mGLInitialized = false;
-            Log.d(TAG, "背景星星数量已修改为: " + mBgStarCount);
-        }
+        mScene.setBgStarCount(count);
     }
-    
-    /**
-     * 设置星云数量并保存到配置
-     * @param count 目标星云数量（会自动限制在MIN/MAX范围内）
-     */
+
     public void setSpaceCloudCount(int count) {
-        // 限制数值范围
-        count = Math.max(MIN_SPACE_CLOUD_COUNT, Math.min(MAX_SPACE_CLOUD_COUNT, count));
-        if (count != mSpaceCloudCount) {
-            mSpaceCloudCount = count;
-            if (mContext != null) {
-                Context appContext = mContext.getApplicationContext() != null ? mContext.getApplicationContext() : mContext;
-                PreferenceManager.getDefaultSharedPreferences(appContext)
-                        .edit()
-                        .putInt("galaxy4_space_cloud_count", mSpaceCloudCount)
-                        .apply();
-            }
-            // 标记OpenGL需要重新初始化（粒子数量变化）
-            mGLInitialized = false;
-            Log.d(TAG, "星云数量已修改为: " + mSpaceCloudCount);
-        }
+        mScene.setSpaceCloudCount(count);
     }
     
     /**
@@ -258,10 +136,7 @@ public class Galaxy4GL extends GLESScene {
         
         // 创建所有着色器程序
         createPrograms();
-        // 加载壁纸所需纹理
         loadTextures();
-        // 初始化粒子位置
-        positionParticles();
         
         Log.d(TAG, "initGL 执行完成");
     }
@@ -410,176 +285,10 @@ public class Galaxy4GL extends GLESScene {
         return textureHandle[0];
     }
     
-    /**
-     * 初始化所有粒子的位置和大小（移植自原版RenderScript的positionParticles方法）
-     * 包括：星云、背景星星、静态星星的位置计算和缓冲区初始化
-     */
-    private void positionParticles() {
-        mScreenWidth = mWidth;
-        mScreenHeight = mHeight;
-        
-        float wRatio = 1.0f;  // 宽度比例（适配不同屏幕）
-        float hRatio = 1.0f;  // 高度比例（适配不同屏幕）
-        
-        // 适配屏幕宽高比
-        if (mScreenWidth > mScreenHeight) {
-            wRatio = mScreenWidth / mScreenHeight;
-            mScreenHeight = mScreenWidth;
-        } else {
-            hRatio = mScreenHeight / mScreenWidth;
-            mScreenWidth = mScreenHeight;
-        }
-        
-        // 缩放比例（将银河半径适配到屏幕尺寸）
-        float scale = GALAXY_RADIUS / (mScreenWidth * 0.5f);
-        
-        // ========== 初始化星云粒子 ==========
-        // 每个星云粒子存储：角度、距离、z轴值（共3个浮点数）
-        mSpaceClouds = new float[mSpaceCloudCount * 3];
-        for (int i = 0; i < mSpaceCloudCount; i++) {
-            // 高斯随机数生成距离（模拟银河分布）
-            float d = Math.abs(randomGauss()) * GALAXY_RADIUS * 0.5f + mRandom.nextFloat() * 64.0f;
-            // 映射距离到缩放后的范围
-            d = mapf(-4.0f, GALAXY_RADIUS + 4.0f, 0.0f, scale, d);
-            float id = d / GALAXY_RADIUS;
-            // 高斯随机数生成z轴值（模拟深度）
-            float z = randomGauss() * 0.4f * (1.0f - id);
-            
-            // 根据距离调整z轴值（模拟银河中心/边缘的深度差异）
-            if (d > GALAXY_RADIUS * 0.15f) {
-                z *= 0.6f * (1.0f - id);
-            } else {
-                z *= 0.72f;
-            }
-            
-            // 存储粒子数据
-            int idx = i * 3;
-            mSpaceClouds[idx] = mRandom.nextFloat() * (float) (Math.PI * 2);  // 随机角度（0-2π）
-            mSpaceClouds[idx + 1] = d;                                       // 距离
-            mSpaceClouds[idx + 2] = z / 5.0f;                                // z轴值（缩放后）
-        }
-        
-        // ========== 初始化背景星星粒子 ==========
-        // 每个背景星星存储：角度、距离、z轴值（共3个浮点数）
-        mBgStars = new float[mBgStarCount * 3];
-        for (int i = 0; i < mBgStarCount; i++) {
-            float d = Math.abs(randomGauss()) * GALAXY_RADIUS * 0.5f + mRandom.nextFloat() * 64.0f;
-            d = mapf(-4.0f, GALAXY_RADIUS + 4.0f, 0.0f, scale, d);
-            float id = d / GALAXY_RADIUS;
-            float z = randomGauss() * 0.4f * (1.0f - id);
-            
-            if (d > GALAXY_RADIUS * 0.15f) {
-                z *= 0.6f * (1.0f - id);
-            } else {
-                z *= 0.72f;
-            }
-            
-            int idx = i * 3;
-            mBgStars[idx] = mRandom.nextFloat() * (float) (Math.PI * 2);  // 随机角度
-            mBgStars[idx + 1] = d;                                       // 距离
-            mBgStars[idx + 2] = z / 5.0f;                                // z轴值
-        }
-        
-        // ========== 初始化静态星星粒子 ==========
-        // 每个静态星星存储：x坐标、y坐标、点大小（共3个浮点数）
-        mStaticStars = new float[STATIC_STAR_COUNT * 3];
-        for (int i = 0; i < STATIC_STAR_COUNT; i++) {
-            int idx = i * 3;
-            // 随机x坐标（-wRatio ~ wRatio）
-            mStaticStars[idx] = (mRandom.nextFloat() * 2.0f - 1.0f) * wRatio;
-            // 随机y坐标（-hRatio ~ hRatio）
-            mStaticStars[idx + 1] = (mRandom.nextFloat() * 2.0f - 1.0f) * hRatio;
-            // 随机点大小（1.0 ~ 10.0）
-            mStaticStars[idx + 2] = mRandom.nextFloat() * 9.0f + 1.0f;
-        }
-        
-        // ========== 创建粒子缓冲区（原生内存） ==========
-        // 星云缓冲区
-        ByteBuffer bb = ByteBuffer.allocateDirect(mSpaceClouds.length * 4);
-        bb.order(ByteOrder.nativeOrder()); // 使用原生字节序（匹配GPU）
-        mSpaceCloudBuffer = bb.asFloatBuffer();
-        mSpaceCloudBuffer.put(mSpaceClouds);
-        mSpaceCloudBuffer.position(0); // 重置缓冲区位置
-        
-        // 背景星星缓冲区
-        bb = ByteBuffer.allocateDirect(mBgStars.length * 4);
-        bb.order(ByteOrder.nativeOrder());
-        mBgStarBuffer = bb.asFloatBuffer();
-        mBgStarBuffer.put(mBgStars);
-        mBgStarBuffer.position(0);
-        
-        // 静态星星缓冲区
-        bb = ByteBuffer.allocateDirect(mStaticStars.length * 4);
-        bb.order(ByteOrder.nativeOrder());
-        mStaticStarBuffer = bb.asFloatBuffer();
-        mStaticStarBuffer.put(mStaticStars);
-        mStaticStarBuffer.position(0);
-        
-        // 更新投影矩阵（适配屏幕）
-        updateProjectionMatrix();
-        
-        Log.d(TAG, "粒子位置初始化完成");
-    }
-    
-    /**
-     * 更新投影矩阵和MVP矩阵
-     * 适配屏幕宽高比，并应用旋转/缩放/平移变换
-     */
-    private void updateProjectionMatrix() {
-        // 计算屏幕宽高比
-        float aspect = (float) mWidth / mHeight;
-        // 创建透视投影矩阵
-        Matrix.frustumM(mProjMatrix, 0, -aspect, aspect, -1, 1, 1, 100);
-        
-        // 临时矩阵（用于矩阵乘法）
-        float[] temp = new float[16];
-        float[] rotMatrix = new float[16];
-        
-        // 绕Y轴旋转180度（适配原版壁纸的方向）
-        Matrix.setRotateM(rotMatrix, 0, 180, 0, 1, 0);
-        Matrix.multiplyMM(temp, 0, mProjMatrix, 0, rotMatrix, 0);
-        
-        // 创建缩放矩阵（X轴翻转）
-        float[] scaleMatrix = new float[16];
-        Matrix.setIdentityM(scaleMatrix, 0);
-        Matrix.scaleM(scaleMatrix, 0, -1, 1, 1);
-        Matrix.multiplyMM(rotMatrix, 0, temp, 0, scaleMatrix, 0);
-        
-        // 平移矩阵并赋值给MVP矩阵
-        Matrix.translateM(mMVPMatrix, 0, rotMatrix, 0, 0, 0, 1);
-    }
-    
-    /**
-     * 生成高斯分布的随机数（Box-Muller算法）
-     * 用于模拟粒子的自然分布（更接近真实银河的星星分布）
-     * @return 高斯随机数（均值0，方差1）
-     */
-    private float randomGauss() {
-        float x1 = 0.0f, x2, w;
-        
-        // Box-Muller算法：生成两个独立的高斯随机数
-        w = 2.0f;
-        while (w >= 1.0f) {
-            x1 = mRandom.nextFloat() * 2.0f - 1.0f;
-            x2 = mRandom.nextFloat() * 2.0f - 1.0f;
-            w = x1 * x1 + x2 * x2;
-        }
-        
-        w = (float) Math.sqrt(-2.0f * Math.log(w) / w);
-        return x1 * w;
-    }
-    
-    /**
-     * 将数值从一个范围映射到另一个范围
-     * @param minStart 原范围最小值
-     * @param minStop 原范围最大值
-     * @param maxStart 目标范围最小值
-     * @param maxStop 目标范围最大值
-     * @param value 要映射的数值
-     * @return 映射后的数值
-     */
-    private float mapf(float minStart, float minStop, float maxStart, float maxStop, float value) {
-        return maxStart + (maxStart - maxStop) * ((value - minStart) / (minStop - minStart));
+    @Override
+    public void resize(int width, int height) {
+        super.resize(width, height);
+        mScene.resize(width, height);
     }
     
     /**
@@ -589,41 +298,47 @@ public class Galaxy4GL extends GLESScene {
      */
     @Override
     public void drawFrame(long timeMs) {
-        // 未初始化则先执行OpenGL初始化
+        mScene.update(timeMs);
+        Galaxy4Scene.SceneData sceneData = mScene.getSceneData();
+
         if (!mGLInitialized) {
             initGL();
+        }
+
+        syncParticleBuffers(sceneData);
+        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+
+        drawBackground();
+        drawSpaceClouds(sceneData);
+        drawBgStars(sceneData);
+        drawStaticStars(sceneData);
+    }
+
+    private void syncParticleBuffers(Galaxy4Scene.SceneData sceneData) {
+        boolean rebuildBuffers = mScene.consumeParticleBufferRebuildRequested()
+                || mSpaceCloudBuffer == null
+                || mBgStarBuffer == null
+                || mStaticStarBuffer == null
+                || mSpaceCloudBuffer.capacity() != sceneData.getSpaceClouds().length
+                || mBgStarBuffer.capacity() != sceneData.getBgStars().length
+                || mStaticStarBuffer.capacity() != sceneData.getStaticStars().length;
+
+        if (rebuildBuffers) {
+            mSpaceCloudBuffer = createFloatBuffer(sceneData.getSpaceClouds());
+            mBgStarBuffer = createFloatBuffer(sceneData.getBgStars());
+            mStaticStarBuffer = createFloatBuffer(sceneData.getStaticStars());
             return;
         }
-        
-        // 清屏（颜色缓冲区）
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
-        
-        // 转换时间戳为秒（方便动画计算）
-        float time = timeMs / 1000.0f;
-        
-        // 1. 绘制背景纹理
-        drawBackground();
-        
-        // 2. 更新星云角度（旋转动画）并绘制
-        for (int i = 0; i < mSpaceCloudCount; i++) {
-            mSpaceClouds[i * 3] -= 0.065f;  // 星云旋转速度（负值为顺时针）
+
+        if (mScene.consumeDynamicParticlesDirty()) {
+            mSpaceCloudBuffer.position(0);
+            mSpaceCloudBuffer.put(sceneData.getSpaceClouds());
+            mSpaceCloudBuffer.position(0);
+
+            mBgStarBuffer.position(0);
+            mBgStarBuffer.put(sceneData.getBgStars());
+            mBgStarBuffer.position(0);
         }
-        mSpaceCloudBuffer.position(0);
-        mSpaceCloudBuffer.put(mSpaceClouds);
-        mSpaceCloudBuffer.position(0);
-        drawSpaceClouds();
-        
-        // 3. 更新背景星星角度（慢速旋转）并绘制
-        for (int i = 0; i < mBgStarCount; i++) {
-            mBgStars[i * 3] -= 0.007f;  // 背景星星旋转速度（比星云慢）
-        }
-        mBgStarBuffer.position(0);
-        mBgStarBuffer.put(mBgStars);
-        mBgStarBuffer.position(0);
-        drawBgStars();
-        
-        // 4. 绘制静态星星（带脉冲动画）
-        drawStaticStars(time);
     }
     
     /**
@@ -676,7 +391,7 @@ public class Galaxy4GL extends GLESScene {
     /**
      * 绘制星云粒子（点精灵方式）
      */
-    private void drawSpaceClouds() {
+    private void drawSpaceClouds(Galaxy4Scene.SceneData sceneData) {
         // 使用星云着色器程序
         GLES20.glUseProgram(mCloudProgram);
         
@@ -686,7 +401,7 @@ public class Galaxy4GL extends GLESScene {
         int samplerHandle = GLES20.glGetUniformLocation(mCloudProgram, "uTexture");// 纹理采样器
         
         // 设置MVP矩阵
-        GLES20.glUniformMatrix4fv(mvpHandle, 1, false, mMVPMatrix, 0);
+        GLES20.glUniformMatrix4fv(mvpHandle, 1, false, sceneData.getMvpMatrix(), 0);
         
         // 启用位置属性数组
         GLES20.glEnableVertexAttribArray(posHandle);
@@ -701,7 +416,7 @@ public class Galaxy4GL extends GLESScene {
         GLES20.glUniform1i(samplerHandle, 0);
         
         // 绘制所有星云粒子（点精灵方式）
-        GLES20.glDrawArrays(GLES20.GL_POINTS, 0, mSpaceCloudCount);
+        GLES20.glDrawArrays(GLES20.GL_POINTS, 0, sceneData.getSpaceCloudCount());
         
         // 禁用属性数组
         GLES20.glDisableVertexAttribArray(posHandle);
@@ -710,7 +425,7 @@ public class Galaxy4GL extends GLESScene {
     /**
      * 绘制背景星星粒子（点精灵方式）
      */
-    private void drawBgStars() {
+    private void drawBgStars(Galaxy4Scene.SceneData sceneData) {
         // 使用背景星星着色器程序
         GLES20.glUseProgram(mBgStarProgram);
         
@@ -719,7 +434,7 @@ public class Galaxy4GL extends GLESScene {
         int mvpHandle = GLES20.glGetUniformLocation(mBgStarProgram, "uMVPMatrix");// MVP矩阵统一变量
         
         // 设置MVP矩阵
-        GLES20.glUniformMatrix4fv(mvpHandle, 1, false, mMVPMatrix, 0);
+        GLES20.glUniformMatrix4fv(mvpHandle, 1, false, sceneData.getMvpMatrix(), 0);
         
         // 启用位置属性数组
         GLES20.glEnableVertexAttribArray(posHandle);
@@ -729,7 +444,7 @@ public class Galaxy4GL extends GLESScene {
         GLES20.glVertexAttribPointer(posHandle, 3, GLES20.GL_FLOAT, false, 0, mBgStarBuffer);
         
         // 绘制所有背景星星粒子（点精灵方式）
-        GLES20.glDrawArrays(GLES20.GL_POINTS, 0, mBgStarCount);
+        GLES20.glDrawArrays(GLES20.GL_POINTS, 0, sceneData.getBgStarCount());
         
         // 禁用属性数组
         GLES20.glDisableVertexAttribArray(posHandle);
@@ -739,7 +454,7 @@ public class Galaxy4GL extends GLESScene {
      * 绘制静态星星（带双纹理混合的脉冲动画）
      * @param time 时间（秒），用于控制混合动画
      */
-    private void drawStaticStars(float time) {
+    private void drawStaticStars(Galaxy4Scene.SceneData sceneData) {
         // 使用静态星星着色器程序
         GLES20.glUseProgram(mStaticStarProgram);
         
@@ -753,10 +468,9 @@ public class Galaxy4GL extends GLESScene {
         
         // 静态星星使用单位矩阵（屏幕空间绘制）
         float[] identity = new float[16];
-        Matrix.setIdentityM(identity, 0);
+        android.opengl.Matrix.setIdentityM(identity, 0);
         GLES20.glUniformMatrix4fv(mvpHandle, 1, false, identity, 0);
-        // 设置时间变量（控制脉冲动画）
-        GLES20.glUniform1f(timeHandle, time);
+        GLES20.glUniform1f(timeHandle, sceneData.getTimeSeconds());
         
         // 启用属性数组
         GLES20.glEnableVertexAttribArray(posHandle);
@@ -780,7 +494,7 @@ public class Galaxy4GL extends GLESScene {
         GLES20.glUniform1i(tex2Handle, 1);
         
         // 绘制所有静态星星粒子
-        GLES20.glDrawArrays(GLES20.GL_POINTS, 0, STATIC_STAR_COUNT);
+        GLES20.glDrawArrays(GLES20.GL_POINTS, 0, sceneData.getStaticStarCount());
         
         // 禁用属性数组
         GLES20.glDisableVertexAttribArray(posHandle);

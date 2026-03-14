@@ -3,6 +3,8 @@ plugins {
 }
 
 import java.math.RoundingMode
+import java.util.TimeZone
+import org.apache.tools.ant.taskdefs.condition.Os
 import java.util.Properties
 
 def versionPropsFile = rootProject.file('gradle.properties')
@@ -13,6 +15,13 @@ if (versionPropsFile.exists()) {
 
 def appVersionCode = (versionProps.getProperty('APP_VERSION_CODE', '1') as String).toInteger()
 def appVersionName = versionProps.getProperty('APP_VERSION_NAME', '1.0') as String
+
+def requestedTasks = gradle.startParameter.taskNames.collect { it.toLowerCase() }
+def isDebugVersionBuildRequested = requestedTasks.any { it.contains('debug') } && !requestedTasks.any { it.contains('release') }
+def debugTimestamp = new Date().format('yyyy.MM.dd.HH.mm', TimeZone.getTimeZone('Asia/Shanghai'))
+def resolvedAppVersionName = isDebugVersionBuildRequested
+    ? "DeBug${debugTimestamp}"
+    : appVersionName
 
 def bumpAppVersion = {
     Properties props = new Properties()
@@ -41,8 +50,17 @@ android {
 	compileSdk 33
 	namespace "com.reandroid.wallpaper"
 
+    ndkVersion "25.2.9519653"
+
     buildFeatures {
         buildConfig true
+    }
+
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['src/main/jniLibs']
+            shaders.srcDirs = ['src/main/shaders']
+        }
     }
 
     defaultConfig {
@@ -50,7 +68,11 @@ android {
         minSdk 19
         targetSdk 33
         versionCode appVersionCode
-        versionName appVersionName
+        versionName resolvedAppVersionName
+
+        ndk {
+            abiFilters 'arm64-v8a', 'armeabi-v7a'
+        }
     }
 
     compileOptions {
@@ -80,6 +102,32 @@ android {
             // 使用与 release 相同的 signingConfig（可改为单独的 debug keystore）
             signingConfig signingConfigs.release
         }
+    }
+}
+
+def ndkBuildExecutable = new File(android.ndkDirectory, Os.isFamily(Os.FAMILY_WINDOWS) ? 'ndk-build.cmd' : 'ndk-build')
+
+tasks.register('buildVulkanNative', Exec) {
+    workingDir file('src/main/jni')
+    commandLine ndkBuildExecutable.absolutePath,
+            'NDK_PROJECT_PATH=null',
+            'APP_BUILD_SCRIPT=Android.mk',
+            'NDK_APPLICATION_MK=Application.mk',
+            'NDK_OUT=../../../build/galaxyvk/obj',
+            'NDK_LIBS_OUT=../jniLibs',
+            'APP_ABI=arm64-v8a,armeabi-v7a',
+            'APP_PLATFORM=android-24'
+}
+
+tasks.named('preBuild').configure {
+    dependsOn(tasks.named('buildVulkanNative'))
+}
+
+tasks.named('clean').configure {
+    doLast {
+        delete file('src/main/jniLibs')
+        delete file('src/main/jni/obj')
+        delete file('src/main/jni/libs')
     }
 }
 

@@ -250,6 +250,8 @@
     <string name="pref_galaxy_particle_alpha_summary">调整粒子透明度（两种计算模式均生效）</string>
     <string name="pref_galaxy_precise_calc">精确螺旋计算</string>
     <string name="pref_galaxy_precise_calc_summary">启用后使用基于 M31 参数的对数螺旋初始化，关闭则使用当前随机角度逻辑</string>
+    <string name="pref_galaxy_use_light2">使用 light2 光晕贴图</string>
+    <string name="pref_galaxy_use_light2_summary">开启使用 light2，关闭使用 light1</string>
     <string name="pref_galaxy_arm_count">旋臂数量</string>
     <string name="pref_galaxy_arm_count_summary">对数旋臂数量（仅精确计算模式生效）</string>
     <string name="pref_galaxy_arm_offset">旋臂偏移（弧度×1000）</string>

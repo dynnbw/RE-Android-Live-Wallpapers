@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wallpaper xmlns:android="http://schemas.android.com/apk/res/android"
+    android:author="@string/wallpaper_fall_author"
+    android:description="@string/wallpaper_fall_vk_desc"
+    android:thumbnail="@drawable/water_thumb"
+    android:showMetadataInPreview="true"
+    android:settingsActivity="com.reandroid.wallpaper.settings.FallSettingsActivity" />
