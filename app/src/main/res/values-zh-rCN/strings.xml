@@ -55,10 +55,12 @@
 
     <!-- Wallpaper showing grass and the sky -->
     <string name="wallpaper_grass">天空草地</string>
+    <string name="wallpaper_grass_vk">天空草地 Vulkan</string>
     <string name="wallpaper_grass_author">Google</string>
     <string name="wallpaper_grass_desc">
         一片片草叶在白天或夜晚的天空下轻轻摇曳。
     </string>
+    <string name="wallpaper_grass_vk_desc">天空草地壁纸的 Vulkan 渲染入口。</string>
 
     <!-- Wallpaper showing a galaxy -->
     <string name="wallpaper_galaxy">星系</string>

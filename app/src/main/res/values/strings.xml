@@ -56,10 +56,12 @@
 
     <!-- Wallpaper showing grass and the sky -->
     <string name="wallpaper_grass">Grass</string>
+    <string name="wallpaper_grass_vk">Grass Vulkan</string>
     <string name="wallpaper_grass_author">Google</string>
     <string name="wallpaper_grass_desc">
         Blades of grass wave gently in front of a day or night sky.
     </string>
+    <string name="wallpaper_grass_vk_desc">Grass wallpaper entry reserved for the Vulkan renderer.</string>
 
     <!-- Wallpaper showing a galaxy -->
     <string name="wallpaper_galaxy">Galaxy</string>

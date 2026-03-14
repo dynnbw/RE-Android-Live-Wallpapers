@@ -81,6 +81,18 @@
 
         <activity
             android:exported="true"
+            android:label="@string/wallpaper_grass_vk"
+            android:name="com.reandroid.wallpaper.grass.GrassVK"
+            android:theme="@android:style/Theme.NoTitleBar"
+            android:enabled="@bool/config_enable_grass_wallpaper">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.TEST" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:exported="true"
             android:label="@string/wallpaper_galaxy"
             android:name="com.reandroid.wallpaper.galaxy.Galaxy"
             android:theme="@android:style/Theme.NoTitleBar"
@@ -194,6 +206,18 @@
                 <action android:name="android.service.wallpaper.WallpaperService" />
             </intent-filter>
             <meta-data android:name="android.service.wallpaper" android:resource="@xml/grass" />
+        </service>
+
+        <service
+            android:exported="true"
+            android:label="@string/wallpaper_grass_vk"
+            android:name="com.reandroid.wallpaper.grass.GrassVKWallpaper"
+            android:permission="android.permission.BIND_WALLPAPER"
+            android:enabled="@bool/config_enable_grass_wallpaper">
+            <intent-filter>
+                <action android:name="android.service.wallpaper.WallpaperService" />
+            </intent-filter>
+            <meta-data android:name="android.service.wallpaper" android:resource="@xml/grass_vk" />
         </service>
 
         <service

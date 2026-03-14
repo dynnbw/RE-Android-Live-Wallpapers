@@ -13,3 +13,10 @@ LOCAL_SRC_FILES := fallvk_jni.cpp
 LOCAL_CPPFLAGS := -std=c++17
 LOCAL_LDLIBS := -landroid -llog -lvulkan
 include $(BUILD_SHARED_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := grassvulkan
+LOCAL_SRC_FILES := grassvk_jni.cpp
+LOCAL_CPPFLAGS := -std=c++17
+LOCAL_LDLIBS := -landroid -llog -lvulkan
+include $(BUILD_SHARED_LIBRARY)

@@ -1238,6 +1238,195 @@ class GrassScene {
         return t * t * (3.0f - 2.0f * t);
     }
 
+    float[] computeVKSkyParams(SceneData sd) {
+        float[] out = new float[5];
+        out[4] = sd.nightInvert ? 1.0f : 0.0f;
+
+        if (sd.useAccurateSun) {
+            out[0] = sd.accurateWeights[0];
+            out[1] = sd.accurateWeights[1];
+            out[2] = sd.accurateWeights[2];
+            out[3] = sd.accurateWeights[3];
+            return out;
+        }
+
+        float now = sd.timeFraction;
+        float dawn = sd.dawn;
+        float morning = sd.morning;
+        float afternoon = sd.afternoon;
+        float dusk = sd.dusk;
+
+        if (now >= 0.0f && now < dawn) {
+            out[0] = 1.0f;
+            return out;
+        }
+        if (now >= dawn && now <= morning) {
+            float half = dawn + (morning - dawn) * 0.5f;
+            if (now <= half) {
+                float t = normf(dawn, half, now);
+                out[0] = 1.0f - t;
+                out[1] = t;
+            } else {
+                float t = normf(half, morning, now);
+                out[1] = 1.0f - t;
+                out[3] = t;
+            }
+            return out;
+        }
+        if (now > morning && now < afternoon) {
+            out[3] = 1.0f;
+            return out;
+        }
+        if (now >= afternoon && now <= dusk) {
+            float half = afternoon + (dusk - afternoon) * 0.5f;
+            if (now <= half) {
+                float t = normf(afternoon, half, now);
+                out[3] = 1.0f - t;
+                out[2] = t;
+            } else {
+                float t = normf(half, dusk, now);
+                out[2] = 1.0f - t;
+                out[0] = t;
+            }
+            return out;
+        }
+
+        out[0] = 1.0f;
+        return out;
+    }
+
+    float[] buildGrassVertexArrayForVK(SceneData sd) {
+        if (!sd.grassEnabled || sd.blades == null || sd.blades.length == 0) {
+            return new float[0];
+        }
+
+        float eclipseImpact = sd.useAccurateSun ? clamp(sd.solarEclipseWeight, 0.0f, 1.0f) : 0.0f;
+        float grassBrightness;
+        float nightDesat;
+        if (sd.useAccurateSun) {
+            grassBrightness = sd.newB;
+            nightDesat = 0.0f;
+            if (sd.nightDesaturateGrass) {
+                grassBrightness = mix(1.0f, 0.72f, eclipseImpact);
+                float baseNightDesat = sd.accurateWeights[0];
+                nightDesat = clamp(baseNightDesat + eclipseImpact * 0.85f, 0.0f, 1.0f);
+            } else {
+                grassBrightness *= mix(1.0f, 0.62f, eclipseImpact);
+            }
+        } else {
+            grassBrightness = sd.newB;
+            nightDesat = 0.0f;
+            if (sd.nightDesaturateGrass) {
+                grassBrightness = 1.0f;
+                nightDesat = clamp(1.0f - sd.newB, 0.0f, 1.0f);
+            }
+        }
+
+        final int stride = 8;
+        float[] out = new float[Math.max(0, mVertexCount * 2) * stride];
+        int cursor = 0;
+        for (Blade blade : sd.blades) {
+            cursor = appendBladeVerticesForVK(blade, sd, grassBrightness, sd.xDraw, nightDesat, out, cursor);
+            if (cursor > out.length) {
+                break;
+            }
+        }
+
+        if (cursor == out.length) {
+            return out;
+        }
+        float[] trimmed = new float[Math.max(cursor, 0)];
+        if (cursor > 0) {
+            System.arraycopy(out, 0, trimmed, 0, cursor);
+        }
+        return trimmed;
+    }
+
+    short[] buildGrassIndexArrayForVK() {
+        short[] idx = new short[Math.max(0, mIndexCount)];
+        int idxIdx = 0;
+        int vtxIdx = 0;
+        for (int size : mBladeSizes) {
+            for (int ct = 0; ct < size; ct++) {
+                idx[idxIdx] = (short) (vtxIdx);
+                idx[idxIdx + 1] = (short) (vtxIdx + 1);
+                idx[idxIdx + 2] = (short) (vtxIdx + 2);
+                idx[idxIdx + 3] = (short) (vtxIdx + 1);
+                idx[idxIdx + 4] = (short) (vtxIdx + 3);
+                idx[idxIdx + 5] = (short) (vtxIdx + 2);
+                idxIdx += 6;
+                vtxIdx += 2;
+            }
+            vtxIdx += 2;
+        }
+        return idx;
+    }
+
+    private int appendBladeVerticesForVK(Blade blade, SceneData sd,
+            float brightness, float xOffset, float nightDesat, float[] out, int cursor) {
+        float scale = blade.scale * sd.grassWidthScale;
+        float angle = blade.angle;
+        float xpos = blade.xPos + xOffset;
+        int size = blade.size;
+
+        float h = blade.h;
+        float s = blade.s;
+        float v = mix(0.0f, blade.b, brightness);
+        if (sd.useGrassTint) {
+            h = sd.grassTintH;
+            s = sd.grassTintS;
+            v = clamp(v * sd.grassTintV, 0.0f, 1.0f);
+        }
+        if (sd.nightDesaturateGrass && nightDesat > 0.0f) {
+            s = mix(s, 0.0f, clamp(nightDesat, 0.0f, 1.0f));
+        }
+
+        int color = hsbToRgb(h, s, v);
+        float r = Color.red(color) / 255.0f;
+        float g = Color.green(color) / 255.0f;
+        float b = Color.blue(color) / 255.0f;
+
+        float currentAngle = (float) (Math.PI * 0.5);
+        float bottomX = xpos;
+        float bottomY = blade.yPos;
+        float d = angle * blade.hardness * sd.grassHardnessScale;
+
+        float si = size * scale;
+        cursor = putVertexToArray(out, cursor, bottomX - si, bottomY + HALF_TESSELATION, r, g, b, 1.0f, 0.0f, 0.0f);
+        cursor = putVertexToArray(out, cursor, bottomX + si, bottomY + HALF_TESSELATION, r, g, b, 1.0f, 1.0f, 0.0f);
+
+        for (; size > 0; size--) {
+            float lengthX = blade.lengthX * sd.grassHeightScale;
+            float lengthY = blade.lengthY * sd.grassHeightScale;
+            float topX = bottomX - (float) Math.cos(currentAngle) * lengthX;
+            float topY = bottomY - (float) Math.sin(currentAngle) * lengthY;
+            si = size * scale;
+            float spi = si - scale;
+            cursor = putVertexToArray(out, cursor, topX - spi, topY, r, g, b, 1.0f, 0.0f, 0.0f);
+            cursor = putVertexToArray(out, cursor, topX + spi, topY, r, g, b, 1.0f, 1.0f, 0.0f);
+            bottomX = topX;
+            bottomY = topY;
+            currentAngle += d;
+        }
+        return cursor;
+    }
+
+    private int putVertexToArray(float[] out, int cursor,
+            float x, float y, float r, float g, float b, float a, float s, float t) {
+        if (cursor + 8 > out.length) {
+            return out.length + 1;
+        }
+        out[cursor++] = x;
+        out[cursor++] = y;
+        out[cursor++] = r;
+        out[cursor++] = g;
+        out[cursor++] = b;
+        out[cursor++] = a;
+        out[cursor++] = s;
+        out[cursor++] = t;
+        return cursor;
+    }
+
     int hsbToRgb(float h, float s, float b) {
         float red = 0.0f, green = 0.0f, blue = 0.0f;
         float hf = (h - (int) h) * 6.0f;
