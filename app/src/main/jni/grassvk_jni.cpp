@@ -29,7 +29,9 @@ namespace {
 // ---- constants ----
 constexpr uint32_t kMaxGrassVertices = 50000;
 constexpr uint32_t kMaxGrassIndices  = 150000;
-constexpr uint32_t kSkyTextureCount  = 4; // night, sunrise, sunset, sky
+constexpr uint32_t kSkyTextureCount  = 5; // night, sunrise, sunset, sky, solar eclipse
+constexpr uint32_t kSpriteTextureCount = 4; // sun, dandelion, firefly, moon
+constexpr uint32_t kMaxSpriteVertices = 8192;
 
 // ---- vertex layout ----
 struct GrassVertex {
@@ -39,24 +41,41 @@ struct GrassVertex {
 };
 static_assert(sizeof(GrassVertex) == 32, "GrassVertex must be 32 bytes");
 
+struct SpriteVertex {
+    float x, y;
+    float u, v;
+    float a;
+};
+static_assert(sizeof(SpriteVertex) == 20, "SpriteVertex must be 20 bytes");
+
 // ---- push constants ----
 struct SkyPushConstants {
     float weightNight;
     float weightSunrise;
     float weightSunset;
     float weightSky;
+    float weightSolarEclipse;
     float nightInvert;
-    float pad[3];
+    float pad[2];
 };
 
 struct GrassPushConstants {
     float mvp[16];
 };
 
+struct MoonPushConstants {
+    float mvp[16];
+    float p0[4];
+    float p1[4];
+    float p2[4];
+};
+
 // ---- pipeline types ----
 enum PipelineType {
     PIPELINE_SKY   = 0,
     PIPELINE_GRASS = 1,
+    PIPELINE_SPRITE = 2,
+    PIPELINE_MOON = 3,
 };
 
 // ---- helper: one GPU texture ----
@@ -119,7 +138,12 @@ public:
             jfloatArray skyWeightsArr,
             jfloatArray grassMvpArr,
             jfloatArray grassVertsArr, jint grassVertCount,
-            jshortArray grassIdxArr,   jint grassIdxCount) {
+            jshortArray grassIdxArr,   jint grassIdxCount,
+            jfloatArray sunVertsArr, jint sunVertCount,
+            jfloatArray dandelionVertsArr, jint dandelionVertCount,
+            jfloatArray fireflyVertsArr, jint fireflyVertCount,
+            jfloatArray moonVertsArr, jint moonVertCount,
+            jfloatArray moonParamsArr) {
         std::lock_guard<std::mutex> lock(mutex_);
 
         if (!isReadyLocked()) {
@@ -135,6 +159,24 @@ public:
         uploadGrassGeometryLocked(env, grassVertsArr, vertexCount,
                                        grassIdxArr,   indexCount);
 
+        const uint32_t sunCount = static_cast<uint32_t>(
+            std::min<int>(sunVertCount, static_cast<int>(kMaxSpriteVertices)));
+        const uint32_t dandelionCount = static_cast<uint32_t>(
+            std::min<int>(dandelionVertCount, static_cast<int>(kMaxSpriteVertices)));
+        const uint32_t fireflyCount = static_cast<uint32_t>(
+            std::min<int>(fireflyVertCount, static_cast<int>(kMaxSpriteVertices)));
+        const uint32_t moonCount = static_cast<uint32_t>(
+            std::min<int>(moonVertCount, static_cast<int>(kMaxSpriteVertices)));
+
+        uploadSpriteGeometryLocked(env, sunVertsArr, sunCount,
+            sunVertexMapped_, sunVertexBuffer_);
+        uploadSpriteGeometryLocked(env, dandelionVertsArr, dandelionCount,
+            dandelionVertexMapped_, dandelionVertexBuffer_);
+        uploadSpriteGeometryLocked(env, fireflyVertsArr, fireflyCount,
+            fireflyVertexMapped_, fireflyVertexBuffer_);
+        uploadSpriteGeometryLocked(env, moonVertsArr, moonCount,
+            moonVertexMapped_, moonVertexBuffer_);
+
         // --- build push constants ---
         SkyPushConstants skyPC{};
         {
@@ -145,6 +187,7 @@ public:
                 skyPC.weightSunset  = sw[2];
                 skyPC.weightSky     = sw[3];
                 skyPC.nightInvert   = sw[4];
+                skyPC.weightSolarEclipse = sw[5];
                 env->ReleaseFloatArrayElements(skyWeightsArr, sw, JNI_ABORT);
             }
         }
@@ -155,6 +198,27 @@ public:
             if (mp) {
                 std::memcpy(grassPC.mvp, mp, 16 * sizeof(float));
                 env->ReleaseFloatArrayElements(grassMvpArr, mp, JNI_ABORT);
+            }
+        }
+
+        MoonPushConstants moonPC{};
+        std::memcpy(moonPC.mvp, grassPC.mvp, sizeof(grassPC.mvp));
+        {
+            jfloat* mp = env->GetFloatArrayElements(moonParamsArr, nullptr);
+            if (mp) {
+                moonPC.p0[0] = mp[0];
+                moonPC.p0[1] = mp[1];
+                moonPC.p0[2] = mp[2];
+                moonPC.p0[3] = mp[3];
+                moonPC.p1[0] = mp[4];
+                moonPC.p1[1] = mp[5];
+                moonPC.p1[2] = mp[6];
+                moonPC.p1[3] = mp[7];
+                moonPC.p2[0] = mp[8];
+                moonPC.p2[1] = mp[9];
+                moonPC.p2[2] = mp[10];
+                moonPC.p2[3] = mp[11];
+                env->ReleaseFloatArrayElements(moonParamsArr, mp, JNI_ABORT);
             }
         }
 
@@ -170,7 +234,10 @@ public:
 
         VkCommandBuffer cb = commandBuffers_[imageIndex];
         vkResetCommandBuffer(cb, 0);
-        if (!recordCommandBufferLocked(cb, imageIndex, vertexCount, indexCount, skyPC, grassPC)) return;
+        if (!recordCommandBufferLocked(cb, imageIndex,
+            vertexCount, indexCount,
+            sunCount, dandelionCount, fireflyCount, moonCount,
+            skyPC, grassPC, moonPC)) return;
 
         VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
         VkSubmitInfo si{};
@@ -260,6 +327,36 @@ public:
 
         if (device_ != VK_NULL_HANDLE && commandPool_ != VK_NULL_HANDLE && graphicsQueue_ != VK_NULL_HANDLE) {
             ensureAATextureLocked();
+        }
+    }
+
+    // slot: 0=sun 1=dandelion 2=firefly 3=moon
+    void setSpriteTexture(JNIEnv* env, jint slot, jintArray argbPixels, jint width, jint height) {
+        if (slot < 0 || slot >= static_cast<jint>(kSpriteTextureCount)) return;
+        if (!argbPixels || width <= 0 || height <= 0) return;
+
+        jsize pixelCount = env->GetArrayLength(argbPixels);
+        if (static_cast<int64_t>(width) * height > pixelCount) return;
+
+        std::vector<uint8_t> rgba(static_cast<size_t>(width) * height * 4u);
+        jint* pixels = env->GetIntArrayElements(argbPixels, nullptr);
+        if (!pixels) return;
+        for (size_t i = 0; i < static_cast<size_t>(width) * height; ++i) {
+            uint32_t argb = static_cast<uint32_t>(pixels[i]);
+            rgba[i*4+0] = static_cast<uint8_t>((argb >> 16) & 0xFF);
+            rgba[i*4+1] = static_cast<uint8_t>((argb >>  8) & 0xFF);
+            rgba[i*4+2] = static_cast<uint8_t>( argb        & 0xFF);
+            rgba[i*4+3] = static_cast<uint8_t>((argb >> 24) & 0xFF);
+        }
+        env->ReleaseIntArrayElements(argbPixels, pixels, JNI_ABORT);
+
+        std::lock_guard<std::mutex> lock(mutex_);
+        pendingSpritePixels_[slot] = std::move(rgba);
+        pendingSpriteWidth_[slot]  = static_cast<uint32_t>(width);
+        pendingSpriteHeight_[slot] = static_cast<uint32_t>(height);
+
+        if (device_ != VK_NULL_HANDLE && commandPool_ != VK_NULL_HANDLE && graphicsQueue_ != VK_NULL_HANDLE) {
+            ensureSpriteTextureLocked(static_cast<uint32_t>(slot));
         }
     }
 
@@ -385,14 +482,21 @@ private:
         vkCreateFence(device_, &fi, nullptr, &inFlightFence_);
 
         if (!createGrassGeometryBuffersLocked()) return false;
+        if (!createSpriteGeometryBuffersLocked()) return false;
         if (!createSkyDescriptorResourcesLocked()) return false;
         if (!createGrassDescriptorResourcesLocked()) return false;
+        if (!createSpriteDescriptorResourcesLocked()) return false;
+        if (!createMoonDescriptorResourcesLocked()) return false;
 
         // Upload any pending textures
         for (uint32_t s = 0; s < kSkyTextureCount; ++s) {
             ensureSkyTextureLocked(s);
         }
         ensureAATextureLocked();
+        for (uint32_t s = 0; s < kSpriteTextureCount; ++s) {
+            ensureSpriteTextureLocked(s);
+        }
+        updateMoonDescriptorLocked();
         return true;
     }
 
@@ -409,6 +513,30 @@ private:
         if (!createMappedBufferLocked(sizeof(uint16_t) * kMaxGrassIndices,
                 VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
                 grassIndexBuffer_, grassIndexMemory_, grassIndexMapped_)) {
+            return false;
+        }
+        return true;
+    }
+
+    bool createSpriteGeometryBuffersLocked() {
+        if (!createMappedBufferLocked(sizeof(SpriteVertex) * kMaxSpriteVertices,
+                VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+                sunVertexBuffer_, sunVertexMemory_, sunVertexMapped_)) {
+            return false;
+        }
+        if (!createMappedBufferLocked(sizeof(SpriteVertex) * kMaxSpriteVertices,
+                VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+                dandelionVertexBuffer_, dandelionVertexMemory_, dandelionVertexMapped_)) {
+            return false;
+        }
+        if (!createMappedBufferLocked(sizeof(SpriteVertex) * kMaxSpriteVertices,
+                VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+                fireflyVertexBuffer_, fireflyVertexMemory_, fireflyVertexMapped_)) {
+            return false;
+        }
+        if (!createMappedBufferLocked(sizeof(SpriteVertex) * kMaxSpriteVertices,
+                VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+                moonVertexBuffer_, moonVertexMemory_, moonVertexMapped_)) {
             return false;
         }
         return true;
@@ -468,6 +596,20 @@ private:
                 env->ReleaseShortArrayElements(idxArr, idx, JNI_ABORT);
             }
         }
+    }
+
+    void uploadSpriteGeometryLocked(JNIEnv* env,
+            jfloatArray vertsArr, uint32_t vertexCount,
+            void* mapped, VkBuffer /*buffer*/) {
+        if (!mapped || !vertsArr || vertexCount == 0) {
+            return;
+        }
+        jfloat* verts = env->GetFloatArrayElements(vertsArr, nullptr);
+        if (!verts) {
+            return;
+        }
+        std::memcpy(mapped, verts, vertexCount * sizeof(SpriteVertex));
+        env->ReleaseFloatArrayElements(vertsArr, verts, JNI_ABORT);
     }
 
     // ===== swapchain =====
@@ -590,8 +732,12 @@ private:
 
         if (skyPipeline_   != VK_NULL_HANDLE) { vkDestroyPipeline(device_, skyPipeline_,   nullptr); skyPipeline_   = VK_NULL_HANDLE; }
         if (grassPipeline_ != VK_NULL_HANDLE) { vkDestroyPipeline(device_, grassPipeline_, nullptr); grassPipeline_ = VK_NULL_HANDLE; }
+        if (spritePipeline_ != VK_NULL_HANDLE) { vkDestroyPipeline(device_, spritePipeline_, nullptr); spritePipeline_ = VK_NULL_HANDLE; }
+        if (moonPipeline_ != VK_NULL_HANDLE) { vkDestroyPipeline(device_, moonPipeline_, nullptr); moonPipeline_ = VK_NULL_HANDLE; }
         if (skyPipelineLayout_   != VK_NULL_HANDLE) { vkDestroyPipelineLayout(device_, skyPipelineLayout_,   nullptr); skyPipelineLayout_   = VK_NULL_HANDLE; }
         if (grassPipelineLayout_ != VK_NULL_HANDLE) { vkDestroyPipelineLayout(device_, grassPipelineLayout_, nullptr); grassPipelineLayout_ = VK_NULL_HANDLE; }
+        if (spritePipelineLayout_ != VK_NULL_HANDLE) { vkDestroyPipelineLayout(device_, spritePipelineLayout_, nullptr); spritePipelineLayout_ = VK_NULL_HANDLE; }
+        if (moonPipelineLayout_ != VK_NULL_HANDLE) { vkDestroyPipelineLayout(device_, moonPipelineLayout_, nullptr); moonPipelineLayout_ = VK_NULL_HANDLE; }
         if (renderPass_ != VK_NULL_HANDLE) { vkDestroyRenderPass(device_, renderPass_, nullptr); renderPass_ = VK_NULL_HANDLE; }
 
         for (VkImageView iv : swapchainImageViews_) vkDestroyImageView(device_, iv, nullptr);
@@ -649,10 +795,20 @@ private:
         if (grassDescriptorSet_ == VK_NULL_HANDLE) {
             if (!createGrassDescriptorResourcesLocked()) return false;
         }
+        if (spriteDescriptorSetLayout_ == VK_NULL_HANDLE || spritePipelineLayout_ == VK_NULL_HANDLE) {
+            if (!createSpriteDescriptorResourcesLocked()) return false;
+        }
+        if (moonDescriptorSetLayout_ == VK_NULL_HANDLE || moonPipelineLayout_ == VK_NULL_HANDLE) {
+            if (!createMoonDescriptorResourcesLocked()) return false;
+        }
         for (uint32_t s = 0; s < kSkyTextureCount; ++s) {
             if (!skyTextures_[s].isValid()) ensureSkyTextureLocked(s);
         }
         if (!aaTexture_.isValid()) ensureAATextureLocked();
+        for (uint32_t s = 0; s < kSpriteTextureCount; ++s) {
+            if (!spriteTextures_[s].isValid()) ensureSpriteTextureLocked(s);
+        }
+        updateMoonDescriptorLocked();
         return true;
     }
 
@@ -708,38 +864,61 @@ private:
         VkShaderModule skyFrag  = createShaderModuleLocked({"shaders/grassvk_sky.frag.spv",  "grassvk_sky.frag.spv"});
         VkShaderModule gVert    = createShaderModuleLocked({"shaders/grassvk_grass.vert.spv", "grassvk_grass.vert.spv"});
         VkShaderModule gFrag    = createShaderModuleLocked({"shaders/grassvk_grass.frag.spv", "grassvk_grass.frag.spv"});
+        VkShaderModule sVert    = createShaderModuleLocked({"shaders/grassvk_sprite.vert.spv", "grassvk_sprite.vert.spv"});
+        VkShaderModule sFrag    = createShaderModuleLocked({"shaders/grassvk_sprite.frag.spv", "grassvk_sprite.frag.spv"});
+        VkShaderModule mVert    = createShaderModuleLocked({"shaders/grassvk_moon.vert.spv", "grassvk_moon.vert.spv"});
+        VkShaderModule mFrag    = createShaderModuleLocked({"shaders/grassvk_moon.frag.spv", "grassvk_moon.frag.spv"});
 
         auto cleanup = [&](){
             if (skyVert  != VK_NULL_HANDLE) vkDestroyShaderModule(device_, skyVert,  nullptr);
             if (skyFrag  != VK_NULL_HANDLE) vkDestroyShaderModule(device_, skyFrag,  nullptr);
             if (gVert    != VK_NULL_HANDLE) vkDestroyShaderModule(device_, gVert,    nullptr);
             if (gFrag    != VK_NULL_HANDLE) vkDestroyShaderModule(device_, gFrag,    nullptr);
+            if (sVert    != VK_NULL_HANDLE) vkDestroyShaderModule(device_, sVert,    nullptr);
+            if (sFrag    != VK_NULL_HANDLE) vkDestroyShaderModule(device_, sFrag,    nullptr);
+            if (mVert    != VK_NULL_HANDLE) vkDestroyShaderModule(device_, mVert,    nullptr);
+            if (mFrag    != VK_NULL_HANDLE) vkDestroyShaderModule(device_, mFrag,    nullptr);
         };
 
-        if (!skyVert || !skyFrag || !gVert || !gFrag) { cleanup(); return false; }
+        if (!skyVert || !skyFrag || !gVert || !gFrag || !sVert || !sFrag || !mVert || !mFrag) { cleanup(); return false; }
 
         skyPipelineLayout_   = createPipelineLayoutLocked(PIPELINE_SKY);
         grassPipelineLayout_ = createPipelineLayoutLocked(PIPELINE_GRASS);
-        if (!skyPipelineLayout_ || !grassPipelineLayout_) { cleanup(); return false; }
+        spritePipelineLayout_ = createPipelineLayoutLocked(PIPELINE_SPRITE);
+        moonPipelineLayout_ = createPipelineLayoutLocked(PIPELINE_MOON);
+        if (!skyPipelineLayout_ || !grassPipelineLayout_ || !spritePipelineLayout_ || !moonPipelineLayout_) { cleanup(); return false; }
 
         skyPipeline_   = createGraphicsPipelineLocked(skyVert,  skyFrag,  skyPipelineLayout_,   PIPELINE_SKY);
         grassPipeline_ = createGraphicsPipelineLocked(gVert,    gFrag,    grassPipelineLayout_,  PIPELINE_GRASS);
+        spritePipeline_ = createGraphicsPipelineLocked(sVert,    sFrag,    spritePipelineLayout_, PIPELINE_SPRITE);
+        moonPipeline_ = createGraphicsPipelineLocked(mVert,    mFrag,    moonPipelineLayout_, PIPELINE_MOON);
 
         cleanup();
-        return skyPipeline_ != VK_NULL_HANDLE && grassPipeline_ != VK_NULL_HANDLE;
+        return skyPipeline_ != VK_NULL_HANDLE && grassPipeline_ != VK_NULL_HANDLE
+            && spritePipeline_ != VK_NULL_HANDLE
+            && moonPipeline_ != VK_NULL_HANDLE;
     }
 
     VkPipelineLayout createPipelineLayoutLocked(PipelineType type) {
-        VkDescriptorSetLayout dsl = (type == PIPELINE_SKY)
-                ? skyDescriptorSetLayout_
-                : grassDescriptorSetLayout_;
+        VkDescriptorSetLayout dsl = grassDescriptorSetLayout_;
+        if (type == PIPELINE_SKY) {
+            dsl = skyDescriptorSetLayout_;
+        } else if (type == PIPELINE_SPRITE || type == PIPELINE_MOON) {
+            dsl = spriteDescriptorSetLayout_;
+        } else if (type == PIPELINE_MOON) {
+            dsl = moonDescriptorSetLayout_;
+        }
 
         VkPushConstantRange pcRange{};
         pcRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
         pcRange.offset     = 0;
-        pcRange.size       = (type == PIPELINE_SKY)
-                ? static_cast<uint32_t>(sizeof(SkyPushConstants))
-                : static_cast<uint32_t>(sizeof(GrassPushConstants));
+        if (type == PIPELINE_SKY) {
+            pcRange.size = static_cast<uint32_t>(sizeof(SkyPushConstants));
+        } else if (type == PIPELINE_MOON) {
+            pcRange.size = static_cast<uint32_t>(sizeof(MoonPushConstants));
+        } else {
+            pcRange.size = static_cast<uint32_t>(sizeof(GrassPushConstants));
+        }
 
         VkPipelineLayoutCreateInfo plci{};
         plci.sType                  = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -796,6 +975,30 @@ private:
             vis.pVertexBindingDescriptions      = &binding;
             vis.vertexAttributeDescriptionCount = 3;
             vis.pVertexAttributeDescriptions    = attrs;
+        } else if (type == PIPELINE_SPRITE) {
+            binding.binding = 0;
+            binding.stride = sizeof(SpriteVertex);
+            binding.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+            attrs[0].binding = 0;
+            attrs[0].location = 0;
+            attrs[0].format = VK_FORMAT_R32G32_SFLOAT;
+            attrs[0].offset = offsetof(SpriteVertex, x);
+
+            attrs[1].binding = 0;
+            attrs[1].location = 1;
+            attrs[1].format = VK_FORMAT_R32G32_SFLOAT;
+            attrs[1].offset = offsetof(SpriteVertex, u);
+
+            attrs[2].binding = 0;
+            attrs[2].location = 2;
+            attrs[2].format = VK_FORMAT_R32_SFLOAT;
+            attrs[2].offset = offsetof(SpriteVertex, a);
+
+            vis.vertexBindingDescriptionCount = 1;
+            vis.pVertexBindingDescriptions = &binding;
+            vis.vertexAttributeDescriptionCount = 3;
+            vis.pVertexAttributeDescriptions = attrs;
         }
 
         VkPipelineInputAssemblyStateCreateInfo ias{};
@@ -823,7 +1026,7 @@ private:
         VkPipelineColorBlendAttachmentState cba{};
         cba.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT
                            | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-        if (type == PIPELINE_GRASS) {
+        if (type == PIPELINE_GRASS || type == PIPELINE_SPRITE || type == PIPELINE_MOON) {
             cba.blendEnable         = VK_TRUE;
             cba.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
             cba.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
@@ -959,6 +1162,99 @@ private:
         return true;
     }
 
+    bool createSpriteDescriptorResourcesLocked() {
+        if (spriteDescriptorSetLayout_ != VK_NULL_HANDLE
+                && spriteDescriptorPool_ != VK_NULL_HANDLE
+                && spriteDescriptorSets_[0] != VK_NULL_HANDLE) return true;
+
+        VkDescriptorSetLayoutBinding binding{};
+        binding.binding = 0;
+        binding.descriptorCount = 1;
+        binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        binding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+        VkDescriptorSetLayoutCreateInfo lci{};
+        lci.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+        lci.bindingCount = 1;
+        lci.pBindings = &binding;
+        if (vkCreateDescriptorSetLayout(device_, &lci, nullptr, &spriteDescriptorSetLayout_) != VK_SUCCESS) {
+            LOGE("vkCreateDescriptorSetLayout(sprite) failed");
+            return false;
+        }
+
+        VkDescriptorPoolSize ps{};
+        ps.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        ps.descriptorCount = kSpriteTextureCount;
+
+        VkDescriptorPoolCreateInfo pci{};
+        pci.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+        pci.poolSizeCount = 1;
+        pci.pPoolSizes = &ps;
+        pci.maxSets = kSpriteTextureCount;
+        if (vkCreateDescriptorPool(device_, &pci, nullptr, &spriteDescriptorPool_) != VK_SUCCESS) {
+            LOGE("vkCreateDescriptorPool(sprite) failed");
+            return false;
+        }
+
+        std::vector<VkDescriptorSetLayout> layouts(kSpriteTextureCount, spriteDescriptorSetLayout_);
+        VkDescriptorSetAllocateInfo ai{};
+        ai.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+        ai.descriptorPool = spriteDescriptorPool_;
+        ai.descriptorSetCount = kSpriteTextureCount;
+        ai.pSetLayouts = layouts.data();
+        if (vkAllocateDescriptorSets(device_, &ai, spriteDescriptorSets_) != VK_SUCCESS) {
+            LOGE("vkAllocateDescriptorSets(sprite) failed");
+            return false;
+        }
+        return true;
+    }
+
+    bool createMoonDescriptorResourcesLocked() {
+        if (moonDescriptorSetLayout_ != VK_NULL_HANDLE
+                && moonDescriptorPool_ != VK_NULL_HANDLE
+                && moonDescriptorSet_ != VK_NULL_HANDLE) return true;
+
+        VkDescriptorSetLayoutBinding binding{};
+        binding.binding = 0;
+        binding.descriptorCount = 1;
+        binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        binding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+        VkDescriptorSetLayoutCreateInfo lci{};
+        lci.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+        lci.bindingCount = 1;
+        lci.pBindings = &binding;
+        if (vkCreateDescriptorSetLayout(device_, &lci, nullptr, &moonDescriptorSetLayout_) != VK_SUCCESS) {
+            LOGE("vkCreateDescriptorSetLayout(moon) failed");
+            return false;
+        }
+
+        VkDescriptorPoolSize ps{};
+        ps.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        ps.descriptorCount = 1;
+
+        VkDescriptorPoolCreateInfo pci{};
+        pci.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+        pci.poolSizeCount = 1;
+        pci.pPoolSizes = &ps;
+        pci.maxSets = 1;
+        if (vkCreateDescriptorPool(device_, &pci, nullptr, &moonDescriptorPool_) != VK_SUCCESS) {
+            LOGE("vkCreateDescriptorPool(moon) failed");
+            return false;
+        }
+
+        VkDescriptorSetAllocateInfo ai{};
+        ai.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+        ai.descriptorPool = moonDescriptorPool_;
+        ai.descriptorSetCount = 1;
+        ai.pSetLayouts = &moonDescriptorSetLayout_;
+        if (vkAllocateDescriptorSets(device_, &ai, &moonDescriptorSet_) != VK_SUCCESS) {
+            LOGE("vkAllocateDescriptorSets(moon) failed");
+            return false;
+        }
+        return true;
+    }
+
     // update sky descriptor set binding for a given slot
     void updateSkyDescriptorLocked(uint32_t slot) {
         if (skyDescriptorSet_ == VK_NULL_HANDLE) return;
@@ -995,6 +1291,49 @@ private:
         wd.descriptorCount = 1;
         wd.descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
         wd.pImageInfo      = &ii;
+        vkUpdateDescriptorSets(device_, 1, &wd, 0, nullptr);
+    }
+
+    void updateSpriteDescriptorLocked(uint32_t slot) {
+        if (slot >= kSpriteTextureCount) return;
+        if (spriteDescriptorSets_[slot] == VK_NULL_HANDLE) return;
+        if (!spriteTextures_[slot].isValid()) return;
+
+        VkDescriptorImageInfo ii{};
+        ii.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        ii.imageView = spriteTextures_[slot].view;
+        ii.sampler = spriteTextures_[slot].sampler;
+
+        VkWriteDescriptorSet wd{};
+        wd.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        wd.dstSet = spriteDescriptorSets_[slot];
+        wd.dstBinding = 0;
+        wd.descriptorCount = 1;
+        wd.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        wd.pImageInfo = &ii;
+        vkUpdateDescriptorSets(device_, 1, &wd, 0, nullptr);
+
+        if (slot == 3) {
+            updateMoonDescriptorLocked();
+        }
+    }
+
+    void updateMoonDescriptorLocked() {
+        if (moonDescriptorSet_ == VK_NULL_HANDLE) return;
+        if (!spriteTextures_[3].isValid()) return;
+
+        VkDescriptorImageInfo ii{};
+        ii.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        ii.imageView = spriteTextures_[3].view;
+        ii.sampler = spriteTextures_[3].sampler;
+
+        VkWriteDescriptorSet wd{};
+        wd.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        wd.dstSet = moonDescriptorSet_;
+        wd.dstBinding = 0;
+        wd.descriptorCount = 1;
+        wd.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        wd.pImageInfo = &ii;
         vkUpdateDescriptorSets(device_, 1, &wd, 0, nullptr);
     }
 
@@ -1041,6 +1380,30 @@ private:
                 VK_FILTER_NEAREST, VK_SAMPLER_ADDRESS_MODE_REPEAT,
                 aaTexture_)) {
             updateGrassDescriptorLocked();
+        }
+    }
+
+    void ensureSpriteTextureLocked(uint32_t slot) {
+        if (slot >= kSpriteTextureCount) return;
+        if (spriteTextures_[slot].isValid()) return;
+
+        if (!pendingSpritePixels_[slot].empty()
+                && pendingSpriteWidth_[slot] > 0
+                && pendingSpriteHeight_[slot] > 0) {
+            if (uploadTextureLocked(pendingSpritePixels_[slot].data(),
+                    pendingSpriteWidth_[slot], pendingSpriteHeight_[slot],
+                    VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+                    spriteTextures_[slot])) {
+                updateSpriteDescriptorLocked(slot);
+            }
+            return;
+        }
+
+        const uint8_t fallback[4] = {255, 255, 255, 255};
+        if (uploadTextureLocked(fallback, 1, 1,
+                VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+                spriteTextures_[slot])) {
+            updateSpriteDescriptorLocked(slot);
         }
     }
 
@@ -1182,7 +1545,9 @@ private:
 
     bool recordCommandBufferLocked(VkCommandBuffer cb, uint32_t imageIndex,
             uint32_t vertexCount, uint32_t indexCount,
-            const SkyPushConstants& skyPC, const GrassPushConstants& grassPC) {
+            uint32_t sunCount, uint32_t dandelionCount, uint32_t fireflyCount, uint32_t moonCount,
+            const SkyPushConstants& skyPC, const GrassPushConstants& grassPC,
+            const MoonPushConstants& moonPC) {
         VkCommandBufferBeginInfo bi{};
         bi.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
         if (vkBeginCommandBuffer(cb, &bi) != VK_SUCCESS) { LOGE("vkBeginCommandBuffer failed"); return false; }
@@ -1241,6 +1606,42 @@ private:
             vkCmdBindVertexBuffers(cb, 0, 1, &grassVertexBuffer_, offsets);
             vkCmdBindIndexBuffer(cb, grassIndexBuffer_, 0, VK_INDEX_TYPE_UINT16);
             vkCmdDrawIndexed(cb, indexCount, 1, 0, 0, 0);
+        }
+
+        // ----- sprite pass -----
+        if (spritePipeline_ != VK_NULL_HANDLE && spritePipelineLayout_ != VK_NULL_HANDLE) {
+            vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, spritePipeline_);
+            vkCmdPushConstants(cb, spritePipelineLayout_,
+                    VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                    0, sizeof(GrassPushConstants), &grassPC);
+
+            auto drawSpriteGroup = [&](uint32_t slot, VkBuffer vb, uint32_t count) {
+                if (count == 0 || vb == VK_NULL_HANDLE || slot >= kSpriteTextureCount) return;
+                if (spriteDescriptorSets_[slot] == VK_NULL_HANDLE) return;
+                vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                        spritePipelineLayout_, 0, 1, &spriteDescriptorSets_[slot], 0, nullptr);
+                VkDeviceSize offsets[] = {0};
+                vkCmdBindVertexBuffers(cb, 0, 1, &vb, offsets);
+                vkCmdDraw(cb, count, 1, 0, 0);
+            };
+
+            drawSpriteGroup(0, sunVertexBuffer_, sunCount);
+            drawSpriteGroup(1, dandelionVertexBuffer_, dandelionCount);
+            drawSpriteGroup(2, fireflyVertexBuffer_, fireflyCount);
+        }
+
+        if (moonPipeline_ != VK_NULL_HANDLE && moonPipelineLayout_ != VK_NULL_HANDLE
+                && moonDescriptorSet_ != VK_NULL_HANDLE && moonVertexBuffer_ != VK_NULL_HANDLE
+                && moonCount > 0) {
+            vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, moonPipeline_);
+            vkCmdPushConstants(cb, moonPipelineLayout_,
+                    VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                    0, sizeof(MoonPushConstants), &moonPC);
+            vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                    moonPipelineLayout_, 0, 1, &moonDescriptorSet_, 0, nullptr);
+            VkDeviceSize offsets[] = {0};
+            vkCmdBindVertexBuffers(cb, 0, 1, &moonVertexBuffer_, offsets);
+            vkCmdDraw(cb, moonCount, 1, 0, 0);
         }
 
         vkCmdEndRenderPass(cb);
@@ -1358,9 +1759,13 @@ private:
         return instance_ != VK_NULL_HANDLE && device_ != VK_NULL_HANDLE
                 && surface_ != VK_NULL_HANDLE && swapchain_ != VK_NULL_HANDLE
                 && renderPass_  != VK_NULL_HANDLE
-                && skyPipeline_ != VK_NULL_HANDLE && grassPipeline_ != VK_NULL_HANDLE
+            && skyPipeline_ != VK_NULL_HANDLE && grassPipeline_ != VK_NULL_HANDLE
+            && spritePipeline_ != VK_NULL_HANDLE
+                && moonPipeline_ != VK_NULL_HANDLE
                 && skyDescriptorSet_  != VK_NULL_HANDLE
                 && grassDescriptorSet_ != VK_NULL_HANDLE
+            && spriteDescriptorSets_[0] != VK_NULL_HANDLE
+                && moonDescriptorSet_ != VK_NULL_HANDLE
                 && !commandBuffers_.empty();
     }
 
@@ -1379,6 +1784,7 @@ private:
         // sky textures
         for (auto& st : skyTextures_) destroyGpuTextureLocked(st);
         destroyGpuTextureLocked(aaTexture_);
+        for (auto& st : spriteTextures_) destroyGpuTextureLocked(st);
 
         // grass geometry buffers
         if (grassVertexMapped_) { vkUnmapMemory(device_, grassVertexMemory_); grassVertexMapped_ = nullptr; }
@@ -1387,6 +1793,19 @@ private:
         if (grassVertexMemory_ != VK_NULL_HANDLE) { vkFreeMemory(device_,    grassVertexMemory_, nullptr); grassVertexMemory_ = VK_NULL_HANDLE; }
         if (grassIndexBuffer_  != VK_NULL_HANDLE) { vkDestroyBuffer(device_, grassIndexBuffer_,  nullptr); grassIndexBuffer_  = VK_NULL_HANDLE; }
         if (grassIndexMemory_  != VK_NULL_HANDLE) { vkFreeMemory(device_,    grassIndexMemory_,  nullptr); grassIndexMemory_  = VK_NULL_HANDLE; }
+
+        if (sunVertexMapped_) { vkUnmapMemory(device_, sunVertexMemory_); sunVertexMapped_ = nullptr; }
+        if (dandelionVertexMapped_) { vkUnmapMemory(device_, dandelionVertexMemory_); dandelionVertexMapped_ = nullptr; }
+        if (fireflyVertexMapped_) { vkUnmapMemory(device_, fireflyVertexMemory_); fireflyVertexMapped_ = nullptr; }
+        if (moonVertexMapped_) { vkUnmapMemory(device_, moonVertexMemory_); moonVertexMapped_ = nullptr; }
+        if (sunVertexBuffer_ != VK_NULL_HANDLE) { vkDestroyBuffer(device_, sunVertexBuffer_, nullptr); sunVertexBuffer_ = VK_NULL_HANDLE; }
+        if (sunVertexMemory_ != VK_NULL_HANDLE) { vkFreeMemory(device_, sunVertexMemory_, nullptr); sunVertexMemory_ = VK_NULL_HANDLE; }
+        if (dandelionVertexBuffer_ != VK_NULL_HANDLE) { vkDestroyBuffer(device_, dandelionVertexBuffer_, nullptr); dandelionVertexBuffer_ = VK_NULL_HANDLE; }
+        if (dandelionVertexMemory_ != VK_NULL_HANDLE) { vkFreeMemory(device_, dandelionVertexMemory_, nullptr); dandelionVertexMemory_ = VK_NULL_HANDLE; }
+        if (fireflyVertexBuffer_ != VK_NULL_HANDLE) { vkDestroyBuffer(device_, fireflyVertexBuffer_, nullptr); fireflyVertexBuffer_ = VK_NULL_HANDLE; }
+        if (fireflyVertexMemory_ != VK_NULL_HANDLE) { vkFreeMemory(device_, fireflyVertexMemory_, nullptr); fireflyVertexMemory_ = VK_NULL_HANDLE; }
+        if (moonVertexBuffer_ != VK_NULL_HANDLE) { vkDestroyBuffer(device_, moonVertexBuffer_, nullptr); moonVertexBuffer_ = VK_NULL_HANDLE; }
+        if (moonVertexMemory_ != VK_NULL_HANDLE) { vkFreeMemory(device_, moonVertexMemory_, nullptr); moonVertexMemory_ = VK_NULL_HANDLE; }
 
         if (imageAvailableSemaphore_ != VK_NULL_HANDLE) { vkDestroySemaphore(device_, imageAvailableSemaphore_, nullptr); imageAvailableSemaphore_ = VK_NULL_HANDLE; }
         if (renderFinishedSemaphore_ != VK_NULL_HANDLE) { vkDestroySemaphore(device_, renderFinishedSemaphore_, nullptr); renderFinishedSemaphore_ = VK_NULL_HANDLE; }
@@ -1397,6 +1816,26 @@ private:
         if (skyDescriptorSetLayout_   != VK_NULL_HANDLE) { vkDestroyDescriptorSetLayout(device_, skyDescriptorSetLayout_,   nullptr); skyDescriptorSetLayout_   = VK_NULL_HANDLE; }
         if (grassDescriptorPool_ != VK_NULL_HANDLE) { vkDestroyDescriptorPool(device_, grassDescriptorPool_, nullptr); grassDescriptorPool_ = VK_NULL_HANDLE; grassDescriptorSet_ = VK_NULL_HANDLE; }
         if (grassDescriptorSetLayout_ != VK_NULL_HANDLE) { vkDestroyDescriptorSetLayout(device_, grassDescriptorSetLayout_, nullptr); grassDescriptorSetLayout_ = VK_NULL_HANDLE; }
+        if (spriteDescriptorPool_ != VK_NULL_HANDLE) {
+            vkDestroyDescriptorPool(device_, spriteDescriptorPool_, nullptr);
+            spriteDescriptorPool_ = VK_NULL_HANDLE;
+            for (uint32_t i = 0; i < kSpriteTextureCount; ++i) {
+                spriteDescriptorSets_[i] = VK_NULL_HANDLE;
+            }
+        }
+        if (spriteDescriptorSetLayout_ != VK_NULL_HANDLE) {
+            vkDestroyDescriptorSetLayout(device_, spriteDescriptorSetLayout_, nullptr);
+            spriteDescriptorSetLayout_ = VK_NULL_HANDLE;
+        }
+        if (moonDescriptorPool_ != VK_NULL_HANDLE) {
+            vkDestroyDescriptorPool(device_, moonDescriptorPool_, nullptr);
+            moonDescriptorPool_ = VK_NULL_HANDLE;
+            moonDescriptorSet_ = VK_NULL_HANDLE;
+        }
+        if (moonDescriptorSetLayout_ != VK_NULL_HANDLE) {
+            vkDestroyDescriptorSetLayout(device_, moonDescriptorSetLayout_, nullptr);
+            moonDescriptorSetLayout_ = VK_NULL_HANDLE;
+        }
 
         vkDestroyDevice(device_, nullptr);
         device_ = VK_NULL_HANDLE;
@@ -1432,8 +1871,12 @@ private:
     VkRenderPass     renderPass_          = VK_NULL_HANDLE;
     VkPipelineLayout skyPipelineLayout_   = VK_NULL_HANDLE;
     VkPipelineLayout grassPipelineLayout_ = VK_NULL_HANDLE;
+    VkPipelineLayout spritePipelineLayout_ = VK_NULL_HANDLE;
+    VkPipelineLayout moonPipelineLayout_ = VK_NULL_HANDLE;
     VkPipeline       skyPipeline_         = VK_NULL_HANDLE;
     VkPipeline       grassPipeline_       = VK_NULL_HANDLE;
+    VkPipeline       spritePipeline_      = VK_NULL_HANDLE;
+    VkPipeline       moonPipeline_        = VK_NULL_HANDLE;
     VkCommandPool    commandPool_         = VK_NULL_HANDLE;
 
     // Sky descriptor set (4 textures)
@@ -1445,6 +1888,15 @@ private:
     VkDescriptorSetLayout grassDescriptorSetLayout_ = VK_NULL_HANDLE;
     VkDescriptorPool      grassDescriptorPool_      = VK_NULL_HANDLE;
     VkDescriptorSet       grassDescriptorSet_       = VK_NULL_HANDLE;
+
+    // Sprite descriptor sets (sun, dandelion, firefly, moon)
+    VkDescriptorSetLayout spriteDescriptorSetLayout_ = VK_NULL_HANDLE;
+    VkDescriptorPool      spriteDescriptorPool_      = VK_NULL_HANDLE;
+    VkDescriptorSet       spriteDescriptorSets_[kSpriteTextureCount] = {};
+
+    VkDescriptorSetLayout moonDescriptorSetLayout_ = VK_NULL_HANDLE;
+    VkDescriptorPool      moonDescriptorPool_      = VK_NULL_HANDLE;
+    VkDescriptorSet       moonDescriptorSet_       = VK_NULL_HANDLE;
 
     // Sky textures (night, sunrise, sunset, sky)
     GpuTexture skyTextures_[kSkyTextureCount];
@@ -1458,6 +1910,12 @@ private:
     uint32_t pendingAAWidth_  = 0;
     uint32_t pendingAAHeight_ = 0;
 
+    // Sprite textures
+    GpuTexture spriteTextures_[kSpriteTextureCount];
+    std::vector<uint8_t> pendingSpritePixels_[kSpriteTextureCount];
+    uint32_t pendingSpriteWidth_[kSpriteTextureCount] = {};
+    uint32_t pendingSpriteHeight_[kSpriteTextureCount] = {};
+
     // Grass geometry (host-visible, persistently mapped)
     VkBuffer        grassVertexBuffer_ = VK_NULL_HANDLE;
     VkDeviceMemory  grassVertexMemory_ = VK_NULL_HANDLE;
@@ -1465,6 +1923,20 @@ private:
     VkBuffer        grassIndexBuffer_  = VK_NULL_HANDLE;
     VkDeviceMemory  grassIndexMemory_  = VK_NULL_HANDLE;
     void*           grassIndexMapped_  = nullptr;
+
+    // Sprite geometry
+    VkBuffer        sunVertexBuffer_ = VK_NULL_HANDLE;
+    VkDeviceMemory  sunVertexMemory_ = VK_NULL_HANDLE;
+    void*           sunVertexMapped_ = nullptr;
+    VkBuffer        dandelionVertexBuffer_ = VK_NULL_HANDLE;
+    VkDeviceMemory  dandelionVertexMemory_ = VK_NULL_HANDLE;
+    void*           dandelionVertexMapped_ = nullptr;
+    VkBuffer        fireflyVertexBuffer_ = VK_NULL_HANDLE;
+    VkDeviceMemory  fireflyVertexMemory_ = VK_NULL_HANDLE;
+    void*           fireflyVertexMapped_ = nullptr;
+    VkBuffer        moonVertexBuffer_ = VK_NULL_HANDLE;
+    VkDeviceMemory  moonVertexMemory_ = VK_NULL_HANDLE;
+    void*           moonVertexMapped_ = nullptr;
 
     VkSemaphore imageAvailableSemaphore_ = VK_NULL_HANDLE;
     VkSemaphore renderFinishedSemaphore_ = VK_NULL_HANDLE;
@@ -1519,9 +1991,21 @@ Java_com_reandroid_wallpaper_grass_GrassVKNative_nRenderFrame(
         JNIEnv* env, jclass, jlong handle,
         jfloatArray skyWeights, jfloatArray grassMvp,
         jfloatArray grassVerts, jint grassVertCount,
-        jshortArray grassIndices, jint grassIndexCount) {
+        jshortArray grassIndices, jint grassIndexCount,
+        jfloatArray sunVerts, jint sunVertCount,
+        jfloatArray dandelionVerts, jint dandelionVertCount,
+        jfloatArray fireflyVerts, jint fireflyVertCount,
+    jfloatArray moonVerts, jint moonVertCount,
+    jfloatArray moonParams) {
     auto* r = asRenderer(handle);
-    if (r) r->render(env, skyWeights, grassMvp, grassVerts, grassVertCount, grassIndices, grassIndexCount);
+    if (r) r->render(env, skyWeights, grassMvp,
+            grassVerts, grassVertCount,
+            grassIndices, grassIndexCount,
+            sunVerts, sunVertCount,
+            dandelionVerts, dandelionVertCount,
+            fireflyVerts, fireflyVertCount,
+        moonVerts, moonVertCount,
+        moonParams);
 }
 
 extern "C" JNIEXPORT void JNICALL
@@ -1536,6 +2020,13 @@ Java_com_reandroid_wallpaper_grass_GrassVKNative_nSetAATexture(
         JNIEnv* env, jclass, jlong handle, jintArray argbPixels, jint width, jint height) {
     auto* r = asRenderer(handle);
     if (r) r->setAATexture(env, argbPixels, width, height);
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_com_reandroid_wallpaper_grass_GrassVKNative_nSetSpriteTexture(
+        JNIEnv* env, jclass, jlong handle, jint slot, jintArray argbPixels, jint width, jint height) {
+    auto* r = asRenderer(handle);
+    if (r) r->setSpriteTexture(env, slot, argbPixels, width, height);
 }
 
 extern "C" JNIEXPORT jboolean JNICALL

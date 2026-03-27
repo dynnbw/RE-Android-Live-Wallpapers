@@ -129,6 +129,11 @@ public class GrassVKWallpaper extends WallpaperService {
                     float[] sky = mScene.computeVKSkyParams(sd);
                     float[] verts = mScene.buildGrassVertexArrayForVK(sd);
                     int vertCount = verts.length / VERTEX_STRIDE;
+                        float[] sunVerts = mScene.buildSunSpriteVerticesForVK(sd);
+                        float[] dandelionVerts = mScene.buildDandelionSpriteVerticesForVK(sd);
+                        float[] fireflyVerts = mScene.buildFireflySpriteVerticesForVK(sd);
+                        float[] moonVerts = mScene.buildMoonSpriteVerticesForVK(sd);
+                        float[] moonParams = mScene.buildMoonParamsForVK(sd);
 
                     GrassVKNative.nRenderFrame(mRendererHandle,
                             sky,
@@ -136,7 +141,16 @@ public class GrassVKWallpaper extends WallpaperService {
                             verts,
                             vertCount,
                             mCachedIndices,
-                            mCachedIndices.length);
+                            mCachedIndices.length,
+                            sunVerts,
+                            sunVerts.length / 5,
+                            dandelionVerts,
+                            dandelionVerts.length / 5,
+                            fireflyVerts,
+                            fireflyVerts.length / 5,
+                            moonVerts,
+                            moonVerts.length / 5,
+                            moonParams);
                 }
 
                 try {
@@ -160,6 +174,7 @@ public class GrassVKWallpaper extends WallpaperService {
                 mRendererHandle = GrassVKNative.nCreateRenderer(getAssets());
                 GrassVKNative.uploadSkyTextures(GrassVKWallpaper.this, mRendererHandle);
                 GrassVKNative.uploadAATexture(mRendererHandle);
+                GrassVKNative.uploadSpriteTextures(GrassVKWallpaper.this, mRendererHandle);
             }
         }
 

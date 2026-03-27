@@ -121,6 +121,48 @@ git push -u --force-with-lease origin main
 
 因为它们被 `.gitignore` 排除了（例如构建产物、签名文件、本地配置与大资源目录）。
 
+### Q3: 如何在工作账户和个人账户之间切换 Git 身份并推送？
+
+本仓库已提供一套本地切换脚本（不会影响其他仓库）：
+
+1. 复制配置模板并填写真实信息：
+
+```powershell
+Copy-Item .\git-identity.config.example.ps1 .\git-identity.config.ps1
+```
+
+需要填写：
+
+- `WorkName` / `WorkEmail` / `WorkSshKeyPath`
+- `PersonalName` / `PersonalEmail` / `PersonalSshKeyPath`
+
+2. 切换为工作身份：
+
+```powershell
+.\use-work-git.bat
+```
+
+3. 切换为个人身份：
+
+```powershell
+.\use-personal-git.bat
+```
+
+4. 查看当前身份：
+
+```powershell
+.\show-git-identity.bat
+```
+
+脚本会设置以下本仓库级配置：
+
+- `user.name`
+- `user.email`
+- `core.sshCommand`（指定对应 SSH 私钥）
+- `identity.activeProfile`（仅用于显示当前档位）
+
+这样你可以在同一台机器上随时切换身份后再执行 `git push`。
+
 ## 免责声明
 
 本项目包含动态壁纸相关资源与效果代码。请在分发或商用前自行确认资源授权与合规要求。

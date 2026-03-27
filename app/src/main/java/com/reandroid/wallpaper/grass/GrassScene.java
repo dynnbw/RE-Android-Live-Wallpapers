@@ -1239,8 +1239,9 @@ class GrassScene {
     }
 
     float[] computeVKSkyParams(SceneData sd) {
-        float[] out = new float[5];
+        float[] out = new float[6];
         out[4] = sd.nightInvert ? 1.0f : 0.0f;
+        out[5] = clamp(sd.solarEclipseWeight, 0.0f, 1.0f);
 
         if (sd.useAccurateSun) {
             out[0] = sd.accurateWeights[0];
@@ -1292,6 +1293,30 @@ class GrassScene {
         }
 
         out[0] = 1.0f;
+        return out;
+    }
+
+    float[] buildMoonParamsForVK(SceneData sd) {
+        float[] out = new float[12];
+        if (!sd.useAccurateSun || !sd.moonEnabled || !sd.moonVisible) {
+            return out;
+        }
+
+        out[0] = sd.moonPhaseAngle;
+        out[1] = sd.moonBrightness;
+        out[2] = sd.moonAlpha;
+        out[3] = sd.moonIsDaytime ? 1.0f : 0.0f;
+        out[4] = sd.moonContrast;
+        out[5] = sd.moonSaturation;
+        out[6] = sd.moonBlueTint;
+
+        if (sd.moonEclipse != null) {
+            out[7] = sd.moonEclipse.type;
+            out[8] = sd.moonEclipse.fraction;
+            out[9] = sd.moonEclipse.phase;
+            out[10] = sd.moonEclipse.shadowOffsetX;
+            out[11] = sd.moonEclipse.shadowOffsetY;
+        }
         return out;
     }
 
@@ -1424,6 +1449,252 @@ class GrassScene {
         out[cursor++] = a;
         out[cursor++] = s;
         out[cursor++] = t;
+        return cursor;
+    }
+
+    float[] buildSunSpriteVerticesForVK(SceneData sd) {
+        if (!sd.useAccurateSun || !sd.sunEnabled || !sd.hasSunData) {
+            return new float[0];
+        }
+        float[] out = new float[30];
+        appendSpriteQuadVertices(out, 0,
+                sd.sunX, sd.sunY, sd.sunSize,
+                sd.sunAlpha,
+                false,
+                0.0f);
+        return out;
+    }
+
+    float[] buildMoonSpriteVerticesForVK(SceneData sd) {
+        if (!sd.useAccurateSun || !sd.moonEnabled || !sd.moonVisible) {
+            return new float[0];
+        }
+        float alpha = clamp(sd.moonAlpha * sd.moonBrightness, 0.0f, 1.0f);
+        if (alpha <= 0.001f) {
+            return new float[0];
+        }
+        float[] out = new float[30];
+        appendSpriteQuadVertices(out, 0,
+                sd.moonX, sd.moonY, sd.moonSize,
+                alpha,
+                false,
+                0.0f);
+        return out;
+    }
+
+    float[] buildDandelionSpriteVerticesForVK(SceneData sd) {
+        if (sd.legacyParticles) {
+            return buildLegacySpriteVerticesForVK(sd, LEGACY_TYPE_DANDELION);
+        }
+        if (sd.isNight || !sd.dandelionEnabled || sd.dandelions == null || sd.dandelions.length == 0) {
+            return new float[0];
+        }
+        float[] out = new float[sd.dandelions.length * 30];
+        int cursor = 0;
+        for (Dandelion d : sd.dandelions) {
+            float sway = (float) Math.sin(d.swayPhase + sd.animNowMs * 0.001f * d.swaySpeed) * 6.0f;
+            cursor = appendSpriteQuadVertices(out, cursor,
+                    d.x, d.y + sway, d.size,
+                    0.9f,
+                    true,
+                    d.rotationDeg);
+            if (cursor > out.length) {
+                break;
+            }
+        }
+        if (cursor == out.length) {
+            return out;
+        }
+        float[] trimmed = new float[Math.max(cursor, 0)];
+        if (cursor > 0) {
+            System.arraycopy(out, 0, trimmed, 0, cursor);
+        }
+        return trimmed;
+    }
+
+    float[] buildFireflySpriteVerticesForVK(SceneData sd) {
+        if (sd.legacyParticles) {
+            return buildLegacySpriteVerticesForVK(sd, LEGACY_TYPE_FIREFLY);
+        }
+        if (!sd.isNight || !sd.fireflyEnabled || sd.fireflies == null || sd.fireflies.length == 0) {
+            return new float[0];
+        }
+        float[] out = new float[sd.fireflies.length * 30];
+        int cursor = 0;
+        float time = sd.animNowMs * 0.001f;
+        for (Firefly f : sd.fireflies) {
+            float flicker = 0.5f + 0.5f * (float) Math.sin(f.phase + time * f.flickerSpeed);
+            float alpha = 0.2f + 0.8f * flicker;
+            float size = f.size * (0.8f + 0.4f * flicker);
+            cursor = appendSpriteQuadVertices(out, cursor,
+                    f.x, f.y, size,
+                    alpha,
+                    false,
+                    0.0f);
+            if (cursor > out.length) {
+                break;
+            }
+        }
+        if (cursor == out.length) {
+            return out;
+        }
+        float[] trimmed = new float[Math.max(cursor, 0)];
+        if (cursor > 0) {
+            System.arraycopy(out, 0, trimmed, 0, cursor);
+        }
+        return trimmed;
+    }
+
+    private float[] buildLegacySpriteVerticesForVK(SceneData sd, int legacyTargetType) {
+        if (!sd.legacyParticles || sd.legacyType != legacyTargetType
+                || sd.legacyNormal == null || sd.legacyExtras == null) {
+            return new float[0];
+        }
+
+        float[] out = new float[(LEGACY_MAX_NORMAL + LEGACY_MAX_EXTRAS) * 30];
+        int cursor = 0;
+        long animNowMs = sd.legacyNow;
+
+        for (int i = 0; i < LEGACY_MAX_NORMAL; i++) {
+            LegacyParticle p = sd.legacyNormal[i];
+            if (p == null || !p.active) {
+                continue;
+            }
+            cursor = updateAndAppendLegacyParticleForVK(out, cursor, p,
+                    sd, legacyTargetType, i, false, animNowMs);
+            if (cursor > out.length) {
+                break;
+            }
+        }
+
+        if (cursor <= out.length) {
+            for (int i = 0; i < LEGACY_MAX_EXTRAS; i++) {
+                LegacyParticle p = sd.legacyExtras[i];
+                if (p == null || !p.active) {
+                    continue;
+                }
+                cursor = updateAndAppendLegacyParticleForVK(out, cursor, p,
+                        sd, legacyTargetType, i + 100, true, animNowMs);
+                if (cursor > out.length) {
+                    break;
+                }
+            }
+        }
+
+        if (cursor == out.length) {
+            return out;
+        }
+        float[] trimmed = new float[Math.max(cursor, 0)];
+        if (cursor > 0) {
+            System.arraycopy(out, 0, trimmed, 0, cursor);
+        }
+        return trimmed;
+    }
+
+    private int updateAndAppendLegacyParticleForVK(float[] out, int cursor, LegacyParticle p,
+            SceneData sd, int legacyType, int index, boolean isExtras, long animNowMs) {
+        boolean outOfBounds = isLegacyParticleOutOfBoundsForVK(p, legacyType);
+        if (outOfBounds) {
+            LegacyParticle np = createLegacyParticle(legacyType);
+            np.active = true;
+            if (isExtras) {
+                sd.legacyExtras[index - 100] = np;
+            } else {
+                sd.legacyNormal[index] = np;
+            }
+            p = np;
+        }
+
+        long delta = animNowMs - p.startTime;
+        if (delta > LEGACY_MAX_STAY) {
+            if (legacyType == LEGACY_TYPE_DANDELION) {
+                flyLegacyDandelion(p, false);
+            } else {
+                flyLegacyFirefly(p, false);
+            }
+            p.startTime = animNowMs;
+            delta = 0;
+        }
+
+        p.originX += p.dx * LEGACY_SPEED * delta;
+        p.originY += p.dy * LEGACY_SPEED * delta;
+
+        if (legacyType == LEGACY_TYPE_FIREFLY) {
+            if (animNowMs > p.silentEndTime) {
+                p.flareEndTime = animNowMs + LEGACY_MAX_FLARE;
+                p.silentEndTime = animNowMs
+                        + (long) ((1.0 + (Math.random() * 2 - 1) * LEGACY_INTERVAL_VARIANCE)
+                                * LEGACY_MAX_INTERVAL);
+            }
+            float flicker = 0.5f + 0.5f * (float) Math.sin((animNowMs + index * 1234L) * 0.002);
+            float alpha = 0.2f + 0.8f * flicker;
+            float size = (isExtras ? 48.0f : 72.0f) * (0.8f + 0.4f * flicker);
+            return appendSpriteQuadVertices(out, cursor,
+                    p.originX, p.originY, size,
+                    alpha,
+                    false,
+                    0.0f);
+        }
+
+        float size = isExtras ? 64.0f : 96.0f;
+        return appendSpriteQuadVertices(out, cursor,
+                p.originX, p.originY, size,
+                0.9f,
+                true,
+                p.angle);
+    }
+
+    private boolean isLegacyParticleOutOfBoundsForVK(LegacyParticle p, int legacyType) {
+        if (legacyType == LEGACY_TYPE_DANDELION) {
+            return p.originX < 0.0f || p.originX > mWidth * 2.0f || p.originY < 0.0f || p.originY > mHeight;
+        }
+        return p.originX < 0.0f || p.originX > mWidth * 2.0f || p.originY < 0.0f;
+    }
+
+    private int appendSpriteQuadVertices(float[] out, int cursor,
+            float cx, float cy, float size, float alpha, boolean flipV, float rotationDeg) {
+        if (cursor + 30 > out.length) {
+            return out.length + 1;
+        }
+
+        float half = size * 0.5f;
+        float rad = (float) Math.toRadians(rotationDeg);
+        float cos = (float) Math.cos(rad);
+        float sin = (float) Math.sin(rad);
+
+        float x0 = (-half * cos) - (-half * sin) + cx;
+        float y0 = (-half * sin) + (-half * cos) + cy;
+        float x1 = (-half * cos) - ( half * sin) + cx;
+        float y1 = (-half * sin) + ( half * cos) + cy;
+        float x2 = ( half * cos) - ( half * sin) + cx;
+        float y2 = ( half * sin) + ( half * cos) + cy;
+        float x3 = ( half * cos) - (-half * sin) + cx;
+        float y3 = ( half * sin) + (-half * cos) + cy;
+
+        float v0 = flipV ? 0.0f : 1.0f;
+        float v1 = flipV ? 1.0f : 0.0f;
+
+        // Triangle 1: 0,1,2
+        cursor = putSpriteVertex(out, cursor, x0, y0, 0.0f, v0, alpha);
+        cursor = putSpriteVertex(out, cursor, x1, y1, 0.0f, v1, alpha);
+        cursor = putSpriteVertex(out, cursor, x2, y2, 1.0f, v1, alpha);
+        // Triangle 2: 0,2,3
+        cursor = putSpriteVertex(out, cursor, x0, y0, 0.0f, v0, alpha);
+        cursor = putSpriteVertex(out, cursor, x2, y2, 1.0f, v1, alpha);
+        cursor = putSpriteVertex(out, cursor, x3, y3, 1.0f, v0, alpha);
+        return cursor;
+    }
+
+    private int putSpriteVertex(float[] out, int cursor,
+            float x, float y, float u, float v, float a) {
+        if (cursor + 5 > out.length) {
+            return out.length + 1;
+        }
+        out[cursor++] = x;
+        out[cursor++] = y;
+        out[cursor++] = u;
+        out[cursor++] = v;
+        out[cursor++] = a;
         return cursor;
     }
 

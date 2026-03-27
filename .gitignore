@@ -35,3 +35,13 @@ png/
 DebugTools/
 strings.txt
 cank.txt
+
+# Local git identity switching config
+git-identity.config.ps1
+
+# Local git identity helper scripts
+git-identity-switch.ps1
+git-identity.config.example.ps1
+use-work-git.bat
+use-personal-git.bat
+show-git-identity.bat
