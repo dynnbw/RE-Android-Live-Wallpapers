@@ -21,6 +21,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
+import android.os.Process;
+import android.os.SystemClock;
 import android.util.Log;
 
 import com.reandroid.wallpaper.R;
@@ -38,6 +40,9 @@ import java.nio.FloatBuffer;
  */
 public class GalaxyGL extends GLESScene {
     private static final String TAG = "GalaxyGL";
+    private static final long PERF_SYNC_INTERVAL_MS = 1000L;
+    private static final long ANR_FRAME_THRESHOLD_MS = 200L;
+
     private boolean mGLInitialized = false;
     private int mBgProgram;
     private int mParticleProgram;
@@ -48,7 +53,16 @@ public class GalaxyGL extends GLESScene {
     private boolean mUseLight2;
     private FloatBuffer mParticlePositionBuffer;
     private FloatBuffer mParticleColorBuffer;
+    private FloatBuffer mBgVertexBuffer;
+    private FloatBuffer mLightVertexBuffer;
     private final GalaxyScene mScene;
+    private int mTargetFps = 30;
+    private long mTargetFrameMs = 33L;
+    private boolean mAnrDiagEnabled = false;
+    private long mLastPerfSyncMs = 0L;
+    private long mDiagFrameCount = 0L;
+    private long mDiagAccumulatedMs = 0L;
+    private long mDiagMaxMs = 0L;
     
     /**
      * 构造函数
@@ -146,6 +160,10 @@ public class GalaxyGL extends GLESScene {
     private void initGL() {
         if (mGLInitialized || mResources == null) {
             return;
+        }
+        try {
+            Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
+        } catch (Throwable ignored) {
         }
 
         Log.d(TAG, "initGL 开始执行");
@@ -280,6 +298,9 @@ public class GalaxyGL extends GLESScene {
 
     @Override
     public void drawFrame(long timeMs) {
+        long frameStart = SystemClock.uptimeMillis();
+        syncPerfSettingsIfNeeded(frameStart);
+
         mScene.update(timeMs);
         GalaxyScene.SceneData sceneData = mScene.getSceneData();
 
@@ -294,6 +315,9 @@ public class GalaxyGL extends GLESScene {
         drawBackground();
         drawParticles(sceneData);
         drawLights(sceneData);
+
+        long frameCost = SystemClock.uptimeMillis() - frameStart;
+        recordFrameCost(frameCost);
     }
 
     private void syncParticleBuffers(GalaxyScene.SceneData sceneData) {
@@ -326,7 +350,13 @@ public class GalaxyGL extends GLESScene {
              1,  1, 1, 0
         };
 
-        FloatBuffer vertexBuffer = createFloatBuffer(vertices);
+        if (mBgVertexBuffer == null || mBgVertexBuffer.capacity() != vertices.length) {
+            mBgVertexBuffer = createFloatBuffer(vertices);
+        } else {
+            mBgVertexBuffer.position(0);
+            mBgVertexBuffer.put(vertices);
+            mBgVertexBuffer.position(0);
+        }
 
         int posHandle = GLES20.glGetAttribLocation(mBgProgram, "aPosition");
         int texHandle = GLES20.glGetAttribLocation(mBgProgram, "aTexCoord");
@@ -335,10 +365,10 @@ public class GalaxyGL extends GLESScene {
         GLES20.glEnableVertexAttribArray(posHandle);
         GLES20.glEnableVertexAttribArray(texHandle);
 
-        vertexBuffer.position(0);
-        GLES20.glVertexAttribPointer(posHandle, 2, GLES20.GL_FLOAT, false, 16, vertexBuffer);
-        vertexBuffer.position(2);
-        GLES20.glVertexAttribPointer(texHandle, 2, GLES20.GL_FLOAT, false, 16, vertexBuffer);
+        mBgVertexBuffer.position(0);
+        GLES20.glVertexAttribPointer(posHandle, 2, GLES20.GL_FLOAT, false, 16, mBgVertexBuffer);
+        mBgVertexBuffer.position(2);
+        GLES20.glVertexAttribPointer(texHandle, 2, GLES20.GL_FLOAT, false, 16, mBgVertexBuffer);
 
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTexSpace);
@@ -419,6 +449,38 @@ public class GalaxyGL extends GLESScene {
 
         GLES20.glDisableVertexAttribArray(posHandle);
         GLES20.glDisableVertexAttribArray(texHandle);
+    }
+
+    private void syncPerfSettingsIfNeeded(long nowMs) {
+        if (nowMs - mLastPerfSyncMs < PERF_SYNC_INTERVAL_MS) {
+            return;
+        }
+        mLastPerfSyncMs = nowMs;
+        int fps = WallpaperSettings.getGlobalFrameRate(30);
+        mTargetFps = Math.max(1, fps);
+        mTargetFrameMs = Math.max(1L, 1000L / mTargetFps);
+        mAnrDiagEnabled = WallpaperSettings.isVulkanAnrDiagnosticsEnabled(true);
+    }
+
+    private void recordFrameCost(long frameCostMs) {
+        if (!mAnrDiagEnabled) {
+            return;
+        }
+        if (frameCostMs >= ANR_FRAME_THRESHOLD_MS) {
+            Log.w(TAG, "Slow frame: " + frameCostMs + "ms, targetFps=" + mTargetFps);
+        }
+        mDiagFrameCount++;
+        mDiagAccumulatedMs += frameCostMs;
+        if (frameCostMs > mDiagMaxMs) {
+            mDiagMaxMs = frameCostMs;
+        }
+        if (mDiagFrameCount >= 120) {
+            long avg = mDiagAccumulatedMs / Math.max(1L, mDiagFrameCount);
+            Log.i(TAG, "FrameStats avg=" + avg + "ms max=" + mDiagMaxMs + "ms fpsTarget=" + mTargetFps);
+            mDiagFrameCount = 0L;
+            mDiagAccumulatedMs = 0L;
+            mDiagMaxMs = 0L;
+        }
     }
 
     private FloatBuffer createFloatBuffer(float[] data) {

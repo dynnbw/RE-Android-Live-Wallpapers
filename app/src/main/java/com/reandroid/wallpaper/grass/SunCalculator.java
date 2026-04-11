@@ -177,58 +177,153 @@ public class SunCalculator {
     }
 
     private double calculateSunTime(double zenith, Calendar calendar, boolean isRise) {
-        // 1. 计算儒略日
-        int year = calendar.get(Calendar.YEAR);
-        int month = calendar.get(Calendar.MONTH) + 1; // 1-12
-        int day = calendar.get(Calendar.DAY_OF_MONTH);
+        calendar.setTimeZone(mTimeZone);
 
-        double n = Math.floor(275 * month / 9.0) - Math.floor((month + 9) / 12.0) * (1 + Math.floor((year - 4 * Math.floor(year / 4.0) + 2) / 3.0)) + day - 30;
+        double longitudeHour = getLongitudeHour(calendar, isRise);
+        double meanAnomaly = getMeanAnomaly(longitudeHour);
+        double sunTrueLong = getSunTrueLongitude(meanAnomaly);
+        double cosineSunLocalHour = getCosineSunLocalHour(sunTrueLong, zenith);
 
-        // 2. 计算太阳平黄经
-        double lng = (280.46646 + n * 0.98564736232) % 360.0;
-        if (lng < 0) lng += 360.0;
-
-        // 3. 计算太阳平近点角
-        double m = 357.52911 + n * 0.98560025851;
-
-        // 4. 计算太阳黄道经度
-        double lambda = lng + 1.914602 * Math.sin(Math.toRadians(m)) + 0.019993 * Math.sin(Math.toRadians(2 * m)) + 0.000289 * Math.sin(Math.toRadians(3 * m));
-
-        // 5. 计算太阳赤纬
-        double sinDec = Math.sin(Math.toRadians(lambda)) * Math.sin(Math.toRadians(23.4397));
-        double cosDec = Math.cos(Math.asin(sinDec));
-
-        // 6. 计算当地时角
-        double cosH = (Math.cos(Math.toRadians(zenith)) - sinDec * Math.sin(Math.toRadians(mLatitude))) / (cosDec * Math.cos(Math.toRadians(mLatitude)));
-        if (cosH > 1) {
-            Log.w(TAG, "Sun never rises");
-            return 0;
-        } else if (cosH < -1) {
+        if (cosineSunLocalHour < -1.0 || cosineSunLocalHour > 1.0) {
+            if (cosineSunLocalHour > 1.0) {
+                Log.w(TAG, "Sun never rises");
+                return 0.0;
+            }
             Log.w(TAG, "Sun never sets");
-            return 24;
+            return 24.0;
         }
 
-        // 7. 计算时角
-        double h = Math.toDegrees(Math.acos(cosH));
-        if (isRise) h = 360 - h; // 日出时角
+        double sunLocalHour = getSunLocalHour(cosineSunLocalHour, isRise);
+        double localMeanTime = getLocalMeanTime(sunTrueLong, longitudeHour, sunLocalHour);
+        return getLocalTime(localMeanTime, calendar);
+    }
 
-        // 8. 转换为小时
-        h = h / 15.0;
+    private double getBaseLongitudeHour() {
+        return mLongitude / 15.0;
+    }
 
-        // 9. 计算太阳时
-        double ra = Math.toDegrees(Math.atan2(Math.cos(Math.toRadians(lambda)) * Math.sin(Math.toRadians(23.4397)), Math.cos(Math.toRadians(lambda))));
-        ra = ra / 15.0;
-        double lst = (lng / 15.0 + h - ra) % 24.0;
+    private double getLongitudeHour(Calendar date, boolean isSunrise) {
+        int offset = isSunrise ? 6 : 18;
+        double dividend = offset - getBaseLongitudeHour();
+        double addend = dividend / 24.0;
+        return getDayOfYear(date) + addend;
+    }
 
-        // 10. 转换为当地时间
-        double localTime = lst - (mLongitude / 15.0);
-        // 11. 调整时区
-        double utcOffset = mTimeZone.getOffset(calendar.getTimeInMillis()) / 3600000.0; // 小时（含DST）
-        double localTimeZone = localTime + utcOffset;
-        localTimeZone = localTimeZone % 24.0;
-        if (localTimeZone < 0) {
-            localTimeZone += 24.0;
+    private static double getMeanAnomaly(double longitudeHour) {
+        return 0.9856 * longitudeHour - 3.289;
+    }
+
+    private static double getSunTrueLongitude(double meanAnomaly) {
+        final double meanRadians = Math.toRadians(meanAnomaly);
+        double sinMeanAnomaly = Math.sin(meanRadians);
+        double sinDoubleMeanAnomaly = Math.sin(meanRadians * 2.0);
+
+        double firstPart = meanAnomaly + sinMeanAnomaly * 1.916;
+        double secondPart = sinDoubleMeanAnomaly * 0.020 + 282.634;
+        double trueLongitude = firstPart + secondPart;
+
+        if (trueLongitude > 360.0) {
+            trueLongitude = trueLongitude - 360.0;
         }
-        return localTimeZone;
+        return trueLongitude;
+    }
+
+    private static double getRightAscension(double sunTrueLong) {
+        double tanL = Math.tan(Math.toRadians(sunTrueLong));
+        double innerParens = Math.toDegrees(tanL) * 0.91764;
+        double rightAscension = Math.atan(Math.toRadians(innerParens));
+        rightAscension = Math.toDegrees(rightAscension);
+
+        if (rightAscension < 0.0) {
+            rightAscension = rightAscension + 360.0;
+        } else if (rightAscension > 360.0) {
+            rightAscension = rightAscension - 360.0;
+        }
+
+        double ninety = 90.0;
+        double longitudeQuadrant = (int) (sunTrueLong / ninety);
+        longitudeQuadrant = longitudeQuadrant * ninety;
+
+        double rightAscensionQuadrant = (int) (rightAscension / ninety);
+        rightAscensionQuadrant = rightAscensionQuadrant * ninety;
+
+        double augend = longitudeQuadrant - rightAscensionQuadrant;
+        return (rightAscension + augend) / 15.0;
+    }
+
+    private double getCosineSunLocalHour(double sunTrueLong, double zenith) {
+        double sinSunDeclination = getSinOfSunDeclination(sunTrueLong);
+        double cosineSunDeclination = getCosineOfSunDeclination(sinSunDeclination);
+
+        final double zenithInRads = Math.toRadians(zenith);
+        final double latitude = Math.toRadians(mLatitude);
+
+        double cosineZenith = Math.cos(zenithInRads);
+        double sinLatitude = Math.sin(latitude);
+        double cosLatitude = Math.cos(latitude);
+
+        double sinDeclinationTimesSinLat = sinSunDeclination * sinLatitude;
+        double dividend = cosineZenith - sinDeclinationTimesSinLat;
+        double divisor = cosineSunDeclination * cosLatitude;
+        return dividend / divisor;
+    }
+
+    private static double getSinOfSunDeclination(double sunTrueLong) {
+        double sinTrueLongitude = Math.sin(Math.toRadians(sunTrueLong));
+        return sinTrueLongitude * 0.39782;
+    }
+
+    private static double getCosineOfSunDeclination(double sinSunDeclination) {
+        double arcSinOfSinDeclination = Math.asin(sinSunDeclination);
+        return Math.cos(arcSinOfSinDeclination);
+    }
+
+    private static double getSunLocalHour(double cosineSunLocalHour, boolean isSunrise) {
+        double arcCosineOfCosineHourAngle = Math.acos(cosineSunLocalHour);
+        double localHour = Math.toDegrees(arcCosineOfCosineHourAngle);
+        if (isSunrise) {
+            localHour = 360.0 - localHour;
+        }
+        return localHour / 15.0;
+    }
+
+    private static double getLocalMeanTime(double sunTrueLong, double longitudeHour, double sunLocalHour) {
+        double rightAscension = getRightAscension(sunTrueLong);
+        double innerParens = longitudeHour * 0.06571;
+        double localMeanTime = sunLocalHour + rightAscension - innerParens;
+        localMeanTime = localMeanTime - 6.622;
+
+        if (localMeanTime < 0.0) {
+            localMeanTime = localMeanTime + 24.0;
+        } else if (localMeanTime > 24.0) {
+            localMeanTime = localMeanTime - 24.0;
+        }
+        return localMeanTime;
+    }
+
+    private double getLocalTime(double localMeanTime, Calendar date) {
+        double utcTime = localMeanTime - getBaseLongitudeHour();
+        double utcOffsetTime = utcTime + getUTCOffset(date);
+        return adjustForDst(utcOffsetTime, date);
+    }
+
+    private double adjustForDst(double localMeanTime, Calendar date) {
+        double localTime = localMeanTime;
+        if (mTimeZone.inDaylightTime(date.getTime())) {
+            localTime++;
+        }
+        if (localTime > 24.0) {
+            localTime = localTime - 24.0;
+        }
+        return localTime;
+    }
+
+    private static double getDayOfYear(Calendar date) {
+        return date.get(Calendar.DAY_OF_YEAR);
+    }
+
+    private static double getUTCOffset(Calendar date) {
+        int offsetInMillis = date.get(Calendar.ZONE_OFFSET);
+        return offsetInMillis / 3600000.0;
     }
 }

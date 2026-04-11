@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wallpaper
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:thumbnail="@drawable/aurora1_thumb"
+    android:author="@string/wallpaper_aurora1_author"
+    android:description="@string/wallpaper_aurora1_desc"
+    android:showMetadataInPreview="true"
+    android:settingsActivity="com.reandroid.wallpaper.settings.Aurora1SettingsActivity" />

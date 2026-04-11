@@ -21,7 +21,7 @@ public class GLESPreviewView extends SurfaceView implements SurfaceHolder.Callba
     }
 
     private final SceneFactory mFactory;
-    private GLESScene mScene;
+    private volatile GLESScene mScene;
     private Thread mThread;
     private boolean mRunning;
     private EGLDisplay mDisplay;
@@ -140,21 +140,23 @@ public class GLESPreviewView extends SurfaceView implements SurfaceHolder.Callba
             return;
         }
 
-        if (mScene != null) {
+        GLESScene scene = mScene;
+        if (scene != null) {
             int width = mPendingWidth > 0 ? mPendingWidth : getWidth();
             int height = mPendingHeight > 0 ? mPendingHeight : getHeight();
             if (width <= 0) width = 256;
             if (height <= 0) height = 256;
-            mScene.init(surface, getResources(), true);
-            mScene.setResources(getResources());
-            mScene.resize(width, height);
-            mScene.start();
+            scene.init(surface, getResources(), true);
+            scene.setResources(getResources());
+            scene.resize(width, height);
+            scene.start();
         }
 
         while (mRunning) {
             long now = System.currentTimeMillis();
-            if (mScene != null) {
-                mScene.drawFrame(now);
+            scene = mScene;
+            if (scene != null) {
+                scene.drawFrame(now);
             } else {
                 GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
             }
@@ -165,8 +167,9 @@ public class GLESPreviewView extends SurfaceView implements SurfaceHolder.Callba
             }
         }
 
-        if (mScene != null) {
-            mScene.stop();
+        scene = mScene;
+        if (scene != null) {
+            scene.stop();
         }
     }
 

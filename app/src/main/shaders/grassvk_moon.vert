@@ -16,6 +16,7 @@ layout(push_constant) uniform MoonPushConstants {
 
 void main() {
     gl_Position = uPush.uMVP * vec4(aPosition, 0.0, 1.0);
+    gl_Position.y = -gl_Position.y;
     vTexCoord = aTexCoord;
     vAlpha = aAlpha;
 }

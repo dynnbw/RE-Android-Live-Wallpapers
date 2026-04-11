@@ -22,6 +22,8 @@
     <bool name="config_enable_galaxy_wallpaper">true</bool>
     <bool name="config_enable_galaxy4_wallpaper">true</bool>
     <bool name="config_enable_fall_wallpaper">true</bool>
+    <bool name="config_enable_aurora1_wallpaper">true</bool>
+    <bool name="config_enable_aurora2_wallpaper">true</bool>
     <bool name="config_enable_nexus_wallpaper">true</bool>
     <bool name="config_enable_polar_clock_wallpaper">true</bool>
     <bool name="config_enable_wildworld_wallpaper">true</bool>

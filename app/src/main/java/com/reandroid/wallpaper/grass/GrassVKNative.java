@@ -39,6 +39,8 @@ final class GrassVKNative {
             int dandelionVertCount,
             float[] fireflyVerts,
             int fireflyVertCount,
+            float[] fireflyFlareVerts,
+            int fireflyFlareVertCount,
             float[] moonVerts,
             int moonVertCount,
             float[] moonParams);
@@ -62,8 +64,9 @@ final class GrassVKNative {
     static void uploadSpriteTextures(Context context, long handle) {
         uploadSpriteTexture(context, handle, 0, R.drawable.sun);
         uploadSpriteTexture(context, handle, 1, R.drawable.dandelion);
-        uploadSpriteTexture(context, handle, 2, R.drawable.firefly);
+        uploadSpriteTexture(context, handle, 2, R.drawable.firefly1);
         uploadSpriteTexture(context, handle, 3, R.drawable.grass_moon);
+        uploadSpriteTexture(context, handle, 4, R.drawable.firefly2);
     }
 
     static void uploadAATexture(long handle) {

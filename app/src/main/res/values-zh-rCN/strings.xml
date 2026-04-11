@@ -124,6 +124,13 @@
         以顺时针圆弧显示日期和时间：月、日、小时、分和秒。
     </string>
 
+    <string name="wallpaper_aurora1">北极光</string>
+    <string name="wallpaper_aurora1_author">TAT</string>
+    <string name="wallpaper_aurora1_desc">分层流动的极光覆盖星空背景，并支持触摸粒子互动。</string>
+    <string name="wallpaper_aurora2">北极光2</string>
+    <string name="wallpaper_aurora2_author">HU1</string>
+    <string name="wallpaper_aurora2_desc">主题夜景上方的极光幕布持续起伏，并伴随闪烁星光与流星动画。</string>
+
     <!-- Wallpaper showing nexus -->
     <string name="wallpaper_nexus">交错光幕</string>
     <string name="wallpaper_nexus_author">Google</string>
@@ -181,6 +188,8 @@
     <string name="settings_entry_config">基础配置</string>
     <string name="settings_entry_fall">水面落叶</string>
     <string name="settings_entry_grass">天空草地</string>
+    <string name="settings_entry_aurora1">北极光</string>
+    <string name="settings_entry_aurora2">北极光2</string>
     <string name="settings_entry_wildworld">野生世界</string>
     <string name="settings_entry_vis5">多重可视化</string>
     <string name="settings_entry_magicsmoke">魔法烟雾</string>
@@ -213,6 +222,8 @@
 
     <string name="pref_grass_enabled">显示草地</string>
     <string name="pref_grass_enabled_summary">显示或隐藏草地效果</string>
+    <string name="pref_grass_weather_enabled">启用天气效果</string>
+    <string name="pref_grass_weather_enabled_summary">根据天气变化调整亮度、风力与粒子效果</string>
     <string name="pref_grass_count">草叶数量</string>
     <string name="pref_grass_count_summary">修改草的数量（影响性能）</string>
     <string name="pref_grass_height">草地高度</string>

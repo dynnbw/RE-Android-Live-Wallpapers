@@ -13,6 +13,7 @@ layout(push_constant) uniform GrassPushConstants {
 
 void main() {
     gl_Position = uPush.uMVP * vec4(aPosition, 0.0, 1.0);
+    gl_Position.y = -gl_Position.y;
     vColor    = aColor;
     vTexCoord = aTexCoord;
 }

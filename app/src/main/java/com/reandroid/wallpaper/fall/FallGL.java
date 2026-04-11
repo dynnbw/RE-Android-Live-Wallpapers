@@ -23,6 +23,8 @@ import android.graphics.Color;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
 import android.opengl.Matrix;
+import android.os.Process;
+import android.os.SystemClock;
 import android.util.Log;
 
 import com.reandroid.wallpaper.R;
@@ -37,6 +39,8 @@ import java.nio.ShortBuffer;
 
 public class FallGL extends GLESScene {
     private static final String TAG = "FallGL";
+    private static final long PERF_SYNC_INTERVAL_MS = 1000L;
+    private static final long ANR_FRAME_THRESHOLD_MS = 200L;
 
     private int mProgram;
     private int mPositionHandle;
@@ -49,11 +53,21 @@ public class FallGL extends GLESScene {
     private int mRiverbedTexture;
     private FloatBuffer mWaterMeshVertexBuffer;
     private FloatBuffer mWaterMeshTexCoordBuffer;
+    private FloatBuffer mLeafQuadVertexBuffer;
+    private ShortBuffer mWaterIndexBuffer;
     private final float[] mModelMatrix = new float[16];
+    private final float[] mViewMatrix = new float[16];
     private final float[] mMVPMatrix = new float[16];
     private boolean mGLInitialized = false;
     private int mFrameCount = 0;
     private final FallScene mScene;
+    private int mTargetFps = 30;
+    private long mTargetFrameMs = 33L;
+    private boolean mAnrDiagEnabled = false;
+    private long mLastPerfSyncMs = 0L;
+    private long mDiagFrameCount = 0L;
+    private long mDiagAccumulatedMs = 0L;
+    private long mDiagMaxMs = 0L;
 
     public FallGL(int width, int height) {
         super(width, height);
@@ -99,6 +113,10 @@ public class FallGL extends GLESScene {
     public void start() {
         if (mGLInitialized) {
             return;
+        }
+        try {
+            Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
+        } catch (Throwable ignored) {
         }
 
         mGLInitialized = true;
@@ -148,6 +166,9 @@ public class FallGL extends GLESScene {
         }
         mFrameCount++;
 
+        long frameStart = SystemClock.uptimeMillis();
+        syncPerfSettingsIfNeeded(frameStart);
+
         if (!mGLInitialized) {
             if (mResources != null) {
                 start();
@@ -177,6 +198,9 @@ public class FallGL extends GLESScene {
         if (glError != GLES20.GL_NO_ERROR) {
             Log.w(TAG, "drawFrame中GL错误: " + glError);
         }
+
+        long frameCost = SystemClock.uptimeMillis() - frameStart;
+        recordFrameCost(frameCost);
     }
 
     private void syncWaterMeshBuffers(FallScene.SceneData sceneData) {
@@ -201,9 +225,8 @@ public class FallGL extends GLESScene {
 
     private void drawWaterQuad(FallScene.SceneData sceneData) {
         Matrix.setIdentityM(mModelMatrix, 0);
-        float[] mv = new float[16];
-        Matrix.multiplyMM(mv, 0, sceneData.getViewMatrix(), 0, mModelMatrix, 0);
-        Matrix.multiplyMM(mMVPMatrix, 0, sceneData.getProjectionMatrix(), 0, mv, 0);
+        Matrix.multiplyMM(mViewMatrix, 0, sceneData.getViewMatrix(), 0, mModelMatrix, 0);
+        Matrix.multiplyMM(mMVPMatrix, 0, sceneData.getProjectionMatrix(), 0, mViewMatrix, 0);
         GLES20.glUniformMatrix4fv(mMatrixHandle, 1, false, mMVPMatrix, 0);
         GLES20.glUniform1f(mAlphaHandle, 1.0f);
         GLES20.glUniform4f(mColorHandle, 1.0f, 1.0f, 1.0f, 1.0f);
@@ -220,11 +243,15 @@ public class FallGL extends GLESScene {
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mRiverbedTexture);
         GLES20.glUniform1i(mSamplerHandle, 0);
 
-        ShortBuffer indexBuffer = ByteBuffer.allocateDirect(sceneData.getWaterMeshIndices().length * 2)
-                .order(ByteOrder.nativeOrder()).asShortBuffer();
-        indexBuffer.put(sceneData.getWaterMeshIndices()).position(0);
-        GLES20.glDrawElements(GLES20.GL_TRIANGLES, sceneData.getWaterMeshIndexCount(), GLES20.GL_UNSIGNED_SHORT,
-                indexBuffer);
+        int indexCount = sceneData.getWaterMeshIndexCount();
+        if (indexCount > 0) {
+            if (mWaterIndexBuffer == null || mWaterIndexBuffer.capacity() != sceneData.getWaterMeshIndices().length) {
+                mWaterIndexBuffer = ByteBuffer.allocateDirect(sceneData.getWaterMeshIndices().length * 2)
+                        .order(ByteOrder.nativeOrder()).asShortBuffer();
+                mWaterIndexBuffer.put(sceneData.getWaterMeshIndices()).position(0);
+            }
+            GLES20.glDrawElements(GLES20.GL_TRIANGLES, indexCount, GLES20.GL_UNSIGNED_SHORT, mWaterIndexBuffer);
+        }
 
         GLES20.glDisableVertexAttribArray(mPositionHandle);
         GLES20.glDisableVertexAttribArray(mTexCoordHandle);
@@ -285,7 +312,14 @@ public class FallGL extends GLESScene {
                 left, top, 0, 0.0f, 1.0f
         };
 
-        FloatBuffer vertexBuffer = createFloatBuffer(vertices);
+        if (mLeafQuadVertexBuffer == null || mLeafQuadVertexBuffer.capacity() != vertices.length) {
+            mLeafQuadVertexBuffer = createFloatBuffer(vertices);
+        } else {
+            mLeafQuadVertexBuffer.position(0);
+            mLeafQuadVertexBuffer.put(vertices);
+            mLeafQuadVertexBuffer.position(0);
+        }
+
         GLES20.glUniformMatrix4fv(mMatrixHandle, 1, false, mMVPMatrix, 0);
         GLES20.glUniform1f(mAlphaHandle, alpha);
         if (silhouette) {
@@ -295,11 +329,11 @@ public class FallGL extends GLESScene {
         }
 
         GLES20.glEnableVertexAttribArray(mPositionHandle);
-        GLES20.glVertexAttribPointer(mPositionHandle, 3, GLES20.GL_FLOAT, false, 20, vertexBuffer);
+        GLES20.glVertexAttribPointer(mPositionHandle, 3, GLES20.GL_FLOAT, false, 20, mLeafQuadVertexBuffer);
 
-        vertexBuffer.position(3);
+        mLeafQuadVertexBuffer.position(3);
         GLES20.glEnableVertexAttribArray(mTexCoordHandle);
-        GLES20.glVertexAttribPointer(mTexCoordHandle, 2, GLES20.GL_FLOAT, false, 20, vertexBuffer);
+        GLES20.glVertexAttribPointer(mTexCoordHandle, 2, GLES20.GL_FLOAT, false, 20, mLeafQuadVertexBuffer);
 
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture);
@@ -464,6 +498,38 @@ public class FallGL extends GLESScene {
         fb.put(data);
         fb.position(0);
         return fb;
+    }
+
+    private void syncPerfSettingsIfNeeded(long nowMs) {
+        if (nowMs - mLastPerfSyncMs < PERF_SYNC_INTERVAL_MS) {
+            return;
+        }
+        mLastPerfSyncMs = nowMs;
+        int fps = WallpaperSettings.getGlobalFrameRate(30);
+        mTargetFps = Math.max(1, fps);
+        mTargetFrameMs = Math.max(1L, 1000L / mTargetFps);
+        mAnrDiagEnabled = WallpaperSettings.isVulkanAnrDiagnosticsEnabled(true);
+    }
+
+    private void recordFrameCost(long frameCostMs) {
+        if (!mAnrDiagEnabled) {
+            return;
+        }
+        if (frameCostMs >= ANR_FRAME_THRESHOLD_MS) {
+            Log.w(TAG, "Slow frame: " + frameCostMs + "ms, targetFps=" + mTargetFps);
+        }
+        mDiagFrameCount++;
+        mDiagAccumulatedMs += frameCostMs;
+        if (frameCostMs > mDiagMaxMs) {
+            mDiagMaxMs = frameCostMs;
+        }
+        if (mDiagFrameCount >= 120) {
+            long avg = mDiagAccumulatedMs / Math.max(1L, mDiagFrameCount);
+            Log.i(TAG, "FrameStats avg=" + avg + "ms max=" + mDiagMaxMs + "ms fpsTarget=" + mTargetFps);
+            mDiagFrameCount = 0L;
+            mDiagAccumulatedMs = 0L;
+            mDiagMaxMs = 0L;
+        }
     }
 
     private float clamp(float value, float min, float max) {

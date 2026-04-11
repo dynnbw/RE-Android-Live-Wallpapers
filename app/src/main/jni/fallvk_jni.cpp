@@ -140,8 +140,15 @@ public:
             jint waterVertexCount, jint waterIndexCount) {
         std::lock_guard<std::mutex> lock(mutex_);
 
-            if (!uploadWaterMeshLocked(env, waterVertices, waterTexCoords, waterIndices,
-                    waterVertexCount, waterIndexCount)) {
+            if (waterVertexCount > 0) {
+                if (!uploadWaterMeshLocked(env, waterVertices, waterTexCoords, waterIndices,
+                        waterVertexCount, waterIndexCount)) {
+                    return;
+                }
+            }
+
+            if (waterVertexBuffer_ == VK_NULL_HANDLE || waterIndexBuffer_ == VK_NULL_HANDLE
+                    || waterIndexCount_ <= 0) {
                 return;
             }
 
@@ -182,7 +189,7 @@ public:
         VkCommandBuffer commandBuffer = commandBuffers_[imageIndex];
         vkResetCommandBuffer(commandBuffer, 0);
         if (!recordCommandBufferLocked(commandBuffer, imageIndex, projection, view, leaves, xOffset,
-            waterIndexCount)) {
+            waterIndexCount_)) {
             return;
         }
 
@@ -826,43 +833,62 @@ private:
 
     bool uploadWaterMeshLocked(JNIEnv* env, jfloatArray waterVertices, jfloatArray waterTexCoords,
             jshortArray waterIndices, jint waterVertexCount, jint waterIndexCount) {
-        if (waterVertices == nullptr || waterTexCoords == nullptr || waterIndices == nullptr
-                || waterVertexCount <= 0 || waterIndexCount <= 0) {
+        if (waterTexCoords == nullptr || waterVertexCount <= 0) {
             return false;
         }
 
-        const jsize verticesLen = env->GetArrayLength(waterVertices);
         const jsize texLen = env->GetArrayLength(waterTexCoords);
-        const jsize idxLen = env->GetArrayLength(waterIndices);
-        if (verticesLen < waterVertexCount * 3 || texLen < waterVertexCount * 2 || idxLen < waterIndexCount) {
+        if (texLen < waterVertexCount * 2) {
             return false;
         }
 
-        if (!ensureWaterBuffersLocked(static_cast<size_t>(waterVertexCount), static_cast<size_t>(waterIndexCount))) {
-            return false;
+        const bool fullUpload = (waterVertices != nullptr && waterIndices != nullptr && waterIndexCount > 0);
+
+        if (fullUpload) {
+            const jsize verticesLen = env->GetArrayLength(waterVertices);
+            const jsize idxLen = env->GetArrayLength(waterIndices);
+            if (verticesLen < waterVertexCount * 3 || idxLen < waterIndexCount) {
+                return false;
+            }
+            if (!ensureWaterBuffersLocked(static_cast<size_t>(waterVertexCount), static_cast<size_t>(waterIndexCount))) {
+                return false;
+            }
+        } else {
+            if (waterVertexBuffer_ == VK_NULL_HANDLE || waterIndexBuffer_ == VK_NULL_HANDLE || waterVertexCount > waterVertexCapacity_) {
+                return false;
+            }
         }
 
-        tempWaterPositions_.resize(static_cast<size_t>(waterVertexCount) * 3);
         tempWaterTexcoords_.resize(static_cast<size_t>(waterVertexCount) * 2);
-        tempWaterIndices_.resize(static_cast<size_t>(waterIndexCount));
-        env->GetFloatArrayRegion(waterVertices, 0, static_cast<jsize>(tempWaterPositions_.size()), tempWaterPositions_.data());
         env->GetFloatArrayRegion(waterTexCoords, 0, static_cast<jsize>(tempWaterTexcoords_.size()), tempWaterTexcoords_.data());
-        env->GetShortArrayRegion(waterIndices, 0, static_cast<jsize>(tempWaterIndices_.size()),
-                reinterpret_cast<jshort*>(tempWaterIndices_.data()));
 
         auto* mappedVertices = reinterpret_cast<WaterVertex*>(waterVertexMapped_);
-        for (int i = 0; i < waterVertexCount; ++i) {
-            const int p = i * 3;
-            const int t = i * 2;
-            mappedVertices[i].x = tempWaterPositions_[p];
-            mappedVertices[i].y = tempWaterPositions_[p + 1];
-            mappedVertices[i].z = tempWaterPositions_[p + 2];
-            mappedVertices[i].u = tempWaterTexcoords_[t];
-            mappedVertices[i].v = tempWaterTexcoords_[t + 1];
-        }
+        if (fullUpload) {
+            tempWaterPositions_.resize(static_cast<size_t>(waterVertexCount) * 3);
+            tempWaterIndices_.resize(static_cast<size_t>(waterIndexCount));
+            env->GetFloatArrayRegion(waterVertices, 0, static_cast<jsize>(tempWaterPositions_.size()), tempWaterPositions_.data());
+            env->GetShortArrayRegion(waterIndices, 0, static_cast<jsize>(tempWaterIndices_.size()),
+                    reinterpret_cast<jshort*>(tempWaterIndices_.data()));
 
-        std::memcpy(waterIndexMapped_, tempWaterIndices_.data(), static_cast<size_t>(waterIndexCount) * sizeof(uint16_t));
-        waterIndexCount_ = waterIndexCount;
+            for (int i = 0; i < waterVertexCount; ++i) {
+                const int p = i * 3;
+                const int t = i * 2;
+                mappedVertices[i].x = tempWaterPositions_[p];
+                mappedVertices[i].y = tempWaterPositions_[p + 1];
+                mappedVertices[i].z = tempWaterPositions_[p + 2];
+                mappedVertices[i].u = tempWaterTexcoords_[t];
+                mappedVertices[i].v = tempWaterTexcoords_[t + 1];
+            }
+
+            std::memcpy(waterIndexMapped_, tempWaterIndices_.data(), static_cast<size_t>(waterIndexCount) * sizeof(uint16_t));
+            waterIndexCount_ = waterIndexCount;
+        } else {
+            for (int i = 0; i < waterVertexCount; ++i) {
+                const int t = i * 2;
+                mappedVertices[i].u = tempWaterTexcoords_[t];
+                mappedVertices[i].v = tempWaterTexcoords_[t + 1];
+            }
+        }
         return true;
     }
 

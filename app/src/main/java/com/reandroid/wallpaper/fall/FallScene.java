@@ -242,6 +242,8 @@ final class FallScene {
     private boolean mInitialized = false;
     private boolean mMeshBuffersDirty = true;
     private boolean mWaterTexCoordsDirty = true;
+    private float[] mVkLeafData = new float[0];
+    private int mVkLeafFloatCount = 0;
 
     FallScene(int width, int height) {
         mWidth = width;
@@ -323,6 +325,35 @@ final class FallScene {
 
     SceneData getSceneData() {
         return mSceneData;
+    }
+
+    float[] buildLeafDataForVK() {
+        Leaf[] leaves = mSceneData.leaves;
+        int leafCount = leaves != null ? leaves.length : 0;
+        int required = leafCount * 6;
+        if (required <= 0) {
+            mVkLeafFloatCount = 0;
+            return mVkLeafData;
+        }
+        if (mVkLeafData.length < required) {
+            mVkLeafData = new float[required];
+        }
+        for (int i = 0; i < leafCount; i++) {
+            Leaf leaf = leaves[i];
+            int base = i * 6;
+            mVkLeafData[base] = leaf.x;
+            mVkLeafData[base + 1] = leaf.y;
+            mVkLeafData[base + 2] = leaf.scale;
+            mVkLeafData[base + 3] = leaf.angle;
+            mVkLeafData[base + 4] = leaf.altitude;
+            mVkLeafData[base + 5] = leaf.leafTextureIndex;
+        }
+        mVkLeafFloatCount = required;
+        return mVkLeafData;
+    }
+
+    int getVKLeafCount() {
+        return mVkLeafFloatCount / 6;
     }
 
     boolean consumeMeshBufferRebuildRequested() {
@@ -562,7 +593,10 @@ final class FallScene {
         float height = mGlHeight;
         int wResolution = MESH_RESOLUTION + 2;
         int hResolution = (int) (MESH_RESOLUTION * height / 2.0f) + 2;
-        float[] deformedTex = new float[mSceneData.waterMeshTexCoords.length];
+        float[] deformedTex = mSceneData.waterMeshTexCoords;
+        if (deformedTex == null || deformedTex.length < (wResolution * hResolution * 2)) {
+            deformedTex = new float[Math.max(0, wResolution * hResolution * 2)];
+        }
 
         for (int y = 0; y < hResolution; y++) {
             for (int x = 0; x < wResolution; x++) {

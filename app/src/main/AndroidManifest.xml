@@ -93,6 +93,30 @@
 
         <activity
             android:exported="true"
+            android:label="@string/wallpaper_aurora1"
+            android:name="com.reandroid.aurora1.Aurora1"
+            android:theme="@android:style/Theme.NoTitleBar"
+            android:enabled="@bool/config_enable_aurora1_wallpaper">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.TEST" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:exported="true"
+            android:label="@string/wallpaper_aurora2"
+            android:name="com.reandroid.aurora2.Aurora2"
+            android:theme="@android:style/Theme.NoTitleBar"
+            android:enabled="@bool/config_enable_aurora2_wallpaper">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.TEST" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:exported="true"
             android:label="@string/wallpaper_galaxy"
             android:name="com.reandroid.wallpaper.galaxy.Galaxy"
             android:theme="@android:style/Theme.NoTitleBar"
@@ -218,6 +242,30 @@
                 <action android:name="android.service.wallpaper.WallpaperService" />
             </intent-filter>
             <meta-data android:name="android.service.wallpaper" android:resource="@xml/grass_vk" />
+        </service>
+
+        <service
+            android:exported="true"
+            android:label="@string/wallpaper_aurora1"
+            android:name="com.reandroid.aurora1.Aurora1Wallpaper"
+            android:permission="android.permission.BIND_WALLPAPER"
+            android:enabled="@bool/config_enable_aurora1_wallpaper">
+            <intent-filter>
+                <action android:name="android.service.wallpaper.WallpaperService" />
+            </intent-filter>
+            <meta-data android:name="android.service.wallpaper" android:resource="@xml/aurora1" />
+        </service>
+
+        <service
+            android:exported="true"
+            android:label="@string/wallpaper_aurora2"
+            android:name="com.reandroid.aurora2.Aurora2Wallpaper"
+            android:permission="android.permission.BIND_WALLPAPER"
+            android:enabled="@bool/config_enable_aurora2_wallpaper">
+            <intent-filter>
+                <action android:name="android.service.wallpaper.WallpaperService" />
+            </intent-filter>
+            <meta-data android:name="android.service.wallpaper" android:resource="@xml/aurora2" />
         </service>
 
         <service
@@ -479,6 +527,20 @@
             android:theme="@style/Theme.WallpaperSettings"
             android:exported="true"
             android:enabled="@bool/config_enable_grass_wallpaper" />
+
+        <activity
+            android:label="@string/wallpaper_aurora1"
+            android:name="com.reandroid.wallpaper.settings.Aurora1SettingsActivity"
+            android:theme="@style/Theme.WallpaperSettings"
+            android:exported="true"
+            android:enabled="@bool/config_enable_aurora1_wallpaper" />
+
+        <activity
+            android:label="@string/wallpaper_aurora2"
+            android:name="com.reandroid.wallpaper.settings.Aurora2SettingsActivity"
+            android:theme="@style/Theme.WallpaperSettings"
+            android:exported="true"
+            android:enabled="@bool/config_enable_aurora2_wallpaper" />
 
         <activity
             android:label="@string/wallpaper_wildworld"

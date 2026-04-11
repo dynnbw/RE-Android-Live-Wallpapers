@@ -30,7 +30,7 @@ namespace {
 constexpr uint32_t kMaxGrassVertices = 50000;
 constexpr uint32_t kMaxGrassIndices  = 150000;
 constexpr uint32_t kSkyTextureCount  = 5; // night, sunrise, sunset, sky, solar eclipse
-constexpr uint32_t kSpriteTextureCount = 4; // sun, dandelion, firefly, moon
+constexpr uint32_t kSpriteTextureCount = 5; // sun, dandelion, firefly1, moon, firefly2
 constexpr uint32_t kMaxSpriteVertices = 8192;
 
 // ---- vertex layout ----
@@ -142,6 +142,7 @@ public:
             jfloatArray sunVertsArr, jint sunVertCount,
             jfloatArray dandelionVertsArr, jint dandelionVertCount,
             jfloatArray fireflyVertsArr, jint fireflyVertCount,
+            jfloatArray fireflyFlareVertsArr, jint fireflyFlareVertCount,
             jfloatArray moonVertsArr, jint moonVertCount,
             jfloatArray moonParamsArr) {
         std::lock_guard<std::mutex> lock(mutex_);
@@ -165,6 +166,8 @@ public:
             std::min<int>(dandelionVertCount, static_cast<int>(kMaxSpriteVertices)));
         const uint32_t fireflyCount = static_cast<uint32_t>(
             std::min<int>(fireflyVertCount, static_cast<int>(kMaxSpriteVertices)));
+        const uint32_t fireflyFlareCount = static_cast<uint32_t>(
+            std::min<int>(fireflyFlareVertCount, static_cast<int>(kMaxSpriteVertices)));
         const uint32_t moonCount = static_cast<uint32_t>(
             std::min<int>(moonVertCount, static_cast<int>(kMaxSpriteVertices)));
 
@@ -174,6 +177,8 @@ public:
             dandelionVertexMapped_, dandelionVertexBuffer_);
         uploadSpriteGeometryLocked(env, fireflyVertsArr, fireflyCount,
             fireflyVertexMapped_, fireflyVertexBuffer_);
+        uploadSpriteGeometryLocked(env, fireflyFlareVertsArr, fireflyFlareCount,
+            fireflyFlareVertexMapped_, fireflyFlareVertexBuffer_);
         uploadSpriteGeometryLocked(env, moonVertsArr, moonCount,
             moonVertexMapped_, moonVertexBuffer_);
 
@@ -236,7 +241,7 @@ public:
         vkResetCommandBuffer(cb, 0);
         if (!recordCommandBufferLocked(cb, imageIndex,
             vertexCount, indexCount,
-            sunCount, dandelionCount, fireflyCount, moonCount,
+            sunCount, dandelionCount, fireflyCount, fireflyFlareCount, moonCount,
             skyPC, grassPC, moonPC)) return;
 
         VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
@@ -330,7 +335,7 @@ public:
         }
     }
 
-    // slot: 0=sun 1=dandelion 2=firefly 3=moon
+    // slot: 0=sun 1=dandelion 2=firefly1 3=moon 4=firefly2
     void setSpriteTexture(JNIEnv* env, jint slot, jintArray argbPixels, jint width, jint height) {
         if (slot < 0 || slot >= static_cast<jint>(kSpriteTextureCount)) return;
         if (!argbPixels || width <= 0 || height <= 0) return;
@@ -532,6 +537,11 @@ private:
         if (!createMappedBufferLocked(sizeof(SpriteVertex) * kMaxSpriteVertices,
                 VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
                 fireflyVertexBuffer_, fireflyVertexMemory_, fireflyVertexMapped_)) {
+            return false;
+        }
+        if (!createMappedBufferLocked(sizeof(SpriteVertex) * kMaxSpriteVertices,
+                VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+                fireflyFlareVertexBuffer_, fireflyFlareVertexMemory_, fireflyFlareVertexMapped_)) {
             return false;
         }
         if (!createMappedBufferLocked(sizeof(SpriteVertex) * kMaxSpriteVertices,
@@ -903,7 +913,7 @@ private:
         VkDescriptorSetLayout dsl = grassDescriptorSetLayout_;
         if (type == PIPELINE_SKY) {
             dsl = skyDescriptorSetLayout_;
-        } else if (type == PIPELINE_SPRITE || type == PIPELINE_MOON) {
+        } else if (type == PIPELINE_SPRITE) {
             dsl = spriteDescriptorSetLayout_;
         } else if (type == PIPELINE_MOON) {
             dsl = moonDescriptorSetLayout_;
@@ -975,7 +985,7 @@ private:
             vis.pVertexBindingDescriptions      = &binding;
             vis.vertexAttributeDescriptionCount = 3;
             vis.pVertexAttributeDescriptions    = attrs;
-        } else if (type == PIPELINE_SPRITE) {
+        } else if (type == PIPELINE_SPRITE || type == PIPELINE_MOON) {
             binding.binding = 0;
             binding.stride = sizeof(SpriteVertex);
             binding.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
@@ -1545,7 +1555,8 @@ private:
 
     bool recordCommandBufferLocked(VkCommandBuffer cb, uint32_t imageIndex,
             uint32_t vertexCount, uint32_t indexCount,
-            uint32_t sunCount, uint32_t dandelionCount, uint32_t fireflyCount, uint32_t moonCount,
+            uint32_t sunCount, uint32_t dandelionCount, uint32_t fireflyCount,
+            uint32_t fireflyFlareCount, uint32_t moonCount,
             const SkyPushConstants& skyPC, const GrassPushConstants& grassPC,
             const MoonPushConstants& moonPC) {
         VkCommandBufferBeginInfo bi{};
@@ -1628,6 +1639,7 @@ private:
             drawSpriteGroup(0, sunVertexBuffer_, sunCount);
             drawSpriteGroup(1, dandelionVertexBuffer_, dandelionCount);
             drawSpriteGroup(2, fireflyVertexBuffer_, fireflyCount);
+            drawSpriteGroup(4, fireflyFlareVertexBuffer_, fireflyFlareCount);
         }
 
         if (moonPipeline_ != VK_NULL_HANDLE && moonPipelineLayout_ != VK_NULL_HANDLE
@@ -1797,6 +1809,7 @@ private:
         if (sunVertexMapped_) { vkUnmapMemory(device_, sunVertexMemory_); sunVertexMapped_ = nullptr; }
         if (dandelionVertexMapped_) { vkUnmapMemory(device_, dandelionVertexMemory_); dandelionVertexMapped_ = nullptr; }
         if (fireflyVertexMapped_) { vkUnmapMemory(device_, fireflyVertexMemory_); fireflyVertexMapped_ = nullptr; }
+        if (fireflyFlareVertexMapped_) { vkUnmapMemory(device_, fireflyFlareVertexMemory_); fireflyFlareVertexMapped_ = nullptr; }
         if (moonVertexMapped_) { vkUnmapMemory(device_, moonVertexMemory_); moonVertexMapped_ = nullptr; }
         if (sunVertexBuffer_ != VK_NULL_HANDLE) { vkDestroyBuffer(device_, sunVertexBuffer_, nullptr); sunVertexBuffer_ = VK_NULL_HANDLE; }
         if (sunVertexMemory_ != VK_NULL_HANDLE) { vkFreeMemory(device_, sunVertexMemory_, nullptr); sunVertexMemory_ = VK_NULL_HANDLE; }
@@ -1804,6 +1817,8 @@ private:
         if (dandelionVertexMemory_ != VK_NULL_HANDLE) { vkFreeMemory(device_, dandelionVertexMemory_, nullptr); dandelionVertexMemory_ = VK_NULL_HANDLE; }
         if (fireflyVertexBuffer_ != VK_NULL_HANDLE) { vkDestroyBuffer(device_, fireflyVertexBuffer_, nullptr); fireflyVertexBuffer_ = VK_NULL_HANDLE; }
         if (fireflyVertexMemory_ != VK_NULL_HANDLE) { vkFreeMemory(device_, fireflyVertexMemory_, nullptr); fireflyVertexMemory_ = VK_NULL_HANDLE; }
+        if (fireflyFlareVertexBuffer_ != VK_NULL_HANDLE) { vkDestroyBuffer(device_, fireflyFlareVertexBuffer_, nullptr); fireflyFlareVertexBuffer_ = VK_NULL_HANDLE; }
+        if (fireflyFlareVertexMemory_ != VK_NULL_HANDLE) { vkFreeMemory(device_, fireflyFlareVertexMemory_, nullptr); fireflyFlareVertexMemory_ = VK_NULL_HANDLE; }
         if (moonVertexBuffer_ != VK_NULL_HANDLE) { vkDestroyBuffer(device_, moonVertexBuffer_, nullptr); moonVertexBuffer_ = VK_NULL_HANDLE; }
         if (moonVertexMemory_ != VK_NULL_HANDLE) { vkFreeMemory(device_, moonVertexMemory_, nullptr); moonVertexMemory_ = VK_NULL_HANDLE; }
 
@@ -1934,6 +1949,9 @@ private:
     VkBuffer        fireflyVertexBuffer_ = VK_NULL_HANDLE;
     VkDeviceMemory  fireflyVertexMemory_ = VK_NULL_HANDLE;
     void*           fireflyVertexMapped_ = nullptr;
+    VkBuffer        fireflyFlareVertexBuffer_ = VK_NULL_HANDLE;
+    VkDeviceMemory  fireflyFlareVertexMemory_ = VK_NULL_HANDLE;
+    void*           fireflyFlareVertexMapped_ = nullptr;
     VkBuffer        moonVertexBuffer_ = VK_NULL_HANDLE;
     VkDeviceMemory  moonVertexMemory_ = VK_NULL_HANDLE;
     void*           moonVertexMapped_ = nullptr;
@@ -1995,8 +2013,9 @@ Java_com_reandroid_wallpaper_grass_GrassVKNative_nRenderFrame(
         jfloatArray sunVerts, jint sunVertCount,
         jfloatArray dandelionVerts, jint dandelionVertCount,
         jfloatArray fireflyVerts, jint fireflyVertCount,
-    jfloatArray moonVerts, jint moonVertCount,
-    jfloatArray moonParams) {
+        jfloatArray fireflyFlareVerts, jint fireflyFlareVertCount,
+        jfloatArray moonVerts, jint moonVertCount,
+        jfloatArray moonParams) {
     auto* r = asRenderer(handle);
     if (r) r->render(env, skyWeights, grassMvp,
             grassVerts, grassVertCount,
@@ -2004,8 +2023,9 @@ Java_com_reandroid_wallpaper_grass_GrassVKNative_nRenderFrame(
             sunVerts, sunVertCount,
             dandelionVerts, dandelionVertCount,
             fireflyVerts, fireflyVertCount,
-        moonVerts, moonVertCount,
-        moonParams);
+            fireflyFlareVerts, fireflyFlareVertCount,
+            moonVerts, moonVertCount,
+            moonParams);
 }
 
 extern "C" JNIEXPORT void JNICALL

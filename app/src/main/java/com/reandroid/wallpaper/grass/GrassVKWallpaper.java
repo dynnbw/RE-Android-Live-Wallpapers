@@ -2,10 +2,14 @@ package com.reandroid.wallpaper.grass;
 
 import android.graphics.Rect;
 import android.os.Build;
+import android.os.Process;
 import android.os.SystemClock;
 import android.service.wallpaper.WallpaperService;
+import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
+
+import com.reandroid.wallpaper.settings.WallpaperSettings;
 
 public class GrassVKWallpaper extends WallpaperService {
     @Override
@@ -14,7 +18,10 @@ public class GrassVKWallpaper extends WallpaperService {
     }
 
     private final class GrassVKEngine extends Engine implements Runnable {
+        private static final String TAG = "GrassVKWallpaper";
         private static final int VERTEX_STRIDE = 8;
+        private static final long PERF_SYNC_INTERVAL_MS = 1000L;
+        private static final long ANR_FRAME_THRESHOLD_MS = 200L;
 
         private Thread mThread;
         private volatile boolean mRunning;
@@ -25,6 +32,13 @@ public class GrassVKWallpaper extends WallpaperService {
         private int mWidth;
         private int mHeight;
         private short[] mCachedIndices = new short[0];
+        private int mTargetFps = 30;
+        private long mTargetFrameMs = 33L;
+        private boolean mAnrDiagEnabled = false;
+        private long mLastPerfSyncMs = 0L;
+        private long mDiagFrameCount = 0L;
+        private long mDiagAccumulatedMs = 0L;
+        private long mDiagMaxMs = 0L;
 
         @Override
         public void onDestroy() {
@@ -68,7 +82,7 @@ public class GrassVKWallpaper extends WallpaperService {
 
             if (mScene == null) {
                 mScene = new GrassScene(width, height);
-                mScene.init(false);
+                mScene.init(isPreview());
             } else {
                 mScene.resize(width, height);
             }
@@ -116,7 +130,15 @@ public class GrassVKWallpaper extends WallpaperService {
 
         @Override
         public void run() {
+            try {
+                Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
+            } catch (Throwable ignored) {
+            }
+
             while (mRunning) {
+                long frameStart = SystemClock.uptimeMillis();
+                syncPerfSettingsIfNeeded(frameStart);
+
                 if (mRendererHandle != 0L && mScene != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                     long now = SystemClock.uptimeMillis();
                     mScene.update(now);
@@ -128,10 +150,11 @@ public class GrassVKWallpaper extends WallpaperService {
 
                     float[] sky = mScene.computeVKSkyParams(sd);
                     float[] verts = mScene.buildGrassVertexArrayForVK(sd);
-                    int vertCount = verts.length / VERTEX_STRIDE;
+                    int vertCount = mScene.getVKGrassVertexCount();
                         float[] sunVerts = mScene.buildSunSpriteVerticesForVK(sd);
                         float[] dandelionVerts = mScene.buildDandelionSpriteVerticesForVK(sd);
                         float[] fireflyVerts = mScene.buildFireflySpriteVerticesForVK(sd);
+                        float[] fireflyFlareVerts = mScene.buildFireflyFlareSpriteVerticesForVK(sd);
                         float[] moonVerts = mScene.buildMoonSpriteVerticesForVK(sd);
                         float[] moonParams = mScene.buildMoonParamsForVK(sd);
 
@@ -143,18 +166,24 @@ public class GrassVKWallpaper extends WallpaperService {
                             mCachedIndices,
                             mCachedIndices.length,
                             sunVerts,
-                            sunVerts.length / 5,
+                            mScene.getVKSunVertexCount(),
                             dandelionVerts,
-                            dandelionVerts.length / 5,
+                            mScene.getVKDandelionVertexCount(),
                             fireflyVerts,
-                            fireflyVerts.length / 5,
+                            mScene.getVKFireflyVertexCount(),
+                            fireflyFlareVerts,
+                            mScene.getVKFireflyFlareVertexCount(),
                             moonVerts,
-                            moonVerts.length / 5,
+                            mScene.getVKMoonVertexCount(),
                             moonParams);
                 }
 
+                long frameCost = SystemClock.uptimeMillis() - frameStart;
+                recordFrameCost(frameCost);
+
                 try {
-                    Thread.sleep(33L);
+                    long sleepMs = Math.max(1L, mTargetFrameMs - frameCost);
+                    Thread.sleep(sleepMs);
                 } catch (InterruptedException ignored) {
                     Thread.currentThread().interrupt();
                     return;
@@ -165,7 +194,7 @@ public class GrassVKWallpaper extends WallpaperService {
         private void ensureScene() {
             if (mScene == null && mWidth > 0 && mHeight > 0) {
                 mScene = new GrassScene(mWidth, mHeight);
-                mScene.init(false);
+                mScene.init(isPreview());
             }
         }
 
@@ -200,6 +229,38 @@ public class GrassVKWallpaper extends WallpaperService {
                     Thread.currentThread().interrupt();
                 }
                 mThread = null;
+            }
+        }
+
+        private void syncPerfSettingsIfNeeded(long nowMs) {
+            if (nowMs - mLastPerfSyncMs < PERF_SYNC_INTERVAL_MS) {
+                return;
+            }
+            mLastPerfSyncMs = nowMs;
+            int fps = WallpaperSettings.getGlobalFrameRate(30);
+            mTargetFps = Math.max(1, fps);
+            mTargetFrameMs = Math.max(1L, 1000L / mTargetFps);
+            mAnrDiagEnabled = WallpaperSettings.isVulkanAnrDiagnosticsEnabled(true);
+        }
+
+        private void recordFrameCost(long frameCostMs) {
+            if (!mAnrDiagEnabled) {
+                return;
+            }
+            if (frameCostMs >= ANR_FRAME_THRESHOLD_MS) {
+                Log.w(TAG, "Slow frame: " + frameCostMs + "ms, targetFps=" + mTargetFps);
+            }
+            mDiagFrameCount++;
+            mDiagAccumulatedMs += frameCostMs;
+            if (frameCostMs > mDiagMaxMs) {
+                mDiagMaxMs = frameCostMs;
+            }
+            if (mDiagFrameCount >= 120) {
+                long avg = mDiagAccumulatedMs / Math.max(1L, mDiagFrameCount);
+                Log.i(TAG, "FrameStats avg=" + avg + "ms max=" + mDiagMaxMs + "ms fpsTarget=" + mTargetFps);
+                mDiagFrameCount = 0L;
+                mDiagAccumulatedMs = 0L;
+                mDiagMaxMs = 0L;
             }
         }
     }

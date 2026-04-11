@@ -3,8 +3,10 @@ package com.reandroid.wallpaper.fall;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Build;
+import android.os.Process;
 import android.os.SystemClock;
 import android.service.wallpaper.WallpaperService;
+import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 
@@ -17,7 +19,10 @@ public class FallVKWallpaper extends WallpaperService {
     }
 
     private final class FallVKEngine extends Engine implements Runnable {
-        private static final int LEAF_STRIDE = 6;
+        private static final String TAG = "FallVKWallpaper";
+        private static final long SETTINGS_SYNC_INTERVAL_MS = 1000L;
+        private static final long PERF_SYNC_INTERVAL_MS = 1000L;
+        private static final long ANR_FRAME_THRESHOLD_MS = 200L;
 
         private Thread mThread;
         private volatile boolean mRunning;
@@ -29,6 +34,14 @@ public class FallVKWallpaper extends WallpaperService {
         private int mHeight;
         private int mLeafTextureCount = 1;
         private boolean mGreenLeavesEnabled;
+        private long mLastAtlasSyncCheckMs;
+        private int mTargetFps = 30;
+        private long mTargetFrameMs = 33L;
+        private boolean mAnrDiagEnabled = false;
+        private long mLastPerfSyncMs;
+        private long mDiagFrameCount;
+        private long mDiagAccumulatedMs;
+        private long mDiagMaxMs;
 
         @Override
         public void onDestroy() {
@@ -131,26 +144,31 @@ public class FallVKWallpaper extends WallpaperService {
 
         @Override
         public void run() {
+            try {
+                Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
+            } catch (Throwable ignored) {
+            }
+
             while (mRunning) {
+                long frameStart = SystemClock.uptimeMillis();
+                syncPerfSettingsIfNeeded(frameStart);
+
                 if (mRendererHandle != 0L && mScene != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                     syncLeafAtlasIfNeeded();
 
                     long now = SystemClock.uptimeMillis();
                     mScene.update(now);
                     FallScene.SceneData data = mScene.getSceneData();
-                    FallScene.Leaf[] leaves = data.getLeaves();
-                    int leafCount = leaves != null ? leaves.length : 0;
-                    float[] leafData = new float[leafCount * LEAF_STRIDE];
-                    for (int i = 0; i < leafCount; i++) {
-                        FallScene.Leaf leaf = leaves[i];
-                        int base = i * LEAF_STRIDE;
-                        leafData[base] = leaf.x;
-                        leafData[base + 1] = leaf.y;
-                        leafData[base + 2] = leaf.scale;
-                        leafData[base + 3] = leaf.angle;
-                        leafData[base + 4] = leaf.altitude;
-                        leafData[base + 5] = leaf.leafTextureIndex;
-                    }
+                    float[] leafData = mScene.buildLeafDataForVK();
+                    int leafCount = mScene.getVKLeafCount();
+
+                    boolean meshRebuild = mScene.consumeMeshBufferRebuildRequested();
+                    boolean texDirty = meshRebuild || mScene.consumeWaterTexCoordsDirty();
+                    float[] waterVertices = meshRebuild ? data.getWaterMeshVertices() : null;
+                    float[] waterTexCoords = texDirty ? data.getWaterMeshTexCoords() : null;
+                    short[] waterIndices = meshRebuild ? data.getWaterMeshIndices() : null;
+                    int waterVertexCount = texDirty ? data.getWaterMeshVertexCount() : 0;
+                    int waterIndexCount = meshRebuild ? data.getWaterMeshIndexCount() : 0;
 
                     FallVKNative.nRenderFrame(mRendererHandle,
                             data.getProjectionMatrix(),
@@ -158,14 +176,17 @@ public class FallVKWallpaper extends WallpaperService {
                             leafData,
                             leafCount,
                             data.getXOffset(),
-                            data.getWaterMeshVertices(),
-                            data.getWaterMeshTexCoords(),
-                            data.getWaterMeshIndices(),
-                            data.getWaterMeshVertexCount(),
-                            data.getWaterMeshIndexCount());
+                            waterVertices,
+                            waterTexCoords,
+                            waterIndices,
+                            waterVertexCount,
+                            waterIndexCount);
                 }
+                long frameCost = SystemClock.uptimeMillis() - frameStart;
+                recordFrameCost(frameCost);
                 try {
-                    Thread.sleep(16L);
+                    long sleepMs = Math.max(1L, mTargetFrameMs - frameCost);
+                    Thread.sleep(sleepMs);
                 } catch (InterruptedException ignored) {
                     Thread.currentThread().interrupt();
                     return;
@@ -189,6 +210,12 @@ public class FallVKWallpaper extends WallpaperService {
                 return;
             }
 
+            long now = SystemClock.uptimeMillis();
+            if (now - mLastAtlasSyncCheckMs < SETTINGS_SYNC_INTERVAL_MS) {
+                return;
+            }
+            mLastAtlasSyncCheckMs = now;
+
             boolean enabled = WallpaperSettings.isGreenLeavesEnabled(false);
             if (enabled == mGreenLeavesEnabled) {
                 return;
@@ -198,6 +225,38 @@ public class FallVKWallpaper extends WallpaperService {
             mGreenLeavesEnabled = enabled;
             if (mScene != null) {
                 mScene.setLeafTextureCount(mLeafTextureCount);
+            }
+        }
+
+        private void syncPerfSettingsIfNeeded(long nowMs) {
+            if (nowMs - mLastPerfSyncMs < PERF_SYNC_INTERVAL_MS) {
+                return;
+            }
+            mLastPerfSyncMs = nowMs;
+            int fps = WallpaperSettings.getGlobalFrameRate(30);
+            mTargetFps = Math.max(1, fps);
+            mTargetFrameMs = Math.max(1L, 1000L / mTargetFps);
+            mAnrDiagEnabled = WallpaperSettings.isVulkanAnrDiagnosticsEnabled(true);
+        }
+
+        private void recordFrameCost(long frameCostMs) {
+            if (!mAnrDiagEnabled) {
+                return;
+            }
+            if (frameCostMs >= ANR_FRAME_THRESHOLD_MS) {
+                Log.w(TAG, "Slow frame: " + frameCostMs + "ms, targetFps=" + mTargetFps);
+            }
+            mDiagFrameCount++;
+            mDiagAccumulatedMs += frameCostMs;
+            if (frameCostMs > mDiagMaxMs) {
+                mDiagMaxMs = frameCostMs;
+            }
+            if (mDiagFrameCount >= 120) {
+                long avg = mDiagAccumulatedMs / Math.max(1L, mDiagFrameCount);
+                Log.i(TAG, "FrameStats avg=" + avg + "ms max=" + mDiagMaxMs + "ms fpsTarget=" + mTargetFps);
+                mDiagFrameCount = 0L;
+                mDiagAccumulatedMs = 0L;
+                mDiagMaxMs = 0L;
             }
         }
 

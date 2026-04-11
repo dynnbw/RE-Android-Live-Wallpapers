@@ -90,6 +90,8 @@ final class GalaxyScene {
     private final Context mContext;
     private final Random mRandom = new Random();
     private final float[] mProjMatrix = new float[16];
+    private final float[] mTmpMatrixA = new float[16];
+    private final float[] mTmpMatrixB = new float[16];
     private final SceneData mSceneData = new SceneData();
 
     private int mWidth;
@@ -369,15 +371,12 @@ final class GalaxyScene {
             Matrix.frustumM(mProjMatrix, 0, -1, 1, -aspect, aspect, 1, 100);
         }
 
-        float[] transformMatrix = new float[16];
-        float[] tempMatrix = new float[16];
+        Matrix.setRotateM(mTmpMatrixA, 0, 180, 0, 1, 0);
+        Matrix.multiplyMM(mTmpMatrixB, 0, mProjMatrix, 0, mTmpMatrixA, 0);
 
-        Matrix.setRotateM(transformMatrix, 0, 180, 0, 1, 0);
-        Matrix.multiplyMM(tempMatrix, 0, mProjMatrix, 0, transformMatrix, 0);
-
-        Matrix.setIdentityM(transformMatrix, 0);
-        Matrix.scaleM(transformMatrix, 0, -2.0f, 2.0f, 1.0f);
-        Matrix.multiplyMM(mProjMatrix, 0, tempMatrix, 0, transformMatrix, 0);
+        Matrix.setIdentityM(mTmpMatrixA, 0);
+        Matrix.scaleM(mTmpMatrixA, 0, -2.0f, 2.0f, 1.0f);
+        Matrix.multiplyMM(mProjMatrix, 0, mTmpMatrixB, 0, mTmpMatrixA, 0);
     }
 
     private void updateParticles() {
@@ -406,9 +405,8 @@ final class GalaxyScene {
         Matrix.rotateM(matrix, 0, absoluteAngle, 1.0f, 0.0f, 0.0f);
         Matrix.rotateM(matrix, 0, a, 0.0f, 0.4f, 0.1f);
 
-        float[] tempMatrix = new float[16];
-        Matrix.multiplyMM(tempMatrix, 0, mProjMatrix, 0, matrix, 0);
-        System.arraycopy(tempMatrix, 0, matrix, 0, 16);
+        Matrix.multiplyMM(mTmpMatrixA, 0, mProjMatrix, 0, matrix, 0);
+        System.arraycopy(mTmpMatrixA, 0, matrix, 0, 16);
     }
 
     private void loadSettingsFromPreferences() {

@@ -1,7 +1,9 @@
 package com.reandroid.wallpaper.galaxy;
 
 import android.content.Context;
+import android.os.Process;
 import android.os.SystemClock;
+import android.util.Log;
 import android.util.AttributeSet;
 import android.view.Surface;
 import android.view.SurfaceHolder;
@@ -10,6 +12,11 @@ import android.view.SurfaceView;
 import com.reandroid.wallpaper.settings.WallpaperSettings;
 
 class GalaxyVKSurfaceView extends SurfaceView implements SurfaceHolder.Callback, Runnable {
+    private static final String TAG = "GalaxyVKSurfaceView";
+    private static final long PERF_SYNC_INTERVAL_MS = 1000L;
+    private static final long SETTINGS_SYNC_INTERVAL_MS = 1000L;
+    private static final long ANR_FRAME_THRESHOLD_MS = 200L;
+
     private Thread mThread;
     private volatile boolean mRunning;
     private long mRendererHandle;
@@ -17,6 +24,14 @@ class GalaxyVKSurfaceView extends SurfaceView implements SurfaceHolder.Callback,
     private int mWidth;
     private int mHeight;
     private boolean mUseLight2;
+    private long mLastLightSyncCheckMs;
+    private int mTargetFps = 30;
+    private long mTargetFrameMs = 33L;
+    private boolean mAnrDiagEnabled = false;
+    private long mLastPerfSyncMs;
+    private long mDiagFrameCount;
+    private long mDiagAccumulatedMs;
+    private long mDiagMaxMs;
 
     GalaxyVKSurfaceView(Context context) {
         super(context);
@@ -88,23 +103,36 @@ class GalaxyVKSurfaceView extends SurfaceView implements SurfaceHolder.Callback,
 
     @Override
     public void run() {
+        try {
+            Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
+        } catch (Throwable ignored) {
+        }
+
         while (mRunning) {
+            long frameStart = SystemClock.uptimeMillis();
+            syncPerfSettingsIfNeeded(frameStart);
+
             if (mRendererHandle != 0L && mScene != null) {
                 syncLightTextureIfNeeded();
 
                 long now = SystemClock.uptimeMillis();
                 mScene.update(now);
                 GalaxyScene.SceneData sceneData = mScene.getSceneData();
+                boolean colorsDirty = mScene.consumeParticleBufferRebuildRequested();
                 GalaxyVKNative.nRenderFrame(mRendererHandle,
                         sceneData.getMvpMatrix(),
                         sceneData.getParticlePositions(),
-                        sceneData.getParticleColors(),
+                    colorsDirty ? sceneData.getParticleColors() : null,
                         sceneData.getParticleCount(),
                         sceneData.getParticleAlphaMultiplier());
             }
 
+            long frameCost = SystemClock.uptimeMillis() - frameStart;
+            recordFrameCost(frameCost);
+
             try {
-                Thread.sleep(33L);
+                long sleepMs = Math.max(1L, mTargetFrameMs - frameCost);
+                Thread.sleep(sleepMs);
             } catch (InterruptedException ignored) {
                 Thread.currentThread().interrupt();
                 return;
@@ -126,6 +154,12 @@ class GalaxyVKSurfaceView extends SurfaceView implements SurfaceHolder.Callback,
             return;
         }
 
+        long now = SystemClock.uptimeMillis();
+        if (now - mLastLightSyncCheckMs < SETTINGS_SYNC_INTERVAL_MS) {
+            return;
+        }
+        mLastLightSyncCheckMs = now;
+
         boolean desired = WallpaperSettings.isGalaxyLight2Enabled(false);
         if (desired == mUseLight2) {
             return;
@@ -133,6 +167,38 @@ class GalaxyVKSurfaceView extends SurfaceView implements SurfaceHolder.Callback,
 
         GalaxyVKNative.uploadLightTexture(getContext(), mRendererHandle);
         mUseLight2 = desired;
+    }
+
+    private void syncPerfSettingsIfNeeded(long nowMs) {
+        if (nowMs - mLastPerfSyncMs < PERF_SYNC_INTERVAL_MS) {
+            return;
+        }
+        mLastPerfSyncMs = nowMs;
+        int fps = WallpaperSettings.getGlobalFrameRate(30);
+        mTargetFps = Math.max(1, fps);
+        mTargetFrameMs = Math.max(1L, 1000L / mTargetFps);
+        mAnrDiagEnabled = WallpaperSettings.isVulkanAnrDiagnosticsEnabled(true);
+    }
+
+    private void recordFrameCost(long frameCostMs) {
+        if (!mAnrDiagEnabled) {
+            return;
+        }
+        if (frameCostMs >= ANR_FRAME_THRESHOLD_MS) {
+            Log.w(TAG, "Slow frame: " + frameCostMs + "ms, targetFps=" + mTargetFps);
+        }
+        mDiagFrameCount++;
+        mDiagAccumulatedMs += frameCostMs;
+        if (frameCostMs > mDiagMaxMs) {
+            mDiagMaxMs = frameCostMs;
+        }
+        if (mDiagFrameCount >= 120) {
+            long avg = mDiagAccumulatedMs / Math.max(1L, mDiagFrameCount);
+            Log.i(TAG, "FrameStats avg=" + avg + "ms max=" + mDiagMaxMs + "ms fpsTarget=" + mTargetFps);
+            mDiagFrameCount = 0L;
+            mDiagAccumulatedMs = 0L;
+            mDiagMaxMs = 0L;
+        }
     }
 
     private void startRenderer() {

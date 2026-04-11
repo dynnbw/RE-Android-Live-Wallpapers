@@ -16,6 +16,7 @@ import android.opengl.EGLContext;
 import android.opengl.EGLDisplay;
 import android.opengl.EGLSurface;
 import android.opengl.GLES20;
+import android.view.MotionEvent;
 
 public abstract class GLESWallpaper extends WallpaperService {
     private static final String TAG = "GLESWallpaper";
@@ -222,6 +223,16 @@ public abstract class GLESWallpaper extends WallpaperService {
                 }
             }
             return null;
+        }
+
+        @Override
+        public void onTouchEvent(MotionEvent event) {
+            super.onTouchEvent(event);
+            synchronized (mSceneLock) {
+                if (mScene != null) {
+                    mScene.onTouchEvent(event);
+                }
+            }
         }
 
         private void startRenderer() {

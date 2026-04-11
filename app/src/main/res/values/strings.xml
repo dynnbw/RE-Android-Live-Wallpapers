@@ -63,6 +63,13 @@
     </string>
     <string name="wallpaper_grass_vk_desc">Grass wallpaper entry reserved for the Vulkan renderer.</string>
 
+    <string name="wallpaper_aurora1">Aurora</string>
+    <string name="wallpaper_aurora1_author">TAT</string>
+    <string name="wallpaper_aurora1_desc">Layered northern lights drift across a star-filled sky and react to touch.</string>
+    <string name="wallpaper_aurora2">Aurora 2</string>
+    <string name="wallpaper_aurora2_author">HU1</string>
+    <string name="wallpaper_aurora2_desc">Animated aurora curtains drift over themed night landscapes with twinkling stars and shooting stars.</string>
+
     <!-- Wallpaper showing a galaxy -->
     <string name="wallpaper_galaxy">Galaxy</string>
     <string name="wallpaper_galaxy_vk">Galaxy Vulkan</string>
@@ -189,6 +196,8 @@
     <string name="settings_entry_config">Configuration</string>
     <string name="settings_entry_fall">Water Surface Leaves</string>
     <string name="settings_entry_grass">Sky &amp; Grass</string>
+    <string name="settings_entry_aurora1">Aurora</string>
+    <string name="settings_entry_aurora2">Aurora 2</string>
     <string name="settings_entry_wildworld">Wild World</string>
     <string name="settings_entry_fireworks">Fireworks</string>
     <string name="settings_entry_windmill">Windmill</string>
@@ -222,6 +231,8 @@
 
     <string name="pref_grass_enabled">Show grass</string>
     <string name="pref_grass_enabled_summary">Show or hide grass effect</string>
+    <string name="pref_grass_weather_enabled">Enable weather effects</string>
+    <string name="pref_grass_weather_enabled_summary">Apply weather-based lighting, wind, and particle changes</string>
     <string name="pref_grass_count">Grass count</string>
     <string name="pref_grass_count_summary">Adjust the number of grass blades (affects performance)</string>
     <string name="pref_grass_height">Grass height</string>

@@ -1050,28 +1050,44 @@ private:
     }
 
     void uploadParticlesLocked(JNIEnv* env, jfloatArray positionsArray, jfloatArray colorsArray, uint32_t count) {
-        if (particleMappedMemory_ == nullptr || count == 0) {
+        if (particleMappedMemory_ == nullptr || count == 0 || positionsArray == nullptr) {
             return;
         }
 
         jfloat* positions = env->GetFloatArrayElements(positionsArray, nullptr);
-        jfloat* colors = env->GetFloatArrayElements(colorsArray, nullptr);
+        if (positions == nullptr) {
+            return;
+        }
+
+        jfloat* colors = nullptr;
+        const bool hasColors = (colorsArray != nullptr);
+        if (hasColors) {
+            colors = env->GetFloatArrayElements(colorsArray, nullptr);
+            if (colors == nullptr) {
+                env->ReleaseFloatArrayElements(positionsArray, positions, JNI_ABORT);
+                return;
+            }
+        }
         auto* vertices = reinterpret_cast<ParticleVertex*>(particleMappedMemory_);
 
         for (uint32_t i = 0; i < count; ++i) {
             const uint32_t posIndex = i * 3;
-            const uint32_t colorIndex = i * 4;
             vertices[i].angle = positions[posIndex];
             vertices[i].dist = positions[posIndex + 1];
             vertices[i].z = positions[posIndex + 2];
-            vertices[i].r = colors[colorIndex];
-            vertices[i].g = colors[colorIndex + 1];
-            vertices[i].b = colors[colorIndex + 2];
-            vertices[i].size = colors[colorIndex + 3];
+            if (hasColors) {
+                const uint32_t colorIndex = i * 4;
+                vertices[i].r = colors[colorIndex];
+                vertices[i].g = colors[colorIndex + 1];
+                vertices[i].b = colors[colorIndex + 2];
+                vertices[i].size = colors[colorIndex + 3];
+            }
         }
 
         env->ReleaseFloatArrayElements(positionsArray, positions, JNI_ABORT);
-        env->ReleaseFloatArrayElements(colorsArray, colors, JNI_ABORT);
+        if (hasColors) {
+            env->ReleaseFloatArrayElements(colorsArray, colors, JNI_ABORT);
+        }
     }
 
     uint32_t findMemoryTypeLocked(uint32_t typeFilter, VkMemoryPropertyFlags properties) const {

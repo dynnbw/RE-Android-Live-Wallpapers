@@ -9,6 +9,9 @@ import androidx.preference.PreferenceManager;
 import com.reandroid.wallpaper.gles.GLESWallpaper;
 
 public class WallpaperSettings {
+    public static final String KEY_GLOBAL_FRAME_RATE = "global_frame_rate";
+    public static final String KEY_VK_ANR_DIAGNOSTICS = "pref_vk_anr_diag";
+
     public static final String KEY_FALL_LEAF_COUNT = "pref_fall_leaf_count";
     public static final String KEY_FALL_GREEN_LEAVES = "pref_fall_green_leaves";
     public static final String KEY_FALL_MAX_DROPS = "pref_fall_max_drops";
@@ -27,6 +30,7 @@ public class WallpaperSettings {
     public static final String KEY_GRASS_MOON = "pref_grass_moon";
     public static final String KEY_GRASS_DANDELION = "pref_grass_dandelion";
     public static final String KEY_GRASS_FIREFLY = "pref_grass_firefly";
+    public static final String KEY_GRASS_WEATHER_ENABLED = "pref_grass_weather_enabled";
     public static final String KEY_GRASS_DANDELION_COUNT = "pref_grass_dandelion_count";
     public static final String KEY_GRASS_FIREFLY_COUNT = "pref_grass_firefly_count";
     public static final String KEY_GRASS_DANDELION_SPEED = "pref_grass_dandelion_speed";
@@ -74,6 +78,24 @@ public class WallpaperSettings {
         SharedPreferences p = prefs();
         if (p == null) return defValue;
         return p.getBoolean(KEY_GALAXY_USE_LIGHT2, defValue);
+    }
+
+    public static int getGlobalFrameRate(int defValue) {
+        SharedPreferences p = prefs();
+        if (p == null) return defValue;
+        try {
+            String value = p.getString(KEY_GLOBAL_FRAME_RATE, String.valueOf(defValue));
+            int fps = Integer.parseInt(value != null ? value : String.valueOf(defValue));
+            return Math.max(1, fps);
+        } catch (Exception ignored) {
+            return defValue;
+        }
+    }
+
+    public static boolean isVulkanAnrDiagnosticsEnabled(boolean defValue) {
+        SharedPreferences p = prefs();
+        if (p == null) return defValue;
+        return p.getBoolean(KEY_VK_ANR_DIAGNOSTICS, defValue);
     }
 
     public static boolean isGrassEnabled(boolean defValue) {
@@ -152,6 +174,12 @@ public class WallpaperSettings {
         SharedPreferences p = prefs();
         if (p == null) return defValue;
         return p.getBoolean(KEY_GRASS_FIREFLY, defValue);
+    }
+
+    public static boolean isGrassWeatherEnabled(boolean defValue) {
+        SharedPreferences p = prefs();
+        if (p == null) return defValue;
+        return p.getBoolean(KEY_GRASS_WEATHER_ENABLED, defValue);
     }
 
     public static int getDandelionCount(int defValue) {
