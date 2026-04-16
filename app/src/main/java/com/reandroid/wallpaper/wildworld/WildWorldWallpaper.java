@@ -1,7 +1,7 @@
 package com.reandroid.wallpaper.wildworld;
 
-import com.reandroid.wallpaper.gles.GLESScene;
-import com.reandroid.wallpaper.gles.GLESWallpaper;
+import com.reandroid.gles.GLESScene;
+import com.reandroid.gles.GLESWallpaper;
 
 /**
  * 野生世界动态壁纸核心类

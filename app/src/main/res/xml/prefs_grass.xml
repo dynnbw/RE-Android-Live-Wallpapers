@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-    <com.reandroid.wallpaper.settings.PreviewPreference android:key="pref_preview"
+    <com.reandroid.settings.PreviewPreference android:key="pref_preview"
         android:title="@string/pref_live_preview" />
     <SwitchPreferenceCompat android:key="pref_grass_enabled"
         android:title="@string/pref_grass_enabled"
@@ -71,6 +71,12 @@
     <SeekBarPreference android:key="pref_grass_firefly_count"
         android:title="@string/pref_grass_firefly_count" android:min="1" android:max="60"
         android:defaultValue="16" app:showSeekBarValue="true"
+        android:layout="@layout/preference_modern_seekbar" />
+    <SeekBarPreference android:key="pref_grass_star_count"
+        android:title="@string/pref_grass_star_count"
+        android:summary="@string/pref_grass_star_count_summary"
+        android:min="0" android:max="10000"
+        android:defaultValue="2048" app:seekBarIncrement="100" app:showSeekBarValue="true"
         android:layout="@layout/preference_modern_seekbar" />
     <SwitchPreferenceCompat
         android:key="pref_grass_legacy_particles"

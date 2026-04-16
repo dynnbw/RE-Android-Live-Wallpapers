@@ -9,7 +9,7 @@ import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
-import com.reandroid.wallpaper.settings.WallpaperSettings;
+import com.reandroid.settings.WallpaperSettings;
 
 class GalaxyVKSurfaceView extends SurfaceView implements SurfaceHolder.Callback, Runnable {
     private static final String TAG = "GalaxyVKSurfaceView";

@@ -4,7 +4,7 @@ import android.opengl.GLES20;
 import android.opengl.Matrix;
 import android.util.Log;
 
-import com.reandroid.wallpaper.gles.GLESScene;
+import com.reandroid.gles.GLESScene;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;

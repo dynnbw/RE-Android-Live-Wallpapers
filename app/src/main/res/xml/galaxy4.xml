@@ -4,4 +4,4 @@
     android:thumbnail="@drawable/galaxy4_thumb"
     android:description="@string/wallpaper_description_galaxy4"
     android:showMetadataInPreview="true"
-    android:settingsActivity="com.reandroid.wallpaper.settings.Galaxy4SettingsActivity" />
+    android:settingsActivity="com.reandroid.settings.Galaxy4SettingsActivity" />

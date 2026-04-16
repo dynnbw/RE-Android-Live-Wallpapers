@@ -4,4 +4,4 @@
     android:thumbnail="@drawable/ww_pterosaur"
     android:author="@string/wallpaper_wildworld_author"
     android:showMetadataInPreview="true"
-    android:settingsActivity="com.reandroid.wallpaper.settings.WildWorldSettingsActivity" />
+    android:settingsActivity="com.reandroid.settings.WildWorldSettingsActivity" />

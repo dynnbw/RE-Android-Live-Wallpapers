@@ -32,8 +32,8 @@ import android.util.Log;
 import androidx.preference.PreferenceManager;
 
 import com.reandroid.wallpaper.R;
-import com.reandroid.wallpaper.gles.GLESScene;
-import com.reandroid.wallpaper.gles.RawResourceLoader;
+import com.reandroid.gles.GLESScene;
+import com.reandroid.gles.RawResourceLoader;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -345,7 +345,7 @@ public class NexusGL extends GLESScene {
      * 从资源文件读取，默认0
      */
     private void loadMode() {
-        Context ctx = com.reandroid.wallpaper.gles.GLESWallpaper.getAppContext();
+        Context ctx = com.reandroid.gles.GLESWallpaper.getAppContext();
         if (ctx != null) {
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(ctx);
             try {
@@ -367,7 +367,7 @@ public class NexusGL extends GLESScene {
      * 从SharedPreferences加载可配置参数
      */
     private void loadParameters() {
-        Context ctx = com.reandroid.wallpaper.gles.GLESWallpaper.getAppContext();
+        Context ctx = com.reandroid.gles.GLESWallpaper.getAppContext();
         SharedPreferences prefs = ctx != null 
             ? PreferenceManager.getDefaultSharedPreferences(ctx) 
             : null;
@@ -534,7 +534,7 @@ public class NexusGL extends GLESScene {
     }
 
     private int loadBackgroundTexture(BitmapFactory.Options options) {
-        Context ctx = com.reandroid.wallpaper.gles.GLESWallpaper.getAppContext();
+        Context ctx = com.reandroid.gles.GLESWallpaper.getAppContext();
         if (ctx == null) {
             return loadBackgroundResourceTexture(R.drawable.pyramid_background, options);
         }
@@ -556,7 +556,7 @@ public class NexusGL extends GLESScene {
     }
 
     private void checkAndReloadBackground() {
-        Context ctx = com.reandroid.wallpaper.gles.GLESWallpaper.getAppContext();
+        Context ctx = com.reandroid.gles.GLESWallpaper.getAppContext();
         if (ctx == null || mResources == null) return;
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(ctx);

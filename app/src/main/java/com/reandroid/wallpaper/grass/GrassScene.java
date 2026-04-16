@@ -1,23 +1,21 @@
 package com.reandroid.wallpaper.grass;
 
 import android.content.Context;
-import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
-import android.location.LocationManager;
 import android.opengl.Matrix;
 import android.os.SystemClock;
 
-import androidx.core.content.ContextCompat;
-
-import com.reandroid.wallpaper.gles.GLESWallpaper;
-import com.reandroid.wallpaper.settings.WallpaperSettings;
-import com.reandroid.wallpaper.weather.WeatherCondition;
-import com.reandroid.wallpaper.weather.WeatherState;
+import com.reandroid.gles.GLESWallpaper;
+import com.reandroid.settings.WallpaperSettings;
+import com.reandroid.weather.WeatherCondition;
+import com.reandroid.weather.WeatherState;
 
 import java.util.Calendar;
 import java.util.Random;
 import java.util.TimeZone;
+
+import static com.reandroid.wallpaper.grass.GrassConstants.*;
 
 /**
  * Grass 壁纸场景逻辑层（纯 Java，无 GL 调用）。
@@ -25,161 +23,20 @@ import java.util.TimeZone;
  */
 class GrassScene {
 
-    // ---- Constants ----
-    static final int DEFAULT_BLADE_COUNT = 200;
-    private static final float TESSELATION = 0.5f;
-    static final float HALF_TESSELATION = 0.25f;
-    static final float MAX_BEND = 0.09f;
-    private static final float SECONDS_IN_DAY = 86400.0f;
-    private static final float SOLAR_MEAN_ANGULAR_RADIUS_DEG = 0.2665f;
-    private static final float LUNAR_MEAN_ANGULAR_RADIUS_DEG = 0.2727f;
-    private static final float SOLAR_ECLIPSE_MODEL_TOLERANCE_DEG = 0.75f;
-    static final float SUN_PHOTOSPHERE_SCALE = 0.88f;
-    private static final int B = 0x100, BM = 0xff, N = 0x1000;
-
-    // Legacy particle constants
-    static final int LEGACY_MAX_NORMAL = 10;
-    static final int LEGACY_MAX_EXTRAS = 50;
-    static final float LEGACY_SPEED = 0.1f;
-    private static final float LEGACY_SPEED_VARIANCE = 0.3f;
-    private static final float LEGACY_VERTICAL_MOTION_SCALE = 1.3f;
-    private static final int LEGACY_VECTOR_MIN_INTERVAL_MS = 800;
-    private static final int LEGACY_VECTOR_MAX_INTERVAL_MS = 1200;
-    static final int LEGACY_MAX_DELAY = 5000;
-    static final int LEGACY_MAX_STAY = 5000;
-    static final int LEGACY_MAX_FLARE = 1000;
-    static final int LEGACY_MAX_INTERVAL = 5000;
-    static final float LEGACY_INTERVAL_VARIANCE = 0.3f;
-    private static final int LEGACY_MAX_BLOW_INTERVAL = 180000;
-    static final int LEGACY_TYPE_DANDELION = 0;
-    static final int LEGACY_TYPE_FIREFLY = 1;
-
-    static final int DEFAULT_DANDELION_COUNT = 10;
-    static final int DEFAULT_FIREFLY_COUNT = 16;
-    static final float DANDELION_SIZE_SCALE = 2.2f;
-    static final float FIREFLY_SIZE_SCALE = 6.0f;
-    private static final float DANDELION_SPEED_SCALE = 1.6f;
-
-    // ---- Inner data classes ----
-
-    static class Blade {
-        float angle;
-        int size;
-        float xPos, yPos, offset, scale, lengthX, lengthY, hardness;
-        float h, s, b;
-        float turbulencex;
-    }
-
-    static class Dandelion {
-        float x, y, speed, size, swayPhase, swaySpeed, rotationDeg;
-    }
-
-    static class Firefly {
-        float x, y, vx, vy, size, phase, flickerSpeed;
-    }
-
-    static class LegacyParticle {
-        int type;
-        boolean active;
-        float angle;
-        int bladeNum, sizeNum, texture;
-        long startTime, stayEndTime, silentEndTime, flareEndTime;
-        long velocityRetargetTime;
-        float originX, originY, dx, dy;
-
-        LegacyParticle() {}
-    }
-
-    static class MoonEclipse {
-        final int type;
-        final float fraction, phase, shadowOffsetX, shadowOffsetY;
-
-        MoonEclipse(int t, float fr, float ph, float sox, float soy) {
-            type = t; fraction = fr; phase = ph; shadowOffsetX = sox; shadowOffsetY = soy;
-        }
-    }
-
-    static class SolarEclipse {
-        final float fraction, phase, moonRadiusRatio;
-
-        SolarEclipse(float fr, float ph, float mrr) {
-            fraction = fr; phase = ph; moonRadiusRatio = mrr;
-        }
-    }
-
-    // ---- SceneData: mutable snapshot read by GrassGL each frame ----
-    static class SceneData {
-        final float[] projectionMatrix = new float[16];
-
-        // Settings
-        boolean grassEnabled, nightInvert, nightDesaturateGrass;
-        boolean useAccurateSun, sunEnabled, moonEnabled;
-        float grassHeightScale, grassWidthScale, grassHardnessScale;
-        boolean useGrassTint;
-        float grassTintH, grassTintS, grassTintV;
-        boolean dandelionEnabled, fireflyEnabled, legacyParticles;
-
-        // Particle/blade arrays (GrassGL reads these; GrassScene owns/updates them)
-        Blade[] blades;
-        Dandelion[] dandelions;
-        Firefly[] fireflies;
-        LegacyParticle[] legacyNormal;
-        LegacyParticle[] legacyExtras;
-        int legacyType;
-        long legacyNow;
-
-        // Time-of-day (simple non-accurate mode)
-        float timeFraction, dawn, morning, afternoon, dusk;
-        float newB;
-        boolean isNight;
-        WeatherCondition weatherCondition;
-
-        // Accurate sun/sky
-        final float[] accurateWeights = new float[4];
-        float solarEclipseWeight;
-        double lastSunAltitude;
-
-        // Sun position (accurate mode)
-        boolean hasSunData;
-        float sunX, sunY, sunAlpha, sunSize;
-
-        // Solar eclipse occlusion overlay at sun disc
-        boolean hasSolarEclipseOcclusion;
-        SolarEclipse solarEclipseAtSun;
-        float eclipseMoonX, eclipseMoonY, eclipseSunX, eclipseSunY, eclipseSunSize, eclipseSunAlpha;
-
-        // Moon (accurate mode)
-        boolean moonVisible;
-        float moonPhaseAngle, moonX, moonY, moonSize;
-        boolean moonIsDaytime;
-        float moonBrightness, moonAlpha, moonContrast, moonSaturation, moonBlueTint;
-        MoonEclipse moonEclipse;
-
-        // Per-frame animation
-        float xDraw, dt;
-        long animNowMs;
-
-        // Signals GrassGL to rebuild blade index/vertex buffers
-        boolean bladeIndexRebuildNeeded;
-    }
+    private static final float ONE_MINUTE_DAY_FRACTION = 1.0f / 1440.0f;
 
     // ---- Instance fields ----
     int mWidth, mHeight;
     private boolean mIsPreview;
     private boolean mInitialized = false;
 
-    // Noise tables (Perlin 2D)
-    private final int[] p = new int[B + B + 2];
-    private final float[][] g2 = new float[B + B + 2][2];
-
     final Random mRandom = new Random(System.currentTimeMillis());
+    private final GrassWindField mWindField = new GrassWindField();
+    private final GrassBladeSystem mBladeSystem;
+    private final GrassDayNightSystem mDayNightSystem = new GrassDayNightSystem();
+    private final GrassRenderDataBuilder mRenderDataBuilder;
 
-    // Location and sun state
-    private final Location mLocation = new Location("grass_wallpaper");
-    private TimeZone mTimeZone = TimeZone.getDefault();
-    SunCalculator mSunCalculator;
-    private float mDawn, mMorning, mAfternoon, mDusk;
-    private long mLastSunUpdateMs = 0L;
+    // Sun state
     private float mXOffset = 0.0f;
     private int mSettingsHash = 0;
 
@@ -197,19 +54,10 @@ class GrassScene {
     private float mGrassTintR = 1.0f, mGrassTintG = 1.0f, mGrassTintB = 1.0f;
     private float mGrassTintH = 0.0f, mGrassTintS = 0.0f, mGrassTintV = 1.0f;
 
-    // Accurate sun weights / eclipse state
-    private final float[] mAccurateWeights = new float[]{1.0f, 0.0f, 0.0f, 0.0f};
-    private long mLastWeightUpdateMs = 0L;
-    private double mLastSunAltitude = 0.0;
-    private double mLastSunriseHour = -1.0, mLastSunsetHour = -1.0;
-    private double mLastSunriseOfficialHour = -1.0, mLastSunsetOfficialHour = -1.0;
-    private long mLastLocationUpdateMs = 0L;
+    // Accurate sun / eclipse state
     private long mLastSolarEclipseUpdateMs = 0L;
     private float mSolarEclipseWeight = 0.0f;
 
-    // Blades
-    Blade[] mBlades;
-    int[] mBladeSizes;
     int mBladeCount = DEFAULT_BLADE_COUNT;
     int mVertexCount, mIndexCount;
 
@@ -263,8 +111,23 @@ class GrassScene {
     GrassScene(int width, int height) {
         mWidth = width;
         mHeight = height;
-        mLocation.setLatitude(37.7749f);
-        mLocation.setLongitude(-122.4194f);
+        mBladeSystem = new GrassBladeSystem(mRandom, mWindField, width, height, mBladeCount);
+        mRenderDataBuilder = new GrassRenderDataBuilder(new GrassRenderDataBuilder.LegacyParticleOps() {
+            @Override
+            public LegacyParticle createLegacyParticle(int type) {
+                return GrassScene.this.createLegacyParticle(type);
+            }
+
+            @Override
+            public void flyLegacyFirefly(LegacyParticle p, boolean isInit) {
+                GrassScene.this.flyLegacyFirefly(p, isInit);
+            }
+
+            @Override
+            public void flyLegacyDandelion(LegacyParticle p, boolean isInit) {
+                GrassScene.this.flyLegacyDandelion(p, isInit);
+            }
+        });
     }
 
     // ---- Lifecycle ----
@@ -274,14 +137,14 @@ class GrassScene {
         mInitialized = true;
         mIsPreview = isPreview;
 
-        initNoise();
+        mWindField.init(mRandom);
         updateSettingsFromPrefs();
-        initBlades();
+        mBladeSystem.initBlades();
+        syncBladeBuffersFromSystem(true);
         initDandelions();
         initFireflies();
 
-        mSunCalculator = new SunCalculator(mLocation, mTimeZone.getID());
-        updateSunTimes();
+        mDayNightSystem.initDefaultLocation();
 
         Matrix.orthoM(mSceneData.projectionMatrix, 0, 0, mWidth, mHeight, 0, -1.0f, 1.0f);
         mXOffset = isPreview ? 0.5f : 0.0f;
@@ -290,8 +153,10 @@ class GrassScene {
     void resize(int width, int height) {
         mWidth = width;
         mHeight = height;
+        mBladeSystem.setViewport(width, height);
         Matrix.orthoM(mSceneData.projectionMatrix, 0, 0, width, height, 0, -1.0f, 1.0f);
-        updateBlades();
+        mBladeSystem.updateBladePositionsForViewport();
+        syncBladeBuffersFromSystem(false);
         initDandelions();
         initFireflies();
     }
@@ -340,23 +205,26 @@ class GrassScene {
         }
         mLastAnimTimeMs = animNowMs;
 
-        if (mLastSunUpdateMs == 0L || (System.currentTimeMillis() - mLastSunUpdateMs) > 3600000L) {
-            updateSunTimes();
+        long nowMs = System.currentTimeMillis();
+        if (mDayNightSystem.getLastSunUpdateMs() == 0L || (nowMs - mDayNightSystem.getLastSunUpdateMs()) > 3600000L) {
+            mDayNightSystem.updateSunTimes(nowMs);
         }
 
-        float timeFrac = timeFraction();
+        float timeFrac = mDayNightSystem.timeFraction(mIsPreview, mUseAccurateSun);
         float newB;
         boolean isNight;
 
         if (mUseAccurateSun) {
-            updateAccurateWeights();
-            newB = clamp(mAccurateWeights[3] + 0.6f * (mAccurateWeights[1] + mAccurateWeights[2]), 0.0f, 1.0f);
-            isNight = mLastSunAltitude < 0.0;
+            mDayNightSystem.updateAccurateWeights(nowMs);
+            float[] accurate = mDayNightSystem.getAccurateWeights();
+            newB = clamp(accurate[3] + 0.6f * (accurate[1] + accurate[2]), 0.0f, 1.0f);
+            isNight = mDayNightSystem.getLastSunAltitude() < 0.0;
 
             // Compute moon data once, reuse for sun/moon/eclipse rendering
-            Calendar now = Calendar.getInstance(mTimeZone);
-            MoonCalculator.MoonData moonData = mSunCalculator != null
-                    ? MoonCalculator.compute(now, mLocation.getLatitude(), mLocation.getLongitude())
+            Calendar now = Calendar.getInstance(mDayNightSystem.getTimeZone());
+            Location location = mDayNightSystem.getLocation();
+            MoonCalculator.MoonData moonData = mDayNightSystem.getSunCalculator() != null
+                    ? MoonCalculator.compute(now, location.getLatitude(), location.getLongitude())
                     : null;
             updateSolarEclipseState(moonData);
 
@@ -372,42 +240,49 @@ class GrassScene {
                 mSceneData.moonVisible = false;
             }
         } else {
-            newB = computeSimpleNewB(timeFrac);
-            isNight = (timeFrac < mDawn || timeFrac > mDusk);
+            newB = mDayNightSystem.computeSimpleNewB(timeFrac);
+            isNight = (timeFrac < mDayNightSystem.getDawn() || timeFrac > mDayNightSystem.getDusk());
             mSceneData.hasSunData = false;
             mSceneData.hasSolarEclipseOcclusion = false;
             mSceneData.moonVisible = false;
         }
 
-        newB = clamp(newB * weatherBrightnessMultiplier(mWeatherCondition), 0.0f, 1.0f);
+        newB = clamp(newB * GrassWeatherSystem.brightnessMultiplier(mWeatherCondition), 0.0f, 1.0f);
         if (mSceneData.hasSunData) {
-            mSceneData.sunAlpha = clamp(mSceneData.sunAlpha * weatherSunAlphaScale(mWeatherCondition),
+            mSceneData.sunAlpha = clamp(mSceneData.sunAlpha * GrassWeatherSystem.sunAlphaScale(mWeatherCondition),
                 0.0f, 1.0f);
         }
         if (mSceneData.moonVisible) {
-            mSceneData.moonAlpha = clamp(mSceneData.moonAlpha * weatherMoonAlphaScale(mWeatherCondition),
+            mSceneData.moonAlpha = clamp(mSceneData.moonAlpha * GrassWeatherSystem.moonAlphaScale(mWeatherCondition),
                 0.0f, 1.0f);
             mSceneData.moonBrightness = clamp(
-                mSceneData.moonBrightness * weatherMoonBrightnessScale(mWeatherCondition),
+                mSceneData.moonBrightness * GrassWeatherSystem.moonBrightnessScale(mWeatherCondition),
                 0.0f, 1.0f);
         }
 
         // Update blade angles using noise
-        float dayNightWind = weatherWindDayNightScale(mWeatherCondition, isNight);
+        float dayNightWind = GrassWeatherSystem.windDayNightScale(mWeatherCondition, isNight);
         float noiseNow = SystemClock.uptimeMillis() * 0.00004f
-            * weatherWindTimeScale(mWeatherCondition) * dayNightWind;
-        updateBladeAngles(noiseNow, weatherWindAmplitudeScale(mWeatherCondition) * dayNightWind);
+            * GrassWeatherSystem.windTimeScale(mWeatherCondition) * dayNightWind;
+        mBladeSystem.updateBladeAngles(noiseNow,
+            GrassWeatherSystem.windAmplitudeScale(mWeatherCondition) * dayNightWind);
 
-        boolean allowDandelion = weatherAllowsDandelion(mWeatherCondition);
-        boolean allowFirefly = weatherAllowsFirefly(mWeatherCondition);
+        boolean allowDandelion = GrassWeatherSystem.allowsDandelion(mWeatherCondition);
+        boolean allowFirefly = GrassWeatherSystem.allowsFirefly(mWeatherCondition);
+        float dandelionVisibility = (mDandelionEnabled && allowDandelion)
+                ? computeDandelionVisibility(timeFrac) : 0.0f;
+        float fireflyVisibility = (mFireflyEnabled && allowFirefly)
+                ? computeFireflyVisibility(timeFrac) : 0.0f;
+        float starVisibility = computeStarVisibility(timeFrac);
 
         // Update particle positions
         if (!mLegacyParticles) {
-            if (!isNight && mDandelionEnabled && allowDandelion && mDandelions != null) {
-                updateDandelionPositions(dt);
+            if (dandelionVisibility > 0.001f && mDandelions != null) {
+                GrassParticleSystem.updateDandelionPositions(mRandom, mDandelions, dt,
+                        mDandelionSpeedScale, mWidth, mHeight);
             }
-            if (isNight && mFireflyEnabled && allowFirefly && mFireflies != null) {
-                updateFireflyPositions(dt);
+            if (fireflyVisibility > 0.001f && mFireflies != null) {
+                GrassParticleSystem.updateFireflyPositions(mFireflies, dt, mWidth, mHeight);
             }
         } else {
             updateLegacyState(isNight, animNowMs);
@@ -427,10 +302,13 @@ class GrassScene {
         mSceneData.grassTintH = mGrassTintH;
         mSceneData.grassTintS = mGrassTintS;
         mSceneData.grassTintV = mGrassTintV;
-        mSceneData.dandelionEnabled = mDandelionEnabled && allowDandelion;
-        mSceneData.fireflyEnabled = mFireflyEnabled && allowFirefly;
+        mSceneData.dandelionEnabled = dandelionVisibility > 0.001f;
+        mSceneData.fireflyEnabled = fireflyVisibility > 0.001f;
+        mSceneData.dandelionVisibility = dandelionVisibility;
+        mSceneData.fireflyVisibility = fireflyVisibility;
+        mSceneData.starVisibility = starVisibility;
         mSceneData.legacyParticles = mLegacyParticles;
-        mSceneData.blades = mBlades;
+        mSceneData.blades = mBladeSystem.getBlades();
         mSceneData.dandelions = mDandelions;
         mSceneData.fireflies = mFireflies;
         mSceneData.legacyNormal = legacyNormal;
@@ -438,16 +316,16 @@ class GrassScene {
         mSceneData.legacyType = legacyType;
         mSceneData.legacyNow = legacyNow;
         mSceneData.timeFraction = timeFrac;
-        mSceneData.dawn = mDawn;
-        mSceneData.morning = mMorning;
-        mSceneData.afternoon = mAfternoon;
-        mSceneData.dusk = mDusk;
+        mSceneData.dawn = mDayNightSystem.getDawn();
+        mSceneData.morning = mDayNightSystem.getMorning();
+        mSceneData.afternoon = mDayNightSystem.getAfternoon();
+        mSceneData.dusk = mDayNightSystem.getDusk();
         mSceneData.newB = newB;
         mSceneData.isNight = isNight;
         mSceneData.weatherCondition = mWeatherCondition;
-        System.arraycopy(mAccurateWeights, 0, mSceneData.accurateWeights, 0, 4);
+        System.arraycopy(mDayNightSystem.getAccurateWeights(), 0, mSceneData.accurateWeights, 0, 4);
         mSceneData.solarEclipseWeight = mSolarEclipseWeight;
-        mSceneData.lastSunAltitude = mLastSunAltitude;
+        mSceneData.lastSunAltitude = mDayNightSystem.getLastSunAltitude();
         mSceneData.xDraw = mix(mWidth, 0.0f, mXOffset);
         mSceneData.dt = dt;
         mSceneData.animNowMs = animNowMs;
@@ -457,181 +335,12 @@ class GrassScene {
 
     // ---- Private update helpers ----
 
-    private void updateBladeAngles(float noiseNow, float windAmplitudeScale) {
-        if (mBlades == null) return;
-        for (Blade blade : mBlades) {
-            float newAngle = (turbulencef2(blade.turbulencex, noiseNow, 4.0f) - 0.5f)
-                    * 0.5f * windAmplitudeScale;
-            blade.angle = clamp(blade.angle + (newAngle + blade.offset - blade.angle) * 0.15f,
-                    -MAX_BEND, MAX_BEND);
-        }
-    }
-
-    private static float weatherBrightnessMultiplier(WeatherCondition condition) {
-        switch (condition) {
-            case D2_CLOUDY: return 0.92f;
-            case D3_DREARY: return 0.76f;
-            case D4_FOG: return 0.72f;
-            case D5_RAIN_SHOWERS: return 0.66f;
-            case D6_THUNDERSTORMS: return 0.58f;
-            case D7_FLURRIES_SNOW: return 0.82f;
-            case D8_ICE_COLD: return 0.84f;
-            case D9_SLEET: return 0.64f;
-            case D1_CLEAR:
-            default:
-                return 1.0f;
-        }
-    }
-
-    private static float weatherWindTimeScale(WeatherCondition condition) {
-        switch (condition) {
-            case D5_RAIN_SHOWERS: return 1.55f;
-            case D6_THUNDERSTORMS: return 1.9f;
-            case D9_SLEET: return 1.6f;
-            case D3_DREARY: return 1.2f;
-            case D2_CLOUDY: return 1.1f;
-            case D4_FOG: return 0.85f;
-            case D7_FLURRIES_SNOW:
-            case D8_ICE_COLD:
-                return 0.9f;
-            case D1_CLEAR:
-            default:
-                return 1.0f;
-        }
-    }
-
-    private static float weatherWindAmplitudeScale(WeatherCondition condition) {
-        switch (condition) {
-            case D5_RAIN_SHOWERS: return 1.45f;
-            case D6_THUNDERSTORMS: return 1.7f;
-            case D9_SLEET: return 1.5f;
-            case D3_DREARY: return 1.2f;
-            case D2_CLOUDY: return 1.05f;
-            case D4_FOG: return 0.75f;
-            case D7_FLURRIES_SNOW:
-            case D8_ICE_COLD:
-                return 0.85f;
-            case D1_CLEAR:
-            default:
-                return 1.0f;
-        }
-    }
-
-    private static float weatherWindDayNightScale(WeatherCondition condition, boolean isNight) {
-        if (!isNight) {
-            return 1.0f;
-        }
-        switch (condition) {
-            case D6_THUNDERSTORMS: return 0.92f;
-            case D5_RAIN_SHOWERS:
-            case D9_SLEET:
-                return 0.88f;
-            case D7_FLURRIES_SNOW:
-            case D8_ICE_COLD:
-                return 0.82f;
-            case D4_FOG:
-                return 0.78f;
-            case D3_DREARY:
-            case D2_CLOUDY:
-                return 0.90f;
-            case D1_CLEAR:
-            default:
-                return 0.94f;
-        }
-    }
-
-    private static boolean weatherAllowsDandelion(WeatherCondition condition) {
-        switch (condition) {
-            case D5_RAIN_SHOWERS:
-            case D6_THUNDERSTORMS:
-            case D7_FLURRIES_SNOW:
-            case D8_ICE_COLD:
-            case D9_SLEET:
-            case D3_DREARY:
-            case D4_FOG:
-                return false;
-            case D1_CLEAR:
-            case D2_CLOUDY:
-            default:
-                return true;
-        }
-    }
-
-    private static boolean weatherAllowsFirefly(WeatherCondition condition) {
-        switch (condition) {
-            case D1_CLEAR:
-            case D2_CLOUDY:
-                return true;
-            default:
-                return false;
-        }
-    }
-
-    private static float weatherSunAlphaScale(WeatherCondition condition) {
-        switch (condition) {
-            case D3_DREARY: return 0.72f;
-            case D4_FOG: return 0.55f;
-            case D5_RAIN_SHOWERS: return 0.45f;
-            case D6_THUNDERSTORMS: return 0.30f;
-            case D7_FLURRIES_SNOW: return 0.62f;
-            case D8_ICE_COLD: return 0.66f;
-            case D9_SLEET: return 0.40f;
-            case D2_CLOUDY: return 0.86f;
-            case D1_CLEAR:
-            default:
-                return 1.0f;
-        }
-    }
-
-    private static float weatherMoonAlphaScale(WeatherCondition condition) {
-        switch (condition) {
-            case D3_DREARY: return 0.78f;
-            case D4_FOG: return 0.62f;
-            case D5_RAIN_SHOWERS: return 0.52f;
-            case D6_THUNDERSTORMS: return 0.35f;
-            case D7_FLURRIES_SNOW: return 0.70f;
-            case D8_ICE_COLD: return 0.74f;
-            case D9_SLEET: return 0.48f;
-            case D2_CLOUDY: return 0.90f;
-            case D1_CLEAR:
-            default:
-                return 1.0f;
-        }
-    }
-
-    private static float weatherMoonBrightnessScale(WeatherCondition condition) {
-        switch (condition) {
-            case D3_DREARY: return 0.84f;
-            case D4_FOG: return 0.75f;
-            case D5_RAIN_SHOWERS: return 0.65f;
-            case D6_THUNDERSTORMS: return 0.52f;
-            case D7_FLURRIES_SNOW: return 0.82f;
-            case D8_ICE_COLD: return 0.85f;
-            case D9_SLEET: return 0.62f;
-            case D2_CLOUDY: return 0.92f;
-            case D1_CLEAR:
-            default:
-                return 1.0f;
-        }
-    }
-
-    private void updateDandelionPositions(float dt) {
-        for (Dandelion d : mDandelions) {
-            d.x += d.speed * DANDELION_SPEED_SCALE * mDandelionSpeedScale * dt;
-            if (d.x > mWidth + d.size) {
-                resetDandelion(d, false);
-            }
-        }
-    }
-
-    private void updateFireflyPositions(float dt) {
-        for (Firefly f : mFireflies) {
-            f.x += f.vx * dt;
-            f.y += f.vy * dt;
-            if (f.x < 0) f.x = mWidth;
-            if (f.x > mWidth) f.x = 0;
-            if (f.y < 0) f.y = mHeight;
-            if (f.y > mHeight) f.y = 0;
+    private void syncBladeBuffersFromSystem(boolean rebuildIndices) {
+        mVertexCount = mBladeSystem.getVertexCount();
+        mIndexCount = mBladeSystem.getIndexCount();
+        mRenderDataBuilder.setGeometry(mWidth, mHeight, mVertexCount, mIndexCount, mBladeSystem.getBladeSizes());
+        if (rebuildIndices) {
+            mBladeIndexRebuildNeeded = true;
         }
     }
 
@@ -662,17 +371,18 @@ class GrassScene {
     // ---- Sun / Moon position computation ----
 
     private void computeSunPosition(Calendar now, MoonCalculator.MoonData moonData) {
-        if (mSunCalculator == null) {
+        SunCalculator sunCalculator = mDayNightSystem.getSunCalculator();
+        if (sunCalculator == null) {
             mSceneData.hasSunData = false;
             mSceneData.hasSolarEclipseOcclusion = false;
             return;
         }
-        double hourAngleDeg = mSunCalculator.computeHourAngle(now);
+        double hourAngleDeg = sunCalculator.computeHourAngle(now);
         float sunX = celestialXFromHourAngle(hourAngleDeg);
-        float clampedAlt = clamp((float) mLastSunAltitude, 0.0f, 90.0f);
+        float clampedAlt = clamp((float) mDayNightSystem.getLastSunAltitude(), 0.0f, 90.0f);
         float sunY = mHeight * (1.0f - clampedAlt / 90.0f);
         float sunSize = mWidth * 0.32f;
-        float sunAlpha = clamp((float) ((mLastSunAltitude + 6.0) / 12.0), 0.0f, 1.0f);
+        float sunAlpha = clamp((float) ((mDayNightSystem.getLastSunAltitude() + 6.0) / 12.0), 0.0f, 1.0f);
 
         mSceneData.hasSunData = true;
         mSceneData.sunX = sunX;
@@ -705,7 +415,7 @@ class GrassScene {
             mSceneData.moonVisible = false;
             return;
         }
-        double sunAlt = mUseAccurateSun ? mLastSunAltitude : data.sunAltitudeDeg;
+        double sunAlt = mUseAccurateSun ? mDayNightSystem.getLastSunAltitude() : data.sunAltitudeDeg;
         boolean isDaytime = sunAlt > 0.0;
         float moonX = moonXFromHourAngle(data.moonHourAngleDeg);
         float clampedAlt = clamp((float) data.moonAltitudeDeg, 0.0f, 90.0f);
@@ -729,17 +439,84 @@ class GrassScene {
     }
 
     private float computeSimpleNewB(float now) {
-        if (now >= 0.0f && now < mDawn) return 0.0f;
-        if (now >= mDawn && now <= mMorning) {
-            float half = mDawn + (mMorning - mDawn) * 0.5f;
-            return now <= half ? normf(mDawn, half, now) : 1.0f;
+        return mDayNightSystem.computeSimpleNewB(now);
+    }
+
+    private float computeDandelionVisibility(float now) {
+        float dawn = mDayNightSystem.getDawn();
+        float dusk = mDayNightSystem.getDusk();
+        float dawnProgress = progressFromStart(now, dawn, ONE_MINUTE_DAY_FRACTION);
+        if (dawnProgress >= 0.0f) {
+            return clamp(dawnProgress, 0.0f, 1.0f);
         }
-        if (now > mMorning && now < mAfternoon) return 1.0f;
-        if (now >= mAfternoon && now <= mDusk) {
-            float half = mAfternoon + (mDusk - mAfternoon) * 0.5f;
-            return now <= half ? (1.0f - normf(mAfternoon, half, now)) : 0.0f;
+        float duskProgress = progressFromStart(now, dusk, ONE_MINUTE_DAY_FRACTION);
+        if (duskProgress >= 0.0f) {
+            return clamp(1.0f - duskProgress, 0.0f, 1.0f);
         }
-        return 0.0f;
+        return isBetweenClock(now, dawn, dusk) ? 1.0f : 0.0f;
+    }
+
+    private float computeFireflyVisibility(float now) {
+        float dawn = mDayNightSystem.getDawn();
+        float dusk = mDayNightSystem.getDusk();
+        float duskProgress = progressFromStart(now, dusk, ONE_MINUTE_DAY_FRACTION);
+        if (duskProgress >= 0.0f) {
+            return clamp(duskProgress, 0.0f, 1.0f);
+        }
+        float dawnProgress = progressFromStart(now, dawn, ONE_MINUTE_DAY_FRACTION);
+        if (dawnProgress >= 0.0f) {
+            return clamp(1.0f - dawnProgress, 0.0f, 1.0f);
+        }
+        return isBetweenClock(now, dusk, dawn) ? 1.0f : 0.0f;
+    }
+
+    private float computeStarVisibility(float now) {
+        float dawn = mDayNightSystem.getDawn();
+        float morning = mDayNightSystem.getMorning();
+        float afternoon = mDayNightSystem.getAfternoon();
+        float dusk = mDayNightSystem.getDusk();
+
+        if (isBetweenClock(now, dawn, morning)) {
+            return clamp(1.0f - clockProgress(now, dawn, morning), 0.0f, 1.0f);
+        }
+        if (isBetweenClock(now, morning, dusk)) {
+            return 0.0f;
+        }
+
+        float nightFadeEnd = wrap01(dusk + ONE_MINUTE_DAY_FRACTION);
+        if (isBetweenClock(now, dusk, nightFadeEnd)) {
+            return clamp(clockProgress(now, dusk, nightFadeEnd), 0.0f, 1.0f);
+        }
+
+        if (isBetweenClock(now, afternoon, dusk)) {
+            return 0.0f;
+        }
+
+        return 1.0f;
+    }
+
+    private float progressFromStart(float now, float start, float duration) {
+        if (duration <= 0.0f) {
+            return -1.0f;
+        }
+        float delta = now - start;
+        if (delta < 0.0f) {
+            delta += 1.0f;
+        }
+        if (delta < 0.0f || delta > duration) {
+            return -1.0f;
+        }
+        return delta / duration;
+    }
+
+    private float wrap01(float value) {
+        if (value >= 1.0f) {
+            return value - 1.0f;
+        }
+        if (value < 0.0f) {
+            return value + 1.0f;
+        }
+        return value;
     }
 
     private float celestialXFromHourAngle(double hourAngleDeg) {
@@ -825,7 +602,9 @@ class GrassScene {
 
         if (newBladeCount > 0 && newBladeCount != mBladeCount) {
             mBladeCount = newBladeCount;
-            initBlades();
+            mBladeSystem.setBladeCount(mBladeCount);
+            mBladeSystem.initBlades();
+            syncBladeBuffersFromSystem(true);
         }
         if (!mLegacyParticles) {
             if (mDandelions == null || mDandelions.length != mDandelionCount) initDandelions();
@@ -836,91 +615,37 @@ class GrassScene {
     // ---- Blade methods ----
 
     private void initBlades() {
-        mBlades = new Blade[mBladeCount];
-        mBladeSizes = new int[mBladeCount];
-        for (int i = 0; i < mBladeCount; i++) {
-            Blade blade = new Blade();
-            createBlade(blade);
-            mBlades[i] = blade;
-            mBladeSizes[i] = blade.size;
-        }
-        computeBladeBufferCounts();
-        mBladeIndexRebuildNeeded = true;
+        mBladeSystem.setBladeCount(mBladeCount);
+        mBladeSystem.initBlades();
+        syncBladeBuffersFromSystem(true);
     }
 
     private void computeBladeBufferCounts() {
-        mVertexCount = 0;
-        mIndexCount = 0;
-        for (int size : mBladeSizes) {
-            mIndexCount += size * 2 * 3;
-            mVertexCount += size + 2;
-        }
+        syncBladeBuffersFromSystem(false);
     }
 
     private void updateBlades() {
-        if (mBlades == null) return;
-        for (Blade blade : mBlades) {
-            float xpos = random(-mWidth, mWidth);
-            blade.xPos = xpos;
-            blade.turbulencex = xpos * 0.006f;
-            blade.yPos = mHeight;
-        }
+        mBladeSystem.setViewport(mWidth, mHeight);
+        mBladeSystem.updateBladePositionsForViewport();
+        syncBladeBuffersFromSystem(false);
     }
 
     private void createBlade(Blade blade) {
-        float size = random(4.0f) + 4.0f;
-        float xpos = random(-mWidth, mWidth);
-        blade.angle = 0.0f;
-        blade.size = (int) (size / TESSELATION);
-        blade.xPos = xpos;
-        blade.yPos = mHeight;
-        blade.offset = random(0.2f) - 0.1f;
-        blade.scale = 4.0f / (size / TESSELATION) + (random(0.6f) + 0.2f) * TESSELATION;
-        blade.lengthX = (random(4.5f) + 3.0f) * TESSELATION * size;
-        blade.lengthY = (random(5.5f) + 2.0f) * TESSELATION * size;
-        blade.hardness = (random(1.0f) + 0.2f) * TESSELATION;
-        blade.h = random(0.02f) + 0.2f;
-        blade.s = random(0.22f) + 0.78f;
-        blade.b = random(0.65f) + 0.35f;
-        blade.turbulencex = xpos * 0.006f;
+        // Moved to GrassBladeSystem.
     }
 
     // ---- Dandelion / Firefly methods ----
 
     private void initDandelions() {
-        mDandelions = new Dandelion[mDandelionCount];
-        for (int i = 0; i < mDandelionCount; i++) {
-            Dandelion d = new Dandelion();
-            resetDandelion(d, true);
-            mDandelions[i] = d;
-        }
+        mDandelions = GrassParticleSystem.initDandelions(mRandom, mDandelionCount, mWidth, mHeight);
     }
 
     void resetDandelion(Dandelion d, boolean randomX) {
-        float size = random(32.0f, 72.0f) * DANDELION_SIZE_SCALE;
-        d.size = size;
-        d.y = random(0.1f * mHeight, 0.9f * mHeight);
-        d.speed = random(20.0f, 60.0f);
-        d.swayPhase = random(0.0f, 6.28318f);
-        d.swaySpeed = random(0.6f, 1.4f);
-        d.rotationDeg = random(-15.0f, 15.0f);
-        if (randomX) d.x = random(-mWidth, 0.0f) - size;
-        else d.x = -size - random(0.0f, mWidth * 0.2f);
+        GrassParticleSystem.resetDandelion(mRandom, d, randomX, mWidth, mHeight);
     }
 
     private void initFireflies() {
-        mFireflies = new Firefly[mFireflyCount];
-        for (int i = 0; i < mFireflyCount; i++) {
-            Firefly f = new Firefly();
-            f.x = random(0.0f, mWidth);
-            f.y = random(0.0f, mHeight);
-            f.vx = random(-10.0f, 10.0f);
-            f.vy = random(-8.0f, 8.0f);
-            f.size = random(6.0f, 12.0f) * FIREFLY_SIZE_SCALE;
-            f.phase = random(0.0f, 6.28318f);
-            f.flickerSpeed = random(0.8f, 1.6f);
-            mFireflies[i] = f;
-        }
+        mFireflies = GrassParticleSystem.initFireflies(mRandom, mFireflyCount, mWidth, mHeight);
     }
 
     // ---- Legacy particle methods ----
@@ -940,305 +665,44 @@ class GrassScene {
     }
 
     LegacyParticle createLegacyParticle(int type) {
-        LegacyParticle p = new LegacyParticle();
-        p.type = type;
-        p.startTime = legacyNow + (long) (Math.random() * LEGACY_MAX_DELAY);
-        p.silentEndTime = legacyNow
-                + (long) ((1.0 + (Math.random() * 2 - 1) * LEGACY_INTERVAL_VARIANCE) * LEGACY_MAX_INTERVAL);
-        p.flareEndTime = legacyNow;
-        p.stayEndTime = legacyNow;
-        p.texture = (type == LEGACY_TYPE_DANDELION) ? 0 : 1;
-        p.bladeNum = -1;
-        p.sizeNum = -1;
-        p.active = true;
-        if (type == LEGACY_TYPE_DANDELION) {
-            flyLegacyDandelion(p, true);
-            p.angle = (float) (Math.random() * 60.0 - 30.0);
-        } else {
-            flyLegacyFirefly(p, true);
-        }
-        return p;
+        return GrassParticleSystem.createLegacyParticle(mRandom, legacyNow, legacyDirection,
+                type, mWidth, mHeight);
     }
 
     void flyLegacyFirefly(LegacyParticle p, boolean isInit) {
-        long delta = legacyNow - p.startTime;
-        if (isInit || legacyNow >= p.velocityRetargetTime) {
-            if (Math.random() > 0.5) {
-                p.dx = (float) (-(1.0 - LEGACY_SPEED_VARIANCE + Math.random() * 2 * LEGACY_SPEED_VARIANCE));
-            } else {
-                p.dx = (float) ((1.0 - LEGACY_SPEED_VARIANCE + Math.random() * 2 * LEGACY_SPEED_VARIANCE));
-            }
-            p.dy = (float) (-(1.0 - LEGACY_SPEED_VARIANCE + Math.random() * 2 * LEGACY_SPEED_VARIANCE));
-            p.velocityRetargetTime = legacyNow + LEGACY_VECTOR_MIN_INTERVAL_MS
-                    + (long) (Math.random() * (LEGACY_VECTOR_MAX_INTERVAL_MS - LEGACY_VECTOR_MIN_INTERVAL_MS));
-        }
-        if (isInit) {
-            p.originX = (float) (Math.random() * mWidth * 2);
-            p.originY = mHeight;
-        } else {
-            p.originX += p.dx * LEGACY_SPEED * delta;
-            p.originY += p.dy * LEGACY_SPEED * LEGACY_VERTICAL_MOTION_SCALE * delta;
-        }
+        GrassParticleSystem.flyLegacyFirefly(mRandom, p, isInit, legacyNow, legacyDirection, mWidth, mHeight);
     }
 
     void flyLegacyDandelion(LegacyParticle p, boolean isInit) {
-        long delta = legacyNow - p.startTime;
-        if (isInit || legacyNow >= p.velocityRetargetTime) {
-            if (Math.random() > 0.5) {
-                p.dy = (float) (-(1.0 - LEGACY_SPEED_VARIANCE + Math.random() * 2 * LEGACY_SPEED_VARIANCE));
-            } else {
-                p.dy = (float) ((1.0 - LEGACY_SPEED_VARIANCE + Math.random() * 2 * LEGACY_SPEED_VARIANCE));
-            }
-            if (legacyDirection == 0) {
-                p.dx = (float) (1.0 - LEGACY_SPEED_VARIANCE + Math.random() * 2 * LEGACY_SPEED_VARIANCE);
-            } else {
-                p.dx = (float) (-(1.0 - LEGACY_SPEED_VARIANCE + Math.random() * 2 * LEGACY_SPEED_VARIANCE));
-            }
-            p.velocityRetargetTime = legacyNow + LEGACY_VECTOR_MIN_INTERVAL_MS
-                    + (long) (Math.random() * (LEGACY_VECTOR_MAX_INTERVAL_MS - LEGACY_VECTOR_MIN_INTERVAL_MS));
-        }
-        if (isInit) {
-            if (legacyDirection == 0) {
-                p.originX = 5.0f;
-                p.originY = (float) (Math.random() * mHeight);
-            } else if (legacyDirection == 1) {
-                p.originX = mWidth * 2.0f;
-                p.originY = (float) (Math.random() * mHeight);
-            } else {
-                p.originX = 0.0f;
-                p.originY = (float) (Math.random() * mHeight);
-            }
-        } else {
-            p.originX += p.dx * LEGACY_SPEED * delta;
-            p.originY += p.dy * LEGACY_SPEED * LEGACY_VERTICAL_MOTION_SCALE * delta;
-        }
+        GrassParticleSystem.flyLegacyDandelion(mRandom, p, isInit, legacyNow, legacyDirection, mWidth, mHeight);
     }
 
     // ---- Sun time helpers ----
 
     private float timeFraction() {
-        if (!mIsPreview || mUseAccurateSun) {
-            Calendar now = Calendar.getInstance(mTimeZone);
-            return (now.get(Calendar.HOUR_OF_DAY) * 3600.0f
-                    + now.get(Calendar.MINUTE) * 60.0f
-                    + now.get(Calendar.SECOND)) / SECONDS_IN_DAY;
-        }
-        float t = (System.currentTimeMillis() % 30000L) / 30000.0f;
-        return t - (int) t;
+        return mDayNightSystem.timeFraction(mIsPreview, mUseAccurateSun);
     }
 
     private void updateSunTimes() {
-        float dawn = 0.3f, dusk = 0.75f;
-        // Original Grass behavior updates location for dawn/dusk regardless of accurate sun mode.
-        updateLocationFromSystem(System.currentTimeMillis());
-        if (mSunCalculator != null) {
-            mTimeZone = TimeZone.getDefault();
-            mSunCalculator = new SunCalculator(mLocation, mTimeZone.getID());
-            Calendar now = Calendar.getInstance(mTimeZone);
-            double sunrise = mSunCalculator.computeSunriseTime(SunCalculator.ZENITH_CIVIL, now);
-            double sunset = mSunCalculator.computeSunsetTime(SunCalculator.ZENITH_CIVIL, now);
-            if (!Double.isNaN(sunrise) && !Double.isNaN(sunset)
-                    && sunrise > 0.0 && sunrise < 24.0
-                    && sunset > 0.0 && sunset < 24.0
-                    && sunrise < sunset) {
-                dawn = SunCalculator.timeToDayFraction(sunrise);
-                dusk = SunCalculator.timeToDayFraction(sunset);
-            }
-        }
-        mDawn = clamp(dawn, 0.0f, 1.0f);
-        mDusk = clamp(dusk, 0.0f, 1.0f);
-        mMorning = mDawn + 1.0f / 12.0f;
-        mAfternoon = mDusk - 1.0f / 12.0f;
-        mLastSunUpdateMs = System.currentTimeMillis();
+        mDayNightSystem.updateSunTimes(System.currentTimeMillis());
     }
 
     // ---- Accurate sun / sky weights ----
 
     private void updateAccurateWeights() {
-        long nowMs = System.currentTimeMillis();
-        updateLocationFromSystem(nowMs);
-        TimeZone tz = TimeZone.getDefault();
-        Calendar now = Calendar.getInstance(tz);
-
-        SunCalculator calc = mSunCalculator;
-        if (calc == null || !tz.getID().equals(mTimeZone.getID())) {
-            calc = new SunCalculator(mLocation, tz.getID());
-        }
-
-        double sunrise = calc.computeSunriseTime(SunCalculator.ZENITH_CIVIL, now);
-        double sunset = calc.computeSunsetTime(SunCalculator.ZENITH_CIVIL, now);
-        double sunriseOfficial = calc.computeSunriseTime(SunCalculator.ZENITH_OFFICIAL, now);
-        double sunsetOfficial = calc.computeSunsetTime(SunCalculator.ZENITH_OFFICIAL, now);
-        mLastSunriseHour = sunrise;
-        mLastSunsetHour = sunset;
-        mLastSunriseOfficialHour = sunriseOfficial;
-        mLastSunsetOfficialHour = sunsetOfficial;
-
-        Calendar noon = (Calendar) now.clone();
-        noon.set(Calendar.HOUR_OF_DAY, 12);
-        noon.set(Calendar.MINUTE, 0);
-        noon.set(Calendar.SECOND, 0);
-        noon.set(Calendar.MILLISECOND, 0);
-        Calendar midnight = (Calendar) now.clone();
-        midnight.set(Calendar.HOUR_OF_DAY, 0);
-        midnight.set(Calendar.MINUTE, 0);
-        midnight.set(Calendar.SECOND, 0);
-        midnight.set(Calendar.MILLISECOND, 0);
-
-        double noonAlt = calc.computeSunAltitude(noon);
-        double midnightAlt = calc.computeSunAltitude(midnight);
-
-        if (noonAlt < 0.0 && midnightAlt < 0.0) {
-            mAccurateWeights[0] = 1.0f; mAccurateWeights[1] = 0.0f;
-            mAccurateWeights[2] = 0.0f; mAccurateWeights[3] = 0.0f;
-            mLastWeightUpdateMs = nowMs;
-            mLastSunAltitude = calc.computeSunAltitude(now);
-            return;
-        }
-        if (noonAlt > 0.0 && midnightAlt > 0.0) {
-            mAccurateWeights[0] = 0.0f; mAccurateWeights[1] = 0.0f;
-            mAccurateWeights[2] = 0.0f; mAccurateWeights[3] = 1.0f;
-            mLastWeightUpdateMs = nowMs;
-            mLastSunAltitude = calc.computeSunAltitude(now);
-            return;
-        }
-        if (sunrise <= 0.0 && sunset <= 0.0) {
-            mAccurateWeights[0] = 1.0f; mAccurateWeights[1] = 0.0f;
-            mAccurateWeights[2] = 0.0f; mAccurateWeights[3] = 0.0f;
-            mLastWeightUpdateMs = nowMs;
-            mLastSunAltitude = -90.0;
-            return;
-        }
-        if (sunrise >= 24.0 && sunset >= 24.0) {
-            mAccurateWeights[0] = 0.0f; mAccurateWeights[1] = 0.0f;
-            mAccurateWeights[2] = 0.0f; mAccurateWeights[3] = 1.0f;
-            mLastWeightUpdateMs = nowMs;
-            mLastSunAltitude = 90.0;
-            return;
-        }
-
-        double altitude = calc.computeSunAltitude(now);
-        boolean rising = calc.isSunRising(now);
-        mLastSunAltitude = altitude;
-
-        long intervalMs = (altitude >= -6.0 && altitude <= 5.0) ? 30000L : 60000L;
-        if (mLastWeightUpdateMs != 0L && (nowMs - mLastWeightUpdateMs) < intervalMs) {
-            return;
-        }
-
-        float wNight = 0.0f, wSunrise = 0.0f, wSunset = 0.0f, wSky = 0.0f;
-
-        float nowMinutes = now.get(Calendar.HOUR_OF_DAY) * 60.0f
-                + now.get(Calendar.MINUTE)
-                + now.get(Calendar.SECOND) / 60.0f;
-        float sunriseMin = (float) (sunrise * 60.0);
-        float sunsetMin = (float) (sunset * 60.0);
-
-        if (sunriseMin >= 0.0f && sunriseMin < 1440.0f && sunsetMin > 0.0f && sunsetMin <= 1440.0f
-                && sunsetMin > sunriseMin) {
-            float dawnStart = sunriseMin;
-            float dawnToSunriseEnd = dawnStart + 20.0f;
-            float dawnHoldEnd = dawnStart + 40.0f;
-            float dawnToDayEnd = dawnStart + 60.0f;
-            float duskStart = sunsetMin - 80.0f;
-            float duskHoldStart = duskStart + 40.0f;
-            float duskToNightStart = duskHoldStart + 20.0f;
-            float duskEnd = duskToNightStart + 50.0f;
-
-            if (isBetweenClock(nowMinutes, dawnStart, dawnToSunriseEnd)) {
-                float t = clockProgress(nowMinutes, dawnStart, dawnToSunriseEnd);
-                wNight = 1.0f - t; wSunrise = t;
-            } else if (isBetweenClock(nowMinutes, dawnToSunriseEnd, dawnHoldEnd)) {
-                wSunrise = 1.0f;
-            } else if (isBetweenClock(nowMinutes, dawnHoldEnd, dawnToDayEnd)) {
-                float t = clockProgress(nowMinutes, dawnHoldEnd, dawnToDayEnd);
-                wSunrise = 1.0f - t; wSky = t;
-            } else if (isBetweenClock(nowMinutes, duskStart, duskHoldStart)) {
-                float t = clockProgress(nowMinutes, duskStart, duskHoldStart);
-                wSky = 1.0f - t; wSunset = t;
-            } else if (isBetweenClock(nowMinutes, duskHoldStart, duskToNightStart)) {
-                wSunset = 1.0f;
-            } else if (isBetweenClock(nowMinutes, duskToNightStart, duskEnd)) {
-                float t = clockProgress(nowMinutes, duskToNightStart, duskEnd);
-                wSunset = 1.0f - t; wNight = t;
-            } else if (isBetweenClock(nowMinutes, dawnToDayEnd, duskStart)) {
-                wSky = 1.0f;
-            } else {
-                wNight = 1.0f;
-            }
-        } else {
-            if (rising) {
-                if (altitude <= -6.0) { wNight = 1.0f; }
-                else if (altitude <= 0.0) {
-                    wNight = 1.0f - (float) ((altitude + 6.0) / 6.0); wSunrise = 1.0f - wNight;
-                } else if (altitude <= 5.0) {
-                    wSunrise = (float) ((5.0 - altitude) / 5.0); wSky = 1.0f - wSunrise;
-                } else { wSky = 1.0f; }
-            } else {
-                if (altitude >= 5.0) { wSky = 1.0f; }
-                else if (altitude >= 0.0) {
-                    wSky = (float) (altitude / 5.0); wSunset = 1.0f - wSky;
-                } else if (altitude >= -6.0) {
-                    wSunset = (float) ((altitude + 6.0) / 6.0); wNight = 1.0f - wSunset;
-                } else { wNight = 1.0f; }
-            }
-        }
-        mAccurateWeights[0] = wNight;
-        mAccurateWeights[1] = wSunrise;
-        mAccurateWeights[2] = wSunset;
-        mAccurateWeights[3] = wSky;
-        mLastWeightUpdateMs = nowMs;
-        mLastSunAltitude = altitude;
+        mDayNightSystem.updateAccurateWeights(System.currentTimeMillis());
     }
 
     private boolean isBetweenClock(float now, float start, float end) {
-        if (start <= end) return now >= start && now < end;
-        return now >= start || now < end;
+        return GrassAstronomyCalculator.isBetweenClock(now, start, end);
     }
 
     private float clockProgress(float now, float start, float end) {
-        float duration, elapsed;
-        if (start <= end) {
-            duration = end - start; elapsed = now - start;
-        } else {
-            duration = (1440.0f - start) + end;
-            elapsed = now >= start ? (now - start) : (1440.0f - start + now);
-        }
-        if (duration <= 0.0f) return 0.0f;
-        return clamp(elapsed / duration, 0.0f, 1.0f);
+        return GrassAstronomyCalculator.clockProgress(now, start, end);
     }
 
     private void updateLocationFromSystem(long nowMs) {
-        if (mLastLocationUpdateMs != 0L && (nowMs - mLastLocationUpdateMs) < 300000L) return;
-        Context ctx = GLESWallpaper.getAppContext();
-        if (ctx == null) return;
-        boolean hasFine = ContextCompat.checkSelfPermission(ctx,
-                android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
-        boolean hasCoarse = ContextCompat.checkSelfPermission(ctx,
-                android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
-        if (!hasFine && !hasCoarse) return;
-        LocationManager lm = (LocationManager) ctx.getSystemService(Context.LOCATION_SERVICE);
-        if (lm == null) return;
-        Location best = null;
-        try {
-            Location gps = hasFine ? lm.getLastKnownLocation(LocationManager.GPS_PROVIDER) : null;
-            Location net = lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-            Location passive = lm.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
-            best = pickBestLocation(gps, net);
-            best = pickBestLocation(best, passive);
-        } catch (SecurityException ignored) {}
-        if (best != null) {
-            mLocation.setLatitude(best.getLatitude());
-            mLocation.setLongitude(best.getLongitude());
-            mSunCalculator = new SunCalculator(mLocation, mTimeZone.getID());
-            mLastLocationUpdateMs = nowMs;
-        }
-    }
-
-    private Location pickBestLocation(Location a, Location b) {
-        if (a == null) return b;
-        if (b == null) return a;
-        return a.getTime() >= b.getTime() ? a : b;
+        mDayNightSystem.updateLocationFromSystem(nowMs);
     }
 
     private void updateSolarEclipseState(MoonCalculator.MoonData data) {
@@ -1250,9 +714,10 @@ class GrassScene {
             mLastSolarEclipseUpdateMs = nowMs;
             return;
         }
-        Calendar now = Calendar.getInstance(mTimeZone);
+        Calendar now = Calendar.getInstance(mDayNightSystem.getTimeZone());
         SolarEclipse eclipse = computeSolarEclipse(data, now);
-        float dayVisibility = clamp(mAccurateWeights[3] + 0.45f * (mAccurateWeights[1] + mAccurateWeights[2]),
+        float[] accurateWeights = mDayNightSystem.getAccurateWeights();
+        float dayVisibility = clamp(accurateWeights[3] + 0.45f * (accurateWeights[1] + accurateWeights[2]),
                 0.0f, 1.0f);
         float eased = smoothstep(0.0f, 1.0f, eclipse.fraction);
         mSolarEclipseWeight = clamp(eased * dayVisibility, 0.0f, 1.0f);
@@ -1262,187 +727,20 @@ class GrassScene {
     // ---- Astronomical computation ----
 
     private SolarEclipse computeSolarEclipse(MoonCalculator.MoonData data, Calendar now) {
-        float defaultRatio = LUNAR_MEAN_ANGULAR_RADIUS_DEG / SOLAR_MEAN_ANGULAR_RADIUS_DEG;
-        if (data.sunAltitudeDeg <= -0.8 || data.moonAltitudeDeg <= -2.0) {
-            return new SolarEclipse(0.0f, 0.0f, defaultRatio);
-        }
-        float phase = (float) data.phaseAngleUtcDeg;
-        float phaseDelta = Math.min(Math.abs(phase), Math.abs(360.0f - phase));
-        float nodeLatitude = Math.abs((float) data.moonLatitudeLocalDeg);
-        if (phaseDelta > 20.0f || nodeLatitude > 7.0f) {
-            return new SolarEclipse(0.0f, 0.0f, defaultRatio);
-        }
-        float[] angularRadii = computeApparentAngularRadii(now);
-        float sunRadiusDeg = angularRadii[0];
-        float moonRadiusDeg = angularRadii[1];
-        double separationDeg = angularSeparationDeg(
-                data.sunAltitudeDeg, data.sunAzimuthDeg,
-                data.moonAltitudeDeg, data.moonAzimuthDeg);
-        float orbitalSeparationDeg = (float) Math.hypot(phaseDelta, nodeLatitude);
-        float separationCandidate = Math.min((float) separationDeg, orbitalSeparationDeg);
-        float moonAltRad = (float) Math.toRadians(clamp((float) data.moonAltitudeDeg, 0.0f, 90.0f));
-        float parallaxCorrection = 0.65f * (float) Math.cos(moonAltRad);
-        float effectiveSeparationDeg = Math.max(0.0f,
-                separationCandidate - SOLAR_ECLIPSE_MODEL_TOLERANCE_DEG - 0.35f * parallaxCorrection);
-        float overlapObscuration = computeDiscOverlapFraction(sunRadiusDeg, moonRadiusDeg, effectiveSeparationDeg);
-        float solarVisible = smoothstep(-0.5f, 5.0f, (float) data.sunAltitudeDeg);
-        float lunarVisible = smoothstep(-2.0f, 4.0f, (float) data.moonAltitudeDeg);
-        float horizonAttenuation = smoothstep(1.5f, 12.0f,
-                (float) Math.min(data.sunAltitudeDeg, data.moonAltitudeDeg));
-        float conjunctionAttenuation = 1.0f - smoothstep(8.0f, 22.0f, phaseDelta);
-        float nodeAttenuation = 1.0f - smoothstep(3.0f, 9.0f, nodeLatitude);
-        float fraction = clamp(
-                overlapObscuration * solarVisible * lunarVisible * horizonAttenuation
-                        * conjunctionAttenuation * nodeAttenuation,
-                0.0f, 1.0f);
-        float signedAzDelta = normalizeSignedDegrees((float) (data.moonAzimuthDeg - data.sunAzimuthDeg));
-        float phaseProgress = clamp((signedAzDelta + 12.0f) / 24.0f, 0.0f, 1.0f);
-        float moonRadiusRatio = moonRadiusDeg / sunRadiusDeg;
-        return new SolarEclipse(fraction, phaseProgress, moonRadiusRatio);
-    }
-
-    private float[] computeApparentAngularRadii(Calendar now) {
-        float d = (float) ((now.getTimeInMillis() / 86400000.0) - 10957.5);
-        float sunMeanAnomaly = (float) Math.toRadians(normalizeDegreesFloat(357.5291f + 0.98560028f * d));
-        float moonMeanAnomaly = (float) Math.toRadians(normalizeDegreesFloat(134.9634f + 13.064993f * d));
-        float sunRadiusDeg = SOLAR_MEAN_ANGULAR_RADIUS_DEG * (1.0f + 0.0167f * (float) Math.cos(sunMeanAnomaly));
-        float moonRadiusDeg = LUNAR_MEAN_ANGULAR_RADIUS_DEG * (1.0f + 0.0549f * (float) Math.cos(moonMeanAnomaly));
-        sunRadiusDeg = clamp(sunRadiusDeg, 0.258f, 0.275f);
-        moonRadiusDeg = clamp(moonRadiusDeg, 0.245f, 0.285f);
-        return new float[]{sunRadiusDeg, moonRadiusDeg};
-    }
-
-    private double angularSeparationDeg(double alt1Deg, double az1Deg, double alt2Deg, double az2Deg) {
-        double alt1 = Math.toRadians(alt1Deg);
-        double alt2 = Math.toRadians(alt2Deg);
-        double deltaAz = Math.toRadians(az1Deg - az2Deg);
-        double cosD = Math.sin(alt1) * Math.sin(alt2)
-                + Math.cos(alt1) * Math.cos(alt2) * Math.cos(deltaAz);
-        cosD = Math.max(-1.0, Math.min(1.0, cosD));
-        return Math.toDegrees(Math.acos(cosD));
-    }
-
-    private float computeDiscOverlapFraction(float sunRadiusDeg, float moonRadiusDeg, float centerDistanceDeg) {
-        if (sunRadiusDeg <= 0.0f || moonRadiusDeg <= 0.0f) return 0.0f;
-        double r1 = sunRadiusDeg, r2 = moonRadiusDeg, d = centerDistanceDeg;
-        if (d >= r1 + r2) return 0.0f;
-        double overlapArea;
-        if (d <= Math.abs(r1 - r2)) {
-            double minR = Math.min(r1, r2);
-            overlapArea = Math.PI * minR * minR;
-        } else {
-            overlapArea = circleIntersectionArea(r1, r2, d);
-        }
-        double sunArea = Math.PI * r1 * r1;
-        if (sunArea <= 0.0) return 0.0f;
-        return clamp((float) (overlapArea / sunArea), 0.0f, 1.0f);
-    }
-
-    private double circleIntersectionArea(double r1, double r2, double d) {
-        double r1Sq = r1 * r1, r2Sq = r2 * r2;
-        double alpha = Math.acos(clampDouble((d * d + r1Sq - r2Sq) / (2.0 * d * r1), -1.0, 1.0));
-        double beta = Math.acos(clampDouble((d * d + r2Sq - r1Sq) / (2.0 * d * r2), -1.0, 1.0));
-        double part1 = r1Sq * alpha;
-        double part2 = r2Sq * beta;
-        double part3 = 0.5 * Math.sqrt(clampDouble(
-                (-d + r1 + r2) * (d + r1 - r2) * (d - r1 + r2) * (d + r1 + r2), 0.0, Double.MAX_VALUE));
-        return part1 + part2 - part3;
+        return GrassAstronomyCalculator.computeSolarEclipse(data, now,
+            SOLAR_MEAN_ANGULAR_RADIUS_DEG,
+            LUNAR_MEAN_ANGULAR_RADIUS_DEG,
+            SOLAR_ECLIPSE_MODEL_TOLERANCE_DEG);
     }
 
     private MoonEclipse computeMoonEclipse(MoonCalculator.MoonData data) {
-        double delta = Math.abs(data.phaseAngleUtcDeg - 180.0);
-        if (delta > 10.0) return new MoonEclipse(0, 0.0f, 0.0f, 0.0f, 0.0f);
-        double beta = Math.abs(data.moonLatitudeUtcDeg);
-        if (beta > 10.2) return new MoonEclipse(0, 0.0f, 0.0f, 0.0f, 0.0f);
-        double umbra = (1.0 - beta) / 0.27;
-        double penumbra = (1.5 - beta) / 0.27;
-        float pen = clamp((float) penumbra, 0.0f, 1.0f);
-        float umb = clamp((float) umbra, 0.0f, 1.0f);
-        float total = clamp((float) (umbra - 1.0), 0.0f, 1.0f);
-        double phaseRad = Math.toRadians(data.phaseAngleUtcDeg);
-        float basePhase;
-        if (umbra <= 0.0) { basePhase = pen * 0.25f; }
-        else if (umbra < 1.0) { basePhase = 0.25f + umb * 0.35f; }
-        else { basePhase = 0.60f + total * 0.20f; }
-        float phase = basePhase;
-        float easedPhase = smoothstep(0.0f, 1.0f, phase);
-        float offsetMag = mix(1.6f, -1.6f, easedPhase);
-        float dirX = Math.sin(phaseRad) >= 0.0 ? 1.0f : -1.0f;
-        float offX = dirX * offsetMag;
-        if (umbra > 1.0) return new MoonEclipse(3, (float) umbra, phase, offX, 0.0f);
-        if (umbra > 0.0) return new MoonEclipse(2, (float) umbra, phase, offX, 0.0f);
-        if (penumbra > 0.0) return new MoonEclipse(1, clamp((float) penumbra, 0.0f, 1.0f), phase, offX, 0.0f);
-        return new MoonEclipse(0, 0.0f, 0.0f, 0.0f, 0.0f);
-    }
-
-    private float normalizeSignedDegrees(float deg) {
-        float n = deg % 360.0f;
-        if (n > 180.0f) n -= 360.0f;
-        else if (n < -180.0f) n += 360.0f;
-        return n;
-    }
-
-    private float normalizeDegreesFloat(float deg) {
-        float n = deg % 360.0f;
-        if (n < 0.0f) n += 360.0f;
-        return n;
-    }
-
-    private double clampDouble(double val, double min, double max) {
-        return Math.max(min, Math.min(max, val));
+        return GrassAstronomyCalculator.computeMoonEclipse(data);
     }
 
     // ---- Noise ----
 
     private void initNoise() {
-        for (int i = 0; i < B; i++) {
-            p[i] = i;
-            g2[i][0] = (float) (mRandom.nextFloat() * 2 - 1);
-            g2[i][1] = (float) (mRandom.nextFloat() * 2 - 1);
-            float len = (float) Math.sqrt(g2[i][0] * g2[i][0] + g2[i][1] * g2[i][1]);
-            g2[i][0] /= len;
-            g2[i][1] /= len;
-        }
-        for (int i = B - 1; i >= 0; i--) {
-            int j = mRandom.nextInt(B);
-            int temp = p[i]; p[i] = p[j]; p[j] = temp;
-        }
-        for (int i = 0; i < B + 2; i++) {
-            p[B + i] = p[i];
-            g2[B + i][0] = g2[i][0];
-            g2[B + i][1] = g2[i][1];
-        }
-    }
-
-    private float turbulencef2(float x, float y, float octaves) {
-        float t = 0.0f;
-        for (float f = 1.0f; f <= octaves; f *= 2) {
-            t += Math.abs(noisef2(f * x, f * y)) / f;
-        }
-        return t;
-    }
-
-    private float noisef2(float x, float y) {
-        float t = x + N;
-        int bx0 = ((int) t) & BM, bx1 = (bx0 + 1) & BM;
-        float rx0 = t - (int) t, rx1 = rx0 - 1.0f;
-        t = y + N;
-        int by0 = ((int) t) & BM, by1 = (by0 + 1) & BM;
-        float ry0 = t - (int) t, ry1 = ry0 - 1.0f;
-        int i = p[bx0], j = p[bx1];
-        int b00 = p[i + by0], b10 = p[j + by0], b01 = p[i + by1], b11 = p[j + by1];
-        float sx = noiseSCurve(rx0), sy = noiseSCurve(ry0);
-        float u = rx0 * g2[b00][0] + ry0 * g2[b00][1];
-        float v = rx1 * g2[b10][0] + ry0 * g2[b10][1];
-        float a = mix(u, v, sx);
-        u = rx0 * g2[b01][0] + ry1 * g2[b01][1];
-        v = rx1 * g2[b11][0] + ry1 * g2[b11][1];
-        float b = mix(u, v, sx);
-        return 1.5f * mix(a, b, sy);
-    }
-
-    private float noiseSCurve(float t) {
-        return t * t * (3.0f - 2.0f * t);
+        mWindField.init(mRandom);
     }
 
     // ---- Math utilities ----
@@ -1464,552 +762,124 @@ class GrassScene {
         return t * t * (3.0f - 2.0f * t);
     }
 
+    float[] computeSkyParams(SceneData sd) {
+        return computeVKSkyParams(sd);
+    }
+
+    float[] buildMoonParams(SceneData sd) {
+        return buildMoonParamsForVK(sd);
+    }
+
+    float[] buildGrassVertexArray(SceneData sd) {
+        return buildGrassVertexArrayForVK(sd);
+    }
+
+    int getGrassVertexCount() {
+        return getVKGrassVertexCount();
+    }
+
+    int getSunVertexCount() {
+        return getVKSunVertexCount();
+    }
+
+    int getDandelionVertexCount() {
+        return getVKDandelionVertexCount();
+    }
+
+    int getFireflyVertexCount() {
+        return getVKFireflyVertexCount();
+    }
+
+    int getFireflyFlareVertexCount() {
+        return getVKFireflyFlareVertexCount();
+    }
+
+    int getMoonVertexCount() {
+        return getVKMoonVertexCount();
+    }
+
+    short[] buildGrassIndexArray() {
+        return buildGrassIndexArrayForVK();
+    }
+
+    float[] buildSunSpriteVertices(SceneData sd) {
+        return buildSunSpriteVerticesForVK(sd);
+    }
+
+    float[] buildMoonSpriteVertices(SceneData sd) {
+        return buildMoonSpriteVerticesForVK(sd);
+    }
+
+    float[] buildDandelionSpriteVertices(SceneData sd) {
+        return buildDandelionSpriteVerticesForVK(sd);
+    }
+
+    float[] buildFireflySpriteVertices(SceneData sd) {
+        return buildFireflySpriteVerticesForVK(sd);
+    }
+
+    float[] buildFireflyFlareSpriteVertices(SceneData sd) {
+        return buildFireflyFlareSpriteVerticesForVK(sd);
+    }
+
     float[] computeVKSkyParams(SceneData sd) {
-        float[] out = mVkSkyParams;
-        out[0] = 0.0f;
-        out[1] = 0.0f;
-        out[2] = 0.0f;
-        out[3] = 0.0f;
-        out[4] = sd.nightInvert ? 1.0f : 0.0f;
-        out[5] = clamp(sd.solarEclipseWeight, 0.0f, 1.0f);
-
-        if (sd.useAccurateSun) {
-            out[0] = sd.accurateWeights[0];
-            out[1] = sd.accurateWeights[1];
-            out[2] = sd.accurateWeights[2];
-            out[3] = sd.accurateWeights[3];
-            return out;
-        }
-
-        float now = sd.timeFraction;
-        float dawn = sd.dawn;
-        float morning = sd.morning;
-        float afternoon = sd.afternoon;
-        float dusk = sd.dusk;
-
-        if (now >= 0.0f && now < dawn) {
-            out[0] = 1.0f;
-            return out;
-        }
-        if (now >= dawn && now <= morning) {
-            float half = dawn + (morning - dawn) * 0.5f;
-            if (now <= half) {
-                float t = normf(dawn, half, now);
-                out[0] = 1.0f - t;
-                out[1] = t;
-            } else {
-                float t = normf(half, morning, now);
-                out[1] = 1.0f - t;
-                out[3] = t;
-            }
-            return out;
-        }
-        if (now > morning && now < afternoon) {
-            out[3] = 1.0f;
-            return out;
-        }
-        if (now >= afternoon && now <= dusk) {
-            float half = afternoon + (dusk - afternoon) * 0.5f;
-            if (now <= half) {
-                float t = normf(afternoon, half, now);
-                out[3] = 1.0f - t;
-                out[2] = t;
-            } else {
-                float t = normf(half, dusk, now);
-                out[2] = 1.0f - t;
-                out[0] = t;
-            }
-            return out;
-        }
-
-        out[0] = 1.0f;
-        return out;
+        return mRenderDataBuilder.computeSkyParams(sd);
     }
 
     float[] buildMoonParamsForVK(SceneData sd) {
-        float[] out = mVkMoonParams;
-        for (int i = 0; i < out.length; i++) {
-            out[i] = 0.0f;
-        }
-        if (!sd.useAccurateSun || !sd.moonEnabled || !sd.moonVisible) {
-            return out;
-        }
-
-        out[0] = sd.moonPhaseAngle;
-        out[1] = sd.moonBrightness;
-        out[2] = sd.moonAlpha;
-        out[3] = sd.moonIsDaytime ? 1.0f : 0.0f;
-        out[4] = sd.moonContrast;
-        out[5] = sd.moonSaturation;
-        out[6] = sd.moonBlueTint;
-
-        if (sd.moonEclipse != null) {
-            out[7] = sd.moonEclipse.type;
-            out[8] = sd.moonEclipse.fraction;
-            out[9] = sd.moonEclipse.phase;
-            out[10] = sd.moonEclipse.shadowOffsetX;
-            out[11] = sd.moonEclipse.shadowOffsetY;
-        }
-        return out;
+        return mRenderDataBuilder.buildMoonParams(sd);
     }
 
     float[] buildGrassVertexArrayForVK(SceneData sd) {
-        if (!sd.grassEnabled || sd.blades == null || sd.blades.length == 0) {
-            mVkGrassFloatCount = 0;
-            return mVkGrassVertices;
-        }
-
-        float eclipseImpact = sd.useAccurateSun ? clamp(sd.solarEclipseWeight, 0.0f, 1.0f) : 0.0f;
-        float grassBrightness;
-        float nightDesat;
-        if (sd.useAccurateSun) {
-            grassBrightness = sd.newB;
-            nightDesat = 0.0f;
-            if (sd.nightDesaturateGrass) {
-                grassBrightness = mix(1.0f, 0.72f, eclipseImpact);
-                float baseNightDesat = sd.accurateWeights[0];
-                nightDesat = clamp(baseNightDesat + eclipseImpact * 0.85f, 0.0f, 1.0f);
-            } else {
-                grassBrightness *= mix(1.0f, 0.62f, eclipseImpact);
-            }
-        } else {
-            grassBrightness = sd.newB;
-            nightDesat = 0.0f;
-            if (sd.nightDesaturateGrass) {
-                grassBrightness = 1.0f;
-                nightDesat = clamp(1.0f - sd.newB, 0.0f, 1.0f);
-            }
-        }
-
-        final int stride = 8;
-        int required = Math.max(0, mVertexCount * 2) * stride;
-        if (mVkGrassVertices.length < required) {
-            mVkGrassVertices = new float[required];
-        }
-        float[] out = mVkGrassVertices;
-        int cursor = 0;
-        for (Blade blade : sd.blades) {
-            cursor = appendBladeVerticesForVK(blade, sd, grassBrightness, sd.xDraw, nightDesat, out, cursor);
-            if (cursor > out.length) {
-                break;
-            }
-        }
-
-        mVkGrassFloatCount = Math.max(0, Math.min(cursor, out.length));
-        return out;
+        return mRenderDataBuilder.buildGrassVertexArray(sd);
     }
 
     int getVKGrassVertexCount() {
-        return mVkGrassFloatCount / 8;
+        return mRenderDataBuilder.getGrassVertexCount();
     }
 
     int getVKSunVertexCount() {
-        return mVkSunFloatCount / 5;
+        return mRenderDataBuilder.getSunVertexCount();
     }
 
     int getVKDandelionVertexCount() {
-        return mVkDandelionFloatCount / 5;
+        return mRenderDataBuilder.getDandelionVertexCount();
     }
 
     int getVKFireflyVertexCount() {
-        return mVkFireflyFloatCount / 5;
+        return mRenderDataBuilder.getFireflyVertexCount();
     }
 
     int getVKFireflyFlareVertexCount() {
-        return mVkFireflyFlareFloatCount / 5;
+        return mRenderDataBuilder.getFireflyFlareVertexCount();
     }
 
     int getVKMoonVertexCount() {
-        return mVkMoonFloatCount / 5;
+        return mRenderDataBuilder.getMoonVertexCount();
     }
 
     short[] buildGrassIndexArrayForVK() {
-        short[] idx = new short[Math.max(0, mIndexCount)];
-        int idxIdx = 0;
-        int vtxIdx = 0;
-        for (int size : mBladeSizes) {
-            for (int ct = 0; ct < size; ct++) {
-                idx[idxIdx] = (short) (vtxIdx);
-                idx[idxIdx + 1] = (short) (vtxIdx + 1);
-                idx[idxIdx + 2] = (short) (vtxIdx + 2);
-                idx[idxIdx + 3] = (short) (vtxIdx + 1);
-                idx[idxIdx + 4] = (short) (vtxIdx + 3);
-                idx[idxIdx + 5] = (short) (vtxIdx + 2);
-                idxIdx += 6;
-                vtxIdx += 2;
-            }
-            vtxIdx += 2;
-        }
-        return idx;
-    }
-
-    private int appendBladeVerticesForVK(Blade blade, SceneData sd,
-            float brightness, float xOffset, float nightDesat, float[] out, int cursor) {
-        float scale = blade.scale * sd.grassWidthScale;
-        float angle = blade.angle;
-        float xpos = blade.xPos + xOffset;
-        int size = blade.size;
-
-        float h = blade.h;
-        float s = blade.s;
-        float v = mix(0.0f, blade.b, brightness);
-        if (sd.useGrassTint) {
-            h = sd.grassTintH;
-            s = sd.grassTintS;
-            v = clamp(v * sd.grassTintV, 0.0f, 1.0f);
-        }
-        if (sd.nightDesaturateGrass && nightDesat > 0.0f) {
-            s = mix(s, 0.0f, clamp(nightDesat, 0.0f, 1.0f));
-        }
-
-        int color = hsbToRgb(h, s, v);
-        float r = Color.red(color) / 255.0f;
-        float g = Color.green(color) / 255.0f;
-        float b = Color.blue(color) / 255.0f;
-
-        float currentAngle = (float) (Math.PI * 0.5);
-        float bottomX = xpos;
-        float bottomY = blade.yPos;
-        float d = angle * blade.hardness * sd.grassHardnessScale;
-
-        float si = size * scale;
-        cursor = putVertexToArray(out, cursor, bottomX - si, bottomY + HALF_TESSELATION, r, g, b, 1.0f, 0.0f, 0.0f);
-        cursor = putVertexToArray(out, cursor, bottomX + si, bottomY + HALF_TESSELATION, r, g, b, 1.0f, 1.0f, 0.0f);
-
-        for (; size > 0; size--) {
-            float lengthX = blade.lengthX * sd.grassHeightScale;
-            float lengthY = blade.lengthY * sd.grassHeightScale;
-            float topX = bottomX - (float) Math.cos(currentAngle) * lengthX;
-            float topY = bottomY - (float) Math.sin(currentAngle) * lengthY;
-            si = size * scale;
-            float spi = si - scale;
-            cursor = putVertexToArray(out, cursor, topX - spi, topY, r, g, b, 1.0f, 0.0f, 0.0f);
-            cursor = putVertexToArray(out, cursor, topX + spi, topY, r, g, b, 1.0f, 1.0f, 0.0f);
-            bottomX = topX;
-            bottomY = topY;
-            currentAngle += d;
-        }
-        return cursor;
-    }
-
-    private int putVertexToArray(float[] out, int cursor,
-            float x, float y, float r, float g, float b, float a, float s, float t) {
-        if (cursor + 8 > out.length) {
-            return out.length + 1;
-        }
-        out[cursor++] = x;
-        out[cursor++] = y;
-        out[cursor++] = r;
-        out[cursor++] = g;
-        out[cursor++] = b;
-        out[cursor++] = a;
-        out[cursor++] = s;
-        out[cursor++] = t;
-        return cursor;
+        return mRenderDataBuilder.buildGrassIndexArray();
     }
 
     float[] buildSunSpriteVerticesForVK(SceneData sd) {
-        if (!sd.useAccurateSun || !sd.sunEnabled || !sd.hasSunData) {
-            mVkSunFloatCount = 0;
-            return mVkSunVerts;
-        }
-        float[] out = mVkSunVerts;
-        appendSpriteQuadVertices(out, 0,
-                sd.sunX, sd.sunY, sd.sunSize,
-                sd.sunAlpha,
-                false,
-                0.0f);
-        mVkSunFloatCount = 30;
-        return out;
+        return mRenderDataBuilder.buildSunSpriteVertices(sd);
     }
 
     float[] buildMoonSpriteVerticesForVK(SceneData sd) {
-        if (!sd.useAccurateSun || !sd.moonEnabled || !sd.moonVisible) {
-            mVkMoonFloatCount = 0;
-            return mVkMoonVerts;
-        }
-        float alpha = clamp(sd.moonAlpha * sd.moonBrightness, 0.0f, 1.0f);
-        if (alpha <= 0.001f) {
-            mVkMoonFloatCount = 0;
-            return mVkMoonVerts;
-        }
-        float[] out = mVkMoonVerts;
-        appendSpriteQuadVertices(out, 0,
-                sd.moonX, sd.moonY, sd.moonSize,
-                alpha,
-                false,
-                0.0f);
-        mVkMoonFloatCount = 30;
-        return out;
+        return mRenderDataBuilder.buildMoonSpriteVertices(sd);
     }
 
     float[] buildDandelionSpriteVerticesForVK(SceneData sd) {
-        if (sd.legacyParticles) {
-            mVkDandelionVerts = buildLegacySpriteVerticesForVK(sd, LEGACY_TYPE_DANDELION,
-                    false,
-                    false,
-                    true,
-                    mVkDandelionVerts);
-            mVkDandelionFloatCount = mVkTempSpriteFloatCount;
-            return mVkDandelionVerts;
-        }
-        if (sd.isNight || !sd.dandelionEnabled || sd.dandelions == null || sd.dandelions.length == 0) {
-            mVkDandelionFloatCount = 0;
-            return mVkDandelionVerts;
-        }
-        int required = sd.dandelions.length * 30;
-        if (mVkDandelionVerts.length < required) {
-            mVkDandelionVerts = new float[required];
-        }
-        float[] out = mVkDandelionVerts;
-        int cursor = 0;
-        for (Dandelion d : sd.dandelions) {
-            float sway = (float) Math.sin(d.swayPhase + sd.animNowMs * 0.001f * d.swaySpeed) * 6.0f;
-            cursor = appendSpriteQuadVertices(out, cursor,
-                    d.x, d.y + sway, d.size,
-                    0.9f,
-                    true,
-                    d.rotationDeg);
-            if (cursor > out.length) {
-                break;
-            }
-        }
-        mVkDandelionFloatCount = Math.max(0, Math.min(cursor, out.length));
-        return out;
+        return mRenderDataBuilder.buildDandelionSpriteVertices(sd);
     }
 
     float[] buildFireflySpriteVerticesForVK(SceneData sd) {
-        if (sd.legacyParticles) {
-            mVkFireflyVerts = buildLegacySpriteVerticesForVK(sd, LEGACY_TYPE_FIREFLY,
-                    false,
-                    true,
-                    true,
-                    mVkFireflyVerts);
-            mVkFireflyFloatCount = mVkTempSpriteFloatCount;
-            return mVkFireflyVerts;
-        }
-        if (!sd.isNight || !sd.fireflyEnabled || sd.fireflies == null || sd.fireflies.length == 0) {
-            mVkFireflyFloatCount = 0;
-            return mVkFireflyVerts;
-        }
-        int required = sd.fireflies.length * 30;
-        if (mVkFireflyVerts.length < required) {
-            mVkFireflyVerts = new float[required];
-        }
-        float[] out = mVkFireflyVerts;
-        int cursor = 0;
-        float time = sd.animNowMs * 0.001f;
-        for (Firefly f : sd.fireflies) {
-            float flicker = 0.5f + 0.5f * (float) Math.sin(f.phase + time * f.flickerSpeed);
-            float alpha = 0.2f + 0.8f * flicker;
-            float size = f.size * (0.8f + 0.4f * flicker);
-            cursor = appendSpriteQuadVertices(out, cursor,
-                    f.x, f.y, size,
-                    alpha,
-                    false,
-                    0.0f);
-            if (cursor > out.length) {
-                break;
-            }
-        }
-        mVkFireflyFloatCount = Math.max(0, Math.min(cursor, out.length));
-        return out;
+        return mRenderDataBuilder.buildFireflySpriteVertices(sd);
     }
 
     float[] buildFireflyFlareSpriteVerticesForVK(SceneData sd) {
-        if (!sd.legacyParticles) {
-            mVkFireflyFlareFloatCount = 0;
-            return mVkFireflyFlareVerts;
-        }
-        mVkFireflyFlareVerts = buildLegacySpriteVerticesForVK(sd, LEGACY_TYPE_FIREFLY,
-                true,
-                true,
-                true,
-                mVkFireflyFlareVerts);
-        mVkFireflyFlareFloatCount = mVkTempSpriteFloatCount;
-        return mVkFireflyFlareVerts;
-    }
-
-    private float[] buildLegacySpriteVerticesForVK(SceneData sd, int legacyTargetType) {
-        return buildLegacySpriteVerticesForVK(sd, legacyTargetType,
-                false,
-                true,
-                true,
-                mVkDandelionVerts);
-    }
-
-    private float[] buildLegacySpriteVerticesForVK(SceneData sd, int legacyTargetType,
-            boolean fireflyFlarePass, boolean includeFirefly, boolean updateState,
-            float[] reusableBuffer) {
-        if (!sd.legacyParticles || sd.legacyType != legacyTargetType
-                || sd.legacyNormal == null || sd.legacyExtras == null) {
-            mVkTempSpriteFloatCount = 0;
-            return reusableBuffer;
-        }
-
-        int required = (LEGACY_MAX_NORMAL + LEGACY_MAX_EXTRAS) * 30;
-        float[] out = reusableBuffer;
-        if (out.length < required) {
-            out = new float[required];
-        }
-        int cursor = 0;
-        long animNowMs = sd.legacyNow;
-
-        for (int i = 0; i < LEGACY_MAX_NORMAL; i++) {
-            LegacyParticle p = sd.legacyNormal[i];
-            if (p == null || !p.active) {
-                continue;
-            }
-            cursor = updateAndAppendLegacyParticleForVK(out, cursor, p,
-                    sd, legacyTargetType, i, false, animNowMs,
-                    fireflyFlarePass, includeFirefly, updateState);
-            if (cursor > out.length) {
-                break;
-            }
-        }
-
-        if (cursor <= out.length) {
-            for (int i = 0; i < LEGACY_MAX_EXTRAS; i++) {
-                LegacyParticle p = sd.legacyExtras[i];
-                if (p == null || !p.active) {
-                    continue;
-                }
-                cursor = updateAndAppendLegacyParticleForVK(out, cursor, p,
-                        sd, legacyTargetType, i + 100, true, animNowMs,
-                        fireflyFlarePass, includeFirefly, updateState);
-                if (cursor > out.length) {
-                    break;
-                }
-            }
-        }
-
-        mVkTempSpriteFloatCount = Math.max(0, Math.min(cursor, out.length));
-        return out;
-    }
-
-    private int updateAndAppendLegacyParticleForVK(float[] out, int cursor, LegacyParticle p,
-            SceneData sd, int legacyType, int index, boolean isExtras, long animNowMs,
-            boolean fireflyFlarePass, boolean includeFirefly, boolean updateState) {
-        if (updateState) {
-            long delta = animNowMs - p.startTime;
-            if (delta < 0L) {
-                return cursor;
-            }
-
-            boolean outOfBounds = isLegacyParticleOutOfBoundsForVK(p, legacyType);
-            if (outOfBounds) {
-                LegacyParticle np = createLegacyParticle(legacyType);
-                np.active = true;
-                if (isExtras) {
-                    sd.legacyExtras[index - 100] = np;
-                } else {
-                    sd.legacyNormal[index] = np;
-                }
-                p = np;
-                delta = animNowMs - p.startTime;
-                if (delta < 0L) {
-                    return cursor;
-                }
-            }
-
-            if ((p.stayEndTime - animNowMs) <= 0L) {
-                if (legacyType == LEGACY_TYPE_DANDELION) {
-                    flyLegacyDandelion(p, false);
-                } else {
-                    flyLegacyFirefly(p, false);
-                }
-                p.startTime = animNowMs;
-            }
-        }
-
-        if (legacyType == LEGACY_TYPE_FIREFLY) {
-            if (!includeFirefly) {
-                return cursor;
-            }
-            if (updateState) {
-                long interval = p.flareEndTime - p.silentEndTime;
-                if (animNowMs >= p.flareEndTime && interval > 0L) {
-                    p.silentEndTime = animNowMs
-                            + (long) ((1.0 + (Math.random() * 2 - 1) * LEGACY_INTERVAL_VARIANCE)
-                            * LEGACY_MAX_INTERVAL);
-                } else if (animNowMs >= p.silentEndTime && interval < 0L) {
-                    p.flareEndTime = animNowMs + LEGACY_MAX_FLARE;
-                }
-            }
-            boolean flareActive = animNowMs < p.flareEndTime;
-            if (fireflyFlarePass != flareActive) {
-                return cursor;
-            }
-            float flicker = 0.5f + 0.5f * (float) Math.sin((animNowMs + index * 1234L) * 0.002);
-            float alpha = 0.2f + 0.8f * flicker;
-            float size = (isExtras ? 48.0f : 72.0f) * (0.8f + 0.4f * flicker);
-            return appendSpriteQuadVertices(out, cursor,
-                    p.originX, p.originY, size,
-                    alpha,
-                    false,
-                    0.0f);
-        }
-
-        float size = isExtras ? 64.0f : 96.0f;
-        return appendSpriteQuadVertices(out, cursor,
-                p.originX, p.originY, size,
-                0.9f,
-                true,
-                p.angle);
-    }
-
-    private boolean isLegacyParticleOutOfBoundsForVK(LegacyParticle p, int legacyType) {
-        if (legacyType == LEGACY_TYPE_DANDELION) {
-            return p.originX < 0.0f || p.originX > mWidth * 2.0f || p.originY < 0.0f || p.originY > mHeight;
-        }
-        return p.originX < 0.0f || p.originX > mWidth * 2.0f || p.originY < 0.0f;
-    }
-
-    private int appendSpriteQuadVertices(float[] out, int cursor,
-            float cx, float cy, float size, float alpha, boolean flipV, float rotationDeg) {
-        if (cursor + 30 > out.length) {
-            return out.length + 1;
-        }
-
-        float half = size * 0.5f;
-        float rad = (float) Math.toRadians(rotationDeg);
-        float cos = (float) Math.cos(rad);
-        float sin = (float) Math.sin(rad);
-
-        float x0 = (-half * cos) - (-half * sin) + cx;
-        float y0 = (-half * sin) + (-half * cos) + cy;
-        float x1 = (-half * cos) - ( half * sin) + cx;
-        float y1 = (-half * sin) + ( half * cos) + cy;
-        float x2 = ( half * cos) - ( half * sin) + cx;
-        float y2 = ( half * sin) + ( half * cos) + cy;
-        float x3 = ( half * cos) - (-half * sin) + cx;
-        float y3 = ( half * sin) + (-half * cos) + cy;
-
-        float v0 = flipV ? 0.0f : 1.0f;
-        float v1 = flipV ? 1.0f : 0.0f;
-
-        // Triangle 1: 0,1,2
-        cursor = putSpriteVertex(out, cursor, x0, y0, 0.0f, v0, alpha);
-        cursor = putSpriteVertex(out, cursor, x1, y1, 0.0f, v1, alpha);
-        cursor = putSpriteVertex(out, cursor, x2, y2, 1.0f, v1, alpha);
-        // Triangle 2: 0,2,3
-        cursor = putSpriteVertex(out, cursor, x0, y0, 0.0f, v0, alpha);
-        cursor = putSpriteVertex(out, cursor, x2, y2, 1.0f, v1, alpha);
-        cursor = putSpriteVertex(out, cursor, x3, y3, 1.0f, v0, alpha);
-        return cursor;
-    }
-
-    private int putSpriteVertex(float[] out, int cursor,
-            float x, float y, float u, float v, float a) {
-        if (cursor + 5 > out.length) {
-            return out.length + 1;
-        }
-        out[cursor++] = x;
-        out[cursor++] = y;
-        out[cursor++] = u;
-        out[cursor++] = v;
-        out[cursor++] = a;
-        return cursor;
+        return mRenderDataBuilder.buildFireflyFlareSpriteVertices(sd);
     }
 
     int hsbToRgb(float h, float s, float b) {

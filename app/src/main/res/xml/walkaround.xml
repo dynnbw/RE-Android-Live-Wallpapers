@@ -25,4 +25,4 @@
     android:description="@string/wallpaper_walkaround_desc"
     android:thumbnail="@drawable/seethru_thumb"
     android:showMetadataInPreview="true"
-    android:settingsActivity="com.reandroid.wallpaper.settings.WalkAroundSettingsActivity" />
+    android:settingsActivity="com.reandroid.settings.WalkAroundSettingsActivity" />

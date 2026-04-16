@@ -5,4 +5,4 @@
     android:author="@string/wallpaper_aurora1_author"
     android:description="@string/wallpaper_aurora1_desc"
     android:showMetadataInPreview="true"
-    android:settingsActivity="com.reandroid.wallpaper.settings.Aurora1SettingsActivity" />
+    android:settingsActivity="com.reandroid.settings.Aurora1SettingsActivity" />

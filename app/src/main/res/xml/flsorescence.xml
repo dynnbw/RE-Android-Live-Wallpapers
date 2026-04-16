@@ -5,4 +5,4 @@
     android:author="@string/wallpaper_flsorescence_author"
     android:description="@string/wallpaper_flsorescence_desc"
     android:showMetadataInPreview="true"
-    android:settingsActivity="com.reandroid.wallpaper.settings.FlsorescenceSettingsActivity" />
+    android:settingsActivity="com.reandroid.settings.FlsorescenceSettingsActivity" />

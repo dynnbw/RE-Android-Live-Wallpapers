@@ -1,7 +1,7 @@
 package com.reandroid.wallpaper.flsorescence;
 
-import com.reandroid.wallpaper.gles.GLESWallpaper;
-import com.reandroid.wallpaper.gles.GLESScene;
+import com.reandroid.gles.GLESWallpaper;
+import com.reandroid.gles.GLESScene;
 
 /**
  * 荧光动态壁纸 - 从三星Luminous Dots完全移植

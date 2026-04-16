@@ -4,4 +4,4 @@
     android:description="@string/wallpaper_magicsmoke"
     android:author="@string/wallpaper_magicsmoke_author"
     android:showMetadataInPreview="true"
-    android:settingsActivity="com.reandroid.wallpaper.settings.MagicSmokeSettingsActivity" />
+    android:settingsActivity="com.reandroid.settings.MagicSmokeSettingsActivity" />

@@ -10,7 +10,7 @@ import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
-import com.reandroid.wallpaper.settings.WallpaperSettings;
+import com.reandroid.settings.WallpaperSettings;
 
 class GrassVKSurfaceView extends SurfaceView implements SurfaceHolder.Callback, Runnable {
     private static final String TAG = "GrassVKSurfaceView";
@@ -115,21 +115,21 @@ class GrassVKSurfaceView extends SurfaceView implements SurfaceHolder.Callback, 
             if (mRendererHandle != 0L && mScene != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                 long now = SystemClock.uptimeMillis();
                 mScene.update(now);
-                GrassScene.SceneData sd = mScene.getSceneData();
+                SceneData sd = mScene.getSceneData();
 
                 if (sd.bladeIndexRebuildNeeded || mCachedIndices.length == 0) {
-                    mCachedIndices = mScene.buildGrassIndexArrayForVK();
+                    mCachedIndices = mScene.buildGrassIndexArray();
                 }
 
-                float[] sky = mScene.computeVKSkyParams(sd);
-                float[] verts = mScene.buildGrassVertexArrayForVK(sd);
-                int vertCount = mScene.getVKGrassVertexCount();
-                float[] sunVerts = mScene.buildSunSpriteVerticesForVK(sd);
-                float[] dandelionVerts = mScene.buildDandelionSpriteVerticesForVK(sd);
-                float[] fireflyVerts = mScene.buildFireflySpriteVerticesForVK(sd);
-                float[] fireflyFlareVerts = mScene.buildFireflyFlareSpriteVerticesForVK(sd);
-                float[] moonVerts = mScene.buildMoonSpriteVerticesForVK(sd);
-                float[] moonParams = mScene.buildMoonParamsForVK(sd);
+                float[] sky = mScene.computeSkyParams(sd);
+                float[] verts = mScene.buildGrassVertexArray(sd);
+                int vertCount = mScene.getGrassVertexCount();
+                float[] sunVerts = mScene.buildSunSpriteVertices(sd);
+                float[] dandelionVerts = mScene.buildDandelionSpriteVertices(sd);
+                float[] fireflyVerts = mScene.buildFireflySpriteVertices(sd);
+                float[] fireflyFlareVerts = mScene.buildFireflyFlareSpriteVertices(sd);
+                float[] moonVerts = mScene.buildMoonSpriteVertices(sd);
+                float[] moonParams = mScene.buildMoonParams(sd);
 
                 GrassVKNative.nRenderFrame(mRendererHandle,
                         sky,
@@ -139,15 +139,15 @@ class GrassVKSurfaceView extends SurfaceView implements SurfaceHolder.Callback, 
                         mCachedIndices,
                     mCachedIndices.length,
                     sunVerts,
-                        mScene.getVKSunVertexCount(),
+                        mScene.getSunVertexCount(),
                     dandelionVerts,
-                        mScene.getVKDandelionVertexCount(),
+                        mScene.getDandelionVertexCount(),
                     fireflyVerts,
-                        mScene.getVKFireflyVertexCount(),
+                        mScene.getFireflyVertexCount(),
                     fireflyFlareVerts,
-                        mScene.getVKFireflyFlareVertexCount(),
+                        mScene.getFireflyFlareVertexCount(),
                     moonVerts,
-                            mScene.getVKMoonVertexCount(),
+                            mScene.getMoonVertexCount(),
                         moonParams);
             }
 

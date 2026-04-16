@@ -25,4 +25,4 @@
     android:description="@string/wallpaper_fall_desc"
     android:thumbnail="@drawable/water_thumb"
     android:showMetadataInPreview="true"
-    android:settingsActivity="com.reandroid.wallpaper.settings.FallSettingsActivity" />
+    android:settingsActivity="com.reandroid.settings.FallSettingsActivity" />

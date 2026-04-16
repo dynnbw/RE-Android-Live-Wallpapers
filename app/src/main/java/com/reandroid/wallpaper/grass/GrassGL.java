@@ -17,7 +17,6 @@
 package com.reandroid.wallpaper.grass;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -28,20 +27,26 @@ import android.os.SystemClock;
 import android.util.Log;
 
 import com.reandroid.wallpaper.R;
-import com.reandroid.wallpaper.gles.GLESScene;
-import com.reandroid.wallpaper.gles.GLESWallpaper;
-import com.reandroid.wallpaper.gles.RawResourceLoader;
-import com.reandroid.wallpaper.settings.WallpaperSettings;
-import com.reandroid.wallpaper.weather.WeatherCondition;
-import com.reandroid.wallpaper.weather.WeatherManager;
-import com.reandroid.wallpaper.weather.WeatherState;
+import com.reandroid.gles.GLESScene;
+import com.reandroid.gles.GLESWallpaper;
+import com.reandroid.gles.RawResourceLoader;
+import com.reandroid.settings.WallpaperSettings;
 
-import java.util.Calendar;
+import java.util.ArrayList;
+import java.util.List;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
+
+import static com.reandroid.wallpaper.grass.GrassConstants.HALF_TESSELATION;
+import static com.reandroid.wallpaper.grass.GrassConstants.LEGACY_INTERVAL_VARIANCE;
+import static com.reandroid.wallpaper.grass.GrassConstants.LEGACY_MAX_FLARE;
+import static com.reandroid.wallpaper.grass.GrassConstants.LEGACY_MAX_INTERVAL;
+import static com.reandroid.wallpaper.grass.GrassConstants.LEGACY_TYPE_DANDELION;
+import static com.reandroid.wallpaper.grass.GrassConstants.LEGACY_TYPE_FIREFLY;
+import static com.reandroid.wallpaper.grass.GrassConstants.SUN_PHOTOSPHERE_SCALE;
 
 /**
  * Grass 壁纸渲染层（OpenGL ES 2.0），所有状态委托 GrassScene 管理。
@@ -52,6 +57,32 @@ public class GrassGL extends GLESScene {
 
     // ---- Scene (non-GL logic) ----
     private final GrassScene mScene;
+    private final GrassSpriteRenderer mSpriteRenderer = new GrassSpriteRenderer();
+    private final GrassBackgroundRenderer mBackgroundRenderer = new GrassBackgroundRenderer();
+    private final GrassWeatherRenderer mWeatherRenderer = new GrassWeatherRenderer();
+    private final GrassStarRenderer mStarRenderer = new GrassStarRenderer();
+    private final GrassWeatherRenderer.RenderOps mWeatherRenderOps = new GrassWeatherRenderer.RenderOps() {
+        @Override
+        public void useBackgroundProgram() {
+            useProgram(mBackgroundProgram);
+        }
+
+        @Override
+        public void setAlphaBlend() {
+            setBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+        }
+    };
+    private final GrassStarRenderer.RenderOps mStarRenderOps = new GrassStarRenderer.RenderOps() {
+        @Override
+        public void useBackgroundProgram() {
+            useProgram(mBackgroundProgram);
+        }
+
+        @Override
+        public void setAlphaBlend() {
+            setBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+        }
+    };
 
     // ---- GL state ----
     private boolean mGLInitialized = false;
@@ -125,36 +156,14 @@ public class GrassGL extends GLESScene {
     private int mTexFirefly;
     private int mTexFirefly1;
     private int mTexFirefly2;
-    private int mTexWeatherRain1;
-    private int mTexWeatherRain2;
-    private int mTexWeatherRain3;
-    private int mTexWeatherSnow1;
-    private int mTexWeatherSnow2;
-    private int mTexWeatherSnow3;
-    private int mTexWeatherSnow4;
-    private int mTexWeatherFog1;
-    private int mTexWeatherFog2;
-    private int mTexWeatherCloud1;
-    private int mTexWeatherCloud2;
-    private int mTexWeatherCloud3;
-    private int mTexWeatherCloud4;
-    private int mTexWeatherLightning1;
-    private int mTexWeatherLightning2;
-    private int mTexWeatherLightning3;
-    private int mTexWeatherFlash;
-    private int mTexWeatherTone;
     private int mTexMoonBase;
     private int mTexMoonMask;
 
     // NIO buffers
     private FloatBuffer mGrassVertexBuffer;
     private ShortBuffer mGrassIndexBuffer;
-    private FloatBuffer mSpriteBuffer;
-    private FloatBuffer mBgQuadBuffer;
-    private FloatBuffer mSkyQuadBuffer;
     private FloatBuffer mMoonBuffer;
     private final float[] mQuadVerts = new float[16];
-    private boolean mSkyQuadDirty = true;
 
     // Performance and diagnostics
     private static final long PERF_SYNC_INTERVAL_MS = 1000L;
@@ -171,37 +180,22 @@ public class GrassGL extends GLESScene {
     private int mBlendDst = -1;
 
     // Weather integration
-    private WeatherManager mWeatherManager;
-    private SharedPreferences mPrefs;
-    private volatile WeatherState mPendingWeatherState;
-    private volatile boolean mClearWeatherStatePending;
-    private boolean mWeatherEnabled = true;
-    private boolean mWeatherRunning;
-
-    // Weather rendering - display density and original mdpi texture dimensions
+    private final GrassWeatherIntegration mWeatherIntegration = new GrassWeatherIntegration();
     private float mDensity = 1.0f;
-    // cloud_01(256x180), cloud_02(256x163), cloud_05→cloud3(256x198), cloudy→cloud4(276x170)
-    private static final float[] CLOUD_MDPI_W = {256f, 256f, 256f, 276f};
-    private static final float[] CLOUD_MDPI_H = {180f, 163f, 198f, 170f};
-    // fog_01=haze(280x95), fog_02=fog(150x86) aspect ratio H/W at mdpi
-    private static final float FOG1_H_OVER_W = 95f / 280f;
-    private static final float FOG2_H_OVER_W = 86f / 150f;
-    // rain_01(2x42), rain_02(2x30), rain_03(2x49) mdpi dimensions
-    private static final float[] RAIN_MDPI_W = {2f, 2f, 2f};
-    private static final float[] RAIN_MDPI_H = {42f, 30f, 49f};
-
-    // Original thunder behavior state (bwlw/Thunder.java style)
-    private long mThunderNextStartMs = 0L;
-    private long mThunderActiveStartMs = 0L;
-    private int mThunderTextureIndex = 0;
-    private boolean mThunderLTR = true;
-    private float mThunderFlashAlpha = 0.0f;
+    private int[][] mSkyFieldNight;
+    private int[][] mSkyFieldSunrise;
+    private int[][] mSkyFieldSunset;
+    private int[][] mSkyFieldDay;
+    // Sky fields moved to res/raw/grass_sky_fields.txt and loaded at runtime.
 
     // ---- Constructor ----
 
     public GrassGL(int width, int height) {
         super(width, height);
         mScene = new GrassScene(width, height);
+        mBackgroundRenderer.setViewport(width, height);
+        mWeatherRenderer.setViewport(width, height);
+        mStarRenderer.setViewport(width, height);
     }
 
     // ---- GLESScene lifecycle ----
@@ -210,10 +204,7 @@ public class GrassGL extends GLESScene {
     protected void onCreate() {
         mScene.init(isPreview());
         Context appContext = GLESWallpaper.getAppContext();
-        if (appContext != null && mWeatherManager == null) {
-            mPrefs = androidx.preference.PreferenceManager.getDefaultSharedPreferences(appContext);
-            mWeatherManager = new WeatherManager(appContext, this::onWeatherUpdated);
-        }
+        mWeatherIntegration.onCreate(appContext);
         if (mResources != null) {
             initGL();
         }
@@ -221,57 +212,30 @@ public class GrassGL extends GLESScene {
 
     @Override
     public void start() {
-        mWeatherEnabled = WallpaperSettings.isGrassWeatherEnabled(true);
-        if (!isPreview() && mWeatherManager != null && mWeatherEnabled) {
-            mWeatherManager.start();
-            mWeatherRunning = true;
-            return;
-        }
-        mWeatherRunning = false;
-        mClearWeatherStatePending = true;
-
-        if (isPreview() && mWeatherEnabled) {
-            boolean isNight = computePreviewIsNight();
-            mPendingWeatherState = new WeatherState(WeatherCondition.D1_CLEAR, isNight,
-                    0.0f, 0.0f, 0L, 0L, 0L);
-        }
+        mWeatherIntegration.start(isPreview());
     }
 
     @Override
     public void stop() {
-        if (mWeatherManager != null) {
-            mWeatherManager.stop();
-        }
-        mWeatherRunning = false;
+        mWeatherIntegration.stop();
     }
 
     @Override
     public void release() {
+        mWeatherIntegration.release();
         int[] tex = new int[]{
                 mTexNight, mTexSunrise, mTexSunset, mTexSky,
                 mTexSolarEclipse, mTexSun, mTexAA, mTexDandelion, mTexFirefly,
             mTexFirefly1, mTexFirefly2,
-            mTexWeatherRain1, mTexWeatherRain2, mTexWeatherRain3,
-            mTexWeatherSnow1, mTexWeatherSnow2, mTexWeatherSnow3, mTexWeatherSnow4,
-            mTexWeatherFog1, mTexWeatherFog2,
-            mTexWeatherCloud1, mTexWeatherCloud2, mTexWeatherCloud3, mTexWeatherCloud4,
-            mTexWeatherLightning1, mTexWeatherLightning2, mTexWeatherLightning3,
-            mTexWeatherFlash,
-            mTexWeatherTone,
             mTexMoonBase, mTexMoonMask
         };
         GLES20.glDeleteTextures(tex.length, tex, 0);
         mTexNight = 0; mTexSunrise = 0; mTexSunset = 0; mTexSky = 0;
         mTexSolarEclipse = 0; mTexSun = 0; mTexAA = 0;
         mTexDandelion = 0; mTexFirefly = 0; mTexFirefly1 = 0; mTexFirefly2 = 0;
-        mTexWeatherRain1 = 0; mTexWeatherRain2 = 0; mTexWeatherRain3 = 0;
-        mTexWeatherSnow1 = 0; mTexWeatherSnow2 = 0; mTexWeatherSnow3 = 0; mTexWeatherSnow4 = 0;
-        mTexWeatherFog1 = 0; mTexWeatherFog2 = 0;
-        mTexWeatherCloud1 = 0; mTexWeatherCloud2 = 0; mTexWeatherCloud3 = 0; mTexWeatherCloud4 = 0;
-        mTexWeatherLightning1 = 0; mTexWeatherLightning2 = 0; mTexWeatherLightning3 = 0;
-        mTexWeatherFlash = 0;
-        mTexWeatherTone = 0;
         mTexMoonBase = 0; mTexMoonMask = 0;
+        mWeatherRenderer.releaseTextures();
+        mStarRenderer.releaseTextures();
 
         if (mBackgroundProgram != 0) { GLES20.glDeleteProgram(mBackgroundProgram); mBackgroundProgram = 0; }
         if (mSkyProgram != 0) { GLES20.glDeleteProgram(mSkyProgram); mSkyProgram = 0; }
@@ -285,7 +249,9 @@ public class GrassGL extends GLESScene {
     public void resize(int width, int height) {
         super.resize(width, height);
         mScene.resize(width, height);
-        mSkyQuadDirty = true;
+        mBackgroundRenderer.setViewport(width, height);
+        mWeatherRenderer.setViewport(width, height);
+        mStarRenderer.setViewport(width, height);
     }
 
     @Override
@@ -306,43 +272,18 @@ public class GrassGL extends GLESScene {
             initGL();
         }
 
-        WeatherState weatherState = mPendingWeatherState;
-        boolean weatherEnabled = WallpaperSettings.isGrassWeatherEnabled(true);
-        if (weatherEnabled != mWeatherEnabled) {
-            mWeatherEnabled = weatherEnabled;
-            if (mWeatherManager != null && !isPreview()) {
-                if (mWeatherEnabled && !mWeatherRunning) {
-                    mWeatherManager.start();
-                    mWeatherRunning = true;
-                } else if (!mWeatherEnabled && mWeatherRunning) {
-                    mWeatherManager.stop();
-                    mWeatherRunning = false;
-                }
-            }
-            if (!mWeatherEnabled) {
-                mClearWeatherStatePending = true;
-                mPendingWeatherState = null;
-                weatherState = null;
-            } else if (isPreview()) {
-                boolean isNight = computePreviewIsNight();
-                weatherState = new WeatherState(WeatherCondition.D1_CLEAR, isNight,
-                        0.0f, 0.0f, 0L, 0L, 0L);
-                mPendingWeatherState = weatherState;
-            }
-        }
+        GrassWeatherIntegration.FrameUpdate weatherUpdate = mWeatherIntegration.update(timeMs, isPreview());
 
-        if (mClearWeatherStatePending) {
+        if (weatherUpdate.clearSceneWeather) {
             mScene.setWeatherState(null);
-            mClearWeatherStatePending = false;
         }
-        if (weatherState != null) {
-            mScene.setWeatherState(weatherState);
-            mPendingWeatherState = null;
+        if (weatherUpdate.stateToApply != null) {
+            mScene.setWeatherState(weatherUpdate.stateToApply);
         }
 
         long animNow = SystemClock.uptimeMillis();
         mScene.update(animNow);
-        GrassScene.SceneData sd = mScene.getSceneData();
+        SceneData sd = mScene.getSceneData();
 
         // Rebuild blade index/vertex buffers when blade count changes
         if (sd.bladeIndexRebuildNeeded || mGrassIndexBuffer == null) {
@@ -357,7 +298,8 @@ public class GrassGL extends GLESScene {
             useProgram(mSkyProgram);
             setBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
             GLES20.glUniformMatrix4fv(mSkyMatrixHandle, 1, false, sd.projectionMatrix, 0);
-            drawAccurateBackground(sd);
+            mBackgroundRenderer.drawAccurateBackground(sd);
+            drawWeatherBackground(sd);
             if (sd.sunEnabled && sd.hasSunData) drawSun(sd);
             eclipseImpact = clamp(sd.solarEclipseWeight, 0.0f, 1.0f);
             grassBrightness = sd.newB;
@@ -373,7 +315,8 @@ public class GrassGL extends GLESScene {
             useProgram(mBackgroundProgram);
             setBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
             GLES20.glUniformMatrix4fv(mBgMatrixHandle, 1, false, sd.projectionMatrix, 0);
-            drawBackground(sd);
+            mBackgroundRenderer.drawBackground(sd);
+            drawWeatherBackground(sd);
             eclipseImpact = 0.0f;
             grassBrightness = sd.newB;
             nightDesat = 0.0f;
@@ -383,6 +326,7 @@ public class GrassGL extends GLESScene {
             }
         }
 
+        mStarRenderer.drawNightStars(sd, mSpriteRenderer, mStarRenderOps);
         drawMoon(sd);
         drawWeatherOverlays(sd, false);
 
@@ -433,6 +377,10 @@ public class GrassGL extends GLESScene {
         mBgMatrixHandle = GLES20.glGetUniformLocation(mBackgroundProgram, "uMVPMatrix");
         mBgAlphaHandle = GLES20.glGetUniformLocation(mBackgroundProgram, "uAlpha");
         mBgSamplerHandle = GLES20.glGetUniformLocation(mBackgroundProgram, "uSampler");
+        mSpriteRenderer.setProgramHandles(mBgPositionHandle, mBgTexHandle, mBgSamplerHandle, mBgAlphaHandle);
+        mBackgroundRenderer.setBackgroundProgramHandles(mBgPositionHandle, mBgTexHandle, mBgSamplerHandle, mBgAlphaHandle);
+        mWeatherRenderer.setBackgroundMatrixHandle(mBgMatrixHandle);
+        mStarRenderer.setBackgroundMatrixHandle(mBgMatrixHandle);
     }
 
     private void createSkyProgram() {
@@ -453,6 +401,20 @@ public class GrassGL extends GLESScene {
         mSkyWeightSkyHandle = GLES20.glGetUniformLocation(mSkyProgram, "uWeightSky");
         mSkyWeightSolarEclipseHandle = GLES20.glGetUniformLocation(mSkyProgram, "uWeightSolarEclipse");
         mSkyNightInvertHandle = GLES20.glGetUniformLocation(mSkyProgram, "uNightInvert");
+        mBackgroundRenderer.setSkyProgramHandles(
+            mSkyPositionHandle,
+            mSkyTexHandle,
+            mSkySamplerNightHandle,
+            mSkySamplerSunriseHandle,
+            mSkySamplerSunsetHandle,
+            mSkySamplerSkyHandle,
+            mSkySamplerSolarEclipseHandle,
+            mSkyWeightNightHandle,
+            mSkyWeightSunriseHandle,
+            mSkyWeightSunsetHandle,
+            mSkyWeightSkyHandle,
+            mSkyWeightSolarEclipseHandle,
+            mSkyNightInvertHandle);
     }
 
     private void createGrassProgram() {
@@ -527,56 +489,144 @@ public class GrassGL extends GLESScene {
 
     private void loadTextures() {
         mDensity = mResources.getDisplayMetrics().density;
-        mTexNight = loadTexture(R.drawable.night, true, false);
-        mTexSunrise = loadTexture(R.drawable.sunrise, true, false);
-        mTexSunset = loadTexture(R.drawable.sunset, true, false);
-        mTexSky = loadTexture(R.drawable.sky, true, false);
+        mWeatherRenderer.setDensity(mDensity);
+        ensureSkyFieldsLoaded();
+        mTexNight = createSkyFieldTexture(mSkyFieldNight, true);
+        mTexSunrise = createSkyFieldTexture(mSkyFieldSunrise, true);
+        mTexSunset = createSkyFieldTexture(mSkyFieldSunset, true);
+        mTexSky = createSkyFieldTexture(mSkyFieldDay, true);
         mTexSolarEclipse = loadTexture(R.drawable.solar_eclipse, false, false);
+        mBackgroundRenderer.setSkyTextures(mTexNight, mTexSunrise, mTexSunset, mTexSky, mTexSolarEclipse);
         mTexSun = loadTexture(R.drawable.sun, false, false);
         mTexAA = createAlphaTexture();
         mTexDandelion = loadTexture(R.drawable.dandelion, false, false);
         mTexFirefly = loadTexture(R.drawable.firefly, false, false);
         mTexFirefly1 = loadTexture(R.drawable.firefly1, false, false);
         mTexFirefly2 = loadTexture(R.drawable.firefly2, false, false);
-        mTexWeatherRain1 = loadTexture(R.drawable.grass_weather_rain_01, false, false);
-        mTexWeatherRain2 = loadTexture(R.drawable.grass_weather_rain_02, false, false);
-        mTexWeatherRain3 = loadTexture(R.drawable.grass_weather_rain_03, false, false);
-        mTexWeatherSnow1 = loadTexture(R.drawable.grass_weather_snow_01, false, false);
-        mTexWeatherSnow2 = loadTexture(R.drawable.grass_weather_snow_02, false, false);
-        mTexWeatherSnow3 = loadTexture(R.drawable.grass_weather_snow_03, false, false);
-        mTexWeatherSnow4 = loadTexture(R.drawable.grass_weather_snow_04, false, false);
-        mTexWeatherFog1 = loadTexture(R.drawable.grass_weather_fog_01, false, false);
-        mTexWeatherFog2 = loadTexture(R.drawable.grass_weather_fog_02, false, false);
-        mTexWeatherCloud1 = loadTexture(R.drawable.grass_weather_cloud_01, false, false);
-        mTexWeatherCloud2 = loadTexture(R.drawable.grass_weather_cloud_02, false, false);
-        mTexWeatherCloud3 = loadTexture(R.drawable.grass_weather_cloud_03, false, false);
-        mTexWeatherCloud4 = loadTexture(R.drawable.grass_weather_cloud_04, false, false);
-        mTexWeatherLightning1 = loadTexture(R.drawable.grass_weather_lightning_01, false, false);
-        mTexWeatherLightning2 = loadTexture(R.drawable.grass_weather_lightning_02, false, false);
-        mTexWeatherLightning3 = loadTexture(R.drawable.grass_weather_lightning_03, false, false);
-        mTexWeatherFlash = createSolidWhiteTexture();
-        mTexWeatherTone = createWeatherToneTexture();
+        mWeatherRenderer.loadTextures(this::loadTexture, this::createSolidColorTexture);
+        mStarRenderer.loadTextures(this::createSolidColorTexture);
     }
 
-    private int createWeatherToneTexture() {
+    private void ensureSkyFieldsLoaded() {
+        if (mSkyFieldNight != null && mSkyFieldSunrise != null
+                && mSkyFieldSunset != null && mSkyFieldDay != null) {
+            return;
+        }
+        String text = RawResourceLoader.readRawText(mResources, R.raw.grass_sky_fields);
+        mSkyFieldNight = parseSkyFieldSection(text, "SKY_FIELD_NIGHT");
+        mSkyFieldSunrise = parseSkyFieldSection(text, "SKY_FIELD_SUNRISE");
+        mSkyFieldSunset = parseSkyFieldSection(text, "SKY_FIELD_SUNSET");
+        mSkyFieldDay = parseSkyFieldSection(text, "SKY_FIELD_DAY");
+    }
+
+    private int[][] parseSkyFieldSection(String allText, String sectionName) {
+        if (allText == null) return null;
+        String marker = "[" + sectionName + "]";
+        int start = allText.indexOf(marker);
+        if (start < 0) return null;
+        int bodyStart = start + marker.length();
+        int next = allText.indexOf("[", bodyStart);
+        String body = (next > bodyStart) ? allText.substring(bodyStart, next) : allText.substring(bodyStart);
+
+        List<int[]> cols = new ArrayList<>();
+        int depth = 0;
+        int rowStart = -1;
+        for (int i = 0; i < body.length(); i++) {
+            char ch = body.charAt(i);
+            if (ch == '{') {
+                depth++;
+                if (depth == 2) {
+                    rowStart = i + 1;
+                }
+            } else if (ch == '}') {
+                if (depth == 2 && rowStart >= 0) {
+                    String row = body.substring(rowStart, i).trim();
+                    if (!row.isEmpty() && row.contains("0x")) {
+                        String[] parts = row.split(",");
+                        int[] values = new int[parts.length];
+                        for (int p = 0; p < parts.length; p++) {
+                            String token = parts[p].trim();
+                            long parsed = Long.decode(token);
+                            values[p] = (int) parsed;
+                        }
+                        cols.add(values);
+                    }
+                    rowStart = -1;
+                }
+                depth--;
+            }
+        }
+        if (cols.isEmpty()) return null;
+        return cols.toArray(new int[0][]);
+    }
+
+    private int createSkyFieldTexture(int[][] fieldColors, boolean repeatS) {
+        if (fieldColors == null || fieldColors.length == 0 || fieldColors[0].length == 0) {
+            return 0;
+        }
+
+        final int cols = fieldColors.length;
+        final int rows = fieldColors[0].length;
+        final int targetW = 24;
+        final int targetH = 64;
+        byte[] rgba = new byte[targetW * targetH * 4];
+
+        for (int y = 0; y < targetH; y++) {
+            float v = y / (float) (targetH - 1);
+            float srcY = v * (rows - 1);
+            int y0 = Math.max(0, Math.min(rows - 1, (int) Math.floor(srcY)));
+            int y1 = Math.min(rows - 1, y0 + 1);
+            float ty = srcY - y0;
+            for (int x = 0; x < targetW; x++) {
+                float u = x / (float) (targetW - 1);
+                float srcX = u * (cols - 1);
+                int x0 = Math.max(0, Math.min(cols - 1, (int) Math.floor(srcX)));
+                int x1 = Math.min(cols - 1, x0 + 1);
+                float tx = srcX - x0;
+
+                int c00 = fieldColors[x0][y0];
+                int c10 = fieldColors[x1][y0];
+                int c01 = fieldColors[x0][y1];
+                int c11 = fieldColors[x1][y1];
+
+                int r = Math.round(lerp(
+                        lerp(Color.red(c00), Color.red(c10), tx),
+                        lerp(Color.red(c01), Color.red(c11), tx), ty));
+                int g = Math.round(lerp(
+                        lerp(Color.green(c00), Color.green(c10), tx),
+                        lerp(Color.green(c01), Color.green(c11), tx), ty));
+                int b = Math.round(lerp(
+                        lerp(Color.blue(c00), Color.blue(c10), tx),
+                        lerp(Color.blue(c01), Color.blue(c11), tx), ty));
+                int a = Math.round(lerp(
+                        lerp(Color.alpha(c00), Color.alpha(c10), tx),
+                        lerp(Color.alpha(c01), Color.alpha(c11), tx), ty));
+
+                int idx = (y * targetW + x) * 4;
+                rgba[idx] = (byte) r;
+                rgba[idx + 1] = (byte) g;
+                rgba[idx + 2] = (byte) b;
+                rgba[idx + 3] = (byte) a;
+            }
+        }
+
         int[] tex = new int[1];
         GLES20.glGenTextures(1, tex, 0);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, tex[0]);
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S,
+                repeatS ? GLES20.GL_REPEAT : GLES20.GL_CLAMP_TO_EDGE);
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
-
-        // Approximate original rainy sky gradient used in Canvas version.
-        byte[] rgba = new byte[]{
-            (byte) 0x51, (byte) 0x7a, (byte) 0x98, (byte) 0xff,
-            (byte) 0x6b, (byte) 0xaf, (byte) 0x9f, (byte) 0xff
-        };
         ByteBuffer buf = ByteBuffer.allocateDirect(rgba.length).order(ByteOrder.nativeOrder());
         buf.put(rgba).position(0);
-        GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_RGBA, 1, 2, 0,
+        GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_RGBA, targetW, targetH, 0,
                 GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, buf);
         return tex[0];
+    }
+
+    private static float lerp(float a, float b, float t) {
+        return a * (1.0f - t) + b * t;
     }
 
     private void loadMoonTextures() {
@@ -664,10 +714,6 @@ public class GrassGL extends GLESScene {
         return tex[0];
     }
 
-    private int createSolidWhiteTexture() {
-        return createSolidColorTexture((byte) 255, (byte) 255, (byte) 255, (byte) 255);
-    }
-
     private int createSolidColorTexture(byte r, byte g, byte b, byte a) {
         int[] tex = new int[1];
         GLES20.glGenTextures(1, tex, 0);
@@ -693,74 +739,13 @@ public class GrassGL extends GLESScene {
         mGrassVertexBuffer = ByteBuffer.allocateDirect(vertexTotal * stride * 4)
                 .order(ByteOrder.nativeOrder()).asFloatBuffer();
 
-        int indexCount = mScene.mIndexCount;
-        short[] idx = new short[indexCount];
-        int idxIdx = 0, vtxIdx = 0;
-        for (int size : mScene.mBladeSizes) {
-            for (int ct = 0; ct < size; ct++) {
-                idx[idxIdx + 0] = (short) (vtxIdx + 0);
-                idx[idxIdx + 1] = (short) (vtxIdx + 1);
-                idx[idxIdx + 2] = (short) (vtxIdx + 2);
-                idx[idxIdx + 3] = (short) (vtxIdx + 1);
-                idx[idxIdx + 4] = (short) (vtxIdx + 3);
-                idx[idxIdx + 5] = (short) (vtxIdx + 2);
-                idxIdx += 6;
-                vtxIdx += 2;
-            }
-            vtxIdx += 2;
-        }
+        short[] idx = mScene.buildGrassIndexArray();
         mGrassIndexBuffer = ByteBuffer.allocateDirect(idx.length * 2)
                 .order(ByteOrder.nativeOrder()).asShortBuffer();
         mGrassIndexBuffer.put(idx).position(0);
     }
 
     // ---- Draw methods ----
-
-    private void drawBackground(GrassScene.SceneData sd) {
-        float now = sd.timeFraction;
-        float dawn = sd.dawn, morning = sd.morning, afternoon = sd.afternoon, dusk = sd.dusk;
-
-        if (now >= 0.0f && now < dawn) {
-            setAlpha(1.0f);
-            drawNight(sd.nightInvert);
-        } else if (now >= dawn && now <= morning) {
-            float half = dawn + (morning - dawn) * 0.5f;
-            if (now <= half) {
-                setAlpha(1.0f);
-                drawNight(sd.nightInvert);
-                setAlpha(normf(dawn, half, now));
-                drawSunrise();
-            } else {
-                setAlpha(1.0f);
-                drawSunrise();
-                setAlpha(normf(half, morning, now));
-                drawNoon();
-            }
-        } else if (now > morning && now < afternoon) {
-            setAlpha(1.0f);
-            drawNoon();
-        } else if (now >= afternoon && now <= dusk) {
-            float half = afternoon + (dusk - afternoon) * 0.5f;
-            if (now <= half) {
-                setAlpha(1.0f);
-                drawNoon();
-                setAlpha(normf(afternoon, half, now));
-                drawSunset();
-            } else {
-                setAlpha(1.0f);
-                drawSunset();
-                setAlpha(normf(half, dusk, now));
-                drawNight(sd.nightInvert);
-            }
-        } else if (now > dusk) {
-            setAlpha(1.0f);
-            drawNight(sd.nightInvert);
-        }
-    }
-
-    private void setAlpha(float a) {
-        GLES20.glUniform1f(mBgAlphaHandle, a);
-    }
 
     private void useProgram(int program) {
         if (mCurrentProgram != program) {
@@ -777,122 +762,24 @@ public class GrassGL extends GLESScene {
         }
     }
 
-    private void drawNight(boolean nightInvert) {
-        if (nightInvert) {
-            drawBackgroundQuad(mTexNight, 0.0f, -32.0f, 0.0f, 1.0f,
-                    0.0f, mHeight, 0.0f, 0.0f,
-                    mWidth, mHeight, 2.0f, 0.0f,
-                    mWidth, -32.0f, 2.0f, 1.0f);
-        } else {
-            drawBackgroundQuad(mTexNight, 0.0f, -32.0f, 0.0f, 0.0f,
-                    0.0f, mHeight, 0.0f, 1.0f,
-                    mWidth, mHeight, 2.0f, 1.0f,
-                    mWidth, -32.0f, 2.0f, 0.0f);
-        }
-    }
-
-    private void drawSunrise() { drawRect(mTexSunrise); }
-    private void drawNoon()    { drawRect(mTexSky); }
-    private void drawSunset()  { drawRect(mTexSunset); }
-
-    private void drawRect(int texture) {
-        drawBackgroundQuad(texture, 0.0f, 0.0f, 0.0f, 0.0f,
-                0.0f, mHeight, 0.0f, 1.0f,
-                mWidth, mHeight, 1.0f, 1.0f,
-                mWidth, 0.0f, 1.0f, 0.0f);
-    }
-
-    private void drawBackgroundQuad(int texture,
-            float x0, float y0, float u0, float v0,
-            float x1, float y1, float u1, float v1,
-            float x2, float y2, float u2, float v2,
-            float x3, float y3, float u3, float v3) {
-        if (mBgQuadBuffer == null) {
-            mBgQuadBuffer = ByteBuffer.allocateDirect(4 * 4 * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
-        }
-        mQuadVerts[0] = x0;  mQuadVerts[1] = y0;  mQuadVerts[2] = u0;  mQuadVerts[3] = v0;
-        mQuadVerts[4] = x1;  mQuadVerts[5] = y1;  mQuadVerts[6] = u1;  mQuadVerts[7] = v1;
-        mQuadVerts[8] = x2;  mQuadVerts[9] = y2;  mQuadVerts[10] = u2; mQuadVerts[11] = v2;
-        mQuadVerts[12] = x3; mQuadVerts[13] = y3; mQuadVerts[14] = u3; mQuadVerts[15] = v3;
-        mBgQuadBuffer.clear();
-        mBgQuadBuffer.put(mQuadVerts).position(0);
-        GLES20.glEnableVertexAttribArray(mBgPositionHandle);
-        GLES20.glVertexAttribPointer(mBgPositionHandle, 2, GLES20.GL_FLOAT, false, 16, mBgQuadBuffer);
-        mBgQuadBuffer.position(2);
-        GLES20.glEnableVertexAttribArray(mBgTexHandle);
-        GLES20.glVertexAttribPointer(mBgTexHandle, 2, GLES20.GL_FLOAT, false, 16, mBgQuadBuffer);
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture);
-        GLES20.glUniform1i(mBgSamplerHandle, 0);
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, 4);
-        GLES20.glDisableVertexAttribArray(mBgPositionHandle);
-        GLES20.glDisableVertexAttribArray(mBgTexHandle);
-    }
-
-    private void drawAccurateBackground(GrassScene.SceneData sd) {
-        if (mSkyQuadBuffer == null) {
-            mSkyQuadBuffer = ByteBuffer.allocateDirect(4 * 4 * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
-            mSkyQuadDirty = true;
-        }
-        if (mSkyQuadDirty) {
-            mSkyQuadBuffer.clear();
-            mSkyQuadBuffer.put(0.0f).put(0.0f).put(0.0f).put(0.0f);
-            mSkyQuadBuffer.put(0.0f).put(mHeight).put(0.0f).put(1.0f);
-            mSkyQuadBuffer.put(mWidth).put(mHeight).put(1.0f).put(1.0f);
-            mSkyQuadBuffer.put(mWidth).put(0.0f).put(1.0f).put(0.0f);
-            mSkyQuadBuffer.position(0);
-            mSkyQuadDirty = false;
-        }
-        mSkyQuadBuffer.position(0);
-        GLES20.glEnableVertexAttribArray(mSkyPositionHandle);
-        GLES20.glVertexAttribPointer(mSkyPositionHandle, 2, GLES20.GL_FLOAT, false, 16, mSkyQuadBuffer);
-        mSkyQuadBuffer.position(2);
-        GLES20.glEnableVertexAttribArray(mSkyTexHandle);
-        GLES20.glVertexAttribPointer(mSkyTexHandle, 2, GLES20.GL_FLOAT, false, 16, mSkyQuadBuffer);
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTexNight);
-        GLES20.glUniform1i(mSkySamplerNightHandle, 0);
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE1);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTexSunrise);
-        GLES20.glUniform1i(mSkySamplerSunriseHandle, 1);
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE2);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTexSunset);
-        GLES20.glUniform1i(mSkySamplerSunsetHandle, 2);
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE3);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTexSky);
-        GLES20.glUniform1i(mSkySamplerSkyHandle, 3);
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE4);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTexSolarEclipse);
-        GLES20.glUniform1i(mSkySamplerSolarEclipseHandle, 4);
-        GLES20.glUniform1f(mSkyWeightNightHandle, sd.accurateWeights[0]);
-        GLES20.glUniform1f(mSkyWeightSunriseHandle, sd.accurateWeights[1]);
-        GLES20.glUniform1f(mSkyWeightSunsetHandle, sd.accurateWeights[2]);
-        GLES20.glUniform1f(mSkyWeightSkyHandle, sd.accurateWeights[3]);
-        GLES20.glUniform1f(mSkyWeightSolarEclipseHandle, sd.solarEclipseWeight);
-        GLES20.glUniform1f(mSkyNightInvertHandle, sd.nightInvert ? 1.0f : 0.0f);
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, 4);
-        GLES20.glDisableVertexAttribArray(mSkyPositionHandle);
-        GLES20.glDisableVertexAttribArray(mSkyTexHandle);
-    }
-
-    private void drawSun(GrassScene.SceneData sd) {
+    private void drawSun(SceneData sd) {
         if (mTexSun == 0) return;
         useProgram(mBackgroundProgram);
         setBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
         GLES20.glUniformMatrix4fv(mBgMatrixHandle, 1, false, sd.projectionMatrix, 0);
-        drawSprite(mTexSun, sd.sunX, sd.sunY, sd.sunSize, sd.sunAlpha, false, 0.0f);
+        mSpriteRenderer.drawSprite(mTexSun, sd.sunX, sd.sunY, sd.sunSize, sd.sunAlpha, false, 0.0f);
         if (sd.hasSolarEclipseOcclusion && mTexMoonMask != 0) {
             drawSolarEclipseOcclusion(sd);
         }
     }
 
-    private void drawSolarEclipseOcclusion(GrassScene.SceneData sd) {
-        GrassScene.SolarEclipse eclipse = sd.solarEclipseAtSun;
+    private void drawSolarEclipseOcclusion(SceneData sd) {
+        SolarEclipse eclipse = sd.solarEclipseAtSun;
         float sunX = sd.eclipseSunX, sunY = sd.eclipseSunY, sunSize = sd.eclipseSunSize;
         float sunAlpha = sd.eclipseSunAlpha;
         float moonX = sd.eclipseMoonX, moonY = sd.eclipseMoonY;
 
-        float sunDiscSize = sunSize * GrassScene.SUN_PHOTOSPHERE_SCALE;
+        float sunDiscSize = sunSize * SUN_PHOTOSPHERE_SCALE;
         float sunRadius = sunDiscSize * 0.5f;
         float moonSize = sunDiscSize * eclipse.moonRadiusRatio;
         float moonRadius = moonSize * 0.5f;
@@ -925,12 +812,12 @@ public class GrassGL extends GLESScene {
         GLES20.glUniform1f(mMoonSolarOcclusionHandle, 0.0f);
     }
 
-    private void drawMoon(GrassScene.SceneData sd) {
+    private void drawMoon(SceneData sd) {
         if (!sd.useAccurateSun || !sd.moonEnabled || !sd.moonVisible) return;
         if (mMoonProgram == 0 || mTexMoonBase == 0 || mTexMoonMask == 0) return;
 
         useProgram(mMoonProgram);
-        GrassScene.MoonEclipse eclipse = sd.moonEclipse;
+        MoonEclipse eclipse = sd.moonEclipse;
         if (sd.moonIsDaytime) {
             setBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE_MINUS_SRC_COLOR);
         } else {
@@ -983,14 +870,19 @@ public class GrassGL extends GLESScene {
         GLES20.glDisableVertexAttribArray(mMoonTexHandle);
     }
 
-    private void drawBlades(GrassScene.SceneData sd, float brightness, float xOffset, float nightDesat) {
+    private void drawBlades(SceneData sd, float brightness, float xOffset, float nightDesat) {
         if (!sd.grassEnabled || sd.blades == null) return;
         if (mGrassVertexBuffer == null || mGrassIndexBuffer == null) return;
 
-        mGrassVertexBuffer.clear();
-        for (GrassScene.Blade blade : sd.blades) {
-            appendBladeVertices(blade, sd, brightness, xOffset, nightDesat, mGrassVertexBuffer);
+        float[] sharedVerts = mScene.buildGrassVertexArray(sd);
+        int sharedVertCount = mScene.getGrassVertexCount();
+        int floatCount = sharedVertCount * 8;
+        if (sharedVerts == null || floatCount <= 0 || floatCount > sharedVerts.length) {
+            return;
         }
+
+        mGrassVertexBuffer.clear();
+        mGrassVertexBuffer.put(sharedVerts, 0, floatCount);
         mGrassVertexBuffer.position(0);
 
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
@@ -1014,461 +906,56 @@ public class GrassGL extends GLESScene {
         GLES20.glDisableVertexAttribArray(mGrassTexHandle);
     }
 
-    private void appendBladeVertices(GrassScene.Blade blade, GrassScene.SceneData sd,
-            float brightness, float xOffset, float nightDesat, FloatBuffer out) {
-        float scale = blade.scale * sd.grassWidthScale;
-        float angle = blade.angle; // already updated by GrassScene.updateBladeAngles()
-        float xpos = blade.xPos + xOffset;
-        int size = blade.size;
-
-        float h = blade.h, s = blade.s;
-        float v = mix(0.0f, blade.b, brightness);
-        if (sd.useGrassTint) {
-            h = sd.grassTintH;
-            s = sd.grassTintS;
-            v = clamp(v * sd.grassTintV, 0.0f, 1.0f);
-        }
-        if (sd.nightDesaturateGrass && nightDesat > 0.0f) {
-            s = mix(s, 0.0f, clamp(nightDesat, 0.0f, 1.0f));
-        }
-        int color = hsbToRgb(h, s, v);
-        float r = Color.red(color) / 255.0f;
-        float g = Color.green(color) / 255.0f;
-        float b = Color.blue(color) / 255.0f;
-
-        float currentAngle = (float) (Math.PI * 0.5);
-        float bottomX = xpos, bottomY = blade.yPos;
-        float d = angle * blade.hardness * sd.grassHardnessScale;
-
-        float si = size * scale;
-        putVertex(out, bottomX - si, bottomY + GrassScene.HALF_TESSELATION, r, g, b, 1.0f, 0.0f, 0.0f);
-        putVertex(out, bottomX + si, bottomY + GrassScene.HALF_TESSELATION, r, g, b, 1.0f, 1.0f, 0.0f);
-
-        for (; size > 0; size -= 1) {
-            float lengthX = blade.lengthX * sd.grassHeightScale;
-            float lengthY = blade.lengthY * sd.grassHeightScale;
-            float topX = bottomX - (float) Math.cos(currentAngle) * lengthX;
-            float topY = bottomY - (float) Math.sin(currentAngle) * lengthY;
-            si = (float) size * scale;
-            float spi = si - scale;
-            putVertex(out, topX - spi, topY, r, g, b, 1.0f, 0.0f, 0.0f);
-            putVertex(out, topX + spi, topY, r, g, b, 1.0f, 1.0f, 0.0f);
-            bottomX = topX;
-            bottomY = topY;
-            currentAngle += d;
-        }
-    }
-
-    private void putVertex(FloatBuffer out, float x, float y, float r, float g, float b, float a, float s, float t) {
-        out.put(x); out.put(y); out.put(r); out.put(g); out.put(b); out.put(a); out.put(s); out.put(t);
-    }
-
     // ---- Sprite drawing ----
 
-    private void drawSprites(GrassScene.SceneData sd) {
+    private void drawSprites(SceneData sd) {
         if (sd.legacyParticles) {
             drawLegacyParticles(sd);
             return;
         }
-        if (mSpriteBuffer == null) {
-            mSpriteBuffer = ByteBuffer.allocateDirect(4 * 4 * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
-        }
         useProgram(mBackgroundProgram);
         setBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
         GLES20.glUniformMatrix4fv(mBgMatrixHandle, 1, false, sd.projectionMatrix, 0);
 
-        if (!sd.isNight && sd.dandelionEnabled && mTexDandelion != 0 && sd.dandelions != null) {
-            for (GrassScene.Dandelion d : sd.dandelions) {
+        if (sd.dandelionVisibility > 0.001f && sd.dandelionEnabled
+                && mTexDandelion != 0 && sd.dandelions != null) {
+            for (Dandelion d : sd.dandelions) {
                 float sway = (float) Math.sin(d.swayPhase + sd.animNowMs * 0.001f * d.swaySpeed) * 6.0f;
-                drawSprite(mTexDandelion, d.x, d.y + sway, d.size, 0.9f, true, d.rotationDeg);
+                mSpriteRenderer.drawSprite(mTexDandelion, d.x, d.y + sway, d.size,
+                        0.9f * sd.dandelionVisibility, true, d.rotationDeg);
             }
         }
 
-        if (sd.isNight && sd.fireflyEnabled && mTexFirefly != 0 && sd.fireflies != null) {
+        if (sd.fireflyVisibility > 0.001f && sd.fireflyEnabled
+                && mTexFirefly != 0 && sd.fireflies != null) {
             float time = sd.animNowMs * 0.001f;
-            for (GrassScene.Firefly f : sd.fireflies) {
+            for (Firefly f : sd.fireflies) {
                 float flicker = 0.5f + 0.5f * (float) Math.sin(f.phase + time * f.flickerSpeed);
-                float alpha = 0.2f + 0.8f * flicker;
+                float alpha = (0.2f + 0.8f * flicker) * sd.fireflyVisibility;
                 float size = f.size * (0.8f + 0.4f * flicker);
-                drawSprite(mTexFirefly, f.x, f.y, size, alpha, false, 0.0f);
+                mSpriteRenderer.drawSprite(mTexFirefly, f.x, f.y, size, alpha, false, 0.0f);
             }
         }
     }
 
-    private void drawWeatherOverlays(GrassScene.SceneData sd, boolean frontPass) {
-        if (!mWeatherEnabled || sd.weatherCondition == null) {
-            return;
-        }
+    private void drawWeatherOverlays(SceneData sd, boolean frontPass) {
+        mWeatherRenderer.drawWeatherOverlays(sd, frontPass,
+                mWeatherIntegration.isWeatherEnabled(), mWeatherRenderOps, mSpriteRenderer);
+    }
+
+    private void drawWeatherTone(SceneData sd) {
+        // moved to GrassWeatherRenderer
+    }
+
+    private void drawWeatherBackground(SceneData sd) {
+        mWeatherRenderer.drawWeatherBackground(sd,
+                mWeatherIntegration.isWeatherEnabled(), mWeatherRenderOps, mSpriteRenderer);
+    }
+
+    private void drawLegacyParticles(SceneData sd) {
         useProgram(mBackgroundProgram);
         setBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
         GLES20.glUniformMatrix4fv(mBgMatrixHandle, 1, false, sd.projectionMatrix, 0);
-        if (!frontPass) {
-            drawWeatherTone(sd);
-        }
-
-        switch (sd.weatherCondition) {
-            case D2_CLOUDY:
-                if (!frontPass) {
-                    drawCloudLayer(sd.weatherCondition, sd.animNowMs, 8, sd.isNight);
-                }
-                break;
-            case D3_DREARY:
-                if (!frontPass) {
-                    drawCloudLayer(sd.weatherCondition, sd.animNowMs, 12, sd.isNight);
-                }
-                break;
-            case D4_FOG:
-                if (!frontPass) {
-                    drawCloudLayer(sd.weatherCondition, sd.animNowMs, 8, sd.isNight);
-                } else {
-                    drawFogLayer(sd.weatherCondition);
-                }
-                break;
-            case D5_RAIN_SHOWERS:
-                if (!frontPass) {
-                    drawCloudLayer(sd.weatherCondition, sd.animNowMs, 12, sd.isNight);
-                }
-                drawRainLayer(sd.animNowMs, 12, frontPass);
-                break;
-            case D6_THUNDERSTORMS:
-                if (!frontPass) {
-                    mThunderFlashAlpha = drawLightningSweep(sd.animNowMs);
-                    drawCloudLayer(sd.weatherCondition, sd.animNowMs, 12, sd.isNight);
-                }
-                drawRainLayer(sd.animNowMs, 25, frontPass);
-                if (frontPass && mThunderFlashAlpha > 0.0f && mTexWeatherFlash != 0) {
-                    float fullSize = Math.max(mWidth, mHeight) * 2.4f;
-                    drawSprite(mTexWeatherFlash, mWidth * 0.5f, mHeight * 0.5f,
-                            fullSize, clamp(mThunderFlashAlpha, 0.0f, 0.58f), false, 0.0f);
-                }
-                break;
-            case D7_FLURRIES_SNOW:
-                if (!frontPass) {
-                    drawCloudLayer(sd.weatherCondition, sd.animNowMs, 2, sd.isNight);
-                }
-                drawSnowLayer(sd.animNowMs, 12, frontPass);
-                break;
-            case D8_ICE_COLD:
-                if (!frontPass) {
-                    drawCloudLayer(sd.weatherCondition, sd.animNowMs, 8, sd.isNight);
-                }
-                drawSnowLayer(sd.animNowMs, 25, frontPass);
-                break;
-            case D9_SLEET:
-                if (!frontPass) {
-                    drawCloudLayer(sd.weatherCondition, sd.animNowMs, 12, sd.isNight);
-                }
-                drawRainLayer(sd.animNowMs, 25, frontPass);
-                drawSnowLayer(sd.animNowMs, 12, frontPass);
-                break;
-            case D1_CLEAR:
-            default:
-                if (!frontPass) {
-                    resetThunderState();
-                }
-                break;
-        }
-
-        if (!frontPass && sd.weatherCondition != WeatherCondition.D6_THUNDERSTORMS) {
-            resetThunderState();
-        }
-    }
-
-    private void drawWeatherTone(GrassScene.SceneData sd) {
-        if (sd.isNight) {
-            return;
-        }
-        float alpha = 0.0f;
-        switch (sd.weatherCondition) {
-            case D2_CLOUDY:
-                alpha = 0.05f;
-                break;
-            case D3_DREARY:
-                alpha = 0.08f;
-                break;
-            case D4_FOG:
-                alpha = 0.10f;
-                break;
-            case D5_RAIN_SHOWERS:
-                alpha = 0.13f;
-                break;
-            case D6_THUNDERSTORMS:
-                alpha = 0.18f;
-                break;
-            case D7_FLURRIES_SNOW:
-                alpha = 0.06f;
-                break;
-            case D8_ICE_COLD:
-                alpha = 0.07f;
-                break;
-            case D9_SLEET:
-                alpha = 0.14f;
-                break;
-            case D1_CLEAR:
-            default:
-                break;
-        }
-            if (mTexWeatherTone == 0 || alpha <= 0.001f) {
-            return;
-        }
-            // Extend 32px outside vertical bounds to avoid bottom-edge seams on non-16:9 screens.
-            GLES20.glUniform1f(mBgAlphaHandle, alpha);
-            drawBackgroundQuad(mTexWeatherTone,
-                0.0f, -32.0f, 0.0f, 0.0f,
-                0.0f, mHeight + 32.0f, 0.0f, 1.0f,
-                mWidth, mHeight + 32.0f, 1.0f, 1.0f,
-                mWidth, -32.0f, 1.0f, 0.0f);
-            GLES20.glUniform1f(mBgAlphaHandle, 1.0f);
-    }
-
-    // drawFogLayer: faithful to original drawFog(). Draws haze (fog_01) full-width at screen
-    // bottom, then fog (fog_02) above it. Only active for D4_FOG (Weather_Fog).
-    private void drawFogLayer(WeatherCondition condition) {
-        if (mTexWeatherFog1 == 0 || mTexWeatherFog2 == 0) return;
-        if (condition != WeatherCondition.D4_FOG) return;
-        float hazeDrawW = mWidth + 40f;
-        float hazeDrawH = FOG1_H_OVER_W * mWidth;
-        float hazeTop = mHeight - hazeDrawH;
-        drawRect(mTexWeatherFog1, -20f, hazeTop, hazeDrawW, hazeDrawH, 1.0f);
-        float fogDrawH = FOG2_H_OVER_W * mWidth * 1.2f;
-        float fogTop = hazeTop - (FOG2_H_OVER_W * mWidth / 2.0f);
-        drawRect(mTexWeatherFog2, 0f, fogTop, mWidth, fogDrawH, 1.0f);
-    }
-
-    private int cloudTexForIndex(int idx) {
-        switch (idx) {
-            case 0: return mTexWeatherCloud1;
-            case 1: return mTexWeatherCloud2;
-            case 2: return mTexWeatherCloud3;
-            case 3: return mTexWeatherCloud4;
-            default: return mTexWeatherCloud1;
-        }
-    }
-
-    private int cloudTexIndexForWeather(WeatherCondition condition, int i) {
-        switch (condition) {
-            case D7_FLURRIES_SNOW:
-                return 0;
-            case D2_CLOUDY:
-            case D4_FOG:
-            case D8_ICE_COLD:
-                return (i & 1) == 0 ? 2 : 0;
-            case D3_DREARY:
-            case D5_RAIN_SHOWERS:
-            case D6_THUNDERSTORMS:
-            case D9_SLEET:
-                return (i & 1) == 0 ? 3 : 2;
-            default:
-                return 0;
-        }
-    }
-
-    private void drawCloudLayer(WeatherCondition condition, long animNowMs, int cloudCount, boolean isNight) {
-        setBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
-        int cond = condition.ordinal();
-        float tSec = animNowMs / 1000.0f;
-        float cloudAlpha = isNight ? 0.30f : 1.0f;
-        for (int i = 0; i < cloudCount; i++) {
-            int texIdx = cloudTexIndexForWeather(condition, i);
-            int texture = cloudTexForIndex(texIdx);
-            if (texture == 0) continue;
-            float cloudW = CLOUD_MDPI_W[texIdx] * mDensity;
-            float cloudH = CLOUD_MDPI_H[texIdx] * mDensity;
-            float speed = 8.0f * (1.0f + hash01((long) (i * 7 + cond * 31)));
-            float cycleLen = cloudW + mWidth;
-            float phase = hash01((long) (i * 13 + cond * 17 + 1000)) * cycleLen;
-            float xPos = (phase + speed * tSec) % cycleLen - cloudW;
-            float yOff = hash01((long) (i * 11 + cond * 7 + 2000)) * (cloudH / 2.0f) - cloudH / 4.0f;
-            drawRect(texture, xPos, yOff, cloudW, cloudH, cloudAlpha);
-        }
-    }
-
-    private void drawRainLayer(long animNowMs, int count, boolean frontPass) {
-        if (mTexWeatherRain1 == 0 || mTexWeatherRain2 == 0 || mTexWeatherRain3 == 0) return;
-        setBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
-        float tSec = animNowMs / 1000.0f;
-        for (int i = 0; i < count; i++) {
-            boolean front = hash01(i * 37L + 991L) > 0.5f;
-            if (front != frontPass) continue;
-            int texIdx = i % 3;
-            int texture;
-            switch (texIdx) {
-                case 0:
-                    texture = mTexWeatherRain1;
-                    break;
-                case 1:
-                    texture = mTexWeatherRain2;
-                    break;
-                default:
-                    texture = mTexWeatherRain3;
-                    break;
-            }
-            float rainW = RAIN_MDPI_W[texIdx] * mDensity;
-            float rainH = RAIN_MDPI_H[texIdx] * mDensity;
-            float xPos = hash01((long) (i * 17 + 503)) * mWidth;
-            float speed = 300.0f + hash01((long) (i * 31 + 271)) * 50.0f;
-            float cycleLen = rainH + mHeight;
-            float phase = hash01((long) (i * 23 + 713)) * cycleLen;
-            float yPos = (phase + speed * tSec) % cycleLen - rainH;
-            // Rain texture needs vertical flip to match original drop direction.
-            drawRectUv(texture,
-                    xPos, yPos, xPos + rainW, yPos + rainH,
-                    0.0f, 0.0f,
-                    1.0f, 1.0f,
-                    1.0f);
-        }
-    }
-
-    private void drawSnowLayer(long animNowMs, int count, boolean frontPass) {
-        if (mTexWeatherSnow1 == 0 || mTexWeatherSnow2 == 0 || mTexWeatherSnow3 == 0 || mTexWeatherSnow4 == 0) {
-            return;
-        }
-        setBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
-        float tSec = animNowMs / 1000.0f;
-        for (int i = 0; i < count; i++) {
-            boolean front = hash01(i * 41L + 577L) > 0.5f;
-            if (front != frontPass) continue;
-            float radiusOffset = hash01((long) (i * 7 + 101)) * 4.0f;
-            float size = (2.0f + radiusOffset) * 2.0f;
-            float speed = 40.0f + hash01((long) (i * 11 + 137)) * (6.0f - (2.0f + radiusOffset)) * 5.0f;
-            float xPos = hash01((long) (i * 13 + 199)) * mWidth;
-            float cycleLen = size + mHeight;
-            float phase = hash01((long) (i * 19 + 317)) * cycleLen;
-            float yPos = (phase + speed * tSec) % cycleLen - size;
-            int texIdx = i & 3;
-            int texture;
-            switch (texIdx) {
-                case 0:
-                    texture = mTexWeatherSnow1;
-                    break;
-                case 1:
-                    texture = mTexWeatherSnow2;
-                    break;
-                case 2:
-                    texture = mTexWeatherSnow3;
-                    break;
-                default:
-                    texture = mTexWeatherSnow4;
-                    break;
-            }
-            drawSprite(texture, xPos, yPos + size * 0.5f, size, 1.0f, false, 0.0f);
-        }
-    }
-
-    // drawLightningSweep: faithful to original Thunder.java behavior.
-    // - random delay 2-8s between strikes
-    // - each strike lasts 200ms
-    // - reveal area sweeps across screen with growing clip
-    // returns fullscreen white flash alpha used in front pass.
-    private float drawLightningSweep(long animNowMs) {
-        if (mTexWeatherLightning1 == 0 || mTexWeatherLightning2 == 0 || mTexWeatherLightning3 == 0) {
-            return 0.0f;
-        }
-
-        if (mThunderActiveStartMs == 0L && mThunderNextStartMs == 0L) {
-            mThunderNextStartMs = animNowMs + 2000L + (long) (hash01(animNowMs * 31L + 7L) * 6000.0f);
-        }
-
-        if (mThunderActiveStartMs == 0L && animNowMs >= mThunderNextStartMs) {
-            mThunderActiveStartMs = animNowMs;
-            mThunderTextureIndex = (int) (hash01(animNowMs * 13L + 17L) * 3.0f) % 3;
-            mThunderLTR = hash01(animNowMs * 19L + 23L) > 0.5f;
-        }
-
-        if (mThunderActiveStartMs == 0L) {
-            return 0.0f;
-        }
-
-        long elapsed = animNowMs - mThunderActiveStartMs;
-        if (elapsed >= 200L) {
-            mThunderActiveStartMs = 0L;
-            mThunderNextStartMs = animNowMs + 2000L + (long) (hash01(animNowMs * 29L + 31L) * 6000.0f);
-            return 0.0f;
-        }
-
-        float progress = clamp(elapsed / 200.0f, 0.0f, 1.0f);
-        float clipW = mWidth * progress;
-        float clipH = mHeight * progress;
-        float left = mThunderLTR ? 0.0f : (mWidth - clipW);
-        float right = left + clipW;
-        float top = 0.0f;
-        float bottom = clipH;
-        int texture;
-        switch (mThunderTextureIndex) {
-            case 0:
-                texture = mTexWeatherLightning1;
-                break;
-            case 1:
-                texture = mTexWeatherLightning2;
-                break;
-            default:
-                texture = mTexWeatherLightning3;
-                break;
-        }
-        drawRectUv(texture,
-                left, top, right, bottom,
-                left / mWidth, 1.0f - top / mHeight,
-                right / mWidth, 1.0f - bottom / mHeight,
-                1.0f);
-
-        return clamp(((elapsed / 200.0f) + 0.2f) * 0.5f, 0.0f, 1.0f);
-    }
-
-    private void resetThunderState() {
-        mThunderNextStartMs = 0L;
-        mThunderActiveStartMs = 0L;
-        mThunderTextureIndex = 0;
-        mThunderLTR = true;
-        mThunderFlashAlpha = 0.0f;
-    }
-
-    private static float thunderFlashAlpha(long animNowMs) {
-        long segment = animNowMs / 7000L;
-        long local = animNowMs % 7000L;
-        long base = 1300L + (long) (hash01(segment * 37L + 11L) * 3600.0f);
-        float a1 = pulseAlpha(local - base, 70L);
-        float a2 = pulseAlpha(local - (base + 110L), 60L) * 0.85f;
-        float a3 = pulseAlpha(local - (base + 250L), 85L) * 0.55f;
-        long recoilDelay = 80L + (long) (hash01(segment * 97L + 19L) * 40.0f);
-        float recoil = pulseAlpha(local - (base + recoilDelay), 45L) * 0.46f;
-        return clamp(a1 + a2 + a3 + recoil, 0.0f, 1.0f);
-    }
-
-    private static float thunderAfterglowAlpha(long animNowMs) {
-        long segment = animNowMs / 7000L;
-        long local = animNowMs % 7000L;
-        long base = 1300L + (long) (hash01(segment * 37L + 11L) * 3600.0f);
-        float a1 = pulseAlpha(local - (base + 30L), 210L) * 0.85f;
-        float a2 = pulseAlpha(local - (base + 145L), 190L) * 0.65f;
-        float a3 = pulseAlpha(local - (base + 290L), 240L) * 0.45f;
-        return clamp(a1 + a2 + a3, 0.0f, 1.0f);
-    }
-
-    private static float pulseAlpha(long deltaMs, long widthMs) {
-        float t = Math.abs(deltaMs) / (float) widthMs;
-        return t >= 1.0f ? 0.0f : (1.0f - t);
-    }
-
-    private static float hash01(long v) {
-        long x = v;
-        x ^= (x << 13);
-        x ^= (x >>> 7);
-        x ^= (x << 17);
-        long masked = x & 0x7fffffffL;
-        return masked / 2147483647.0f;
-    }
-
-    private static float fract(float v) {
-        return v - (float) Math.floor(v);
-    }
-
-    private void drawLegacyParticles(GrassScene.SceneData sd) {
-        useProgram(mBackgroundProgram);
-        setBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
-        GLES20.glUniformMatrix4fv(mBgMatrixHandle, 1, false, sd.projectionMatrix, 0);
-        if (mSpriteBuffer == null) {
-            mSpriteBuffer = ByteBuffer.allocateDirect(4 * 4 * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
-        }
 
         long animNowMs = sd.legacyNow;
         int legacyType = sd.legacyType;
@@ -1477,20 +964,20 @@ public class GrassGL extends GLESScene {
         drawLegacyParticleSet(sd.legacyExtras, legacyType, true, animNowMs);
     }
 
-    private void drawLegacyParticleSet(GrassScene.LegacyParticle[] particles, int legacyType,
+    private void drawLegacyParticleSet(LegacyParticle[] particles, int legacyType,
             boolean isExtras, long animNowMs) {
         if (particles == null) {
             return;
         }
 
         for (int i = 0; i < particles.length; i++) {
-            GrassScene.LegacyParticle p = particles[i];
+            LegacyParticle p = particles[i];
             if (p == null || !p.active) continue;
             long delta = animNowMs - p.startTime;
             if (delta < 0L) continue;
             boolean outOfBounds = isLegacyParticleOutOfBounds(p, legacyType);
             if (outOfBounds) {
-                GrassScene.LegacyParticle np = mScene.createLegacyParticle(legacyType);
+                LegacyParticle np = mScene.createLegacyParticle(legacyType);
                 np.active = true;
                 particles[i] = np;
                 p = np;
@@ -1498,7 +985,7 @@ public class GrassGL extends GLESScene {
                 if (delta < 0L) continue;
             }
             if ((p.stayEndTime - animNowMs) <= 0L) {
-                if (legacyType == GrassScene.LEGACY_TYPE_DANDELION) {
+                if (legacyType == LEGACY_TYPE_DANDELION) {
                     mScene.flyLegacyDandelion(p, false);
                 } else {
                     mScene.flyLegacyFirefly(p, false);
@@ -1509,125 +996,36 @@ public class GrassGL extends GLESScene {
         }
     }
 
-    private boolean isLegacyParticleOutOfBounds(GrassScene.LegacyParticle p, int legacyType) {
-        if (legacyType == GrassScene.LEGACY_TYPE_DANDELION) {
+    private boolean isLegacyParticleOutOfBounds(LegacyParticle p, int legacyType) {
+        if (legacyType == LEGACY_TYPE_DANDELION) {
             return p.originX < 0 || p.originX > mWidth * 2 || p.originY < 0 || p.originY > mHeight;
         } else {
             return p.originX < 0 || p.originX > mWidth * 2 || p.originY < 0;
         }
     }
 
-    private void drawLegacyParticle(GrassScene.LegacyParticle p, int legacyType, int index,
+    private void drawLegacyParticle(LegacyParticle p, int legacyType, int index,
             boolean isExtras, long animNowMs) {
-        if (legacyType == GrassScene.LEGACY_TYPE_FIREFLY) {
+        if (legacyType == LEGACY_TYPE_FIREFLY) {
             long interval = p.flareEndTime - p.silentEndTime;
             if (animNowMs >= p.flareEndTime && interval > 0L) {
                 p.silentEndTime = animNowMs
-                        + (long) ((1.0 + (Math.random() * 2 - 1) * GrassScene.LEGACY_INTERVAL_VARIANCE)
-                        * GrassScene.LEGACY_MAX_INTERVAL);
+                        + (long) ((1.0 + (Math.random() * 2 - 1) * LEGACY_INTERVAL_VARIANCE)
+                        * LEGACY_MAX_INTERVAL);
             } else if (animNowMs >= p.silentEndTime && interval < 0L) {
-                p.flareEndTime = animNowMs + GrassScene.LEGACY_MAX_FLARE;
+                p.flareEndTime = animNowMs + LEGACY_MAX_FLARE;
             }
             int tex = (animNowMs < p.flareEndTime) ? mTexFirefly2 : mTexFirefly1;
             float flicker = 0.5f + 0.5f * (float) Math.sin((animNowMs + index * 1234) * 0.002);
             float alpha = 0.2f + 0.8f * flicker;
             float size = (isExtras ? 48.0f : 72.0f) * (0.8f + 0.4f * flicker);
-            drawSprite(tex, p.originX, p.originY, size, alpha, false, 0.0f);
+            mSpriteRenderer.drawSprite(tex, p.originX, p.originY, size, alpha, false, 0.0f);
         } else {
             float size = isExtras ? 64.0f : 96.0f;
-            drawSprite(mTexDandelion, p.originX, p.originY, size, 0.9f, true, p.angle);
+            mSpriteRenderer.drawSprite(mTexDandelion, p.originX, p.originY, size, 0.9f, true, p.angle);
         }
     }
 
-    private void drawSprite(int texture, float cx, float cy, float size, float alpha, boolean flipV,
-            float rotationDeg) {
-        if (mSpriteBuffer == null) {
-            mSpriteBuffer = ByteBuffer.allocateDirect(4 * 4 * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
-        }
-        float half = size * 0.5f;
-        float rad = (float) Math.toRadians(rotationDeg);
-        float cos = (float) Math.cos(rad), sin = (float) Math.sin(rad);
-
-        float x0 = (-half * cos) - (-half * sin) + cx, y0 = (-half * sin) + (-half * cos) + cy;
-        float x1 = (-half * cos) - ( half * sin) + cx, y1 = (-half * sin) + ( half * cos) + cy;
-        float x2 = ( half * cos) - ( half * sin) + cx, y2 = ( half * sin) + ( half * cos) + cy;
-        float x3 = ( half * cos) - (-half * sin) + cx, y3 = ( half * sin) + (-half * cos) + cy;
-
-        float v0 = flipV ? 0.0f : 1.0f, v1 = flipV ? 1.0f : 0.0f;
-        mQuadVerts[0] = x0;  mQuadVerts[1] = y0;  mQuadVerts[2] = 0.0f; mQuadVerts[3] = v0;
-        mQuadVerts[4] = x1;  mQuadVerts[5] = y1;  mQuadVerts[6] = 0.0f; mQuadVerts[7] = v1;
-        mQuadVerts[8] = x2;  mQuadVerts[9] = y2;  mQuadVerts[10] = 1.0f; mQuadVerts[11] = v1;
-        mQuadVerts[12] = x3; mQuadVerts[13] = y3; mQuadVerts[14] = 1.0f; mQuadVerts[15] = v0;
-        mSpriteBuffer.clear();
-        mSpriteBuffer.put(mQuadVerts).position(0);
-
-        GLES20.glEnableVertexAttribArray(mBgPositionHandle);
-        GLES20.glVertexAttribPointer(mBgPositionHandle, 2, GLES20.GL_FLOAT, false, 16, mSpriteBuffer);
-        mSpriteBuffer.position(2);
-        GLES20.glEnableVertexAttribArray(mBgTexHandle);
-        GLES20.glVertexAttribPointer(mBgTexHandle, 2, GLES20.GL_FLOAT, false, 16, mSpriteBuffer);
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture);
-        GLES20.glUniform1i(mBgSamplerHandle, 0);
-        GLES20.glUniform1f(mBgAlphaHandle, alpha);
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, 4);
-        GLES20.glDisableVertexAttribArray(mBgPositionHandle);
-        GLES20.glDisableVertexAttribArray(mBgTexHandle);
-    }
-
-    // drawRect: draws texture as rectangle with top-left at (left,top), dimensions (w,h).
-    // Same UV convention as drawSprite: v=1 at screen top, v=0 at screen bottom.
-    private void drawRect(int texture, float left, float top, float w, float h, float alpha) {
-        if (mSpriteBuffer == null) {
-            mSpriteBuffer = ByteBuffer.allocateDirect(4 * 4 * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
-        }
-        float right = left + w, bottom = top + h;
-        mQuadVerts[0] = left;  mQuadVerts[1] = top;    mQuadVerts[2] = 0.0f; mQuadVerts[3] = 1.0f;
-        mQuadVerts[4] = left;  mQuadVerts[5] = bottom; mQuadVerts[6] = 0.0f; mQuadVerts[7] = 0.0f;
-        mQuadVerts[8] = right; mQuadVerts[9] = bottom; mQuadVerts[10] = 1.0f; mQuadVerts[11] = 0.0f;
-        mQuadVerts[12] = right; mQuadVerts[13] = top;  mQuadVerts[14] = 1.0f; mQuadVerts[15] = 1.0f;
-        mSpriteBuffer.clear();
-        mSpriteBuffer.put(mQuadVerts).position(0);
-        GLES20.glEnableVertexAttribArray(mBgPositionHandle);
-        GLES20.glVertexAttribPointer(mBgPositionHandle, 2, GLES20.GL_FLOAT, false, 16, mSpriteBuffer);
-        mSpriteBuffer.position(2);
-        GLES20.glEnableVertexAttribArray(mBgTexHandle);
-        GLES20.glVertexAttribPointer(mBgTexHandle, 2, GLES20.GL_FLOAT, false, 16, mSpriteBuffer);
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture);
-        GLES20.glUniform1i(mBgSamplerHandle, 0);
-        GLES20.glUniform1f(mBgAlphaHandle, alpha);
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, 4);
-        GLES20.glDisableVertexAttribArray(mBgPositionHandle);
-        GLES20.glDisableVertexAttribArray(mBgTexHandle);
-    }
-
-    private void drawRectUv(int texture,
-            float left, float top, float right, float bottom,
-            float uLeft, float vTop, float uRight, float vBottom,
-            float alpha) {
-        if (mSpriteBuffer == null) {
-            mSpriteBuffer = ByteBuffer.allocateDirect(4 * 4 * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
-        }
-        mQuadVerts[0] = left;  mQuadVerts[1] = top;    mQuadVerts[2] = uLeft;  mQuadVerts[3] = vTop;
-        mQuadVerts[4] = left;  mQuadVerts[5] = bottom; mQuadVerts[6] = uLeft;  mQuadVerts[7] = vBottom;
-        mQuadVerts[8] = right; mQuadVerts[9] = bottom; mQuadVerts[10] = uRight; mQuadVerts[11] = vBottom;
-        mQuadVerts[12] = right; mQuadVerts[13] = top;  mQuadVerts[14] = uRight; mQuadVerts[15] = vTop;
-        mSpriteBuffer.clear();
-        mSpriteBuffer.put(mQuadVerts).position(0);
-        GLES20.glEnableVertexAttribArray(mBgPositionHandle);
-        GLES20.glVertexAttribPointer(mBgPositionHandle, 2, GLES20.GL_FLOAT, false, 16, mSpriteBuffer);
-        mSpriteBuffer.position(2);
-        GLES20.glEnableVertexAttribArray(mBgTexHandle);
-        GLES20.glVertexAttribPointer(mBgTexHandle, 2, GLES20.GL_FLOAT, false, 16, mSpriteBuffer);
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture);
-        GLES20.glUniform1i(mBgSamplerHandle, 0);
-        GLES20.glUniform1f(mBgAlphaHandle, alpha);
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, 4);
-        GLES20.glDisableVertexAttribArray(mBgPositionHandle);
-        GLES20.glDisableVertexAttribArray(mBgTexHandle);
-    }
     private void syncPerfSettingsIfNeeded(long nowMs) {
         if (nowMs - mLastPerfSyncMs < PERF_SYNC_INTERVAL_MS) {
             return;
@@ -1658,26 +1056,6 @@ public class GrassGL extends GLESScene {
             mDiagAccumulatedMs = 0L;
             mDiagMaxMs = 0L;
         }
-    }
-
-    private void onWeatherUpdated(WeatherState state) {
-        if (state == null || !mWeatherEnabled) {
-            return;
-        }
-        mPendingWeatherState = state;
-    }
-
-    private boolean computePreviewIsNight() {
-        long nowMs = System.currentTimeMillis();
-        long sunriseUtc = mPrefs != null ? mPrefs.getLong("last_sunrise", 0L) : 0L;
-        long sunsetUtc = mPrefs != null ? mPrefs.getLong("last_sunset", 0L) : 0L;
-        if (sunriseUtc > 0L && sunsetUtc > 0L) {
-            long nowSec = nowMs / 1000L;
-            return nowSec < sunriseUtc || nowSec >= sunsetUtc;
-        }
-        Calendar calendar = Calendar.getInstance();
-        int time = (calendar.get(Calendar.HOUR_OF_DAY) * 100) + calendar.get(Calendar.MINUTE);
-        return time < 600 || time > 1800;
     }
 
     // ---- Math utilities (local copies for GL rendering code) ----

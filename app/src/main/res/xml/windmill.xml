@@ -5,4 +5,4 @@
     android:description="@string/wallpaper_windmill_desc"
     android:thumbnail="@drawable/icon_windmill"
     android:showMetadataInPreview="true"
-    android:settingsActivity="com.reandroid.wallpaper.settings.WindmillSettingsActivity" />
+    android:settingsActivity="com.reandroid.settings.WindmillSettingsActivity" />

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
-    <com.reandroid.wallpaper.settings.PreviewPreference android:key="pref_preview" android:title="@string/pref_live_preview" />
+    <com.reandroid.settings.PreviewPreference android:key="pref_preview" android:title="@string/pref_live_preview" />
     <Preference android:key="pref_open_wallpaper_picker" android:title="@string/pref_open_wallpaper_picker" android:layout="@layout/preference_modern_item" />
     <androidx.preference.SwitchPreferenceCompat android:key="phasebeam_recolor_enabled" android:title="@string/phasebeam_enable_recolor" android:summary="@string/phasebeam_enable_recolor_summary" android:layout="@layout/preference_modern_item" />
     <androidx.preference.SeekBarPreference android:key="phasebeam_hue" android:title="@string/phasebeam_color_label" android:defaultValue="0" android:max="1000" app:min="0" app:seekBarIncrement="10" app:showSeekBarValue="false" android:layout="@layout/preference_modern_seekbar" />

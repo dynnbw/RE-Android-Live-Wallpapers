@@ -25,4 +25,4 @@
     android:description="@string/wallpaper_grass_desc"
     android:thumbnail="@drawable/grass_thumb"
     android:showMetadataInPreview="true"
-    android:settingsActivity="com.reandroid.wallpaper.settings.GrassSettingsActivity" />
+    android:settingsActivity="com.reandroid.settings.GrassSettingsActivity" />

@@ -25,4 +25,4 @@
     android:description="@string/wallpaper_nexus_desc"
     android:thumbnail="@drawable/nexus_thumb"
     android:showMetadataInPreview="true"
-    android:settingsActivity="com.reandroid.wallpaper.settings.NexusSettingsActivity" />
+    android:settingsActivity="com.reandroid.settings.NexusSettingsActivity" />

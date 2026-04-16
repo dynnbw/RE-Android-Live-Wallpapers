@@ -28,8 +28,8 @@ import android.view.MotionEvent;
 import android.app.WallpaperManager;
 
 import com.reandroid.wallpaper.R;
-import com.reandroid.wallpaper.gles.GLESScene;
-import com.reandroid.wallpaper.gles.RawResourceLoader;
+import com.reandroid.gles.GLESScene;
+import com.reandroid.gles.RawResourceLoader;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;

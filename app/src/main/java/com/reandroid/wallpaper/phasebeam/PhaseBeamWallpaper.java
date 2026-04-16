@@ -16,8 +16,8 @@
 
 package com.reandroid.wallpaper.phasebeam;
 
-import com.reandroid.wallpaper.gles.GLESScene;
-import com.reandroid.wallpaper.gles.GLESWallpaper;
+import com.reandroid.gles.GLESScene;
+import com.reandroid.gles.GLESWallpaper;
 
 public class PhaseBeamWallpaper extends GLESWallpaper {
     @Override

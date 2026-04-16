@@ -21,7 +21,7 @@ import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 
-import com.reandroid.wallpaper.gles.GLESScene;
+import com.reandroid.gles.GLESScene;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;

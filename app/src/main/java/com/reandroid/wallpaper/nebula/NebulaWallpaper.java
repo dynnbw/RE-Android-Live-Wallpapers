@@ -1,7 +1,7 @@
 package com.reandroid.wallpaper.nebula;
 
-import com.reandroid.wallpaper.gles.GLESScene;
-import com.reandroid.wallpaper.gles.GLESWallpaper;
+import com.reandroid.gles.GLESScene;
+import com.reandroid.gles.GLESWallpaper;
 
 public class NebulaWallpaper extends GLESWallpaper {
     @Override

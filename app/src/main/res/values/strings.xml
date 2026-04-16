@@ -258,6 +258,8 @@
     <string name="pref_grass_firefly_summary">Display flying fireflies during nighttime</string>
     <string name="pref_grass_dandelion_count">Dandelion count</string>
     <string name="pref_grass_firefly_count">Firefly count</string>
+    <string name="pref_grass_star_count">Star count</string>
+    <string name="pref_grass_star_count_summary">Adjust the number of stars (0 to 10000)</string>
     <string name="pref_grass_dandelion_speed">Dandelion speed</string>
     <string name="pref_open_wallpaper_picker">Open system preview</string>
     <string name="pref_open_wallpaper_picker_failed">Wallpaper preview not supported</string>

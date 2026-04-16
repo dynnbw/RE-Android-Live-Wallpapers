@@ -9,7 +9,7 @@ import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 
-import com.reandroid.wallpaper.settings.WallpaperSettings;
+import com.reandroid.settings.WallpaperSettings;
 
 /**
  * Galaxy 的 Vulkan 壁纸服务实现。

@@ -5,4 +5,4 @@
     android:author="@string/wallpaper_phasebeam_author"
     android:description="@string/wallpaper_phasebeam_desc"
     android:showMetadataInPreview="true"
-    android:settingsActivity="com.reandroid.wallpaper.settings.PhaseBeamSettingsActivity" />
+    android:settingsActivity="com.reandroid.settings.PhaseBeamSettingsActivity" />

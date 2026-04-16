@@ -1,7 +1,7 @@
 package com.reandroid.wallpaper.ocean;
 
-import com.reandroid.wallpaper.gles.GLESScene;
-import com.reandroid.wallpaper.gles.GLESWallpaper;
+import com.reandroid.gles.GLESScene;
+import com.reandroid.gles.GLESWallpaper;
 
 public class OceanWallpaper extends GLESWallpaper {
     @Override

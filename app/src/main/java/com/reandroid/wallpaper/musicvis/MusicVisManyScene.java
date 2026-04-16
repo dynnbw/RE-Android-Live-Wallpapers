@@ -4,9 +4,9 @@ import android.content.Context;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 
-import com.reandroid.wallpaper.gles.GLESScene;
+import com.reandroid.gles.GLESScene;
 import com.reandroid.wallpaper.R;
-import com.reandroid.wallpaper.gles.RawResourceLoader;
+import com.reandroid.gles.RawResourceLoader;
 
 import androidx.preference.PreferenceManager;
 

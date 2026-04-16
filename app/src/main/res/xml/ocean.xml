@@ -5,4 +5,4 @@
     android:description="@string/wallpaper_ocean_desc"
     android:thumbnail="@drawable/icon_sea"
     android:showMetadataInPreview="true"
-    android:settingsActivity="com.reandroid.wallpaper.settings.OceanSettingsActivity" />
+    android:settingsActivity="com.reandroid.settings.OceanSettingsActivity" />

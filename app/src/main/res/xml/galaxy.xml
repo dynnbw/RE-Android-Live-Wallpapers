@@ -5,4 +5,4 @@
     android:author="@string/wallpaper_galaxy_author"
     android:description="@string/wallpaper_galaxy_desc"
     android:showMetadataInPreview="true"
-    android:settingsActivity="com.reandroid.wallpaper.settings.GalaxySettingsActivity" />
+    android:settingsActivity="com.reandroid.settings.GalaxySettingsActivity" />

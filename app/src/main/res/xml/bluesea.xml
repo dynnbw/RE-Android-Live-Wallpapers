@@ -4,4 +4,4 @@
     android:description="@string/wallpaper_bluesea_desc"
     android:thumbnail="@drawable/bluesea_thumb"
     android:showMetadataInPreview="true"
-    android:settingsActivity="com.reandroid.wallpaper.settings.BlueSeaSettingsActivity" />
+    android:settingsActivity="com.reandroid.settings.BlueSeaSettingsActivity" />

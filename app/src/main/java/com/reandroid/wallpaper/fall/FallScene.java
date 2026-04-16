@@ -19,7 +19,7 @@ package com.reandroid.wallpaper.fall;
 import android.opengl.Matrix;
 import android.util.Log;
 
-import com.reandroid.wallpaper.settings.WallpaperSettings;
+import com.reandroid.settings.WallpaperSettings;
 
 import java.util.ArrayList;
 import java.util.List;

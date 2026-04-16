@@ -9,8 +9,8 @@ import android.opengl.Matrix;
 import android.os.SystemClock;
 
 import com.reandroid.wallpaper.R;
-import com.reandroid.wallpaper.gles.GLESScene;
-import com.reandroid.wallpaper.gles.RawResourceLoader;
+import com.reandroid.gles.GLESScene;
+import com.reandroid.gles.RawResourceLoader;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -334,7 +334,7 @@ public class FireworksGL extends GLESScene {
                 .order(ByteOrder.nativeOrder()).asFloatBuffer();
 
         // 尝试加载自定义背景纹理
-        android.content.Context ctx = com.reandroid.wallpaper.gles.GLESWallpaper.getAppContext();
+        android.content.Context ctx = com.reandroid.gles.GLESWallpaper.getAppContext();
         if (ctx != null) {
             mTexBackground = loadCustomBackgroundTexture(ctx, res);
         }
@@ -360,7 +360,7 @@ public class FireworksGL extends GLESScene {
      */
     private void checkAndReloadBackground() {
         try {
-            android.content.Context ctx = com.reandroid.wallpaper.gles.GLESWallpaper.getAppContext();
+            android.content.Context ctx = com.reandroid.gles.GLESWallpaper.getAppContext();
             if (ctx == null) return;
             
             // 获取当前保存的自定义背景URI

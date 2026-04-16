@@ -19,8 +19,8 @@ package com.reandroid.wallpaper.polarclock;
 import android.content.res.XmlResourceParser;
 import android.graphics.Color;
 
-import com.reandroid.wallpaper.gles.GLESScene;
-import com.reandroid.wallpaper.gles.GLESWallpaper;
+import com.reandroid.gles.GLESScene;
+import com.reandroid.gles.GLESWallpaper;
 
 /**
  * 极坐标时钟壁纸的主类

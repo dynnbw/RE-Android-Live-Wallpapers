@@ -10,7 +10,7 @@ import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 
-import com.reandroid.wallpaper.settings.WallpaperSettings;
+import com.reandroid.settings.WallpaperSettings;
 
 public class FallVKWallpaper extends WallpaperService {
     @Override

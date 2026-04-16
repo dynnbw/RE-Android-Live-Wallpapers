@@ -4,4 +4,4 @@
     android:description="@string/wallpaper_holospiral_desc"
     android:thumbnail="@drawable/wallpaper_thumb"
     android:showMetadataInPreview="true"
-    android:settingsActivity="com.reandroid.wallpaper.settings.HoloSpiralSettingsActivity" />
+    android:settingsActivity="com.reandroid.settings.HoloSpiralSettingsActivity" />

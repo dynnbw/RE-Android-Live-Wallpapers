@@ -6,8 +6,8 @@ import android.opengl.Matrix;
 import android.util.Log;
 
 import com.reandroid.wallpaper.R;
-import com.reandroid.wallpaper.gles.GLESScene;
-import com.reandroid.wallpaper.gles.RawResourceLoader;
+import com.reandroid.gles.GLESScene;
+import com.reandroid.gles.RawResourceLoader;
 
 import androidx.preference.PreferenceManager;
 

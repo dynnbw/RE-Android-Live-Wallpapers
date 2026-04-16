@@ -5,4 +5,4 @@
     android:author="@string/wallpaper_nebula_author"
     android:description="@string/wallpaper_nebula_desc"
     android:showMetadataInPreview="true"
-    android:settingsActivity="com.reandroid.wallpaper.settings.NebulaSettingsActivity" />
+    android:settingsActivity="com.reandroid.settings.NebulaSettingsActivity" />

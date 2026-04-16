@@ -4,4 +4,4 @@
     android:description="@string/wallpaper_deepsea_desc"
     android:thumbnail="@drawable/deepsea_thumb"
     android:showMetadataInPreview="true"
-    android:settingsActivity="com.reandroid.wallpaper.settings.DeepSeaSettingsActivity" />
+    android:settingsActivity="com.reandroid.settings.DeepSeaSettingsActivity" />

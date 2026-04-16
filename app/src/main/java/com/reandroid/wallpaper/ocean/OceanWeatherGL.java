@@ -7,12 +7,12 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 import com.reandroid.wallpaper.R;
-import com.reandroid.wallpaper.gles.GLESScene;
+import com.reandroid.gles.GLESScene;
 import com.reandroid.wallpaper.musicvis.GLTextureUtils;
-import com.reandroid.wallpaper.weather.WeatherCondition;
-import com.reandroid.wallpaper.weather.WeatherManager;
-import com.reandroid.wallpaper.weather.WeatherState;
-import com.reandroid.wallpaper.gles.RawResourceLoader;
+import com.reandroid.weather.WeatherCondition;
+import com.reandroid.weather.WeatherManager;
+import com.reandroid.weather.WeatherState;
+import com.reandroid.gles.RawResourceLoader;
 
 import androidx.preference.PreferenceManager;
 
@@ -194,7 +194,7 @@ public class OceanWeatherGL extends GLESScene {
     @Override
     protected void onCreate() {
         initMemory();
-        Context appContext = com.reandroid.wallpaper.gles.GLESWallpaper.getAppContext();
+        Context appContext = com.reandroid.gles.GLESWallpaper.getAppContext();
         if (appContext != null) {
             mPrefs = PreferenceManager.getDefaultSharedPreferences(appContext);
             mWeatherManager = new WeatherManager(appContext, this::onWeatherUpdated);

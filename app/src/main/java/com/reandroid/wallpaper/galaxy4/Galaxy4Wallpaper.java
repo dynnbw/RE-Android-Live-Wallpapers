@@ -16,8 +16,8 @@
 
 package com.reandroid.wallpaper.galaxy4;
 
-import com.reandroid.wallpaper.gles.GLESScene;
-import com.reandroid.wallpaper.gles.GLESWallpaper;
+import com.reandroid.gles.GLESScene;
+import com.reandroid.gles.GLESWallpaper;
 
 /**
  * Galaxy4动态壁纸的主类

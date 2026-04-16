@@ -16,8 +16,8 @@
 
 package com.reandroid.wallpaper.galaxy;
 
-import com.reandroid.wallpaper.gles.GLESWallpaper;
-import com.reandroid.wallpaper.gles.GLESScene;
+import com.reandroid.gles.GLESWallpaper;
+import com.reandroid.gles.GLESScene;
 
 /**
  * 星系壁纸入口类

@@ -16,7 +16,7 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
      xmlns:app="http://schemas.android.com/apk/res-auto" android:title="@string/clock_settings"
      android:key="polar_clock_settings">
-     <com.reandroid.wallpaper.settings.PreviewPreference android:key="pref_preview"
+     <com.reandroid.settings.PreviewPreference android:key="pref_preview"
           android:title="@string/pref_live_preview" />
      <androidx.preference.CheckBoxPreference android:key="show_seconds"
           android:title="@string/show_seconds" android:defaultValue="true" android:persistent="true"

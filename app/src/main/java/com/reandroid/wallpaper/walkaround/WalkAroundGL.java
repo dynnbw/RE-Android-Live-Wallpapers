@@ -15,8 +15,8 @@ import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
 
 import com.reandroid.wallpaper.R;
-import com.reandroid.wallpaper.gles.GLESScene;
-import com.reandroid.wallpaper.gles.RawResourceLoader;
+import com.reandroid.gles.GLESScene;
+import com.reandroid.gles.RawResourceLoader;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;

@@ -7,7 +7,7 @@ import android.graphics.BitmapFactory;
 import android.view.Surface;
 
 import com.reandroid.wallpaper.R;
-import com.reandroid.wallpaper.settings.WallpaperSettings;
+import com.reandroid.settings.WallpaperSettings;
 
 final class GalaxyVKNative {
     static {

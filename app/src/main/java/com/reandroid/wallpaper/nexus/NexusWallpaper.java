@@ -16,8 +16,8 @@
 
 package com.reandroid.wallpaper.nexus;
 
-import com.reandroid.wallpaper.gles.GLESWallpaper;
-import com.reandroid.wallpaper.gles.GLESScene;
+import com.reandroid.gles.GLESWallpaper;
+import com.reandroid.gles.GLESScene;
 
 /**
  * Nexus动态壁纸主类

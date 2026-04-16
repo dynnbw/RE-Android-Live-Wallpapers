@@ -21,7 +21,7 @@ import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.reandroid.wallpaper.R;
-import com.reandroid.wallpaper.settings.PolarClockSettingsFragment;
+import com.reandroid.settings.PolarClockSettingsFragment;
 
 /**
  * 极坐标时钟设置页面Activity

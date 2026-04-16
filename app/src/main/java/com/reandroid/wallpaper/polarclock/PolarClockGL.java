@@ -27,9 +27,9 @@ import android.util.Log;
 import androidx.annotation.Nullable;
 
 import com.reandroid.wallpaper.R;
-import com.reandroid.wallpaper.gles.GLESScene;
-import com.reandroid.wallpaper.gles.RawResourceLoader;
-import com.reandroid.wallpaper.gles.GLESWallpaper;
+import com.reandroid.gles.GLESScene;
+import com.reandroid.gles.RawResourceLoader;
+import com.reandroid.gles.GLESWallpaper;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;

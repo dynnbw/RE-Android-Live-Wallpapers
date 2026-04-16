@@ -4,4 +4,4 @@
     android:description="@string/vis5_desc"
     android:thumbnail="@drawable/musicvis_vis5"
     android:showMetadataInPreview="true"
-    android:settingsActivity="com.reandroid.wallpaper.settings.MusicVis5SettingsActivity" />
+    android:settingsActivity="com.reandroid.settings.MusicVis5SettingsActivity" />

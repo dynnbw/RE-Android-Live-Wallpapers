@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-    <com.reandroid.wallpaper.settings.PreviewPreference android:key="pref_preview"
+    <com.reandroid.settings.PreviewPreference android:key="pref_preview"
         android:title="@string/pref_live_preview" />
     <Preference android:key="pref_open_wallpaper_picker"
         android:title="@string/pref_open_wallpaper_picker"

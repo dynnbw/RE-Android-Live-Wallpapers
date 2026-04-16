@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.reandroid.wallpaper.R;
-import com.reandroid.wallpaper.settings.WallpaperSettings;
+import com.reandroid.settings.WallpaperSettings;
 
 final class FallVKNative {
     static {

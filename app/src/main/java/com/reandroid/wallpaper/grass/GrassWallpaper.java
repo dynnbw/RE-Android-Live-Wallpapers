@@ -16,8 +16,8 @@
 
 package com.reandroid.wallpaper.grass;
 
-import com.reandroid.wallpaper.gles.GLESWallpaper;
-import com.reandroid.wallpaper.gles.GLESScene;
+import com.reandroid.gles.GLESWallpaper;
+import com.reandroid.gles.GLESScene;
 
 public class GrassWallpaper extends GLESWallpaper {
     @Override

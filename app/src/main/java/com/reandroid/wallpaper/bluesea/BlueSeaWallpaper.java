@@ -1,7 +1,7 @@
 package com.reandroid.wallpaper.bluesea;
 
-import com.reandroid.wallpaper.gles.GLESScene;
-import com.reandroid.wallpaper.gles.GLESWallpaper;
+import com.reandroid.gles.GLESScene;
+import com.reandroid.gles.GLESWallpaper;
 
 public class BlueSeaWallpaper extends GLESWallpaper {
     @Override

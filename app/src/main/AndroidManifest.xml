@@ -42,7 +42,7 @@
         <activity
             android:exported="true"
             android:label="@string/settings_title"
-            android:name="com.reandroid.wallpaper.settings.SettingsActivity"
+            android:name="com.reandroid.settings.SettingsActivity"
             android:theme="@style/Theme.WallpaperSettings">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -53,7 +53,7 @@
         <activity
             android:exported="true"
             android:label="@string/about_title"
-            android:name="com.reandroid.wallpaper.settings.AboutActivity"
+            android:name="com.reandroid.settings.AboutActivity"
             android:theme="@style/Theme.WallpaperSettings" />
 
         <activity
@@ -94,7 +94,7 @@
         <activity
             android:exported="true"
             android:label="@string/wallpaper_aurora1"
-            android:name="com.reandroid.aurora1.Aurora1"
+            android:name="com.reandroid.wallpaper.aurora1.Aurora1"
             android:theme="@android:style/Theme.NoTitleBar"
             android:enabled="@bool/config_enable_aurora1_wallpaper">
             <intent-filter>
@@ -106,7 +106,7 @@
         <activity
             android:exported="true"
             android:label="@string/wallpaper_aurora2"
-            android:name="com.reandroid.aurora2.Aurora2"
+            android:name="com.reandroid.wallpaper.aurora2.Aurora2"
             android:theme="@android:style/Theme.NoTitleBar"
             android:enabled="@bool/config_enable_aurora2_wallpaper">
             <intent-filter>
@@ -247,7 +247,7 @@
         <service
             android:exported="true"
             android:label="@string/wallpaper_aurora1"
-            android:name="com.reandroid.aurora1.Aurora1Wallpaper"
+            android:name="com.reandroid.wallpaper.aurora1.Aurora1Wallpaper"
             android:permission="android.permission.BIND_WALLPAPER"
             android:enabled="@bool/config_enable_aurora1_wallpaper">
             <intent-filter>
@@ -259,7 +259,7 @@
         <service
             android:exported="true"
             android:label="@string/wallpaper_aurora2"
-            android:name="com.reandroid.aurora2.Aurora2Wallpaper"
+            android:name="com.reandroid.wallpaper.aurora2.Aurora2Wallpaper"
             android:permission="android.permission.BIND_WALLPAPER"
             android:enabled="@bool/config_enable_aurora2_wallpaper">
             <intent-filter>
@@ -452,28 +452,28 @@
 
         <activity
             android:label="@string/wallpaper_vis2"
-            android:name="com.reandroid.wallpaper.settings.MusicVis2SettingsActivity"
+            android:name="com.reandroid.settings.MusicVis2SettingsActivity"
             android:theme="@style/Theme.WallpaperSettings"
             android:exported="true"
             android:enabled="@bool/config_enable_vis2_wallpaper" />
 
         <activity
             android:label="@string/wallpaper_vis3"
-            android:name="com.reandroid.wallpaper.settings.MusicVis3SettingsActivity"
+            android:name="com.reandroid.settings.MusicVis3SettingsActivity"
             android:theme="@style/Theme.WallpaperSettings"
             android:exported="true"
             android:enabled="@bool/config_enable_vis3_wallpaper" />
 
         <activity
             android:label="@string/wallpaper_vis4"
-            android:name="com.reandroid.wallpaper.settings.MusicVis4SettingsActivity"
+            android:name="com.reandroid.settings.MusicVis4SettingsActivity"
             android:theme="@style/Theme.WallpaperSettings"
             android:exported="true"
             android:enabled="@bool/config_enable_vis4_wallpaper" />
 
         <activity
             android:label="@string/wallpaper_vis5"
-            android:name="com.reandroid.wallpaper.settings.MusicVis5SettingsActivity"
+            android:name="com.reandroid.settings.MusicVis5SettingsActivity"
             android:theme="@style/Theme.WallpaperSettings"
             android:exported="true"
             android:enabled="@bool/config_enable_vis5_wallpaper" />
@@ -516,83 +516,83 @@
 
         <activity
             android:label="@string/wallpaper_fall"
-            android:name="com.reandroid.wallpaper.settings.FallSettingsActivity"
+            android:name="com.reandroid.settings.FallSettingsActivity"
             android:theme="@style/Theme.WallpaperSettings"
             android:exported="true"
             android:enabled="@bool/config_enable_fall_wallpaper" />
 
         <activity
             android:label="@string/wallpaper_grass"
-            android:name="com.reandroid.wallpaper.settings.GrassSettingsActivity"
+            android:name="com.reandroid.settings.GrassSettingsActivity"
             android:theme="@style/Theme.WallpaperSettings"
             android:exported="true"
             android:enabled="@bool/config_enable_grass_wallpaper" />
 
         <activity
             android:label="@string/wallpaper_aurora1"
-            android:name="com.reandroid.wallpaper.settings.Aurora1SettingsActivity"
+            android:name="com.reandroid.settings.Aurora1SettingsActivity"
             android:theme="@style/Theme.WallpaperSettings"
             android:exported="true"
             android:enabled="@bool/config_enable_aurora1_wallpaper" />
 
         <activity
             android:label="@string/wallpaper_aurora2"
-            android:name="com.reandroid.wallpaper.settings.Aurora2SettingsActivity"
+            android:name="com.reandroid.settings.Aurora2SettingsActivity"
             android:theme="@style/Theme.WallpaperSettings"
             android:exported="true"
             android:enabled="@bool/config_enable_aurora2_wallpaper" />
 
         <activity
             android:label="@string/wallpaper_wildworld"
-            android:name="com.reandroid.wallpaper.settings.WildWorldSettingsActivity"
+            android:name="com.reandroid.settings.WildWorldSettingsActivity"
             android:theme="@style/Theme.WallpaperSettings"
             android:exported="true"
             android:enabled="@bool/config_enable_wildworld_wallpaper" />
 
         <activity
             android:label="@string/wallpaper_windmill"
-            android:name="com.reandroid.wallpaper.settings.WindmillSettingsActivity"
+            android:name="com.reandroid.settings.WindmillSettingsActivity"
             android:theme="@style/Theme.WallpaperSettings"
             android:exported="true"
             android:enabled="@bool/config_enable_windmill_wallpaper" />
 
         <activity
             android:label="@string/wallpaper_ocean"
-            android:name="com.reandroid.wallpaper.settings.OceanSettingsActivity"
+            android:name="com.reandroid.settings.OceanSettingsActivity"
             android:theme="@style/Theme.WallpaperSettings"
             android:exported="true"
             android:enabled="@bool/config_enable_ocean_wallpaper" />
 
         <activity
             android:label="@string/wallpaper_fireworks"
-            android:name="com.reandroid.wallpaper.settings.FireworksSettingsActivity"
+            android:name="com.reandroid.settings.FireworksSettingsActivity"
             android:theme="@style/Theme.WallpaperSettings"
             android:exported="true"
             android:enabled="@bool/config_enable_fireworks_wallpaper" />
         <!-- Magic Smoke设置 -->
         <activity
-            android:name="com.reandroid.wallpaper.settings.MagicSmokeSettingsActivity"
+            android:name="com.reandroid.settings.MagicSmokeSettingsActivity"
             android:enabled="@bool/config_enable_magicsmoke_wallpaper"
             android:exported="true"
             android:label="@string/wallpaper_magicsmoke"
             android:theme="@style/Theme.WallpaperSettings" />
 
         <activity
-            android:name="com.reandroid.wallpaper.settings.HoloSpiralSettingsActivity"
+            android:name="com.reandroid.settings.HoloSpiralSettingsActivity"
             android:enabled="@bool/config_enable_holospiral_wallpaper"
             android:exported="true"
             android:label="@string/wallpaper_holospiral"
             android:theme="@style/Theme.WallpaperSettings" />
 
         <activity
-            android:name="com.reandroid.wallpaper.settings.BlueSeaSettingsActivity"
+            android:name="com.reandroid.settings.BlueSeaSettingsActivity"
             android:enabled="@bool/config_enable_bluesea_wallpaper"
             android:exported="true"
             android:label="@string/wallpaper_bluesea"
             android:theme="@style/Theme.WallpaperSettings" />
 
         <activity
-            android:name="com.reandroid.wallpaper.settings.DeepSeaSettingsActivity"
+            android:name="com.reandroid.settings.DeepSeaSettingsActivity"
             android:enabled="@bool/config_enable_deepsea_wallpaper"
             android:exported="true"
             android:label="@string/wallpaper_deepsea"
@@ -600,7 +600,7 @@
             
         <activity
             android:label="@string/wallpaper_galaxy4"
-            android:name="com.reandroid.wallpaper.settings.Galaxy4SettingsActivity"
+            android:name="com.reandroid.settings.Galaxy4SettingsActivity"
             android:theme="@style/Theme.WallpaperSettings"
             android:exported="true"
             android:enabled="@bool/config_enable_galaxy4_wallpaper">
@@ -608,7 +608,7 @@
 
         <activity
             android:label="@string/wallpaper_galaxy"
-            android:name="com.reandroid.wallpaper.settings.GalaxySettingsActivity"
+            android:name="com.reandroid.settings.GalaxySettingsActivity"
             android:theme="@style/Theme.WallpaperSettings"
             android:exported="true"
             android:enabled="@bool/config_enable_galaxy_wallpaper">
@@ -616,7 +616,7 @@
 
         <activity
             android:label="@string/wallpaper_phasebeam"
-            android:name="com.reandroid.wallpaper.settings.PhaseBeamSettingsActivity"
+            android:name="com.reandroid.settings.PhaseBeamSettingsActivity"
             android:theme="@style/Theme.WallpaperSettings"
             android:exported="true"
             android:enabled="@bool/config_enable_phasebeam_wallpaper">
@@ -624,14 +624,14 @@
 
         <activity
             android:label="@string/wallpaper_nebula"
-            android:name="com.reandroid.wallpaper.settings.NebulaSettingsActivity"
+            android:name="com.reandroid.settings.NebulaSettingsActivity"
             android:theme="@style/Theme.WallpaperSettings"
             android:exported="true"
             android:enabled="@bool/config_enable_nebula_wallpaper" />
 
         <activity
             android:label="@string/wallpaper_nexus"
-            android:name="com.reandroid.wallpaper.settings.NexusSettingsActivity"
+            android:name="com.reandroid.settings.NexusSettingsActivity"
             android:theme="@style/Theme.WallpaperSettings"
             android:exported="true"
             android:enabled="@bool/config_enable_nexus_wallpaper">
@@ -639,7 +639,7 @@
 
         <activity
             android:label="@string/wallpaper_noisefield"
-            android:name="com.reandroid.wallpaper.settings.NoiseFieldSettingsActivity"
+            android:name="com.reandroid.settings.NoiseFieldSettingsActivity"
             android:theme="@style/Theme.WallpaperSettings"
             android:exported="true"
             android:enabled="@bool/config_enable_noisefield_wallpaper" />
@@ -670,7 +670,7 @@
 
         <activity
             android:label="@string/wallpaper_walkaround"
-            android:name="com.reandroid.wallpaper.settings.WalkAroundSettingsActivity"
+            android:name="com.reandroid.settings.WalkAroundSettingsActivity"
             android:theme="@style/Theme.WallpaperSettings"
             android:exported="true"
             android:enabled="@bool/config_enable_walkaround_wallpaper" />

@@ -248,6 +248,8 @@
     <string name="pref_grass_firefly_summary">在夜晚显示飞舞的萤火虫</string>
     <string name="pref_grass_dandelion_count">蒲公英数量（影响性能）</string>
     <string name="pref_grass_firefly_count">萤火虫数量（影响性能）</string>
+    <string name="pref_grass_star_count">星星数量（影响性能）</string>
+    <string name="pref_grass_star_count_summary">调整星星数量（0 到 10000）</string>
     <string name="pref_grass_dandelion_speed">蒲公英速度</string>
 
     <string name="phasebeam_enable_recolor">调整光束颜色</string>

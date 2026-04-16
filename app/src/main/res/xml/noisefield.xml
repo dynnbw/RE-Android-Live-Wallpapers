@@ -5,4 +5,4 @@
     android:author="@string/wallpaper_noisefield_author"
     android:description="@string/wallpaper_noisefield_desc"
     android:showMetadataInPreview="true"
-    android:settingsActivity="com.reandroid.wallpaper.settings.NoiseFieldSettingsActivity" />
+    android:settingsActivity="com.reandroid.settings.NoiseFieldSettingsActivity" />
