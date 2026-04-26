@@ -103,6 +103,41 @@ public class WeatherManager {
         }
     }
 
+    public synchronized void refreshNow(Listener oneShotListener) {
+        ScheduledExecutorService executor = mExecutor;
+        if (executor == null || executor.isShutdown() || executor.isTerminated()) {
+            mExecutor = createExecutor();
+            executor = mExecutor;
+        }
+        final ScheduledExecutorService finalExecutor = executor;
+        try {
+            finalExecutor.execute(() -> {
+                WeatherState state = null;
+                try {
+                    state = fetchWeather();
+                    if (state != null) {
+                        mLastState = state;
+                        saveStateToPrefs(state);
+                        if (mListener != null) {
+                            mListener.onWeatherUpdated(state);
+                        }
+                    }
+                } catch (Exception e) {
+                    Log.w(TAG, "Manual weather refresh failed", e);
+                } finally {
+                    if (oneShotListener != null) {
+                        oneShotListener.onWeatherUpdated(state);
+                    }
+                }
+            });
+        } catch (RejectedExecutionException e) {
+            Log.w(TAG, "Manual weather refresh rejected", e);
+            if (oneShotListener != null) {
+                oneShotListener.onWeatherUpdated(null);
+            }
+        }
+    }
+
     private void scheduleNext(long delayMs) {
         if (!mRunning.get()) return;
         ScheduledExecutorService executor = mExecutor;

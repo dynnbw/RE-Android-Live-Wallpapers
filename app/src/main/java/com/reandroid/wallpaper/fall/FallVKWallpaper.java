@@ -7,6 +7,7 @@ import android.os.Process;
 import android.os.SystemClock;
 import android.service.wallpaper.WallpaperService;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 
@@ -42,6 +43,15 @@ public class FallVKWallpaper extends WallpaperService {
         private long mDiagFrameCount;
         private long mDiagAccumulatedMs;
         private long mDiagMaxMs;
+        private static final float TOUCH_TRIGGER_DISTANCE_THRESHOLD_PX = 42.0f;
+        private float mLastTouchTriggerX = -1.0f;
+        private float mLastTouchTriggerY = -1.0f;
+
+        @Override
+        public void onCreate(SurfaceHolder surfaceHolder) {
+            super.onCreate(surfaceHolder);
+            setTouchEventsEnabled(true);
+        }
 
         @Override
         public void onDestroy() {
@@ -140,6 +150,47 @@ public class FallVKWallpaper extends WallpaperService {
                 mScene.addDrop(x, y);
             }
             return super.onCommand(action, x, y, z, extras, resultRequested);
+        }
+
+        @Override
+        public void onTouchEvent(MotionEvent event) {
+            super.onTouchEvent(event);
+            if (event == null || mScene == null) {
+                return;
+            }
+
+            float x = event.getX();
+            float y = event.getY();
+            switch (event.getActionMasked()) {
+                case MotionEvent.ACTION_DOWN:
+                    mScene.addDrop((int) x, (int) y);
+                    mLastTouchTriggerX = x;
+                    mLastTouchTriggerY = y;
+                    break;
+                case MotionEvent.ACTION_MOVE:
+                    if (mLastTouchTriggerX < 0.0f || mLastTouchTriggerY < 0.0f) {
+                        mScene.addDrop((int) x, (int) y);
+                        mLastTouchTriggerX = x;
+                        mLastTouchTriggerY = y;
+                        break;
+                    }
+                    float dx = x - mLastTouchTriggerX;
+                    float dy = y - mLastTouchTriggerY;
+                    float distance = (float) Math.sqrt(dx * dx + dy * dy);
+                    if (distance >= TOUCH_TRIGGER_DISTANCE_THRESHOLD_PX) {
+                        mScene.addDrop((int) x, (int) y);
+                        mLastTouchTriggerX = x;
+                        mLastTouchTriggerY = y;
+                    }
+                    break;
+                case MotionEvent.ACTION_UP:
+                case MotionEvent.ACTION_CANCEL:
+                    mLastTouchTriggerX = -1.0f;
+                    mLastTouchTriggerY = -1.0f;
+                    break;
+                default:
+                    break;
+            }
         }
 
         @Override

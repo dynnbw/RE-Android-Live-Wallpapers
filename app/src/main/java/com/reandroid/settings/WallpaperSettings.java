@@ -15,7 +15,6 @@ public class WallpaperSettings {
     public static final String KEY_FALL_LEAF_COUNT = "pref_fall_leaf_count";
     public static final String KEY_FALL_GREEN_LEAVES = "pref_fall_green_leaves";
     public static final String KEY_FALL_MAX_DROPS = "pref_fall_max_drops";
-    public static final String KEY_FALL_PRECISE_CALC = "pref_fall_precise_calc";
     public static final String KEY_GALAXY_USE_LIGHT2 = "pref_galaxy_use_light2";
     public static final String KEY_GRASS_ENABLED = "pref_grass_enabled";
     public static final String KEY_GRASS_COUNT = "pref_grass_count";
@@ -34,6 +33,8 @@ public class WallpaperSettings {
     public static final String KEY_GRASS_DANDELION_COUNT = "pref_grass_dandelion_count";
     public static final String KEY_GRASS_FIREFLY_COUNT = "pref_grass_firefly_count";
     public static final String KEY_GRASS_STAR_COUNT = "pref_grass_star_count";
+    public static final String KEY_GRASS_WEATHER_RAIN_COUNT = "pref_grass_weather_rain_count";
+    public static final String KEY_GRASS_WEATHER_SNOW_COUNT = "pref_grass_weather_snow_count";
     public static final String KEY_GRASS_DANDELION_SPEED = "pref_grass_dandelion_speed";
 
     private static Context getContext() {
@@ -67,12 +68,6 @@ public class WallpaperSettings {
         SharedPreferences p = prefs();
         if (p == null) return defValue;
         return p.getInt(KEY_FALL_MAX_DROPS, defValue);
-    }
-
-    public static boolean isFallPreciseCalcEnabled(boolean defValue) {
-        SharedPreferences p = prefs();
-        if (p == null) return defValue;
-        return p.getBoolean(KEY_FALL_PRECISE_CALC, defValue);
     }
 
     public static boolean isGalaxyLight2Enabled(boolean defValue) {
@@ -201,6 +196,22 @@ public class WallpaperSettings {
         int v = p.getInt(KEY_GRASS_STAR_COUNT, defValue);
         if (v < 0) return 0;
         return Math.min(v, 10000);
+    }
+
+    public static int getGrassWeatherRainCount(int defValue) {
+        SharedPreferences p = prefs();
+        if (p == null) return defValue;
+        int v = p.getInt(KEY_GRASS_WEATHER_RAIN_COUNT, defValue);
+        if (v < 10) return 10;
+        return Math.min(v, 1000);
+    }
+
+    public static int getGrassWeatherSnowCount(int defValue) {
+        SharedPreferences p = prefs();
+        if (p == null) return defValue;
+        int v = p.getInt(KEY_GRASS_WEATHER_SNOW_COUNT, defValue);
+        if (v < 10) return 10;
+        return Math.min(v, 1000);
     }
 
     public static float getDandelionSpeedScale(float defValue) {

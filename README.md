@@ -1,168 +1,100 @@
 # Reborn Android Live Wallpapers
 
-一个基于 Android 动态壁纸（Live Wallpaper）的合集项目，包含多种 OpenGL/粒子/天气类壁纸效果，并提供统一设置入口。
+一个 Android 动态壁纸合集工程，聚焦高流畅度视觉效果与统一设置体验。
 
-## 功能概览
+## 仓库壁纸特点
 
-- 多壁纸引擎：如 `Galaxy`、`Nexus`、`Ocean`、`Grass`、`Fireworks`、`WildWorld`、`Windmill`、`BlueSea`、`DeepSea`、`MagicSmoke`、`HoloSpiral`、`PolarClock`、`MusicVis` 等。
-- 独立设置页与预览配置。
-- 支持根据构建任务自动维护版本号（`assembleRelease` 成功后自动递增）。
+1. 壁纸类型覆盖广：
+	粒子与星空类（Galaxy、NightSky、Nebula、Microbes）、自然场景类（Grass、WildWorld、WalkAround、DeepSea、BlueSea）、特效类（MagicSmoke、HoloSpiral、Nexus、PhaseBeam、Noisefield）等。
+2. 双渲染路径：
+	以 OpenGL ES 为主，同时包含 Vulkan 版本实验实现（如 Fall/Galaxy/Grass 的 VK 变体），便于性能对比与效果迭代。
+3. 每张壁纸独立可配：
+	亮度、速度、粒子数量、触控反馈等参数可在设置页单独调整，适合按机型性能做取舍。
+4. 统一设置入口：
+	所有壁纸在同一套 Settings 界面中管理，切换、预览、恢复默认配置流程一致。
+5. 面向移动端优化：
+	最低支持 Android 4.4（API 19），保留对低端设备的兼容，同时支持高帧率设备上的增强效果。
 
-## 技术栈
+## 壁纸清单速览
 
-- Android Gradle Plugin: `8.1.0`
-- Gradle Wrapper（项目自带）
-- Java 8（`sourceCompatibility/targetCompatibility = 1.8`）
-- `compileSdk 33` / `targetSdk 33` / `minSdk 19`
+| 分类 | 代表壁纸 | 对应模块目录 |
+| --- | --- | --- |
+| 粒子/星空 | Galaxy、Galaxy4、NightSky、Nebula、Microbes | app/src/main/java/com/reandroid/wallpaper/galaxy 等 |
+| 自然/环境 | Grass、WildWorld、WalkAround、DeepSea、BlueSea | app/src/main/java/com/reandroid/wallpaper/grass 等 |
+| 程序化特效 | Nexus、PhaseBeam、Noisefield、HoloSpiral、MagicSmoke | app/src/main/java/com/reandroid/wallpaper/nexus 等 |
+| 天气与可视化 | WeatherWallpapers、MusicVis、Fall | app/src/main/java/com/reandroid/wallpaper/weatherwallpapers 等 |
+| Aurora 系列 | Aurora1、Aurora2 | app/src/main/java/com/reandroid/wallpaper/aurora1 与 aurora2 |
 
-## 环境要求
+常用资源入口：
 
-- Windows / macOS / Linux
-- JDK 17（推荐，与 AGP 8.x 更匹配）
-- Android SDK 33
-- 已安装可用的 Android Build Tools（由 Android Studio 自动管理即可）
+- 壁纸服务声明 XML：app/src/main/res/xml
+- 每个壁纸的偏好页面：app/src/main/res/xml/prefs_*.xml
+- 着色器目录：app/src/main/shaders
 
-## 快速开始
+## 开发环境配置
 
-### 1) 克隆仓库
+### 1. 必备工具
+
+1. Android Studio（建议最新稳定版）
+2. JDK 17
+3. Android SDK Platform 33
+4. Android Build-Tools（由 Android Studio SDK Manager 安装）
+5. Android NDK 25.2.9519653（项目内已固定此版本）
+
+### 2. 获取并导入工程
 
 ```bash
 git clone https://github.com/dynnbw/RE-Android-Live-Wallpapers.git
 cd RE-Android-Live-Wallpapers
 ```
 
-### 2) 本地配置（重要）
+在 Android Studio 中选择“Open”，打开仓库根目录。
 
-以下文件已被忽略，不会上传：
+### 3. 本地 SDK/NDK 路径
 
-- `local.properties`
-- `gradle.properties`
-- `*.jks` / `*.keystore`
+首次打开后，Android Studio 会生成或更新 local.properties。
 
-请在本地创建或维护 `gradle.properties`（示例）：
+确认以下路径可用：
 
 ```properties
-APP_VERSION_CODE=1
-APP_VERSION_NAME=1.0
-
-RELEASE_STORE_FILE=./your-release.jks
-RELEASE_STORE_PASSWORD=your_password
-RELEASE_KEY_ALIAS=your_alias
-RELEASE_KEY_PASSWORD=your_key_password
+sdk.dir=你的AndroidSdk路径
 ```
 
-> 不要提交包含密码或签名信息的配置文件。
+NDK 版本由工程配置指定为 25.2.9519653，无需在代码中手动改动。
 
-### 3) 构建 Debug
+### 4. 构建 Debug
 
-```bash
-./gradlew assembleDebug
-```
-
-Windows PowerShell:
+Windows PowerShell：
 
 ```powershell
 .\gradlew.bat assembleDebug
 ```
 
-### 4) 构建 Release
+macOS/Linux：
 
 ```bash
-./gradlew assembleRelease
+./gradlew assembleDebug
 ```
 
-## 版本号规则
+输出 APK 默认位于：
 
-项目在 `assembleRelease` 成功后会自动执行版本号递增逻辑：
-
-- `APP_VERSION_CODE`：`+1`
-- `APP_VERSION_NAME`：按 `0.1` 递增（保留 1 位小数）
-
-请确保本地 `gradle.properties` 中存在以上字段。
-
-## 目录说明（简）
-
-- `app/src/main/java`：壁纸引擎与设置代码
-- `app/src/main/res/xml`：壁纸服务与偏好配置 XML
-- `app/src/main/res/drawable`：贴图与资源
-- `png/`、`RESOURCE/`、`DebugTools/`：本地资源/工具目录（默认不上传）
-
-## 开源协议与来源说明
-
-### 项目许可证
-
-本项目采用 **Apache License 2.0** 发布，详见 [LICENSE](LICENSE)。
-
-### Android / MediaTek 来源代码说明
-
-- 本项目为对部分 Android 动态壁纸实现的重制与移植，重点是将原有 **RenderScript/旧渲染实现** 重制为 **OpenGL ES** 壁纸实现。
-- 项目中若包含来自 AOSP（Android Open Source Project）或 MediaTek 相关源码/衍生实现的文件，应遵循其原始许可证与版权声明。
-- 具体到单个文件时，以该文件头部版权与许可声明为准。
-
-### 再分发要求（简述）
-
-- 保留原作者版权声明与许可文本。
-- 对修改过的文件或行为保持清晰说明。
-- 不得删除或篡改第三方许可证要求的 NOTICE/声明。
-
-> 若某些文件带有额外或更严格的授权条款（例如特定平台厂商条款），则该文件按其原条款执行，不自动受本仓库统一许可证覆盖。
-
-## 常见问题
-
-### Q1: `git push` 提示 `fetch first`
-
-如果你刚重写了历史，需使用：
-
-```bash
-git push -u --force-with-lease origin main
+```text
+app/build/outputs/apk/debug/
 ```
 
-### Q2: 为什么某些文件在本地可见但不参与提交？
+### 5. 运行到设备
 
-因为它们被 `.gitignore` 排除了（例如构建产物、签名文件、本地配置与大资源目录）。
+1. 连接真机（开启 USB 调试）或启动模拟器。
+2. 在 Android Studio 点击 Run 安装应用。
+3. 打开应用设置页选择目标壁纸并应用。
 
-### Q3: 如何在工作账户和个人账户之间切换 Git 身份并推送？
+## 项目结构（与开发直接相关）
 
-本仓库已提供一套本地切换脚本（不会影响其他仓库）：
+- app/src/main/java/com/reandroid/wallpaper：各壁纸渲染实现（按壁纸目录划分）
+- app/src/main/res/xml：壁纸服务声明与对应偏好页面
+- app/src/main/jni 与 app/src/main/jniLibs：Vulkan/Native 相关代码与产物
+- app/src/main/shaders：着色器资源
 
-1. 复制配置模板并填写真实信息：
+## 许可证
 
-```powershell
-Copy-Item .\git-identity.config.example.ps1 .\git-identity.config.ps1
-```
-
-需要填写：
-
-- `WorkName` / `WorkEmail` / `WorkSshKeyPath`
-- `PersonalName` / `PersonalEmail` / `PersonalSshKeyPath`
-
-2. 切换为工作身份：
-
-```powershell
-.\use-work-git.bat
-```
-
-3. 切换为个人身份：
-
-```powershell
-.\use-personal-git.bat
-```
-
-4. 查看当前身份：
-
-```powershell
-.\show-git-identity.bat
-```
-
-脚本会设置以下本仓库级配置：
-
-- `user.name`
-- `user.email`
-- `core.sshCommand`（指定对应 SSH 私钥）
-- `identity.activeProfile`（仅用于显示当前档位）
-
-这样你可以在同一台机器上随时切换身份后再执行 `git push`。
-
-## 免责声明
-
-本项目包含动态壁纸相关资源与效果代码。请在分发或商用前自行确认资源授权与合规要求。
+项目许可证见 [LICENSE](LICENSE) 与 [NOTICE.md](NOTICE.md)。

@@ -14,8 +14,8 @@ import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 
 import com.reandroid.wallpaper.R;
-import com.reandroid.wallpaper.ocean.OceanWeatherGL;
-import com.reandroid.wallpaper.ocean.OceanWallpaper;
+import com.reandroid.wallpaper.weatherwallpapers.ocean.OceanWeatherGL;
+import com.reandroid.wallpaper.weatherwallpapers.ocean.OceanWallpaper;
 
 public class OceanSettingsFragment extends PreferenceFragmentCompat {
     @Override

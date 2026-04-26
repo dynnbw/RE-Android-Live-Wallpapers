@@ -64,6 +64,12 @@
 
     <!-- Wallpaper showing a galaxy -->
     <string name="wallpaper_galaxy">星系</string>
+    <string name="wallpaper_nightsky">夜空</string>
+    <string name="wallpaper_microbes">微生物</string>
+    <string name="wallpaper_nightsky_author">念.</string>
+    <string name="wallpaper_microbes_author">Samsung</string>
+        <string name="wallpaper_nightsky_desc">基于真实星表的夜空壁纸，包含恒星周日运动、传感器方向联动、长按时间加速与星轨渐隐效果。</string>
+    <string name="wallpaper_microbes_desc">显微镜下的生命，支持触摸驱动移动、觅食行为与有机粒子动画。</string>
     <string name="wallpaper_galaxy_author">Google</string>
     <string name="wallpaper_galaxy_desc">
         由缓慢旋转的星体组成的星系。
@@ -200,6 +206,8 @@
     <string name="settings_entry_fireworks">烟火</string>
     <string name="settings_entry_galaxy4">星系4</string>
     <string name="settings_entry_galaxy">星系</string>
+    <string name="settings_entry_nightsky">夜空</string>
+    <string name="settings_entry_microbes">微生物</string>
     <string name="settings_entry_walkaround">透视</string>
     <string name="settings_entry_phasebeam">镭光</string>
     <string name="settings_entry_nebula">星云</string>
@@ -224,6 +232,10 @@
     <string name="pref_grass_enabled_summary">显示或隐藏草地效果</string>
     <string name="pref_grass_weather_enabled">启用天气效果</string>
     <string name="pref_grass_weather_enabled_summary">根据天气变化调整亮度、风力与粒子效果</string>
+    <string name="pref_grass_weather_rain_count">雨滴数量（影响性能）</string>
+    <string name="pref_grass_weather_rain_count_summary">调整雨滴数量（10 到 1000）</string>
+    <string name="pref_grass_weather_snow_count">雪花数量（影响性能）</string>
+    <string name="pref_grass_weather_snow_count_summary">调整雪花数量（10 到 1000）</string>
     <string name="pref_grass_count">草叶数量</string>
     <string name="pref_grass_count_summary">修改草的数量（影响性能）</string>
     <string name="pref_grass_height">草地高度</string>
@@ -301,12 +313,17 @@
     <string name="pref_preview_ratio_summary">格式：宽:高，例如 9:16</string>
     <string name="pref_preview_ratio_invalid">比例无效，请使用 宽:高，例如 9:16</string>
     <string name="pref_weather_api_notice">开启天气变换请到基础配置配置API</string>
+    <string name="pref_weather_refresh_now">立即刷新天气</string>
+    <string name="pref_weather_refresh_now_summary">立即拉取最新天气数据</string>
+    <string name="pref_weather_refresh_now_success">天气刷新完成</string>
+    <string name="pref_weather_refresh_now_failed">天气刷新失败</string>
     <string name="pref_apply_api_title">申请API</string>
     <string name="pref_weather_update_interval">天气更新间隔</string>
     <string name="pref_openweather_api_key_title">OpenWeather API 密钥</string>
     <string name="pref_openweather_api_key_dialog">请输入 OpenWeather API 密钥</string>
     <string name="pref_openweather_api_key_summary_set">已配置 API 密钥</string>
     <string name="pref_openweather_api_key_summary_unset">未配置 API 密钥</string>
+    <string name="weather_toolbar_title">天气设置</string>
     <string name="phasebeam_ssion_message">
         小米系统需要手动授予“动态壁纸服务”权限，否则无法正常打开壁纸预览。\n\n点击确定后，请在权限管理页面找到“动态壁纸服务”并开启。</string>
 
@@ -338,6 +355,24 @@
 
     <string name="pref_open_wallpaper_picker">打开系统预览</string>
     <string name="pref_open_wallpaper_picker_failed">不支持壁纸预览</string>
+        <string name="pref_nightsky_preview_hint">提示：可先在上方应用内实时预览，再点“打开系统预览”应用夜空壁纸。</string>
+    <string name="pref_nightsky_camera_focal">相机焦距</string>
+    <string name="pref_nightsky_camera_focal_summary">调整镜头焦距（mm），数值越大视角越窄</string>
+    <string name="pref_nightsky_use_sensor">使用传感器朝向</string>
+    <string name="pref_nightsky_use_sensor_summary">关闭后改为按桌面滚动控制视角（每页 45°）</string>
+    <string name="pref_nightsky_auto_time_accel">自动时间加速</string>
+    <string name="pref_nightsky_auto_time_accel_summary">持续加速天空时间，并保持显示星轨</string>
+    <string name="pref_nightsky_time_accel_speed">加速档位</string>
+    <string name="pref_nightsky_time_accel_speed_summary">选择自动加速/长按加速的速度档位</string>
+        <string name="pref_microbes_preview_hint">提示：可在预览中触摸拖动吸引微生物，再点“打开系统预览”应用壁纸。</string>
+    <string name="pref_microbes_lifecycle_speed">生命周期速度</string>
+    <string name="pref_microbes_lifecycle_speed_summary">调整代谢、繁殖与衰减速度（%）</string>
+    <string name="pref_microbes_motion_activity">游动活跃度</string>
+    <string name="pref_microbes_motion_activity_summary">调整自然巡游与摆动强度（%）</string>
+    <string name="pref_microbes_color_mode">配色风格</string>
+    <string name="pref_microbes_color_mode_summary">切换原版红绿蓝三色与新版（当前）增强配色</string>
+    <string name="pref_microbes_color_mode_original">原版</string>
+    <string name="pref_microbes_color_mode_modern">新版（当前）</string>
     <string name="pref_open_wallpaper_chooser">打开壁纸选择器</string>
     <string name="pref_live_preview">实时预览</string>
     <string name="pref_nexus_background_title">背景</string>
@@ -437,10 +472,12 @@
     <string name="about_official_website_url">https://github.com/zyfxv/android-live-wallpapers</string>
     <string name="about_email">邮箱</string>
     <string name="about_email_address">3471348199@qq.com</string>
+    <string name="about_email_address_alt">xujiekai508@gmail.com</string>
     <string name="about_qq">QQ</string>
     <string name="about_qq_number">3471348199</string>
     <string name="about_feedback">反馈</string>
     <string name="about_bilibili">Bilibili主页</string>
+    <string name="about_bilibili_url">https://space.bilibili.com/470023065</string>
     <string name="about_feedback_contact">反馈请通过上述联系方式</string>
     <string name="about_thanks">致谢</string>
     <string name="about_thanks_original">感谢原作者</string>

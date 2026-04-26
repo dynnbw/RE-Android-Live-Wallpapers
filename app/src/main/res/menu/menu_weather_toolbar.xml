@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_weather_update_interval"
+        android:title="@string/pref_weather_update_interval"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_weather_refresh_now"
+        android:title="@string/pref_weather_refresh_now"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_weather_api_key"
+        android:title="@string/pref_openweather_api_key_title"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_weather_apply_api"
+        android:title="@string/pref_apply_api_title"
+        app:showAsAction="never" />
+</menu>

@@ -1,4 +1,4 @@
-package com.reandroid.wallpaper.ocean;
+package com.reandroid.wallpaper.weatherwallpapers.ocean;
 
 import com.reandroid.gles.GLESScene;
 import com.reandroid.gles.GLESWallpaper;

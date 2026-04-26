@@ -213,4 +213,8 @@
     <string name="pref_nexus_trail_size">트레일 길이</string>
     <string name="pref_nexus_trail_size_summary">펄스 트레일 효과 길이(기본값:40)</string>
     <string name="pref_nexus_mode">색상 모드</string>
-    <string name="pref_nexus_mode_summary">펄스 색상 구성표 선택</string></resources>
+    <string name="pref_nexus_mode_summary">펄스 색상 구성표 선택</string>
+    <string name="about_official_website_url">https://github.com/zyfxv/android-live-wallpapers</string>
+    <string name="about_email_address">3471348199@qq.com</string>
+    <string name="about_bilibili_url">https://space.bilibili.com/470023065</string>
+</resources>

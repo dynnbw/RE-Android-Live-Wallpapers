@@ -6,6 +6,10 @@ import static com.reandroid.wallpaper.grass.GrassConstants.MAX_BEND;
 import static com.reandroid.wallpaper.grass.GrassConstants.TESSELATION;
 
 final class GrassBladeSystem {
+    private static final float ANGLE_DIRTY_EPSILON = 0.00075f;
+    private static final int WIND_SAMPLE_COUNT = 64;
+    private static final float MIN_SAMPLE_SPAN = 0.0001f;
+
     private final Random random;
     private final GrassWindField windField;
 
@@ -17,6 +21,7 @@ final class GrassBladeSystem {
     private int[] bladeSizes = new int[0];
     private int vertexCount;
     private int indexCount;
+    private final float[] windSamples = new float[WIND_SAMPLE_COUNT];
 
     GrassBladeSystem(Random random, GrassWindField windField, int width, int height, int bladeCount) {
         this.random = random;
@@ -57,14 +62,66 @@ final class GrassBladeSystem {
         }
     }
 
-    void updateBladeAngles(float noiseNow, float windAmplitudeScale) {
-        if (blades == null) return;
+    boolean updateBladeAngles(float noiseNow, float windAmplitudeScale) {
+        if (blades == null || blades.length == 0) return false;
+
+        float minTx = Float.MAX_VALUE;
+        float maxTx = -Float.MAX_VALUE;
         for (Blade blade : blades) {
-            float newAngle = (windField.turbulencef2(blade.turbulencex, noiseNow, 4.0f) - 0.5f)
-                    * 0.5f * windAmplitudeScale;
+            if (blade.turbulencex < minTx) {
+                minTx = blade.turbulencex;
+            }
+            if (blade.turbulencex > maxTx) {
+                maxTx = blade.turbulencex;
+            }
+        }
+
+        float span = maxTx - minTx;
+        float sampleStep;
+        if (span < MIN_SAMPLE_SPAN) {
+            float sample = windField.turbulencef2(minTx, noiseNow, 4.0f);
+            for (int i = 0; i < WIND_SAMPLE_COUNT; i++) {
+                windSamples[i] = sample;
+            }
+            sampleStep = 1.0f;
+        } else {
+            sampleStep = span / (WIND_SAMPLE_COUNT - 1);
+            for (int i = 0; i < WIND_SAMPLE_COUNT; i++) {
+                float x = minTx + i * sampleStep;
+                windSamples[i] = windField.turbulencef2(x, noiseNow, 4.0f);
+            }
+        }
+
+        boolean dirty = false;
+        for (Blade blade : blades) {
+            float previousAngle = blade.angle;
+
+            float noiseValue;
+            if (span < MIN_SAMPLE_SPAN) {
+                noiseValue = windSamples[0];
+            } else {
+                float t = (blade.turbulencex - minTx) / sampleStep;
+                int idx = (int) t;
+                if (idx < 0) {
+                    idx = 0;
+                }
+                if (idx >= WIND_SAMPLE_COUNT - 1) {
+                    idx = WIND_SAMPLE_COUNT - 2;
+                }
+                float frac = t - idx;
+                float n0 = windSamples[idx];
+                float n1 = windSamples[idx + 1];
+                noiseValue = n0 + (n1 - n0) * frac;
+            }
+
+            float newAngle = (noiseValue - 0.5f) * 0.5f * windAmplitudeScale;
             blade.angle = clamp(blade.angle + (newAngle + blade.offset - blade.angle) * 0.15f,
                     -MAX_BEND, MAX_BEND);
+            if (!dirty && Math.abs(blade.angle - previousAngle) >= ANGLE_DIRTY_EPSILON) {
+                dirty = true;
+            }
         }
+        return dirty;
     }
 
     Blade[] getBlades() {

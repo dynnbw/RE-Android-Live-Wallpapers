@@ -136,6 +136,10 @@
     <string name="pref_grass_firefly_summary">在夜晚顯示飛舞的螢火蟲</string>
     <string name="pref_grass_dandelion_count">蒲公英數量</string>
     <string name="pref_grass_firefly_count">螢火蟲數量</string>
+    <string name="pref_grass_weather_rain_count">雨滴數量</string>
+    <string name="pref_grass_weather_rain_count_summary">調整雨滴數量（10 到 1000）</string>
+    <string name="pref_grass_weather_snow_count">雪花數量</string>
+    <string name="pref_grass_weather_snow_count_summary">調整雪花數量（10 到 1000）</string>
     <string name="pref_grass_star_count">星星數量</string>
     <string name="pref_grass_star_count_summary">調整星星數量（0 到 10000）</string>
     <string name="pref_grass_dandelion_speed">蒲公英速度</string>
@@ -265,4 +269,7 @@
     <string name="pref_nexus_trail_size_summary">脈衝拖尾效果的長度（預設:40）</string>
     <string name="pref_nexus_mode">配色模式</string>
     <string name="pref_nexus_mode_summary">選擇脈衝的顏色方案</string>
+    <string name="about_official_website_url">https://github.com/zyfxv/android-live-wallpapers</string>
+    <string name="about_email_address">3471348199@qq.com</string>
+    <string name="about_bilibili_url">https://space.bilibili.com/470023065</string>
 </resources>

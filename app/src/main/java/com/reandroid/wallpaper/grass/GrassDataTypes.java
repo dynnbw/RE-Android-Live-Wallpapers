@@ -101,4 +101,5 @@ final class SceneData {
     long animNowMs;
 
     boolean bladeIndexRebuildNeeded;
+    boolean grassGeometryDirty;
 }

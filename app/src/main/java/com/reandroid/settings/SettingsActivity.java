@@ -1,22 +1,48 @@
 
 package com.reandroid.settings;
 
-import android.os.Bundle;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.net.Uri;
+import android.graphics.drawable.Drawable;
+import android.os.Bundle;
+import android.text.InputType;
+import android.text.TextUtils;
 
+import android.view.ContextThemeWrapper;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ImageButton;
+import android.widget.EditText;
+import android.widget.Toast;
 
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.PopupMenu;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
+import androidx.core.graphics.drawable.DrawableCompat;
+import androidx.preference.PreferenceManager;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 
 import com.reandroid.wallpaper.R;
-import com.google.android.material.appbar.MaterialToolbar;
+import com.reandroid.weather.WeatherCondition;
+import com.reandroid.weather.WeatherManager;
+import com.reandroid.weather.WeatherState;
 
 public class SettingsActivity extends AppCompatActivity
     implements PreferenceFragmentCompat.OnPreferenceStartFragmentCallback {
 
+    private static final String KEY_GLOBAL_FRAME_RATE = "global_frame_rate";
+    private static final String KEY_PREVIEW_RATIO = "pref_preview_ratio";
+    private static final String DEFAULT_PREVIEW_RATIO = "9:16";
+    private static final String KEY_PREVIEW = "pref_preview";
+
+    private ImageButton weatherButton;
+    private WeatherManager weatherManager;
+    private WeatherState lastWeatherState;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,8 +50,12 @@ public class SettingsActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
 
-        MaterialToolbar toolbar = findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        weatherButton = findViewById(R.id.toolbar_weather_button);
+        if (weatherButton != null) {
+            weatherButton.setOnClickListener(v -> showWeatherPopupMenu());
+        }
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -39,21 +69,72 @@ public class SettingsActivity extends AppCompatActivity
             setTitle(R.string.settings_title);
         }
 
+        weatherManager = new WeatherManager(getApplicationContext(), state -> {
+            runOnUiThread(() -> {
+                lastWeatherState = state;
+                updateWeatherMenuIcon();
+            });
+        });
+
         getSupportFragmentManager().addOnBackStackChangedListener(() -> {
             if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
                 setTitle(R.string.settings_title);
             }
+            updateWeatherMenuVisibility();
         });
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (weatherManager != null) {
+            weatherManager.start();
+            lastWeatherState = weatherManager.getLastState();
+        }
+        updateWeatherMenuIcon();
+    }
+
+    @Override
+    protected void onStop() {
+        if (weatherManager != null) {
+            weatherManager.stop();
+        }
+        super.onStop();
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (weatherManager != null) {
+            weatherManager.release();
+            weatherManager = null;
+        }
+        super.onDestroy();
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_settings, menu);
+        updateWeatherMenuVisibility();
+        updateWeatherMenuIcon();
         return true;
     }
 
     @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        updateWeatherMenuIcon();
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.action_global_frame_rate) {
+            showGlobalFrameRateDialog();
+            return true;
+        }
+        if (item.getItemId() == R.id.action_preview_ratio) {
+            showPreviewRatioDialog();
+            return true;
+        }
         if (item.getItemId() == R.id.action_reset_all) {
             SettingsResetHelper.showResetAllDialog(this);
             return true;
@@ -83,6 +164,7 @@ public class SettingsActivity extends AppCompatActivity
         if (title != null) {
             setTitle(title);
         }
+        supportInvalidateOptionsMenu();
         return true;
     }
 
@@ -92,5 +174,279 @@ public class SettingsActivity extends AppCompatActivity
             return true;
         }
         return super.onSupportNavigateUp();
+    }
+
+    private void updateWeatherMenuVisibility() {
+        if (weatherButton == null) {
+            return;
+        }
+        weatherButton.setVisibility(ImageButton.VISIBLE);
+    }
+
+    private void updateWeatherMenuIcon() {
+        if (weatherButton == null) {
+            return;
+        }
+        int iconRes = getWeatherIconRes(lastWeatherState);
+        Drawable icon = ContextCompat.getDrawable(this, iconRes);
+        if (icon != null) {
+            weatherButton.setImageDrawable(tintToolbarIcon(icon));
+            return;
+        }
+        Drawable fallback = ContextCompat.getDrawable(this, android.R.drawable.ic_menu_compass);
+        if (fallback != null) {
+            weatherButton.setImageDrawable(tintToolbarIcon(fallback));
+        }
+    }
+
+    private Drawable tintToolbarIcon(Drawable drawable) {
+        Drawable wrapped = DrawableCompat.wrap(drawable.mutate());
+        int tint = ContextCompat.getColor(this, R.color.md_theme_onPrimary);
+        DrawableCompat.setTint(wrapped, tint);
+        return wrapped;
+    }
+
+    private void showWeatherPopupMenu() {
+        if (weatherButton == null) {
+            return;
+        }
+        ContextThemeWrapper themedContext = new ContextThemeWrapper(
+                this,
+                R.style.ThemeOverlay_WallpaperSettings_ToolbarPopup
+        );
+        PopupMenu popupMenu = new PopupMenu(themedContext, weatherButton);
+        popupMenu.getMenuInflater().inflate(R.menu.menu_weather_toolbar, popupMenu.getMenu());
+        popupMenu.setOnMenuItemClickListener(item -> {
+            int itemId = item.getItemId();
+            if (itemId == R.id.action_weather_update_interval) {
+                showWeatherUpdateIntervalDialog();
+                return true;
+            }
+            if (itemId == R.id.action_weather_refresh_now) {
+                refreshWeatherNow();
+                return true;
+            }
+            if (itemId == R.id.action_weather_api_key) {
+                showWeatherApiKeyDialog();
+                return true;
+            }
+            if (itemId == R.id.action_weather_apply_api) {
+                openWeatherApiGuide();
+                return true;
+            }
+            return false;
+        });
+        popupMenu.show();
+    }
+
+    private void showGlobalFrameRateDialog() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        String[] entries = getResources().getStringArray(R.array.frame_rate_entries);
+        String[] values = getResources().getStringArray(R.array.frame_rate_values);
+        String currentValue = prefs.getString(KEY_GLOBAL_FRAME_RATE, "60");
+        int checkedIndex = 0;
+        for (int i = 0; i < values.length; i++) {
+            if (TextUtils.equals(values[i], currentValue)) {
+                checkedIndex = i;
+                break;
+            }
+        }
+
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.pref_global_frame_rate)
+                .setSingleChoiceItems(entries, checkedIndex, (dialog, which) -> {
+                    prefs.edit().putString(KEY_GLOBAL_FRAME_RATE, values[which]).apply();
+                    dialog.dismiss();
+                })
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
+    }
+
+    private void showPreviewRatioDialog() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+        input.setSingleLine(true);
+        input.setText(prefs.getString(KEY_PREVIEW_RATIO, DEFAULT_PREVIEW_RATIO));
+        input.setSelection(input.getText().length());
+
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.pref_preview_ratio)
+                .setView(input)
+                .setPositiveButton(android.R.string.ok, (dialog, which) -> {
+                    String normalized = normalizeRatio(input.getText() == null ? null : input.getText().toString());
+                    if (normalized == null) {
+                        Toast.makeText(this, R.string.pref_preview_ratio_invalid, Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    prefs.edit().putString(KEY_PREVIEW_RATIO, normalized).apply();
+                    notifyPreviewRatioChanged();
+                })
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
+    }
+
+    private void showWeatherUpdateIntervalDialog() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        String[] entries = getResources().getStringArray(R.array.weather_update_entries);
+        String[] values = getResources().getStringArray(R.array.weather_update_values);
+        String currentValue = prefs.getString("weather_update_minutes", "30");
+        int checkedIndex = 0;
+        for (int i = 0; i < values.length; i++) {
+            if (TextUtils.equals(values[i], currentValue)) {
+                checkedIndex = i;
+                break;
+            }
+        }
+
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.pref_weather_update_interval)
+                .setSingleChoiceItems(entries, checkedIndex, (dialog, which) -> {
+                    prefs.edit().putString("weather_update_minutes", values[which]).apply();
+                    restartWeatherManager();
+                    dialog.dismiss();
+                })
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
+    }
+
+    private void showWeatherApiKeyDialog() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+        input.setSingleLine(true);
+        input.setText(prefs.getString("openweather_api_key", ""));
+        input.setSelection(input.getText().length());
+
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.pref_openweather_api_key_title)
+                .setView(input)
+                .setPositiveButton(android.R.string.ok, (dialog, which) -> {
+                    prefs.edit().putString("openweather_api_key", input.getText() == null ? "" : input.getText().toString().trim()).apply();
+                    restartWeatherManager();
+                })
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
+    }
+
+    private void refreshWeatherNow() {
+        if (weatherButton != null) {
+            weatherButton.setEnabled(false);
+        }
+        if (weatherManager == null) {
+            weatherManager = new WeatherManager(getApplicationContext(), state -> runOnUiThread(() -> {
+                lastWeatherState = state;
+                updateWeatherMenuIcon();
+            }));
+            weatherManager.start();
+        }
+
+        weatherManager.refreshNow(state -> runOnUiThread(() -> {
+            if (weatherButton != null) {
+                weatherButton.setEnabled(true);
+            }
+            WeatherState resolved = state != null ? state : weatherManager.getLastState();
+            if (resolved != null) {
+                lastWeatherState = resolved;
+                updateWeatherMenuIcon();
+                Toast.makeText(this, R.string.pref_weather_refresh_now_success, Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, R.string.pref_weather_refresh_now_failed, Toast.LENGTH_SHORT).show();
+            }
+        }));
+    }
+
+    private void restartWeatherManager() {
+        if (weatherManager == null) {
+            weatherManager = new WeatherManager(getApplicationContext(), state -> runOnUiThread(() -> {
+                lastWeatherState = state;
+                updateWeatherMenuIcon();
+            }));
+        }
+        weatherManager.stop();
+        weatherManager.start();
+        weatherManager.refreshNow(state -> runOnUiThread(() -> {
+            WeatherState resolved = state != null ? state : weatherManager.getLastState();
+            if (resolved != null) {
+                lastWeatherState = resolved;
+                updateWeatherMenuIcon();
+            }
+        }));
+    }
+
+    private void openWeatherApiGuide() {
+        try {
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://zhuanlan.zhihu.com/p/656012235")));
+        } catch (Exception e) {
+            Toast.makeText(this, R.string.config_open_browser_failed, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Nullable
+    private String normalizeRatio(@Nullable String value) {
+        if (value == null) {
+            return null;
+        }
+        String raw = value.trim();
+        if (TextUtils.isEmpty(raw)) {
+            return null;
+        }
+        String[] parts = raw.split(":");
+        if (parts.length != 2) {
+            return null;
+        }
+        try {
+            int width = Integer.parseInt(parts[0].trim());
+            int height = Integer.parseInt(parts[1].trim());
+            if (width <= 0 || height <= 0) {
+                return null;
+            }
+            return width + ":" + height;
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private int getWeatherIconRes(WeatherState state) {
+        if (state == null || state.condition == null) {
+            return R.drawable.weather_day_sunny;
+        }
+        boolean isNight = state.isNight;
+        WeatherCondition condition = state.condition;
+        switch (condition) {
+            case D1_CLEAR:
+                return isNight ? R.drawable.weather_night_sunny : R.drawable.weather_day_sunny;
+            case D2_CLOUDY:
+                return isNight ? R.drawable.weather_night_cloudy : R.drawable.weather_day_cloudy;
+            case D3_DREARY:
+                return R.drawable.weather_drealy;
+            case D4_FOG:
+                return isNight ? R.drawable.weather_night_fog : R.drawable.weather_day_fog;
+            case D5_RAIN_SHOWERS:
+                return isNight ? R.drawable.weather_night_rain : R.drawable.weather_day_rain;
+            case D6_THUNDERSTORMS:
+                return isNight ? R.drawable.weather_night_lightning : R.drawable.weather_day_lightning;
+            case D7_FLURRIES_SNOW:
+                return isNight ? R.drawable.weather_night_snow : R.drawable.weather_day_snow;
+            case D8_ICE_COLD:
+                return R.drawable.weather_snowflake_cold;
+            case D9_SLEET:
+                return isNight ? R.drawable.weather_night_sleet : R.drawable.weather_day_sleet;
+            default:
+                return R.drawable.weather_day_sunny;
+        }
+    }
+
+    private void notifyPreviewRatioChanged() {
+        for (androidx.fragment.app.Fragment fragment : getSupportFragmentManager().getFragments()) {
+            if (!(fragment instanceof PreferenceFragmentCompat)) {
+                continue;
+            }
+            PreferenceFragmentCompat prefFragment = (PreferenceFragmentCompat) fragment;
+            Preference previewPref = prefFragment.findPreference(KEY_PREVIEW);
+            if (previewPref instanceof PreviewPreference) {
+                ((PreviewPreference) previewPref).refreshPreviewRatioNow();
+            }
+        }
     }
 }

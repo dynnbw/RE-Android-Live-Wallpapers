@@ -30,11 +30,11 @@
         android:key="about_email" />
     <Preference
         android:title="@string/about_email"
-        android:summary="xujiekai508@gmail.com"
+        android:summary="@string/about_email_address_alt"
         android:key="about_email2" />
     <Preference
         android:title="@string/about_bilibili"
-        android:summary="https://space.bilibili.com/470023065"
+        android:summary="@string/about_bilibili_url"
         android:key="about_bilibili" />
     <Preference
         android:title="@string/about_qq"

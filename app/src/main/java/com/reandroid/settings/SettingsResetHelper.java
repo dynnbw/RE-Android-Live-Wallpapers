@@ -49,9 +49,18 @@ public final class SettingsResetHelper {
     public static final String TARGET_BLUESEA = "bluesea";
     public static final String TARGET_DEEPSEA = "deepsea";
     public static final String TARGET_FLSORESCENCE = "flsorescence";
+    public static final String TARGET_MICROBES = "microbes";
+    public static final String TARGET_NIGHTSKY = "nightsky";
+    public static final String TARGET_AURORA1 = "aurora1";
+    public static final String TARGET_AURORA2 = "aurora2";
 
     private static final String RESET_PREF_KEY_PREFIX = "pref_reset_defaults_";
     private static final String ANDROID_NS = "http://schemas.android.com/apk/res/android";
+    private static final String DEFAULT_SHARED_PREFS_SUFFIX = "_preferences";
+    private static final String KEY_GLOBAL_FRAME_RATE = "global_frame_rate";
+    private static final String KEY_PREVIEW_RATIO = "pref_preview_ratio";
+    private static final String KEY_WEATHER_UPDATE_MINUTES = "weather_update_minutes";
+    private static final String KEY_WEATHER_API_KEY = "openweather_api_key";
 
     private interface ExternalResetAction {
         void run(Context context);
@@ -133,7 +142,9 @@ public final class SettingsResetHelper {
         if (spec == null) {
             return;
         }
-        resetPreferenceValues(context, spec);
+        if (spec.xmlResId != 0) {
+            resetPreferenceValues(context, spec);
+        }
         if (spec.externalResetAction != null) {
             spec.externalResetAction.run(context.getApplicationContext());
         }
@@ -143,7 +154,19 @@ public final class SettingsResetHelper {
     private static ResetSpec getSpec(String targetId) {
         switch (targetId) {
             case TARGET_CONFIG:
-                return new ResetSpec(R.xml.prefs_config, null, null);
+            return new ResetSpec(0, null,
+                        context -> {
+                            SharedPreferences prefs = context.getSharedPreferences(
+                                    context.getPackageName() + DEFAULT_SHARED_PREFS_SUFFIX,
+                                    Context.MODE_PRIVATE
+                            );
+                            prefs.edit()
+                                    .remove(KEY_GLOBAL_FRAME_RATE)
+                                    .remove(KEY_PREVIEW_RATIO)
+                        .remove(KEY_WEATHER_UPDATE_MINUTES)
+                        .remove(KEY_WEATHER_API_KEY)
+                                    .apply();
+                        });
             case TARGET_FALL:
                 return new ResetSpec(R.xml.prefs_fall, null, null);
             case TARGET_GRASS:
@@ -205,6 +228,14 @@ public final class SettingsResetHelper {
                         });
             case TARGET_FLSORESCENCE:
                 return new ResetSpec(R.xml.prefs_flsorescence, null, null);
+            case TARGET_MICROBES:
+                return new ResetSpec(R.xml.prefs_microbes, null, null);
+            case TARGET_NIGHTSKY:
+                return new ResetSpec(R.xml.prefs_nightsky, null, null);
+            case TARGET_AURORA1:
+                return new ResetSpec(R.xml.prefs_aurora1, null, null);
+            case TARGET_AURORA2:
+                return new ResetSpec(R.xml.prefs_aurora2, null, null);
             default:
                 return null;
         }
@@ -233,6 +264,10 @@ public final class SettingsResetHelper {
         targets.add(TARGET_BLUESEA);
         targets.add(TARGET_DEEPSEA);
         targets.add(TARGET_FLSORESCENCE);
+        targets.add(TARGET_MICROBES);
+        targets.add(TARGET_NIGHTSKY);
+        targets.add(TARGET_AURORA1);
+        targets.add(TARGET_AURORA2);
         return targets;
     }
 

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <com.reandroid.settings.PreviewPreference
+        android:key="pref_preview"
+        android:title="@string/pref_live_preview" />
+
+    <Preference
+        android:key="pref_open_wallpaper_picker"
+        android:layout="@layout/preference_modern_item"
+        android:title="@string/pref_open_wallpaper_picker" />
+
+    <androidx.preference.SeekBarPreference
+        android:key="microbes_lifecycle_speed"
+        android:title="@string/pref_microbes_lifecycle_speed"
+        android:summary="@string/pref_microbes_lifecycle_speed_summary"
+        android:defaultValue="100"
+        android:max="200"
+        app:min="50"
+        app:seekBarIncrement="5"
+        app:showSeekBarValue="true"
+        android:layout="@layout/preference_modern_seekbar" />
+
+    <androidx.preference.SeekBarPreference
+        android:key="microbes_motion_activity"
+        android:title="@string/pref_microbes_motion_activity"
+        android:summary="@string/pref_microbes_motion_activity_summary"
+        android:defaultValue="50"
+        android:max="200"
+        app:min="10"
+        app:seekBarIncrement="5"
+        app:showSeekBarValue="true"
+        android:layout="@layout/preference_modern_seekbar" />
+
+    <ListPreference
+        android:key="microbes_color_mode"
+        android:title="@string/pref_microbes_color_mode"
+        android:summary="@string/pref_microbes_color_mode_summary"
+        android:entries="@array/microbes_color_mode_entries"
+        android:entryValues="@array/microbes_color_mode_values"
+        android:defaultValue="original"
+        android:layout="@layout/preference_modern_item"
+        app:useSimpleSummaryProvider="true" />
+
+</PreferenceScreen>

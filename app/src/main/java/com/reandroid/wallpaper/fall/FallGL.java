@@ -26,6 +26,7 @@ import android.opengl.Matrix;
 import android.os.Process;
 import android.os.SystemClock;
 import android.util.Log;
+import android.view.MotionEvent;
 
 import com.reandroid.wallpaper.R;
 import com.reandroid.gles.GLESScene;
@@ -68,6 +69,9 @@ public class FallGL extends GLESScene {
     private long mDiagFrameCount = 0L;
     private long mDiagAccumulatedMs = 0L;
     private long mDiagMaxMs = 0L;
+    private static final float TOUCH_TRIGGER_DISTANCE_THRESHOLD_PX = 42.0f;
+    private float mLastTouchTriggerX = -1.0f;
+    private float mLastTouchTriggerY = -1.0f;
 
     public FallGL(int width, int height) {
         super(width, height);
@@ -147,6 +151,45 @@ public class FallGL extends GLESScene {
     public void onCommand(String action, int x, int y, int z) {
         if (action != null && action.toLowerCase().contains("tap")) {
             mScene.addDrop(x, y);
+        }
+    }
+
+    @Override
+    public void onTouchEvent(MotionEvent event) {
+        if (event == null) {
+            return;
+        }
+        float x = event.getX();
+        float y = event.getY();
+        switch (event.getActionMasked()) {
+            case MotionEvent.ACTION_DOWN:
+                mScene.addDrop((int) x, (int) y);
+                mLastTouchTriggerX = x;
+                mLastTouchTriggerY = y;
+                break;
+            case MotionEvent.ACTION_MOVE:
+                if (mLastTouchTriggerX < 0.0f || mLastTouchTriggerY < 0.0f) {
+                    mScene.addDrop((int) x, (int) y);
+                    mLastTouchTriggerX = x;
+                    mLastTouchTriggerY = y;
+                    break;
+                }
+                float dx = x - mLastTouchTriggerX;
+                float dy = y - mLastTouchTriggerY;
+                float distance = (float) Math.sqrt(dx * dx + dy * dy);
+                if (distance >= TOUCH_TRIGGER_DISTANCE_THRESHOLD_PX) {
+                    mScene.addDrop((int) x, (int) y);
+                    mLastTouchTriggerX = x;
+                    mLastTouchTriggerY = y;
+                }
+                break;
+            case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_CANCEL:
+                mLastTouchTriggerX = -1.0f;
+                mLastTouchTriggerY = -1.0f;
+                break;
+            default:
+                break;
         }
     }
 

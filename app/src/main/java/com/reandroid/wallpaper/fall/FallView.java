@@ -29,6 +29,9 @@ import com.reandroid.wallpaper.fall.FallGL;
 class FallView extends View {
     // 渲染器引用（运行时实际为FallGL实例）
     private Object mRender;
+    private static final float TRIGGER_DISTANCE_THRESHOLD_PX = 42.0f;
+    private float mLastTriggerX = -1.0f;
+    private float mLastTriggerY = -1.0f;
 
     /**
      * 构造方法
@@ -76,24 +79,43 @@ class FallView extends View {
      */
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN: // 触摸按下事件
-                // 如果渲染器实例不为空
-                if (mRender != null) {
-                    // 检查是否为FallGL实例，是则转发触摸坐标生成水滴
-                    if (mRender instanceof FallGL) {
-                        ((FallGL) mRender).addDrop((int) event.getX(), (int) event.getY());
-                    }
+        float x = event.getX();
+        float y = event.getY();
+        switch (event.getActionMasked()) {
+            case MotionEvent.ACTION_DOWN:
+                triggerRipple(x, y);
+                mLastTriggerX = x;
+                mLastTriggerY = y;
+                break;
+            case MotionEvent.ACTION_MOVE:
+                if (mLastTriggerX < 0.0f || mLastTriggerY < 0.0f) {
+                    triggerRipple(x, y);
+                    mLastTriggerX = x;
+                    mLastTriggerY = y;
+                    break;
                 }
-                // 短暂休眠16ms（约60帧/秒的帧间隔），避免触摸事件过快
-                try {
-                    Thread.sleep(16);
-                } catch (InterruptedException e) {
-                    // 忽略中断异常
+                float deltaX = x - mLastTriggerX;
+                float deltaY = y - mLastTriggerY;
+                float distance = (float) Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+                if (distance >= TRIGGER_DISTANCE_THRESHOLD_PX) {
+                    triggerRipple(x, y);
+                    mLastTriggerX = x;
+                    mLastTriggerY = y;
                 }
+                break;
+            case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_CANCEL:
+                mLastTriggerX = -1.0f;
+                mLastTriggerY = -1.0f;
                 break;
         }
         // 返回true表示消费了该触摸事件
         return true;
+    }
+
+    private void triggerRipple(float x, float y) {
+        if (mRender instanceof FallGL) {
+            ((FallGL) mRender).addDrop((int) x, (int) y);
+        }
     }
 }

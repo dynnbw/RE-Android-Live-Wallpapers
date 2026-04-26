@@ -13,6 +13,7 @@ final class GrassSpriteRenderer {
     private int alphaHandle = -1;
 
     private FloatBuffer spriteBuffer;
+    private FloatBuffer batchBuffer;
     private final float[] quadVerts = new float[16];
 
     void setProgramHandles(int positionHandle, int texHandle, int samplerHandle, int alphaHandle) {
@@ -59,6 +60,34 @@ final class GrassSpriteRenderer {
         appendSpriteQuadVertices(left, top, left, bottom, right, bottom, right, top,
                 uLeft, vTop, uLeft, vBottom, uRight, vBottom, uRight, vTop);
         flush(texture, alpha);
+    }
+
+    void drawBatch(int texture, float[] vertices, int floatCount, float alpha) {
+        if (vertices == null || floatCount <= 0 || (floatCount % 4) != 0) {
+            return;
+        }
+        if (positionHandle < 0 || texHandle < 0 || samplerHandle < 0 || alphaHandle < 0) {
+            return;
+        }
+
+        ensureBatchBuffer(floatCount);
+        batchBuffer.clear();
+        batchBuffer.put(vertices, 0, floatCount).position(0);
+
+        GLES20.glEnableVertexAttribArray(positionHandle);
+        GLES20.glVertexAttribPointer(positionHandle, 2, GLES20.GL_FLOAT, false, 16, batchBuffer);
+        batchBuffer.position(2);
+        GLES20.glEnableVertexAttribArray(texHandle);
+        GLES20.glVertexAttribPointer(texHandle, 2, GLES20.GL_FLOAT, false, 16, batchBuffer);
+
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture);
+        GLES20.glUniform1i(samplerHandle, 0);
+        GLES20.glUniform1f(alphaHandle, alpha);
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, floatCount / 4);
+
+        GLES20.glDisableVertexAttribArray(positionHandle);
+        GLES20.glDisableVertexAttribArray(texHandle);
     }
 
     private void appendSpriteQuadVertices(
@@ -109,6 +138,14 @@ final class GrassSpriteRenderer {
     private void ensureBuffer() {
         if (spriteBuffer == null) {
             spriteBuffer = ByteBuffer.allocateDirect(4 * 4 * 4)
+                    .order(ByteOrder.nativeOrder())
+                    .asFloatBuffer();
+        }
+    }
+
+    private void ensureBatchBuffer(int floatCount) {
+        if (batchBuffer == null || batchBuffer.capacity() < floatCount) {
+            batchBuffer = ByteBuffer.allocateDirect(floatCount * 4)
                     .order(ByteOrder.nativeOrder())
                     .asFloatBuffer();
         }

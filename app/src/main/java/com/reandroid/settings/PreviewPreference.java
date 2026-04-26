@@ -18,7 +18,7 @@ import com.reandroid.gles.GLESWallpaper;
 
 public class PreviewPreference extends Preference {
     private static final String PREF_PREVIEW_RATIO = "pref_preview_ratio";
-    private static final String DEFAULT_PREVIEW_RATIO = "9:16";
+    private static final String DEFAULT_PREVIEW_RATIO = "1:1";
     private GLESPreviewView.SceneFactory mSceneFactory;
     private GLESPreviewView mPreviewView;
 
@@ -40,23 +40,37 @@ public class PreviewPreference extends Preference {
         return mPreviewView != null ? mPreviewView.getScene() : null;
     }
 
+    public void refreshPreviewRatioNow() {
+        notifyChanged();
+    }
+
     @Override
     public void onBindViewHolder(PreferenceViewHolder holder) {
         super.onBindViewHolder(holder);
         FrameLayout container = (FrameLayout) holder.findViewById(R.id.preview_container);
         if (container == null || mSceneFactory == null) return;
+
         GLESWallpaper.initializeAppContext(getContext());
-        // 移除所有子View，保证每次都刷新比例
+
+        if (mPreviewView == null) {
+            mPreviewView = new GLESPreviewView(getContext(), mSceneFactory);
+            mPreviewView.setLayoutParams(new FrameLayout.LayoutParams(
+                    FrameLayout.LayoutParams.MATCH_PARENT,
+                    FrameLayout.LayoutParams.MATCH_PARENT
+            ));
+        }
+
+        String ratio = resolvePreviewRatio();
+        applyPreviewRatio(container, ratio);
+        container.setVisibility(android.view.View.VISIBLE);
         container.removeAllViews();
-        applyPreviewRatio(container);
-        mPreviewView = new GLESPreviewView(getContext(), mSceneFactory);
-        mPreviewView.setLayoutParams(new FrameLayout.LayoutParams(
-            FrameLayout.LayoutParams.MATCH_PARENT,
-            FrameLayout.LayoutParams.MATCH_PARENT));
+        if (mPreviewView.getParent() instanceof FrameLayout) {
+            ((FrameLayout) mPreviewView.getParent()).removeView(mPreviewView);
+        }
         container.addView(mPreviewView);
     }
 
-    private void applyPreviewRatio(FrameLayout container) {
+    private String resolvePreviewRatio() {
         String ratio = DEFAULT_PREVIEW_RATIO;
         // 始终从全局 SharedPreferences 读取，避免 Fragment 层级 name 不一致
         Context context = getContext();
@@ -67,6 +81,10 @@ public class PreviewPreference extends Preference {
         if (!isValidRatio(ratio)) {
             ratio = DEFAULT_PREVIEW_RATIO;
         }
+        return ratio;
+    }
+
+    private void applyPreviewRatio(FrameLayout container, String ratio) {
 
         ViewGroup.LayoutParams layoutParams = container.getLayoutParams();
         if (layoutParams instanceof ConstraintLayout.LayoutParams) {
@@ -96,4 +114,5 @@ public class PreviewPreference extends Preference {
             return false;
         }
     }
+
 }

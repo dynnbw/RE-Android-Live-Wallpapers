@@ -14,7 +14,6 @@ import com.reandroid.wallpaper.BuildConfig;
 import com.reandroid.wallpaper.R;
 
 import android.content.Context;
-import com.google.android.material.theme.overlay.MaterialThemeOverlay;
 
 public class AboutFragment extends PreferenceFragmentCompat {
 
@@ -42,11 +41,18 @@ public class AboutFragment extends PreferenceFragmentCompat {
                 return true;
             });
         }
+        Preference email2 = findPreference("about_email2");
+        if (email2 != null) {
+            email2.setOnPreferenceClickListener(pref -> {
+                sendEmail(getString(R.string.about_email_address_alt));
+                return true;
+            });
+        }
         // Bilibili主页
         Preference bilibili = findPreference("about_bilibili");
         if (bilibili != null) {
             bilibili.setOnPreferenceClickListener(pref -> {
-                openUrl("https://space.bilibili.com/470023065");
+                openUrl(getString(R.string.about_bilibili_url));
                 return true;
             });
         }
@@ -81,10 +87,20 @@ public class AboutFragment extends PreferenceFragmentCompat {
     }
 
     private void sendEmail(String email) {
-        Intent intent = new Intent(Intent.ACTION_SENDTO);
-        intent.setData(Uri.parse("mailto:" + email));
+        Intent sendToIntent = new Intent(Intent.ACTION_SENDTO);
+        sendToIntent.setData(Uri.parse("mailto:" + email));
         try {
-            startActivity(intent);
+            startActivity(sendToIntent);
+            return;
+        } catch (ActivityNotFoundException ignored) {
+            // Fallback for devices/apps that do not expose SENDTO handlers reliably.
+        }
+
+        Intent sendIntent = new Intent(Intent.ACTION_SEND);
+        sendIntent.setType("message/rfc822");
+        sendIntent.putExtra(Intent.EXTRA_EMAIL, new String[]{email});
+        try {
+            startActivity(Intent.createChooser(sendIntent, getString(R.string.about_email)));
         } catch (ActivityNotFoundException e) {
             Toast.makeText(getContext(), R.string.no_email_found, Toast.LENGTH_SHORT).show();
         }

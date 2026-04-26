@@ -11,6 +11,18 @@
         android:title="@string/pref_grass_weather_enabled"
         android:summary="@string/pref_grass_weather_enabled_summary" android:defaultValue="true"
         android:layout="@layout/preference_modern_item" />
+    <SeekBarPreference android:key="pref_grass_weather_rain_count"
+        android:title="@string/pref_grass_weather_rain_count"
+        android:summary="@string/pref_grass_weather_rain_count_summary"
+        android:min="10" android:max="1000"
+        android:defaultValue="25" app:seekBarIncrement="5" app:showSeekBarValue="true"
+        android:layout="@layout/preference_modern_seekbar" />
+    <SeekBarPreference android:key="pref_grass_weather_snow_count"
+        android:title="@string/pref_grass_weather_snow_count"
+        android:summary="@string/pref_grass_weather_snow_count_summary"
+        android:min="10" android:max="1000"
+        android:defaultValue="25" app:seekBarIncrement="5" app:showSeekBarValue="true"
+        android:layout="@layout/preference_modern_seekbar" />
     <Preference
         android:key="pref_weather_api_notice"
         android:layout="@layout/preference_modern_item"

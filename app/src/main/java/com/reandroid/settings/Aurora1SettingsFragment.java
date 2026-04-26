@@ -18,6 +18,7 @@ public class Aurora1SettingsFragment extends PreferenceFragmentCompat {
     @Override
     public void onCreatePreferences(@Nullable Bundle savedInstanceState, @Nullable String rootKey) {
         setPreferencesFromResource(R.xml.prefs_aurora1, rootKey);
+        SettingsResetHelper.attachResetPreference(this, SettingsResetHelper.TARGET_AURORA1);
 
         PreviewPreference preview = findPreference("pref_preview");
         if (preview != null) {

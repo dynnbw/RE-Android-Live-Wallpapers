@@ -20,6 +20,8 @@
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <bool name="config_enable_grass_wallpaper">true</bool>
     <bool name="config_enable_galaxy_wallpaper">true</bool>
+    <bool name="config_enable_nightsky_wallpaper">true</bool>
+    <bool name="config_enable_microbes_wallpaper">true</bool>
     <bool name="config_enable_galaxy4_wallpaper">true</bool>
     <bool name="config_enable_fall_wallpaper">true</bool>
     <bool name="config_enable_aurora1_wallpaper">true</bool>

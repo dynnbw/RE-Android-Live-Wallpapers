@@ -138,6 +138,30 @@
         <item>7</item>
     </string-array>
 
+    <string-array name="microbes_color_mode_entries" translatable="false">
+        <item>@string/pref_microbes_color_mode_original</item>
+        <item>@string/pref_microbes_color_mode_modern</item>
+    </string-array>
+    <string-array name="microbes_color_mode_values" translatable="false">
+        <item>original</item>
+        <item>modern</item>
+    </string-array>
+
+    <string-array name="nightsky_time_accel_speed_entries" translatable="false">
+        <item>180x</item>
+        <item>360x</item>
+        <item>540x</item>
+        <item>720x</item>
+        <item>1440x</item>
+    </string-array>
+    <string-array name="nightsky_time_accel_speed_values" translatable="false">
+        <item>180</item>
+        <item>360</item>
+        <item>540</item>
+        <item>720</item>
+        <item>1440</item>
+    </string-array>
+
     <!-- Magic Smoke Presets -->
     <string-array name="magicsmoke_preset_names">
         <item>Black &amp; White (Classic)</item>

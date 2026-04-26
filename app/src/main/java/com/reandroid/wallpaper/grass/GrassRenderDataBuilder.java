@@ -28,28 +28,31 @@ final class GrassRenderDataBuilder {
     private int indexCount;
     private int[] bladeSizes = new int[0];
 
-    private final float[] vkSkyParams = new float[6];
-    private final float[] vkMoonParams = new float[12];
+    private final float[] mVKSkyParams = new float[6];
+    private final float[] mVKMoonParams = new float[12];
 
-    private float[] vkGrassVertices = new float[0];
-    private int vkGrassFloatCount;
+    private float[] mVKGrassVertices = new float[0];
+    private int mVKGrassFloatCount;
+    private boolean grassVertexArrayUpdated;
+    private boolean hasGrassBuildCache;
+    private int lastGrassAppearanceKey;
 
-    private final float[] vkSunVerts = new float[30];
-    private int vkSunFloatCount;
+    private final float[] mVKSunVerts = new float[30];
+    private int mVKSunFloatCount;
 
-    private final float[] vkMoonVerts = new float[30];
-    private int vkMoonFloatCount;
+    private final float[] mVKMoonVerts = new float[30];
+    private int mVKMoonFloatCount;
 
-    private float[] vkDandelionVerts = new float[0];
-    private int vkDandelionFloatCount;
+    private float[] mVKDandelionVerts = new float[0];
+    private int mVKDandelionFloatCount;
 
-    private float[] vkFireflyVerts = new float[0];
-    private int vkFireflyFloatCount;
+    private float[] mVKFireflyVerts = new float[0];
+    private int mVKFireflyFloatCount;
 
-    private float[] vkFireflyFlareVerts = new float[0];
-    private int vkFireflyFlareFloatCount;
+    private float[] mVKFireflyFlareVerts = new float[0];
+    private int mVKFireflyFlareFloatCount;
 
-    private int vkTempSpriteFloatCount;
+    private int mVKTempSpriteFloatCount;
 
     GrassRenderDataBuilder(LegacyParticleOps legacyOps) {
         this.legacyOps = legacyOps;
@@ -64,7 +67,7 @@ final class GrassRenderDataBuilder {
     }
 
     float[] computeSkyParams(SceneData sd) {
-        float[] out = vkSkyParams;
+        float[] out = mVKSkyParams;
         out[0] = 0.0f;
         out[1] = 0.0f;
         out[2] = 0.0f;
@@ -126,7 +129,7 @@ final class GrassRenderDataBuilder {
     }
 
     float[] buildMoonParams(SceneData sd) {
-        float[] out = vkMoonParams;
+        float[] out = mVKMoonParams;
         for (int i = 0; i < out.length; i++) {
             out[i] = 0.0f;
         }
@@ -154,8 +157,10 @@ final class GrassRenderDataBuilder {
 
     float[] buildGrassVertexArray(SceneData sd) {
         if (!sd.grassEnabled || sd.blades == null || sd.blades.length == 0) {
-            vkGrassFloatCount = 0;
-            return vkGrassVertices;
+            mVKGrassFloatCount = 0;
+            grassVertexArrayUpdated = false;
+            hasGrassBuildCache = false;
+            return mVKGrassVertices;
         }
 
         float eclipseImpact = sd.useAccurateSun ? clamp(sd.solarEclipseWeight, 0.0f, 1.0f) : 0.0f;
@@ -182,10 +187,17 @@ final class GrassRenderDataBuilder {
 
         final int stride = 8;
         int required = Math.max(0, vertexCount * 2) * stride;
-        if (vkGrassVertices.length < required) {
-            vkGrassVertices = new float[required];
+        if (mVKGrassVertices.length < required) {
+            mVKGrassVertices = new float[required];
         }
-        float[] out = vkGrassVertices;
+
+        int appearanceKey = computeGrassAppearanceKey(sd, grassBrightness, nightDesat);
+        if (!sd.grassGeometryDirty && hasGrassBuildCache && appearanceKey == lastGrassAppearanceKey) {
+            grassVertexArrayUpdated = false;
+            return mVKGrassVertices;
+        }
+
+        float[] out = mVKGrassVertices;
         int cursor = 0;
         for (Blade blade : sd.blades) {
             cursor = appendBladeVertices(sd, blade, grassBrightness, sd.xDraw, nightDesat, out, cursor);
@@ -194,8 +206,15 @@ final class GrassRenderDataBuilder {
             }
         }
 
-        vkGrassFloatCount = Math.max(0, Math.min(cursor, out.length));
+        mVKGrassFloatCount = Math.max(0, Math.min(cursor, out.length));
+        grassVertexArrayUpdated = true;
+        hasGrassBuildCache = true;
+        lastGrassAppearanceKey = appearanceKey;
         return out;
+    }
+
+    boolean wasGrassVertexArrayUpdated() {
+        return grassVertexArrayUpdated;
     }
 
     short[] buildGrassIndexArray() {
@@ -219,61 +238,61 @@ final class GrassRenderDataBuilder {
     }
 
     int getGrassVertexCount() {
-        return vkGrassFloatCount / 8;
+        return mVKGrassFloatCount / 8;
     }
 
     float[] buildSunSpriteVertices(SceneData sd) {
         if (!sd.useAccurateSun || !sd.sunEnabled || !sd.hasSunData) {
-            vkSunFloatCount = 0;
-            return vkSunVerts;
+            mVKSunFloatCount = 0;
+            return mVKSunVerts;
         }
-        appendSpriteQuadVertices(vkSunVerts, 0, sd.sunX, sd.sunY, sd.sunSize, sd.sunAlpha, false, 0.0f);
-        vkSunFloatCount = 30;
-        return vkSunVerts;
+        appendSpriteQuadVertices(mVKSunVerts, 0, sd.sunX, sd.sunY, sd.sunSize, sd.sunAlpha, false, 0.0f);
+        mVKSunFloatCount = 30;
+        return mVKSunVerts;
     }
 
     int getSunVertexCount() {
-        return vkSunFloatCount / 5;
+        return mVKSunFloatCount / 5;
     }
 
     float[] buildMoonSpriteVertices(SceneData sd) {
         if (!sd.useAccurateSun || !sd.moonEnabled || !sd.moonVisible) {
-            vkMoonFloatCount = 0;
-            return vkMoonVerts;
+            mVKMoonFloatCount = 0;
+            return mVKMoonVerts;
         }
         float alpha = clamp(sd.moonAlpha * sd.moonBrightness, 0.0f, 1.0f);
         if (alpha <= 0.001f) {
-            vkMoonFloatCount = 0;
-            return vkMoonVerts;
+            mVKMoonFloatCount = 0;
+            return mVKMoonVerts;
         }
-        appendSpriteQuadVertices(vkMoonVerts, 0, sd.moonX, sd.moonY, sd.moonSize, alpha, false, 0.0f);
-        vkMoonFloatCount = 30;
-        return vkMoonVerts;
+        appendSpriteQuadVertices(mVKMoonVerts, 0, sd.moonX, sd.moonY, sd.moonSize, alpha, false, 0.0f);
+        mVKMoonFloatCount = 30;
+        return mVKMoonVerts;
     }
 
     int getMoonVertexCount() {
-        return vkMoonFloatCount / 5;
+        return mVKMoonFloatCount / 5;
     }
 
     float[] buildDandelionSpriteVertices(SceneData sd) {
         if (sd.legacyParticles) {
-            vkDandelionVerts = buildLegacySpriteVertices(sd, LEGACY_TYPE_DANDELION,
-                    false, false, true, vkDandelionVerts);
-            vkDandelionFloatCount = vkTempSpriteFloatCount;
-            return vkDandelionVerts;
+            mVKDandelionVerts = buildLegacySpriteVertices(sd, LEGACY_TYPE_DANDELION,
+                    false, false, true, mVKDandelionVerts);
+            mVKDandelionFloatCount = mVKTempSpriteFloatCount;
+            return mVKDandelionVerts;
         }
         if (sd.dandelionVisibility <= 0.001f || !sd.dandelionEnabled
             || sd.dandelions == null || sd.dandelions.length == 0) {
-            vkDandelionFloatCount = 0;
-            return vkDandelionVerts;
+            mVKDandelionFloatCount = 0;
+            return mVKDandelionVerts;
         }
 
         int required = sd.dandelions.length * 30;
-        if (vkDandelionVerts.length < required) {
-            vkDandelionVerts = new float[required];
+        if (mVKDandelionVerts.length < required) {
+            mVKDandelionVerts = new float[required];
         }
 
-        float[] out = vkDandelionVerts;
+        float[] out = mVKDandelionVerts;
         int cursor = 0;
         for (Dandelion d : sd.dandelions) {
             float sway = (float) Math.sin(d.swayPhase + sd.animNowMs * 0.001f * d.swaySpeed) * 6.0f;
@@ -283,33 +302,33 @@ final class GrassRenderDataBuilder {
                 break;
             }
         }
-        vkDandelionFloatCount = Math.max(0, Math.min(cursor, out.length));
+        mVKDandelionFloatCount = Math.max(0, Math.min(cursor, out.length));
         return out;
     }
 
     int getDandelionVertexCount() {
-        return vkDandelionFloatCount / 5;
+        return mVKDandelionFloatCount / 5;
     }
 
     float[] buildFireflySpriteVertices(SceneData sd) {
         if (sd.legacyParticles) {
-            vkFireflyVerts = buildLegacySpriteVertices(sd, LEGACY_TYPE_FIREFLY,
-                    false, true, true, vkFireflyVerts);
-            vkFireflyFloatCount = vkTempSpriteFloatCount;
-            return vkFireflyVerts;
+            mVKFireflyVerts = buildLegacySpriteVertices(sd, LEGACY_TYPE_FIREFLY,
+                    false, true, true, mVKFireflyVerts);
+            mVKFireflyFloatCount = mVKTempSpriteFloatCount;
+            return mVKFireflyVerts;
         }
         if (sd.fireflyVisibility <= 0.001f || !sd.fireflyEnabled
             || sd.fireflies == null || sd.fireflies.length == 0) {
-            vkFireflyFloatCount = 0;
-            return vkFireflyVerts;
+            mVKFireflyFloatCount = 0;
+            return mVKFireflyVerts;
         }
 
         int required = sd.fireflies.length * 30;
-        if (vkFireflyVerts.length < required) {
-            vkFireflyVerts = new float[required];
+        if (mVKFireflyVerts.length < required) {
+            mVKFireflyVerts = new float[required];
         }
 
-        float[] out = vkFireflyVerts;
+        float[] out = mVKFireflyVerts;
         int cursor = 0;
         float time = sd.animNowMs * 0.001f;
         for (Firefly f : sd.fireflies) {
@@ -321,27 +340,27 @@ final class GrassRenderDataBuilder {
                 break;
             }
         }
-        vkFireflyFloatCount = Math.max(0, Math.min(cursor, out.length));
+        mVKFireflyFloatCount = Math.max(0, Math.min(cursor, out.length));
         return out;
     }
 
     int getFireflyVertexCount() {
-        return vkFireflyFloatCount / 5;
+        return mVKFireflyFloatCount / 5;
     }
 
     float[] buildFireflyFlareSpriteVertices(SceneData sd) {
         if (!sd.legacyParticles) {
-            vkFireflyFlareFloatCount = 0;
-            return vkFireflyFlareVerts;
+            mVKFireflyFlareFloatCount = 0;
+            return mVKFireflyFlareVerts;
         }
-        vkFireflyFlareVerts = buildLegacySpriteVertices(sd, LEGACY_TYPE_FIREFLY,
-                true, true, true, vkFireflyFlareVerts);
-        vkFireflyFlareFloatCount = vkTempSpriteFloatCount;
-        return vkFireflyFlareVerts;
+        mVKFireflyFlareVerts = buildLegacySpriteVertices(sd, LEGACY_TYPE_FIREFLY,
+                true, true, true, mVKFireflyFlareVerts);
+        mVKFireflyFlareFloatCount = mVKTempSpriteFloatCount;
+        return mVKFireflyFlareVerts;
     }
 
     int getFireflyFlareVertexCount() {
-        return vkFireflyFlareFloatCount / 5;
+        return mVKFireflyFlareFloatCount / 5;
     }
 
     private float[] buildLegacySpriteVertices(SceneData sd, int legacyTargetType,
@@ -349,7 +368,7 @@ final class GrassRenderDataBuilder {
             float[] reusableBuffer) {
         if (!sd.legacyParticles || sd.legacyType != legacyTargetType
                 || sd.legacyNormal == null || sd.legacyExtras == null) {
-            vkTempSpriteFloatCount = 0;
+            mVKTempSpriteFloatCount = 0;
             return reusableBuffer;
         }
 
@@ -386,7 +405,7 @@ final class GrassRenderDataBuilder {
             }
         }
 
-        vkTempSpriteFloatCount = Math.max(0, Math.min(cursor, out.length));
+        mVKTempSpriteFloatCount = Math.max(0, Math.min(cursor, out.length));
         return out;
     }
 
@@ -483,6 +502,10 @@ final class GrassRenderDataBuilder {
         float bottomX = xpos;
         float bottomY = blade.yPos;
         float d = angle * blade.hardness * sd.grassHardnessScale;
+        float stepCos = (float) Math.cos(d);
+        float stepSin = (float) Math.sin(d);
+        float currentCos = 0.0f;
+        float currentSin = 1.0f;
 
         float si = size * scale;
         cursor = putVertex(out, cursor, bottomX - si, bottomY + HALF_TESSELATION, r, g, b, 1.0f, 0.0f, 0.0f);
@@ -491,17 +514,38 @@ final class GrassRenderDataBuilder {
         for (; size > 0; size--) {
             float lengthX = blade.lengthX * sd.grassHeightScale;
             float lengthY = blade.lengthY * sd.grassHeightScale;
-            float topX = bottomX - (float) Math.cos(currentAngle) * lengthX;
-            float topY = bottomY - (float) Math.sin(currentAngle) * lengthY;
+            float topX = bottomX - currentCos * lengthX;
+            float topY = bottomY - currentSin * lengthY;
             si = size * scale;
             float spi = si - scale;
             cursor = putVertex(out, cursor, topX - spi, topY, r, g, b, 1.0f, 0.0f, 0.0f);
             cursor = putVertex(out, cursor, topX + spi, topY, r, g, b, 1.0f, 1.0f, 0.0f);
             bottomX = topX;
             bottomY = topY;
-            currentAngle += d;
+            float nextCos = currentCos * stepCos - currentSin * stepSin;
+            float nextSin = currentSin * stepCos + currentCos * stepSin;
+            currentCos = nextCos;
+            currentSin = nextSin;
         }
         return cursor;
+    }
+
+    private int computeGrassAppearanceKey(SceneData sd, float brightness, float nightDesat) {
+        int key = 17;
+        key = 31 * key + (sd.grassEnabled ? 1 : 0);
+        key = 31 * key + (sd.useAccurateSun ? 1 : 0);
+        key = 31 * key + (sd.useGrassTint ? 1 : 0);
+        key = 31 * key + (sd.nightDesaturateGrass ? 1 : 0);
+        key = 31 * key + Math.round(sd.xDraw * 2.0f);
+        key = 31 * key + Math.round(sd.grassHeightScale * 1000.0f);
+        key = 31 * key + Math.round(sd.grassWidthScale * 1000.0f);
+        key = 31 * key + Math.round(sd.grassHardnessScale * 1000.0f);
+        key = 31 * key + Math.round(brightness * 512.0f);
+        key = 31 * key + Math.round(nightDesat * 512.0f);
+        key = 31 * key + Math.round(sd.grassTintH * 512.0f);
+        key = 31 * key + Math.round(sd.grassTintS * 512.0f);
+        key = 31 * key + Math.round(sd.grassTintV * 512.0f);
+        return key;
     }
 
     private int putVertex(float[] out, int cursor,

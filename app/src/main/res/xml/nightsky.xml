@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wallpaper
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:thumbnail="@drawable/galaxy_thumb"
+    android:author="@string/wallpaper_nightsky_author"
+    android:description="@string/wallpaper_nightsky_desc"
+    android:showMetadataInPreview="true"
+    android:settingsActivity="com.reandroid.settings.NightSkySettingsActivity" />

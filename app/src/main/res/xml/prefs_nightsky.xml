@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <com.reandroid.settings.PreviewPreference
+        android:key="pref_preview"
+        android:title="@string/pref_live_preview" />
+
+    <Preference
+        android:key="pref_open_wallpaper_picker"
+        android:layout="@layout/preference_modern_item"
+        android:title="@string/pref_open_wallpaper_picker" />
+
+    <androidx.preference.SeekBarPreference
+        android:key="nightsky_camera_focal_mm"
+        android:title="@string/pref_nightsky_camera_focal"
+        android:summary="@string/pref_nightsky_camera_focal_summary"
+        android:defaultValue="35"
+        android:max="75"
+        app:min="6"
+        app:seekBarIncrement="1"
+        app:showSeekBarValue="true"
+        android:layout="@layout/preference_modern_seekbar" />
+
+    <SwitchPreferenceCompat
+        android:key="nightsky_use_sensor"
+        android:title="@string/pref_nightsky_use_sensor"
+        android:summary="@string/pref_nightsky_use_sensor_summary"
+        android:defaultValue="true"
+        android:layout="@layout/preference_modern_item" />
+
+    <SwitchPreferenceCompat
+        android:key="nightsky_auto_time_accel"
+        android:title="@string/pref_nightsky_auto_time_accel"
+        android:summary="@string/pref_nightsky_auto_time_accel_summary"
+        android:defaultValue="false"
+        android:layout="@layout/preference_modern_item" />
+
+    <ListPreference
+        android:key="nightsky_time_accel_speed"
+        android:title="@string/pref_nightsky_time_accel_speed"
+        android:summary="@string/pref_nightsky_time_accel_speed_summary"
+        android:defaultValue="360"
+        android:entries="@array/nightsky_time_accel_speed_entries"
+        android:entryValues="@array/nightsky_time_accel_speed_values"
+        android:layout="@layout/preference_modern_item" />
+
+</PreferenceScreen>

@@ -14,8 +14,8 @@ import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 
 import com.reandroid.wallpaper.R;
-import com.reandroid.wallpaper.windmill.WindmillGL;
-import com.reandroid.wallpaper.windmill.WindmillWallpaper;
+import com.reandroid.wallpaper.weatherwallpapers.windmill.WindmillGL;
+import com.reandroid.wallpaper.weatherwallpapers.windmill.WindmillWallpaper;
 
 public class WindmillSettingsFragment extends PreferenceFragmentCompat {
     @Override

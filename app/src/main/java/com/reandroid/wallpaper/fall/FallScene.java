@@ -33,8 +33,6 @@ final class FallScene {
     static final float LEAF_SIZE = 0.55f;
     private static final int MESH_RESOLUTION = 48;
     private static final int DEFAULT_WATER_MESH_DROPS = 10;
-    private static final float PRECISE_RIPPLE_STRENGTH = 0.18f;
-    private static final float PRECISE_RIPPLE_SIZE_SCALE = 1.65f;
 
     static final class Leaf {
         float x;
@@ -68,33 +66,11 @@ final class FallScene {
         float spread;
         float x;
         float y;
-        float initAmplitude;
-        float currentAmplitude;
-        float wavelength;
-        float frequency;
-        float waveNumber;
-        float angularFrequency;
-        float phase;
-        float timeDecay;
-        float spatialDecay;
-        long birthTimeMs;
-        float waveSpeed;
 
         void init() {
             ampS = 0.0f;
             ampE = 0.0f;
             spread = 1.0f;
-            initAmplitude = 0.0f;
-            currentAmplitude = 0.0f;
-            wavelength = 0.0f;
-            frequency = 0.0f;
-            waveNumber = 0.0f;
-            angularFrequency = 0.0f;
-            phase = 0.0f;
-            timeDecay = 0.0f;
-            spatialDecay = 0.0f;
-            birthTimeMs = 0L;
-            waveSpeed = 0.0f;
         }
 
         void updateLegacy(float dt) {
@@ -110,63 +86,6 @@ final class FallScene {
             ampS = amplitude;
             spread = 0.0f;
             ampE = amplitude;
-            initAmplitude = 0.0f;
-            currentAmplitude = 0.0f;
-            birthTimeMs = 0L;
-        }
-
-        void activatePrecise(float meshX, float meshY, float energy, Random random, long nowMs) {
-            x = meshX;
-            y = meshY;
-            initAmplitude = energy * 1.0f;
-            currentAmplitude = initAmplitude;
-            wavelength = 4.0f + random.nextFloat() * 2.5f;
-            frequency = 2.2f;
-            waveNumber = (float) (2.0f * Math.PI / wavelength);
-            angularFrequency = (float) (2.0f * Math.PI * frequency);
-            phase = 0.0f;
-            timeDecay = 0.30f;
-            spatialDecay = 0.045f;
-            birthTimeMs = nowMs;
-            waveSpeed = Math.max(wavelength * frequency, 18.0f);
-            ampS = 0.0f;
-            ampE = currentAmplitude;
-            spread = 1.0f;
-        }
-
-        void updatePrecise(long nowMs) {
-            if (initAmplitude <= 0.0f || birthTimeMs <= 0L) {
-                currentAmplitude = 0.0f;
-                return;
-            }
-            float elapsedTimeSec = Math.max(0.0f, (nowMs - birthTimeMs) / 1000.0f);
-            currentAmplitude = (float) (initAmplitude * Math.exp(-timeDecay * elapsedTimeSec));
-            ampE = currentAmplitude;
-        }
-
-        float getDisplacementAt(float px, float py, long nowMs) {
-            if (currentAmplitude <= 0.1f || birthTimeMs <= 0L) {
-                return 0.0f;
-            }
-
-            float dx = px - x;
-            float dy = py - y;
-            float radius = (float) Math.sqrt(dx * dx + dy * dy);
-            float scaledRadius = radius / PRECISE_RIPPLE_SIZE_SCALE;
-            float timeSinceBirth = (nowMs - birthTimeMs) / 1000.0f;
-            if (timeSinceBirth <= 0.0f) {
-                return 0.0f;
-            }
-
-            float waveFrontRadius = waveSpeed * timeSinceBirth;
-            if (scaledRadius > waveFrontRadius + 1.0f) {
-                return 0.0f;
-            }
-
-            float decay = (float) Math.exp(-timeDecay * timeSinceBirth - spatialDecay * scaledRadius);
-            float oscillation = (float) Math.cos(waveNumber * scaledRadius - angularFrequency * timeSinceBirth + phase);
-            float geometricAttenuation = 1.0f / (float) Math.sqrt(scaledRadius + 1.0f);
-            return currentAmplitude * decay * oscillation * geometricAttenuation;
         }
     }
 
@@ -237,8 +156,6 @@ final class FallScene {
     private Drop[] mWaterDrops;
     private int mWaterDropCount = DEFAULT_WATER_MESH_DROPS;
     private int mLastWaterDropCount = DEFAULT_WATER_MESH_DROPS;
-    private boolean mUsePreciseRippleCalc = false;
-    private boolean mLastUsePreciseRippleCalc = false;
     private boolean mInitialized = false;
     private boolean mMeshBuffersDirty = true;
     private boolean mWaterTexCoordsDirty = true;
@@ -296,7 +213,7 @@ final class FallScene {
         int minIndex = 0;
         float minAmp = Float.MAX_VALUE;
         for (int i = 0; i < mWaterDropCount; i++) {
-            float score = mUsePreciseRippleCalc ? mWaterDrops[i].currentAmplitude : mWaterDrops[i].ampE;
+            float score = mWaterDrops[i].ampE;
             if (score < minAmp) {
                 minAmp = score;
                 minIndex = i;
@@ -315,11 +232,7 @@ final class FallScene {
         float dropY = ((posY / (mGlHeight * 0.5f)) + 1.0f) * scaleY;
 
         Drop drop = mWaterDrops[minIndex];
-        if (mUsePreciseRippleCalc) {
-            drop.activatePrecise(dropX, dropY, 1.2f, mRandom, System.currentTimeMillis());
-        } else {
-            drop.activateLegacy(dropX, dropY, 1.2f);
-        }
+        drop.activateLegacy(dropX, dropY, 1.2f);
         mWaterTexCoordsDirty = true;
     }
 
@@ -396,8 +309,6 @@ final class FallScene {
 
         mWaterDropCount = Math.max(1, WallpaperSettings.getFallMaxDrops(DEFAULT_WATER_MESH_DROPS));
         mLastWaterDropCount = mWaterDropCount;
-        mUsePreciseRippleCalc = WallpaperSettings.isFallPreciseCalcEnabled(false);
-        mLastUsePreciseRippleCalc = mUsePreciseRippleCalc;
         mWaterDrops = new Drop[mWaterDropCount];
         for (int i = 0; i < mWaterDropCount; i++) {
             mWaterDrops[i] = new Drop();
@@ -473,15 +384,12 @@ final class FallScene {
 
     private void ensureWaterDropCount() {
         int desired = Math.max(1, WallpaperSettings.getFallMaxDrops(DEFAULT_WATER_MESH_DROPS));
-        boolean desiredPrecise = WallpaperSettings.isFallPreciseCalcEnabled(false);
-        if (desired == mLastWaterDropCount && desiredPrecise == mLastUsePreciseRippleCalc && mWaterDrops != null) {
+        if (desired == mLastWaterDropCount && mWaterDrops != null) {
             return;
         }
 
         mWaterDropCount = desired;
         mLastWaterDropCount = desired;
-        mUsePreciseRippleCalc = desiredPrecise;
-        mLastUsePreciseRippleCalc = desiredPrecise;
         mWaterDrops = new Drop[mWaterDropCount];
         for (int i = 0; i < mWaterDropCount; i++) {
             mWaterDrops[i] = new Drop();
@@ -559,7 +467,7 @@ final class FallScene {
             return;
         }
         for (int i = 0; i < mWaterDropCount; i++) {
-            float score = mUsePreciseRippleCalc ? mWaterDrops[i].currentAmplitude : mWaterDrops[i].ampE;
+            float score = mWaterDrops[i].ampE;
             if (score < minAmp) {
                 minIndex = i;
                 minAmp = score;
@@ -567,11 +475,7 @@ final class FallScene {
         }
 
         Drop drop = mWaterDrops[minIndex];
-        if (mUsePreciseRippleCalc) {
-            drop.activatePrecise(meshX, meshY, amplitude, mRandom, System.currentTimeMillis());
-        } else {
-            drop.activateLegacy(meshX, meshY, amplitude);
-        }
+        drop.activateLegacy(meshX, meshY, amplitude);
     }
 
     private void updateWaterMesh(long nowMs) {
@@ -579,15 +483,9 @@ final class FallScene {
             return;
         }
 
-        if (mUsePreciseRippleCalc) {
-            for (Drop drop : mWaterDrops) {
-                drop.updatePrecise(nowMs);
-            }
-        } else {
-            for (Drop drop : mWaterDrops) {
-                drop.spread += 30.0f * mDeltaTime;
-                drop.ampE = drop.ampS / drop.spread;
-            }
+        for (Drop drop : mWaterDrops) {
+            drop.spread += 30.0f * mDeltaTime;
+            drop.ampE = drop.ampS / drop.spread;
         }
 
         float height = mGlHeight;
@@ -631,42 +529,19 @@ final class FallScene {
                 float posScaledX = (posX + 1.0f) * scaleX;
                 float posScaledY = ((posY / (mGlHeight * 0.5f)) + 1.0f) * scaleY;
 
-                if (mUsePreciseRippleCalc) {
-                    float uOffset = 0.0f;
-                    float vOffset = 0.0f;
-                    for (Drop drop : mWaterDrops) {
-                        float displacement = drop.getDisplacementAt(posScaledX, posScaledY, nowMs);
-                        if (Math.abs(displacement) < 0.00001f) {
-                            continue;
-                        }
-                        float ddx = drop.x - posScaledX;
-                        float ddy = drop.y - posScaledY;
-                        float radius = (float) Math.sqrt(ddx * ddx + ddy * ddy);
-                        if (radius < 0.0001f) {
-                            continue;
-                        }
-                        float invR = 1.0f / radius;
-                        float waveOffset = displacement * PRECISE_RIPPLE_STRENGTH;
-                        uOffset += (ddx * dxMul) * invR * waveOffset * 0.35f;
-                        vOffset += ddy * invR * waveOffset;
+                for (Drop drop : mWaterDrops) {
+                    float dx = drop.x - posScaledX;
+                    float dy = drop.y - posScaledY;
+                    dx *= dxMul;
+                    float dist = (float) Math.sqrt(dx * dx + dy * dy);
+                    if (dist < drop.spread) {
+                        float amp = drop.ampE * 0.12f * dist;
+                        amp /= (drop.spread * drop.spread);
+                        amp *= (float) Math.sin(drop.spread - dist);
+                        varU += dx * amp;
+                        varV += dy * amp;
                     }
-                    varU += uOffset;
-                    varV += vOffset;
-                } else {
-                    for (Drop drop : mWaterDrops) {
-                        float dx = drop.x - posScaledX;
-                        float dy = drop.y - posScaledY;
-                        dx *= dxMul;
-                        float dist = (float) Math.sqrt(dx * dx + dy * dy);
-                        if (dist < drop.spread) {
-                            float amp = drop.ampE * 0.12f * dist;
-                            amp /= (drop.spread * drop.spread);
-                            amp *= (float) Math.sin(drop.spread - dist);
-                            varU += dx * amp;
-                            varV += dy * amp;
-                        }
                     }
-                }
 
                 int texIndex = (y * wResolution + x) * 2;
                 deformedTex[texIndex] = varU;

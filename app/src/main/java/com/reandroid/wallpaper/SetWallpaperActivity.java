@@ -11,6 +11,8 @@ import com.reandroid.wallpaper.galaxy.GalaxyWallpaper;
 import com.reandroid.wallpaper.nexus.NexusWallpaper;
 import com.reandroid.wallpaper.wildworld.WildWorldWallpaper;
 import com.reandroid.wallpaper.fireworks.FireworksWallpaper;
+import com.reandroid.wallpaper.nightsky.NightSkyWallpaper;
+import com.reandroid.wallpaper.microbes.MicrobesWallpaper;
 import com.reandroid.wallpaper.polarclock.PolarClockWallpaper;
 
 /**
@@ -66,6 +68,14 @@ public class SetWallpaperActivity extends Activity {
             case "fireworks":
                 // 烟花壁纸
                 wallpaperClass = FireworksWallpaper.class;
+                break;
+            case "nightsky":
+                // 夜空壁纸
+                wallpaperClass = NightSkyWallpaper.class;
+                break;
+            case "microbes":
+                // 微生物壁纸
+                wallpaperClass = MicrobesWallpaper.class;
                 break;
             case "clock":
                 // 极地时钟壁纸

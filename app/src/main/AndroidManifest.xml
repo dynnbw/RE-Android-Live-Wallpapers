@@ -282,6 +282,30 @@
 
         <service
             android:exported="true"
+            android:label="@string/wallpaper_nightsky"
+            android:name="com.reandroid.wallpaper.nightsky.NightSkyWallpaper"
+            android:permission="android.permission.BIND_WALLPAPER"
+            android:enabled="@bool/config_enable_nightsky_wallpaper">
+            <intent-filter>
+                <action android:name="android.service.wallpaper.WallpaperService" />
+            </intent-filter>
+            <meta-data android:name="android.service.wallpaper" android:resource="@xml/nightsky" />
+        </service>
+
+        <service
+            android:exported="true"
+            android:label="@string/wallpaper_microbes"
+            android:name="com.reandroid.wallpaper.microbes.MicrobesWallpaper"
+            android:permission="android.permission.BIND_WALLPAPER"
+            android:enabled="@bool/config_enable_microbes_wallpaper">
+            <intent-filter>
+                <action android:name="android.service.wallpaper.WallpaperService" />
+            </intent-filter>
+            <meta-data android:name="android.service.wallpaper" android:resource="@xml/microbes" />
+        </service>
+
+        <service
+            android:exported="true"
             android:label="@string/wallpaper_galaxy_vk"
             android:name="com.reandroid.wallpaper.galaxy.GalaxyVKWallpaper"
             android:permission="android.permission.BIND_WALLPAPER"
@@ -331,7 +355,7 @@
         <service
             android:exported="true"
             android:label="@string/wallpaper_windmill"
-            android:name="com.reandroid.wallpaper.windmill.WindmillWallpaper"
+            android:name="com.reandroid.wallpaper.weatherwallpapers.windmill.WindmillWallpaper"
             android:permission="android.permission.BIND_WALLPAPER"
             android:enabled="@bool/config_enable_windmill_wallpaper">
             <intent-filter>
@@ -343,7 +367,7 @@
         <service
             android:exported="true"
             android:label="@string/wallpaper_ocean"
-            android:name="com.reandroid.wallpaper.ocean.OceanWallpaper"
+            android:name="com.reandroid.wallpaper.weatherwallpapers.ocean.OceanWallpaper"
             android:permission="android.permission.BIND_WALLPAPER"
             android:enabled="@bool/config_enable_ocean_wallpaper">
             <intent-filter>
@@ -612,6 +636,22 @@
             android:theme="@style/Theme.WallpaperSettings"
             android:exported="true"
             android:enabled="@bool/config_enable_galaxy_wallpaper">
+        </activity>
+
+        <activity
+            android:label="@string/wallpaper_nightsky"
+            android:name="com.reandroid.settings.NightSkySettingsActivity"
+            android:theme="@style/Theme.WallpaperSettings"
+            android:exported="true"
+            android:enabled="@bool/config_enable_nightsky_wallpaper">
+        </activity>
+
+        <activity
+            android:label="@string/wallpaper_microbes"
+            android:name="com.reandroid.settings.MicrobesSettingsActivity"
+            android:theme="@style/Theme.WallpaperSettings"
+            android:exported="true"
+            android:enabled="@bool/config_enable_microbes_wallpaper">
         </activity>
 
         <activity

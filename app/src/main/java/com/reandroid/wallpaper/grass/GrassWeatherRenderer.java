@@ -4,12 +4,18 @@ import android.graphics.Color;
 import android.opengl.GLES20;
 
 import com.reandroid.wallpaper.R;
+import com.reandroid.settings.WallpaperSettings;
 import com.reandroid.weather.WeatherCondition;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 final class GrassWeatherRenderer {
+    private static final int RAIN_BATCH_GROUP_COUNT = 3;
+    private static final int SNOW_BATCH_GROUP_COUNT = 4;
+    private static final int CLOUD_BATCH_GROUP_COUNT = 4;
+    private static final int FLOATS_PER_VERTEX = 4;
+    private static final int FLOATS_PER_QUAD = 6 * FLOATS_PER_VERTEX;
 
     interface TextureLoader {
         int load(int resId, boolean repeat, boolean mipmap);
@@ -61,6 +67,13 @@ final class GrassWeatherRenderer {
     private int thunderTextureIndex;
     private boolean thunderLTR = true;
     private float thunderFlashAlpha;
+
+    private final float[][] rainBatchVertices = new float[RAIN_BATCH_GROUP_COUNT][];
+    private final int[] rainBatchFloatCounts = new int[RAIN_BATCH_GROUP_COUNT];
+    private final float[][] snowBatchVertices = new float[SNOW_BATCH_GROUP_COUNT][];
+    private final int[] snowBatchFloatCounts = new int[SNOW_BATCH_GROUP_COUNT];
+    private final float[][] cloudBatchVertices = new float[CLOUD_BATCH_GROUP_COUNT][];
+    private final int[] cloudBatchFloatCounts = new int[CLOUD_BATCH_GROUP_COUNT];
 
     void setViewport(int width, int height) {
         this.width = width;
@@ -170,14 +183,14 @@ final class GrassWeatherRenderer {
                 if (!frontPass) {
                     drawCloudLayer(sd.weatherCondition, sd.animNowMs, 12, sd.isNight, spriteRenderer);
                 }
-                drawRainLayer(sd.animNowMs, 12, frontPass, spriteRenderer);
+                drawRainLayer(sd.animNowMs, resolveRainCount(false), frontPass, spriteRenderer);
                 break;
             case D6_THUNDERSTORMS:
                 if (!frontPass) {
                     thunderFlashAlpha = drawLightningSweep(sd.animNowMs, spriteRenderer);
                     drawCloudLayer(sd.weatherCondition, sd.animNowMs, 12, sd.isNight, spriteRenderer);
                 }
-                drawRainLayer(sd.animNowMs, 25, frontPass, spriteRenderer);
+                drawRainLayer(sd.animNowMs, resolveRainCount(true), frontPass, spriteRenderer);
                 if (frontPass && thunderFlashAlpha > 0.0f && texWeatherFlash != 0) {
                     float fullSize = Math.max(width, height) * 2.4f;
                     spriteRenderer.drawSprite(texWeatherFlash, width * 0.5f, height * 0.5f,
@@ -188,20 +201,20 @@ final class GrassWeatherRenderer {
                 if (!frontPass) {
                     drawCloudLayer(sd.weatherCondition, sd.animNowMs, 2, sd.isNight, spriteRenderer);
                 }
-                drawSnowLayer(sd.animNowMs, 12, frontPass, spriteRenderer);
+                drawSnowLayer(sd.animNowMs, resolveSnowCount(false), frontPass, spriteRenderer);
                 break;
             case D8_ICE_COLD:
                 if (!frontPass) {
                     drawCloudLayer(sd.weatherCondition, sd.animNowMs, 8, sd.isNight, spriteRenderer);
                 }
-                drawSnowLayer(sd.animNowMs, 25, frontPass, spriteRenderer);
+                drawSnowLayer(sd.animNowMs, resolveSnowCount(true), frontPass, spriteRenderer);
                 break;
             case D9_SLEET:
                 if (!frontPass) {
                     drawCloudLayer(sd.weatherCondition, sd.animNowMs, 12, sd.isNight, spriteRenderer);
                 }
-                drawRainLayer(sd.animNowMs, 25, frontPass, spriteRenderer);
-                drawSnowLayer(sd.animNowMs, 12, frontPass, spriteRenderer);
+                drawRainLayer(sd.animNowMs, resolveRainCount(true), frontPass, spriteRenderer);
+                drawSnowLayer(sd.animNowMs, resolveSnowCount(false), frontPass, spriteRenderer);
                 break;
             case D1_CLEAR:
             default:
@@ -305,6 +318,7 @@ final class GrassWeatherRenderer {
         int cond = condition.ordinal();
         float tSec = animNowMs / 1000.0f;
         float cloudAlpha = isNight ? 0.30f : 1.0f;
+        clearBatchCounts(cloudBatchFloatCounts);
         for (int i = 0; i < cloudCount; i++) {
             int texIdx = cloudTexIndexForWeather(condition, i);
             int texture = cloudTexForIndex(texIdx);
@@ -316,29 +330,31 @@ final class GrassWeatherRenderer {
             float phase = hash01((long) (i * 13 + cond * 17 + 1000)) * cycleLen;
             float xPos = (phase + speed * tSec) % cycleLen - cloudW;
             float yOff = hash01((long) (i * 11 + cond * 7 + 2000)) * (cloudH / 2.0f) - cloudH / 4.0f;
-            spriteRenderer.drawRect(texture, xPos, yOff, cloudW, cloudH, cloudAlpha);
+            appendQuadToGroup(cloudBatchVertices, cloudBatchFloatCounts, texIdx,
+                    xPos, yOff, xPos + cloudW, yOff + cloudH,
+                    0.0f, 0.0f, 1.0f, 1.0f);
+        }
+        for (int i = 0; i < CLOUD_BATCH_GROUP_COUNT; i++) {
+            int floatCount = cloudBatchFloatCounts[i];
+            if (floatCount <= 0) {
+                continue;
+            }
+            int texture = cloudTexForIndex(i);
+            if (texture == 0) {
+                continue;
+            }
+            spriteRenderer.drawBatch(texture, cloudBatchVertices[i], floatCount, cloudAlpha);
         }
     }
 
     private void drawRainLayer(long animNowMs, int count, boolean frontPass, GrassSpriteRenderer spriteRenderer) {
         if (texWeatherRain1 == 0 || texWeatherRain2 == 0 || texWeatherRain3 == 0) return;
         float tSec = animNowMs / 1000.0f;
+        clearBatchCounts(rainBatchFloatCounts);
         for (int i = 0; i < count; i++) {
             boolean front = hash01(i * 37L + 991L) > 0.5f;
             if (front != frontPass) continue;
             int texIdx = i % 3;
-            int texture;
-            switch (texIdx) {
-                case 0:
-                    texture = texWeatherRain1;
-                    break;
-                case 1:
-                    texture = texWeatherRain2;
-                    break;
-                default:
-                    texture = texWeatherRain3;
-                    break;
-            }
             float rainW = RAIN_MDPI_W[texIdx] * density;
             float rainH = RAIN_MDPI_H[texIdx] * density;
             float xPos = hash01((long) (i * 17 + 503)) * width;
@@ -346,11 +362,20 @@ final class GrassWeatherRenderer {
             float cycleLen = rainH + height;
             float phase = hash01((long) (i * 23 + 713)) * cycleLen;
             float yPos = (phase + speed * tSec) % cycleLen - rainH;
-            spriteRenderer.drawRectUv(texture,
+            appendQuadToGroup(rainBatchVertices, rainBatchFloatCounts, texIdx,
                     xPos, yPos, xPos + rainW, yPos + rainH,
-                    0.0f, 0.0f,
-                    1.0f, 1.0f,
-                    1.0f);
+                    0.0f, 0.0f, 1.0f, 1.0f);
+        }
+        for (int i = 0; i < RAIN_BATCH_GROUP_COUNT; i++) {
+            int floatCount = rainBatchFloatCounts[i];
+            if (floatCount <= 0) {
+                continue;
+            }
+            int texture = rainTextureForIndex(i);
+            if (texture == 0) {
+                continue;
+            }
+            spriteRenderer.drawBatch(texture, rainBatchVertices[i], floatCount, 1.0f);
         }
     }
 
@@ -359,6 +384,7 @@ final class GrassWeatherRenderer {
             return;
         }
         float tSec = animNowMs / 1000.0f;
+        clearBatchCounts(snowBatchFloatCounts);
         for (int i = 0; i < count; i++) {
             boolean front = hash01(i * 41L + 577L) > 0.5f;
             if (front != frontPass) continue;
@@ -370,23 +396,114 @@ final class GrassWeatherRenderer {
             float phase = hash01((long) (i * 19 + 317)) * cycleLen;
             float yPos = (phase + speed * tSec) % cycleLen - size;
             int texIdx = i & 3;
-            int texture;
-            switch (texIdx) {
-                case 0:
-                    texture = texWeatherSnow1;
-                    break;
-                case 1:
-                    texture = texWeatherSnow2;
-                    break;
-                case 2:
-                    texture = texWeatherSnow3;
-                    break;
-                default:
-                    texture = texWeatherSnow4;
-                    break;
-            }
-            spriteRenderer.drawSprite(texture, xPos, yPos + size * 0.5f, size, 1.0f, false, 0.0f);
+            float cy = yPos + size * 0.5f;
+            float half = size * 0.5f;
+            appendQuadToGroup(snowBatchVertices, snowBatchFloatCounts, texIdx,
+                    xPos - half, cy - half, xPos + half, cy + half,
+                    0.0f, 1.0f, 1.0f, 0.0f);
         }
+        for (int i = 0; i < SNOW_BATCH_GROUP_COUNT; i++) {
+            int floatCount = snowBatchFloatCounts[i];
+            if (floatCount <= 0) {
+                continue;
+            }
+            int texture = snowTextureForIndex(i);
+            if (texture == 0) {
+                continue;
+            }
+            spriteRenderer.drawBatch(texture, snowBatchVertices[i], floatCount, 1.0f);
+        }
+    }
+
+    private int resolveRainCount(boolean intense) {
+        int base = WallpaperSettings.getGrassWeatherRainCount(25);
+        if (!intense) {
+            return Math.max(10, base / 2);
+        }
+        return base;
+    }
+
+    private int resolveSnowCount(boolean intense) {
+        int base = WallpaperSettings.getGrassWeatherSnowCount(25);
+        if (!intense) {
+            return Math.max(10, base / 2);
+        }
+        return base;
+    }
+
+    private int rainTextureForIndex(int idx) {
+        switch (idx) {
+            case 0:
+                return texWeatherRain1;
+            case 1:
+                return texWeatherRain2;
+            default:
+                return texWeatherRain3;
+        }
+    }
+
+    private int snowTextureForIndex(int idx) {
+        switch (idx) {
+            case 0:
+                return texWeatherSnow1;
+            case 1:
+                return texWeatherSnow2;
+            case 2:
+                return texWeatherSnow3;
+            default:
+                return texWeatherSnow4;
+        }
+    }
+
+    private void clearBatchCounts(int[] counts) {
+        for (int i = 0; i < counts.length; i++) {
+            counts[i] = 0;
+        }
+    }
+
+    private void appendQuadToGroup(float[][] groups, int[] counts, int group,
+            float left, float top, float right, float bottom,
+            float uLeft, float vTop, float uRight, float vBottom) {
+        ensureGroupCapacity(groups, counts, group, FLOATS_PER_QUAD);
+        float[] out = groups[group];
+        int cursor = counts[group];
+
+        cursor = putVertex(out, cursor, left, top, uLeft, vTop);
+        cursor = putVertex(out, cursor, left, bottom, uLeft, vBottom);
+        cursor = putVertex(out, cursor, right, bottom, uRight, vBottom);
+
+        cursor = putVertex(out, cursor, left, top, uLeft, vTop);
+        cursor = putVertex(out, cursor, right, bottom, uRight, vBottom);
+        cursor = putVertex(out, cursor, right, top, uRight, vTop);
+
+        counts[group] = cursor;
+    }
+
+    private int putVertex(float[] out, int cursor, float x, float y, float u, float v) {
+        out[cursor++] = x;
+        out[cursor++] = y;
+        out[cursor++] = u;
+        out[cursor++] = v;
+        return cursor;
+    }
+
+    private void ensureGroupCapacity(float[][] groups, int[] counts, int group, int appendFloats) {
+        int required = counts[group] + appendFloats;
+        float[] current = groups[group];
+        if (current != null && current.length >= required) {
+            return;
+        }
+
+        int newSize = current == null ? 2048 : current.length;
+        while (newSize < required) {
+            newSize *= 2;
+        }
+
+        float[] expanded = new float[newSize];
+        if (current != null && counts[group] > 0) {
+            System.arraycopy(current, 0, expanded, 0, counts[group]);
+        }
+        groups[group] = expanded;
     }
 
     private float drawLightningSweep(long animNowMs, GrassSpriteRenderer spriteRenderer) {

@@ -94,6 +94,10 @@ final class GrassDayNightSystem {
     }
 
     void updateAccurateWeights(long nowMs) {
+        if (lastWeightUpdateMs != 0L && (nowMs - lastWeightUpdateMs) < 60000L) {
+            return;
+        }
+
         updateLocationFromSystem(nowMs);
         TimeZone tz = TimeZone.getDefault();
         Calendar now = Calendar.getInstance(tz);
@@ -157,11 +161,6 @@ final class GrassDayNightSystem {
         double altitude = calc.computeSunAltitude(now);
         boolean rising = calc.isSunRising(now);
         lastSunAltitude = altitude;
-
-        long intervalMs = (altitude >= -6.0 && altitude <= 5.0) ? 30000L : 60000L;
-        if (lastWeightUpdateMs != 0L && (nowMs - lastWeightUpdateMs) < intervalMs) {
-            return;
-        }
 
         float wNight = 0.0f;
         float wSunrise = 0.0f;

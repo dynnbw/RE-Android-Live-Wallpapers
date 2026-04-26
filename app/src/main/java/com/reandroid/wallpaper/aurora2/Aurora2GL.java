@@ -27,18 +27,6 @@ public class Aurora2GL extends GLESScene {
     private final float[] mModelMatrix = new float[16];
     private final float[] mTempMatrix = new float[16];
     private final int[] mTextures = new int[Aurora2Scene.TEXTURE_COUNT];
-    private final float[] mQuadVertices = new float[] {
-            -0.5f, -0.5f, 0.0f,
-             0.5f, -0.5f, 0.0f,
-            -0.5f,  0.5f, 0.0f,
-             0.5f,  0.5f, 0.0f
-    };
-    private final float[] mQuadTexCoords = new float[] {
-            0.0f, 1.0f,
-            1.0f, 1.0f,
-            0.0f, 0.0f,
-            1.0f, 0.0f
-    };
 
     private FloatBuffer mQuadVertexBuffer;
     private FloatBuffer mQuadTexCoordBuffer;
@@ -170,15 +158,20 @@ public class Aurora2GL extends GLESScene {
     }
 
     private void initBuffers() {
-        mQuadVertexBuffer = ByteBuffer.allocateDirect(mQuadVertices.length * 4)
+        float[] quadVertices = RawResourceLoader.readRawFloatArray(mResources, R.raw.aurora2_quad_pos3);
+        float[] quadTexCoords = RawResourceLoader.readRawFloatArray(mResources, R.raw.aurora2_quad_tex);
+        if (quadVertices.length != 12 || quadTexCoords.length != 8) {
+            throw new IllegalStateException("Aurora2 quad data size mismatch");
+        }
+        mQuadVertexBuffer = ByteBuffer.allocateDirect(quadVertices.length * 4)
                 .order(ByteOrder.nativeOrder())
                 .asFloatBuffer();
-        mQuadVertexBuffer.put(mQuadVertices).position(0);
+        mQuadVertexBuffer.put(quadVertices).position(0);
 
-        mQuadTexCoordBuffer = ByteBuffer.allocateDirect(mQuadTexCoords.length * 4)
+        mQuadTexCoordBuffer = ByteBuffer.allocateDirect(quadTexCoords.length * 4)
                 .order(ByteOrder.nativeOrder())
                 .asFloatBuffer();
-        mQuadTexCoordBuffer.put(mQuadTexCoords).position(0);
+        mQuadTexCoordBuffer.put(quadTexCoords).position(0);
 
         float[] auroraVertices = new float[AURORA_STRIPS * 2 * 3];
         float[] auroraTexCoords = new float[AURORA_STRIPS * 2 * 2];

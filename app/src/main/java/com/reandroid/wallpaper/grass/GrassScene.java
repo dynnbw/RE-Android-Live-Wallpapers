@@ -24,6 +24,7 @@ import static com.reandroid.wallpaper.grass.GrassConstants.*;
 class GrassScene {
 
     private static final float ONE_MINUTE_DAY_FRACTION = 1.0f / 1440.0f;
+    private static final long CELESTIAL_CACHE_INTERVAL_MS = 60000L;
 
     // ---- Instance fields ----
     int mWidth, mHeight;
@@ -57,6 +58,8 @@ class GrassScene {
     // Accurate sun / eclipse state
     private long mLastSolarEclipseUpdateMs = 0L;
     private float mSolarEclipseWeight = 0.0f;
+    private long mLastCelestialComputeMs = 0L;
+    private MoonCalculator.MoonData mCachedMoonData;
 
     int mBladeCount = DEFAULT_BLADE_COUNT;
     int mVertexCount, mIndexCount;
@@ -86,26 +89,27 @@ class GrassScene {
 
     // Rebuild signal
     private boolean mBladeIndexRebuildNeeded = false;
+    private boolean mGrassGeometryDirty = true;
 
     // Cached SceneData (reused to avoid allocations)
     private final SceneData mSceneData = new SceneData();
 
     // Vulkan transient buffers (reused to avoid per-frame allocations)
-    private final float[] mVkSkyParams = new float[6];
-    private final float[] mVkMoonParams = new float[12];
-    private float[] mVkGrassVertices = new float[0];
-    private int mVkGrassFloatCount = 0;
-    private final float[] mVkSunVerts = new float[30];
-    private int mVkSunFloatCount = 0;
-    private final float[] mVkMoonVerts = new float[30];
-    private int mVkMoonFloatCount = 0;
-    private float[] mVkDandelionVerts = new float[0];
-    private int mVkDandelionFloatCount = 0;
-    private float[] mVkFireflyVerts = new float[0];
-    private int mVkFireflyFloatCount = 0;
-    private float[] mVkFireflyFlareVerts = new float[0];
-    private int mVkFireflyFlareFloatCount = 0;
-    private int mVkTempSpriteFloatCount = 0;
+    private final float[] mVKSkyParams = new float[6];
+    private final float[] mVKMoonParams = new float[12];
+    private float[] mVKGrassVertices = new float[0];
+    private int mVKGrassFloatCount = 0;
+    private final float[] mVKSunVerts = new float[30];
+    private int mVKSunFloatCount = 0;
+    private final float[] mVKMoonVerts = new float[30];
+    private int mVKMoonFloatCount = 0;
+    private float[] mVKDandelionVerts = new float[0];
+    private int mVKDandelionFloatCount = 0;
+    private float[] mVKFireflyVerts = new float[0];
+    private int mVKFireflyFloatCount = 0;
+    private float[] mVKFireflyFlareVerts = new float[0];
+    private int mVKFireflyFlareFloatCount = 0;
+    private int mVKTempSpriteFloatCount = 0;
 
     // ---- Constructor ----
     GrassScene(int width, int height) {
@@ -157,6 +161,7 @@ class GrassScene {
         Matrix.orthoM(mSceneData.projectionMatrix, 0, 0, width, height, 0, -1.0f, 1.0f);
         mBladeSystem.updateBladePositionsForViewport();
         syncBladeBuffersFromSystem(false);
+        mGrassGeometryDirty = true;
         initDandelions();
         initFireflies();
     }
@@ -222,10 +227,7 @@ class GrassScene {
 
             // Compute moon data once, reuse for sun/moon/eclipse rendering
             Calendar now = Calendar.getInstance(mDayNightSystem.getTimeZone());
-            Location location = mDayNightSystem.getLocation();
-            MoonCalculator.MoonData moonData = mDayNightSystem.getSunCalculator() != null
-                    ? MoonCalculator.compute(now, location.getLatitude(), location.getLongitude())
-                    : null;
+            MoonCalculator.MoonData moonData = getCachedMoonData(nowMs, now);
             updateSolarEclipseState(moonData);
 
             if (mSunEnabled) {
@@ -264,7 +266,7 @@ class GrassScene {
         float dayNightWind = GrassWeatherSystem.windDayNightScale(mWeatherCondition, isNight);
         float noiseNow = SystemClock.uptimeMillis() * 0.00004f
             * GrassWeatherSystem.windTimeScale(mWeatherCondition) * dayNightWind;
-        mBladeSystem.updateBladeAngles(noiseNow,
+        boolean bladeAnglesDirty = mBladeSystem.updateBladeAngles(noiseNow,
             GrassWeatherSystem.windAmplitudeScale(mWeatherCondition) * dayNightWind);
 
         boolean allowDandelion = GrassWeatherSystem.allowsDandelion(mWeatherCondition);
@@ -330,7 +332,9 @@ class GrassScene {
         mSceneData.dt = dt;
         mSceneData.animNowMs = animNowMs;
         mSceneData.bladeIndexRebuildNeeded = mBladeIndexRebuildNeeded;
+        mSceneData.grassGeometryDirty = mGrassGeometryDirty || bladeAnglesDirty;
         mBladeIndexRebuildNeeded = false;
+        mGrassGeometryDirty = false;
     }
 
     // ---- Private update helpers ----
@@ -339,6 +343,7 @@ class GrassScene {
         mVertexCount = mBladeSystem.getVertexCount();
         mIndexCount = mBladeSystem.getIndexCount();
         mRenderDataBuilder.setGeometry(mWidth, mHeight, mVertexCount, mIndexCount, mBladeSystem.getBladeSizes());
+        mGrassGeometryDirty = true;
         if (rebuildIndices) {
             mBladeIndexRebuildNeeded = true;
         }
@@ -724,6 +729,22 @@ class GrassScene {
         mLastSolarEclipseUpdateMs = nowMs;
     }
 
+    private MoonCalculator.MoonData getCachedMoonData(long nowMs, Calendar now) {
+        if (mDayNightSystem.getSunCalculator() == null) {
+            mCachedMoonData = null;
+            return null;
+        }
+
+        if (mCachedMoonData != null && (nowMs - mLastCelestialComputeMs) < CELESTIAL_CACHE_INTERVAL_MS) {
+            return mCachedMoonData;
+        }
+
+        Location location = mDayNightSystem.getLocation();
+        mCachedMoonData = MoonCalculator.compute(now, location.getLatitude(), location.getLongitude());
+        mLastCelestialComputeMs = nowMs;
+        return mCachedMoonData;
+    }
+
     // ---- Astronomical computation ----
 
     private SolarEclipse computeSolarEclipse(MoonCalculator.MoonData data, Calendar now) {
@@ -772,6 +793,10 @@ class GrassScene {
 
     float[] buildGrassVertexArray(SceneData sd) {
         return buildGrassVertexArrayForVK(sd);
+    }
+
+    boolean wasGrassVertexArrayUpdated() {
+        return mRenderDataBuilder.wasGrassVertexArrayUpdated();
     }
 
     int getGrassVertexCount() {

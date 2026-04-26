@@ -144,18 +144,11 @@ public class Aurora1GL extends GLESScene {
     }
 
     private void initBuffers() {
-        float[] vertices = new float[] {
-                -0.5f, -0.5f,
-                 0.5f, -0.5f,
-                -0.5f,  0.5f,
-                 0.5f,  0.5f
-        };
-        float[] texCoords = new float[] {
-                0.0f, 1.0f,
-                1.0f, 1.0f,
-                0.0f, 0.0f,
-                1.0f, 0.0f
-        };
+        float[] vertices = RawResourceLoader.readRawFloatArray(mResources, R.raw.aurora1_quad_pos);
+        float[] texCoords = RawResourceLoader.readRawFloatArray(mResources, R.raw.aurora1_quad_tex);
+        if (vertices.length != 8 || texCoords.length != 8) {
+            throw new IllegalStateException("Aurora1 quad data size mismatch");
+        }
         mVertexBuffer = ByteBuffer.allocateDirect(vertices.length * 4)
                 .order(ByteOrder.nativeOrder())
                 .asFloatBuffer();

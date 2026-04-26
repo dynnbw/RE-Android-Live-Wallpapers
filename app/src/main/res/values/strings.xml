@@ -72,11 +72,17 @@
 
     <!-- Wallpaper showing a galaxy -->
     <string name="wallpaper_galaxy">Galaxy</string>
+    <string name="wallpaper_nightsky">Night Sky</string>
+    <string name="wallpaper_microbes">Microbes</string>
     <string name="wallpaper_galaxy_vk">Galaxy Vulkan</string>
     <string name="wallpaper_galaxy_author">Google</string>
+    <string name="wallpaper_nightsky_author">念.</string>
+    <string name="wallpaper_microbes_author">Samsung</string>
     <string name="wallpaper_galaxy_desc">
         A galaxy made of slowly swirling stars.
     </string>
+    <string name="wallpaper_nightsky_desc">Real-star night sky with sidereal motion, sensor-based orientation, long-press time acceleration, and fading star trails.</string>
+    <string name="wallpaper_microbes_desc">Life under the microscope with touch-driven motion, feeding behavior, and organic particle animation.</string>
     <string name="wallpaper_galaxy_vk_desc">
         Galaxy wallpaper entry reserved for the Vulkan renderer.
     </string>
@@ -204,6 +210,8 @@
     <string name="settings_entry_ocean">Ocean Weather</string>
     <string name="settings_entry_galaxy4">Galaxy 4</string>
     <string name="settings_entry_galaxy">Galaxy</string>
+    <string name="settings_entry_nightsky">Night Sky</string>
+    <string name="settings_entry_microbes">Microbes</string>
     <string name="settings_entry_walkaround">See Through</string>
     <string name="settings_entry_phasebeam">Phase Beam</string>
     <string name="settings_entry_nebula">Nebula</string>
@@ -233,6 +241,10 @@
     <string name="pref_grass_enabled_summary">Show or hide grass effect</string>
     <string name="pref_grass_weather_enabled">Enable weather effects</string>
     <string name="pref_grass_weather_enabled_summary">Apply weather-based lighting, wind, and particle changes</string>
+    <string name="pref_grass_weather_rain_count">Rain particle count</string>
+    <string name="pref_grass_weather_rain_count_summary">Adjust rain particle count (10 to 1000)</string>
+    <string name="pref_grass_weather_snow_count">Snow particle count</string>
+    <string name="pref_grass_weather_snow_count_summary">Adjust snow particle count (10 to 1000)</string>
     <string name="pref_grass_count">Grass count</string>
     <string name="pref_grass_count_summary">Adjust the number of grass blades (affects performance)</string>
     <string name="pref_grass_height">Grass height</string>
@@ -265,6 +277,24 @@
     <string name="pref_open_wallpaper_picker_failed">Wallpaper preview not supported</string>
     <string name="pref_open_wallpaper_chooser">Open wallpaper chooser</string>
     <string name="pref_live_preview">Live preview</string>
+    <string name="pref_nightsky_preview_hint">Tip: Use in-app live preview above, then tap Open system preview to apply Night Sky.</string>
+    <string name="pref_nightsky_camera_focal">Camera focal length</string>
+    <string name="pref_nightsky_camera_focal_summary">Adjust lens focal length (mm); larger values zoom in more</string>
+    <string name="pref_nightsky_use_sensor">Use sensor orientation</string>
+    <string name="pref_nightsky_use_sensor_summary">When off, use home-screen page scrolling to rotate view (45° per page)</string>
+    <string name="pref_nightsky_auto_time_accel">Auto time acceleration</string>
+    <string name="pref_nightsky_auto_time_accel_summary">Continuously speed up sky time and keep star trails visible</string>
+    <string name="pref_nightsky_time_accel_speed">Acceleration speed</string>
+    <string name="pref_nightsky_time_accel_speed_summary">Select speed tier for auto/long-press acceleration</string>
+    <string name="pref_microbes_preview_hint">Tip: Touch and drag in preview to attract microbes, then tap Open system preview to apply.</string>
+    <string name="pref_microbes_lifecycle_speed">Lifecycle speed</string>
+    <string name="pref_microbes_lifecycle_speed_summary">Adjust metabolism, reproduction, and decay speed (%)</string>
+    <string name="pref_microbes_motion_activity">Motion activity</string>
+    <string name="pref_microbes_motion_activity_summary">Adjust natural roaming and swimming intensity (%)</string>
+    <string name="pref_microbes_color_mode">Color style</string>
+    <string name="pref_microbes_color_mode_summary">Switch between original RGB-only palette and current enhanced palette</string>
+    <string name="pref_microbes_color_mode_original">Original</string>
+    <string name="pref_microbes_color_mode_modern">New (current)</string>
     <string name="pref_nexus_background_title">Background</string>
     <string name="pref_nexus_custom_background_title">Custom background</string>
     <string name="pref_nexus_custom_background_summary">Select a background image</string>
@@ -345,6 +375,10 @@
     <string name="walkaround_permission_denied">Camera permission denied. Live camera preview will
         not work.</string>
     <string name="pref_weather_update_interval">Weather update interval</string>
+    <string name="pref_weather_refresh_now">Refresh weather now</string>
+    <string name="pref_weather_refresh_now_summary">Fetch latest weather data immediately</string>
+    <string name="pref_weather_refresh_now_success">Weather refresh completed</string>
+    <string name="pref_weather_refresh_now_failed">Weather refresh failed</string>
     <string name="pref_openweather_api_key_title">OpenWeather API key</string>
     <string name="pref_openweather_api_key_dialog">Enter OpenWeather API key</string>
     <string name="pref_openweather_api_key_summary_set">API key set</string>
@@ -352,6 +386,7 @@
     <string name="pref_weather_api_notice">Enable weather-based changes by setting the API key in
         Configuration.</string>
     <string name="pref_apply_api_title">Apply for API</string>
+        <string name="weather_toolbar_title">Weather settings</string>
     <string name="pref_musicvis_mesh_mode_title">Use legacy triangle strip mesh</string>
     <string name="pref_musicvis_mesh_mode_summary">On: original RS mesh/primitive (triangle strip).
         Off: current line mesh.</string>
@@ -491,9 +526,11 @@
     <string name="about_official_website_url">https://github.com/zyfxv/android-live-wallpapers</string>
     <string name="about_email">Email</string>
     <string name="about_email_address">3471348199@qq.com</string>
+    <string name="about_email_address_alt">xujiekai508@gmail.com</string>
     <string name="about_qq">QQ Group</string>
     <string name="about_qq_number">3471348199</string>
     <string name="about_bilibili">Bilibili</string>
+    <string name="about_bilibili_url">https://space.bilibili.com/470023065</string>
     <string name="about_feedback">Feedback</string>
     <string name="about_feedback_contact">For feedback, please use the above contact information.</string>
     <string name="about_thanks">Acknowledgements</string>

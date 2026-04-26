@@ -54,6 +54,13 @@ import static com.reandroid.wallpaper.grass.GrassConstants.SUN_PHOTOSPHERE_SCALE
 public class GrassGL extends GLESScene {
 
     private static final String TAG = "GrassGL";
+    private static final int LEGACY_FIREFLY_ALPHA_BIN_COUNT = 8;
+    private static final int LEGACY_BATCH_GROUP_DANDELION = 0;
+    private static final int LEGACY_BATCH_GROUP_FIREFLY1_START = 1;
+    private static final int LEGACY_BATCH_GROUP_FIREFLY2_START = LEGACY_BATCH_GROUP_FIREFLY1_START + LEGACY_FIREFLY_ALPHA_BIN_COUNT;
+    private static final int LEGACY_BATCH_GROUP_COUNT = LEGACY_BATCH_GROUP_FIREFLY2_START + LEGACY_FIREFLY_ALPHA_BIN_COUNT;
+    private static final int LEGACY_FLOATS_PER_VERTEX = 4;
+    private static final int LEGACY_FLOATS_PER_QUAD = 6 * LEGACY_FLOATS_PER_VERTEX;
 
     // ---- Scene (non-GL logic) ----
     private final GrassScene mScene;
@@ -164,6 +171,8 @@ public class GrassGL extends GLESScene {
     private ShortBuffer mGrassIndexBuffer;
     private FloatBuffer mMoonBuffer;
     private final float[] mQuadVerts = new float[16];
+    private final float[][] mLegacyBatchVertices = new float[LEGACY_BATCH_GROUP_COUNT][];
+    private final int[] mLegacyBatchFloatCounts = new int[LEGACY_BATCH_GROUP_COUNT];
 
     // Performance and diagnostics
     private static final long PERF_SYNC_INTERVAL_MS = 1000L;
@@ -881,8 +890,10 @@ public class GrassGL extends GLESScene {
             return;
         }
 
-        mGrassVertexBuffer.clear();
-        mGrassVertexBuffer.put(sharedVerts, 0, floatCount);
+        if (mScene.wasGrassVertexArrayUpdated()) {
+            mGrassVertexBuffer.clear();
+            mGrassVertexBuffer.put(sharedVerts, 0, floatCount);
+        }
         mGrassVertexBuffer.position(0);
 
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
@@ -957,11 +968,15 @@ public class GrassGL extends GLESScene {
         setBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
         GLES20.glUniformMatrix4fv(mBgMatrixHandle, 1, false, sd.projectionMatrix, 0);
 
+        clearLegacyBatchCounts();
+
         long animNowMs = sd.legacyNow;
         int legacyType = sd.legacyType;
 
         drawLegacyParticleSet(sd.legacyNormal, legacyType, false, animNowMs);
         drawLegacyParticleSet(sd.legacyExtras, legacyType, true, animNowMs);
+
+        flushLegacyBatches();
     }
 
     private void drawLegacyParticleSet(LegacyParticle[] particles, int legacyType,
@@ -1019,11 +1034,130 @@ public class GrassGL extends GLESScene {
             float flicker = 0.5f + 0.5f * (float) Math.sin((animNowMs + index * 1234) * 0.002);
             float alpha = 0.2f + 0.8f * flicker;
             float size = (isExtras ? 48.0f : 72.0f) * (0.8f + 0.4f * flicker);
-            mSpriteRenderer.drawSprite(tex, p.originX, p.originY, size, alpha, false, 0.0f);
+            int alphaBin = alphaBinForLegacy(alpha);
+            int group = (tex == mTexFirefly2)
+                    ? (LEGACY_BATCH_GROUP_FIREFLY2_START + alphaBin)
+                    : (LEGACY_BATCH_GROUP_FIREFLY1_START + alphaBin);
+            appendLegacySpriteQuad(group, p.originX, p.originY, size, false, 0.0f);
         } else {
             float size = isExtras ? 64.0f : 96.0f;
-            mSpriteRenderer.drawSprite(mTexDandelion, p.originX, p.originY, size, 0.9f, true, p.angle);
+            appendLegacySpriteQuad(LEGACY_BATCH_GROUP_DANDELION, p.originX, p.originY, size, true, p.angle);
         }
+    }
+
+    private void clearLegacyBatchCounts() {
+        for (int i = 0; i < mLegacyBatchFloatCounts.length; i++) {
+            mLegacyBatchFloatCounts[i] = 0;
+        }
+    }
+
+    private void flushLegacyBatches() {
+        if (mTexDandelion != 0 && mLegacyBatchFloatCounts[LEGACY_BATCH_GROUP_DANDELION] > 0) {
+            mSpriteRenderer.drawBatch(
+                    mTexDandelion,
+                    mLegacyBatchVertices[LEGACY_BATCH_GROUP_DANDELION],
+                    mLegacyBatchFloatCounts[LEGACY_BATCH_GROUP_DANDELION],
+                    0.9f);
+        }
+
+        if (mTexFirefly1 != 0) {
+            for (int bin = 0; bin < LEGACY_FIREFLY_ALPHA_BIN_COUNT; bin++) {
+                int group = LEGACY_BATCH_GROUP_FIREFLY1_START + bin;
+                int floatCount = mLegacyBatchFloatCounts[group];
+                if (floatCount <= 0) {
+                    continue;
+                }
+                mSpriteRenderer.drawBatch(mTexFirefly1, mLegacyBatchVertices[group], floatCount, alphaForLegacyBin(bin));
+            }
+        }
+
+        if (mTexFirefly2 != 0) {
+            for (int bin = 0; bin < LEGACY_FIREFLY_ALPHA_BIN_COUNT; bin++) {
+                int group = LEGACY_BATCH_GROUP_FIREFLY2_START + bin;
+                int floatCount = mLegacyBatchFloatCounts[group];
+                if (floatCount <= 0) {
+                    continue;
+                }
+                mSpriteRenderer.drawBatch(mTexFirefly2, mLegacyBatchVertices[group], floatCount, alphaForLegacyBin(bin));
+            }
+        }
+    }
+
+    private int alphaBinForLegacy(float alpha) {
+        int idx = (int) (alpha * (LEGACY_FIREFLY_ALPHA_BIN_COUNT - 1) + 0.5f);
+        if (idx < 0) {
+            return 0;
+        }
+        if (idx >= LEGACY_FIREFLY_ALPHA_BIN_COUNT) {
+            return LEGACY_FIREFLY_ALPHA_BIN_COUNT - 1;
+        }
+        return idx;
+    }
+
+    private float alphaForLegacyBin(int alphaBin) {
+        if (LEGACY_FIREFLY_ALPHA_BIN_COUNT <= 1) {
+            return 1.0f;
+        }
+        return alphaBin / (float) (LEGACY_FIREFLY_ALPHA_BIN_COUNT - 1);
+    }
+
+    private void appendLegacySpriteQuad(int group, float cx, float cy, float size, boolean flipV, float rotationDeg) {
+        ensureLegacyGroupCapacity(group, LEGACY_FLOATS_PER_QUAD);
+        float[] out = mLegacyBatchVertices[group];
+        int cursor = mLegacyBatchFloatCounts[group];
+
+        float half = size * 0.5f;
+        float rad = (float) Math.toRadians(rotationDeg);
+        float cos = (float) Math.cos(rad);
+        float sin = (float) Math.sin(rad);
+
+        float x0 = (-half * cos) - (-half * sin) + cx;
+        float y0 = (-half * sin) + (-half * cos) + cy;
+        float x1 = (-half * cos) - (half * sin) + cx;
+        float y1 = (-half * sin) + (half * cos) + cy;
+        float x2 = (half * cos) - (half * sin) + cx;
+        float y2 = (half * sin) + (half * cos) + cy;
+        float x3 = (half * cos) - (-half * sin) + cx;
+        float y3 = (half * sin) + (-half * cos) + cy;
+
+        float v0 = flipV ? 0.0f : 1.0f;
+        float v1 = flipV ? 1.0f : 0.0f;
+
+        cursor = putLegacyBatchVertex(out, cursor, x0, y0, 0.0f, v0);
+        cursor = putLegacyBatchVertex(out, cursor, x1, y1, 0.0f, v1);
+        cursor = putLegacyBatchVertex(out, cursor, x2, y2, 1.0f, v1);
+        cursor = putLegacyBatchVertex(out, cursor, x0, y0, 0.0f, v0);
+        cursor = putLegacyBatchVertex(out, cursor, x2, y2, 1.0f, v1);
+        cursor = putLegacyBatchVertex(out, cursor, x3, y3, 1.0f, v0);
+
+        mLegacyBatchFloatCounts[group] = cursor;
+    }
+
+    private int putLegacyBatchVertex(float[] out, int cursor, float x, float y, float u, float v) {
+        out[cursor++] = x;
+        out[cursor++] = y;
+        out[cursor++] = u;
+        out[cursor++] = v;
+        return cursor;
+    }
+
+    private void ensureLegacyGroupCapacity(int group, int appendFloats) {
+        int required = mLegacyBatchFloatCounts[group] + appendFloats;
+        float[] current = mLegacyBatchVertices[group];
+        if (current != null && current.length >= required) {
+            return;
+        }
+
+        int newSize = current == null ? 2048 : current.length;
+        while (newSize < required) {
+            newSize *= 2;
+        }
+
+        float[] expanded = new float[newSize];
+        if (current != null && mLegacyBatchFloatCounts[group] > 0) {
+            System.arraycopy(current, 0, expanded, 0, mLegacyBatchFloatCounts[group]);
+        }
+        mLegacyBatchVertices[group] = expanded;
     }
 
     private void syncPerfSettingsIfNeeded(long nowMs) {
