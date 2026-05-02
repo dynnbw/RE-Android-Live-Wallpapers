@@ -1,0 +1,532 @@
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+
+<string name="pref_grass_legacy_particles">ক্লাসিক ড্যান্ডেলিয়ন এবং জোনাকি</string>
+<string name="pref_grass_legacy_particles_summary">এমটিকে-র ক্লাসিক ড্যান্ডেলিয়ন এবং জোনাকির ভিজুয়াল ইফেক্টে স্যুইচ করুন</string>
+    <!-- অ্যাপ্লিকেশনের নাম -->
+    <string name="wallpapers">আরইঅ্যানড্রয়েড লাইভ ওয়ালপেপার</string>
+    <string name="app_name">আরইঅ্যানড্রয়েড লাইভ ওয়ালপেপার</string>
+
+
+    <!-- ফ্লুরোসেন্স ওয়ালপেপার -->
+    <string name="wallpaper_flsorescence">ফ্লুরোসেন্স</string>
+    <string name="wallpaper_flsorescence_author">念.</string>
+    <string name="wallpaper_flsorescence_desc">জ্বলজ্বলে বিন্দুগুলো পর্দা জুড়ে মসৃণভাবে চলে, যেন প্রাণবন্ত।</string>
+    <string name="pref_flsorescence_shape">বিন্দুর আকৃতি</string>
+    <string name="pref_flsorescence_shape_summary">প্রতিটি বিন্দুর আকৃতি পরিবর্তন করুন</string>
+    <string name="pref_flsorescence_color">বিন্দুর রঙের স্কিম</string>
+    <string name="pref_flsorescence_color_summary">রঙের স্কিম পরিবর্তন করুন</string>
+    <string name="pref_flsorescence_scale">বিন্দুর স্কেল</string>
+    <string name="pref_flsorescence_scale_summary">প্রতিটি বিন্দুর আকার পরিবর্তন করুন</string>
+    <string name="pref_flsorescence_speed">গতির বেগ</string>
+    <string name="pref_flsorescence_speed_summary">গতির বেগ পরিবর্তন করুন</string>
+    <string name="pref_flsorescence_amount">বিন্দুর সংখ্যা</string>
+    <string name="pref_flsorescence_amount_summary">বিন্দুর সংখ্যা পরিবর্তন করুন</string>
+    <string name="pref_flsorescence_pattern">গতির প্যাটার্ন</string>
+    <string name="pref_flsorescence_pattern_summary">গতির প্যাটার্ন পরিবর্তন করুন</string>
+
+    <!-- ওয়ালপেপার -->
+    <skip />
+
+    <!-- ক্যামেরা প্রিভিউ দেখানো ওয়ালপেপার -->
+    <string name="wallpaper_walkaround">স্বচ্ছ দৃশ্য</string>
+    <string name="wallpaper_walkaround_author">গুগল</string>
+    <string name="wallpaper_walkaround_desc">
+        আপনার ফোনের ভেতর দিয়ে দেখুন এবং দুর্ঘটনার ঝুঁকি ছাড়াই ঘুরে বেড়ান।
+    </string>
+
+    <!-- ঘাস ও আকাশের ওয়ালপেপার -->
+    <string name="wallpaper_grass">ঘাস</string>
+    <string name="wallpaper_grass_vk">ঘাস ভালকান</string>
+    <string name="wallpaper_grass_author">গুগল</string>
+    <string name="wallpaper_grass_desc">
+        ঘাসের ফলক দিন বা রাতের আকাশের সামনে মৃদুভাবে দুলে ওঠে।
+    </string>
+    <string name="wallpaper_grass_vk_desc">ভালকান রেন্ডারারের জন্য সংরক্ষিত ঘাস ওয়ালপেপার এন্ট্রি।</string>
+
+    <string name="wallpaper_aurora1">অরোরা</string>
+    <string name="wallpaper_aurora1_author">টিএটি</string>
+    <string name="wallpaper_aurora1_desc">স্তরযুক্ত নর্দান লাইট তারা ভরা আকাশে ভাসে এবং স্পর্শে সাড়া দেয়।</string>
+    <string name="wallpaper_aurora2">অরোরা ২</string>
+    <string name="wallpaper_aurora2_author">এইচইউ১</string>
+    <string name="wallpaper_aurora2_desc">অ্যানিমেটেড অরোরা পর্দা থিমযুক্ত রাতের ল্যান্ডস্কেপের উপর টিমটিমে তারা এবং উল্কাপাত সহ ভাসে।</string>
+
+    <!-- গ্যালাক্সি ওয়ালপেপার -->
+    <string name="wallpaper_galaxy">গ্যালাক্সি</string>
+    <string name="wallpaper_nightsky">রাতের আকাশ</string>
+    <string name="wallpaper_microbes">অণুজীব</string>
+    <string name="wallpaper_galaxy_vk">গ্যালাক্সি ভালকান</string>
+    <string name="wallpaper_galaxy_author">গুগল</string>
+    <string name="wallpaper_nightsky_author">念.</string>
+    <string name="wallpaper_microbes_author">স্যামসাং</string>
+    <string name="wallpaper_galaxy_desc">
+        ধীরে ধীরে ঘূর্ণায়মান তারা দিয়ে তৈরি একটি গ্যালাক্সি।
+    </string>
+    <string name="wallpaper_nightsky_desc">বাস্তব-তারা রাতের আকাশ যার সাথে পার্শ্বীয় গতি, সেন্সর-ভিত্তিক ওরিয়েন্টেশন, দীর্ঘ-চাপ সময় ত্বরণ এবং ম্লান হওয়া তারার পথ রয়েছে।</string>
+    <string name="wallpaper_microbes_desc">স্পর্শ-চালিত গতি, খাদ্য গ্রহণের আচরণ এবং জৈব কণা অ্যানিমেশন সহ মাইক্রোস্কোপের নিচে জীবন।</string>
+    <string name="wallpaper_galaxy_vk_desc">
+        ভালকান রেন্ডারারের জন্য সংরক্ষিত গ্যালাক্সি ওয়ালপেপার এন্ট্রি।
+    </string>
+
+    <!-- গ্যালাক্সি ৪ ওয়ালপেপার -->
+    <string name="wallpaper_galaxy4">গ্যালাক্সি ৪</string>
+    <string name="wallpaper_galaxy4_author">গুগল</string>
+    <string name="wallpaper_description_galaxy4">
+        ঘূর্ণায়মান মেঘ এবং টিমটিমে তারা সহ একটি সুন্দর গ্যালাক্সি।
+    </string>
+
+    <!-- জলে ভাসমান পাতার ওয়ালপেপার -->
+    <string name="wallpaper_fall">জলপাতা</string>
+    <string name="wallpaper_fall_vk">জলপাতা ভালকান</string>
+    <string name="wallpaper_fall_author">গুগল</string>
+    <string name="wallpaper_fall_desc">
+         শরতের পাতা পড়ে \n নীচের ঢেউ খেলানো পুকুরে: \n তরল পটভূমি জেন
+    </string>
+    <string name="wallpaper_fall_vk_desc">ভালকান রেন্ডারারের জন্য সংরক্ষিত জলপাতা ওয়ালপেপার এন্ট্রি।</string>
+
+    <!-- বন্য বিশ্ব ওয়ালপেপার -->
+    <string name="wallpaper_wildworld">বন্য বিশ্ব</string>
+    <string name="wallpaper_wildworld_author">মিডিয়াটেক</string>
+    <string name="wallpaper_wildworld_desc">
+        স্তরযুক্ত গতি এবং কৌতুকপূর্ণ প্রাণী সহ একটি প্রাগৈতিহাসিক ল্যান্ডস্কেপ।
+    </string>
+
+    <!-- আতশবাজি ওয়ালপেপার -->
+    <string name="wallpaper_fireworks">আতশবাজি</string>
+    <string name="wallpaper_fireworks_author">মিডিয়াটেক</string>
+    <string name="wallpaper_fireworks_desc">
+        রাতের আকাশে রঙিন আতশবাজি ফুটে ওঠে।
+    </string>
+
+    <!-- বায়ুকল ওয়ালপেপার -->
+    <string name="wallpaper_windmill">বায়ুকল</string>
+    <string name="wallpaper_windmill_author">মিডিয়াটেক</string>
+    <string name="wallpaper_windmill_desc">গতিশীল আবহাওয়ার অধীনে অ্যানিমেটেড বায়ুকল সহ ঢেউ খেলানো পাহাড়।</string>
+
+    <!-- সমুদ্রের আবহাওয়া ওয়ালপেপার -->
+    <string name="wallpaper_ocean">সমুদ্র আবহাওয়া</string>
+    <string name="wallpaper_ocean_author">মিডিয়াটেক</string>
+    <string name="wallpaper_ocean_desc">বাস্তব-বিশ্বের অবস্থার সাথে পরিবর্তিত তরঙ্গ এবং আকাশ।</string>
+
+    <!-- গভীর সমুদ্র ওয়ালপেপার -->
+    <string name="wallpaper_deepsea">গভীর সমুদ্র</string>
+    <string name="wallpaper_deepsea_author">স্যামসাং</string>
+    <string name="wallpaper_deepsea_desc">স্বচ্ছ জেলিফিশ গভীর সমুদ্রে সাঁতার কাটে।</string>
+
+    <!-- পোলার ঘড়ি ওয়ালপেপার -->
+    <string name="wallpaper_clock">পোলার ঘড়ি</string>
+    <string name="wallpaper_clock_author">গুগল</string>
+    <string name="wallpaper_clock_desc">
+        তারিখ এবং সময় ঘড়ির কাঁটার দিকে চাপ হিসাবে উপস্থাপন করে: মাস, দিন, ঘন্টা, মিনিট এবং সেকেন্ড।
+    </string>
+
+    <!-- নেক্সাস ওয়ালপেপার -->
+    <string name="wallpaper_nexus">নেক্সাস</string>
+    <string name="wallpaper_nexus_author">গুগল</string>
+    <string name="wallpaper_nexus_desc">
+        নিউরাল নেটওয়ার্কের ভিতরে একটি ঝলক।
+    </string>
+
+    <!-- নয়েজ ফিল্ড ওয়ালপেপার -->
+    <string name="wallpaper_noisefield">নয়েজ ফিল্ড</string>
+    <string name="wallpaper_noisefield_author">গুগল</string>
+    <string name="wallpaper_noisefield_desc">একটি নরম গ্রেডিয়েন্টের উপর ভাসমান উজ্জ্বল বুদবুদের একটি প্রবাহিত ক্ষেত্র।</string>
+    <string name="wallpaper_nebula">নীহারিকা</string>
+    <string name="wallpaper_nebula_author">念.</string>
+    <string name="wallpaper_nebula_desc">পদার্থবিদ্যা-অনুপ্রাণিত ওরিয়ন নীহারিকা সম্পূর্ণরূপে সূত্র থেকে ভলিউম রেন্ডার করা।</string>
+
+    <!-- মিউজিক ভিজুয়ালাইজেশন ওয়ালপেপার -->
+    <string name="musicvis_author">গুগল</string>
+    <string name="wallpaper_vis2">ওয়েভফর্ম</string>
+    <string name="wallpaper_vis3">স্পেকট্রাম</string>
+    <string name="wallpaper_vis4">ভিইউ মিটার</string>
+    <string name="wallpaper_vis5">একাধিক</string>
+    <string name="vis2_desc">বর্তমানে বাজানো যেকোনো মিউজিক ট্র্যাকের শব্দ তরঙ্গ আঁকে।</string>
+    <string name="vis3_desc">বর্তমানে বাজানো যেকোনো মিউজিক ট্র্যাকের ফ্রিকোয়েন্সি স্পেকট্রাম দেখায়।</string>
+    <string name="vis4_desc">একটি অ্যানালগ সাউন্ড মিটার অনুকরণ করে।</string>
+    <string name="vis5_desc">সমস্ত মিউজিক ভিজুয়ালাইজেশন একসাথে, ৩ডি-তে ধীরে ধীরে ঘুরছে।</string>
+
+    <!-- পোলার ঘড়ি: সেটিংস অ্যাক্টিভিটির শিরোনাম -->
+    <string name="clock_settings">পোলার ঘড়ি সেটিংস</string>
+    <string name="show_seconds">সেকেন্ড দেখান</string>
+    <string name="variable_line_width">রিংয়ের প্রস্থ পরিবর্তন করুন</string>
+    <string name="palette">রঙের প্যালেট</string>
+
+    <!-- প্যালেটের নাম -->
+    <string name="palette_gray">লোহা</string>
+    <string name="palette_violet">মধ্যরাত</string>
+    <string name="palette_matrix">সবুজ পর্দা</string>
+    <string name="palette_white_c">মেরু ভালুক (গতিশীল)</string>
+    <string name="palette_black_c">ব্ল্যাক হোল (গতিশীল)</string>
+    <string name="palette_halloween">কুমড়ো পাই</string>
+    <string name="palette_zenburn">এলিয়েন ফ্রুট সালাদ</string>
+    <string name="palette_oceanic">নীল লেজার</string>
+
+    <!-- সেটিংস ইউআই -->
+    <string name="settings_title">লাইভ ওয়ালপেপার সেটিংস</string>
+    <string name="settings_entry_config">কনফিগারেশন</string>
+    <string name="settings_entry_fall">জলের পৃষ্ঠের পাতা</string>
+    <string name="settings_entry_grass">আকাশ ও ঘাস</string>
+    <string name="settings_entry_aurora1">অরোরা</string>
+    <string name="settings_entry_aurora2">অরোরা ২</string>
+    <string name="settings_entry_wildworld">বন্য বিশ্ব</string>
+    <string name="settings_entry_fireworks">আতশবাজি</string>
+    <string name="settings_entry_windmill">বায়ুকল</string>
+    <string name="settings_entry_ocean">সমুদ্র আবহাওয়া</string>
+    <string name="settings_entry_galaxy4">গ্যালাক্সি ৪</string>
+    <string name="settings_entry_galaxy">গ্যালাক্সি</string>
+    <string name="settings_entry_nightsky">রাতের আকাশ</string>
+    <string name="settings_entry_microbes">অণুজীব</string>
+    <string name="settings_entry_walkaround">স্বচ্ছ দৃশ্য</string>
+    <string name="settings_entry_phasebeam">ফেজ বিম</string>
+    <string name="settings_entry_nebula">নীহারিকা</string>
+    <string name="settings_entry_clock">পোলার ঘড়ি</string>
+    <string name="settings_entry_noisefield">নয়েজ ফিল্ড</string>
+    <string name="settings_entry_vis2">ওয়েভফর্ম</string>
+    <string name="settings_entry_vis3">স্পেকট্রাম</string>
+    <string name="settings_entry_vis4">ভিইউ মিটার</string>
+    <string name="settings_entry_vis5">একাধিক</string>
+    <string name="settings_entry_magicsmoke">জাদুকরী ধোঁয়া</string>
+    <string name="settings_entry_holospiral">হলো সর্পিল</string>
+    <string name="settings_entry_bluesea">নীল সমুদ্র</string>
+    <string name="settings_entry_deepsea">গভীর সমুদ্র</string>
+
+    <string name="pref_fall_leaf_count">পাতার সংখ্যা</string>
+    <string name="pref_fall_leaf_count_summary">পতিত পাতার সংখ্যা সামঞ্জস্য করুন (কর্মক্ষমতা প্রভাবিত করে)</string>
+    <string name="pref_fall_green_leaves">সবুজ পাতা</string>
+    <string name="pref_fall_green_leaves_summary">সক্ষম থাকলে, কিছু পাতা সবুজ হবে</string>
+    <string name="pref_fall_max_drops">সর্বোচ্চ ঢেউ ফোঁটা</string>
+    <string name="pref_fall_max_drops_summary">পর্দায় একসাথে প্রদর্শিত জলের ঢেউয়ের সর্বোচ্চ সংখ্যা (কর্মক্ষমতা প্রভাবিত করে)</string>
+    <string name="pref_fall_precise_calc">সুনির্দিষ্ট গণনা</string>
+    <string name="pref_fall_precise_calc_summary">পদার্থবিদ্যা-অনুপ্রাণিত ঢেউ সিমুলেশন ব্যবহার করুন (তরঙ্গ প্রসারণ এবং ক্ষয়)</string>
+
+    <string name="pref_grass_enabled">ঘাস দেখান</string>
+    <string name="pref_grass_enabled_summary">ঘাসের প্রভাব দেখান বা লুকান</string>
+    <string name="pref_grass_weather_enabled">আবহাওয়ার প্রভাব সক্ষম করুন</string>
+    <string name="pref_grass_weather_enabled_summary">আবহাওয়া-ভিত্তিক আলো, বায়ু এবং কণা পরিবর্তন প্রয়োগ করুন</string>
+    <string name="pref_grass_weather_rain_count">বৃষ্টি কণার সংখ্যা</string>
+    <string name="pref_grass_weather_rain_count_summary">বৃষ্টি কণার সংখ্যা সামঞ্জস্য করুন (১০ থেকে ১০০০)</string>
+    <string name="pref_grass_weather_snow_count">তুষার কণার সংখ্যা</string>
+    <string name="pref_grass_weather_snow_count_summary">তুষার কণার সংখ্যা সামঞ্জস্য করুন (১০ থেকে ১০০০)</string>
+    <string name="pref_grass_count">ঘাসের সংখ্যা</string>
+    <string name="pref_grass_count_summary">ঘাসের ফলকের সংখ্যা সামঞ্জস্য করুন (কর্মক্ষমতা প্রভাবিত করে)</string>
+    <string name="pref_grass_height">ঘাসের উচ্চতা</string>
+    <string name="pref_grass_height_summary">ঘাসের উচ্চতা সামঞ্জস্য করুন</string>
+    <string name="pref_grass_width">ঘাসের প্রস্থ</string>
+    <string name="pref_grass_width_summary">ঘাসের প্রস্থ সামঞ্জস্য করুন</string>
+    <string name="pref_grass_color">ঘাসের রঙ</string>
+    <string name="pref_grass_color_summary">বিভিন্ন ভিজুয়াল ইফেক্টের জন্য ঘাসের রঙ সামঞ্জস্য করুন</string>
+    <string name="pref_grass_hardness">ঘাসের কোমলতা</string>
+    <string name="pref_grass_hardness_summary">ফলকের কোমলতা সামঞ্জস্য করুন (উচ্চ মান বেশি বাঁকায়)</string>
+    <string name="pref_grass_night_invert">রাতের আকাশ উল্টান</string>
+    <string name="pref_grass_night_desaturate">রাতে ঘাসের রঙ হালকা করুন</string>
+    <string name="pref_grass_accurate_sun">সুনির্দিষ্ট গণনা (কর্মক্ষমতা প্রভাবিত করে)</string>
+    <string name="pref_grass_accurate_sun_summary">বাস্তব সময় এবং ভৌগোলিক অবস্থানের ভিত্তিতে সূর্য ও চাঁদের অবস্থান গণনা করুন (কর্মক্ষমতা প্রভাবিত করে)</string>
+    <string name="pref_grass_sun">সূর্য দেখান</string>
+    <string name="pref_grass_sun_summary">সূর্য দেখান বা লুকান</string>
+    <string name="pref_grass_moon">চাঁদ দেখান (সঠিক সূর্যোদয়/সূর্যাস্ত প্রয়োজন)</string>
+    <string name="pref_grass_moon_summary">বাস্তবসম্মত চন্দ্র কলা সহ চাঁদ দেখান বা লুকান</string>
+    <string name="pref_grass_dandelion">ড্যান্ডেলিয়ন দেখান (দিন)</string>
+    <string name="pref_grass_dandelion_summary">দিনের বেলা ভাসমান ড্যান্ডেলিয়ন প্রদর্শন করুন</string>
+    <string name="pref_grass_firefly">জোনাকি দেখান (রাত)</string>
+    <string name="pref_grass_firefly_summary">রাতের বেলা উড়ন্ত জোনাকি প্রদর্শন করুন</string>
+    <string name="pref_grass_dandelion_count">ড্যান্ডেলিয়নের সংখ্যা</string>
+    <string name="pref_grass_firefly_count">জোনাকির সংখ্যা</string>
+    <string name="pref_grass_star_count">তারার সংখ্যা</string>
+    <string name="pref_grass_star_count_summary">তারার সংখ্যা সামঞ্জস্য করুন (০ থেকে ১০০০০)</string>
+    <string name="pref_grass_dandelion_speed">ড্যান্ডেলিয়নের গতি</string>
+    <string name="pref_open_wallpaper_picker">সিস্টেম প্রিভিউ খুলুন</string>
+    <string name="pref_open_wallpaper_picker_failed">ওয়ালপেপার প্রিভিউ সমর্থিত নয়</string>
+    <string name="pref_open_wallpaper_chooser">ওয়ালপেপার নির্বাচক খুলুন</string>
+    <string name="pref_live_preview">লাইভ প্রিভিউ</string>
+    <string name="pref_nightsky_preview_hint">টিপ: উপরের অ্যাপে লাইভ প্রিভিউ ব্যবহার করুন, তারপর প্রযোজ্য করতে "সিস্টেম প্রিভিউ খুলুন" এ ট্যাপ করুন।</string>
+    <string name="pref_nightsky_camera_focal">ক্যামেরা ফোকাল দৈর্ঘ্য</string>
+    <string name="pref_nightsky_camera_focal_summary">লেন্স ফোকাল দৈর্ঘ্য (মিমি) সামঞ্জস্য করুন; বড় মান বেশি জুম করে</string>
+    <string name="pref_nightsky_use_sensor">সেন্সর ওরিয়েন্টেশন ব্যবহার করুন</string>
+    <string name="pref_nightsky_use_sensor_summary">বন্ধ থাকলে, দৃশ্য ঘোরাতে হোম-স্ক্রিন পেজ স্ক্রোলিং ব্যবহার করুন (প্রতি পৃষ্ঠায় ৪৫°)</string>
+    <string name="pref_nightsky_auto_time_accel">স্বয়ংক্রিয় সময় ত্বরণ</string>
+    <string name="pref_nightsky_auto_time_accel_summary">আকাশের সময় ক্রমাগত দ্রুত করুন এবং তারার পথ দৃশ্যমান রাখুন</string>
+    <string name="pref_nightsky_time_accel_speed">ত্বরণ গতি</string>
+    <string name="pref_nightsky_time_accel_speed_summary">স্বয়ংক্রিয়/দীর্ঘ-চাপ ত্বরণের জন্য গতি স্তর নির্বাচন করুন</string>
+    <string name="pref_microbes_preview_hint">টিপ: প্রিভিউতে অণুজীব আকর্ষণ করতে স্পর্শ করে টেনে আনুন, তারপর প্রযোজ্য করতে "সিস্টেম প্রিভিউ খুলুন" এ ট্যাপ করুন।</string>
+    <string name="pref_microbes_lifecycle_speed">জীবনচক্রের গতি</string>
+    <string name="pref_microbes_lifecycle_speed_summary">মেটাবলিজম, প্রজনন এবং ক্ষয় গতি সামঞ্জস্য করুন (%)</string>
+    <string name="pref_microbes_motion_activity">গতি কার্যকলাপ</string>
+    <string name="pref_microbes_motion_activity_summary">প্রাকৃতিক বিচরণ এবং সাঁতারের তীব্রতা সামঞ্জস্য করুন (%)</string>
+    <string name="pref_microbes_color_mode">রঙের শৈলী</string>
+    <string name="pref_microbes_color_mode_summary">মূল শুধুমাত্র আরজিবি প্যালেট এবং বর্তমান উন্নত প্যালেটের মধ্যে স্যুইচ করুন</string>
+    <string name="pref_microbes_color_mode_original">মূল</string>
+    <string name="pref_microbes_color_mode_modern">নতুন (বর্তমান)</string>
+    <string name="pref_nexus_background_title">পটভূমি</string>
+    <string name="pref_nexus_custom_background_title">কাস্টম পটভূমি</string>
+    <string name="pref_nexus_custom_background_summary">একটি পটভূমি ছবি নির্বাচন করুন</string>
+    <string name="pref_nexus_custom_background_set_summary">কাস্টম পটভূমি সেট করা হয়েছে</string>
+    <string name="pref_nexus_reset_background_title">পটভূমি রিসেট করুন</string>
+    <string name="pref_nexus_reset_background_summary">কাস্টম পটভূমি মুছুন এবং বিল্ট-ইন ব্যবহার করুন</string>
+    <string name="nexus_bg_pyramid">পিরামিড</string>
+    <string name="nexus_bg_pyramid_1">পিরামিড ১</string>
+    <string name="nexus_bg_pyramid_2">পিরামিড ২</string>
+    <string name="nexus_bg_pyramid_3">পিরামিড ৩</string>
+    <string name="nexus_bg_pyramid_4">পিরামিড ৪</string>
+    <string name="nexus_custom_background_set_toast">কাস্টম পটভূমি সেট করা হয়েছে। কার্যকর করতে ওয়ালপেপার পুনরায় প্রয়োগ করুন।</string>
+    <string name="nexus_background_changed_title">পটভূমি আপডেট হয়েছে</string>
+    <string name="nexus_background_changed_message">পটভূমি সংরক্ষিত হয়েছে। এখন পরিবর্তন প্রয়োগ করবেন?</string>
+    <string name="nexus_background_reset_toast">কাস্টম পটভূমি মুছে ফেলা হয়েছে</string>
+    <string name="nexus_background_reset_title">পটভূমি রিসেট হয়েছে</string>
+    <string name="nexus_background_reset_message">কাস্টম পটভূমি মুছে ফেলা হয়েছে। এখন পরিবর্তন প্রয়োগ করবেন?</string>
+    <string name="action_apply_now">এখন প্রয়োগ করুন</string>
+    <string name="action_later">পরে</string>
+
+    <!-- গভীর সমুদ্র সেটিংস -->
+    <string name="title_unit_scale">জেলিফিশের আকার</string>
+    <string name="summary_unit_scale">জেলিফিশের আকার পরিবর্তন করুন</string>
+    <string name="title_unit_number">জেলিফিশের সংখ্যা</string>
+    <string name="summary_unit_number">জেলিফিশের সংখ্যা পরিবর্তন করুন</string>
+    <string name="title_background_image_type">পটভূমি</string>
+    <string name="summary_background_image_type">পটভূমি পরিবর্তন করুন</string>
+    <string name="title_background_brightness">পটভূমির উজ্জ্বলতা</string>
+    <string name="summary_background_brightness">পটভূমির উজ্জ্বলতা পরিবর্তন করুন</string>
+    <string name="title_background_lighting">পটভূমির আলোকসজ্জা</string>
+    <string name="summary_background_lighting">পটভূমির আলোকসজ্জা পরিবর্তন করুন</string>
+    <string name="title_particle_color">জেলিফিশের মূল রং</string>
+    <string name="summary_particle_color">মূলের রং পরিবর্তন করুন</string>
+    <string name="deepsea_custom_background_title">কাস্টম পটভূমি</string>
+    <string name="deepsea_custom_background_summary">একটি পটভূমি ছবি নির্বাচন করুন</string>
+    <string name="deepsea_custom_background_set_summary">কাস্টম পটভূমি সেট করা হয়েছে</string>
+    <string name="deepsea_reset_background_title">পটভূমি রিসেট করুন</string>
+    <string name="deepsea_reset_background_summary">কাস্টম পটভূমি মুছুন এবং বিল্ট-ইন ব্যবহার করুন</string>
+    <string name="deepsea_background_changed_title">পটভূমি আপডেট হয়েছে</string>
+    <string name="deepsea_background_changed_message">পটভূমি সংরক্ষিত হয়েছে। এখন পরিবর্তন প্রয়োগ করবেন?</string>
+    <string name="deepsea_background_reset_title">পটভূমি রিসেট হয়েছে</string>
+    <string name="deepsea_background_reset_message">কাস্টম পটভূমি মুছে ফেলা হয়েছে। এখন পরিবর্তন প্রয়োগ করবেন?</string>
+    <string name="deepsea_apply_now">এখন প্রয়োগ করুন</string>
+    <string name="deepsea_apply_later">পরে</string>
+    <string name="deepsea_custom_background_failed">পটভূমি ছবি সংরক্ষণ করতে অক্ষম</string>
+
+    <!-- নেক্সাস উন্নত সেটিংস -->
+    <string name="pref_nexus_advanced_title">উন্নত সেটিংস</string>
+    <string name="pref_nexus_max_pulses">সর্বোচ্চ ডাল</string>
+    <string name="pref_nexus_max_pulses_summary">পর্দায় একসাথে প্রদর্শিত নিয়মিত ডালের সর্বোচ্চ সংখ্যা (ডিফল্ট: ২০)</string>
+    <string name="pref_nexus_max_extras">সর্বোচ্চ অতিরিক্ত ডাল</string>
+    <string name="pref_nexus_max_extras_summary">স্পর্শ দ্বারা ট্রিগার অতিরিক্ত ডালের সংখ্যা (ডিফল্ট: ৪০)</string>
+    <string name="pref_nexus_pulse_size">ডালের আকার</string>
+    <string name="pref_nexus_pulse_size_summary">ডাল টেক্সচার পিক্সেল আকার (ডিফল্ট: ১৪)</string>
+    <string name="pref_nexus_glow_size">আভার আকার</string>
+    <string name="pref_nexus_glow_size_summary">আভা টেক্সচার পিক্সেল আকার (ডিফল্ট: ৬৪)</string>
+    <string name="pref_nexus_speed">গতি</string>
+    <string name="pref_nexus_speed_summary">ডালের ভিত্তি গতি (ডিফল্ট: ২০ = ০.২)</string>
+    <string name="pref_nexus_speed_delta_min">ন্যূনতম গতি ডেল্টা</string>
+    <string name="pref_nexus_speed_delta_min_summary">গতি এলোমেলো পরিবর্তনের জন্য ন্যূনতম গুণক (ডিফল্ট: ৭০ = ০.৭)</string>
+    <string name="pref_nexus_speed_delta_max">সর্বোচ্চ গতি ডেল্টা</string>
+    <string name="pref_nexus_speed_delta_max_summary">গতি এলোমেলো পরিবর্তনের জন্য সর্বোচ্চ গুণক (ডিফল্ট: ১৭০ = ১.৭)</string>
+    <string name="pref_nexus_trail_size">ট্রেইলের আকার</string>
+    <string name="pref_nexus_trail_size_summary">ডাল ট্রেইল ইফেক্টের দৈর্ঘ্য (ডিফল্ট: ৪০)</string>
+    <string name="pref_nexus_mode">রঙ মোড</string>
+    <string name="pref_nexus_mode_summary">ডালের রঙের স্কিম নির্বাচন করুন</string>
+
+    <string name="pref_walkaround_use_front">ফ্রন্ট ক্যামেরা ব্যবহার করুন</string>
+    <string name="pref_walkaround_use_front_summary">ফ্রন্ট এবং ব্যাক ক্যামেরার মধ্যে স্যুইচ করুন।</string>
+    <string name="pref_walkaround_mirror_front">ফ্রন্ট ক্যামেরা মিরর করুন</string>
+    <string name="pref_walkaround_mirror_front_summary">ফ্রন্ট ক্যামেরাটি অনুভূমিকভাবে ফ্লিপ করুন।</string>
+    <string name="walkaround_permission_granted">ক্যামেরার অনুমতি দেওয়া হয়েছে</string>
+    <string name="walkaround_permission_denied">ক্যামেরার অনুমতি অস্বীকৃত। লাইভ ক্যামেরা প্রিভিউ কাজ করবে না।</string>
+    <string name="pref_weather_update_interval">আবহাওয়া আপডেট ব্যবধান</string>
+    <string name="pref_weather_refresh_now">এখনই আবহাওয়া রিফ্রেশ করুন</string>
+    <string name="pref_weather_refresh_now_summary">তাৎক্ষণিকভাবে সর্বশেষ আবহাওয়া ডেটা আনুন</string>
+    <string name="pref_weather_refresh_now_success">আবহাওয়া রিফ্রেশ সম্পূর্ণ</string>
+    <string name="pref_weather_refresh_now_failed">আবহাওয়া রিফ্রেশ ব্যর্থ</string>
+    <string name="pref_openweather_api_key_title">ওপেনওয়েদার এপিআই কী</string>
+    <string name="pref_openweather_api_key_dialog">আপনার ওপেনওয়েদার এপিআই কী লিখুন</string>
+    <string name="pref_openweather_api_key_summary_set">এপিআই কী কনফিগার করা হয়েছে</string>
+    <string name="pref_openweather_api_key_summary_unset">এপিআই কী কনফিগার করা হয়নি</string>
+    <string name="pref_weather_api_notice">সেটিংসে একটি এপিআই কী কনফিগার করে আবহাওয়া পরিবর্তন সক্ষম করুন।</string>
+    <string name="pref_apply_api_title">এপিআই এর জন্য আবেদন করুন</string>
+    <string name="pref_weather_api_guide_intro">ওপেনওয়েদার এপিআই কী সেটআপ এবং কনফিগারেশন গাইড।</string>
+    <string name="pref_weather_api_guide_prepare">ধাপ ১: প্রস্তুতি\n- একটি ইমেইল ঠিকানা যা যাচাইকরণ বার্তা পেতে পারে\n- একটি নেটওয়ার্ক পরিবেশ যা ওপেনওয়েদার ওয়েবসাইটে পৌঁছাতে পারে</string>
+    <string name="pref_weather_api_guide_step_register1">ধাপ ২: একটি ওপেনওয়েদার অ্যাকাউন্ট নিবন্ধন করুন\n১. https://openweathermap.org/ খুলুন এবং উপরের ডানদিকে কমলা লগইন বাটনে ট্যাপ করুন (ছবি ১ দেখুন)।</string>
+    <string name="pref_weather_api_guide_step_register2">২. সাইন-ইন পৃষ্ঠায়, "Create an Account" এ ট্যাপ করুন।</string>
+    <string name="pref_weather_api_guide_step_register3">৩. নিবন্ধন ফর্ম পূরণ করুন (ছবি ৩ দেখুন):\n    ব্যবহারকারীর নাম: অ্যাকাউন্ট সনাক্তকরণের জন্য কাস্টম নাম\n    ইমেইল লিখুন: যাচাইকরণ এবং অ্যাকাউন্ট পুনরুদ্ধারের জন্য আপনার বৈধ ইমেইল ঠিকানা\n    পাসওয়ার্ড: আপনার পাসওয়ার্ড সেট করুন\n    পাসওয়ার্ড পুনরায় লিখুন: একই পাসওয়ার্ড আবার লিখুন\nনিবন্ধনের জন্য ফর্ম জমা দিন।</string>
+    <string name="pref_weather_api_guide_step_verify1">ধাপ ৩: আপনার ইমেইল যাচাই করুন\n১. নিবন্ধনের পরে, পৃষ্ঠা দেখায়: আমরা নিশ্চিতকরণ লিঙ্ক xxx@xx.com-এ পাঠিয়েছি। দয়া করে আপনার ইমেইল চেক করুন। ২. আপনার ইমেইল খুলুন, ওপেনওয়েদারের বার্তাটি সন্ধান করুন, এবং যাচাইকরণ সম্পূর্ণ করতে "Verify your email" বাটনে ট্যাপ করুন (ছবি ৫ দেখুন)\nযদি আপনি ইমেইল না পান, স্প্যাম বা প্রমোশন ফোল্ডার চেক করুন।</string>
+    <string name="pref_weather_api_guide_step_verify2">২. আপনার ইমেইল খুলুন, ওপেনওয়েদারের বার্তাটি সন্ধান করুন, এবং যাচাইকরণ সম্পূর্ণ করতে "Verify your email" বাটনে ট্যাপ করুন।</string>
+    <string name="pref_weather_api_guide_step_verify3">যদি আপনি ইমেইল না পান, স্প্যাম বা প্রমোশন ফোল্ডার চেক করুন।</string>
+    <string name="pref_weather_api_guide_step_key1">ধাপ ৪: আপনার এপিআই কী পান\n১. যাচাইকরণের পরে, ওপেনওয়েদারে ফিরে যান এবং সাইন ইন করুন।\n২. আপনার অ্যাকাউন্ট ড্যাশবোর্ডে, নেভিগেশন মেনু থেকে "API Keys" খুলুন।</string>
+    <string name="pref_weather_api_guide_step_key2">৩. এপিআই ব্যবস্থাপনা পৃষ্ঠায়, ডিফল্টভাবে উত্পন্ন কী কপি করুন (সাধারণত নাম "Default", অবস্থা "Active"), অথবা একটি নাম লিখুন এবং একটি নতুন কী তৈরি করতে "Generate" এ ট্যাপ করুন।</string>
+    <string name="pref_weather_api_guide_step_key3">গুরুত্বপূর্ণ: বিনামূল্যের কীগুলি প্রতি মিনিটে ৬০ কল এবং প্রতি দিনে ১০০০-এ সীমাবদ্ধ, যা ব্যক্তিগত ওয়ালপেপার ব্যবহারের জন্য যথেষ্ট। অপব্যবহার এবং অ্যাকাউন্ট থ্রটলিং এড়াতে আপনার কী সর্বজনীনভাবে শেয়ার করবেন না।</string>
+    <string name="pref_weather_api_guide_step_config1">ধাপ ৫: ওয়ালপেপার অ্যাপে এপিআই কী কনফিগার করুন\n১. ওয়ালপেপার অ্যাপ খুলুন এবং উপরের ডানদিকে মেঘ আইকনে ট্যাপ করুন।</string>
+    <string name="pref_weather_api_guide_step_config2">২. পপআপ মেনু থেকে "ওপেনওয়েদার এপিআই কী" নির্বাচন করুন।</string>
+    <string name="pref_weather_api_guide_step_config3">৩. কপি করা এপিআই কী ইনপুট বক্সে পেস্ট করুন এবং সংরক্ষণ করতে "Confirm" এ ট্যাপ করুন।</string>
+    <string name="pref_weather_api_guide_step_config4">৪. পরীক্ষা করতে "এখনই আবহাওয়া রিফ্রেশ করুন" এ ট্যাপ করুন। যদি ওয়ালপেপার স্বাভাবিকভাবে আবহাওয়ার তথ্য লোড করে, তাহলে কনফিগারেশন সফল।</string>
+    <string name="pref_weather_api_guide_common">ধাপ ৬: সমস্যা সমাধান\n- কীটি সম্পূর্ণভাবে অতিরিক্ত স্পেস বা লাইন ব্রেক ছাড়া কপি করা হয়েছে কিনা যাচাই করুন।\n- একটি নতুন এপিআই কী সক্রিয় হতে ১০-৩০ মিনিট সময় নিতে পারে; অপেক্ষা করুন এবং আবার চেষ্টা করুন।\n- অ্যাপে অবস্থানের অনুমতি সক্ষম আছে কিনা নিশ্চিত করুন।</string>
+    <string name="pref_weather_api_guide_illustration">এপিআই টিউটোরিয়াল চিত্র</string>
+    <string name="pref_weather_api_guide_link_text">https://openweathermap.org/</string>
+    <string name="pref_weather_api_guide_open_web_button">ওপেনওয়েদার ওয়েবসাইট খুলুন</string>
+    <string name="pref_weather_last_refresh">শেষ রিফ্রেশ: %1$s</string>
+    <string name="pref_weather_last_refresh_unknown">শেষ রিফ্রেশ: অজানা</string>
+    <string name="pref_weather_debug_title">আবহাওয়া ডিবাগ</string>
+    <string name="pref_weather_debug_restore">সাধারণ আবহাওয়া লজিকে ফিরেছে</string>
+    <string name="pref_weather_debug_override">আবহাওয়া ওভাররাইড প্রয়োগ করা হয়েছে: %1$s</string>
+    <string name="weather_toolbar_title">আবহাওয়া সেটিংস</string>
+    <string name="pref_musicvis_mesh_mode_title">লিগ্যাসি ত্রিভুজ স্ট্রিপ মেশ ব্যবহার করুন</string>
+    <string name="pref_musicvis_mesh_mode_summary">চালু: মূল আরএস মেশ/প্রিমিটিভ (ত্রিভুজ স্ট্রিপ)। বন্ধ: বর্তমান লাইন মেশ।</string>
+
+    <string name="musicvis_permission_granted">অডিও অনুমতি দেওয়া হয়েছে</string>
+    <string name="musicvis_permission_denied">অডিও অনুমতি অস্বীকৃত। অডিও ভিজুয়ালাইজেশন কাজ করবে না।</string>
+    <string name="wallpaper_preview_not_supported">ওয়ালপেপার প্রিভিউ সমর্থিত নয়</string>
+    <string name="miui_permission_title">অনুমতি প্রয়োজন</string>
+    <string name="miui_permission_message">প্রিভিউ খুলতে MIUI-তে ম্যানুয়ালি "লাইভ ওয়ালপেপার পরিষেবা" অনুমতি সক্ষম করা প্রয়োজন।\n\nঠিক আছে ট্যাপ করুন, তারপর অনুমতি ব্যবস্থাপনায় এটি সক্ষম করুন।</string>
+    <string name="miui_permission_go_settings">সেটিংসে যান</string>
+    <string name="miui_permission_continue">চালিয়ে যান</string>
+    <string name="miui_permission_open_failed">সেটিংস খুলতে অক্ষম</string>
+    <string name="phasebeam_ssion_message">প্রিভিউ খুলতে MIUI-তে ম্যানুয়ালি "লাইভ ওয়ালপেপার পরিষেবা" অনুমতি সক্ষম করা প্রয়োজন।\n\nঠিক আছে ট্যাপ করুন, তারপর অনুমতি ব্যবস্থাপনায় এটি সক্ষম করুন।</string>
+    <string name="no_live_wallpaper_support">এই ডিভাইসে লাইভ ওয়ালপেপার সমর্থিত নয়</string>
+    <string name="about_title">পরিচিতি</string>
+    <string name="about_body">লেখক: 念.\nইমেইল: 3471348199@qq.com,\n
+        xujiekai508@gmail.com\nমূল প্রকল্প লেখক: দ্য অ্যান্ড্রয়েড ওপেন সোর্স প্রজেক্ট
+        (এওএসপি)\n\nপ্রকল্পের সংক্ষিপ্ত বিবরণ:\nএই প্রকল্পটি ক্লাসিক অ্যান্ড্রয়েড লাইভ ওয়ালপেপার স্থানান্তর এবং রক্ষণাবেক্ষণ করে। লক্ষ্য হল বর্তমান অ্যান্ড্রয়েড সংস্করণগুলিতে সামঞ্জস্য, কর্মক্ষমতা এবং স্থিতিশীলতার জন্য রেন্ডারিং স্ট্যাককে আধুনিক করার সময় মূল ভিজ্যুয়ালগুলি সম্পূর্ণরূপে সংরক্ষণ করা।\n\nমূল লক্ষ্য:\n১) ভিজুয়াল ফিডেলিটি: পাতা ভাসা, জলের ঢেউ, রঙ এবং সময় নির্ভুলভাবে পুনরুত্পাদন করা।\n২) কর্মক্ষমতা এবং স্থিতিশীলতা: সিপিইউ/জিপিইউ লোড হ্রাস করুন এবং উচ্চ-রিফ্রেশ মসৃণতা উন্নত করুন।\n৩) দীর্ঘমেয়াদী সামঞ্জস্য: অ্যান্ড্রয়েড ১০+ এ কাজ করুন এবং একটি ভবিষ্যত স্থানান্তর পথ রাখুন।\n\nকেন রেন্ডারস্ক্রিপ্ট থেকে ওপেনজিএল ইএস ২.০-তে স্থানান্তর?\n- রেন্ডারস্ক্রিপ্টটি অপ্রচলিত এবং সাম্প্রতিক এসডিকে/এনডিকে টুলচেইন থেকে সরানো হয়েছে।\n- এটি ডিভাইস এবং রম জুড়ে ভঙ্গুর, যাতে ঘন ঘন রেন্ডারিং ব্যর্থতা ঘটে।\n- ওপেনজিএল ইএস ২.০ ব্যাপকভাবে সমর্থিত এবং জিপিইউ-ভিত্তিক অপ্টিমাইজেশন সক্ষম করে।</string>
+
+    <!-- গ্যালাক্সি ওয়ালপেপার পছন্দগুলি -->
+    <string name="pref_galaxy_particle_count">কণার সংখ্যা</string>
+    <string name="pref_galaxy_particle_count_summary">গ্যালাক্সিতে কণার সংখ্যা (কর্মক্ষমতা প্রভাবিত করে)</string>
+    <string name="pref_galaxy_particle_alpha">কণার অস্বচ্ছতা</string>
+    <string name="pref_galaxy_particle_alpha_summary">কণার স্বচ্ছতা সামঞ্জস্য করুন (উভয় গণনা মোডে প্রযোজ্য)</string>
+    <string name="pref_galaxy_precise_calc">সুনির্দিষ্ট সর্পিল গণনা</string>
+    <string name="pref_galaxy_precise_calc_summary">পুরানো এলোমেলো-কোণ মডেলের পরিবর্তে এম৩১-অনুপ্রাণিত লগারিদমিক সর্পিল আরম্ভ ব্যবহার করুন</string>
+    <string name="pref_galaxy_use_light2">লাইট২ টেক্সচার ব্যবহার করুন</string>
+    <string name="pref_galaxy_use_light2_summary">লাইট২ ব্যবহার করতে সক্ষম করুন; লাইট১ ব্যবহার করতে অক্ষম করুন</string>
+    <string name="pref_galaxy_arm_count">বাহুর সংখ্যা</string>
+    <string name="pref_galaxy_arm_count_summary">সর্পিল বাহুর সংখ্যা (শুধুমাত্র নির্ভুল মোডে কার্যকর)</string>
+    <string name="pref_galaxy_arm_offset">বাহু অফসেট (রেড ×১০০০)</string>
+    <string name="pref_galaxy_arm_offset_summary">বাহুগুলির মধ্যে কৌণিক ব্যবধান রেডিয়ানে (০ ~ ২π, শুধুমাত্র নির্ভুল মোড)</string>
+    <string name="pref_galaxy_pitch_angle">পিচ কোণ (ডিগ্রি ×১০)</string>
+    <string name="pref_galaxy_pitch_angle_summary">সর্পিল পিচ কোণ ডিগ্রিতে (০ ~ ৩০, শুধুমাত্র নির্ভুল মোড)</string>
+    <string name="pref_galaxy_inner_scatter">অভ্যন্তরীণ বিক্ষেপণ (×১০০)</string>
+    <string name="pref_galaxy_inner_scatter_summary">কোরের কাছে বাহু বিক্ষেপণ শক্তি (শুধুমাত্র নির্ভুল মোড)</string>
+    <string name="pref_galaxy_outer_scatter">বাহ্যিক বিক্ষেপণ (×১০০)</string>
+    <string name="pref_galaxy_outer_scatter_summary">বাইরের অঞ্চলে বাহু বিক্ষেপণ শক্তি (শুধুমাত্র নির্ভুল মোড)</string>
+    <string name="pref_galaxy_turbulence">অশান্তি (×১০০)</string>
+    <string name="pref_galaxy_turbulence_summary">নির্ভুল বাহু বিকৃতির জন্য এলোমেলো অশান্তি তীব্রতা</string>
+    <string name="pref_galaxy_forbidden_radius">কোর নিষিদ্ধ ব্যাসার্ধ (কেপিসি ×১০০)</string>
+    <string name="pref_galaxy_forbidden_radius_summary">লগারিদমিক বাহু ফিটিং থেকে বাদ দেওয়া অভ্যন্তরীণ ব্যাসার্ধ (শুধুমাত্র নির্ভুল মোড)</string>
+    <string name="pref_galaxy_ellipse_ratio">উপবৃত্ত অনুপাত (×১০০০)</string>
+    <string name="pref_galaxy_ellipse_ratio_summary">বাহু রূপবিদ্যার উপবৃত্তাকারতা (০.৫ ~ ১.০, শুধুমাত্র নির্ভুল মোড)</string>
+    <string name="pref_galaxy_ellipse_twist">উপবৃত্ত মোচড় (×১০০০)</string>
+    <string name="pref_galaxy_ellipse_twist_summary">বাহু উপবৃত্তাকারতার জন্য মোচড় অফসেট (-০.১ ~ ০.১, শুধুমাত্র নির্ভুল মোড)</string>
+    <string name="pref_galaxenable_recolor_summary">সক্ষম থাকলে, আপনি রশ্মির রঙ কাস্টমাইজ করতে পারেন</string>
+
+    <!-- গ্যালাক্সি ৪ ওয়ালপেপার পছন্দগুলি -->
+    <string name="pref_galaxy4_bg_star_count">পটভূমি তারার সংখ্যা</string>
+    <string name="pref_galaxy4_bg_star_count_summary">গ্যালাক্সিতে পটভূমি তারার সংখ্যা (কর্মক্ষমতা প্রভাবিত করে)</string>
+    <string name="phasebeam_y4_bg_star_count">পটভূমি তারার সংখ্যা</string>
+    <string name="pref_galaxy4_space_cloud_count">মহাকাশ মেঘের সংখ্যা</string>
+    <string name="pref_galaxy4_space_cloud_count_summary">গ্যালাক্সিতে মেঘের সংখ্যা</string>
+
+    <!-- ফেজ বিম ওয়ালপেপার -->
+    <string name="wallpaper_phasebeam">ফেজ বিম</string>
+    <string name="wallpaper_enable_recolor_summary">সক্ষম থাকলে, আপনি রশ্মির রঙ কাস্টমাইজ করতে পারেন</string>
+    <string name="phasebeam_phasebeam">ফেজ বিম</string>
+    <string name="wallpaper_phasebeam_author">গুগল</string>
+    <string name="wallpaper_phasebeam_desc">একটি প্রাণবন্ত পটভূমি জুড়ে নরম রশ্মি এবং কণা প্রবাহিত হচ্ছে।</string>
+
+    <string name="phasebeam_enable_recolor">রশ্মির রঙ সামঞ্জস্য করুন</string>
+    <string name="phasebeam_enable_recolor_summary">সক্ষম থাকলে, আপনি রশ্মির রঙ কাস্টমাইজ করতে পারেন</string>
+    <string name="miui_permienable_recolor_summary">সক্ষম থাকলে, আপনি রশ্মির রঙ কাস্টমাইজ করতে পারেন</string>
+    <string name="phasebeam_color_label">রঙ</string>
+    <string name="phasebeam_saturation_label">স্যাচুরেশন</string>
+    <string name="phasebeam_brightness_label">উজ্জ্বলতা</string>
+
+    <!-- বৈশ্বিক ফ্রেম রেট সেটিংস -->
+    <string name="pref_global_frame_rate">বৈশ্বিক ফ্রেম রেট</string>
+    <string name="pref_global_frame_rate_summary">সমস্ত ওয়ালপেপারের জন্য ফ্রেম রেট সেট করুন (উচ্চ মান বেশি ব্যাটারি ব্যবহার করে)</string>
+    <string name="pref_preview_ratio">লাইভ প্রিভিউ অনুপাত</string>
+    <string name="pref_preview_ratio_dialog">লাইভ প্রিভিউ অনুপাত</string>
+    <string name="pref_preview_ratio_summary">ফর্ম্যাট: প্র:উ, যেমন ৯:১৬</string>
+    <string name="pref_preview_ratio_invalid">অবৈধ অনুপাত। প্র:উ ব্যবহার করুন, যেমন ৯:১৬</string>
+
+    <string name="grass_color_default">ডিফল্ট</string>
+    <string name="grass_color_green">সবুজ</string>
+    <string name="grass_color_blue">নীল</string>
+    <string name="grass_color_red">লাল</string>
+    <string name="grass_color_pink">গোলাপী</string>
+    <string name="grass_color_purple">বেগুনি</string>
+    <string name="grass_color_yellow">হলুদ</string>
+    <string name="grass_color_black">কালো</string>
+    <string name="grass_color_white">সাদা</string>
+
+    <!-- জাদুকরী ধোঁয়া ওয়ালপেপার -->
+    <string name="wallpaper_magicsmoke">জাদুকরী ধোঁয়া</string>
+    <string name="wallpaper_magicsmoke_author">গুগল</string>
+    <string name="pref_magicsmoke_preset">ভিজুয়াল থিম</string>
+    <string name="pref_magicsmoke_preset_summary">২০টি ভিন্ন ধোঁয়া/মেঘ/প্লাজমা ইফেক্ট থেকে বেছে নিন</string>
+    <string name="pref_fireworks_custom_background_title">কাস্টম পটভূমি ছবি</string>
+    <string name="pref_fireworks_custom_background_summary">একটি কাস্টম পটভূমি ছবি নির্বাচন করতে ট্যাপ করুন</string>
+    <string name="pref_fireworks_reset_background_title">ডিফল্ট পটভূমিতে রিসেট করুন</string>
+    <string name="pref_fireworks_reset_background_summary">কাস্টম পটভূমি সরান এবং ডিফল্টটি ব্যবহার করুন</string>
+
+    <!-- হলো সর্পিল ওয়ালপেপার -->
+    <string name="wallpaper_holospiral">হলো সর্পিল</string>
+    <string name="wallpaper_holospiral_author">গুগল</string>
+    <string name="wallpaper_holospiral_desc">হলো থিমযুক্ত সর্পিল ওয়ালপেপার।</string>
+
+    <!-- নীল সমুদ্র ওয়ালপেপার -->
+    <string name="wallpaper_bluesea">নীল সমুদ্র</string>
+    <string name="wallpaper_bluesea_author">টিএটি</string>
+    <string name="wallpaper_bluesea_desc">স্বচ্ছ সমুদ্রের প্রাণী উজ্জ্বল নীল সমুদ্রে ভাসছে।</string>
+
+    <string name="openweather_api_key">আপনার_ওপেনওয়েদার_এপিআই_কী</string>
+
+    <!-- পরিচিতি/অ্যাপ তথ্য স্ক্রিন -->
+    <string name="about_app_info">অ্যাপ তথ্য</string>
+    <string name="about_project_intro">প্রকল্পের পরিচিতি</string>
+    <string name="about_project_one_liner">ক্লাসিক লাইভ ওয়ালপেপার রিমাস্টার</string>
+    <string name="about_project_description">ক্লাসিক অ্যান্ড্রয়েড লাইভ ওয়ালপেপার, নতুন ডিভাইসের জন্য সম্পূর্ণরূপে রিমাস্টার এবং আধুনিকীকরণ করা হয়েছে। রেন্ডারস্ক্রিপ্ট → ওপেনজিএল ইএস ২.০, উচ্চ সামঞ্জস্য, কম শক্তি, জিপিইউ ত্বরণ।</string>
+    <string name="about_project_highlights">মূল বৈশিষ্ট্য</string>
+    <string name="about_project_highlights_detail">কম শক্তি, উচ্চ সামঞ্জস্য, মূল ভিজুয়াল নির্ভুলতা, জিপিইউ ত্বরণ, দীর্ঘমেয়াদী রক্ষণাবেক্ষণ।</string>
+    <string name="about_links">লিঙ্ক এবং যোগাযোগ</string>
+    <string name="about_official_website">অফিসিয়াল ওয়েবসাইট</string>
+    <string name="about_official_website_url">https://github.com/zyfxv/android-live-wallpapers</string>
+    <string name="about_email">ইমেইল</string>
+    <string name="about_email_address">3471348199@qq.com</string>
+    <string name="about_email_address_alt">xujiekai508@gmail.com</string>
+    <string name="about_qq">কিউকিউ গ্রুপ</string>
+    <string name="about_qq_number">3471348199</string>
+    <string name="about_bilibili">বিলিবিলি</string>
+    <string name="about_bilibili_url">https://space.bilibili.com/470023065</string>
+    <string name="about_feedback">মতামত</string>
+    <string name="about_feedback_contact">মতামতের জন্য, উপরের যোগাযোগের তথ্য ব্যবহার করুন।</string>
+    <string name="about_thanks">ধন্যবাদ</string>
+    <string name="about_thanks_original">মূল লেখকদের ধন্যবাদ</string>
+    <string name="about_thanks_original_detail">মূল: মিডিয়াটেক, গুগল, স্যামসাং</string>
+
+    <string name="about_developer">ডেভেলপার</string>
+    <string name="about_author">লেখক</string>
+    <string name="about_author_detail">念. এবং অবদানকারীরা</string>
+    <string name="about_disclaimer">দাবিত্যাগ</string>
+    <string name="about_disclaimer_title">শুধুমাত্র শেখার এবং যোগাযোগের জন্য</string>
+    <string name="about_disclaimer_detail">এই প্রকল্পটি শুধুমাত্র অ-বাণিজ্যিক, শিক্ষামূলক ব্যবহারের জন্য। সমস্ত অধিকার মূল কপিরাইট ধারকদের।</string>
+    <string name="app_version_summary">সংস্করণ: %1$s</string>
+    <string name="copied_to_clipboard">ক্লিপবোর্ডে কপি করা হয়েছে</string>
+    <string name="no_browser_found">কোন ব্রাউজার পাওয়া যায়নি</string>
+    <string name="no_email_found">কোন ইমেইল অ্যাপ পাওয়া যায়নি</string>
+    <string name="galaxy_enable_precise_calc_first">অনুগ্রহ করে প্রথমে সুনির্দিষ্ট সর্পিল গণনা সক্ষম করুন</string>
+    <string name="grass_disable_dandelion_firefly_first">অনুগ্রহ করে প্রথমে ড্যান্ডেলিয়ন এবং জোনাকি নিষ্ক্রিয় করুন</string>
+    <string name="grass_disable_legacy_particles_first">অনুগ্রহ করে প্রথমে লিগ্যাসি (এমটিকে) কণা গতি নিষ্ক্রিয় করুন</string>
+    <string name="grass_enable_dandelion_first">অনুগ্রহ করে প্রথমে ড্যান্ডেলিয়ন সক্ষম করুন</string>
+    <string name="grass_enable_firefly_first">অনুগ্রহ করে প্রথমে জোনাকি সক্ষম করুন</string>
+    <string name="phasebeam_enable_recolor_first">অনুগ্রহ করে প্রথমে রশ্মির রঙ সমন্বয় সক্ষম করুন</string>
+    <string name="config_open_browser_failed">ব্রাউজার খুলতে অক্ষম</string>
+    <string name="fireworks_custom_background_set_toast">কাস্টম পটভূমি সেট করা হয়েছে। কার্যকর করতে ওয়ালপেপার পুনরায় প্রয়োগ করুন।</string>
+    <string name="fireworks_background_changed_title">পটভূমি আপডেট হয়েছে</string>
+    <string name="fireworks_background_changed_message">পটভূমি সংরক্ষিত হয়েছে। এখন পরিবর্তন প্রয়োগ করবেন?</string>
+    <string name="fireworks_background_reset_toast">ডিফল্ট পটভূমি পুনরুদ্ধার করা হয়েছে</string>
+    <string name="fireworks_background_reset_title">পটভূমি রিসেট হয়েছে</string>
+    <string name="fireworks_background_reset_message">ডিফল্ট পটভূমি পুনরুদ্ধার করা হয়েছে। এখন পরিবর্তন প্রয়োগ করবেন?</string>
+    <string name="fireworks_custom_background_set_summary">কাস্টম পটভূমি সেট করা হয়েছে</string>
+    <string name="fireworks_custom_background_click_summary">কাস্টম পটভূমি ছবি বাছাই করতে ট্যাপ করুন</string>
+    <string name="reset_all_settings_title">সমস্ত ডিফল্ট পুনরুদ্ধার করুন</string>
+    <string name="reset_all_settings_message">সমস্ত ওয়ালপেপার এবং বৈশ্বিক সেটিংস তাদের ডিফল্ট মানগুলিতে পুনরুদ্ধার করবেন?</string>
+    <string name="reset_all_settings_done">সমস্ত সেটিংস ডিফল্টে পুনরুদ্ধার করা হয়েছে</string>
+    <string name="reset_current_settings_title">ডিফল্ট সেটিংস পুনরুদ্ধার করুন</string>
+    <string name="reset_current_settings_summary">এই ওয়ালপেপারের সেটিংস ডিফল্টে পুনরুদ্ধার করুন</string>
+    <string name="reset_current_settings_message">এই ওয়ালপেপারের সেটিংস তাদের ডিফল্ট মানগুলিতে পুনরুদ্ধার করবেন?</string>
+    <string name="reset_current_settings_done">ওয়ালপেপার সেটিংস ডিফল্টে পুনরুদ্ধার করা হয়েছে</string>
+    <string name="reset_action_confirm">পুনরুদ্ধার করুন</string>
+</resources>

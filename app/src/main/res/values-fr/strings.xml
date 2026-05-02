@@ -1,0 +1,532 @@
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+
+<string name="pref_grass_legacy_particles">Pissenlit et lucioles classiques</string>
+<string name="pref_grass_legacy_particles_summary">Basculer vers l’effet visuel classique MTK des pissenlits et des lucioles</string>
+    <!-- Nom de l’application -->
+    <string name="wallpapers">REAndroid Fonds d’écran animés</string>
+    <string name="app_name">REAndroid Fonds d’écran animés</string>
+
+
+    <!-- Papier peint Flsorescence (荧光) -->
+    <string name="wallpaper_flsorescence">Fluorescence</string>
+    <string name="wallpaper_flsorescence_author">念.</string>
+    <string name="wallpaper_flsorescence_desc">Des points lumineux se déplacent en douceur sur l’écran comme s’ils étaient vivants.</string>
+    <string name="pref_flsorescence_shape">Forme des points</string>
+    <string name="pref_flsorescence_shape_summary">Modifier la forme de chaque point</string>
+    <string name="pref_flsorescence_color">Palette de couleurs des points</string>
+    <string name="pref_flsorescence_color_summary">Modifier la palette de couleurs</string>
+    <string name="pref_flsorescence_scale">Échelle des points</string>
+    <string name="pref_flsorescence_scale_summary">Modifier la taille de chaque point</string>
+    <string name="pref_flsorescence_speed">Vitesse de déplacement</string>
+    <string name="pref_flsorescence_speed_summary">Modifier la vitesse de déplacement</string>
+    <string name="pref_flsorescence_amount">Quantité de points</string>
+    <string name="pref_flsorescence_amount_summary">Modifier le nombre de points</string>
+    <string name="pref_flsorescence_pattern">Motif de déplacement</string>
+    <string name="pref_flsorescence_pattern_summary">Modifier le motif de déplacement</string>
+
+    <!-- Fonds d’écran -->
+    <skip />
+
+    <!-- Fond d’écran montrant l’aperçu de l’appareil photo -->
+    <string name="wallpaper_walkaround">Vision transparente</string>
+    <string name="wallpaper_walkaround_author">Google</string>
+    <string name="wallpaper_walkaround_desc">
+        Voyez à travers votre téléphone et promenez-vous sans risque d’accident.
+    </string>
+
+    <!-- Fond d’écran avec herbe et ciel -->
+    <string name="wallpaper_grass">Herbe</string>
+    <string name="wallpaper_grass_vk">Herbe Vulkan</string>
+    <string name="wallpaper_grass_author">Google</string>
+    <string name="wallpaper_grass_desc">
+        Les brins d’herbe ondulent doucement devant un ciel diurne ou nocturne.
+    </string>
+    <string name="wallpaper_grass_vk_desc">Entrée du fond d’écran Herbe réservée au moteur de rendu Vulkan.</string>
+
+    <string name="wallpaper_aurora1">Aurore boréale</string>
+    <string name="wallpaper_aurora1_author">TAT</string>
+    <string name="wallpaper_aurora1_desc">Des aurores boréales superposées dérivent dans un ciel étoilé et réagissent au toucher.</string>
+    <string name="wallpaper_aurora2">Aurore boréale 2</string>
+    <string name="wallpaper_aurora2_author">HU1</string>
+    <string name="wallpaper_aurora2_desc">Des rideaux d’aurores animés défilent sur des paysages nocturnes thématiques avec étoiles scintillantes et étoiles filantes.</string>
+
+    <!-- Fond d’écran de galaxie -->
+    <string name="wallpaper_galaxy">Galaxie</string>
+    <string name="wallpaper_nightsky">Ciel nocturne</string>
+    <string name="wallpaper_microbes">Microbes</string>
+    <string name="wallpaper_galaxy_vk">Galaxie Vulkan</string>
+    <string name="wallpaper_galaxy_author">Google</string>
+    <string name="wallpaper_nightsky_author">念.</string>
+    <string name="wallpaper_microbes_author">Samsung</string>
+    <string name="wallpaper_galaxy_desc">
+        Une galaxie composée d’étoiles qui tournent lentement.
+    </string>
+    <string name="wallpaper_nightsky_desc">Ciel nocturne réaliste avec mouvement sidéral, orientation par capteur, accélération temporelle par appui long et traînées d’étoiles qui s’estompent.</string>
+    <string name="wallpaper_microbes_desc">Vie au microscope avec mouvement tactile, comportement alimentaire et animation organique de particules.</string>
+    <string name="wallpaper_galaxy_vk_desc">
+        Entrée du fond d’écran Galaxie réservée au moteur de rendu Vulkan.
+    </string>
+
+    <!-- Fond d’écran Galaxie 4 -->
+    <string name="wallpaper_galaxy4">Galaxie 4</string>
+    <string name="wallpaper_galaxy4_author">Google</string>
+    <string name="wallpaper_description_galaxy4">
+        Une magnifique galaxie avec des nuages tourbillonnants et des étoiles scintillantes.
+    </string>
+
+    <!-- Fond d’écran feuilles flottant sur l’eau -->
+    <string name="wallpaper_fall">Feuilles d’eau</string>
+    <string name="wallpaper_fall_vk">Feuilles d’eau Vulkan</string>
+    <string name="wallpaper_fall_author">Google</string>
+    <string name="wallpaper_fall_desc">
+         Les feuilles d’automne tombent \n Dans l’étang ondulé : \n Fond liquide Zen
+    </string>
+    <string name="wallpaper_fall_vk_desc">Entrée du fond d’écran Feuilles d’eau réservée au moteur de rendu Vulkan.</string>
+
+    <!-- Fond d’écran monde sauvage -->
+    <string name="wallpaper_wildworld">Monde sauvage</string>
+    <string name="wallpaper_wildworld_author">MediaTek</string>
+    <string name="wallpaper_wildworld_desc">
+        Un paysage préhistorique animé par des mouvements superposés et des créatures espiègles.
+    </string>
+
+    <!-- Fond d’écran feux d’artifice -->
+    <string name="wallpaper_fireworks">Feux d’artifice</string>
+    <string name="wallpaper_fireworks_author">MediaTek</string>
+    <string name="wallpaper_fireworks_desc">
+        Des feux d’artifice colorés illuminent le ciel nocturne.
+    </string>
+
+    <!-- Fond d’écran moulins à vent -->
+    <string name="wallpaper_windmill">Moulins à vent</string>
+    <string name="wallpaper_windmill_author">MediaTek</string>
+    <string name="wallpaper_windmill_desc">Collines vallonnées avec moulins à vent animés sous un temps dynamique.</string>
+
+    <!-- Fond d’écran météo océanique -->
+    <string name="wallpaper_ocean">Météo océanique</string>
+    <string name="wallpaper_ocean_author">MediaTek</string>
+    <string name="wallpaper_ocean_desc">Vagues et ciel qui changent selon les conditions réelles.</string>
+
+    <!-- Fond d’écran grand fond marin -->
+    <string name="wallpaper_deepsea">Grand fond</string>
+    <string name="wallpaper_deepsea_author">Samsung</string>
+    <string name="wallpaper_deepsea_desc">Des méduses translucides nagent dans les profondeurs marines.</string>
+
+    <!-- Fond d’écran horloge polaire -->
+    <string name="wallpaper_clock">Horloge polaire</string>
+    <string name="wallpaper_clock_author">Google</string>
+    <string name="wallpaper_clock_desc">
+        Affiche la date et l’heure sous forme d’arcs horaires : mois, jour, heure, minute et seconde.
+    </string>
+
+    <!-- Fond d’écran Nexus -->
+    <string name="wallpaper_nexus">Nexus</string>
+    <string name="wallpaper_nexus_author">Google</string>
+    <string name="wallpaper_nexus_desc">
+        Un aperçu de l’intérieur du réseau neuronal.
+    </string>
+
+    <!-- Fond d’écran champ de bruit -->
+    <string name="wallpaper_noisefield">Champ de bruit</string>
+    <string name="wallpaper_noisefield_author">Google</string>
+    <string name="wallpaper_noisefield_desc">Un champ fluide de bulles lumineuses dérivant sur un dégradé doux.</string>
+    <string name="wallpaper_nebula">Nébuleuse</string>
+    <string name="wallpaper_nebula_author">念.</string>
+    <string name="wallpaper_nebula_desc">Nébuleuse d’Orion inspirée de la physique, rendue en volume entièrement à partir de formules.</string>
+
+    <!-- Fonds d’écran de visualisation musicale -->
+    <string name="musicvis_author">Google</string>
+    <string name="wallpaper_vis2">Forme d’onde</string>
+    <string name="wallpaper_vis3">Spectre</string>
+    <string name="wallpaper_vis4">VU-mètre</string>
+    <string name="wallpaper_vis5">Multitude</string>
+    <string name="vis2_desc">Dessine l’onde sonore de n’importe quel morceau de musique en cours de lecture.</string>
+    <string name="vis3_desc">Affiche le spectre de fréquence de n’importe quel morceau de musique en cours de lecture.</string>
+    <string name="vis4_desc">Simule un sonomètre analogique.</string>
+    <string name="vis5_desc">Toutes les visualisations musicales ensemble, tournant lentement en 3D.</string>
+
+    <!-- Horloge polaire : titre de l’activité des paramètres -->
+    <string name="clock_settings">Paramètres de l’horloge polaire</string>
+    <string name="show_seconds">Afficher les secondes</string>
+    <string name="variable_line_width">Varier la largeur des anneaux</string>
+    <string name="palette">Palette de couleurs</string>
+
+    <!-- Noms des palettes -->
+    <string name="palette_gray">Fer</string>
+    <string name="palette_violet">Minuit</string>
+    <string name="palette_matrix">Écran vert</string>
+    <string name="palette_white_c">Ours polaire (dynamique)</string>
+    <string name="palette_black_c">Trou noir (dynamique)</string>
+    <string name="palette_halloween">Tarte à la citrouille</string>
+    <string name="palette_zenburn">Salade de fruits extraterrestre</string>
+    <string name="palette_oceanic">Laser bleu</string>
+
+    <!-- Interface des paramètres -->
+    <string name="settings_title">Paramètres des fonds d’écran animés</string>
+    <string name="settings_entry_config">Configuration</string>
+    <string name="settings_entry_fall">Feuilles à la surface de l’eau</string>
+    <string name="settings_entry_grass">Ciel et herbe</string>
+    <string name="settings_entry_aurora1">Aurore boréale</string>
+    <string name="settings_entry_aurora2">Aurore boréale 2</string>
+    <string name="settings_entry_wildworld">Monde sauvage</string>
+    <string name="settings_entry_fireworks">Feux d’artifice</string>
+    <string name="settings_entry_windmill">Moulin à vent</string>
+    <string name="settings_entry_ocean">Météo océanique</string>
+    <string name="settings_entry_galaxy4">Galaxie 4</string>
+    <string name="settings_entry_galaxy">Galaxie</string>
+    <string name="settings_entry_nightsky">Ciel nocturne</string>
+    <string name="settings_entry_microbes">Microbes</string>
+    <string name="settings_entry_walkaround">Vision transparente</string>
+    <string name="settings_entry_phasebeam">Faisceau de phase</string>
+    <string name="settings_entry_nebula">Nébuleuse</string>
+    <string name="settings_entry_clock">Horloge polaire</string>
+    <string name="settings_entry_noisefield">Champ de bruit</string>
+    <string name="settings_entry_vis2">Forme d’onde</string>
+    <string name="settings_entry_vis3">Spectre</string>
+    <string name="settings_entry_vis4">VU-mètre</string>
+    <string name="settings_entry_vis5">Multitude</string>
+    <string name="settings_entry_magicsmoke">Fumée magique</string>
+    <string name="settings_entry_holospiral">Spirale Holo</string>
+    <string name="settings_entry_bluesea">Mer bleue</string>
+    <string name="settings_entry_deepsea">Grand fond</string>
+
+    <string name="pref_fall_leaf_count">Nombre de feuilles</string>
+    <string name="pref_fall_leaf_count_summary">Ajuster le nombre de feuilles tombantes (affecte les performances)</string>
+    <string name="pref_fall_green_leaves">Feuilles vertes</string>
+    <string name="pref_fall_green_leaves_summary">Quand activé, certaines feuilles seront vertes</string>
+    <string name="pref_fall_max_drops">Max. d’ondulations</string>
+    <string name="pref_fall_max_drops_summary">Nombre maximal d’ondulations de l’eau affichées simultanément (affecte les performances)</string>
+    <string name="pref_fall_precise_calc">Calcul précis</string>
+    <string name="pref_fall_precise_calc_summary">Utiliser une simulation d’ondulations inspirée de la physique (propagation et atténuation des vagues)</string>
+
+    <string name="pref_grass_enabled">Afficher l’herbe</string>
+    <string name="pref_grass_enabled_summary">Afficher ou masquer l’effet herbe</string>
+    <string name="pref_grass_weather_enabled">Activer les effets météo</string>
+    <string name="pref_grass_weather_enabled_summary">Appliquer les changements d’éclairage, de vent et de particules basés sur la météo</string>
+    <string name="pref_grass_weather_rain_count">Nombre de particules de pluie</string>
+    <string name="pref_grass_weather_rain_count_summary">Ajuster le nombre de particules de pluie (10 à 1000)</string>
+    <string name="pref_grass_weather_snow_count">Nombre de particules de neige</string>
+    <string name="pref_grass_weather_snow_count_summary">Ajuster le nombre de particules de neige (10 à 1000)</string>
+    <string name="pref_grass_count">Nombre de brins d’herbe</string>
+    <string name="pref_grass_count_summary">Ajuster le nombre de brins d’herbe (affecte les performances)</string>
+    <string name="pref_grass_height">Hauteur de l’herbe</string>
+    <string name="pref_grass_height_summary">Ajuster la hauteur de l’herbe</string>
+    <string name="pref_grass_width">Largeur de l’herbe</string>
+    <string name="pref_grass_width_summary">Ajuster la largeur de l’herbe</string>
+    <string name="pref_grass_color">Couleur de l’herbe</string>
+    <string name="pref_grass_color_summary">Ajuster la couleur de l’herbe pour différents effets visuels</string>
+    <string name="pref_grass_hardness">Souplesse de l’herbe</string>
+    <string name="pref_grass_hardness_summary">Ajuster la souplesse des brins (plus la valeur est élevée, plus ils se courbent)</string>
+    <string name="pref_grass_night_invert">Inverser le ciel nocturne</string>
+    <string name="pref_grass_night_desaturate">Désaturer l’herbe la nuit</string>
+    <string name="pref_grass_accurate_sun">Calcul précis (affecte les performances)</string>
+    <string name="pref_grass_accurate_sun_summary">Calculer les positions du soleil et de la lune en fonction de l’heure réelle et de la position géographique (affecte les performances)</string>
+    <string name="pref_grass_sun">Afficher le soleil</string>
+    <string name="pref_grass_sun_summary">Afficher ou masquer le soleil</string>
+    <string name="pref_grass_moon">Afficher la lune (nécessite un calcul précis du lever/coucher du soleil)</string>
+    <string name="pref_grass_moon_summary">Afficher ou masquer la lune avec des phases lunaires réalistes</string>
+    <string name="pref_grass_dandelion">Afficher les pissenlits (jour)</string>
+    <string name="pref_grass_dandelion_summary">Affiche des pissenlits flottants pendant la journée</string>
+    <string name="pref_grass_firefly">Afficher les lucioles (nuit)</string>
+    <string name="pref_grass_firefly_summary">Affiche des lucioles volantes la nuit</string>
+    <string name="pref_grass_dandelion_count">Nombre de pissenlits</string>
+    <string name="pref_grass_firefly_count">Nombre de lucioles</string>
+    <string name="pref_grass_star_count">Nombre d’étoiles</string>
+    <string name="pref_grass_star_count_summary">Ajuster le nombre d’étoiles (0 à 10000)</string>
+    <string name="pref_grass_dandelion_speed">Vitesse des pissenlits</string>
+    <string name="pref_open_wallpaper_picker">Ouvrir l’aperçu système</string>
+    <string name="pref_open_wallpaper_picker_failed">Aperçu du fond d’écran non pris en charge</string>
+    <string name="pref_open_wallpaper_chooser">Ouvrir le sélecteur de fonds d’écran</string>
+    <string name="pref_live_preview">Aperçu en direct</string>
+    <string name="pref_nightsky_preview_hint">Astuce : utilisez l’aperçu en direct dans l’application ci-dessus, puis appuyez sur "Ouvrir l’aperçu système" pour appliquer Ciel nocturne.</string>
+    <string name="pref_nightsky_camera_focal">Focale de l’appareil photo</string>
+    <string name="pref_nightsky_camera_focal_summary">Ajuster la distance focale de l’objectif (mm) ; des valeurs plus grandes zooment davantage</string>
+    <string name="pref_nightsky_use_sensor">Utiliser l’orientation du capteur</string>
+    <string name="pref_nightsky_use_sensor_summary">Lorsque désactivé, utiliser le défilement des pages de l’écran d’accueil pour faire pivoter la vue (45° par page)</string>
+    <string name="pref_nightsky_auto_time_accel">Accélération temporelle automatique</string>
+    <string name="pref_nightsky_auto_time_accel_summary">Accélérer continuellement le temps du ciel et garder les traînées d’étoiles visibles</string>
+    <string name="pref_nightsky_time_accel_speed">Vitesse d’accélération</string>
+    <string name="pref_nightsky_time_accel_speed_summary">Sélectionner le niveau de vitesse pour l’accélération automatique / par appui long</string>
+    <string name="pref_microbes_preview_hint">Astuce : touchez et faites glisser dans l’aperçu pour attirer les microbes, puis appuyez sur "Ouvrir l’aperçu système" pour appliquer.</string>
+    <string name="pref_microbes_lifecycle_speed">Vitesse du cycle de vie</string>
+    <string name="pref_microbes_lifecycle_speed_summary">Ajuster la vitesse du métabolisme, de la reproduction et du déclin (%)</string>
+    <string name="pref_microbes_motion_activity">Activité de mouvement</string>
+    <string name="pref_microbes_motion_activity_summary">Ajuster l’intensité de déplacement et de nage naturelle (%)</string>
+    <string name="pref_microbes_color_mode">Style de couleur</string>
+    <string name="pref_microbes_color_mode_summary">Basculer entre la palette d’origine (uniquement RVB) et la palette améliorée actuelle</string>
+    <string name="pref_microbes_color_mode_original">Original</string>
+    <string name="pref_microbes_color_mode_modern">Nouveau (actuel)</string>
+    <string name="pref_nexus_background_title">Arrière-plan</string>
+    <string name="pref_nexus_custom_background_title">Arrière-plan personnalisé</string>
+    <string name="pref_nexus_custom_background_summary">Sélectionner une image d’arrière-plan</string>
+    <string name="pref_nexus_custom_background_set_summary">Arrière-plan personnalisé défini</string>
+    <string name="pref_nexus_reset_background_title">Réinitialiser l’arrière-plan</string>
+    <string name="pref_nexus_reset_background_summary">Effacer l’arrière-plan personnalisé et utiliser l’arrière-plan intégré</string>
+    <string name="nexus_bg_pyramid">Pyramide</string>
+    <string name="nexus_bg_pyramid_1">Pyramide 1</string>
+    <string name="nexus_bg_pyramid_2">Pyramide 2</string>
+    <string name="nexus_bg_pyramid_3">Pyramide 3</string>
+    <string name="nexus_bg_pyramid_4">Pyramide 4</string>
+    <string name="nexus_custom_background_set_toast">Arrière-plan personnalisé défini. Réappliquez le fond d’écran pour prendre effet.</string>
+    <string name="nexus_background_changed_title">Arrière-plan mis à jour</string>
+    <string name="nexus_background_changed_message">Arrière-plan enregistré. Appliquer les modifications maintenant ?</string>
+    <string name="nexus_background_reset_toast">Arrière-plan personnalisé effacé</string>
+    <string name="nexus_background_reset_title">Arrière-plan réinitialisé</string>
+    <string name="nexus_background_reset_message">Arrière-plan personnalisé effacé. Appliquer les modifications maintenant ?</string>
+    <string name="action_apply_now">Appliquer maintenant</string>
+    <string name="action_later">Plus tard</string>
+
+    <!-- Paramètres Grand fond -->
+    <string name="title_unit_scale">Taille des méduses</string>
+    <string name="summary_unit_scale">Modifier la taille des méduses</string>
+    <string name="title_unit_number">Nombre de méduses</string>
+    <string name="summary_unit_number">Modifier le nombre de méduses</string>
+    <string name="title_background_image_type">Arrière-plan</string>
+    <string name="summary_background_image_type">Changer d’arrière-plan</string>
+    <string name="title_background_brightness">Luminosité de l’arrière-plan</string>
+    <string name="summary_background_brightness">Modifier la luminosité de l’arrière-plan</string>
+    <string name="title_background_lighting">Éclairage de l’arrière-plan</string>
+    <string name="summary_background_lighting">Modifier l’éclairage de l’arrière-plan</string>
+    <string name="title_particle_color">Couleur centrale des méduses</string>
+    <string name="summary_particle_color">Modifier la couleur du centre</string>
+    <string name="deepsea_custom_background_title">Arrière-plan personnalisé</string>
+    <string name="deepsea_custom_background_summary">Sélectionner une image d’arrière-plan</string>
+    <string name="deepsea_custom_background_set_summary">Arrière-plan personnalisé défini</string>
+    <string name="deepsea_reset_background_title">Réinitialiser l’arrière-plan</string>
+    <string name="deepsea_reset_background_summary">Effacer l’arrière-plan personnalisé et utiliser l’arrière-plan intégré</string>
+    <string name="deepsea_background_changed_title">Arrière-plan mis à jour</string>
+    <string name="deepsea_background_changed_message">Arrière-plan enregistré. Appliquer les modifications maintenant ?</string>
+    <string name="deepsea_background_reset_title">Arrière-plan réinitialisé</string>
+    <string name="deepsea_background_reset_message">Arrière-plan personnalisé effacé. Appliquer les modifications maintenant ?</string>
+    <string name="deepsea_apply_now">Appliquer maintenant</string>
+    <string name="deepsea_apply_later">Plus tard</string>
+    <string name="deepsea_custom_background_failed">Impossible d’enregistrer l’image d’arrière-plan</string>
+
+    <!-- Paramètres avancés Nexus -->
+    <string name="pref_nexus_advanced_title">Paramètres avancés</string>
+    <string name="pref_nexus_max_pulses">Max. d’impulsions</string>
+    <string name="pref_nexus_max_pulses_summary">Nombre maximal d’impulsions régulières affichées simultanément à l’écran (par défaut : 20)</string>
+    <string name="pref_nexus_max_extras">Max. d’impulsions supplémentaires</string>
+    <string name="pref_nexus_max_extras_summary">Nombre d’impulsions supplémentaires déclenchées par le toucher (par défaut : 40)</string>
+    <string name="pref_nexus_pulse_size">Taille des impulsions</string>
+    <string name="pref_nexus_pulse_size_summary">Taille en pixels de la texture d’impulsion (par défaut : 14)</string>
+    <string name="pref_nexus_glow_size">Taille de la lueur</string>
+    <string name="pref_nexus_glow_size_summary">Taille en pixels de la texture de lueur (par défaut : 64)</string>
+    <string name="pref_nexus_speed">Vitesse</string>
+    <string name="pref_nexus_speed_summary">Vitesse de déplacement de base des impulsions (par défaut : 20 = 0,2)</string>
+    <string name="pref_nexus_speed_delta_min">Delta min. de vitesse</string>
+    <string name="pref_nexus_speed_delta_min_summary">Multiplicateur minimal pour la variation aléatoire de vitesse (par défaut : 70 = 0,7)</string>
+    <string name="pref_nexus_speed_delta_max">Delta max. de vitesse</string>
+    <string name="pref_nexus_speed_delta_max_summary">Multiplicateur maximal pour la variation aléatoire de vitesse (par défaut : 170 = 1,7)</string>
+    <string name="pref_nexus_trail_size">Taille de la traînée</string>
+    <string name="pref_nexus_trail_size_summary">Longueur de l’effet de traînée des impulsions (par défaut : 40)</string>
+    <string name="pref_nexus_mode">Mode couleur</string>
+    <string name="pref_nexus_mode_summary">Sélectionner la palette de couleurs des impulsions</string>
+
+    <string name="pref_walkaround_use_front">Utiliser l’appareil photo avant</string>
+    <string name="pref_walkaround_use_front_summary">Basculer entre l’appareil photo avant et arrière.</string>
+    <string name="pref_walkaround_mirror_front">Mirror l’appareil photo avant</string>
+    <string name="pref_walkaround_mirror_front_summary">Inverser horizontalement l’appareil photo avant.</string>
+    <string name="walkaround_permission_granted">Autorisation de l’appareil photo accordée</string>
+    <string name="walkaround_permission_denied">Autorisation de l’appareil photo refusée. L’aperçu en direct ne fonctionnera pas.</string>
+    <string name="pref_weather_update_interval">Intervalle de mise à jour météo</string>
+    <string name="pref_weather_refresh_now">Actualiser la météo maintenant</string>
+    <string name="pref_weather_refresh_now_summary">Récupérer immédiatement les dernières données météo</string>
+    <string name="pref_weather_refresh_now_success">Actualisation météo terminée</string>
+    <string name="pref_weather_refresh_now_failed">Échec de l’actualisation météo</string>
+    <string name="pref_openweather_api_key_title">Clé API OpenWeather</string>
+    <string name="pref_openweather_api_key_dialog">Saisissez votre clé API OpenWeather</string>
+    <string name="pref_openweather_api_key_summary_set">Clé API configurée</string>
+    <string name="pref_openweather_api_key_summary_unset">Clé API non configurée</string>
+    <string name="pref_weather_api_notice">Activez les changements météo en configurant une clé API dans les paramètres.</string>
+    <string name="pref_apply_api_title">Demander une API</string>
+    <string name="pref_weather_api_guide_intro">Guide de configuration de la clé API OpenWeather.</string>
+    <string name="pref_weather_api_guide_prepare">Étape 1 : Préparation\n- Une adresse e-mail pouvant recevoir des messages de vérification\n- Un environnement réseau pouvant accéder au site OpenWeather</string>
+    <string name="pref_weather_api_guide_step_register1">Étape 2 : Créer un compte OpenWeather\n1. Ouvrez https://openweathermap.org/ et appuyez sur le bouton orange "Login" en haut à droite (voir image 1).</string>
+    <string name="pref_weather_api_guide_step_register2">2. Sur la page de connexion, appuyez sur "Create an Account".</string>
+    <string name="pref_weather_api_guide_step_register3">3. Remplissez le formulaire d’inscription (voir image 3) :\n    Nom d’utilisateur : nom personnalisé pour l’identification du compte\n    E-mail : votre adresse e-mail valide pour la vérification et la récupération du compte\n    Mot de passe : définissez votre mot de passe\n    Répéter le mot de passe : saisissez à nouveau le même mot de passe\nSoumettez le formulaire pour vous inscrire.</string>
+    <string name="pref_weather_api_guide_step_verify1">Étape 3 : Vérifiez votre e-mail\n1. Après l’inscription, la page affiche : Nous avons envoyé le lien de confirmation à xxx@xx.com. Veuillez vérifier votre e-mail. 2. Ouvrez votre e-mail, trouvez le message d’OpenWeather et appuyez sur le bouton "Verify your email" pour terminer la vérification (voir image 5).\nSi vous ne recevez pas l’e-mail, vérifiez vos dossiers de spam ou promotions.</string>
+    <string name="pref_weather_api_guide_step_verify2">2. Ouvrez votre e-mail, trouvez le message d’OpenWeather et appuyez sur le bouton "Verify your email" pour terminer la vérification.</string>
+    <string name="pref_weather_api_guide_step_verify3">Si vous ne recevez pas l’e-mail, vérifiez vos dossiers de spam ou promotions.</string>
+    <string name="pref_weather_api_guide_step_key1">Étape 4 : Obtenez votre clé API\n1. Après vérification, revenez sur OpenWeather et connectez-vous.\n2. Dans votre tableau de bord, ouvrez "API Keys" dans le menu de navigation.</string>
+    <string name="pref_weather_api_guide_step_key2">3. Sur la page de gestion des API, copiez la clé générée par défaut (généralement nommée "Default", statut "Active"), ou saisissez un nom et appuyez sur "Generate" pour créer une nouvelle clé.</string>
+    <string name="pref_weather_api_guide_step_key3">Important : les clés gratuites sont limitées à 60 appels par minute et 1000 par jour, ce qui est suffisant pour un usage personnel. Ne partagez pas votre clé publiquement pour éviter les abus et le bridage du compte.</string>
+    <string name="pref_weather_api_guide_step_config1">Étape 5 : Configurer la clé API dans l’application de fonds d’écran\n1. Ouvrez l’application de fonds d’écran et appuyez sur l’icône de nuage en haut à droite.</string>
+    <string name="pref_weather_api_guide_step_config2">2. Sélectionnez "Clé API OpenWeather" dans le menu contextuel.</string>
+    <string name="pref_weather_api_guide_step_config3">3. Collez la clé API copiée dans la zone de saisie et appuyez sur "Confirmer" pour enregistrer.</string>
+    <string name="pref_weather_api_guide_step_config4">4. Appuyez sur "Actualiser la météo maintenant" pour tester. Si le fond d’écran charge normalement les informations météo, la configuration est réussie.</string>
+    <string name="pref_weather_api_guide_common">Étape 6 : Dépannage\n- Vérifiez que la clé est copiée entièrement sans espaces ni sauts de ligne supplémentaires.\n- Une nouvelle clé API peut prendre 10 à 30 minutes pour s’activer ; attendez et réessayez.\n- Assurez-vous que l’autorisation de localisation est activée dans l’application.</string>
+    <string name="pref_weather_api_guide_illustration">Illustration du tutoriel API</string>
+    <string name="pref_weather_api_guide_link_text">https://openweathermap.org/</string>
+    <string name="pref_weather_api_guide_open_web_button">Ouvrir le site OpenWeather</string>
+    <string name="pref_weather_last_refresh">Dernière actualisation : %1$s</string>
+    <string name="pref_weather_last_refresh_unknown">Dernière actualisation : inconnue</string>
+    <string name="pref_weather_debug_title">Débogage météo</string>
+    <string name="pref_weather_debug_restore">Retour à la logique météo normale</string>
+    <string name="pref_weather_debug_override">Remplacement météo appliqué : %1$s</string>
+    <string name="weather_toolbar_title">Paramètres météo</string>
+    <string name="pref_musicvis_mesh_mode_title">Utiliser le maillage hérité en bandes de triangles</string>
+    <string name="pref_musicvis_mesh_mode_summary">Activé : maillage/primitif RS d’origine (bande de triangles). Désactivé : maillage de lignes actuel.</string>
+
+    <string name="musicvis_permission_granted">Autorisation audio accordée</string>
+    <string name="musicvis_permission_denied">Autorisation audio refusée. La visualisation musicale ne fonctionnera pas.</string>
+    <string name="wallpaper_preview_not_supported">Aperçu du fond d’écran non pris en charge</string>
+    <string name="miui_permission_title">Autorisation requise</string>
+    <string name="miui_permission_message">MIUI nécessite d’activer manuellement l’autorisation "Service de fond d’écran animé" pour ouvrir l’aperçu.\n\nAppuyez sur OK, puis activez-la dans la gestion des autorisations.</string>
+    <string name="miui_permission_go_settings">Aller aux paramètres</string>
+    <string name="miui_permission_continue">Continuer</string>
+    <string name="miui_permission_open_failed">Impossible d’ouvrir les paramètres</string>
+    <string name="phasebeam_ssion_message">MIUI nécessite d’activer manuellement l’autorisation "Service de fond d’écran animé" pour ouvrir l’aperçu.\n\nAppuyez sur OK, puis activez-la dans la gestion des autorisations.</string>
+    <string name="no_live_wallpaper_support">Les fonds d’écran animés ne sont pas pris en charge sur cet appareil</string>
+    <string name="about_title">À propos</string>
+    <string name="about_body">Auteur : 念.\nE-mail : 3471348199@qq.com,\n
+        xujiekai508@gmail.com\nAuteur du projet original : The Android Open Source Project
+        (AOSP)\n\nPrésentation du projet :\nCe projet migre et maintient des fonds d’écran animés classiques d’Android. L’objectif est de préserver entièrement les visuels d’origine tout en modernisant la pile de rendu pour la compatibilité, les performances et la stabilité sur les versions actuelles d’Android.\n\nObjectifs principaux :\n1) Fidélité visuelle : reproduire fidèlement la dérive des feuilles, les ondulations de l’eau, les couleurs et le timing.\n2) Performances et stabilité : réduire la charge CPU/GPU et améliorer la fluidité en haute fréquence de rafraîchissement.\n3) Compatibilité à long terme : fonctionner sur Android 10+ et conserver une voie de migration future.\n\nPourquoi migrer de RenderScript vers OpenGL ES 2.0 ?\n- RenderScript est obsolète et supprimé des chaînes d’outils SDK/NDK récentes.\n- Il est fragile selon les appareils et les ROM, avec des échecs de rendu fréquents.\n- OpenGL ES 2.0 est largement pris en charge et permet une optimisation GPU.</string>
+
+    <!-- Préférences du fond d’écran Galaxie -->
+    <string name="pref_galaxy_particle_count">Nombre de particules</string>
+    <string name="pref_galaxy_particle_count_summary">Nombre de particules dans la galaxie (affecte les performances)</string>
+    <string name="pref_galaxy_particle_alpha">Opacité des particules</string>
+    <string name="pref_galaxy_particle_alpha_summary">Ajuster la transparence des particules (s’applique aux deux modes de calcul)</string>
+    <string name="pref_galaxy_precise_calc">Calcul spiral précis</string>
+    <string name="pref_galaxy_precise_calc_summary">Utiliser une initialisation spirale logarithmique inspirée de M31 au lieu du modèle aléatoire hérité</string>
+    <string name="pref_galaxy_use_light2">Utiliser la texture light2</string>
+    <string name="pref_galaxy_use_light2_summary">Activer pour utiliser light2 ; désactiver pour utiliser light1</string>
+    <string name="pref_galaxy_arm_count">Nombre de bras</string>
+    <string name="pref_galaxy_arm_count_summary">Nombre de bras spiraux (effectif uniquement en mode précis)</string>
+    <string name="pref_galaxy_arm_offset">Décalage des bras (rad ×1000)</string>
+    <string name="pref_galaxy_arm_offset_summary">Espacement angulaire entre les bras en radians (0 ~ 2π, mode précis uniquement)</string>
+    <string name="pref_galaxy_pitch_angle">Angle de tangage (degrés ×10)</string>
+    <string name="pref_galaxy_pitch_angle_summary">Angle de tangage spiral en degrés (0 ~ 30, mode précis uniquement)</string>
+    <string name="pref_galaxy_inner_scatter">Dispersion interne (×100)</string>
+    <string name="pref_galaxy_inner_scatter_summary">Intensité de dispersion des bras près du noyau (mode précis uniquement)</string>
+    <string name="pref_galaxy_outer_scatter">Dispersion externe (×100)</string>
+    <string name="pref_galaxy_outer_scatter_summary">Intensité de dispersion des bras dans les régions externes (mode précis uniquement)</string>
+    <string name="pref_galaxy_turbulence">Turbulence (×100)</string>
+    <string name="pref_galaxy_turbulence_summary">Intensité de turbulence aléatoire pour la déformation précise des bras</string>
+    <string name="pref_galaxy_forbidden_radius">Rayon interdit du noyau (kpc ×100)</string>
+    <string name="pref_galaxy_forbidden_radius_summary">Rayon interne exclu de l’ajustement logarithmique des bras (mode précis uniquement)</string>
+    <string name="pref_galaxy_ellipse_ratio">Rapport d’ellipse (×1000)</string>
+    <string name="pref_galaxy_ellipse_ratio_summary">Ellipticité de la morphologie des bras (0,5 ~ 1,0, mode précis uniquement)</string>
+    <string name="pref_galaxy_ellipse_twist">Torsion d’ellipse (×1000)</string>
+    <string name="pref_galaxy_ellipse_twist_summary">Décalage de torsion pour l’ellipticité des bras (-0,1 ~ 0,1, mode précis uniquement)</string>
+    <string name="pref_galaxenable_recolor_summary">Une fois activé, vous pouvez personnaliser les couleurs des faisceaux</string>
+
+    <!-- Préférences du fond d’écran Galaxie 4 -->
+    <string name="pref_galaxy4_bg_star_count">Nombre d’étoiles d’arrière-plan</string>
+    <string name="pref_galaxy4_bg_star_count_summary">Nombre d’étoiles d’arrière-plan dans la galaxie (affecte les performances)</string>
+    <string name="phasebeam_y4_bg_star_count">Nombre d’étoiles d’arrière-plan</string>
+    <string name="pref_galaxy4_space_cloud_count">Nombre de nuages cosmiques</string>
+    <string name="pref_galaxy4_space_cloud_count_summary">Nombre de nuages dans la galaxie</string>
+
+    <!-- Fond d’écran Phase Beam -->
+    <string name="wallpaper_phasebeam">Faisceau de phase</string>
+    <string name="wallpaper_enable_recolor_summary">Une fois activé, vous pouvez personnaliser les couleurs des faisceaux</string>
+    <string name="phasebeam_phasebeam">Faisceau de phase</string>
+    <string name="wallpaper_phasebeam_author">Google</string>
+    <string name="wallpaper_phasebeam_desc">Des faisceaux doux et des particules balayant un fond vivant.</string>
+
+    <string name="phasebeam_enable_recolor">Ajuster les couleurs des faisceaux</string>
+    <string name="phasebeam_enable_recolor_summary">Une fois activé, vous pouvez personnaliser les couleurs des faisceaux</string>
+    <string name="miui_permienable_recolor_summary">Une fois activé, vous pouvez personnaliser les couleurs des faisceaux</string>
+    <string name="phasebeam_color_label">Couleur</string>
+    <string name="phasebeam_saturation_label">Saturation</string>
+    <string name="phasebeam_brightness_label">Luminosité</string>
+
+    <!-- Paramètres globaux de fréquence d’images -->
+    <string name="pref_global_frame_rate">Fréquence d’images globale</string>
+    <string name="pref_global_frame_rate_summary">Définir la fréquence d’images pour tous les fonds d’écran (les valeurs plus élevées consomment plus de batterie)</string>
+    <string name="pref_preview_ratio">Ratio de l’aperçu en direct</string>
+    <string name="pref_preview_ratio_dialog">Ratio de l’aperçu en direct</string>
+    <string name="pref_preview_ratio_summary">Format : L:H, ex. 9:16</string>
+    <string name="pref_preview_ratio_invalid">Ratio invalide. Utilisez L:H, ex. 9:16</string>
+
+    <string name="grass_color_default">Par défaut</string>
+    <string name="grass_color_green">Vert</string>
+    <string name="grass_color_blue">Bleu</string>
+    <string name="grass_color_red">Rouge</string>
+    <string name="grass_color_pink">Rose</string>
+    <string name="grass_color_purple">Violet</string>
+    <string name="grass_color_yellow">Jaune</string>
+    <string name="grass_color_black">Noir</string>
+    <string name="grass_color_white">Blanc</string>
+
+    <!-- Fond d’écran Fumée magique -->
+    <string name="wallpaper_magicsmoke">Fumée magique</string>
+    <string name="wallpaper_magicsmoke_author">Google</string>
+    <string name="pref_magicsmoke_preset">Thème visuel</string>
+    <string name="pref_magicsmoke_preset_summary">Choisissez parmi 20 effets différents de fumée / nuages / plasma</string>
+    <string name="pref_fireworks_custom_background_title">Image d’arrière-plan personnalisée</string>
+    <string name="pref_fireworks_custom_background_summary">Appuyez pour sélectionner une image d’arrière-plan personnalisée</string>
+    <string name="pref_fireworks_reset_background_title">Rétablir l’arrière-plan par défaut</string>
+    <string name="pref_fireworks_reset_background_summary">Supprimer l’arrière-plan personnalisé et utiliser celui par défaut</string>
+
+    <!-- Fond d’écran Spirale Holo -->
+    <string name="wallpaper_holospiral">Spirale Holo</string>
+    <string name="wallpaper_holospiral_author">Google</string>
+    <string name="wallpaper_holospiral_desc">Fond d’écran spiralé sur le thème Holo.</string>
+
+    <!-- Fond d’écran Mer bleue -->
+    <string name="wallpaper_bluesea">Mer bleue</string>
+    <string name="wallpaper_bluesea_author">TAT</string>
+    <string name="wallpaper_bluesea_desc">Créatures marines translucides flottant dans une mer d’un bleu éclatant.</string>
+
+    <string name="openweather_api_key">YOUR_OPENWEATHER_API_KEY</string>
+
+    <!-- Écran À propos -->
+    <string name="about_app_info">Informations sur l’application</string>
+    <string name="about_project_intro">Présentation du projet</string>
+    <string name="about_project_one_liner">Remasterisation de fonds d’écran animés classiques</string>
+    <string name="about_project_description">Fonds d’écran animés classiques d’Android, entièrement remasterisés et modernisés pour les nouveaux appareils. RenderScript → OpenGL ES 2.0, haute compatibilité, faible consommation, accélération GPU.</string>
+    <string name="about_project_highlights">Points forts</string>
+    <string name="about_project_highlights_detail">Faible consommation, haute compatibilité, fidélité visuelle d’origine, accélération GPU, maintenance à long terme.</string>
+    <string name="about_links">Liens et contact</string>
+    <string name="about_official_website">Site officiel</string>
+    <string name="about_official_website_url">https://github.com/zyfxv/android-live-wallpapers</string>
+    <string name="about_email">E-mail</string>
+    <string name="about_email_address">3471348199@qq.com</string>
+    <string name="about_email_address_alt">xujiekai508@gmail.com</string>
+    <string name="about_qq">Groupe QQ</string>
+    <string name="about_qq_number">3471348199</string>
+    <string name="about_bilibili">Bilibili</string>
+    <string name="about_bilibili_url">https://space.bilibili.com/470023065</string>
+    <string name="about_feedback">Retour d’information</string>
+    <string name="about_feedback_contact">Pour tout retour, utilisez les coordonnées ci-dessus.</string>
+    <string name="about_thanks">Remerciements</string>
+    <string name="about_thanks_original">Merci aux auteurs originaux</string>
+    <string name="about_thanks_original_detail">Original : MediaTek, Google, Samsung</string>
+
+    <string name="about_developer">Développeur</string>
+    <string name="about_author">Auteur</string>
+    <string name="about_author_detail">念. et contributeurs</string>
+    <string name="about_disclaimer">Avertissement légal</string>
+    <string name="about_disclaimer_title">Uniquement pour l’apprentissage et les échanges</string>
+    <string name="about_disclaimer_detail">Ce projet est uniquement destiné à un usage éducatif non commercial. Tous les droits appartiennent aux titulaires des droits d’auteur d’origine.</string>
+    <string name="app_version_summary">Version : %1$s</string>
+    <string name="copied_to_clipboard">Copié dans le presse-papiers</string>
+    <string name="no_browser_found">Aucun navigateur trouvé</string>
+    <string name="no_email_found">Aucune application de messagerie trouvée</string>
+    <string name="galaxy_enable_precise_calc_first">Veuillez d’abord activer le calcul spiral précis</string>
+    <string name="grass_disable_dandelion_firefly_first">Veuillez d’abord désactiver les pissenlits et les lucioles</string>
+    <string name="grass_disable_legacy_particles_first">Veuillez d’abord désactiver le mouvement de particules hérité (MTK)</string>
+    <string name="grass_enable_dandelion_first">Veuillez d’abord activer les pissenlits</string>
+    <string name="grass_enable_firefly_first">Veuillez d’abord activer les lucioles</string>
+    <string name="phasebeam_enable_recolor_first">Veuillez d’abord activer l’ajustement des couleurs des faisceaux</string>
+    <string name="config_open_browser_failed">Impossible d’ouvrir le navigateur</string>
+    <string name="fireworks_custom_background_set_toast">Arrière-plan personnalisé défini. Réappliquez le fond d’écran pour que cela prenne effet.</string>
+    <string name="fireworks_background_changed_title">Arrière-plan mis à jour</string>
+    <string name="fireworks_background_changed_message">Arrière-plan enregistré. Appliquer les modifications maintenant ?</string>
+    <string name="fireworks_background_reset_toast">Arrière-plan par défaut restauré</string>
+    <string name="fireworks_background_reset_title">Arrière-plan réinitialisé</string>
+    <string name="fireworks_background_reset_message">Arrière-plan par défaut restauré. Appliquer les modifications maintenant ?</string>
+    <string name="fireworks_custom_background_set_summary">Arrière-plan personnalisé défini</string>
+    <string name="fireworks_custom_background_click_summary">Appuyez pour choisir une image d’arrière-plan personnalisée</string>
+    <string name="reset_all_settings_title">Restaurer tous les paramètres par défaut</string>
+    <string name="reset_all_settings_message">Restaurer tous les paramètres des fonds d’écran et globaux à leurs valeurs par défaut ?</string>
+    <string name="reset_all_settings_done">Tous les paramètres ont été rétablis par défaut</string>
+    <string name="reset_current_settings_title">Restaurer les paramètres par défaut</string>
+    <string name="reset_current_settings_summary">Restaurer les paramètres de ce fond d’écran aux valeurs par défaut</string>
+    <string name="reset_current_settings_message">Restaurer les paramètres de ce fond d’écran à leurs valeurs par défaut ?</string>
+    <string name="reset_current_settings_done">Les paramètres du fond d’écran ont été rétablis par défaut</string>
+    <string name="reset_action_confirm">Restaurer</string>
+</resources>

@@ -1,0 +1,543 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+
+    <string name="pref_grass_legacy_particles">Diente de león y luciérnagas clásicos</string>
+    <string name="pref_grass_legacy_particles_summary">Cambia al efecto visual clásico de MTK para dientes de león y luciérnagas</string>
+    <!-- Application name -->
+    <string name="wallpapers">REAndroid Live Wallpapers</string>
+    <string name="app_name">REAndroid Live Wallpapers</string>
+
+    <!-- Flsorescence (荧光) Wallpaper -->
+    <string name="wallpaper_flsorescence">Fluorescencia</string>
+    <string name="wallpaper_flsorescence_author">念.</string>
+    <string name="wallpaper_flsorescence_desc">Puntos brillantes se mueven suavemente por la pantalla como si tuvieran vida.</string>
+    <string name="pref_flsorescence_shape">Forma del punto</string>
+    <string name="pref_flsorescence_shape_summary">Cambia la forma de cada punto</string>
+    <string name="pref_flsorescence_color">Esquema de color del punto</string>
+    <string name="pref_flsorescence_color_summary">Cambiar el esquema de color</string>
+    <string name="pref_flsorescence_scale">Escala del punto</string>
+    <string name="pref_flsorescence_scale_summary">Cambia el tamaño de cada punto</string>
+    <string name="pref_flsorescence_speed">Velocidad de movimiento</string>
+    <string name="pref_flsorescence_speed_summary">Cambia la velocidad del movimiento</string>
+    <string name="pref_flsorescence_amount">Cantidad de puntos</string>
+    <string name="pref_flsorescence_amount_summary">Cambia la cantidad de puntos</string>
+    <string name="pref_flsorescence_pattern">Patrón de movimiento</string>
+    <string name="pref_flsorescence_pattern_summary">Cambia el patrón de movimiento</string>
+
+    <!-- Wallpapers: -->
+    <skip />
+
+    <!-- Wallpaper showing the camera preview -->
+    <string name="wallpaper_walkaround">Ver a través</string>
+    <string name="wallpaper_walkaround_author">Google</string>
+    <string name="wallpaper_walkaround_desc">
+        Mira a través de tu teléfono y camina sin riesgo de accidentes.
+    </string>
+
+    <!-- Wallpaper showing grass and the sky -->
+    <string name="wallpaper_grass">Césped</string>
+    <string name="wallpaper_grass_vk">Césped Vulkan</string>
+    <string name="wallpaper_grass_author">Google</string>
+    <string name="wallpaper_grass_desc">
+        Las briznas de hierba se mecen suavemente frente a un cielo diurno o nocturno.
+    </string>
+    <string name="wallpaper_grass_vk_desc">Entrada de fondo de pantalla de césped reservada para el renderizador Vulkan.</string>
+
+    <string name="wallpaper_aurora1">Aurora</string>
+    <string name="wallpaper_aurora1_author">TAT</string>
+    <string name="wallpaper_aurora1_desc">Auroras boreales en capas se desplazan por un cielo estrellado y reaccionan al tacto.</string>
+    <string name="wallpaper_aurora2">Aurora 2</string>
+    <string name="wallpaper_aurora2_author">HU1</string>
+    <string name="wallpaper_aurora2_desc">Cortinas de aurora animadas se desplazan sobre paisajes nocturnos temáticos con estrellas centelleantes y estrellas fugaces.</string>
+
+    <!-- Wallpaper showing a galaxy -->
+    <string name="wallpaper_galaxy">Galaxia</string>
+    <string name="wallpaper_nightsky">Cielo nocturno</string>
+    <string name="wallpaper_microbes">Microbios</string>
+    <string name="wallpaper_galaxy_vk">Galaxia Vulkan</string>
+    <string name="wallpaper_galaxy_author">Google</string>
+    <string name="wallpaper_nightsky_author">念.</string>
+    <string name="wallpaper_microbes_author">Samsung</string>
+    <string name="wallpaper_galaxy_desc">
+        Una galaxia hecha de estrellas que giran lentamente.
+    </string>
+    <string name="wallpaper_nightsky_desc">Cielo nocturno con estrellas reales, movimiento sidéreo, orientación por sensor, aceleración temporal con pulsación larga y estelas de estrellas que se desvanecen.</string>
+    <string name="wallpaper_microbes_desc">Vida bajo el microscopio con movimiento táctil, comportamiento de alimentación y animación de partículas orgánicas.</string>
+    <string name="wallpaper_galaxy_vk_desc">
+        Entrada de fondo de pantalla de galaxia reservada para el renderizador Vulkan.
+    </string>
+
+    <!-- Wallpaper showing Galaxy 4 -->
+    <string name="wallpaper_galaxy4">Galaxia 4</string>
+    <string name="wallpaper_galaxy4_author">Google</string>
+    <string name="wallpaper_description_galaxy4">
+        Una hermosa galaxia con nubes arremolinadas y estrellas centelleantes.
+    </string>
+
+    <!-- Wallpaper showing leaves floating on water -->
+    <string name="wallpaper_fall">Hojas de agua</string>
+    <string name="wallpaper_fall_vk">Hojas de agua Vulkan</string>
+    <string name="wallpaper_fall_author">Google</string>
+    <string name="wallpaper_fall_desc">
+        Las hojas de otoño caen \n Al estanque ondulado: \n Fondo líquido Zen
+    </string>
+    <string name="wallpaper_fall_vk_desc">Entrada de fondo de pantalla de Hojas de agua reservada para el renderizador Vulkan.</string>
+
+    <!-- Wallpaper showing wild world -->
+    <string name="wallpaper_wildworld">Mundo salvaje</string>
+    <string name="wallpaper_wildworld_author">MediaTek</string>
+    <string name="wallpaper_wildworld_desc">
+        Un paisaje prehistórico con movimiento en capas y criaturas juguetonas.
+    </string>
+
+    <!-- Wallpaper showing fireworks -->
+    <string name="wallpaper_fireworks">Fuegos artificiales</string>
+    <string name="wallpaper_fireworks_author">MediaTek</string>
+    <string name="wallpaper_fireworks_desc">
+        Coloridos fuegos artificiales florecen contra el cielo nocturno.
+    </string>
+
+    <!-- Wallpaper showing windmills -->
+    <string name="wallpaper_windmill">Molinos de viento</string>
+    <string name="wallpaper_windmill_author">MediaTek</string>
+    <string name="wallpaper_windmill_desc">Colinas onduladas con molinos de viento animados bajo un clima dinámico.</string>
+
+    <!-- Wallpaper showing ocean weather -->
+    <string name="wallpaper_ocean">Clima oceánico</string>
+    <string name="wallpaper_ocean_author">MediaTek</string>
+    <string name="wallpaper_ocean_desc">Olas y cielo que cambian con las condiciones del mundo real.</string>
+
+    <!-- Wallpaper showing deep sea -->
+    <string name="wallpaper_deepsea">Mar profundo</string>
+    <string name="wallpaper_deepsea_author">Samsung</string>
+    <string name="wallpaper_deepsea_desc">Medusas translúcidas nadan en las profundidades del mar.</string>
+
+    <!-- Wallpaper showing a clock -->
+    <string name="wallpaper_clock">Reloj polar</string>
+    <string name="wallpaper_clock_author">Google</string>
+    <string name="wallpaper_clock_desc">
+        Presenta la fecha y la hora como arcos en sentido horario: mes, día, hora, minuto y segundo.
+    </string>
+
+    <!-- Wallpaper showing nexus -->
+    <string name="wallpaper_nexus">Nexus</string>
+    <string name="wallpaper_nexus_author">Google</string>
+    <string name="wallpaper_nexus_desc">
+        Un vistazo al interior de la red neuronal.
+    </string>
+
+    <!-- Wallpaper showing noise field -->
+    <string name="wallpaper_noisefield">Campo de ruido</string>
+    <string name="wallpaper_noisefield_author">Google</string>
+    <string name="wallpaper_noisefield_desc">Un campo fluido de burbujas luminosas que se desplazan sobre un suave degradado.</string>
+    <string name="wallpaper_nebula">Nebulosa</string>
+    <string name="wallpaper_nebula_author">念.</string>
+    <string name="wallpaper_nebula_desc">Nebulosa de Orión renderizada volumétricamente en tiempo real a partir de fórmulas.</string>
+
+    <!-- Music visualization wallpapers -->
+    <string name="musicvis_author">Google</string>
+    <string name="wallpaper_vis2">Forma de onda</string>
+    <string name="wallpaper_vis3">Espectro</string>
+    <string name="wallpaper_vis4">Medidor VU</string>
+    <string name="wallpaper_vis5">Múltiple</string>
+    <string name="vis2_desc">Dibuja la onda de sonido de cualquier pista musical en reproducción.</string>
+    <string name="vis3_desc">Muestra el espectro de frecuencias de cualquier pista musical en reproducción.</string>
+    <string name="vis4_desc">Simula un medidor de sonido analógico.</string>
+    <string name="vis5_desc">Todas las visualizaciones de música juntas, girando lentamente en 3D.</string>
+
+    <!-- Polar clock: title of settings activity -->
+    <string name="clock_settings">Configuración del reloj polar</string>
+    <!-- Polar clock: label for "show seconds" pref -->
+    <string name="show_seconds">Mostrar segundos</string>
+    <!-- Polar clock: label for "variable widths" pref -->
+    <string name="variable_line_width">Variar anchos de anillo</string>
+    <!-- Polar clock: label for "palette" pref -->
+    <string name="palette">Paleta de colores</string>
+
+    <!-- Polar clock: palette name -->
+    <string name="palette_gray">Hierro</string>
+    <!-- Polar clock: palette name -->
+    <string name="palette_violet">Medianoche</string>
+    <!-- Polar clock: palette name -->
+    <string name="palette_matrix">Pantalla verde</string>
+    <!-- Polar clock: palette name -->
+    <string name="palette_white_c">Oso polar (dinámico)</string>
+    <!-- Polar clock: palette name -->
+    <string name="palette_black_c">Agujero negro (dinámico)</string>
+    <!-- Polar clock: palette name -->
+    <string name="palette_halloween">Pastel de calabaza</string>
+    <!-- Polar clock: palette name -->
+    <string name="palette_zenburn">Ensalada de frutas alienígena</string>
+    <!-- Polar clock: palette name -->
+    <string name="palette_oceanic">Láser azul</string>
+
+    <!-- Settings UI -->
+    <string name="settings_title">Configuración de fondos de pantalla en vivo</string>
+    <string name="settings_entry_config">Configuración</string>
+    <string name="settings_entry_fall">Hojas en la superficie del agua</string>
+    <string name="settings_entry_grass">Cielo y césped</string>
+    <string name="settings_entry_aurora1">Aurora</string>
+    <string name="settings_entry_aurora2">Aurora 2</string>
+    <string name="settings_entry_wildworld">Mundo salvaje</string>
+    <string name="settings_entry_fireworks">Fuegos artificiales</string>
+    <string name="settings_entry_windmill">Molino de viento</string>
+    <string name="settings_entry_ocean">Clima oceánico</string>
+    <string name="settings_entry_galaxy4">Galaxia 4</string>
+    <string name="settings_entry_galaxy">Galaxia</string>
+    <string name="settings_entry_nightsky">Cielo nocturno</string>
+    <string name="settings_entry_microbes">Microbios</string>
+    <string name="settings_entry_walkaround">Ver a través</string>
+    <string name="settings_entry_phasebeam">Phase Beam</string>
+    <string name="settings_entry_nebula">Nebulosa</string>
+    <string name="settings_entry_clock">Reloj polar</string>
+    <string name="settings_entry_noisefield">Campo de ruido</string>
+    <string name="settings_entry_vis2">Forma de onda</string>
+    <string name="settings_entry_vis3">Espectro</string>
+    <string name="settings_entry_vis4">Medidor VU</string>
+    <string name="settings_entry_vis5">Múltiple</string>
+    <string name="settings_entry_magicsmoke">Humo mágico</string>
+    <string name="settings_entry_holospiral">Espiral holográfica</string>
+    <string name="settings_entry_bluesea">Mar azul</string>
+    <string name="settings_entry_deepsea">Mar profundo</string>
+
+    <string name="pref_fall_leaf_count">Número de hojas</string>
+    <string name="pref_fall_leaf_count_summary">Ajusta el número de hojas que caen (afecta el rendimiento)</string>
+    <string name="pref_fall_green_leaves">Hojas verdes</string>
+    <string name="pref_fall_green_leaves_summary">Cuando está activado, algunas hojas serán verdes</string>
+    <string name="pref_fall_max_drops">Máximo de ondas</string>
+    <string name="pref_fall_max_drops_summary">Número máximo de ondas de agua mostradas simultáneamente en pantalla (afecta el rendimiento)</string>
+    <string name="pref_fall_precise_calc">Cálculo preciso</string>
+    <string name="pref_fall_precise_calc_summary">Usar simulación de ondas basada en física (propagación y amortiguación de ondas)</string>
+
+    <string name="pref_grass_enabled">Mostrar césped</string>
+    <string name="pref_grass_enabled_summary">Mostrar u ocultar el efecto del césped</string>
+    <string name="pref_grass_weather_enabled">Activar efectos climáticos</string>
+    <string name="pref_grass_weather_enabled_summary">Aplicar cambios de iluminación, viento y partículas basados en el clima</string>
+    <string name="pref_grass_weather_rain_count">Cantidad de partículas de lluvia</string>
+    <string name="pref_grass_weather_rain_count_summary">Ajustar la cantidad de partículas de lluvia (10 a 1000)</string>
+    <string name="pref_grass_weather_snow_count">Cantidad de partículas de nieve</string>
+    <string name="pref_grass_weather_snow_count_summary">Ajustar la cantidad de partículas de nieve (10 a 1000)</string>
+    <string name="pref_grass_count">Número de briznas</string>
+    <string name="pref_grass_count_summary">Ajusta el número de briznas de hierba (afecta el rendimiento)</string>
+    <string name="pref_grass_height">Altura del césped</string>
+    <string name="pref_grass_height_summary">Ajusta la altura del césped</string>
+    <string name="pref_grass_width">Ancho del césped</string>
+    <string name="pref_grass_width_summary">Ajusta el ancho del césped</string>
+    <string name="pref_grass_color">Color del césped</string>
+    <string name="pref_grass_color_summary">Ajusta el color del césped para diferentes efectos visuales</string>
+    <string name="pref_grass_hardness">Suavidad del césped</string>
+    <string name="pref_grass_hardness_summary">Ajusta la suavidad de la brizna (valores más altos se doblan más)</string>
+    <string name="pref_grass_night_invert">Invertir cielo nocturno</string>
+    <string name="pref_grass_night_desaturate">Desaturar el césped por la noche</string>
+    <string name="pref_grass_accurate_sun">Cálculo preciso (afecta el rendimiento)</string>
+    <string name="pref_grass_accurate_sun_summary">Calcular las posiciones del sol y la luna según la hora real y la ubicación geográfica</string>
+    <string name="pref_grass_sun">Mostrar sol</string>
+    <string name="pref_grass_sun_summary">Mostrar u ocultar el sol</string>
+    <string name="pref_grass_moon">Mostrar luna (requiere cálculo preciso de salida/puesta del sol)</string>
+    <string name="pref_grass_moon_summary">Mostrar u ocultar la luna con fases lunares realistas</string>
+    <string name="pref_grass_dandelion">Mostrar diente de león (día)</string>
+    <string name="pref_grass_dandelion_summary">Mostrar dientes de león flotantes durante el día</string>
+    <string name="pref_grass_firefly">Mostrar luciérnagas (noche)</string>
+    <string name="pref_grass_firefly_summary">Mostrar luciérnagas volando durante la noche</string>
+    <string name="pref_grass_dandelion_count">Número de dientes de león</string>
+    <string name="pref_grass_firefly_count">Número de luciérnagas</string>
+    <string name="pref_grass_star_count">Número de estrellas</string>
+    <string name="pref_grass_star_count_summary">Ajustar el número de estrellas (0 a 10000)</string>
+    <string name="pref_grass_dandelion_speed">Velocidad del diente de león</string>
+    <string name="pref_open_wallpaper_picker">Abrir vista previa del sistema</string>
+    <string name="pref_open_wallpaper_picker_failed">Vista previa de fondo de pantalla no compatible</string>
+    <string name="pref_open_wallpaper_chooser">Abrir selector de fondos de pantalla</string>
+    <string name="pref_live_preview">Vista previa en vivo</string>
+    <string name="pref_nightsky_preview_hint">Consejo: Use la vista previa en vivo en la aplicación arriba, luego toque Abrir vista previa del sistema para aplicar Cielo nocturno.</string>
+    <string name="pref_nightsky_camera_focal">Longitud focal de la cámara</string>
+    <string name="pref_nightsky_camera_focal_summary">Ajustar la distancia focal del objetivo (mm); valores más grandes amplían más</string>
+    <string name="pref_nightsky_use_sensor">Usar orientación del sensor</string>
+    <string name="pref_nightsky_use_sensor_summary">Cuando está desactivado, usar desplazamiento de página de la pantalla de inicio para rotar la vista (45° por página)</string>
+    <string name="pref_nightsky_auto_time_accel">Aceleración de tiempo automática</string>
+    <string name="pref_nightsky_auto_time_accel_summary">Acelerar continuamente el tiempo del cielo y mantener visibles las estelas de estrellas</string>
+    <string name="pref_nightsky_time_accel_speed">Velocidad de aceleración</string>
+    <string name="pref_nightsky_time_accel_speed_summary">Seleccionar nivel de velocidad para la aceleración automática/pulsación larga</string>
+    <string name="pref_microbes_preview_hint">Consejo: Toque y arrastre en la vista previa para atraer microbios, luego toque Abrir vista previa del sistema para aplicar.</string>
+    <string name="pref_microbes_lifecycle_speed">Velocidad del ciclo de vida</string>
+    <string name="pref_microbes_lifecycle_speed_summary">Ajustar la velocidad del metabolismo, reproducción y decadencia (%)</string>
+    <string name="pref_microbes_motion_activity">Actividad de movimiento</string>
+    <string name="pref_microbes_motion_activity_summary">Ajustar la intensidad de desplazamiento y natación natural (%)</string>
+    <string name="pref_microbes_color_mode">Estilo de color</string>
+    <string name="pref_microbes_color_mode_summary">Cambiar entre la paleta original solo RGB y la paleta mejorada actual</string>
+    <string name="pref_microbes_color_mode_original">Original</string>
+    <string name="pref_microbes_color_mode_modern">Nuevo (actual)</string>
+    <string name="pref_nexus_background_title">Fondo</string>
+    <string name="pref_nexus_custom_background_title">Fondo personalizado</string>
+    <string name="pref_nexus_custom_background_summary">Seleccionar una imagen de fondo</string>
+    <string name="pref_nexus_custom_background_set_summary">Fondo personalizado establecido</string>
+    <string name="pref_nexus_reset_background_title">Restablecer fondo</string>
+    <string name="pref_nexus_reset_background_summary">Borrar fondo personalizado y usar el integrado</string>
+    <string name="nexus_bg_pyramid">Pirámide</string>
+    <string name="nexus_bg_pyramid_1">Pirámide 1</string>
+    <string name="nexus_bg_pyramid_2">Pirámide 2</string>
+    <string name="nexus_bg_pyramid_3">Pirámide 3</string>
+    <string name="nexus_bg_pyramid_4">Pirámide 4</string>
+    <string name="nexus_custom_background_set_toast">Fondo personalizado establecido. Vuelva a aplicar el fondo de pantalla para que surta efecto.</string>
+    <string name="nexus_background_changed_title">Fondo actualizado</string>
+    <string name="nexus_background_changed_message">Fondo guardado. ¿Aplicar cambios ahora?</string>
+    <string name="nexus_background_reset_toast">Fondo personalizado borrado</string>
+    <string name="nexus_background_reset_title">Fondo restablecido</string>
+    <string name="nexus_background_reset_message">Fondo personalizado borrado. ¿Aplicar cambios ahora?</string>
+    <string name="action_apply_now">Aplicar ahora</string>
+    <string name="action_later">Más tarde</string>
+
+    <!-- Deep Sea settings -->
+    <string name="title_unit_scale">Tamaño de la medusa</string>
+    <string name="summary_unit_scale">Cambiar el tamaño de las medusas</string>
+    <string name="title_unit_number">Número de medusas</string>
+    <string name="summary_unit_number">Cambiar número de medusas</string>
+    <string name="title_background_image_type">Fondo</string>
+    <string name="summary_background_image_type">Cambiar el fondo</string>
+    <string name="title_background_brightness">Brillo del fondo</string>
+    <string name="summary_background_brightness">Cambiar el brillo del fondo</string>
+    <string name="title_background_lighting">Iluminación del fondo</string>
+    <string name="summary_background_lighting">Cambiar la iluminación del fondo</string>
+    <string name="title_particle_color">Color central de la medusa</string>
+    <string name="summary_particle_color">Cambiar color del centro</string>
+    <string name="deepsea_custom_background_title">Fondo personalizado</string>
+    <string name="deepsea_custom_background_summary">Seleccionar una imagen de fondo</string>
+    <string name="deepsea_custom_background_set_summary">Fondo personalizado establecido</string>
+    <string name="deepsea_reset_background_title">Restablecer fondo</string>
+    <string name="deepsea_reset_background_summary">Borrar fondo personalizado y usar el integrado</string>
+    <string name="deepsea_background_changed_title">Fondo actualizado</string>
+    <string name="deepsea_background_changed_message">Fondo guardado. ¿Aplicar cambios ahora?</string>
+    <string name="deepsea_background_reset_title">Fondo restablecido</string>
+    <string name="deepsea_background_reset_message">Fondo personalizado borrado. ¿Aplicar cambios ahora?</string>
+    <string name="deepsea_apply_now">Aplicar ahora</string>
+    <string name="deepsea_apply_later">Más tarde</string>
+    <string name="deepsea_custom_background_failed">No se pudo guardar la imagen de fondo</string>
+
+    <!-- Nexus advanced settings -->
+    <string name="pref_nexus_advanced_title">Configuración avanzada</string>
+    <string name="pref_nexus_max_pulses">Máx. de pulsos</string>
+    <string name="pref_nexus_max_pulses_summary">Número máximo de pulsos regulares mostrados simultáneamente en pantalla (Predeterminado: 20)</string>
+    <string name="pref_nexus_max_extras">Máx. de pulsos extra</string>
+    <string name="pref_nexus_max_extras_summary">Número de pulsos adicionales activados por toque (Predeterminado: 40)</string>
+    <string name="pref_nexus_pulse_size">Tamaño del pulso</string>
+    <string name="pref_nexus_pulse_size_summary">Tamaño de píxel de la textura del pulso (Predeterminado: 14)</string>
+    <string name="pref_nexus_glow_size">Tamaño del resplandor</string>
+    <string name="pref_nexus_glow_size_summary">Tamaño de píxel de la textura del resplandor (Predeterminado: 64)</string>
+    <string name="pref_nexus_speed">Velocidad</string>
+    <string name="pref_nexus_speed_summary">Velocidad base de movimiento de los pulsos (Predeterminado: 20 = 0,2)</string>
+    <string name="pref_nexus_speed_delta_min">Delta mínimo de velocidad</string>
+    <string name="pref_nexus_speed_delta_min_summary">Multiplicador mínimo para la variación aleatoria de velocidad (Predeterminado: 70 = 0,7)</string>
+    <string name="pref_nexus_speed_delta_max">Delta máximo de velocidad</string>
+    <string name="pref_nexus_speed_delta_max_summary">Multiplicador máximo para la variación aleatoria de velocidad (Predeterminado: 170 = 1,7)</string>
+    <string name="pref_nexus_trail_size">Tamaño de la estela</string>
+    <string name="pref_nexus_trail_size_summary">Longitud del efecto de estela del pulso (Predeterminado: 40)</string>
+    <string name="pref_nexus_mode">Modo de color</string>
+    <string name="pref_nexus_mode_summary">Seleccionar esquema de color del pulso</string>
+
+    <string name="pref_walkaround_use_front">Usar cámara frontal</string>
+    <string name="pref_walkaround_use_front_summary">Cambiar entre cámara frontal y trasera.</string>
+    <string name="pref_walkaround_mirror_front">Reflejar cámara frontal</string>
+    <string name="pref_walkaround_mirror_front_summary">Voltear la cámara frontal horizontalmente.</string>
+    <string name="walkaround_permission_granted">Permiso de cámara concedido</string>
+    <string name="walkaround_permission_denied">Permiso de cámara denegado. La vista previa de la cámara en vivo no funcionará.</string>
+    <string name="pref_weather_update_interval">Intervalo de actualización del clima</string>
+    <string name="pref_weather_refresh_now">Actualizar clima ahora</string>
+    <string name="pref_weather_refresh_now_summary">Obtener datos climáticos más recientes inmediatamente</string>
+    <string name="pref_weather_refresh_now_success">Actualización del clima completada</string>
+    <string name="pref_weather_refresh_now_failed">Error en la actualización del clima</string>
+    <string name="pref_openweather_api_key_title">Clave API de OpenWeather</string>
+    <string name="pref_openweather_api_key_dialog">Ingrese su clave API de OpenWeather</string>
+    <string name="pref_openweather_api_key_summary_set">Clave API configurada</string>
+    <string name="pref_openweather_api_key_summary_unset">Clave API no configurada</string>
+    <string name="pref_weather_api_notice">Habilitar cambios climáticos configurando una clave API en la configuración.</string>
+    <string name="pref_apply_api_title">Solicitar API</string>
+    <string name="pref_weather_api_guide_intro">Guía de configuración de la clave API de OpenWeather.</string>
+    <string name="pref_weather_api_guide_prepare">Paso 1: Preparación\n- Una dirección de correo electrónico que pueda recibir mensajes de verificación\n- Un entorno de red que pueda acceder al sitio web de OpenWeather</string>
+    <string name="pref_weather_api_guide_step_register1">Paso 2: Registrar una cuenta de OpenWeather\n1. Abra https://openweathermap.org/ y toque el botón naranja Login en la parte superior derecha (consulte la imagen 1).</string>
+    <string name="pref_weather_api_guide_step_register2">2. En la página de inicio de sesión, toque Crear una cuenta.</string>
+    <string name="pref_weather_api_guide_step_register3">3. Complete el formulario de registro (consulte la imagen 3):\n    Nombre de usuario: nombre personalizado para identificación de la cuenta\n    Correo electrónico: su dirección de correo electrónico válida para verificación y recuperación de cuenta\n    Contraseña: establezca su contraseña\n    Repetir contraseña: ingrese la misma contraseña nuevamente\nEnvíe el formulario para registrarse.</string>
+    <string name="pref_weather_api_guide_step_verify1">Paso 3: Verifique su correo electrónico\n1. Después del registro, la página muestra: Hemos enviado el enlace de confirmación a xxx@xx.com. Por favor, revise su correo electrónico. 2. Abra su correo electrónico, busque el mensaje de OpenWeather y toque el botón Verifique su correo electrónico para completar la verificación. (consulte la imagen 5)\nSi no recibe el correo electrónico, revise las carpetas de correo no deseado o promociones.</string>
+    <string name="pref_weather_api_guide_step_verify2">2. Abra su correo electrónico, busque el mensaje de OpenWeather y toque el botón Verifique su correo electrónico para completar la verificación.</string>
+    <string name="pref_weather_api_guide_step_verify3">Si no recibe el correo electrónico, revise las carpetas de correo no deseado o promociones.</string>
+    <string name="pref_weather_api_guide_step_key1">Paso 4: Obtenga su clave API\n1. Después de la verificación, regrese a OpenWeather e inicie sesión.\n2. En el panel de su cuenta, abra Claves API en el menú de navegación.</string>
+    <string name="pref_weather_api_guide_step_key2">3. En la página de administración de API, copie la clave generada por defecto (generalmente llamada Default, estado Activo), o ingrese un nombre y toque Generar para crear una nueva clave.</string>
+    <string name="pref_weather_api_guide_step_key3">Importante: las claves gratuitas tienen un límite de 60 llamadas por minuto y 1000 por día, suficiente para el uso personal de fondos de pantalla. No comparta su clave públicamente para evitar el uso indebido y la limitación de la cuenta.</string>
+    <string name="pref_weather_api_guide_step_config1">Paso 5: Configure la clave API en la aplicación de fondos de pantalla\n1. Abra la aplicación de fondos de pantalla y toque el ícono de nube en la parte superior derecha.</string>
+    <string name="pref_weather_api_guide_step_config2">2. Seleccione Clave API de OpenWeather en el menú emergente.</string>
+    <string name="pref_weather_api_guide_step_config3">3. Pegue la clave API copiada en el cuadro de entrada y toque Confirmar para guardar.</string>
+    <string name="pref_weather_api_guide_step_config4">4. Toque Actualizar clima ahora para probar. Si el fondo de pantalla carga la información climática normalmente, la configuración es exitosa.</string>
+    <string name="pref_weather_api_guide_common">Paso 6: Solución de problemas\n- Verifique que la clave esté copiada completamente sin espacios o saltos de línea adicionales.\n- Una nueva clave API puede tardar de 10 a 30 minutos en activarse; espere y vuelva a intentarlo.\n- Asegúrese de que el permiso de ubicación esté habilitado en la aplicación.</string>
+    <string name="pref_weather_api_guide_illustration">Ilustración del tutorial de API</string>
+    <string name="pref_weather_api_guide_link_text">https://openweathermap.org/</string>
+    <string name="pref_weather_api_guide_open_web_button">Abrir sitio web de OpenWeather</string>
+    <string name="pref_weather_last_refresh">Última actualización: %1$s</string>
+    <string name="pref_weather_last_refresh_unknown">Última actualización: desconocida</string>
+    <string name="pref_weather_debug_title">Depuración del clima</string>
+    <string name="pref_weather_debug_restore">Se volvió a la lógica climática normal</string>
+    <string name="pref_weather_debug_override">Anulación del clima aplicada: %1$s</string>
+    <string name="weather_toolbar_title">Configuración del clima</string>
+    <string name="pref_musicvis_mesh_mode_title">Usar malla de tiras de triángulos heredada</string>
+    <string name="pref_musicvis_mesh_mode_summary">Activado: malla/ primitiva RS original (tira de triángulos). Desactivado: malla de líneas actual.</string>
+
+    <string name="musicvis_permission_granted">Permiso de audio concedido</string>
+    <string name="musicvis_permission_denied">Permiso de audio denegado. La visualización de música no funcionará.</string>
+    <string name="wallpaper_preview_not_supported">Vista previa de fondo de pantalla no compatible</string>
+    <string name="miui_permission_title">Permiso requerido</string>
+    <string name="miui_permission_message">MIUI requiere habilitar manualmente el permiso "Servicio de fondo de pantalla en vivo" para abrir la vista previa.\n\nToque Aceptar, luego habilítelo en la administración de permisos.</string>
+    <string name="miui_permission_go_settings">Ir a configuración</string>
+    <string name="miui_permission_continue">Continuar</string>
+    <string name="miui_permission_open_failed">No se puede abrir la configuración</string>
+    <string name="phasebeam_ssion_message">MIUI requiere habilitar manualmente el permiso "Servicio de fondo de pantalla en vivo" para abrir la vista previa.\n\nToque Aceptar, luego habilítelo en la administración de permisos.</string>
+    <string name="no_live_wallpaper_support">El fondo de pantalla en vivo no es compatible en este dispositivo</string>
+    <string name="about_title">Acerca de</string>
+    <string name="about_body">Autor: 念.\nCorreo electrónico: 3471348199@qq.com,\n
+        xujiekai508@gmail.com\nAutor del proyecto original: The Android Open Source Project
+        (AOSP)\n\nDescripción del proyecto:\nEste proyecto migra y mantiene fondos de pantalla en vivo clásicos de Android. El objetivo es preservar completamente las imágenes originales mientras se moderniza la pila de renderizado para compatibilidad, rendimiento y estabilidad en las versiones actuales de Android.\n\nObjetivos principales:\n1) Fidelidad visual: reproducir fielmente a la deriva de las hojas, las ondas del agua, los colores y la sincronización.\n2) Rendimiento y estabilidad: reducir la carga de CPU/GPU y mejorar la suavidad de alta frecuencia de actualización.\n3) Compatibilidad a largo plazo: funcionar en Android 10+ y mantener una ruta de migración futura.\n\n¿Por qué migrar de RenderScript a OpenGL ES 2.0?\n- RenderScript está obsoleto y eliminado de las cadenas de herramientas SDK/NDK recientes.\n- Es frágil en todos los dispositivos y ROM, con fallas de renderizado frecuentes.\n- OpenGL ES 2.0 es ampliamente compatible y permite la optimización basada en GPU.</string>
+
+    <!-- Galaxy wallpaper preferences -->
+    <string name="pref_galaxy_particle_count">Número de partículas</string>
+    <string name="pref_galaxy_particle_count_summary">Número de partículas en la galaxia (afecta el rendimiento)</string>
+    <string name="pref_galaxy_particle_alpha">Opacidad de las partículas</string>
+    <string name="pref_galaxy_particle_alpha_summary">Ajustar la transparencia de las partículas (se aplica a ambos modos de cálculo)</string>
+    <string name="pref_galaxy_precise_calc">Cálculo espiral preciso</string>
+    <string name="pref_galaxy_precise_calc_summary">Usar inicialización espiral logarítmica inspirada en M31 en lugar del modelo de ángulo aleatorio heredado</string>
+    <string name="pref_galaxy_use_light2">Usar textura light2</string>
+    <string name="pref_galaxy_use_light2_summary">Habilitar para usar light2; deshabilitar para usar light1</string>
+    <string name="pref_galaxy_arm_count">Número de brazos</string>
+    <string name="pref_galaxy_arm_count_summary">Número de brazos espirales (efectivo solo en modo preciso)</string>
+    <string name="pref_galaxy_arm_offset">Desplazamiento del brazo (rad ×1000)</string>
+    <string name="pref_galaxy_arm_offset_summary">Espaciado angular entre brazos en radianes (0 ~ 2π, solo modo preciso)</string>
+    <string name="pref_galaxy_pitch_angle">Ángulo de paso (grados ×10)</string>
+    <string name="pref_galaxy_pitch_angle_summary">Ángulo de paso espiral en grados (0 ~ 30, solo modo preciso)</string>
+    <string name="pref_galaxy_inner_scatter">Dispersión interna (×100)</string>
+    <string name="pref_galaxy_inner_scatter_summary">Fuerza de dispersión del brazo cerca del núcleo (solo modo preciso)</string>
+    <string name="pref_galaxy_outer_scatter">Dispersión externa (×100)</string>
+    <string name="pref_galaxy_outer_scatter_summary">Fuerza de dispersión del brazo en regiones externas (solo modo preciso)</string>
+    <string name="pref_galaxy_turbulence">Turbulencia (×100)</string>
+    <string name="pref_galaxy_turbulence_summary">Intensidad de turbulencia aleatoria para la deformación precisa del brazo</string>
+    <string name="pref_galaxy_forbidden_radius">Radio prohibido del núcleo (kpc ×100)</string>
+    <string name="pref_galaxy_forbidden_radius_summary">Radio interno excluido del ajuste logarítmico del brazo (solo modo preciso)</string>
+    <string name="pref_galaxy_ellipse_ratio">Relación de elipse (×1000)</string>
+    <string name="pref_galaxy_ellipse_ratio_summary">Elipicidad de la morfología del brazo (0,5 ~ 1,0, solo modo preciso)</string>
+    <string name="pref_galaxy_ellipse_twist">Giro de elipse (×1000)</string>
+    <string name="pref_galaxy_ellipse_twist_summary">Desplazamiento de giro para la elipicidad del brazo (-0,1 ~ 0,1, solo modo preciso)</string>
+    <string name="pref_galaxenable_recolor_summary">Cuando está habilitado, puede personalizar los colores del haz</string>
+
+    <!-- Galaxy 4 wallpaper preferences -->
+    <string name="pref_galaxy4_bg_star_count">Número de estrellas de fondo</string>
+    <string name="pref_galaxy4_bg_star_count_summary">Número de estrellas de fondo en la galaxia (afecta el rendimiento)</string>
+    <string name="phasebeam_y4_bg_star_count">Número de estrellas de fondo</string>
+    <string name="pref_galaxy4_space_cloud_count">Número de nubes espaciales</string>
+    <string name="pref_galaxy4_space_cloud_count_summary">Número de nubes en la galaxia</string>
+
+    <!-- Phase Beam wallpaper -->
+    <string name="wallpaper_phasebeam">Phase Beam</string>
+    <string name="wallpaper_enable_recolor_summary">Cuando está habilitado, puede personalizar los colores del haz</string>
+    <string name="phasebeam_phasebeam">Phase Beam</string>
+    <string name="wallpaper_phasebeam_author">Google</string>
+    <string name="wallpaper_phasebeam_desc">Haces suaves y partículas barriendo un fondo vívido.</string>
+
+    <string name="phasebeam_enable_recolor">Ajustar colores del haz</string>
+    <string name="phasebeam_enable_recolor_summary">Cuando está habilitado, puede personalizar los colores del haz</string>
+    <string name="miui_permienable_recolor_summary">Cuando está habilitado, puede personalizar los colores del haz</string>
+    <string name="phasebeam_color_label">Color</string>
+    <string name="phasebeam_saturation_label">Saturación</string>
+    <string name="phasebeam_brightness_label">Brillo</string>
+
+    <!-- Global frame rate settings -->
+    <string name="pref_global_frame_rate">Frecuencia de cuadros global</string>
+    <string name="pref_global_frame_rate_summary">Establecer la frecuencia de cuadros para todos los fondos de pantalla (los valores más altos usan más batería)</string>
+    <string name="pref_preview_ratio">Relación de vista previa en vivo</string>
+    <string name="pref_preview_ratio_dialog">Relación de vista previa en vivo</string>
+    <string name="pref_preview_ratio_summary">Formato: A:A, ej. 9:16</string>
+    <string name="pref_preview_ratio_invalid">Relación no válida. Use A:A, ej. 9:16</string>
+
+    <string name="grass_color_default">Predeterminado</string>
+    <string name="grass_color_green">Verde</string>
+    <string name="grass_color_blue">Azul</string>
+    <string name="grass_color_red">Rojo</string>
+    <string name="grass_color_pink">Rosa</string>
+    <string name="grass_color_purple">Púrpura</string>
+    <string name="grass_color_yellow">Amarillo</string>
+    <string name="grass_color_black">Negro</string>
+    <string name="grass_color_white">Blanco</string>
+
+    <!-- Magic Smoke Wallpaper -->
+    <string name="wallpaper_magicsmoke">Humo mágico</string>
+    <string name="wallpaper_magicsmoke_author">Google</string>
+    <string name="pref_magicsmoke_preset">Tema visual</string>
+    <string name="pref_magicsmoke_preset_summary">Elija entre 20 efectos diferentes de humo\nube/plasma</string>
+    <string name="pref_fireworks_custom_background_title">Imagen de fondo personalizada</string>
+    <string name="pref_fireworks_custom_background_summary">Toque para seleccionar una imagen de fondo personalizada</string>
+    <string name="pref_fireworks_reset_background_title">Restablecer al fondo predeterminado</string>
+    <string name="pref_fireworks_reset_background_summary">Eliminar el fondo personalizado y usar el predeterminado</string>
+
+    <!-- Holo Spiral Wallpaper -->
+    <string name="wallpaper_holospiral">Espiral holográfica</string>
+    <string name="wallpaper_holospiral_author">Google</string>
+    <string name="wallpaper_holospiral_desc">Fondo de pantalla espiral con temática holográfica.</string>
+
+    <!-- Blue Sea Wallpaper -->
+    <string name="wallpaper_bluesea">Mar azul</string>
+    <string name="wallpaper_bluesea_author">TAT</string>
+    <string name="wallpaper_bluesea_desc">Criaturas marinas translúcidas flotando en un mar azul brillante.</string>
+
+    <string name="openweather_api_key">YOUR_OPENWEATHER_API_KEY</string>
+
+    <!-- About/关于界面专用 -->
+    <string name="about_app_info">Información de la aplicación</string>
+    <string name="about_project_intro">Introducción del proyecto</string>
+    <string name="about_project_one_liner">Remasterización de fondos de pantalla en vivo clásicos</string>
+    <string name="about_project_description">Fondos de pantalla en vivo clásicos de Android, completamente remasterizados y modernizados para dispositivos nuevos. RenderScript → OpenGL ES 2.0, alta compatibilidad, bajo consumo, aceleración por GPU.</string>
+    <string name="about_project_highlights">Destacados</string>
+    <string name="about_project_highlights_detail">Bajo consumo, alta compatibilidad, fidelidad visual original, aceleración por GPU, mantenimiento a largo plazo.</string>
+    <string name="about_links">Enlaces y contacto</string>
+    <string name="about_official_website">Sitio web oficial</string>
+    <string name="about_official_website_url">https://github.com/zyfxv/android-live-wallpapers</string>
+    <string name="about_email">Correo electrónico</string>
+    <string name="about_email_address">3471348199@qq.com</string>
+    <string name="about_email_address_alt">xujiekai508@gmail.com</string>
+    <string name="about_qq">Grupo de QQ</string>
+    <string name="about_qq_number">3471348199</string>
+    <string name="about_bilibili">Bilibili</string>
+    <string name="about_bilibili_url">https://space.bilibili.com/470023065</string>
+    <string name="about_feedback">Comentarios</string>
+    <string name="about_feedback_contact">Para comentarios, utilice la información de contacto anterior.</string>
+    <string name="about_thanks">Agradecimientos</string>
+    <string name="about_thanks_original">Gracias a los autores originales</string>
+    <string name="about_thanks_original_detail">Original: MediaTek, Google, Samsung</string>
+
+    <string name="about_developer">Desarrollador</string>
+    <string name="about_author">Autor</string>
+    <string name="about_author_detail">念. y colaboradores</string>
+    <string name="about_disclaimer">Aviso legal</string>
+    <string name="about_disclaimer_title">Solo para aprendizaje y comunicación</string>
+    <string name="about_disclaimer_detail">Este proyecto es solo para uso educativo y no comercial. Todos los derechos pertenecen a los titulares de derechos de autor originales.</string>
+    <string name="app_version_summary">Versión: %1$s</string>
+    <string name="copied_to_clipboard">Copiado al portapapeles</string>
+    <string name="no_browser_found">No se encontró ningún navegador</string>
+    <string name="no_email_found">No se encontró ninguna aplicación de correo</string>
+    <string name="galaxy_enable_precise_calc_first">Primero habilite el cálculo espiral preciso</string>
+    <string name="grass_disable_dandelion_firefly_first">Primero deshabilite los dientes de león y las luciérnagas</string>
+    <string name="grass_disable_legacy_particles_first">Primero deshabilite el movimiento de partículas heredado (MTK)</string>
+    <string name="grass_enable_dandelion_first">Primero habilite el diente de león</string>
+    <string name="grass_enable_firefly_first">Primero habilite las luciérnagas</string>
+    <string name="phasebeam_enable_recolor_first">Primero habilite el ajuste del color del haz</string>
+    <string name="config_open_browser_failed">No se puede abrir el navegador</string>
+    <string name="fireworks_custom_background_set_toast">Fondo personalizado establecido. Vuelva a aplicar el fondo de pantalla para que surta efecto.</string>
+    <string name="fireworks_background_changed_title">Fondo actualizado</string>
+    <string name="fireworks_background_changed_message">Fondo guardado. ¿Aplicar cambios ahora?</string>
+    <string name="fireworks_background_reset_toast">Fondo predeterminado restaurado</string>
+    <string name="fireworks_background_reset_title">Fondo restablecido</string>
+    <string name="fireworks_background_reset_message">Fondo predeterminado restaurado. ¿Aplicar cambios ahora?</string>
+    <string name="fireworks_custom_background_set_summary">Fondo personalizado establecido</string>
+    <string name="fireworks_custom_background_click_summary">Toque para elegir una imagen de fondo personalizada</string>
+    <string name="reset_all_settings_title">Restaurar todos los valores predeterminados</string>
+    <string name="reset_all_settings_message">¿Restaurar todos los fondos de pantalla y la configuración global a sus valores predeterminados?</string>
+    <string name="reset_all_settings_done">Toda la configuración restaurada a los valores predeterminados</string>
+    <string name="reset_current_settings_title">Restaurar configuración predeterminada</string>
+    <string name="reset_current_settings_summary">Restaurar la configuración de este fondo de pantalla a los valores predeterminados</string>
+    <string name="reset_current_settings_message">¿Restaurar la configuración de este fondo de pantalla a sus valores predeterminados?</string>
+    <string name="reset_current_settings_done">Configuración del fondo de pantalla restaurada a los valores predeterminados</string>
+    <string name="reset_action_confirm">Restaurar</string>
+</resources>

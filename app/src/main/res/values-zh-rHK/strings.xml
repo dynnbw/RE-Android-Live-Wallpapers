@@ -17,216 +17,536 @@
 */
  -->
 
-<resources xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-    <string name="wallpapers" msgid="7890805662847963863">"Android 動態桌布"</string>
-    <string name="wallpaper_walkaround" msgid="5548084303782181478">"透視"</string>
-    <string name="wallpaper_walkaround_author" msgid="7292960549371044078">"Google"</string>
-    <string name="wallpaper_walkaround_desc" msgid="1714824320382778730">"透視手機，走路時邊看螢幕也不會有危險。"</string>
-    <string name="wallpaper_grass" msgid="4753389782988032116">"草原"</string>
-    <string name="wallpaper_grass_author" msgid="9197652780831360471">"Google"</string>
-    <string name="wallpaper_grass_desc" msgid="7808225799564607409">"晴空或夜空下隨風輕舞的草原。"</string>
-    <string name="wallpaper_galaxy" msgid="4698294375306738428">"銀河"</string>
-    <string name="wallpaper_galaxy_author" msgid="5455561260819111338">"Google"</string>
-    <string name="wallpaper_galaxy_desc" msgid="6816969378845338629">"由緩慢旋轉的星星組成的銀河。"</string>
-    <string name="wallpaper_fall" msgid="1500920940722360941">"浮水"</string>
-    <string name="wallpaper_fall_author" msgid="8860429843949521342">"Google"</string>
-    <string name="wallpaper_fall_desc" msgid="595888373487204297">"秋葉飄落&lt;br&gt;池中激起漣漪：&lt;br&gt;禪意象水波背景"</string>
-    <string name="wallpaper_clock" msgid="6555051461698958610">"Polar Clock"</string>
-    <string name="wallpaper_clock_author" msgid="8779094427834551330">"Google"</string>
-    <string name="wallpaper_clock_desc" msgid="6767980298898740026">"以順時針方向弧形顯示日期及時間：月、日、時、分以及秒。"</string>
-    <string name="wallpaper_nexus" msgid="3789061608411260304">"Nexus"</string>
-    <string name="wallpaper_nexus_author" msgid="8492858637541249441">"Google"</string>
-    <string name="wallpaper_nexus_desc" msgid="5562598238151885905">"窺視神經網絡內部。"</string>
-    <string name="clock_settings" msgid="7837858747417927288">"Polar Clock 設定"</string>
-    <string name="show_seconds" msgid="8525899907567218168">"顯示秒"</string>
-    <string name="variable_line_width" msgid="8487094734462263605">"可變動的環狀寬度"</string>
-    <string name="palette" msgid="1636154448241520718">"調色盤"</string>
-    <string name="palette_gray" msgid="4575370050214496017">"鋼鐵"</string>
-    <string name="palette_violet" msgid="6124851215872884048">"午夜"</string>
-    <string name="palette_matrix" msgid="2755109999115087511">"綠色螢幕"</string>
-    <string name="palette_white_c" msgid="3846812107437715188">"北極熊 (動態)"</string>
-    <string name="palette_black_c" msgid="1521258571661038231">"黑洞 (動態)"</string>
-    <string name="palette_halloween" msgid="1502590278217616811">"南瓜批"</string>
-    <string name="palette_zenburn" msgid="5537306782860767365">"異國水果沙律"</string>
-    <string name="palette_oceanic" msgid="7336134088073550028">"藍光雷射"</string>
-    <string name="wallpaper_fireworks">"煙火"</string>
-    <string name="wallpaper_fireworks_author">"MediaTek"</string>
-    <string name="wallpaper_fireworks_desc">"在夜間呈現最美麗的煙火。"</string>
-    <string name="pref_fireworks_custom_background_title">"自定義背景圖片"</string>
-    <string name="pref_fireworks_custom_background_summary">"點擊選擇自定義背景圖片"</string>
-    <string name="pref_fireworks_reset_background_title">"恢復默認背景"</string>
-    <string name="pref_fireworks_reset_background_summary">"清除自定義背景，使用默認背景"</string>
-    <string name="wallpaper_wildworld">"野生世界"</string>
-    <string name="wallpaper_wildworld_author">"MediaTek"</string>
-    <string name="wallpaper_wildworld_desc">"「野生世界」呈現的是翼龍、恐龍、火山。"</string>
-    <string name="settings_title">"動態桌布設定"</string>
-    <string name="settings_entry_config">"配置設定"</string>
-    <string name="settings_entry_fall">"水面落葉"</string>
-    <string name="settings_entry_grass">"天空草地"</string>
-    <string name="settings_entry_wildworld">"野生世界"</string>
-    <string name="settings_entry_fireworks">"煙火"</string>
-    <string name="settings_entry_windmill">"風車"</string>
-    <string name="settings_entry_ocean">"海洋天氣"</string>
-    <string name="settings_entry_galaxy4">"銀河4"</string>
-    <string name="settings_entry_galaxy">"銀河"</string>
-    <string name="settings_entry_phasebeam">"鐳光"</string>
-    <string name="settings_entry_clock">"極坐標時鐘"</string>
-    <string name="settings_entry_noisefield">"泡泡"</string>
-    <string name="settings_entry_vis2">"聲波"</string>
-    <string name="settings_entry_vis3">"頻譜"</string>
-    <string name="settings_entry_vis4">"音量表"</string>
-    <string name="settings_entry_vis5">"多重可視化"</string>
-    <string name="wallpaper_galaxy4">"銀河4"</string>
-    <string name="wallpaper_galaxy4_author">"Google"</string>
-    <string name="wallpaper_description_galaxy4">"一個美麗的銀河，擁有旋轉的雲彩和閃爍的星星。"</string>
-    <string name="wallpaper_noisefield">"泡泡"</string>
-    <string name="wallpaper_noisefield_author">"Google"</string>
-    <string name="wallpaper_noisefield_desc">"柔和漸層背景上的發光泡泡流動。"</string>
-    <string name="wallpaper_phasebeam">"鐳光"</string>
-    <string name="wallpaper_phasebeam_author">"Google"</string>
-    <string name="wallpaper_phasebeam_desc">"柔和的光束與粒子在背景中掠過。"</string>
-    <string name="wallpaper_vis2">"聲波"</string>
-    <string name="wallpaper_vis3">"頻譜"</string>
-    <string name="wallpaper_vis4">"音量表"</string>
-    <string name="wallpaper_vis5">"多重可視化"</string>
-    <string name="vis2_desc">"繪製目前播放音樂曲目的聲波。"</string>
-    <string name="vis3_desc">"顯示目前播放音樂曲目的頻譜。"</string>
-    <string name="vis4_desc">"模擬類比聲音量表。"</string>
-    <string name="vis5_desc">"以 3D 模式旋轉顯示所有音樂視覺效果。"</string>
-    <string name="wallpaper_windmill">"風車"</string>
-    <string name="wallpaper_windmill_author">"MediaTek"</string>
-    <string name="wallpaper_windmill_desc">"動態天氣下的起伏丘陵與旋轉風車。"</string>
-    <string name="wallpaper_ocean">"海洋天氣"</string>
-    <string name="wallpaper_ocean_author">"MediaTek"</string>
-    <string name="wallpaper_ocean_desc">"海浪與天空隨真實天氣變化。"</string>
-    <string name="musicvis_author">"Google"</string>
-    <string name="musicvis_permission_granted">"已授予音訊權限"</string>
-    <string name="musicvis_permission_denied">"未授予音訊權限，無法取得音訊可視化效果"</string>
-    <string name="wallpaper_preview_not_supported">"不支援桌布預覽"</string>
-    <string name="miui_permission_title">"需要授予權限"</string>
-    <string name="miui_permission_message">"小米系統需要手動授予\"動態桌布服務\"權限，否則無法正常開啟桌布預覽。\n\n點選確定後，請在權限管理頁面找到\"動態桌布服務\"並開啟。"</string>
-    <string name="miui_permission_go_settings">"前往設定"</string>
-    <string name="miui_permission_continue">"繼續"</string>
-    <string name="miui_permission_open_failed">"無法開啟設定頁面"</string>
-    <string name="pref_fall_leaf_count">"落葉數量"</string>
-    <string name="pref_fall_leaf_count_summary">"修改落葉的數量（影響效能）"</string>
-    <string name="pref_fall_green_leaves">"綠色落葉"</string>
-    <string name="pref_fall_green_leaves_summary">"啟用後部分落葉將為綠色"</string>
-    <string name="pref_fall_max_drops">"最大漣漪水滴數量"</string>
-    <string name="pref_fall_max_drops_summary">"螢幕上同時顯示的最大水波漣漪數量（影響效能）"</string>
-    <string name="pref_grass_enabled">"顯示草地"</string>
-    <string name="pref_grass_enabled_summary">"顯示或隱藏草地效果"</string>
-    <string name="pref_grass_count">"草地數量"</string>
-    <string name="pref_grass_count_summary">"修改草的數量（影響效能）"</string>
-    <string name="pref_grass_height">"草地高度"</string>
-    <string name="pref_grass_height_summary">"修改草的高度"</string>
-    <string name="pref_grass_width">"草地寬度"</string>
-    <string name="pref_grass_width_summary">"修改草的寬度"</string>
-    <string name="pref_grass_color">"草地顏色"</string>
-    <string name="pref_grass_color_summary">"修改草的顏色，呈現不同效果"</string>
-    <string name="pref_grass_night_invert">"反轉夜間天空"</string>
-    <string name="pref_grass_night_desaturate">"夜晚草地去色"</string>
-    <string name="pref_grass_accurate_sun">"精確日出日落"</string>
-    <string name="pref_grass_accurate_sun_summary">"根據真實時間和地理位置計算太陽和月亮的位置（影響效能）"</string>
-    <string name="pref_grass_sun">"顯示太陽"</string>
-    <string name="pref_grass_sun_summary">"顯示或隱藏太陽"</string>
-    <string name="pref_grass_moon">"顯示月亮（需啟用精確日出日落）"</string>
-    <string name="pref_grass_moon_summary">"顯示或隱藏月亮，呈現真實月相"</string>
-    <string name="pref_grass_dandelion">"顯示蒲公英（白天）"</string>
-    <string name="pref_grass_dandelion_summary">"在白天顯示飄動的蒲公英"</string>
-    <string name="pref_grass_firefly">"顯示螢火蟲（夜晚）"</string>
-    <string name="pref_grass_firefly_summary">"在夜晚顯示飛舞的螢火蟲"</string>
-    <string name="pref_grass_dandelion_count">"蒲公英數量"</string>
-    <string name="pref_grass_firefly_count">"螢火蟲數量"</string>
-    <string name="pref_grass_weather_rain_count">"雨滴數量"</string>
-    <string name="pref_grass_weather_rain_count_summary">"調整雨滴數量（10 到 1000）"</string>
-    <string name="pref_grass_weather_snow_count">"雪花數量"</string>
-    <string name="pref_grass_weather_snow_count_summary">"調整雪花數量（10 到 1000）"</string>
-    <string name="pref_grass_star_count">"星星數量"</string>
-    <string name="pref_grass_star_count_summary">"調整星星數量（0 到 10000）"</string>
-    <string name="pref_grass_dandelion_speed">"蒲公英速度"</string>
-    <string name="pref_live_preview">"即時預覽"</string>
-    <string name="pref_open_wallpaper_picker">"開啟系統預覽"</string>
-    <string name="pref_open_wallpaper_chooser">"開啟桌布選擇器"</string>
-    <string name="pref_walkaround_use_front_summary">"在前置與後置攝影機之間切換。"</string>
-    <string name="pref_walkaround_mirror_front">"鏡像前置攝影機"</string>
-    <string name="pref_walkaround_mirror_front_summary">"對前置畫面進行左右鏡像。"</string>
-    <string name="walkaround_permission_granted">"已授予攝影機權限"</string>
-    <string name="walkaround_permission_denied">"未授予攝影機權限，無法顯示透視畫面"</string>
-    <string name="pref_musicvis_mesh_mode_title">"使用原版三角條帶網格"</string>
-    <string name="pref_musicvis_mesh_mode_summary">"開啟：還原原版網格/繪製基元。關閉：目前線段網格。"</string>
-    <string name="pref_weather_update_interval">"天氣更新間隔"</string>
-    <string name="pref_weather_api_notice">"要啟用天氣變化，請到「配置設定」設定 API 金鑰。"</string>
-    <string name="pref_apply_api_title">"申請 API"</string>
-    <string name="pref_openweather_api_key_title">"OpenWeather API 金鑰"</string>
-    <string name="pref_openweather_api_key_dialog">"請輸入 OpenWeather API 金鑰"</string>
-    <string name="pref_openweather_api_key_summary_set">"已設定 API 金鑰"</string>
-    <string name="pref_openweather_api_key_summary_unset">"未設定 API 金鑰"</string>
-    <string name="pref_preview_ratio">"即時預覽比例"</string>
-    <string name="pref_preview_ratio_dialog">"即時預覽比例"</string>
-    <string name="pref_preview_ratio_summary">"格式：寬:高，例如 9:16"</string>
-    <string name="pref_preview_ratio_invalid">"比例無效，請使用 寬:高，例如 9:16"</string>
-    <string name="pref_galaxy_particle_count">"粒子數量"</string>
-    <string name="pref_galaxy_particle_count_summary">"銀河中的粒子數量（影響效能）"</string>
-    <string name="pref_galaxenable_recolor_summary">"啟用後可以自訂光束顏色"</string>
-    <string name="pref_galaxy4_bg_star_count">"背景星星數量"</string>
-    <string name="pref_galaxy4_bg_star_count_summary">"銀河中的背景星星數量（影響效能）"</string>
-    <string name="phasebeam_y4_bg_star_count">"背景星星數量"</string>
-    <string name="pref_galaxy4_space_cloud_count">"空間雲彩數量"</string>
-    <string name="pref_galaxy4_space_cloud_count_summary">"銀河中的雲彩數量"</string>
-    <string name="phasebeam_enable_recolor">"調整光束顏色"</string>
-    <string name="phasebeam_enable_recolor_summary">"啟用後可以調整光束的顏色"</string>
-    <string name="miui_permienable_recolor_summary">"啟用後可以自訂光束顏色"</string>
-    <string name="phasebeam_color_label">"顏色"</string>
-    <string name="phasebeam_saturation_label">"飽和度"</string>
-    <string name="phasebeam_brightness_label">"亮度"</string>
-    <string name="pref_global_frame_rate">"幀率"</string>
-    <string name="pref_global_frame_rate_summary">"設定所有桌布的幀率（數值越高越流暢但耗電越多）"</string>
-    <string name="phasebeam_ssion_message">"小米系統需要手動授予\"動態桌布服務\"權限，否則無法正常開啟桌布預覽。\n\n點選確定後，請在權限管理頁面找到\"動態桌布服務\"並開啟。"</string>
-    <string name="grass_color_default">"預設"</string>
-    <string name="grass_color_green">"綠色"</string>
-    <string name="grass_color_blue">"藍色"</string>
-    <string name="grass_color_red">"紅色"</string>
-    <string name="grass_color_pink">"粉紅色"</string>
-    <string name="grass_color_purple">"紫色"</string>
-    <string name="grass_color_yellow">"黃色"</string>
-    <string name="grass_color_black">"黑色"</string>
-    <string name="grass_color_white">"白色"</string>
-    <string name="openweather_api_key">"YOUR_OPENWEATHER_API_KEY"</string>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
 
-    <!-- Nexus高級設定 -->
+    <string name="pref_grass_legacy_particles">原版蒲公英、螢火蟲</string>
+    <string name="pref_grass_legacy_particles_summary">切換為MTK原版蒲公英和螢火蟲的視覺效果</string>
+    <!-- General -->
+    <skip />
+    <!-- Application name -->
+    <string name="wallpapers">REAndroid 動態壁紙</string>
+
+    <!-- Wallpapers: -->
+    <skip />
+
+    <!-- Wallpaper showing the camera preview -->
+    <string name="wallpaper_walkaround">透視</string>
+    <string name="wallpaper_walkaround_author">Google</string>
+    <string name="wallpaper_walkaround_desc">
+        透過手機觀察，安心愜意地四處走動。
+    </string>
+
+    <!-- Flsorescence (荧光) Wallpaper -->
+    <string name="wallpaper_flsorescence">熒光</string>
+    <string name="wallpaper_flsorescence_author">念.</string>
+    <string name="wallpaper_flsorescence_desc">發光點在屏幕上流暢移動，仿佛有生命一般。</string>
+    <string name="pref_flsorescence_shape">點的形狀</string>
+    <string name="pref_flsorescence_shape_summary">更改每個點的形狀</string>
+    <string name="pref_flsorescence_color">點的配色方案</string>
+    <string name="pref_flsorescence_color_summary">更改配色方案</string>
+    <string name="pref_flsorescence_scale">點的縮放</string>
+    <string name="pref_flsorescence_scale_summary">更改每個點的大小</string>
+    <string name="pref_flsorescence_speed">運動速度</string>
+    <string name="pref_flsorescence_speed_summary">更改移動速度</string>
+    <string name="pref_flsorescence_amount">點的數量</string>
+    <string name="pref_flsorescence_amount_summary">更改點的數量</string>
+    <string name="pref_flsorescence_pattern">運動模式</string>
+    <string name="pref_flsorescence_pattern_summary">更改運動模式</string>
+
+    <!-- Wallpaper showing grass and the sky -->
+    <string name="wallpaper_grass">天空草地</string>
+    <string name="wallpaper_grass_vk">天空草地 Vulkan</string>
+    <string name="wallpaper_grass_author">Google</string>
+    <string name="wallpaper_grass_desc">
+        一片片草葉在白天或夜晚的天空下輕輕搖曳。
+    </string>
+    <string name="wallpaper_grass_vk_desc">天空草地壁紙的 Vulkan 渲染入口。</string>
+
+    <!-- Wallpaper showing a galaxy -->
+    <string name="wallpaper_galaxy">星系</string>
+    <string name="wallpaper_nightsky">夜空</string>
+    <string name="wallpaper_microbes">微生物</string>
+    <string name="wallpaper_nightsky_author">念.</string>
+    <string name="wallpaper_microbes_author">Samsung</string>
+    <string name="wallpaper_nightsky_desc">基於真實星表的夜空壁紙，包含恆星周日運動、傳感器方向聯動、長按時間加速與星軌漸隱效果。</string>
+    <string name="wallpaper_microbes_desc">顯微鏡下的生命，支持觸摸驅動移動、覓食行為與有機粒子動畫。</string>
+    <string name="wallpaper_galaxy_author">Google</string>
+    <string name="wallpaper_galaxy_desc">
+        由緩慢旋轉的星體組成的星系。
+    </string>
+
+    <!-- Wallpaper showing Galaxy 4 -->
+    <string name="wallpaper_galaxy4">星系4</string>
+    <string name="wallpaper_galaxy4_author">Google</string>
+    <string name="wallpaper_description_galaxy4">擁有旋轉雲彩和閃爍星星的美麗星系。</string>
+
+    <!-- Wallpaper showing phase beam -->
+    <string name="wallpaper_phasebeam">鐳光</string>
+    <string name="wallpaper_phasebeam_author">Google</string>
+    <string name="wallpaper_phasebeam_desc">柔和的光束與粒子在背景中掠過。</string>
+
+    <!-- Wallpaper showing leaves floating on water -->
+    <string name="wallpaper_fall">水面落葉</string>
+    <string name="wallpaper_fall_author">Google</string>
+    <string name="wallpaper_fall_desc">
+        秋葉飄零\n落入下方微波蕩漾的池塘：\n流體背景風格
+    </string>
+
+    <!-- Wallpaper showing wild world -->
+    <string name="wallpaper_wildworld">野生世界</string>
+    <string name="wallpaper_wildworld_author">MediaTek</string>
+    <string name="wallpaper_wildworld_desc">
+        史前景觀，層疊運動與趣味生物。
+    </string>
+
+    <!-- Wallpaper showing fireworks -->
+    <string name="wallpaper_fireworks">煙火</string>
+    <string name="wallpaper_fireworks_author">MediaTek</string>
+    <string name="wallpaper_fireworks_desc">
+        絢麗煙花在夜空中綻放。
+    </string>
+
+    <!-- Wallpaper showing windmills -->
+    <string name="wallpaper_windmill">旋轉風車</string>
+    <string name="wallpaper_windmill_author">MediaTek</string>
+    <string name="wallpaper_windmill_desc">動態天氣下的起伏山丘與旋轉風車。</string>
+
+    <!-- Wallpaper showing ocean weather -->
+    <string name="wallpaper_ocean">海洋天氣</string>
+    <string name="wallpaper_ocean_author">MediaTek</string>
+    <string name="wallpaper_ocean_desc">海浪與天空隨真實天氣變化。</string>
+
+    <!-- Wallpaper showing deep sea -->
+    <string name="wallpaper_deepsea">深海</string>
+    <string name="wallpaper_deepsea_author">Samsung</string>
+    <string name="wallpaper_deepsea_desc">半透明水母在深海中緩緩游動。</string>
+
+    <!-- Wallpaper showing a clock -->
+    <string name="wallpaper_clock">極地時鐘</string>
+    <string name="wallpaper_clock_author">Google</string>
+    <string name="wallpaper_clock_desc">
+        以順時針圓弧顯示日期和時間：月、日、小時、分和秒。
+    </string>
+
+    <string name="wallpaper_aurora1">北極光</string>
+    <string name="wallpaper_aurora1_author">TAT</string>
+    <string name="wallpaper_aurora1_desc">分層流動的極光覆蓋星空背景，並支持觸摸粒子互動。</string>
+    <string name="wallpaper_aurora2">北極光2</string>
+    <string name="wallpaper_aurora2_author">HU1</string>
+    <string name="wallpaper_aurora2_desc">主題夜景上方的極光幕布持續起伏，並伴隨閃爍星光與流星動畫。</string>
+
+    <!-- Wallpaper showing nexus -->
+    <string name="wallpaper_nexus">交錯光幕</string>
+    <string name="wallpaper_nexus_author">Google</string>
+    <string name="wallpaper_nexus_desc">
+        神經網絡之一斑。
+    </string>
+
+    <!-- Wallpaper showing noise field -->
+    <string name="wallpaper_noisefield">泡泡</string>
+    <string name="wallpaper_noisefield_author">Google</string>
+    <string name="wallpaper_noisefield_desc">柔和漸變背景上的發光泡泡流動。</string>
+    <string name="wallpaper_nebula">星雲</string>
+    <string name="wallpaper_nebula_author">念.</string>
+    <string name="wallpaper_nebula_desc">基於公式實時體積渲染的獵戶座大星雲視覺效果。</string>
+
+    <!-- Music visualization wallpapers -->
+    <string name="musicvis_author">Google</string>
+    <string name="wallpaper_vis2">聲波</string>
+    <string name="wallpaper_vis3">頻譜</string>
+    <string name="wallpaper_vis4">音量表</string>
+    <string name="wallpaper_vis5">多重可視化</string>
+    <string name="vis2_desc">繪製當前所播放任意曲目的聲波。</string>
+    <string name="vis3_desc">顯示當前所播放任意曲目的頻譜。</string>
+    <string name="vis4_desc">模仿一個模擬測聲計。</string>
+    <string name="vis5_desc">匯聚所有的音樂可視化效果，使用三維效果緩慢旋轉。</string>
+
+    <!-- Polar clock: title of settings activity -->
+    <string name="clock_settings">極地時鐘設置</string>
+    <!-- Polar clock: label for "show seconds" pref -->
+    <string name="show_seconds">顯示秒</string>
+    <!-- Polar clock: label for "variable widths" pref -->
+    <string name="variable_line_width">讓環的寬度各不相同</string>
+    <!-- Polar clock: label for "palette" pref -->
+    <string name="palette">調色板</string>
+
+    <!-- Polar clock: palette name -->
+    <string name="palette_gray">鐵灰色</string>
+    <!-- Polar clock: palette name -->
+    <string name="palette_violet">午夜</string>
+    <!-- Polar clock: palette name -->
+    <string name="palette_matrix">綠屏</string>
+    <!-- Polar clock: palette name -->
+    <string name="palette_white_c">北極熊（動態）</string>
+    <!-- Polar clock: palette name -->
+    <string name="palette_black_c">黑洞（動態）</string>
+    <!-- Polar clock: palette name -->
+    <string name="palette_halloween">南瓜派</string>
+    <!-- Polar clock: palette name -->
+    <string name="palette_zenburn">異國水果沙拉</string>
+    <!-- Polar clock: palette name -->
+    <string name="palette_oceanic">藍色激光</string>
+
+    <!-- Settings UI -->
+    <string name="settings_title">壁紙設置</string>
+    <string name="settings_entry_config">基礎配置</string>
+    <string name="settings_entry_fall">水面落葉</string>
+    <string name="settings_entry_grass">天空草地</string>
+    <string name="settings_entry_aurora1">北極光</string>
+    <string name="settings_entry_aurora2">北極光2</string>
+    <string name="settings_entry_wildworld">野生世界</string>
+    <string name="settings_entry_vis5">多重可視化</string>
+    <string name="settings_entry_magicsmoke">魔法煙霧</string>
+    <string name="settings_entry_holospiral">光環螺旋</string>
+    <string name="settings_entry_windmill">旋轉風車</string>
+    <string name="settings_entry_ocean">海洋天氣</string>
+    <string name="settings_entry_clock">極地時鐘</string>
+    <string name="settings_entry_fireworks">煙火</string>
+    <string name="settings_entry_galaxy4">星系4</string>
+    <string name="settings_entry_galaxy">星系</string>
+    <string name="settings_entry_nightsky">夜空</string>
+    <string name="settings_entry_microbes">微生物</string>
+    <string name="settings_entry_walkaround">透視</string>
+    <string name="settings_entry_phasebeam">鐳光</string>
+    <string name="settings_entry_nebula">星雲</string>
+    <string name="settings_entry_noisefield">泡泡</string>
+    <string name="settings_entry_vis2">聲波</string>
+    <string name="settings_entry_vis3">頻譜</string>
+    <string name="settings_entry_vis4">VU計</string>
+
+    <string name="settings_entry_bluesea">藍色海洋</string>
+    <string name="settings_entry_deepsea">深海</string>
+
+    <string name="pref_fall_leaf_count">落葉數量</string>
+    <string name="pref_fall_leaf_count_summary">修改落葉的數量（影響性能）</string>
+    <string name="pref_fall_green_leaves">綠色樹葉</string>
+    <string name="pref_fall_green_leaves_summary">啟用後部分落葉將為綠色</string>
+    <string name="pref_fall_max_drops">最大漣漪數量</string>
+    <string name="pref_fall_max_drops_summary">屏幕上同時顯示的最大水波漣漪數量（影響性能）</string>
+    <string name="pref_fall_precise_calc">精確計算</string>
+    <string name="pref_fall_precise_calc_summary">啟用基於波傳播與衰減的物理漣漪模擬</string>
+
+    <string name="pref_grass_enabled">顯示草地</string>
+    <string name="pref_grass_enabled_summary">顯示或隱藏草地效果</string>
+    <string name="pref_grass_weather_enabled">啟用天氣效果</string>
+    <string name="pref_grass_weather_enabled_summary">根據天氣變化調整亮度、風力與粒子效果</string>
+    <string name="pref_grass_weather_rain_count">雨滴數量（影響性能）</string>
+    <string name="pref_grass_weather_rain_count_summary">調整雨滴數量（10 到 1000）</string>
+    <string name="pref_grass_weather_snow_count">雪花數量（影響性能）</string>
+    <string name="pref_grass_weather_snow_count_summary">調整雪花數量（10 到 1000）</string>
+    <string name="pref_grass_count">草葉數量</string>
+    <string name="pref_grass_count_summary">修改草的數量（影響性能）</string>
+    <string name="pref_grass_height">草地高度</string>
+    <string name="pref_grass_height_summary">修改草的高度</string>
+    <string name="pref_grass_width">草地寬度</string>
+    <string name="pref_grass_width_summary">修改草的寬度</string>
+    <string name="pref_grass_hardness">草葉柔軟度</string>
+    <string name="pref_grass_hardness_summary">修改草葉柔軟度（越高越容易彎曲）</string>
+    <string name="pref_grass_color">草地顏色</string>
+    <string name="pref_grass_color_summary">修改草的顏色，呈現不同效果</string>
+    <string name="pref_grass_night_invert">反轉夜空</string>
+    <string name="pref_grass_night_desaturate">夜晚草地去色</string>
+    <string name="pref_grass_accurate_sun">精確計算（影響性能）</string>
+    <string name="pref_grass_accurate_sun_summary">根據真實時間和地理位置計算太陽和月亮的位置</string>
+    <string name="pref_grass_sun">顯示太陽（需開啟精確計算）</string>
+    <string name="pref_grass_sun_summary">顯示或隱藏太陽</string>
+    <string name="pref_grass_moon">顯示月亮（需開啟精確計算）</string>
+    <string name="pref_grass_moon_summary">顯示或隱藏月亮，呈現真實月相</string>
+    <string name="pref_grass_dandelion">顯示蒲公英</string>
+    <string name="pref_grass_dandelion_summary">在白天顯示飄動的蒲公英</string>
+    <string name="pref_grass_firefly">顯示螢火蟲</string>
+    <string name="pref_grass_firefly_summary">在夜晚顯示飛舞的螢火蟲</string>
+    <string name="pref_grass_dandelion_count">蒲公英數量（影響性能）</string>
+    <string name="pref_grass_firefly_count">螢火蟲數量（影響性能）</string>
+    <string name="pref_grass_star_count">星星數量（影響性能）</string>
+    <string name="pref_grass_star_count_summary">調整星星數量（0 到 10000）</string>
+    <string name="pref_grass_dandelion_speed">蒲公英速度</string>
+
+    <string name="phasebeam_enable_recolor">調整光束顏色</string>
+    <string name="phasebeam_enable_recolor_summary">啟用後可以調整光束的顏色</string>
+    <string name="pref_galaxenable_recolor_summary">啟用後可以自定義光束顏色</string>
+    <string name="phasebeam_color_label">顏色</string>
+    <string name="phasebeam_saturation_label">飽和度</string>
+    <string name="phasebeam_brightness_label">亮度</string>
+    <!-- Galaxy 壁紙偏好設置 -->
+    <string name="pref_galaxy_particle_count">粒子數量</string>
+    <string name="pref_galaxy_particle_count_summary">星系中的粒子數量（影響性能）</string>
+    <string name="pref_galaxy_particle_alpha">粒子透明度</string>
+    <string name="pref_galaxy_particle_alpha_summary">調整粒子透明度（兩種計算模式均生效）</string>
+    <string name="pref_galaxy_precise_calc">精確螺旋計算</string>
+    <string name="pref_galaxy_precise_calc_summary">啟用後使用基於 M31 參數的對數螺旋初始化，關閉則使用當前隨機角度邏輯</string>
+    <string name="pref_galaxy_use_light2">使用 light2 光暈貼圖</string>
+    <string name="pref_galaxy_use_light2_summary">開啟使用 light2，關閉使用 light1</string>
+    <string name="pref_galaxy_arm_count">旋臂數量</string>
+    <string name="pref_galaxy_arm_count_summary">對數旋臂數量（僅精確計算模式生效）</string>
+    <string name="pref_galaxy_arm_offset">旋臂偏移（弧度×1000）</string>
+    <string name="pref_galaxy_arm_offset_summary">旋臂之間的角度間隔（0 ~ 2π，僅精確計算生效）</string>
+    <string name="pref_galaxy_pitch_angle">螺距角（度×10）</string>
+    <string name="pref_galaxy_pitch_angle_summary">旋臂螺距角（0 ~ 30°，僅精確計算生效）</string>
+    <string name="pref_galaxy_inner_scatter">內部散射（×100）</string>
+    <string name="pref_galaxy_inner_scatter_summary">靠近核心的旋臂散射強度（僅精確計算生效）</string>
+    <string name="pref_galaxy_outer_scatter">外部散射（×100）</string>
+    <string name="pref_galaxy_outer_scatter_summary">外圍旋臂散射強度（僅精確計算生效）</string>
+    <string name="pref_galaxy_turbulence">湍流強度（×100）</string>
+    <string name="pref_galaxy_turbulence_summary">精確旋臂形變的隨機湍流強度</string>
+    <string name="pref_galaxy_forbidden_radius">中心禁區半徑（kpc×100）</string>
+    <string name="pref_galaxy_forbidden_radius_summary">對數旋臂擬合排除的內核半徑（僅精確計算生效）</string>
+    <string name="pref_galaxy_ellipse_ratio">橢圓比率（×1000）</string>
+    <string name="pref_galaxy_ellipse_ratio_summary">旋臂橢圓形態比率（0.5 ~ 1.0，僅精確計算生效）</string>
+    <string name="pref_galaxy_ellipse_twist">橢圓扭曲（×1000）</string>
+    <string name="pref_galaxy_ellipse_twist_summary">橢圓形態扭曲偏移（-0.1 ~ 0.1，僅精確計算生效）</string>
+
+    <!-- Galaxy 4 壁紙偏好設置 -->
+    <string name="pref_galaxy4_bg_star_count">粒子數量</string>
+    <string name="pref_galaxy4_bg_star_count_summary">星系中的粒子數量（影響性能）</string>
+    <string name="phasebeam_y4_bg_star_count">背景星星數量</string>
+    <string name="pref_galaxy4_space_cloud_count">雲彩數量</string>
+    <string name="pref_galaxy4_space_cloud_count_summary">星系中的雲彩數量</string>
+
+    <!-- 全局幀數設置 -->
+    <string name="pref_global_frame_rate">全局幀數</string>
+    <string name="pref_global_frame_rate_summary">設置所有壁紙的幀數（影響性能）</string>
+    <string name="pref_preview_ratio">實時預覽比例</string>
+    <string name="pref_preview_ratio_dialog">實時預覽比例</string>
+    <string name="pref_preview_ratio_summary">格式：寬:高，例如 9:16</string>
+    <string name="pref_preview_ratio_invalid">比例無效，請使用 寬:高，例如 9:16</string>
+    <string name="pref_weather_api_notice">開啟天氣變換請到基礎配置配置API</string>
+    <string name="pref_weather_refresh_now">立即刷新天氣</string>
+    <string name="pref_weather_refresh_now_summary">立即拉取最新天氣數據</string>
+    <string name="pref_weather_refresh_now_success">天氣刷新完成</string>
+    <string name="pref_weather_refresh_now_failed">天氣刷新失敗</string>
+    <string name="pref_apply_api_title">申請API</string>
+    <string name="pref_weather_update_interval">天氣更新間隔</string>
+    <string name="pref_openweather_api_key_title">OpenWeather API 密鑰</string>
+    <string name="pref_openweather_api_key_dialog">請輸入 OpenWeather API 密鑰</string>
+    <string name="pref_openweather_api_key_summary_set">已配置 API 密鑰</string>
+    <string name="pref_openweather_api_key_summary_unset">未配置 API 密鑰</string>
+    <string name="weather_toolbar_title">天氣設置</string>
+    <string name="pref_weather_last_refresh">最後刷新時間: %1$s</string>
+    <string name="pref_weather_last_refresh_unknown">最後刷新時間: 未知</string>
+    <string name="phasebeam_ssion_message">
+        小米系統需要手動授予「動態壁紙服務」權限，否則無法正常打開壁紙預覽。\n\n點擊確定後，請在權限管理頁面找到「動態壁紙服務」並開啟。</string>
+
+    <string name="grass_color_default">默認</string>
+    <string name="grass_color_green">綠色</string>
+    <string name="grass_color_blue">藍色</string>
+    <string name="grass_color_red">紅色</string>
+    <string name="grass_color_pink">粉色</string>
+    <string name="grass_color_purple">紫色</string>
+    <string name="grass_color_yellow">黃色</string>
+    <string name="grass_color_black">黑色</string>
+    <string name="grass_color_white">白色</string>
+    <string name="miui_permienable_recolor_summary">啟用後可以自定義光束顏色</string>
+
+    <!-- 魔法煙霧壁紙 -->
+    <string name="wallpaper_magicsmoke">魔法煙霧</string>
+    <string name="pref_magicsmoke_preset">視覺主題</string>
+    <string name="pref_magicsmoke_preset_summary">從20種煙霧/雲/等離子效果中選擇</string>
+
+    <!-- 光環螺旋壁紙 -->
+    <string name="wallpaper_holospiral">光環螺旋</string>
+    <string name="wallpaper_holospiral_author">Google</string>
+    <string name="wallpaper_holospiral_desc">光環主題螺旋壁紙</string>
+
+    <!-- 藍色海洋壁紙 -->
+    <string name="wallpaper_bluesea">藍色海洋</string>
+    <string name="wallpaper_bluesea_author">TAT</string>
+    <string name="wallpaper_bluesea_desc">半透明的海洋生物漂浮在海上。</string>
+
+    <string name="pref_open_wallpaper_picker">打開系統預覽</string>
+    <string name="pref_open_wallpaper_picker_failed">不支持壁紙預覽</string>
+    <string name="pref_nightsky_preview_hint">提示：可先在上方應用內實時預覽，再點「打開系統預覽」應用夜空壁紙。</string>
+    <string name="pref_nightsky_camera_focal">相機焦距</string>
+    <string name="pref_nightsky_camera_focal_summary">調整鏡頭焦距（mm），數值越大視角越窄</string>
+    <string name="pref_nightsky_use_sensor">使用傳感器朝向</string>
+    <string name="pref_nightsky_use_sensor_summary">關閉後改為按桌面滾動控制視角（每頁 45°）</string>
+    <string name="pref_nightsky_auto_time_accel">自動時間加速</string>
+    <string name="pref_nightsky_auto_time_accel_summary">持續加速天空時間，並保持顯示星軌</string>
+    <string name="pref_nightsky_time_accel_speed">加速檔位</string>
+    <string name="pref_nightsky_time_accel_speed_summary">選擇自動加速/長按加速的速度檔位</string>
+    <string name="pref_microbes_preview_hint">提示：可在預覽中觸摸拖動吸引微生物，再點「打開系統預覽」應用壁紙。</string>
+    <string name="pref_microbes_lifecycle_speed">生命周期速度</string>
+    <string name="pref_microbes_lifecycle_speed_summary">調整代謝、繁殖與衰減速度（%）</string>
+    <string name="pref_microbes_motion_activity">遊動活躍度</string>
+    <string name="pref_microbes_motion_activity_summary">調整自然巡遊與擺動強度（%）</string>
+    <string name="pref_microbes_color_mode">配色風格</string>
+    <string name="pref_microbes_color_mode_summary">切換原版紅綠藍三色與新版（當前）增強配色</string>
+    <string name="pref_microbes_color_mode_original">原版</string>
+    <string name="pref_microbes_color_mode_modern">新版（當前）</string>
+    <string name="pref_open_wallpaper_chooser">打開壁紙選擇器</string>
+    <string name="pref_live_preview">實時預覽</string>
     <string name="pref_nexus_background_title">背景</string>
-    <string name="pref_nexus_custom_background_title">自訂背景</string>
+    <string name="pref_nexus_custom_background_title">自定義背景</string>
     <string name="pref_nexus_custom_background_summary">選擇背景圖片</string>
-    <string name="pref_nexus_custom_background_set_summary">已設置自訂背景</string>
-    <string name="pref_nexus_reset_background_title">還原預設背景</string>
-    <string name="pref_nexus_reset_background_summary">清除自訂背景並使用內建背景</string>
-    <string name="nexus_bg_pyramid">預設</string>
+    <string name="pref_nexus_custom_background_set_summary">已設置自定義背景</string>
+    <string name="pref_nexus_reset_background_title">恢復默認背景</string>
+    <string name="pref_nexus_reset_background_summary">清除自定義背景並使用內置背景</string>
+    <string name="nexus_bg_pyramid">默認</string>
     <string name="nexus_bg_pyramid_1">舊版 1</string>
     <string name="nexus_bg_pyramid_2">舊版 2</string>
     <string name="nexus_bg_pyramid_3">舊版 3</string>
     <string name="nexus_bg_pyramid_4">極簡</string>
-    <string name="pref_nexus_advanced_title">進階設定</string>
+    <string name="nexus_custom_background_set_toast">已設置自定義背景，請重新設置壁紙以生效</string>
+    <string name="nexus_background_changed_title">背景已更換</string>
+    <string name="nexus_background_changed_message">新背景已保存。是否立即重新設置壁紙以應用更改？</string>
+    <string name="nexus_background_reset_toast">已清除自定義背景</string>
+    <string name="nexus_background_reset_title">背景已重置</string>
+    <string name="nexus_background_reset_message">已恢復為默認背景。是否立即重新設置壁紙以應用更改？</string>
+    <string name="action_apply_now">立即設置</string>
+    <string name="action_later">稍後</string>
+
+    <!-- Deep Sea settings -->
+    <string name="title_unit_scale">水母尺寸</string>
+    <string name="summary_unit_scale">更改水母的尺寸</string>
+    <string name="title_unit_number">水母數目</string>
+    <string name="summary_unit_number">更改水母數目</string>
+    <string name="title_background_image_type">背景</string>
+    <string name="summary_background_image_type">更改背景</string>
+    <string name="title_background_brightness">背景亮度</string>
+    <string name="summary_background_brightness">更改背景亮度</string>
+    <string name="title_background_lighting">背景照明</string>
+    <string name="summary_background_lighting">更改背景照明</string>
+    <string name="title_particle_color">水母核心色彩</string>
+    <string name="summary_particle_color">更改核心色彩</string>
+    <string name="deepsea_custom_background_title">自定義背景</string>
+    <string name="deepsea_custom_background_summary">選擇背景圖片</string>
+    <string name="deepsea_custom_background_set_summary">已設置自定義背景</string>
+    <string name="deepsea_reset_background_title">恢復默認背景</string>
+    <string name="deepsea_reset_background_summary">清除自定義背景並使用內置背景</string>
+    <string name="deepsea_background_changed_title">背景已更換</string>
+    <string name="deepsea_background_changed_message">新背景已保存。是否立即重新設置壁紙以應用更改？</string>
+    <string name="deepsea_background_reset_title">背景已重置</string>
+    <string name="deepsea_background_reset_message">已恢復為默認背景。是否立即重新設置壁紙以應用更改？</string>
+    <string name="deepsea_apply_now">立即設置</string>
+    <string name="deepsea_apply_later">稍後</string>
+    <string name="deepsea_custom_background_failed">背景保存失敗</string>
+
+    <!-- Nexus設置 -->
     <string name="pref_nexus_max_pulses">最大常規脈衝數</string>
-    <string name="pref_nexus_max_pulses_summary">螢幕上同時顯示的常規脈衝數量（預設:20）</string>
+    <string name="pref_nexus_max_pulses_summary">屏幕上同時顯示的常規脈衝數量（默認:20）</string>
     <string name="pref_nexus_max_extras">最大額外脈衝數</string>
-    <string name="pref_nexus_max_extras_summary">觸控觸發的額外脈衝數量（預設:40）</string>
+    <string name="pref_nexus_max_extras_summary">點擊觸發的額外脈衝數量（默認:40）</string>
     <string name="pref_nexus_pulse_size">脈衝尺寸</string>
-    <string name="pref_nexus_pulse_size_summary">脈衝紋理像素大小（預設:14）</string>
+    <string name="pref_nexus_pulse_size_summary">脈衝紋理像素大小（默認:14）</string>
     <string name="pref_nexus_glow_size">光暈尺寸</string>
-    <string name="pref_nexus_glow_size_summary">光暈紋理像素大小（預設:64）</string>
+    <string name="pref_nexus_glow_size_summary">光暈紋理像素大小（默認:64）</string>
     <string name="pref_nexus_speed">移動速度</string>
-    <string name="pref_nexus_speed_summary">脈衝基礎移動速度（預設:20 = 0.2）</string>
+    <string name="pref_nexus_speed_summary">脈衝基礎移動速度（默認:20 = 0.2）</string>
     <string name="pref_nexus_speed_delta_min">速度係數最小值</string>
-    <string name="pref_nexus_speed_delta_min_summary">速度隨機變化的最小乘數（預設:70 = 0.7）</string>
+    <string name="pref_nexus_speed_delta_min_summary">速度隨機變化的最小乘數（默認:70 = 0.7）</string>
     <string name="pref_nexus_speed_delta_max">速度係數最大值</string>
-    <string name="pref_nexus_speed_delta_max_summary">速度隨機變化的最大乘數（預設:170 = 1.7）</string>
+    <string name="pref_nexus_speed_delta_max_summary">速度隨機變化的最大乘數（默認:170 = 1.7）</string>
     <string name="pref_nexus_trail_size">拖尾長度</string>
-    <string name="pref_nexus_trail_size_summary">脈衝拖尾效果的長度（預設:40）</string>
+    <string name="pref_nexus_trail_size_summary">脈衝拖尾效果的長度（默認:40）</string>
     <string name="pref_nexus_mode">配色模式</string>
     <string name="pref_nexus_mode_summary">選擇脈衝的顏色方案</string>
+
+    <string name="pref_walkaround_use_front">使用前置攝像頭</string>
+    <string name="pref_walkaround_use_front_summary">在前置與後置攝像頭之間切換。</string>
+    <string name="pref_walkaround_mirror_front">鏡像前置攝像頭</string>
+    <string name="pref_walkaround_mirror_front_summary">對前置畫面進行左右鏡像。</string>
+    <string name="walkaround_permission_granted">相機權限已授予</string>
+    <string name="walkaround_permission_denied">未授予相機權限，無法顯示透視畫面</string>
+    <string name="pref_musicvis_mesh_mode_title">使用原版三角條帶網格</string>
+    <string name="pref_musicvis_mesh_mode_summary">開啟：還原原版網格/繪製基元。關閉：當前線段網格。</string>
+
+    <string name="musicvis_permission_granted">音頻權限已授予</string>
+    <string name="musicvis_permission_denied">未授予音頻權限，無法獲取音頻可視化效果</string>
+    <string name="wallpaper_preview_not_supported">不支持壁紙預覽</string>
+    <string name="miui_permission_title">需要授予權限</string>
+    <string name="miui_permission_message">
+        小米系統需要手動授予「動態壁紙服務」權限，否則無法正常打開壁紙預覽。\n\n點擊確定後，請在權限管理頁面找到「動態壁紙服務」並開啟。</string>
+    <string name="miui_permission_go_settings">去設置</string>
+    <string name="miui_permission_continue">繼續</string>
+    <string name="miui_permission_open_failed">無法打開設置頁面</string>
+    <string name="about_title">關於</string>
+    <string name="about_app_info">應用信息</string>
+    <string name="about_project_intro">項目簡介</string>
+    <string name="about_project_one_liner">經典動態壁紙重製</string>
+    <string name="about_project_description">經典 Android 動態壁紙，全面重製並適配新設備。RenderScript → OpenGL ES
+        2.0，高兼容、低功耗、GPU 加速。</string>
+    <string name="about_project_highlights">亮點</string>
+    <string name="about_project_highlights_detail">低功耗、高兼容、原汁原味、GPU 加速、長期維護</string>
+    <string name="about_links">鏈接與聯繫方式</string>
+    <string name="about_official_website">官方網站</string>
     <string name="about_official_website_url">https://github.com/zyfxv/android-live-wallpapers</string>
+    <string name="about_email">郵箱</string>
     <string name="about_email_address">3471348199@qq.com</string>
+    <string name="about_email_address_alt">xujiekai508@gmail.com</string>
+    <string name="about_qq">QQ</string>
+    <string name="about_qq_number">3471348199</string>
+    <string name="about_feedback">反饋</string>
+    <string name="about_bilibili">Bilibili主頁</string>
     <string name="about_bilibili_url">https://space.bilibili.com/470023065</string>
+    <string name="about_feedback_contact">反饋請通過上述聯繫方式</string>
+    <string name="about_thanks">致謝</string>
+    <string name="about_thanks_original">感謝原作者</string>
+    <string name="about_thanks_original_detail">原作者：MediaTek、Google、Samsung</string>
+
+    <string name="about_developer">開發者</string>
+    <string name="about_author">作者</string>
+    <string name="about_author_detail">念. </string>
+    <string name="about_disclaimer">免責聲明</string>
+    <string name="about_disclaimer_title">僅供學習與交流</string>
+    <string name="about_disclaimer_detail">本項目僅供非商業、學習交流使用，所有權歸原著作權人所有。</string>
+    <string name="app_version_summary">版本：%1$s</string>
+    <string name="copied_to_clipboard">已複製到剪貼板</string>
+    <string name="no_browser_found">未找到瀏覽器</string>
+    <string name="no_email_found">未找到郵件應用</string>
+    <string name="galaxy_enable_precise_calc_first">請先開啟精確螺旋計算</string>
+    <string name="grass_disable_dandelion_firefly_first">請先關閉蒲公英和螢火蟲</string>
+    <string name="grass_disable_legacy_particles_first">請先關閉傳統(MTK)粒子運動方式</string>
+    <string name="grass_enable_dandelion_first">請先開啟蒲公英</string>
+    <string name="grass_enable_firefly_first">請先開啟螢火蟲</string>
+    <string name="phasebeam_enable_recolor_first">請先開啟調整光束顏色</string>
+    <string name="config_open_browser_failed">無法打開瀏覽器</string>
+    <string name="fireworks_custom_background_set_toast">自定義背景已設置，請重新設置壁紙以應用更改</string>
+    <string name="fireworks_background_changed_title">背景已更換</string>
+    <string name="fireworks_background_changed_message">新背景已保存。是否立即重新設置壁紙以應用更改？</string>
+    <string name="fireworks_background_reset_toast">已恢復默認背景</string>
+    <string name="fireworks_background_reset_title">背景已重置</string>
+    <string name="fireworks_background_reset_message">已恢復為默認背景。是否立即重新設置壁紙以應用更改？</string>
+    <string name="fireworks_custom_background_set_summary">已設置自定義背景</string>
+    <string name="fireworks_custom_background_click_summary">點擊選擇自定義背景圖片</string>
+    <string name="pref_fireworks_custom_background_title">自定義背景圖片</string>
+    <string name="pref_fireworks_custom_background_summary">點擊選擇自定義背景圖片</string>
+    <string name="pref_fireworks_reset_background_title">恢復默認背景</string>
+    <string name="pref_fireworks_reset_background_summary">清除自定義背景，使用默認背景</string>
+    <string name="reset_all_settings_title">恢復全部默認配置</string>
+    <string name="reset_all_settings_message">確定要將所有壁紙和全局設置恢復為默認值嗎？</string>
+    <string name="reset_all_settings_done">已恢復全部默認配置</string>
+    <string name="reset_current_settings_title">恢復默認配置</string>
+    <string name="reset_current_settings_summary">恢復當前壁紙的默認配置</string>
+    <string name="reset_current_settings_message">確定要將當前壁紙設置恢復為默認值嗎？</string>
+    <string name="reset_current_settings_done">已恢復當前壁紙默認配置</string>
+    <string name="reset_action_confirm">恢復</string>
+    <string name="pref_weather_api_guide_intro">OpenWeather API 密鑰獲取與配置完整教程。</string>
+    <string name="pref_weather_api_guide_prepare">一、前期準備\n- 一個可正常接收郵件的郵箱地址\n- 能正常訪問 OpenWeather
+        官網的網絡環境</string>
+    <string name="pref_weather_api_guide_step_register1">二、註冊 OpenWeather 賬號\n1. 打開 OpenWeather
+        官網（https://openweathermap.org/），點擊右上角橙色 Login 按鈕</string>
+    <string name="pref_weather_api_guide_step_register2">2. 在登錄頁面點擊 Create an Account</string>
+    <string name="pref_weather_api_guide_step_register3">3. 在註冊表單中填寫信息：\n Username：自定義用戶名（僅用於賬號標識）\n
+        Enter email：填寫你的有效郵箱地址（後續驗證和找回賬號用）\n Password：設置賬號密碼\n Repeat password：再次輸入相同密碼\n填寫完成後提交註冊。</string>
+    <string name="pref_weather_api_guide_step_verify1">三、驗證你的郵箱\n1. 提交註冊後，頁面會提示：We have sent the
+        confirmation link to xxx@xx.com. Please check your email.</string>
+    <string name="pref_weather_api_guide_step_verify2">2. 登錄你填寫的郵箱，找到來自 OpenWeather 的驗證郵件，點擊郵件中的
+        Verify your email 按鈕完成驗證。</string>
+    <string name="pref_weather_api_guide_step_verify3">如果未收到郵件，請檢查垃圾郵件或廣告郵件文件夾。</string>
+    <string name="pref_weather_api_guide_step_key1">四、獲取你的專屬 APIKey\n1. 驗證郵箱後，返回 OpenWeather
+        官網並登錄你的賬號。\n2. 登錄成功後，在個人中心頁面點擊導航欄的 API keys 選項</string>
+    <string name="pref_weather_api_guide_step_key2">3. 在 API 管理頁面，你會看到系統默認生成的 APIKey（通常命名為
+        Default，狀態為 Active），直接複製即可；也可以輸入名稱點擊 Generate 生成新的 Key。</string>
+    <string name="pref_weather_api_guide_step_key3">重要說明：免費版 APIKey 有調用限制，每分鐘最多 60 次、每天最多 1000
+        次，個人壁紙使用完全足夠。請勿將你的 APIKey 公開分享，避免被他人濫用導致限流。</string>
+    <string name="pref_weather_api_guide_step_config1">五、在壁紙應用中配置 APIKey\n1.
+        打開壁紙應用，點擊右上角的雲朵圖標（天氣設置入口）</string>
+    <string name="pref_weather_api_guide_step_config2">2. 在彈出的菜單中選擇 OpenWeather API 密鑰選項</string>
+    <string name="pref_weather_api_guide_step_config3">3. 在彈出的輸入框中粘貼你剛才複製的 APIKey，點擊確定保存。</string>
+    <string name="pref_weather_api_guide_step_config4">4. 配置完成後，點擊「立即刷新天氣」測試，如果壁紙能正常加載天氣信息，說明配置成功。</string>
+    <string name="pref_weather_api_guide_common">六、常見問題\n配置後無法獲取天氣：\n- 檢查 Key 是否複製完整，不要帶多餘空格或換行符。\n-
+        新生成的 APIKey 可能需要 10～30 分鐘才能生效，耐心等待後再測試。\n- 確認應用已開啟定位權限。</string>
+    <string name="pref_weather_api_guide_illustration">API 教程插圖</string>
+    <string name="pref_weather_api_guide_link_text">https://openweathermap.org/</string>
+    <string name="pref_weather_api_guide_open_web_button">打開 OpenWeather 官網</string>
 </resources>

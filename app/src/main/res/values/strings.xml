@@ -19,8 +19,8 @@
 
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
 
-    <string name="pref_grass_legacy_particles">原版蒲公英、萤火虫</string>
-    <string name="pref_grass_legacy_particles_summary">切换为MTK原版蒲公英和萤火虫的视觉效果</string>
+<string name="pref_grass_legacy_particles">Classic dandelion and fireflies</string>
+<string name="pref_grass_legacy_particles_summary">Switch to the visual effect of MTK's classic dandelions and fireflies</string>
     <!-- Application name -->
     <string name="wallpapers">REAndroid Live Wallpapers</string>
     <string name="app_name">REAndroid Live Wallpapers</string>
@@ -100,7 +100,7 @@
     <string name="wallpaper_fall_vk">Water Leaves Vulkan</string>
     <string name="wallpaper_fall_author">Google</string>
     <string name="wallpaper_fall_desc">
-         Autumn leaves tumble \n To the rippling pond below: /n Liquid background Zen
+         Autumn leaves tumble \n To the rippling pond below: \n Liquid background Zen
     </string>
     <string name="wallpaper_fall_vk_desc">Water Leaves wallpaper entry reserved for the Vulkan renderer.</string>
 

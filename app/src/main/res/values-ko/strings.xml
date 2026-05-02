@@ -19,202 +19,498 @@
 
 <resources xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-    <string name="wallpapers" msgid="7890805662847963863">"Android 라이브 배경화면"</string>
-    <string name="wallpaper_walkaround" msgid="5548084303782181478">"투명"</string>
-    <string name="wallpaper_walkaround_author" msgid="7292960549371044078">"Google"</string>
-    <string name="wallpaper_walkaround_desc" msgid="1714824320382778730">"전화가 항상 시야에 들어오게 하여 사고를 당할 위험 없이 안전하게 돌아다니세요."</string>
-    <string name="wallpaper_grass" msgid="4753389782988032116">"풀밭"</string>
-    <string name="wallpaper_grass_author" msgid="9197652780831360471">"Google"</string>
-    <string name="wallpaper_grass_desc" msgid="7808225799564607409">"풀잎들이 낮이나 밤하늘을 배경으로 하여 부드럽게 흔들립니다."</string>
-    <string name="wallpaper_galaxy" msgid="4698294375306738428">"은하수"</string>
-    <string name="wallpaper_galaxy_author" msgid="5455561260819111338">"Google"</string>
-    <string name="wallpaper_galaxy_desc" msgid="6816969378845338629">"부드럽게 소용돌이치는 별들로 이루어진 은하수입니다."</string>
-    <string name="wallpaper_fall" msgid="1500920940722360941">"물"</string>
-    <string name="wallpaper_fall_author" msgid="8860429843949521342">"Google"</string>
-    <string name="wallpaper_fall_desc" msgid="595888373487204297">"찰랑거리는 연못으로&lt;br&gt; 떨어지는 가을 낙엽:&lt;br&gt; 투명한 배경"</string>
-    <string name="wallpaper_clock" msgid="6555051461698958610">"중심축 시계"</string>
-    <string name="wallpaper_clock_author" msgid="8779094427834551330">"Google"</string>
-    <string name="wallpaper_clock_desc" msgid="6767980298898740026">"날짜와 시간을 시계방향 원호(월, 일, 시, 분, 초)로 표시합니다."</string>
-    <string name="wallpaper_nexus" msgid="3789061608411260304">"넥서스"</string>
-    <string name="wallpaper_nexus_author" msgid="8492858637541249441">"Google"</string>
-    <string name="wallpaper_nexus_desc" msgid="5562598238151885905">"신경망 들여다보기"</string>
-    <string name="clock_settings" msgid="7837858747417927288">"중심축 시계 설정"</string>
-    <string name="show_seconds" msgid="8525899907567218168">"초 표시"</string>
-    <string name="variable_line_width" msgid="8487094734462263605">"다양한 고리 너비"</string>
-    <string name="palette" msgid="1636154448241520718">"색상 팔레트"</string>
-    <string name="palette_gray" msgid="4575370050214496017">"아이언"</string>
-    <string name="palette_violet" msgid="6124851215872884048">"자정"</string>
-    <string name="palette_matrix" msgid="2755109999115087511">"블루 스크린"</string>
-    <string name="palette_white_c" msgid="3846812107437715188">"북극곰(동적)"</string>
-    <string name="palette_black_c" msgid="1521258571661038231">"블랙홀(동적)"</string>
-    <string name="palette_halloween" msgid="1502590278217616811">"호박 파이"</string>
-    <string name="palette_zenburn" msgid="5537306782860767365">"이국적인 과일 샐러드"</string>
-    <string name="palette_oceanic" msgid="7336134088073550028">"파란 레이저"</string>
-    <string name="wallpaper_fireworks">"불꽃놀이"</string>
-    <string name="wallpaper_fireworks_author">"MediaTek"</string>
-    <string name="wallpaper_fireworks_desc">"밤하늘에 화려한 불꽃이 피어납니다."</string>
-    <string name="wallpaper_wildworld">"와일드 월드"</string>
-    <string name="wallpaper_wildworld_author">"MediaTek"</string>
-    <string name="wallpaper_wildworld_desc">"겹겹이 움직이는 레이어와 장난기 있는 생명체가 있는 선사시대 풍경입니다."</string>
-    <string name="wallpaper_windmill">"풍차"</string>
-    <string name="wallpaper_windmill_author">"MediaTek"</string>
-    <string name="wallpaper_windmill_desc">"역동적인 날씨 아래의 구릉과 회전하는 풍차."</string>
-    <string name="wallpaper_ocean">"해양 날씨"</string>
-    <string name="wallpaper_ocean_author">"MediaTek"</string>
-    <string name="wallpaper_ocean_desc">"실제 날씨에 따라 파도와 하늘이 변합니다."</string>
-    <string name="wallpaper_galaxy4">"갤럭시 4"</string>
-    <string name="wallpaper_galaxy4_author">"Google"</string>
-    <string name="wallpaper_description_galaxy4">"소용돌이치는 구름과 반짝이는 별이 있는 아름다운 은하."</string>
-    <string name="wallpaper_noisefield">"노이즈 필드"</string>
-    <string name="wallpaper_noisefield_author">"Google"</string>
-    <string name="wallpaper_noisefield_desc">"부드러운 그라데이션 위로 빛나는 거품이 흐르는 필드."</string>
-    <string name="wallpaper_phasebeam">"페이즈 빔"</string>
-    <string name="wallpaper_phasebeam_author">"Google"</string>
-    <string name="wallpaper_phasebeam_desc">"선명한 배경 위로 부드러운 빔과 입자가 흐릅니다."</string>
-    <string name="wallpaper_vis2">"파형"</string>
-    <string name="wallpaper_vis3">"스펙트럼"</string>
-    <string name="wallpaper_vis4">"VU 미터"</string>
-    <string name="wallpaper_vis5">"다중"</string>
-    <string name="vis2_desc">"현재 재생 중인 음악 트랙의 파형을 그립니다."</string>
-    <string name="vis3_desc">"현재 재생 중인 음악 트랙의 주파수 스펙트럼을 표시합니다."</string>
-    <string name="vis4_desc">"아날로그 사운드 미터를 시뮬레이션합니다."</string>
-    <string name="vis5_desc">"모든 음악 시각화를 3D로 천천히 회전하여 표시합니다."</string>
-    <string name="musicvis_author">"Google"</string>
-    <string name="musicvis_permission_granted">"오디오 권한이 허용됨"</string>
-    <string name="musicvis_permission_denied">"오디오 권한이 거부되었습니다. 음악 시각화가 작동하지 않습니다."</string>
-    <string name="settings_title">"라이브 배경화면 설정"</string>
-    <string name="settings_entry_config">"구성"</string>
-    <string name="settings_entry_fall">"수면 위 낙엽"</string>
-    <string name="settings_entry_grass">"하늘과 풀"</string>
-    <string name="settings_entry_wildworld">"와일드 월드"</string>
-    <string name="settings_entry_fireworks">"불꽃놀이"</string>
-    <string name="settings_entry_windmill">"풍차"</string>
-    <string name="settings_entry_ocean">"해양 날씨"</string>
-    <string name="settings_entry_galaxy4">"갤럭시 4"</string>
-    <string name="settings_entry_galaxy">"갤럭시"</string>
-    <string name="settings_entry_phasebeam">"페이즈 빔"</string>
-    <string name="settings_entry_clock">"폴라 시계"</string>
-    <string name="settings_entry_noisefield">"노이즈 필드"</string>
-    <string name="settings_entry_vis2">"파형"</string>
-    <string name="settings_entry_vis3">"스펙트럼"</string>
-    <string name="settings_entry_vis4">"VU 미터"</string>
-    <string name="settings_entry_vis5">"다중"</string>
-    <string name="settings_entry_bluesea">"블루 시"</string>
-    <string name="pref_fall_leaf_count">"낙엽 수"</string>
-    <string name="pref_fall_leaf_count_summary">"낙엽의 수를 조정（성능에 영향）"</string>
-    <string name="pref_fall_green_leaves">"초록 잎"</string>
-    <string name="pref_fall_green_leaves_summary">"활성화하면 일부 잎이 녹색이 됩니다"</string>
-    <string name="pref_fall_max_drops">"최대 물결 수"</string>
-    <string name="pref_fall_max_drops_summary">"화면에 동시에 표시되는 최대 물결 수（성능에 영향）"</string>
-    <string name="pref_grass_enabled">"풀 표시"</string>
-    <string name="pref_grass_enabled_summary">"풀 효과를 표시하거나 숨기기"</string>
-    <string name="pref_grass_count">"풀 수"</string>
-    <string name="pref_grass_count_summary">"풀의 수를 조정（성능에 영향）"</string>
-    <string name="pref_grass_height">"풀 높이"</string>
-    <string name="pref_grass_height_summary">"풀의 높이를 조정"</string>
-    <string name="pref_grass_width">"풀 너비"</string>
-    <string name="pref_grass_width_summary">"풀의 너비를 조정"</string>
-    <string name="pref_grass_color">"풀 색상"</string>
-    <string name="pref_grass_color_summary">"풀의 색상을 변경하여 다양한 시각 효과 구현"</string>
-    <string name="pref_grass_night_invert">"밤하늘 반전"</string>
-    <string name="pref_grass_night_desaturate">"밤에 잔디 색 제거"</string>
-    <string name="pref_grass_accurate_sun">"정확한 일출/일몰"</string>
-    <string name="pref_grass_accurate_sun_summary">"실제 시간과 지리적 위치를 기반으로 태양과 달의 위치를 계산（성능에 영향）"</string>
-    <string name="pref_grass_sun">"태양 표시"</string>
-    <string name="pref_grass_sun_summary">"태양을 표시하거나 숨기기"</string>
-    <string name="pref_grass_moon">"달 표시(정확한 일출/일몰 필요)"</string>
-    <string name="pref_grass_moon_summary">"실제 월상으로 달을 표시하거나 숨기기"</string>
-    <string name="pref_grass_dandelion">"민들레 표시(낮)"</string>
-    <string name="pref_grass_dandelion_summary">"낮 동안 떠다니는 민들레 표시"</string>
-    <string name="pref_grass_firefly">"반딧불이 표시(밤)"</string>
-    <string name="pref_grass_firefly_summary">"밤 동안 날아다니는 반딧불이 표시"</string>
-    <string name="pref_grass_dandelion_count">"민들레 수"</string>
-    <string name="pref_grass_firefly_count">"반딧불이 수"</string>
-    <string name="pref_grass_dandelion_speed">"민들레 속도"</string>
-    <string name="pref_open_wallpaper_picker">"시스템 미리보기 열기"</string>
-    <string name="pref_open_wallpaper_chooser">"배경화면 선택기 열기"</string>
-    <string name="pref_live_preview">"라이브 미리보기"</string>
-    <string name="pref_weather_update_interval">"날씨 업데이트 간격"</string>
-    <string name="pref_weather_api_notice">"날씨 기반 변화를 사용하려면 구성에서 API 키를 설정하세요."</string>
-    <string name="pref_apply_api_title">"API 신청"</string>
-    <string name="pref_openweather_api_key_title">"OpenWeather API 키"</string>
-    <string name="pref_openweather_api_key_dialog">"OpenWeather API 키 입력"</string>
-    <string name="pref_openweather_api_key_summary_set">"API 키가 설정됨"</string>
-    <string name="pref_openweather_api_key_summary_unset">"API 키가 설정되지 않음"</string>
-    <string name="pref_musicvis_mesh_mode_title">"기존 삼각 스트립 메쉬 사용"</string>
-    <string name="pref_musicvis_mesh_mode_summary">"켬: 원본 RS 메쉬/프리미티브(삼각 스트립). 끔: 현재 라인 메쉬."</string>
-    <string name="miui_permission_title">"권한 필요"</string>
-    <string name="miui_permission_message">"MIUI에서는 미리보기를 열기 위해 \"라이브 배경화면 서비스\" 권한을 수동으로 활성화해야 합니다.\n\nOK를 누른 뒤 권한 관리에서 활성화하세요."</string>
-    <string name="phasebeam_ssion_message">"MIUI에서는 미리보기를 열기 위해 \"라이브 배경화면 서비스\" 권한을 수동으로 활성화해야 합니다.\n\nOK를 누른 뒤 권한 관리에서 활성화하세요."</string>
-    <string name="miui_permission_go_settings">"설정으로 이동"</string>
-    <string name="miui_permission_continue">"계속"</string>
-    <string name="miui_permission_open_failed">"설정을 열 수 없음"</string>
-    <string name="wallpaper_preview_not_supported">"배경화면 미리보기는 지원되지 않습니다"</string>
-    <string name="pref_galaxy_particle_count">"입자 수"</string>
-    <string name="pref_galaxy_particle_count_summary">"은하의 입자 수(성능에 영향)"</string>
-    <string name="pref_galaxenable_recolor_summary">"활성화하면 빔 색상을 사용자 지정할 수 있습니다"</string>
-    <string name="miui_permienable_recolor_summary">"활성화하면 빔 색상을 사용자 지정할 수 있습니다"</string>
-    <string name="phasebeam_y4_bg_star_count">"배경 별 수"</string>
-    <string name="pref_galaxy4_bg_star_count_summary">"은하 배경 별 수(성능에 영향)"</string>
-    <string name="pref_galaxy4_space_cloud_count">"우주 구름 수"</string>
-    <string name="pref_galaxy4_space_cloud_count_summary">"은하의 구름 수"</string>
-    <string name="phasebeam_enable_recolor">"빔 색상 조정"</string>
-    <string name="phasebeam_color_label">"색상"</string>
-    <string name="phasebeam_saturation_label">"채도"</string>
-    <string name="phasebeam_brightness_label">"밝기"</string>
-    <string name="pref_global_frame_rate">"전체 프레임 속도"</string>
-    <string name="pref_global_frame_rate_summary">"모든 배경화면의 프레임 속도 설정(높을수록 배터리 소모)"</string>
-    <string name="pref_preview_ratio">"라이브 미리보기 비율"</string>
-    <string name="pref_preview_ratio_dialog">"라이브 미리보기 비율"</string>
-    <string name="pref_preview_ratio_summary">"형식: 가로:세로 (예: 9:16)"</string>
-    <string name="pref_preview_ratio_invalid">"비율이 올바르지 않습니다. 가로:세로 (예: 9:16)"</string>
-    <string name="grass_color_default">"기본"</string>
-    <string name="grass_color_green">"초록"</string>
-    <string name="grass_color_blue">"파랑"</string>
-    <string name="grass_color_red">"빨강"</string>
-    <string name="grass_color_pink">"분홍"</string>
-    <string name="grass_color_purple">"보라"</string>
-    <string name="grass_color_yellow">"노랑"</string>
-    <string name="grass_color_black">"검정"</string>
-    <string name="pref_walkaround_use_front_summary">"전면 카메라와 후면 카메라 사이를 전환합니다."</string>
-    <string name="pref_walkaround_mirror_front_summary">"전면 화면을 좌우 반전합니다."</string>
-    <string name="grass_color_white">"흰색"</string>
-    <string name="openweather_api_key">"YOUR_OPENWEATHER_API_KEY"</string>
-    <string name="wallpaper_bluesea">"Blue sea"</string>
-    <string name="wallpaper_bluesea_author">"TAT"</string>
-    <string name="wallpaper_bluesea_desc">"푸른 바다에 떠다니는 반투명 바다 생물"</string>
-    <!-- Nexus 고급 설정 -->
+
+    <!-- Application name -->
+    <string name="wallpapers">REAndroid 라이브 배경화면</string>
+
+    <!-- Wallpapers -->
+    <string name="wallpaper_walkaround">투시</string>
+    <string name="wallpaper_walkaround_author">Google</string>
+    <string name="wallpaper_walkaround_desc">전화기를 통해 주변을 안전하고 편안하게 둘러볼 수 있습니다.</string>
+
+    <string name="wallpaper_flsorescence">형광</string>
+    <string name="wallpaper_flsorescence_author">念.</string>
+    <string name="wallpaper_flsorescence_desc">빛나는 점들이 화면에서 생명체처럼 부드럽게 움직입니다.</string>
+
+    <string name="wallpaper_grass">하늘과 풀밭</string>
+    <string name="wallpaper_grass_vk">하늘과 풀밭 Vulkan</string>
+    <string name="wallpaper_grass_author">Google</string>
+    <string name="wallpaper_grass_desc">풀잎들이 낮이나 밤하늘 아래에서 부드럽게 흔들립니다.</string>
+    <string name="wallpaper_grass_vk_desc">하늘과 풀밭 배경화면의 Vulkan 렌더링 진입점입니다.</string>
+
+    <string name="wallpaper_galaxy">은하수</string>
+    <string name="wallpaper_nightsky">밤하늘</string>
+    <string name="wallpaper_microbes">미생물</string>
+    <string name="wallpaper_nightsky_author">念.</string>
+    <string name="wallpaper_microbes_author">Samsung</string>
+    <string name="wallpaper_nightsky_desc">실제 항성 목록을 기반으로 한 밤하늘 배경화면으로, 항성 일주 운동, 센서 방향 연동, 길게 누르기 시간 가속, 별 궤적 점진적 페이드 효과를 포함합니다.</string>
+    <string name="wallpaper_microbes_desc">현미경 속 생명체로, 터치 기반 이동, 먹이 찾기 행동, 유기적 입자 애니메이션을 지원합니다.</string>
+    <string name="wallpaper_galaxy_author">Google</string>
+    <string name="wallpaper_galaxy_desc">천천히 회전하는 별들로 이루어진 은하수입니다.</string>
+
+    <string name="wallpaper_galaxy4">은하수 4</string>
+    <string name="wallpaper_galaxy4_author">Google</string>
+    <string name="wallpaper_description_galaxy4">회전하는 구름과 반짝이는 별들이 있는 아름다운 은하수입니다.</string>
+
+    <string name="wallpaper_phasebeam">레이저 광선</string>
+    <string name="wallpaper_phasebeam_author">Google</string>
+    <string name="wallpaper_phasebeam_desc">부드러운 광선과 입자들이 배경을 가로지릅니다.</string>
+
+    <string name="wallpaper_fall">수면 위 낙엽</string>
+    <string name="wallpaper_fall_author">Google</string>
+    <string name="wallpaper_fall_desc">가을 낙엽이 아래 잔잔한 연못으로 떨어집니다:\n유체 배경 스타일</string>
+
+    <string name="wallpaper_wildworld">야생 세계</string>
+    <string name="wallpaper_wildworld_author">MediaTek</string>
+    <string name="wallpaper_wildworld_desc">층층이 움직이는 선사 시대 풍경과 장난기 있는 생명체들.</string>
+
+    <string name="wallpaper_fireworks">불꽃놀이</string>
+    <string name="wallpaper_fireworks_author">MediaTek</string>
+    <string name="wallpaper_fireworks_desc">화려한 불꽃이 밤하늘에 터집니다.</string>
+
+    <string name="wallpaper_windmill">회전하는 풍차</string>
+    <string name="wallpaper_windmill_author">MediaTek</string>
+    <string name="wallpaper_windmill_desc">역동적인 날씨 속의 구릉과 회전하는 풍차.</string>
+
+    <string name="wallpaper_ocean">해양 날씨</string>
+    <string name="wallpaper_ocean_author">MediaTek</string>
+    <string name="wallpaper_ocean_desc">실제 날씨에 따라 변화하는 파도와 하늘.</string>
+
+    <string name="wallpaper_deepsea">깊은 바다</string>
+    <string name="wallpaper_deepsea_author">Samsung</string>
+    <string name="wallpaper_deepsea_desc">반투명 해파리가 깊은 바다에서 천천히 움직입니다.</string>
+
+    <string name="wallpaper_clock">극지 시계</string>
+    <string name="wallpaper_clock_author">Google</string>
+    <string name="wallpaper_clock_desc">시계 방향 원호로 날짜와 시간을 표시합니다: 월, 일, 시, 분, 초.</string>
+
+    <string name="wallpaper_aurora1">북극광</string>
+    <string name="wallpaper_aurora1_author">TAT</string>
+    <string name="wallpaper_aurora1_desc">층을 이루며 흐르는 오로라가 별이 빛나는 배경을 덮고, 터치 입자 상호작용을 지원합니다.</string>
+    <string name="wallpaper_aurora2">북극광 2</string>
+    <string name="wallpaper_aurora2_author">HU1</string>
+    <string name="wallpaper_aurora2_desc">테마 야경 위의 오로라 커튼이 계속해서 물결치며, 반짝이는 별과 유성 애니메이션이 함께합니다.</string>
+
+    <string name="wallpaper_nexus">교차하는 빛의 장막</string>
+    <string name="wallpaper_nexus_author">Google</string>
+    <string name="wallpaper_nexus_desc">신경망의 한 단면.</string>
+
+    <string name="wallpaper_noisefield">거품</string>
+    <string name="wallpaper_noisefield_author">Google</string>
+    <string name="wallpaper_noisefield_desc">부드러운 그라데이션 배경 위에 빛나는 거품이 흐릅니다.</string>
+
+    <string name="wallpaper_nebula">성운</string>
+    <string name="wallpaper_nebula_author">念.</string>
+    <string name="wallpaper_nebula_desc">공식 기반 실시간 볼륨 렌더링으로 구현한 오리온 대성운의 시각 효과.</string>
+
+    <!-- Music visualization wallpapers -->
+    <string name="musicvis_author">Google</string>
+    <string name="wallpaper_vis2">음파</string>
+    <string name="wallpaper_vis3">주파수 스펙트럼</string>
+    <string name="wallpaper_vis4">볼륨 미터</string>
+    <string name="wallpaper_vis5">다중 시각화</string>
+    <string name="vis2_desc">현재 재생 중인 음악 트랙의 음파를 그립니다.</string>
+    <string name="vis3_desc">현재 재생 중인 음악 트랙의 주파수 스펙트럼을 표시합니다.</string>
+    <string name="vis4_desc">아날로그 사운드 미터를 모방합니다.</string>
+    <string name="vis5_desc">모든 음악 시각화 효과를 모아 3D 효과로 천천히 회전시킵니다.</string>
+
+    <!-- Polar clock -->
+    <string name="clock_settings">극지 시계 설정</string>
+    <string name="show_seconds">초 표시</string>
+    <string name="variable_line_width">고리 너비를 다양하게 설정</string>
+    <string name="palette">색상 팔레트</string>
+    <string name="palette_gray">철회색</string>
+    <string name="palette_violet">한밤중</string>
+    <string name="palette_matrix">녹색 화면</string>
+    <string name="palette_white_c">북극곰 (동적)</string>
+    <string name="palette_black_c">블랙홀 (동적)</string>
+    <string name="palette_halloween">호박 파이</string>
+    <string name="palette_zenburn">이국적인 과일 샐러드</string>
+    <string name="palette_oceanic">파란색 레이저</string>
+
+    <!-- Settings UI -->
+    <string name="settings_title">배경화면 설정</string>
+    <string name="settings_entry_config">기본 설정</string>
+    <string name="settings_entry_fall">수면 위 낙엽</string>
+    <string name="settings_entry_grass">하늘과 풀밭</string>
+    <string name="settings_entry_aurora1">북극광</string>
+    <string name="settings_entry_aurora2">북극광 2</string>
+    <string name="settings_entry_wildworld">야생 세계</string>
+    <string name="settings_entry_vis5">다중 시각화</string>
+    <string name="settings_entry_magicsmoke">마법의 연기</string>
+    <string name="settings_entry_holospiral">후광 나선</string>
+    <string name="settings_entry_windmill">회전하는 풍차</string>
+    <string name="settings_entry_ocean">해양 날씨</string>
+    <string name="settings_entry_clock">극지 시계</string>
+    <string name="settings_entry_fireworks">불꽃놀이</string>
+    <string name="settings_entry_galaxy4">은하수 4</string>
+    <string name="settings_entry_galaxy">은하수</string>
+    <string name="settings_entry_nightsky">밤하늘</string>
+    <string name="settings_entry_microbes">미생물</string>
+    <string name="settings_entry_walkaround">투시</string>
+    <string name="settings_entry_phasebeam">레이저 광선</string>
+    <string name="settings_entry_nebula">성운</string>
+    <string name="settings_entry_noisefield">거품</string>
+    <string name="settings_entry_vis2">음파</string>
+    <string name="settings_entry_vis3">주파수 스펙트럼</string>
+    <string name="settings_entry_vis4">볼륨 미터</string>
+    <string name="settings_entry_bluesea">푸른 바다</string>
+    <string name="settings_entry_deepsea">깊은 바다</string>
+
+    <!-- Fall leaves preferences -->
+    <string name="pref_fall_leaf_count">낙엽 수</string>
+    <string name="pref_fall_leaf_count_summary">낙엽의 수를 변경합니다 (성능에 영향)</string>
+    <string name="pref_fall_green_leaves">초록색 잎</string>
+    <string name="pref_fall_green_leaves_summary">활성화하면 일부 낙엽이 초록색이 됩니다</string>
+    <string name="pref_fall_max_drops">최대 물결 수</string>
+    <string name="pref_fall_max_drops_summary">화면에 동시에 표시되는 최대 물결 수 (성능에 영향)</string>
+    <string name="pref_fall_precise_calc">정밀 계산</string>
+    <string name="pref_fall_precise_calc_summary">파동 전파와 감쇠에 기반한 물리적 물결 시뮬레이션을 활성화합니다</string>
+
+    <!-- Grass preferences -->
+    <string name="pref_grass_legacy_particles">클래식 버전 민들레, 반딧불이</string>
+    <string name="pref_grass_legacy_particles_summary">MTK 클래식 버전 민들레와 반딧불이의 시각 효과로 전환합니다</string>
+    <string name="pref_grass_enabled">풀밭 표시</string>
+    <string name="pref_grass_enabled_summary">풀밭 효과를 표시하거나 숨깁니다</string>
+    <string name="pref_grass_weather_enabled">날씨 효과 활성화</string>
+    <string name="pref_grass_weather_enabled_summary">날씨 변화에 따라 밝기, 바람 세기, 입자 효과를 조정합니다</string>
+    <string name="pref_grass_weather_rain_count">빗방울 수 (성능에 영향)</string>
+    <string name="pref_grass_weather_rain_count_summary">빗방울 수를 조정합니다 (10 ~ 1000)</string>
+    <string name="pref_grass_weather_snow_count">눈송이 수 (성능에 영향)</string>
+    <string name="pref_grass_weather_snow_count_summary">눈송이 수를 조정합니다 (10 ~ 1000)</string>
+    <string name="pref_grass_count">풀잎 수</string>
+    <string name="pref_grass_count_summary">풀의 수를 변경합니다 (성능에 영향)</string>
+    <string name="pref_grass_height">풀밭 높이</string>
+    <string name="pref_grass_height_summary">풀의 높이를 변경합니다</string>
+    <string name="pref_grass_width">풀밭 너비</string>
+    <string name="pref_grass_width_summary">풀의 너비를 변경합니다</string>
+    <string name="pref_grass_hardness">풀잎 부드러움</string>
+    <string name="pref_grass_hardness_summary">풀잎의 부드러움을 변경합니다 (높을수록 잘 휘어짐)</string>
+    <string name="pref_grass_color">풀밭 색상</string>
+    <string name="pref_grass_color_summary">풀의 색상을 변경하여 다른 효과를 구현합니다</string>
+    <string name="pref_grass_night_invert">밤하늘 반전</string>
+    <string name="pref_grass_night_desaturate">밤 풀밭 탈색</string>
+    <string name="pref_grass_accurate_sun">정밀 계산 (성능에 영향)</string>
+    <string name="pref_grass_accurate_sun_summary">실제 시간과 지리적 위치를 기반으로 태양과 달의 위치를 계산합니다</string>
+    <string name="pref_grass_sun">태양 표시 (정밀 계산 필요)</string>
+    <string name="pref_grass_sun_summary">태양을 표시하거나 숨깁니다</string>
+    <string name="pref_grass_moon">달 표시 (정밀 계산 필요)</string>
+    <string name="pref_grass_moon_summary">달을 표시하거나 숨기며, 실제 월상을 표현합니다</string>
+    <string name="pref_grass_dandelion">민들레 표시</string>
+    <string name="pref_grass_dandelion_summary">낮에 떠다니는 민들레를 표시합니다</string>
+    <string name="pref_grass_firefly">반딧불이 표시</string>
+    <string name="pref_grass_firefly_summary">밤에 날아다니는 반딧불이를 표시합니다</string>
+    <string name="pref_grass_dandelion_count">민들레 수 (성능에 영향)</string>
+    <string name="pref_grass_firefly_count">반딧불이 수 (성능에 영향)</string>
+    <string name="pref_grass_star_count">별 수 (성능에 영향)</string>
+    <string name="pref_grass_star_count_summary">별 수를 조정합니다 (0 ~ 10000)</string>
+    <string name="pref_grass_dandelion_speed">민들레 속도</string>
+
+    <!-- Phase beam preferences -->
+    <string name="phasebeam_enable_recolor">광선 색상 조정</string>
+    <string name="phasebeam_enable_recolor_summary">활성화하면 광선의 색상을 조정할 수 있습니다</string>
+    <string name="pref_galaxenable_recolor_summary">활성화하면 광선 색상을 사용자 정의할 수 있습니다</string>
+    <string name="phasebeam_color_label">색상</string>
+    <string name="phasebeam_saturation_label">채도</string>
+    <string name="phasebeam_brightness_label">밝기</string>
+    <string name="miui_permienable_recolor_summary">활성화하면 광선의 색상을 조정할 수 있습니다</string>
+
+    <!-- Galaxy preferences -->
+    <string name="pref_galaxy_particle_count">입자 수</string>
+    <string name="pref_galaxy_particle_count_summary">은하수의 입자 수 (성능에 영향)</string>
+    <string name="pref_galaxy_particle_alpha">입자 투명도</string>
+    <string name="pref_galaxy_particle_alpha_summary">입자 투명도를 조정합니다 (두 계산 모드 모두 적용)</string>
+    <string name="pref_galaxy_precise_calc">정밀 나선 계산</string>
+    <string name="pref_galaxy_precise_calc_summary">활성화하면 M31 매개변수 기반 로그 나선으로 초기화하고, 비활성화하면 현재 무작위 각도 로직을 사용합니다</string>
+    <string name="pref_galaxy_use_light2">light2 후광 텍스처 사용</string>
+    <string name="pref_galaxy_use_light2_summary">켜면 light2를 사용하고, 끄면 light1을 사용합니다</string>
+    <string name="pref_galaxy_arm_count">나선팔 수</string>
+    <string name="pref_galaxy_arm_count_summary">로그 나선팔 수 (정밀 계산 모드에서만 적용)</string>
+    <string name="pref_galaxy_arm_offset">나선팔 오프셋 (라디안 × 1000)</string>
+    <string name="pref_galaxy_arm_offset_summary">나선팔 사이의 각도 간격 (0 ~ 2π, 정밀 계산에서만 적용)</string>
+    <string name="pref_galaxy_pitch_angle">피치 각도 (도 × 10)</string>
+    <string name="pref_galaxy_pitch_angle_summary">나선팔 피치 각도 (0 ~ 30°, 정밀 계산에서만 적용)</string>
+    <string name="pref_galaxy_inner_scatter">내부 산란 (×100)</string>
+    <string name="pref_galaxy_inner_scatter_summary">핵심부 근처 나선팔 산란 강도 (정밀 계산에서만 적용)</string>
+    <string name="pref_galaxy_outer_scatter">외부 산란 (×100)</string>
+    <string name="pref_galaxy_outer_scatter_summary">외곽 나선팔 산란 강도 (정밀 계산에서만 적용)</string>
+    <string name="pref_galaxy_turbulence">난류 강도 (×100)</string>
+    <string name="pref_galaxy_turbulence_summary">정밀 나선팔 변형의 무작위 난류 강도</string>
+    <string name="pref_galaxy_forbidden_radius">중심 금지 반경 (kpc × 100)</string>
+    <string name="pref_galaxy_forbidden_radius_summary">로그 나선팔 피팅에서 제외된 핵심 반경 (정밀 계산에서만 적용)</string>
+    <string name="pref_galaxy_ellipse_ratio">타원 비율 (×1000)</string>
+    <string name="pref_galaxy_ellipse_ratio_summary">나선팔 타원 형태 비율 (0.5 ~ 1.0, 정밀 계산에서만 적용)</string>
+    <string name="pref_galaxy_ellipse_twist">타원 왜곡 (×1000)</string>
+    <string name="pref_galaxy_ellipse_twist_summary">타원 형태 왜곡 오프셋 (-0.1 ~ 0.1, 정밀 계산에서만 적용)</string>
+
+    <!-- Galaxy 4 preferences -->
+    <string name="pref_galaxy4_bg_star_count">배경 별 수</string>
+    <string name="pref_galaxy4_bg_star_count_summary">은하수의 배경 별 수 (성능에 영향)</string>
+    <string name="phasebeam_y4_bg_star_count">배경 별 수</string>
+    <string name="pref_galaxy4_space_cloud_count">우주 구름 수</string>
+    <string name="pref_galaxy4_space_cloud_count_summary">은하수의 구름 수</string>
+
+    <!-- Global settings -->
+    <string name="pref_global_frame_rate">전역 프레임 수</string>
+    <string name="pref_global_frame_rate_summary">모든 배경화면의 프레임 수를 설정합니다 (성능에 영향)</string>
+    <string name="pref_preview_ratio">실시간 미리보기 비율</string>
+    <string name="pref_preview_ratio_dialog">실시간 미리보기 비율</string>
+    <string name="pref_preview_ratio_summary">형식: 너비:높이, 예: 9:16</string>
+    <string name="pref_preview_ratio_invalid">비율이 유효하지 않습니다. 너비:높이 형식을 사용하세요, 예: 9:16</string>
+
+    <!-- Weather settings -->
+    <string name="pref_weather_api_notice">날씨 변화를 사용하려면 기본 설정에서 API를 설정하세요</string>
+    <string name="pref_weather_refresh_now">지금 날씨 새로고침</string>
+    <string name="pref_weather_refresh_now_summary">최신 날씨 데이터를 즉시 가져옵니다</string>
+    <string name="pref_weather_refresh_now_success">날씨 새로고침 완료</string>
+    <string name="pref_weather_refresh_now_failed">날씨 새로고침 실패</string>
+    <string name="pref_apply_api_title">API 신청</string>
+    <string name="pref_weather_update_interval">날씨 업데이트 간격</string>
+    <string name="pref_openweather_api_key_title">OpenWeather API 키</string>
+    <string name="pref_openweather_api_key_dialog">OpenWeather API 키를 입력하세요</string>
+    <string name="pref_openweather_api_key_summary_set">API 키가 설정됨</string>
+    <string name="pref_openweather_api_key_summary_unset">API 키가 설정되지 않음</string>
+    <string name="weather_toolbar_title">날씨 설정</string>
+    <string name="pref_weather_last_refresh">마지막 새로고침 시간: %1$s</string>
+    <string name="pref_weather_last_refresh_unknown">마지막 새로고침 시간: 알 수 없음</string>
+
+    <!-- Grass colors -->
+    <string name="grass_color_default">기본</string>
+    <string name="grass_color_green">초록색</string>
+    <string name="grass_color_blue">파란색</string>
+    <string name="grass_color_red">빨간색</string>
+    <string name="grass_color_pink">분홍색</string>
+    <string name="grass_color_purple">보라색</string>
+    <string name="grass_color_yellow">노란색</string>
+    <string name="grass_color_black">검은색</string>
+    <string name="grass_color_white">흰색</string>
+
+    <!-- Magic smoke wallpaper -->
+    <string name="wallpaper_magicsmoke">마법의 연기</string>
+    <string name="pref_magicsmoke_preset">시각 테마</string>
+    <string name="pref_magicsmoke_preset_summary">20가지 연기/구름/플라즈마 효과 중에서 선택하세요</string>
+
+    <!-- Holo spiral wallpaper -->
+    <string name="wallpaper_holospiral">후광 나선</string>
+    <string name="wallpaper_holospiral_author">Google</string>
+    <string name="wallpaper_holospiral_desc">후광 테마 나선형 배경화면</string>
+
+    <!-- Blue sea wallpaper -->
+    <string name="wallpaper_bluesea">푸른 바다</string>
+    <string name="wallpaper_bluesea_author">TAT</string>
+    <string name="wallpaper_bluesea_desc">반투명 해양 생물들이 바다 위에 떠 있습니다.</string>
+
+    <!-- General preferences -->
+    <string name="pref_open_wallpaper_picker">시스템 미리보기 열기</string>
+    <string name="pref_open_wallpaper_picker_failed">배경화면 미리보기를 지원하지 않습니다</string>
+    <string name="pref_nightsky_preview_hint">힌트: 위쪽에서 앱 내 실시간 미리보기를 먼저 사용한 후, \"시스템 미리보기 열기\"를 눌러 밤하늘 배경화면을 적용하세요.</string>
+    <string name="pref_nightsky_camera_focal">카메라 초점 거리</string>
+    <string name="pref_nightsky_camera_focal_summary">렌즈 초점 거리(mm)를 조정합니다. 값이 클수록 시야가 좁아집니다</string>
+    <string name="pref_nightsky_use_sensor">센서 방향 사용</string>
+    <string name="pref_nightsky_use_sensor_summary">비활성화하면 바탕화면 스크롤로 시점을 제어합니다 (페이지당 45°)</string>
+    <string name="pref_nightsky_auto_time_accel">자동 시간 가속</string>
+    <string name="pref_nightsky_auto_time_accel_summary">하늘 시간을 지속적으로 가속하고 별 궤적을 유지합니다</string>
+    <string name="pref_nightsky_time_accel_speed">가속 단계</string>
+    <string name="pref_nightsky_time_accel_speed_summary">자동 가속/길게 누르기 가속의 속도 단계를 선택합니다</string>
+    <string name="pref_microbes_preview_hint">힌트: 미리보기에서 터치하여 드래그하면 미생물을 끌어당길 수 있으며, 그런 다음 \"시스템 미리보기 열기\"를 눌러 배경화면을 적용하세요.</string>
+    <string name="pref_microbes_lifecycle_speed">생명 주기 속도</string>
+    <string name="pref_microbes_lifecycle_speed_summary">대사, 번식 및 감소 속도를 조정합니다 (%)</string>
+    <string name="pref_microbes_motion_activity">움직임 활발도</string>
+    <string name="pref_microbes_motion_activity_summary">자연스러운 이동과 흔들림 강도를 조정합니다 (%)</string>
+    <string name="pref_microbes_color_mode">색상 스타일</string>
+    <string name="pref_microbes_color_mode_summary">클래식 버전 빨강/초록/파랑 3색과 새 버전 (현재) 강화 색상 사이를 전환합니다</string>
+    <string name="pref_microbes_color_mode_original">클래식 버전</string>
+    <string name="pref_microbes_color_mode_modern">새 버전 (현재)</string>
+    <string name="pref_open_wallpaper_chooser">배경화면 선택기 열기</string>
+    <string name="pref_live_preview">실시간 미리보기</string>
+
+    <!-- Flsorescence preferences -->
+    <string name="pref_flsorescence_shape">점의 모양</string>
+    <string name="pref_flsorescence_shape_summary">각 점의 모양을 변경합니다</string>
+    <string name="pref_flsorescence_color">점의 색상 구성표</string>
+    <string name="pref_flsorescence_color_summary">색상 구성표를 변경합니다</string>
+    <string name="pref_flsorescence_scale">점의 크기 조정</string>
+    <string name="pref_flsorescence_scale_summary">각 점의 크기를 변경합니다</string>
+    <string name="pref_flsorescence_speed">움직임 속도</string>
+    <string name="pref_flsorescence_speed_summary">움직임 속도를 변경합니다</string>
+    <string name="pref_flsorescence_amount">점의 개수</string>
+    <string name="pref_flsorescence_amount_summary">점의 개수를 변경합니다</string>
+    <string name="pref_flsorescence_pattern">움직임 패턴</string>
+    <string name="pref_flsorescence_pattern_summary">움직임 패턴을 변경합니다</string>
+
+    <!-- Nexus preferences -->
     <string name="pref_nexus_background_title">배경</string>
-    <string name="pref_nexus_custom_background_title">맞춤 배경</string>
+    <string name="pref_nexus_custom_background_title">사용자 정의 배경</string>
     <string name="pref_nexus_custom_background_summary">배경 이미지 선택</string>
-    <string name="pref_nexus_custom_background_set_summary">맞춤 배경이 설정됨</string>
-    <string name="pref_nexus_reset_background_title">기본 배경으로 복원</string>
-    <string name="pref_nexus_reset_background_summary">맞춤 배경을 지우고 내장 배경을 사용</string>
+    <string name="pref_nexus_custom_background_set_summary">사용자 정의 배경이 설정됨</string>
+    <string name="pref_nexus_reset_background_title">기본 배경 복원</string>
+    <string name="pref_nexus_reset_background_summary">사용자 정의 배경을 지우고 내장 배경을 사용합니다</string>
     <string name="nexus_bg_pyramid">기본</string>
-    <string name="nexus_bg_pyramid_1">이전 버전 1</string>
-    <string name="nexus_bg_pyramid_2">이전 버전 2</string>
-    <string name="nexus_bg_pyramid_3">이전 버전 3</string>
+    <string name="nexus_bg_pyramid_1">클래식 버전 1</string>
+    <string name="nexus_bg_pyramid_2">클래식 버전 2</string>
+    <string name="nexus_bg_pyramid_3">클래식 버전 3</string>
     <string name="nexus_bg_pyramid_4">미니멀</string>
-    <string name="pref_nexus_advanced_title">고급 설정</string>
+    <string name="nexus_custom_background_set_toast">사용자 정의 배경이 설정되었습니다. 적용하려면 배경화면을 다시 설정하세요</string>
+    <string name="nexus_background_changed_title">배경이 변경됨</string>
+    <string name="nexus_background_changed_message">새 배경이 저장되었습니다. 변경 사항을 적용하려면 지금 배경화면을 다시 설정하시겠습니까?</string>
+    <string name="nexus_background_reset_toast">사용자 정의 배경이 지워졌습니다</string>
+    <string name="nexus_background_reset_title">배경이 초기화됨</string>
+    <string name="nexus_background_reset_message">기본 배경으로 복원되었습니다. 변경 사항을 적용하려면 지금 배경화면을 다시 설정하시겠습니까?</string>
+    <string name="action_apply_now">지금 설정</string>
+    <string name="action_later">나중에</string>
+
+    <!-- Nexus advanced preferences -->
     <string name="pref_nexus_max_pulses">최대 일반 펄스 수</string>
-    <string name="pref_nexus_max_pulses_summary">화면에 동시에 표시되는 일반 펄스 수(기본값:20)</string>
+    <string name="pref_nexus_max_pulses_summary">화면에 동시에 표시되는 일반 펄스 수 (기본값: 20)</string>
     <string name="pref_nexus_max_extras">최대 추가 펄스 수</string>
-    <string name="pref_nexus_max_extras_summary">터치로 발생하는 추가 펄스 수(기본값:40)</string>
+    <string name="pref_nexus_max_extras_summary">터치로 트리거되는 추가 펄스 수 (기본값: 40)</string>
     <string name="pref_nexus_pulse_size">펄스 크기</string>
-    <string name="pref_nexus_pulse_size_summary">펄스 텍스처 픽셀 크기(기본값:14)</string>
-    <string name="pref_nexus_glow_size">글로우 크기</string>
-    <string name="pref_nexus_glow_size_summary">글로우 텍스처 픽셀 크기(기본값:64)</string>
+    <string name="pref_nexus_pulse_size_summary">펄스 텍스처 픽셀 크기 (기본값: 14)</string>
+    <string name="pref_nexus_glow_size">후광 크기</string>
+    <string name="pref_nexus_glow_size_summary">후광 텍스처 픽셀 크기 (기본값: 64)</string>
     <string name="pref_nexus_speed">이동 속도</string>
-    <string name="pref_nexus_speed_summary">펄스 기본 이동 속도(기본값:20 = 0.2)</string>
+    <string name="pref_nexus_speed_summary">펄스 기본 이동 속도 (기본값: 20 = 0.2)</string>
     <string name="pref_nexus_speed_delta_min">속도 계수 최소값</string>
-    <string name="pref_nexus_speed_delta_min_summary">속도 무작위 변동 최소 배수(기본값:70 = 0.7)</string>
+    <string name="pref_nexus_speed_delta_min_summary">속도 무작위 변동의 최소 배수 (기본값: 70 = 0.7)</string>
     <string name="pref_nexus_speed_delta_max">속도 계수 최대값</string>
-    <string name="pref_nexus_speed_delta_max_summary">속도 무작위 변동 최대 배수(기본값:170 = 1.7)</string>
-    <string name="pref_nexus_trail_size">트레일 길이</string>
-    <string name="pref_nexus_trail_size_summary">펄스 트레일 효과 길이(기본값:40)</string>
+    <string name="pref_nexus_speed_delta_max_summary">속도 무작위 변동의 최대 배수 (기본값: 170 = 1.7)</string>
+    <string name="pref_nexus_trail_size">꼬리 길이</string>
+    <string name="pref_nexus_trail_size_summary">펄스 꼬리 효과의 길이 (기본값: 40)</string>
     <string name="pref_nexus_mode">색상 모드</string>
-    <string name="pref_nexus_mode_summary">펄스 색상 구성표 선택</string>
+    <string name="pref_nexus_mode_summary">펄스의 색상 구성표를 선택합니다</string>
+
+    <!-- Walkaround preferences -->
+    <string name="pref_walkaround_use_front">전면 카메라 사용</string>
+    <string name="pref_walkaround_use_front_summary">전면 카메라와 후면 카메라 사이를 전환합니다.</string>
+    <string name="pref_walkaround_mirror_front">전면 카메라 미러링</string>
+    <string name="pref_walkaround_mirror_front_summary">전면 화면을 좌우로 미러링합니다.</string>
+    <string name="walkaround_permission_granted">카메라 권한이 허용됨</string>
+    <string name="walkaround_permission_denied">카메라 권한이 허용되지 않아 투시 화면을 표시할 수 없습니다</string>
+
+    <!-- Music visualization preferences -->
+    <string name="pref_musicvis_mesh_mode_title">클래식 버전 삼각형 스트립 메시 사용</string>
+    <string name="pref_musicvis_mesh_mode_summary">켜기: 클래식 버전 메시/그리기 기본 요소 복원. 끄기: 현재 선분 메시.</string>
+
+    <!-- MIUI permission -->
+    <string name="miui_permission_title">권한 필요</string>
+    <string name="miui_permission_message">MIUI 시스템에서는 배경화면 미리보기를 정상적으로 열려면 \"라이브 배경화면 서비스\" 권한을 수동으로 부여해야 합니다.\n\n확인을 누른 후 권한 관리 페이지에서 \"라이브 배경화면 서비스\"를 찾아 활성화하세요.</string>
+    <string name="phasebeam_ssion_message">MIUI 시스템에서는 배경화면 미리보기를 정상적으로 열려면 \"라이브 배경화면 서비스\" 권한을 수동으로 부여해야 합니다.\n\n확인을 누른 후 권한 관리 페이지에서 \"라이브 배경화면 서비스\"를 찾아 활성화하세요.</string>
+    <string name="miui_permission_go_settings">설정으로 이동</string>
+    <string name="miui_permission_continue">계속</string>
+    <string name="miui_permission_open_failed">설정 페이지를 열 수 없음</string>
+
+    <!-- About -->
+    <string name="about_title">정보</string>
+    <string name="about_app_info">앱 정보</string>
+    <string name="about_project_intro">프로젝트 소개</string>
+    <string name="about_project_one_liner">클래식 라이브 배경화면 리메이크</string>
+    <string name="about_project_description">클래식 Android 라이브 배경화면을 완전히 리메이크하여 새 기기에适配했습니다. RenderScript → OpenGL ES 2.0, 높은 호환성, 낮은 전력 소비, GPU 가속.</string>
+    <string name="about_project_highlights">하이라이트</string>
+    <string name="about_project_highlights_detail">저전력, 고호환성, 원본 그대로, GPU 가속, 장기 유지보수</string>
+    <string name="about_links">링크 및 연락처</string>
+    <string name="about_official_website">공식 웹사이트</string>
     <string name="about_official_website_url">https://github.com/zyfxv/android-live-wallpapers</string>
+    <string name="about_email">이메일</string>
     <string name="about_email_address">3471348199@qq.com</string>
+    <string name="about_email_address_alt">xujiekai508@gmail.com</string>
+    <string name="about_qq">QQ</string>
+    <string name="about_qq_number">3471348199</string>
+    <string name="about_feedback">피드백</string>
+    <string name="about_bilibili">Bilibili 홈페이지</string>
     <string name="about_bilibili_url">https://space.bilibili.com/470023065</string>
+    <string name="about_feedback_contact">피드백은 위 연락처를 통해 보내주세요</string>
+    <string name="about_thanks">감사</string>
+    <string name="about_thanks_original">원작자 감사</string>
+    <string name="about_thanks_original_detail">원작자: MediaTek, Google, Samsung</string>
+    <string name="about_developer">개발자</string>
+    <string name="about_author">저자</string>
+    <string name="about_author_detail">念.</string>
+    <string name="about_disclaimer">면책 조항</string>
+    <string name="about_disclaimer_title">학습 및 교류 목적</string>
+    <string name="about_disclaimer_detail">이 프로젝트는 비상업적 학습 및 교류 목적으로만 제공되며, 모든 권리는 원저작권자에게 있습니다.</string>
+    <string name="app_version_summary">버전: %1$s</string>
+    <string name="copied_to_clipboard">클립보드에 복사됨</string>
+    <string name="no_browser_found">브라우저를 찾을 수 없음</string>
+    <string name="no_email_found">이메일 앱을 찾을 수 없음</string>
+
+    <!-- Warning messages -->
+    <string name="galaxy_enable_precise_calc_first">먼저 정밀 나선 계산을 활성화하세요</string>
+    <string name="grass_disable_dandelion_firefly_first">먼저 민들레와 반딧불이를 비활성화하세요</string>
+    <string name="grass_disable_legacy_particles_first">먼저 전통적인 (MTK) 입자 운동 방식을 비활성화하세요</string>
+    <string name="grass_enable_dandelion_first">먼저 민들레를 활성화하세요</string>
+    <string name="grass_enable_firefly_first">먼저 반딧불이를 활성화하세요</string>
+    <string name="phasebeam_enable_recolor_first">먼저 광선 색상 조정을 활성화하세요</string>
+    <string name="config_open_browser_failed">브라우저를 열 수 없음</string>
+
+    <!-- Fireworks preferences -->
+    <string name="fireworks_custom_background_set_toast">사용자 정의 배경이 설정되었습니다. 적용하려면 배경화면을 다시 설정하세요</string>
+    <string name="fireworks_background_changed_title">배경이 변경됨</string>
+    <string name="fireworks_background_changed_message">새 배경이 저장되었습니다. 변경 사항을 적용하려면 지금 배경화면을 다시 설정하시겠습니까?</string>
+    <string name="fireworks_background_reset_toast">기본 배경으로 복원됨</string>
+    <string name="fireworks_background_reset_title">배경이 초기화됨</string>
+    <string name="fireworks_background_reset_message">기본 배경으로 복원되었습니다. 변경 사항을 적용하려면 지금 배경화면을 다시 설정하시겠습니까?</string>
+    <string name="fireworks_custom_background_set_summary">사용자 정의 배경이 설정됨</string>
+    <string name="fireworks_custom_background_click_summary">클릭하여 사용자 정의 배경 이미지 선택</string>
+    <string name="pref_fireworks_custom_background_title">사용자 정의 배경 이미지</string>
+    <string name="pref_fireworks_custom_background_summary">클릭하여 사용자 정의 배경 이미지 선택</string>
+    <string name="pref_fireworks_reset_background_title">기본 배경 복원</string>
+    <string name="pref_fireworks_reset_background_summary">사용자 정의 배경을 지우고 기본 배경을 사용합니다</string>
+
+    <!-- Reset settings -->
+    <string name="reset_all_settings_title">모든 기본 설정 복원</string>
+    <string name="reset_all_settings_message">모든 배경화면 및 전역 설정을 기본값으로 복원하시겠습니까?</string>
+    <string name="reset_all_settings_done">모든 기본 설정이 복원됨</string>
+    <string name="reset_current_settings_title">기본 설정 복원</string>
+    <string name="reset_current_settings_summary">현재 배경화면의 기본 설정을 복원합니다</string>
+    <string name="reset_current_settings_message">현재 배경화면 설정을 기본값으로 복원하시겠습니까?</string>
+    <string name="reset_current_settings_done">현재 배경화면 기본 설정이 복원됨</string>
+    <string name="reset_action_confirm">복원</string>
+
+    <!-- Deep sea preferences -->
+    <string name="title_unit_scale">해파리 크기</string>
+    <string name="summary_unit_scale">해파리의 크기를 변경합니다</string>
+    <string name="title_unit_number">해파리 수</string>
+    <string name="summary_unit_number">해파리의 수를 변경합니다</string>
+    <string name="title_background_image_type">배경</string>
+    <string name="summary_background_image_type">배경을 변경합니다</string>
+    <string name="title_background_brightness">배경 밝기</string>
+    <string name="summary_background_brightness">배경 밝기를 변경합니다</string>
+    <string name="title_background_lighting">배경 조명</string>
+    <string name="summary_background_lighting">배경 조명을 변경합니다</string>
+    <string name="title_particle_color">해파리 핵심 색상</string>
+    <string name="summary_particle_color">핵심 색상을 변경합니다</string>
+    <string name="deepsea_custom_background_title">사용자 정의 배경</string>
+    <string name="deepsea_custom_background_summary">배경 이미지 선택</string>
+    <string name="deepsea_custom_background_set_summary">사용자 정의 배경이 설정됨</string>
+    <string name="deepsea_reset_background_title">기본 배경 복원</string>
+    <string name="deepsea_reset_background_summary">사용자 정의 배경을 지우고 내장 배경을 사용합니다</string>
+    <string name="deepsea_background_changed_title">배경이 변경됨</string>
+    <string name="deepsea_background_changed_message">새 배경이 저장되었습니다. 변경 사항을 적용하려면 지금 배경화면을 다시 설정하시겠습니까?</string>
+    <string name="deepsea_background_reset_title">배경이 초기화됨</string>
+    <string name="deepsea_background_reset_message">기본 배경으로 복원되었습니다. 변경 사항을 적용하려면 지금 배경화면을 다시 설정하시겠습니까?</string>
+    <string name="deepsea_apply_now">지금 설정</string>
+    <string name="deepsea_apply_later">나중에</string>
+    <string name="deepsea_custom_background_failed">배경 저장 실패</string>
+
+    <!-- Weather API guide -->
+    <string name="pref_weather_api_guide_intro">OpenWeather API 키 획득 및 설정 전체 튜토리얼입니다.</string>
+    <string name="pref_weather_api_guide_prepare">1. 사전 준비\n- 이메일을 정상적으로 수신할 수 있는 이메일 주소\n- OpenWeather 공식 웹사이트에 정상적으로 접속할 수 있는 네트워크 환경</string>
+    <string name="pref_weather_api_guide_step_register1">2. OpenWeather 계정 등록\n1. OpenWeather 공식 웹사이트(https://openweathermap.org/)를 열고 오른쪽 상단의 주황색 Login 버튼을 클릭합니다</string>
+    <string name="pref_weather_api_guide_step_register2">2. 로그인 페이지에서 Create an Account를 클릭합니다</string>
+    <string name="pref_weather_api_guide_step_register3">3. 등록 양식에 정보를 입력합니다:\n    Username: 사용자 이름 입력 (계정 식별용)\n    Enter email: 유효한 이메일 주소 입력 (후속 인증 및 계정 복구용)\n    Password: 계정 비밀번호 설정\n    Repeat password: 동일한 비밀번호 다시 입력\n작성 완료 후 등록을 제출합니다.</string>
+    <string name="pref_weather_api_guide_step_verify1">3. 이메일 인증\n1. 등록 제출 후 페이지에 \"We have sent the confirmation link to xxx@xx.com. Please check your email.\" 메시지가 표시됩니다.</string>
+    <string name="pref_weather_api_guide_step_verify2">2. 입력한 이메일에 로그인하여 OpenWeather에서 보낸 인증 이메일을 찾고, 이메일의 \"Verify your email\" 버튼을 클릭하여 인증을 완료합니다.</string>
+    <string name="pref_weather_api_guide_step_verify3">이메일을 받지 못한 경우 스팸 또는 광고 메일 폴더를 확인하세요.</string>
+    <string name="pref_weather_api_guide_step_key1">4. 전용 API Key 획득\n1. 이메일 인증 후 OpenWeather 공식 웹사이트로 돌아가 계정에 로그인합니다.\n2. 로그인 성공 후 개인 센터 페이지에서 탐색 모음의 API keys 옵션을 클릭합니다</string>
+    <string name="pref_weather_api_guide_step_key2">3. API 관리 페이지에서 시스템이 기본으로 생성한 API Key(일반적으로 Default로 명명, 상태는 Active)를 확인할 수 있으며, 직접 복사하면 됩니다. 또는 이름을 입력하고 Generate를 클릭하여 새 Key를 생성할 수도 있습니다.</string>
+    <string name="pref_weather_api_guide_step_key3">중요: 무료 버전 API Key는 호출 제한이 있습니다(분당 최대 60회, 하루 최대 1000회). 개인 배경화면 사용에는 충분합니다. API Key를 공개적으로 공유하지 마세요. 남용으로 인한 제한을 방지하기 위함입니다.</string>
+    <string name="pref_weather_api_guide_step_config1">5. 배경화면 앱에서 API Key 설정\n1. 배경화면 앱을 열고 오른쪽 상단의 구름 아이콘(날씨 설정 진입점)을 클릭합니다</string>
+    <string name="pref_weather_api_guide_step_config2">2. 팝업 메뉴에서 OpenWeather API 키 옵션을 선택합니다</string>
+    <string name="pref_weather_api_guide_step_config3">3. 팝업 입력 상자에 방금 복사한 API Key를 붙여넣고 확인을 클릭하여 저장합니다.</string>
+    <string name="pref_weather_api_guide_step_config4">4. 설정 완료 후 \"지금 날씨 새로고침\"을 클릭하여 테스트합니다. 배경화면이 날씨 정보를 정상적으로 로드하면 설정 성공입니다.</string>
+    <string name="pref_weather_api_guide_common">6. 자주 묻는 질문\n설정 후 날씨를 가져올 수 없는 경우:\n- Key가 완전히 복사되었는지 확인하고, 불필요한 공백이나 줄바꿈 문자가 없는지 확인하세요.\n- 새로 생성된 API Key는 적용까지 10~30분이 걸릴 수 있습니다. 인내심을 가지고 기다린 후 테스트하세요.\n- 앱의 위치 권한이 활성화되어 있는지 확인하세요.</string>
+    <string name="pref_weather_api_guide_illustration">API 튜토리얼 일러스트</string>
+    <string name="pref_weather_api_guide_link_text">https://openweathermap.org/</string>
+    <string name="pref_weather_api_guide_open_web_button">OpenWeather 공식 웹사이트 열기</string>
+
 </resources>
