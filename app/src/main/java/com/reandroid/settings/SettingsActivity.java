@@ -55,6 +55,10 @@ public class SettingsActivity extends AppCompatActivity
         weatherButton = findViewById(R.id.toolbar_weather_button);
         if (weatherButton != null) {
             weatherButton.setOnClickListener(v -> showWeatherPopupMenu());
+            weatherButton.setOnLongClickListener(v -> {
+                showWeatherDebugDialog();
+                return true;
+            });
         }
 
         if (getSupportActionBar() != null) {
@@ -216,6 +220,11 @@ public class SettingsActivity extends AppCompatActivity
         );
         PopupMenu popupMenu = new PopupMenu(themedContext, weatherButton);
         popupMenu.getMenuInflater().inflate(R.menu.menu_weather_toolbar, popupMenu.getMenu());
+        MenuItem lastRefreshItem = popupMenu.getMenu().findItem(R.id.action_weather_last_refresh);
+        if (lastRefreshItem != null) {
+            lastRefreshItem.setTitle(getWeatherLastRefreshTitle());
+            lastRefreshItem.setEnabled(false);
+        }
         popupMenu.setOnMenuItemClickListener(item -> {
             int itemId = item.getItemId();
             if (itemId == R.id.action_weather_update_interval) {
@@ -237,6 +246,57 @@ public class SettingsActivity extends AppCompatActivity
             return false;
         });
         popupMenu.show();
+    }
+
+    private void showWeatherDebugDialog() {
+        String[] debugOptions = getResources().getStringArray(R.array.weather_debug_options);
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.pref_weather_debug_title)
+                .setItems(debugOptions, (dialog, which) -> {
+                    if (which == 0) {
+                        if (weatherManager != null) {
+                            weatherManager.clearManualOverride();
+                        }
+                        lastWeatherState = weatherManager != null ? weatherManager.getLastState() : null;
+                        updateWeatherMenuIcon();
+                        Toast.makeText(this, R.string.pref_weather_debug_restore, Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    WeatherCondition[] conditions = WeatherCondition.values();
+                    int conditionIndex = which - 1;
+                    if (conditionIndex >= 0 && conditionIndex < conditions.length) {
+                        WeatherCondition selected = conditions[conditionIndex];
+                        boolean isNight = isNightTime();
+                        long nowUtc = System.currentTimeMillis() / 1000L;
+                        WeatherState overrideState = new WeatherState(selected, isNight, 0.0f, 0.0f,
+                                0L, 0L, nowUtc);
+                        if (weatherManager != null) {
+                            weatherManager.setManualOverride(overrideState);
+                        }
+                        lastWeatherState = overrideState;
+                        updateWeatherMenuIcon();
+                        String message = getString(R.string.pref_weather_debug_override, debugOptions[which]);
+                        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .show();
+    }
+
+    private boolean isNightTime() {
+        java.util.Calendar calendar = java.util.Calendar.getInstance();
+        int hour = calendar.get(java.util.Calendar.HOUR_OF_DAY);
+        return hour < 6 || hour >= 18;
+    }
+
+    private String getWeatherLastRefreshTitle() {
+        if (lastWeatherState == null || lastWeatherState.updateUtc <= 0L) {
+            return getString(R.string.pref_weather_last_refresh_unknown);
+        }
+        long updateMillis = lastWeatherState.updateUtc * 1000L;
+        java.text.DateFormat formatter = android.text.format.DateFormat.getTimeFormat(this);
+        String formatted = formatter.format(updateMillis);
+        return getString(R.string.pref_weather_last_refresh, formatted);
     }
 
     private void showGlobalFrameRateDialog() {
@@ -341,11 +401,13 @@ public class SettingsActivity extends AppCompatActivity
             weatherManager.start();
         }
 
+        final WeatherManager currentManager = weatherManager;
         weatherManager.refreshNow(state -> runOnUiThread(() -> {
+            if (isFinishing() || isDestroyed()) return;
             if (weatherButton != null) {
                 weatherButton.setEnabled(true);
             }
-            WeatherState resolved = state != null ? state : weatherManager.getLastState();
+            WeatherState resolved = state != null ? state : (currentManager != null ? currentManager.getLastState() : null);
             if (resolved != null) {
                 lastWeatherState = resolved;
                 updateWeatherMenuIcon();
@@ -365,8 +427,10 @@ public class SettingsActivity extends AppCompatActivity
         }
         weatherManager.stop();
         weatherManager.start();
+        final WeatherManager currentManager = weatherManager;
         weatherManager.refreshNow(state -> runOnUiThread(() -> {
-            WeatherState resolved = state != null ? state : weatherManager.getLastState();
+            if (isFinishing() || isDestroyed()) return;
+            WeatherState resolved = state != null ? state : (currentManager != null ? currentManager.getLastState() : null);
             if (resolved != null) {
                 lastWeatherState = resolved;
                 updateWeatherMenuIcon();
@@ -375,11 +439,7 @@ public class SettingsActivity extends AppCompatActivity
     }
 
     private void openWeatherApiGuide() {
-        try {
-            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://zhuanlan.zhihu.com/p/656012235")));
-        } catch (Exception e) {
-            Toast.makeText(this, R.string.config_open_browser_failed, Toast.LENGTH_SHORT).show();
-        }
+        startActivity(new Intent(this, OpenWeatherApiGuideActivity.class));
     }
 
     @Nullable

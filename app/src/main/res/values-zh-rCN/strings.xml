@@ -89,9 +89,7 @@
     <string name="wallpaper_fall">水面落叶</string>
     <string name="wallpaper_fall_author">Google</string>
     <string name="wallpaper_fall_desc">
-        秋叶飘零&lt;br&gt;
-        落入下方微波荡漾的池塘：&lt;br&gt;
-        流体背景风格
+        秋叶飘零\n落入下方微波荡漾的池塘：\n流体背景风格
     </string>
 
     <!-- Wallpaper showing wild world -->
@@ -324,6 +322,8 @@
     <string name="pref_openweather_api_key_summary_set">已配置 API 密钥</string>
     <string name="pref_openweather_api_key_summary_unset">未配置 API 密钥</string>
     <string name="weather_toolbar_title">天气设置</string>
+        <string name="pref_weather_last_refresh">最后刷新时间: %1$s</string>
+    <string name="pref_weather_last_refresh_unknown">最后刷新时间: 未知</string>
     <string name="phasebeam_ssion_message">
         小米系统需要手动授予“动态壁纸服务”权限，否则无法正常打开壁纸预览。\n\n点击确定后，请在权限管理页面找到“动态壁纸服务”并开启。</string>
 
@@ -508,6 +508,10 @@
     <string name="fireworks_background_reset_message">已恢复为默认背景。是否立即重新设置壁纸以应用更改？</string>
     <string name="fireworks_custom_background_set_summary">已设置自定义背景</string>
     <string name="fireworks_custom_background_click_summary">点击选择自定义背景图片</string>
+    <string name="pref_fireworks_custom_background_title">自定义背景图片</string>
+    <string name="pref_fireworks_custom_background_summary">点击选择自定义背景图片</string>
+    <string name="pref_fireworks_reset_background_title">恢复默认背景</string>
+    <string name="pref_fireworks_reset_background_summary">清除自定义背景，使用默认背景</string>
     <string name="reset_all_settings_title">恢复全部默认配置</string>
     <string name="reset_all_settings_message">确定要将所有壁纸和全局设置恢复为默认值吗？</string>
     <string name="reset_all_settings_done">已恢复全部默认配置</string>
@@ -516,4 +520,23 @@
     <string name="reset_current_settings_message">确定要将当前壁纸设置恢复为默认值吗？</string>
     <string name="reset_current_settings_done">已恢复当前壁纸默认配置</string>
     <string name="reset_action_confirm">恢复</string>
+    <string name="pref_weather_api_guide_intro">OpenWeather API 密钥获取与配置完整教程。</string>
+    <string name="pref_weather_api_guide_prepare">一、前期准备\n- 一个可正常接收邮件的邮箱地址\n- 能正常访问 OpenWeather 官网的网络环境</string>
+    <string name="pref_weather_api_guide_step_register1">二、注册 OpenWeather 账号\n1. 打开 OpenWeather 官网（https://openweathermap.org/），点击右上角橙色 Login 按钮</string>
+    <string name="pref_weather_api_guide_step_register2">2. 在登录页面点击 Create an Account</string>
+    <string name="pref_weather_api_guide_step_register3">3. 在注册表单中填写信息：\n    Username：自定义用户名（仅用于账号标识）\n    Enter email：填写你的有效邮箱地址（后续验证和找回账号用）\n    Password：设置账号密码\n    Repeat password：再次输入相同密码\n填写完成后提交注册。</string>
+    <string name="pref_weather_api_guide_step_verify1">三、验证你的邮箱\n1. 提交注册后，页面会提示：We have sent the confirmation link to xxx@xx.com. Please check your email.</string>
+    <string name="pref_weather_api_guide_step_verify2">2. 登录你填写的邮箱，找到来自 OpenWeather 的验证邮件，点击邮件中的 Verify your email 按钮完成验证。</string>
+    <string name="pref_weather_api_guide_step_verify3">如果未收到邮件，请检查垃圾邮件或广告邮件文件夹。</string>
+    <string name="pref_weather_api_guide_step_key1">四、获取你的专属 APIKey\n1. 验证邮箱后，返回 OpenWeather 官网并登录你的账号。\n2. 登录成功后，在个人中心页面点击导航栏的 API keys 选项</string>
+    <string name="pref_weather_api_guide_step_key2">3. 在 API 管理页面，你会看到系统默认生成的 APIKey（通常命名为 Default，状态为 Active），直接复制即可；也可以输入名称点击 Generate 生成新的 Key。</string>
+    <string name="pref_weather_api_guide_step_key3">重要说明：免费版 APIKey 有调用限制，每分钟最多 60 次、每天最多 1000 次，个人壁纸使用完全足够。请勿将你的 APIKey 公开分享，避免被他人滥用导致限流。</string>
+    <string name="pref_weather_api_guide_step_config1">五、在壁纸应用中配置 APIKey\n1. 打开壁纸应用，点击右上角的云朵图标（天气设置入口）</string>
+    <string name="pref_weather_api_guide_step_config2">2. 在弹出的菜单中选择 OpenWeather API 密钥选项</string>
+    <string name="pref_weather_api_guide_step_config3">3. 在弹出的输入框中粘贴你刚才复制的 APIKey，点击确定保存。</string>
+    <string name="pref_weather_api_guide_step_config4">4. 配置完成后，点击“立即刷新天气”测试，如果壁纸能正常加载天气信息，说明配置成功。</string>
+    <string name="pref_weather_api_guide_common">六、常见问题\n配置后无法获取天气：\n- 检查 Key 是否复制完整，不要带多余空格或换行符。\n- 新生成的 APIKey 可能需要 10～30 分钟才能生效，耐心等待后再测试。\n- 确认应用已开启定位权限。</string>
+    <string name="pref_weather_api_guide_illustration">API 教程插图</string>
+    <string name="pref_weather_api_guide_link_text">https://openweathermap.org/</string>
+    <string name="pref_weather_api_guide_open_web_button">打开 OpenWeather 官网</string>
 </resources>

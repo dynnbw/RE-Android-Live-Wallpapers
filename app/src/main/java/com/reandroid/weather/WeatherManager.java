@@ -7,6 +7,8 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
 import androidx.core.content.ContextCompat;
@@ -49,13 +51,19 @@ public class WeatherManager {
     private static final String KEY_LAST_LAT = "last_lat";
     private static final String KEY_LAST_LON = "last_lon";
     private static final String KEY_UPDATE_MINUTES = "weather_update_minutes";
+    private static final String KEY_OVERRIDE_ACTIVE = "weather_override_active";
+    private static final String KEY_OVERRIDE_CONDITION = "weather_override_condition";
+    private static final String KEY_OVERRIDE_IS_NIGHT = "weather_override_is_night";
+    private static final String KEY_OVERRIDE_UPDATE = "weather_override_update";
 
     private final Context mContext;
     private final SharedPreferences mPrefs;
     private final AtomicBoolean mRunning;
     private final Listener mListener;
+    private final Handler mMainHandler;
 
     private volatile WeatherState mLastState;
+    private volatile WeatherState mOverrideState;
     private ScheduledExecutorService mExecutor;
     private ScheduledFuture<?> mFuture;
 
@@ -65,6 +73,17 @@ public class WeatherManager {
         mExecutor = createExecutor();
         mRunning = new AtomicBoolean(false);
         mListener = listener;
+        mMainHandler = new Handler(Looper.getMainLooper());
+        mOverrideState = loadManualOverrideFromPrefs();
+    }
+
+    private void dispatchWeatherUpdated(WeatherState state, Listener listener) {
+        if (listener == null) return;
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            listener.onWeatherUpdated(state);
+        } else {
+            mMainHandler.post(() -> listener.onWeatherUpdated(state));
+        }
     }
 
     private ScheduledExecutorService createExecutor() {
@@ -72,7 +91,47 @@ public class WeatherManager {
     }
 
     public WeatherState getLastState() {
-        return mLastState;
+        return mOverrideState != null ? mOverrideState : mLastState;
+    }
+
+    public synchronized void setManualOverride(WeatherState overrideState) {
+        if (overrideState == null) {
+            clearManualOverride();
+            return;
+        }
+        mOverrideState = overrideState;
+        mPrefs.edit()
+                .putBoolean(KEY_OVERRIDE_ACTIVE, true)
+                .putInt(KEY_OVERRIDE_CONDITION, overrideState.condition.ordinal())
+                .putBoolean(KEY_OVERRIDE_IS_NIGHT, overrideState.isNight)
+                .putLong(KEY_OVERRIDE_UPDATE, overrideState.updateUtc)
+                .apply();
+        dispatchWeatherUpdated(getLastState(), mListener);
+    }
+
+    public synchronized void clearManualOverride() {
+        mOverrideState = null;
+        mPrefs.edit()
+                .putBoolean(KEY_OVERRIDE_ACTIVE, false)
+                .remove(KEY_OVERRIDE_CONDITION)
+                .remove(KEY_OVERRIDE_IS_NIGHT)
+                .remove(KEY_OVERRIDE_UPDATE)
+                .apply();
+        dispatchWeatherUpdated(getLastState(), mListener);
+    }
+
+    private WeatherState loadManualOverrideFromPrefs() {
+        if (!mPrefs.getBoolean(KEY_OVERRIDE_ACTIVE, false)) {
+            return null;
+        }
+        int ordinal = mPrefs.getInt(KEY_OVERRIDE_CONDITION, -1);
+        if (ordinal < 0 || ordinal >= WeatherCondition.values().length) {
+            return null;
+        }
+        boolean isNight = mPrefs.getBoolean(KEY_OVERRIDE_IS_NIGHT, false);
+        long update = mPrefs.getLong(KEY_OVERRIDE_UPDATE, System.currentTimeMillis() / 1000L);
+        return new WeatherState(WeatherCondition.values()[ordinal], isNight,
+                0.0f, 0.0f, 0L, 0L, update);
     }
 
     public synchronized void start() {
@@ -81,8 +140,8 @@ public class WeatherManager {
             mExecutor = createExecutor();
         }
         mLastState = loadStateFromPrefs();
-        if (mListener != null && mLastState != null) {
-            mListener.onWeatherUpdated(mLastState);
+        if (mLastState != null) {
+            dispatchWeatherUpdated(getLastState(), mListener);
         }
         scheduleNext(0L);
     }
@@ -118,22 +177,18 @@ public class WeatherManager {
                     if (state != null) {
                         mLastState = state;
                         saveStateToPrefs(state);
-                        if (mListener != null) {
-                            mListener.onWeatherUpdated(state);
-                        }
+                        dispatchWeatherUpdated(getLastState(), mListener);
                     }
                 } catch (Exception e) {
                     Log.w(TAG, "Manual weather refresh failed", e);
                 } finally {
-                    if (oneShotListener != null) {
-                        oneShotListener.onWeatherUpdated(state);
-                    }
+                    dispatchWeatherUpdated(getLastState(), oneShotListener);
                 }
             });
         } catch (RejectedExecutionException e) {
             Log.w(TAG, "Manual weather refresh rejected", e);
             if (oneShotListener != null) {
-                oneShotListener.onWeatherUpdated(null);
+                dispatchWeatherUpdated(getLastState(), oneShotListener);
             }
         }
     }
@@ -162,9 +217,7 @@ public class WeatherManager {
             if (state != null) {
                 mLastState = state;
                 saveStateToPrefs(state);
-                if (mListener != null) {
-                    mListener.onWeatherUpdated(state);
-                }
+                dispatchWeatherUpdated(getLastState(), mListener);
             }
         } catch (Exception e) {
             Log.w(TAG, "Weather fetch failed", e);
@@ -412,14 +465,18 @@ public class WeatherManager {
         LocationManager lm = (LocationManager) mContext.getSystemService(Context.LOCATION_SERVICE);
         if (lm == null) return null;
         Location best = null;
-        if (coarse == android.content.pm.PackageManager.PERMISSION_GRANTED) {
-            best = lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-        }
-        if (fine == android.content.pm.PackageManager.PERMISSION_GRANTED) {
-            Location gps = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-            if (gps != null && (best == null || gps.getAccuracy() <= best.getAccuracy())) {
-                best = gps;
+        try {
+            if (coarse == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                best = lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
             }
+            if (fine == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                Location gps = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                if (gps != null && (best == null || gps.getAccuracy() <= best.getAccuracy())) {
+                    best = gps;
+                }
+            }
+        } catch (SecurityException | IllegalArgumentException e) {
+            Log.w(TAG, "Location provider failed", e);
         }
         return best;
     }

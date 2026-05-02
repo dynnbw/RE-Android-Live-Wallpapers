@@ -180,6 +180,17 @@ public abstract class GLESWallpaper extends WallpaperService {
         public void onSurfaceChanged(SurfaceHolder holder, int format, int width, int height) {
             super.onSurfaceChanged(holder, format, width, height);
             mHolder = holder;
+
+            android.graphics.Rect frame = holder.getSurfaceFrame();
+            if (frame != null && frame.width() > 0 && frame.height() > 0) {
+                width = frame.width();
+                height = frame.height();
+            }
+            if (width <= 0 || height <= 0) {
+                logD("onSurfaceChanged: invalid size, skip resize");
+                return;
+            }
+
             long now = SystemClock.uptimeMillis();
             if (width == mLastWidth && height == mLastHeight && (now - mLastResizeTimeMs) < 100) {
                 return; // 简单防抖，避免频繁resize触发重建
@@ -261,9 +272,17 @@ public abstract class GLESWallpaper extends WallpaperService {
 
             
             EGLDisplay display = EGL14.eglGetDisplay(EGL14.EGL_DEFAULT_DISPLAY);
-            
+            if (display == null || display == EGL14.EGL_NO_DISPLAY) {
+                Log.e(TAG, "eglGetDisplay failed");
+                return;
+            }
+
             int[] version = new int[2];
-            EGL14.eglInitialize(display, version, 0, version, 1);
+            if (!EGL14.eglInitialize(display, version, 0, version, 1)) {
+                Log.e(TAG, "eglInitialize failed");
+                cleanupEgl(display, EGL14.EGL_NO_SURFACE, EGL14.EGL_NO_CONTEXT);
+                return;
+            }
 
             int[] attribList = {
                     EGL14.EGL_RED_SIZE, 8,
@@ -274,11 +293,22 @@ public abstract class GLESWallpaper extends WallpaperService {
             };
             EGLConfig[] configs = new EGLConfig[1];
             int[] numConfig = new int[1];
-            EGL14.eglChooseConfig(display, attribList, 0, configs, 0, 1, numConfig, 0);
+            if (!EGL14.eglChooseConfig(display, attribList, 0, configs, 0, 1, numConfig, 0)
+                    || numConfig[0] <= 0
+                    || configs[0] == null) {
+                Log.e(TAG, "eglChooseConfig failed");
+                cleanupEgl(display, EGL14.EGL_NO_SURFACE, EGL14.EGL_NO_CONTEXT);
+                return;
+            }
             EGLConfig config = configs[0];
 
             int[] attrib_list = {EGL14.EGL_CONTEXT_CLIENT_VERSION, 2, EGL14.EGL_NONE};
             EGLContext context = EGL14.eglCreateContext(display, config, EGL14.EGL_NO_CONTEXT, attrib_list, 0);
+            if (context == null || context == EGL14.EGL_NO_CONTEXT) {
+                Log.e(TAG, "eglCreateContext failed");
+                cleanupEgl(display, EGL14.EGL_NO_SURFACE, context);
+                return;
+            }
 
             Surface surface = mHolder == null ? null : mHolder.getSurface();
             
@@ -290,11 +320,14 @@ public abstract class GLESWallpaper extends WallpaperService {
 
             if (eglSurface == null || eglSurface == EGL14.EGL_NO_SURFACE) {
                 Log.e(TAG, "eglSurface无效，停止渲染");
-                mRunning = false;
+                cleanupEgl(display, eglSurface, context);
+                return;
             }
 
-            if (mRunning) {
-                EGL14.eglMakeCurrent(display, eglSurface, eglSurface, context);
+            if (!EGL14.eglMakeCurrent(display, eglSurface, eglSurface, context)) {
+                Log.e(TAG, "eglMakeCurrent failed");
+                cleanupEgl(display, eglSurface, context);
+                return;
             }
 
             // **CRITICAL BUGFIX**: If mScene is still null, create it now in the GL thread
@@ -361,6 +394,18 @@ public abstract class GLESWallpaper extends WallpaperService {
             EGL14.eglTerminate(display);
             mThread = null;
         }
+    }
+
+    private static void cleanupEgl(EGLDisplay display, EGLSurface surface, EGLContext context) {
+        if (display == null || display == EGL14.EGL_NO_DISPLAY) return;
+        EGL14.eglMakeCurrent(display, EGL14.EGL_NO_SURFACE, EGL14.EGL_NO_SURFACE, EGL14.EGL_NO_CONTEXT);
+        if (surface != null && surface != EGL14.EGL_NO_SURFACE) {
+            EGL14.eglDestroySurface(display, surface);
+        }
+        if (context != null && context != EGL14.EGL_NO_CONTEXT) {
+            EGL14.eglDestroyContext(display, context);
+        }
+        EGL14.eglTerminate(display);
     }
 
     private static void logD(String msg) {

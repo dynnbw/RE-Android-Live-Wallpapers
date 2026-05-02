@@ -100,6 +100,8 @@ public class DeepSeaSettingsFragment extends PreferenceFragmentCompat {
     }
 
     private void saveCustomBackground(Uri uri) {
+        final java.lang.ref.WeakReference<DeepSeaSettingsFragment> selfRef =
+                new java.lang.ref.WeakReference<>(DeepSeaSettingsFragment.this);
         Context context = requireContext().getApplicationContext();
         File outFile = getBackgroundFile(context);
 
@@ -143,18 +145,25 @@ public class DeepSeaSettingsFragment extends PreferenceFragmentCompat {
             }
 
             boolean finalSuccess = success;
-            requireActivity().runOnUiThread(() -> {
+            java.lang.ref.WeakReference<DeepSeaSettingsFragment> ref = selfRef;
+            android.app.Activity activity = ref.get() != null ? ref.get().getActivity() : null;
+            if (activity == null) return;
+            activity.runOnUiThread(() -> {
+                DeepSeaSettingsFragment fragment = ref.get();
+                if (fragment == null || !fragment.isAdded()) return;
+                Context safeContext = fragment.getContext();
+                if (safeContext == null) return;
                 if (finalSuccess) {
-                    requireContext().getSharedPreferences(DeepSeaGL.PREFS_NAME, 0)
+                    safeContext.getSharedPreferences(DeepSeaGL.PREFS_NAME, 0)
                             .edit()
                             .putString(DeepSeaGL.KEY_BACKGROUND_IMAGE_TYPE, "1")
                             .putLong(DeepSeaGL.KEY_BACKGROUND_UPDATED, System.currentTimeMillis())
                             .apply();
-                    updateCustomBackgroundSummary();
-                    showBackgroundChangedDialog();
+                    fragment.updateCustomBackgroundSummary();
+                    fragment.showBackgroundChangedDialog();
                 } else {
-                    Toast.makeText(requireContext(), R.string.deepsea_custom_background_failed, Toast.LENGTH_LONG).show();
-                    setBackgroundTypeValue("0");
+                    Toast.makeText(safeContext, R.string.deepsea_custom_background_failed, Toast.LENGTH_LONG).show();
+                    fragment.setBackgroundTypeValue("0");
                 }
             });
         }).start();

@@ -86,10 +86,10 @@
     </string-array>
 
     <string-array name="weather_update_entries" translatable="false">
-        <item>15 minutes</item>
-        <item>30 minutes</item>
-        <item>1 hour</item>
-        <item>3 hours</item>
+        <item>15 分钟</item>
+        <item>30 分钟</item>
+        <item>1 小时</item>
+        <item>3 小时</item>
     </string-array>
 
     <string-array name="weather_update_values" translatable="false">
@@ -99,6 +99,18 @@
         <item>180</item>
     </string-array>
 
+    <string-array name="weather_debug_options" translatable="false">
+        <item>正常天气逻辑</item>
+        <item>晴朗</item>
+        <item>多云</item>
+        <item>阴沉</item>
+        <item>雾</item>
+        <item>阵雨</item>
+        <item>雷暴</item>
+        <item>飘雪/雪</item>
+        <item>冰冷</item>
+        <item>冻雨</item>
+    </string-array>
 
     <string-array name="nexus_background_entries" translatable="false">
         <item>@string/nexus_bg_pyramid</item>

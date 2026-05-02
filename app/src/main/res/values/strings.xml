@@ -100,9 +100,7 @@
     <string name="wallpaper_fall_vk">Water Leaves Vulkan</string>
     <string name="wallpaper_fall_author">Google</string>
     <string name="wallpaper_fall_desc">
-        Autumn leaves tumble&lt;br&gt;
-        To the rippling pond below:&lt;br&gt;
-        Liquid background Zen
+         Autumn leaves tumble \n To the rippling pond below: /n Liquid background Zen
     </string>
     <string name="wallpaper_fall_vk_desc">Water Leaves wallpaper entry reserved for the Vulkan renderer.</string>
 
@@ -377,16 +375,39 @@
     <string name="pref_weather_update_interval">Weather update interval</string>
     <string name="pref_weather_refresh_now">Refresh weather now</string>
     <string name="pref_weather_refresh_now_summary">Fetch latest weather data immediately</string>
-    <string name="pref_weather_refresh_now_success">Weather refresh completed</string>
+    <string name="pref_weather_refresh_now_success">Weather refresh complete</string>
     <string name="pref_weather_refresh_now_failed">Weather refresh failed</string>
     <string name="pref_openweather_api_key_title">OpenWeather API key</string>
-    <string name="pref_openweather_api_key_dialog">Enter OpenWeather API key</string>
-    <string name="pref_openweather_api_key_summary_set">API key set</string>
-    <string name="pref_openweather_api_key_summary_unset">API key not set</string>
-    <string name="pref_weather_api_notice">Enable weather-based changes by setting the API key in
-        Configuration.</string>
+    <string name="pref_openweather_api_key_dialog">Enter your OpenWeather API key</string>
+    <string name="pref_openweather_api_key_summary_set">API key configured</string>
+    <string name="pref_openweather_api_key_summary_unset">API key not configured</string>
+    <string name="pref_weather_api_notice">Enable weather changes by configuring an API key in settings.</string>
     <string name="pref_apply_api_title">Apply for API</string>
-        <string name="weather_toolbar_title">Weather settings</string>
+    <string name="pref_weather_api_guide_intro">OpenWeather API key setup and configuration guide.</string>
+    <string name="pref_weather_api_guide_prepare">Step 1: Preparation\n- An email address that can receive verification messages\n- A network environment that can reach the OpenWeather website</string>
+    <string name="pref_weather_api_guide_step_register1">Step 2: Register an OpenWeather account\n1. Open https://openweathermap.org/ and tap the orange Login button at the top right (see image 1).</string>
+    <string name="pref_weather_api_guide_step_register2">2. On the sign-in page, tap Create an Account.</string>
+    <string name="pref_weather_api_guide_step_register3">3. Fill the registration form (see image 3):\n    Username: custom name for account identification\n    Enter email: your valid email address for verification and account recovery\n    Password: set your password\n    Repeat password: enter the same password again\nSubmit the form to register.</string>
+    <string name="pref_weather_api_guide_step_verify1">Step 3: Verify your email\n1. After registration, the page shows: We have sent the confirmation link to xxx@xx.com. Please check your email. 2. Open your email, find the message from OpenWeather, and tap the Verify your email button to complete verification. (see image 5)\nIf you do not receive the email, check spam or promotions folders.</string>
+    <string name="pref_weather_api_guide_step_verify2">2. Open your email, find the message from OpenWeather, and tap the Verify your email button to complete verification.</string>
+    <string name="pref_weather_api_guide_step_verify3">If you do not receive the email, check spam or promotions folders.</string>
+    <string name="pref_weather_api_guide_step_key1">Step 4: Get your API key\n1. After verification, return to OpenWeather and sign in.\n2. In your account dashboard, open API Keys from the navigation menu.</string>
+    <string name="pref_weather_api_guide_step_key2">3. On the API management page, copy the default generated key (usually named Default, status Active), or enter a name and tap Generate to create a new key.</string>
+    <string name="pref_weather_api_guide_step_key3">Important: free keys are limited to 60 calls per minute and 1000 per day, which is enough for personal wallpaper use. Do not share your key publicly to avoid misuse and account throttling.</string>
+    <string name="pref_weather_api_guide_step_config1">Step 5: Configure the API key in the wallpaper app\n1. Open the wallpaper app and tap the cloud icon at the top right.</string>
+    <string name="pref_weather_api_guide_step_config2">2. Select OpenWeather API key from the popup menu.</string>
+    <string name="pref_weather_api_guide_step_config3">3. Paste the copied API key into the input box and tap Confirm to save.</string>
+    <string name="pref_weather_api_guide_step_config4">4. Tap Refresh Weather Now to test. If the wallpaper loads weather information normally, the configuration is successful.</string>
+    <string name="pref_weather_api_guide_common">Step 6: Troubleshooting\n- Verify the key is copied completely without extra spaces or line breaks.\n- A new API key may take 10–30 minutes to activate; wait and try again.\n- Make sure location permission is enabled in the app.</string>
+    <string name="pref_weather_api_guide_illustration">API tutorial illustration</string>
+    <string name="pref_weather_api_guide_link_text">https://openweathermap.org/</string>
+    <string name="pref_weather_api_guide_open_web_button">Open OpenWeather website</string>
+    <string name="pref_weather_last_refresh">Last refresh: %1$s</string>
+    <string name="pref_weather_last_refresh_unknown">Last refresh: unknown</string>
+    <string name="pref_weather_debug_title">Weather debug</string>
+    <string name="pref_weather_debug_restore">Returned to normal weather logic</string>
+    <string name="pref_weather_debug_override">Weather override applied: %1$s</string>
+    <string name="weather_toolbar_title">Weather settings</string>
     <string name="pref_musicvis_mesh_mode_title">Use legacy triangle strip mesh</string>
     <string name="pref_musicvis_mesh_mode_summary">On: original RS mesh/primitive (triangle strip).
         Off: current line mesh.</string>
@@ -497,6 +518,10 @@
     <string name="pref_magicsmoke_preset">Visual Theme</string>
     <string name="pref_magicsmoke_preset_summary">Choose from 20 different smoke/cloud/plasma
         effects</string>
+    <string name="pref_fireworks_custom_background_title">Custom background image</string>
+    <string name="pref_fireworks_custom_background_summary">Tap to select a custom background image</string>
+    <string name="pref_fireworks_reset_background_title">Reset to default background</string>
+    <string name="pref_fireworks_reset_background_summary">Remove the custom background and use the default one</string>
 
     <!-- Holo Spiral Wallpaper -->
     <string name="wallpaper_holospiral">Holo Spiral</string>

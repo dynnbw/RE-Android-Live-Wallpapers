@@ -5,8 +5,8 @@
     <Preference android:key="pref_open_wallpaper_picker"
         android:title="@string/pref_open_wallpaper_picker"
         android:layout="@layout/preference_modern_item" />
-    <Preference android:key="pref_custom_background" android:title="自定义背景图片"
-        android:summary="点击选择自定义背景图片" android:layout="@layout/preference_modern_item" />
-    <Preference android:key="pref_reset_background" android:title="恢复默认背景"
-        android:summary="清除自定义背景，使用默认背景" android:layout="@layout/preference_modern_item" />
+    <Preference android:key="pref_custom_background" android:title="@string/pref_fireworks_custom_background_title"
+        android:summary="@string/pref_fireworks_custom_background_summary" android:layout="@layout/preference_modern_item" />
+    <Preference android:key="pref_reset_background" android:title="@string/pref_fireworks_reset_background_title"
+        android:summary="@string/pref_fireworks_reset_background_summary" android:layout="@layout/preference_modern_item" />
 </PreferenceScreen>

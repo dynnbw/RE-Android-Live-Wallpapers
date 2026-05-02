@@ -57,6 +57,12 @@
             android:theme="@style/Theme.WallpaperSettings" />
 
         <activity
+            android:exported="false"
+            android:label="@string/pref_apply_api_title"
+            android:name="com.reandroid.settings.OpenWeatherApiGuideActivity"
+            android:theme="@style/Theme.WallpaperSettings" />
+
+        <activity
             android:exported="true"
             android:label="Set Wallpaper"
             android:name="com.reandroid.wallpaper.SetWallpaperActivity"

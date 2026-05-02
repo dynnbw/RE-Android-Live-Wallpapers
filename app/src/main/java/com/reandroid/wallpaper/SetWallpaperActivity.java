@@ -36,6 +36,14 @@ public class SetWallpaperActivity extends Activity {
         // 打印控制台日志，标记onCreate方法开始执行
         logD("onCreate开始");
         
+        // 如果不是系统设置壁纸入口，则直接退出，避免外部滥用
+        String action = getIntent() != null ? getIntent().getAction() : null;
+        if (!Intent.ACTION_SET_WALLPAPER.equals(action)) {
+            logD("Unsupported action: " + action);
+            finish();
+            return;
+        }
+
         // 从Intent中获取传递的壁纸类型参数（key为"wallpaper"）
         // 如果参数为空，默认设置为"fall"（秋季壁纸）
         String wallpaper = getIntent().getStringExtra("wallpaper");

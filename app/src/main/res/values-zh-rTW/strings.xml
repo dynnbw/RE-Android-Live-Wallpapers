@@ -61,6 +61,10 @@
     <string name="wallpaper_fireworks" msgid="4733058489378301088">煙火</string>
     <string name="wallpaper_fireworks_author" msgid="3556951191382835700">MediaTek</string>
     <string name="wallpaper_fireworks_desc" msgid="6809217843163283993">在夜間呈現最美麗的煙火。</string>
+    <string name="pref_fireworks_custom_background_title">自定義背景圖片</string>
+    <string name="pref_fireworks_custom_background_summary">點擊選擇自定義背景圖片</string>
+    <string name="pref_fireworks_reset_background_title">恢復預設背景</string>
+    <string name="pref_fireworks_reset_background_summary">清除自定義背景，使用預設背景</string>
     <string name="wallpaper_windmill">風車</string>
     <string name="wallpaper_windmill_author">MediaTek</string>
     <string name="wallpaper_windmill_desc">動態天氣下的起伏丘陵與旋轉風車。</string>

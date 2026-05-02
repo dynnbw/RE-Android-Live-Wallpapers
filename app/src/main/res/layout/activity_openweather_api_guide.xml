@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/md_theme_surface">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/md_theme_primary"
+        app:titleTextColor="@color/md_theme_onPrimary"
+        app:popupTheme="@style/ThemeOverlay.WallpaperSettings.ToolbarPopup" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/pref_weather_api_guide_intro"
+                android:textSize="16sp"
+                android:textColor="@color/md_theme_onSurface" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="@string/pref_weather_api_guide_prepare"
+                android:textSize="14sp"
+                android:textColor="@color/md_theme_onSurface" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="@string/pref_weather_api_guide_step_register1"
+                android:textSize="14sp"
+                android:textColor="@color/md_theme_onSurface" />
+           <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:adjustViewBounds="true"
+                android:contentDescription="@string/pref_weather_api_guide_illustration"
+                android:scaleType="centerCrop"
+                android:src="@drawable/api_guide_1" />
+                <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="@string/pref_weather_api_guide_step_register2"
+                android:textSize="14sp"
+                android:textColor="@color/md_theme_onSurface" />
+                <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:adjustViewBounds="true"
+                android:contentDescription="@string/pref_weather_api_guide_illustration"
+                android:scaleType="centerCrop"
+                android:src="@drawable/api_guide_2" />
+                <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="@string/pref_weather_api_guide_step_register3"
+                android:textSize="14sp"
+                android:textColor="@color/md_theme_onSurface" />
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:adjustViewBounds="true"
+                android:contentDescription="@string/pref_weather_api_guide_illustration"
+                android:scaleType="centerCrop"
+                android:src="@drawable/api_guide_3" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="@string/pref_weather_api_guide_step_verify1"
+                android:textSize="14sp"
+                android:textColor="@color/md_theme_onSurface" />
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:adjustViewBounds="true"
+                android:contentDescription="@string/pref_weather_api_guide_illustration"
+                android:scaleType="centerCrop"
+                android:src="@drawable/api_guide_4" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="@string/pref_weather_api_guide_step_verify2"
+                android:textSize="14sp"
+                android:textColor="@color/md_theme_onSurface" />
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:adjustViewBounds="true"
+                android:contentDescription="@string/pref_weather_api_guide_illustration"
+                android:scaleType="centerCrop"
+                android:src="@drawable/api_guide_5" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="@string/pref_weather_api_guide_step_verify3"
+                android:textSize="14sp"
+                android:textColor="@color/md_theme_onSurface" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="@string/pref_weather_api_guide_step_key1"
+                android:textSize="14sp"
+                android:textColor="@color/md_theme_onSurface" />
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:adjustViewBounds="true"
+                android:contentDescription="@string/pref_weather_api_guide_illustration"
+                android:scaleType="centerCrop"
+                android:src="@drawable/api_guide_6" />
+                <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="@string/pref_weather_api_guide_step_key2"
+                android:textSize="14sp"
+                android:textColor="@color/md_theme_onSurface" />
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:adjustViewBounds="true"
+                android:contentDescription="@string/pref_weather_api_guide_illustration"
+                android:scaleType="centerCrop"
+                android:src="@drawable/api_guide_7" />
+                <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="@string/pref_weather_api_guide_step_key3"
+                android:textSize="14sp"
+                android:textColor="@color/md_theme_onSurface" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="@string/pref_weather_api_guide_step_config1"
+                android:textSize="14sp"
+                android:textColor="@color/md_theme_onSurface" />
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:adjustViewBounds="true"
+                android:contentDescription="@string/pref_weather_api_guide_illustration"
+                android:scaleType="centerCrop"
+                android:src="@drawable/api_guide_8" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="@string/pref_weather_api_guide_step_config2"
+                android:textSize="14sp"
+                android:textColor="@color/md_theme_onSurface" />
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:adjustViewBounds="true"
+                android:contentDescription="@string/pref_weather_api_guide_illustration"
+                android:scaleType="centerCrop"
+                android:src="@drawable/api_guide_9" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="@string/pref_weather_api_guide_step_config3"
+                android:textSize="14sp"
+                android:textColor="@color/md_theme_onSurface" />
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:adjustViewBounds="true"
+                android:contentDescription="@string/pref_weather_api_guide_illustration"
+                android:scaleType="centerCrop"
+                android:src="@drawable/api_guide_10" />
+<TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="@string/pref_weather_api_guide_step_config4"
+                android:textSize="14sp"
+                android:textColor="@color/md_theme_onSurface" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="@string/pref_weather_api_guide_common"
+                android:textSize="14sp"
+                android:textColor="@color/md_theme_onSurface" />
+
+            <TextView
+                android:id="@+id/api_guide_link_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="@string/pref_weather_api_guide_link_text"
+                android:textSize="16sp"
+                android:textColor="@color/md_theme_primary"
+                android:textStyle="bold"
+                android:clickable="true"
+                android:focusable="true" />
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/api_guide_open_web_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                app:cardBackgroundColor="@color/md_theme_surface"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="4dp"
+                app:cardUseCompatPadding="true">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="16dp"
+                    android:text="@string/pref_weather_api_guide_open_web_button"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                    android:textColor="?attr/colorPrimary"
+                    android:textStyle="bold" />
+
+            </androidx.cardview.widget.CardView>
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>
