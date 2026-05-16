@@ -20,8 +20,8 @@ import java.util.Random;
 public class BlueSeaGL extends GLESScene {
     private static final String TAG = "BlueSeaGL";
 
-    private static final int BASE_WIDTH = 480;
-    private static final int BASE_HEIGHT = 800;
+    private static final int DESIGN_WIDTH = 480;
+    private static final int DESIGN_HEIGHT = 800;
 
     private static final int PANE_COUNT = 5;
     private static final int JELLY_COUNT = 20;
@@ -125,8 +125,8 @@ public class BlueSeaGL extends GLESScene {
     @Override
     public void resize(int width, int height) {
         super.resize(width, height);
-        mScaleX = width / (float) BASE_WIDTH;
-        mScaleY = height / (float) BASE_HEIGHT;
+        mScaleX = width / (float) DESIGN_WIDTH;
+        mScaleY = height / (float) DESIGN_HEIGHT;
         mScale = (mScaleX + mScaleY) * 0.5f;
         Matrix.orthoM(mProjection, 0, 0.0f, width, height, 0.0f, -1.0f, 1.0f);
     }

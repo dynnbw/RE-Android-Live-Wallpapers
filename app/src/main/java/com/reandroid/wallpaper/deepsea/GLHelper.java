@@ -64,11 +64,11 @@ class GLHelper {
                 Log.e("DeepSea", "BitmapFactory.decodeResource returned null for resource ID: " + resolvedId);
             }
             GLES20.glGenTextures(1, iArr, 0);
-            GLES20.glBindTexture(3553, iArr[0]);
-            GLES20.glTexParameterf(3553, 10240, 9729.0f);
-            GLES20.glTexParameterf(3553, 10241, 9729.0f);
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, iArr[0]);
+            GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, 10240, 9729.0f);
+            GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, 10241, 9729.0f);
             if (bitmap != null) {
-                GLUtils.texImage2D(3553, 0, bitmap, 0);
+                GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
                 Log.d("DeepSea", "Texture created with ID: " + iArr[0]);
             } else {
                 Log.e("DeepSea", "Cannot create texture because bitmap is null");
@@ -86,15 +86,15 @@ class GLHelper {
     public static int getCompressedTexture(Context context, int i) {
         int[] iArr = new int[1];
         GLES20.glGenTextures(1, iArr, 0);
-        GLES20.glBindTexture(3553, iArr[0]);
-        GLES20.glTexParameterf(3553, 10240, 9729.0f);
-        GLES20.glTexParameterf(3553, 10241, 9729.0f);
-        GLES20.glTexParameterf(3553, 10242, 33071.0f);
-        GLES20.glTexParameterf(3553, 10243, 33071.0f);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, iArr[0]);
+        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, 10240, 9729.0f);
+        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, 10241, 9729.0f);
+        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, 10242, 33071.0f);
+        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, 10243, 33071.0f);
         InputStream openRawResource = context.getResources().openRawResource(resolveResourceId(i));
         try {
             try {
-                ETC1Util.loadTexture(3553, 0, 0, 6407, 33635, openRawResource);
+                ETC1Util.loadTexture(GLES20.GL_TEXTURE_2D, 0, 0, 6407, 33635, openRawResource);
             } catch (IOException e) {
                 Log.d("Test", "error compressing texture : " + e.toString());
                 try {
@@ -117,10 +117,10 @@ class GLHelper {
         int[] iArr = new int[1];
         try {
             GLES20.glGenTextures(1, iArr, 0);
-            GLES20.glBindTexture(3553, iArr[0]);
-            GLES20.glTexParameterf(3553, 10240, 9729.0f);
-            GLES20.glTexParameterf(3553, 10241, 9729.0f);
-            GLUtils.texImage2D(3553, 0, bitmap, 0);
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, iArr[0]);
+            GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, 10240, 9729.0f);
+            GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, 10241, 9729.0f);
+            GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
         } catch (Exception e) {
             Log.d("Test", e.toString() + ":" + e.getMessage() + ":" + e.getLocalizedMessage());
         }

@@ -16,12 +16,15 @@
 package com.reandroid.wallpaper.grass;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.location.Location;
 import android.opengl.Matrix;
 import android.os.SystemClock;
 
 import com.reandroid.gles.GLESWallpaper;
+import androidx.preference.PreferenceManager;
+
 import com.reandroid.settings.WallpaperSettings;
 import com.reandroid.weather.WeatherCondition;
 import com.reandroid.weather.WeatherState;
@@ -31,6 +34,7 @@ import java.util.Random;
 import java.util.TimeZone;
 
 import static com.reandroid.wallpaper.grass.GrassConstants.*;
+import com.reandroid.wallpaper.MathUtils;
 
 /**
  * Grass 壁纸场景逻辑层（纯 Java，无 GL 调用）。
@@ -47,14 +51,17 @@ class GrassScene {
     private boolean mInitialized = false;
 
     final Random mRandom = new Random(System.currentTimeMillis());
+    private final Calendar mCalendar = Calendar.getInstance();
     private final GrassWindField mWindField = new GrassWindField();
     private final GrassBladeSystem mBladeSystem;
     private final GrassDayNightSystem mDayNightSystem = new GrassDayNightSystem();
     private final GrassRenderDataBuilder mRenderDataBuilder;
+    private final GrassVKBridge mVKBridge;
 
     // Sun state
     private float mXOffset = 0.0f;
     private int mSettingsHash = 0;
+    private boolean mPrefsDirty = true;
 
     // Settings
     private boolean mGrassEnabled = true;
@@ -148,6 +155,7 @@ class GrassScene {
                 GrassScene.this.flyLegacyDandelion(p, isInit);
             }
         });
+        mVKBridge = new GrassVKBridge(mRenderDataBuilder);
     }
 
     // ---- Lifecycle ----
@@ -165,6 +173,14 @@ class GrassScene {
         initFireflies();
 
         mDayNightSystem.initDefaultLocation();
+
+        Context appCtx = GLESWallpaper.getAppContext();
+        if (appCtx != null) {
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(appCtx);
+            prefs.registerOnSharedPreferenceChangeListener((sharedPrefs, key) -> {
+                mPrefsDirty = true;
+            });
+        }
 
         Matrix.orthoM(mSceneData.projectionMatrix, 0, 0, mWidth, mHeight, 0, -1.0f, 1.0f);
         mXOffset = isPreview ? 0.5f : 0.0f;
@@ -242,7 +258,9 @@ class GrassScene {
             isNight = mDayNightSystem.getLastSunAltitude() < 0.0;
 
             // Compute moon data once, reuse for sun/moon/eclipse rendering
-            Calendar now = Calendar.getInstance(mDayNightSystem.getTimeZone());
+            mCalendar.setTimeZone(mDayNightSystem.getTimeZone());
+            mCalendar.setTimeInMillis(System.currentTimeMillis());
+            Calendar now = mCalendar;
             MoonCalculator.MoonData moonData = getCachedMoonData(nowMs, now);
             updateSolarEclipseState(moonData);
 
@@ -555,6 +573,9 @@ class GrassScene {
     // ---- Settings management ----
 
     private void updateSettingsFromPrefs() {
+        if (!mPrefsDirty) return;
+        mPrefsDirty = false;
+
         boolean legacy = WallpaperSettings.getBoolean("pref_grass_legacy_particles", false);
         if (legacy != mLegacyParticles) {
             mLegacyParticles = legacy;
@@ -739,7 +760,9 @@ class GrassScene {
             mLastSolarEclipseUpdateMs = nowMs;
             return;
         }
-        Calendar now = Calendar.getInstance(mDayNightSystem.getTimeZone());
+        mCalendar.setTimeZone(mDayNightSystem.getTimeZone());
+        mCalendar.setTimeInMillis(System.currentTimeMillis());
+        Calendar now = mCalendar;
         SolarEclipse eclipse = computeSolarEclipse(data, now);
         float[] accurateWeights = mDayNightSystem.getAccurateWeights();
         float dayVisibility = clamp(accurateWeights[3] + 0.45f * (accurateWeights[1] + accurateWeights[2]),

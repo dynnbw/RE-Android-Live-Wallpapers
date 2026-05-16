@@ -1,5 +1,6 @@
 package com.reandroid.wallpaper.grass;
 
+import com.reandroid.wallpaper.MathUtils;
 import com.reandroid.weather.WeatherCondition;
 
 final class Blade {
@@ -102,4 +103,38 @@ final class SceneData {
 
     boolean bladeIndexRebuildNeeded;
     boolean grassGeometryDirty;
+
+    /** Compute simple-sun sky blend weights [wNight,wSunrise,wSunset,wSky]. Shared by GLES and Vulkan paths. */
+    static void computeSimpleSkyWeights(float now, float dawn, float morning, float afternoon, float dusk, float[] out) {
+        out[0] = 0.0f; out[1] = 0.0f; out[2] = 0.0f; out[3] = 0.0f;
+        if (now >= 0.0f && now < dawn) {
+            out[0] = 1.0f;
+        } else if (now >= dawn && now <= morning) {
+            float half = dawn + (morning - dawn) * 0.5f;
+            if (now <= half) {
+                float t = MathUtils.norm(dawn, half, now);
+                out[0] = 1.0f - t;
+                out[1] = t;
+            } else {
+                float t = MathUtils.norm(half, morning, now);
+                out[1] = 1.0f - t;
+                out[3] = t;
+            }
+        } else if (now > morning && now < afternoon) {
+            out[3] = 1.0f;
+        } else if (now >= afternoon && now <= dusk) {
+            float half = afternoon + (dusk - afternoon) * 0.5f;
+            if (now <= half) {
+                float t = MathUtils.norm(afternoon, half, now);
+                out[3] = 1.0f - t;
+                out[2] = t;
+            } else {
+                float t = MathUtils.norm(half, dusk, now);
+                out[2] = 1.0f - t;
+                out[0] = t;
+            }
+        } else {
+            out[0] = 1.0f;
+        }
+    }
 }

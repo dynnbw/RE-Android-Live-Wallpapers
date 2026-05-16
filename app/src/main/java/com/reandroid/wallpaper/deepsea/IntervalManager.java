@@ -2,6 +2,8 @@ package com.reandroid.wallpaper.deepsea;
 
 import java.util.ArrayList;
 class IntervalManager {
+    private static final int REF_WIDTH = 720;
+    private static final int REF_HEIGHT = 1280;
     private final float MOVE_X = -4.5f;
     private final float MOVE_Y = -8.1f;
     private final float INTERVAL = 1.8f;
@@ -115,12 +117,12 @@ class IntervalManager {
     }
 
     public void changeMove(int i, int i2) {
-        if (i > 720 || i2 > 1280) {
-            float f = (i / 720.0f) * 2.0f;
+        if (i > REF_WIDTH || i2 > REF_HEIGHT) {
+            float f = (i / (float) REF_WIDTH) * 2.0f;
             this.mMoveX = (-4.5f) * f;
             this.mIntervalX = 1.8f * f;
             this.mMarginX = f * 0.1f;
-            float f2 = (i2 / 1280.0f) * 2.0f;
+            float f2 = (i2 / (float) REF_HEIGHT) * 2.0f;
             this.mMoveY = (-8.1f) * f2;
             this.mIntervalY = 1.8f * f2;
             this.mMarginY = f2 * 0.1f;

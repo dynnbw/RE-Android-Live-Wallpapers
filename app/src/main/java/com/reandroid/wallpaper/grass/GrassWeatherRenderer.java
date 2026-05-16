@@ -9,6 +9,7 @@ import com.reandroid.weather.WeatherCondition;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import com.reandroid.wallpaper.MathUtils;
 
 final class GrassWeatherRenderer {
     private static final int RAIN_BATCH_GROUP_COUNT = 3;
@@ -194,7 +195,7 @@ final class GrassWeatherRenderer {
                 if (frontPass && thunderFlashAlpha > 0.0f && texWeatherFlash != 0) {
                     float fullSize = Math.max(width, height) * 2.4f;
                     spriteRenderer.drawSprite(texWeatherFlash, width * 0.5f, height * 0.5f,
-                            fullSize, clamp(thunderFlashAlpha, 0.0f, 0.58f), false, 0.0f);
+                            fullSize, MathUtils.clamp(thunderFlashAlpha, 0.0f, 0.58f), false, 0.0f);
                 }
                 break;
             case D7_FLURRIES_SNOW:
@@ -532,7 +533,7 @@ final class GrassWeatherRenderer {
             return 0.0f;
         }
 
-        float progress = clamp(elapsed / 200.0f, 0.0f, 1.0f);
+        float progress = MathUtils.clamp(elapsed / 200.0f, 0.0f, 1.0f);
         float clipW = width * progress;
         float clipH = height * progress;
         float left = thunderLTR ? 0.0f : (width - clipW);
@@ -557,7 +558,7 @@ final class GrassWeatherRenderer {
                 right / width, 1.0f - bottom / height,
                 1.0f);
 
-        return clamp(((elapsed / 200.0f) + 0.2f) * 0.5f, 0.0f, 1.0f);
+        return MathUtils.clamp(((elapsed / 200.0f) + 0.2f) * 0.5f, 0.0f, 1.0f);
     }
 
     private int createWeatherToneTexture() {
@@ -578,7 +579,7 @@ final class GrassWeatherRenderer {
         byte[] rgba = new byte[texWidth * texHeight * 4];
         for (int y = 0; y < texHeight; y++) {
             float v = y / (float) (texHeight - 1);
-            float t = clamp(v / gradientEnd, 0.0f, 1.0f);
+            float t = MathUtils.clamp(v / gradientEnd, 0.0f, 1.0f);
             int color = Color.argb(
                     Math.round(lerp(Color.alpha(topColor), Color.alpha(bottomColor), t)),
                     Math.round(lerp(Color.red(topColor), Color.red(bottomColor), t)),
@@ -605,10 +606,6 @@ final class GrassWeatherRenderer {
         x ^= (x << 17);
         long masked = x & 0x7fffffffL;
         return masked / 2147483647.0f;
-    }
-
-    private static float clamp(float val, float min, float max) {
-        return Math.max(min, Math.min(max, val));
     }
 
     private static float lerp(float a, float b, float t) {

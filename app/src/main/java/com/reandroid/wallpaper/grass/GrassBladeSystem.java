@@ -19,6 +19,7 @@ import java.util.Random;
 
 import static com.reandroid.wallpaper.grass.GrassConstants.MAX_BEND;
 import static com.reandroid.wallpaper.grass.GrassConstants.TESSELATION;
+import com.reandroid.wallpaper.MathUtils;
 
 final class GrassBladeSystem {
     private static final float ANGLE_DIRTY_EPSILON = 0.00075f;
@@ -130,7 +131,7 @@ final class GrassBladeSystem {
             }
 
             float newAngle = (noiseValue - 0.5f) * 0.5f * windAmplitudeScale;
-            blade.angle = clamp(blade.angle + (newAngle + blade.offset - blade.angle) * 0.15f,
+            blade.angle = MathUtils.clamp(blade.angle + (newAngle + blade.offset - blade.angle) * 0.15f,
                     -MAX_BEND, MAX_BEND);
             if (!dirty && Math.abs(blade.angle - previousAngle) >= ANGLE_DIRTY_EPSILON) {
                 dirty = true;
@@ -188,9 +189,5 @@ final class GrassBladeSystem {
 
     private float random(float min, float max) {
         return min + random.nextFloat() * (max - min);
-    }
-
-    private static float clamp(float val, float min, float max) {
-        return Math.max(min, Math.min(max, val));
     }
 }

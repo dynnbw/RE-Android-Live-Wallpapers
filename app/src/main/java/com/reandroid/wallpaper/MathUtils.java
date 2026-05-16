@@ -243,6 +243,31 @@ public final class MathUtils {
         return value >= min && value <= max;
     }
     
+    // mix / hsbToRgb 别名
+    public static float mix(float a, float b, float t) {
+        return lerp(a, b, t);
+    }
+
+    public static int hsbToRgb(float h, float s, float b) {
+        float red = 0.0f, green = 0.0f, blue = 0.0f;
+        float hf = (h - (int) h) * 6.0f;
+        int ihf = (int) hf;
+        float f = hf - ihf;
+        float pv = b * (1.0f - s);
+        float qv = b * (1.0f - s * f);
+        float tv = b * (1.0f - s * (1.0f - f));
+        switch (ihf) {
+            case 0: red = b; green = tv; blue = pv; break;
+            case 1: red = qv; green = b; blue = pv; break;
+            case 2: red = pv; green = b; blue = tv; break;
+            case 3: red = pv; green = qv; blue = b; break;
+            case 4: red = tv; green = pv; blue = b; break;
+            case 5: red = b; green = pv; blue = qv; break;
+        }
+        return android.graphics.Color.argb(255, clamp((int)(red * 255), 0, 255),
+                clamp((int)(green * 255), 0, 255), clamp((int)(blue * 255), 0, 255));
+    }
+
     // 平滑插值函数
     public static float smoothStep(float edge0, float edge1, float x) {
         if (x <= edge0) return 0f;

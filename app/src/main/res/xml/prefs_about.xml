@@ -25,6 +25,10 @@
     <!-- 跳转链接与联系方式 -->
     <PreferenceCategory android:title="@string/about_links" />
     <Preference
+        android:title="@string/about_official_website"
+        android:summary="@string/about_official_website_url"
+        android:key="about_official_website" />
+    <Preference
         android:title="@string/about_email"
         android:summary="@string/about_email_address"
         android:key="about_email" />

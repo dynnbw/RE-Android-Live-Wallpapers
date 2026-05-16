@@ -16,6 +16,7 @@
 package com.reandroid.wallpaper.grass;
 
 import java.util.Random;
+import com.reandroid.wallpaper.MathUtils;
 
 final class GrassWindField {
     private static final int B = 0x100;
@@ -80,20 +81,16 @@ final class GrassWindField {
 
         float u = rx0 * g2[b00][0] + ry0 * g2[b00][1];
         float v = rx1 * g2[b10][0] + ry0 * g2[b10][1];
-        float a = mix(u, v, sx);
+        float a = MathUtils.mix(u, v, sx);
 
         u = rx0 * g2[b01][0] + ry1 * g2[b01][1];
         v = rx1 * g2[b11][0] + ry1 * g2[b11][1];
-        float b = mix(u, v, sx);
+        float b = MathUtils.mix(u, v, sx);
 
-        return 1.5f * mix(a, b, sy);
+        return 1.5f * MathUtils.mix(a, b, sy);
     }
 
     private static float noiseSCurve(float t) {
         return t * t * (3.0f - 2.0f * t);
-    }
-
-    private static float mix(float a, float b, float t) {
-        return a * (1.0f - t) + b * t;
     }
 }

@@ -49,7 +49,7 @@ class Sunshine extends GLBaseView {
     @Override // com.reandroid.wallpaper.deepsea.GLBaseView
     public void initShader() {
         if (!isInitShader()) {
-            int createdAndLinkedProgram = GLHelper.getCreatedAndLinkedProgram(GLHelper.getCompiledShader(35633, "uniform mat4 u_MVPMatrix;\t\t\t\t\t\t\t\nattribute vec4 a_position;\t\t\t\t\t\t\t\nattribute vec2 a_texCoord;\t\t\t\t\t\t\t\nvarying vec2 v_texCoord;\t\t\t\t\t\t\t\nvoid main(){\t\t\t\t\t\t\t\t\t\t\n\tgl_Position = u_MVPMatrix * a_position;\t\t\t\n\tv_texCoord = a_texCoord;\t\t\t\t\t\t\n}"), GLHelper.getCompiledShader(35632, "precision mediump float;\t\t\t\t\t\t\t\nuniform sampler2D s_texture;\t\t\t\t\t\t\nuniform float u_Light;\t\t\t\t\t\t\t\t\nuniform float u_AddAlpha;\t\t\t\t\t\t\t\nvarying vec2 v_texCoord;\t\t\t\t\t\t\t\nvoid main(){\t\t\t\t\t\t\t\t\t\t\n\tfloat val = u_Light;\t\t\t\t\t\t\t\n\tvec4 addColor = vec4(val, val, val, u_AddAlpha);\t\t\n\tgl_FragColor = texture2D(s_texture, v_texCoord) + addColor; \n}\t\t\t\t\t\t\t\t\t\t\t\t\t\n"));
+            int createdAndLinkedProgram = GLHelper.getCreatedAndLinkedProgram(GLHelper.getCompiledShader(GLES20.GL_VERTEX_SHADER, "uniform mat4 u_MVPMatrix;\t\t\t\t\t\t\t\nattribute vec4 a_position;\t\t\t\t\t\t\t\nattribute vec2 a_texCoord;\t\t\t\t\t\t\t\nvarying vec2 v_texCoord;\t\t\t\t\t\t\t\nvoid main(){\t\t\t\t\t\t\t\t\t\t\n\tgl_Position = u_MVPMatrix * a_position;\t\t\t\n\tv_texCoord = a_texCoord;\t\t\t\t\t\t\n}"), GLHelper.getCompiledShader(GLES20.GL_FRAGMENT_SHADER, "precision mediump float;\t\t\t\t\t\t\t\nuniform sampler2D s_texture;\t\t\t\t\t\t\nuniform float u_Light;\t\t\t\t\t\t\t\t\nuniform float u_AddAlpha;\t\t\t\t\t\t\t\nvarying vec2 v_texCoord;\t\t\t\t\t\t\t\nvoid main(){\t\t\t\t\t\t\t\t\t\t\n\tfloat val = u_Light;\t\t\t\t\t\t\t\n\tvec4 addColor = vec4(val, val, val, u_AddAlpha);\t\t\n\tgl_FragColor = texture2D(s_texture, v_texCoord) + addColor; \n}\t\t\t\t\t\t\t\t\t\t\t\t\t\n"));
             this.mProgramHandle = createdAndLinkedProgram;
             this.mPositionHandle = GLES20.glGetAttribLocation(createdAndLinkedProgram, "a_position");
             this.mTexCoordHandle = GLES20.glGetAttribLocation(this.mProgramHandle, "a_texCoord");
@@ -66,14 +66,14 @@ class Sunshine extends GLBaseView {
     public void setForDrawing() {
         GLES20.glUseProgram(this.mProgramHandle);
         this.mVertices.position(0);
-        GLES20.glVertexAttribPointer(this.mPositionHandle, 3, 5126, false, 20, (Buffer) this.mVertices);
+        GLES20.glVertexAttribPointer(this.mPositionHandle, 3, GLES20.GL_FLOAT, false, 20, (Buffer) this.mVertices);
         this.mVertices.position(3);
-        GLES20.glVertexAttribPointer(this.mTexCoordHandle, 2, 5126, false, 20, (Buffer) this.mVertices);
+        GLES20.glVertexAttribPointer(this.mTexCoordHandle, 2, GLES20.GL_FLOAT, false, 20, (Buffer) this.mVertices);
         GLES20.glEnableVertexAttribArray(this.mPositionHandle);
         GLES20.glEnableVertexAttribArray(this.mTexCoordHandle);
-        GLES20.glActiveTexture(33984);
-        GLES20.glBindTexture(3553, this.mTextureId);
-        GLES20.glEnable(3553);
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, this.mTextureId);
+        GLES20.glEnable(GLES20.GL_TEXTURE_2D);
         GLES20.glUniform1i(this.mTextureHandle, 0);
         GLES20.glUniform1f(this.mAddAlphaHandle, this.mAddAlpha);
         GLES20.glUniform1f(this.mLightHandle, this.mLight);
@@ -82,7 +82,7 @@ class Sunshine extends GLBaseView {
     @Override // com.reandroid.wallpaper.deepsea.GLBaseView
     public void draw() {
         Log.d("DeepSea", "Sea.draw() executing - about to call glDrawElements");
-        GLES20.glDrawElements(4, 6, 5123, this.mIndices);
+        GLES20.glDrawElements(GLES20.GL_TRIANGLES, 6, GLES20.GL_UNSIGNED_SHORT, this.mIndices);
         Log.d("DeepSea", "Sea.draw() completed");
     }
 

@@ -5,6 +5,7 @@ import android.opengl.GLES20;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+import com.reandroid.wallpaper.MathUtils;
 
 final class GrassBackgroundRenderer {
     private int width;
@@ -105,12 +106,12 @@ final class GrassBackgroundRenderer {
             if (now <= half) {
                 setAlpha(1.0f);
                 drawNight(sd.nightInvert);
-                setAlpha(normf(dawn, half, now));
+                setAlpha(MathUtils.norm(dawn, half, now));
                 drawSunrise();
             } else {
                 setAlpha(1.0f);
                 drawSunrise();
-                setAlpha(normf(half, morning, now));
+                setAlpha(MathUtils.norm(half, morning, now));
                 drawNoon();
             }
         } else if (now > morning && now < afternoon) {
@@ -121,12 +122,12 @@ final class GrassBackgroundRenderer {
             if (now <= half) {
                 setAlpha(1.0f);
                 drawNoon();
-                setAlpha(normf(afternoon, half, now));
+                setAlpha(MathUtils.norm(afternoon, half, now));
                 drawSunset();
             } else {
                 setAlpha(1.0f);
                 drawSunset();
-                setAlpha(normf(half, dusk, now));
+                setAlpha(MathUtils.norm(half, dusk, now));
                 drawNight(sd.nightInvert);
             }
         } else if (now > dusk) {
@@ -263,9 +264,5 @@ final class GrassBackgroundRenderer {
 
         GLES20.glDisableVertexAttribArray(bgPositionHandle);
         GLES20.glDisableVertexAttribArray(bgTexHandle);
-    }
-
-    private static float normf(float start, float stop, float value) {
-        return (value - start) / (stop - start);
     }
 }

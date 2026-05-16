@@ -144,7 +144,7 @@ class JellyfishWaterDrops extends GLBaseView {
     @Override // com.reandroid.wallpaper.deepsea.GLBaseView
     public void initShader() {
         if (!isInitShader()) {
-            this.mProgramHandle = GLHelper.getCreatedAndLinkedProgram(GLHelper.getCompiledShader(35633, "precision mediump float;\t\t\t\t\t\t\t\t\t\nuniform mat4 u_MVPMatrix;\t\t\t\t\t\t\t\t\t\nattribute vec4 a_Position;\t\t\t\t\t\t\t\t\t\nattribute vec4 a_EmitterPosition;\t\t\t\t\t\t\t\nattribute vec4 a_move;\t\t\t\t\t\t\t\t\t\tuniform float a_time;\t\t\t\t\t\t\t\t\t\t\nattribute float a_Scale;\t\t\t\t\t\t\t\t\t\nattribute float a_life;\t\t\t\t\t\t\t\t\t\nattribute float a_age;\t\t\t\t\t\t\t\t\t\t\nattribute float a_size;\t\t\t\t\t\t\t\t\t\nattribute float a_angle;\t\t\t\t\t\t\t\t\t\nattribute float a_speed;\t\t\t\t\t\t\t\t\t\nattribute vec4 a_AddColor;\t\t\t\t\t\t\t\t\t\nvarying float alpha;\t\t\t\t\t\t\t\t\t\t\nvarying vec4 v_AddColor;\t\t\t\t\t\t\t\t\t\nfloat time;\t\t\t\t\t\t\t\t\t\t\t\t\nvoid main(){\t\t\t\t\t\t\t\t\t\t\t\t\n\t\tfloat td = a_life/a_age;\t\t\t\t\t\t\t\n\t\ttd /= 10.0;\t\t\t\t\t\t\t\t\t\t\t\n\t\tfloat df = a_time/td;\t\t\t\t\t\t\t\t\n\t\tint div = int(df);\t\t\t\t\t\t\t\t\t\n\t\tdf = float(div);\t\t\t\t\t\t\t\t\t\n\t\ttd *= df;\t\t\t\t\t\t\t\t\t\t\t\n\t\ttime = a_time - td;\t\t\t\t\t\t\t\t\t\n\tfloat tempAlpha = (time * 20.0 * a_age);\t\t\t\t\n\tif(tempAlpha >= a_life){\t\t\t\t\t\t\t\t\n\t\talpha = a_life * 2.0 - tempAlpha;\t\t\t\t\t\n\t}else{\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\talpha = tempAlpha;\t\t\t\t\t\t\t\t\t\n\t}\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\tgl_Position = a_Position;\t\t\t\t\t\t\t\t\n\tvec4 move = a_move;\t\t\t\t\t\t\t\t\t\t\n\tmove.x *= a_Scale;\t\t\t\t\t\t\t\t\t\t\n\tmove.y *= a_Scale;\t\t\t\t\t\t\t\t\t\t\n\tgl_Position += (time * move * 0.6);\t\t\t\t\t\t\n\tgl_Position = u_MVPMatrix * gl_Position;\t\t\t\t\n\tgl_PointSize = (a_size - gl_Position.z) * a_Scale;\t\t\n \tif(gl_PointSize < 0.0)gl_PointSize = 0.0;\t\t\t\t\n\tvec4 ePosition = a_EmitterPosition + gl_Position;\t\t\n\tv_AddColor = a_AddColor;\t\t\t\t\t\t\t\t\n}"), GLHelper.getCompiledShader(35632, "precision mediump float;\t\t\t\t\t\t\t\t\t\nuniform sampler2D u_texture;\t\t\t\t\t\t\t\t\nuniform sampler2D s_AlphaTexture;\t\t\t\t\t\t\t\nuniform float u_AddAlpha;\t\t\t\t\t\t\t\t\t\nvarying float alpha;\t\t\t\t\t\t\t\t\t\t\nvarying vec4 v_AddColor;\t\t\t\t\t\t\t\t\t\nvoid main(){\t\t\t\t\t\t\t\t\t\t\t\t\n\tvec4 tex = texture2D(u_texture, gl_PointCoord);\t\t\t\n\tvec4 alphaTexture;\t\t\t\t\t\t\t\t\t\t\n\talphaTexture = texture2D(s_AlphaTexture, gl_PointCoord);\n\tgl_FragColor = tex + v_AddColor;\t\t\t\t\t\t\n\tgl_FragColor.w = (alphaTexture.r * alpha + u_AddAlpha) * 0.5;\t\t\t\n}"));
+            this.mProgramHandle = GLHelper.getCreatedAndLinkedProgram(GLHelper.getCompiledShader(GLES20.GL_VERTEX_SHADER, "precision mediump float;\t\t\t\t\t\t\t\t\t\nuniform mat4 u_MVPMatrix;\t\t\t\t\t\t\t\t\t\nattribute vec4 a_Position;\t\t\t\t\t\t\t\t\t\nattribute vec4 a_EmitterPosition;\t\t\t\t\t\t\t\nattribute vec4 a_move;\t\t\t\t\t\t\t\t\t\tuniform float a_time;\t\t\t\t\t\t\t\t\t\t\nattribute float a_Scale;\t\t\t\t\t\t\t\t\t\nattribute float a_life;\t\t\t\t\t\t\t\t\t\nattribute float a_age;\t\t\t\t\t\t\t\t\t\t\nattribute float a_size;\t\t\t\t\t\t\t\t\t\nattribute float a_angle;\t\t\t\t\t\t\t\t\t\nattribute float a_speed;\t\t\t\t\t\t\t\t\t\nattribute vec4 a_AddColor;\t\t\t\t\t\t\t\t\t\nvarying float alpha;\t\t\t\t\t\t\t\t\t\t\nvarying vec4 v_AddColor;\t\t\t\t\t\t\t\t\t\nfloat time;\t\t\t\t\t\t\t\t\t\t\t\t\nvoid main(){\t\t\t\t\t\t\t\t\t\t\t\t\n\t\tfloat td = a_life/a_age;\t\t\t\t\t\t\t\n\t\ttd /= 10.0;\t\t\t\t\t\t\t\t\t\t\t\n\t\tfloat df = a_time/td;\t\t\t\t\t\t\t\t\n\t\tint div = int(df);\t\t\t\t\t\t\t\t\t\n\t\tdf = float(div);\t\t\t\t\t\t\t\t\t\n\t\ttd *= df;\t\t\t\t\t\t\t\t\t\t\t\n\t\ttime = a_time - td;\t\t\t\t\t\t\t\t\t\n\tfloat tempAlpha = (time * 20.0 * a_age);\t\t\t\t\n\tif(tempAlpha >= a_life){\t\t\t\t\t\t\t\t\n\t\talpha = a_life * 2.0 - tempAlpha;\t\t\t\t\t\n\t}else{\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\talpha = tempAlpha;\t\t\t\t\t\t\t\t\t\n\t}\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\tgl_Position = a_Position;\t\t\t\t\t\t\t\t\n\tvec4 move = a_move;\t\t\t\t\t\t\t\t\t\t\n\tmove.x *= a_Scale;\t\t\t\t\t\t\t\t\t\t\n\tmove.y *= a_Scale;\t\t\t\t\t\t\t\t\t\t\n\tgl_Position += (time * move * 0.6);\t\t\t\t\t\t\n\tgl_Position = u_MVPMatrix * gl_Position;\t\t\t\t\n\tgl_PointSize = (a_size - gl_Position.z) * a_Scale;\t\t\n \tif(gl_PointSize < 0.0)gl_PointSize = 0.0;\t\t\t\t\n\tvec4 ePosition = a_EmitterPosition + gl_Position;\t\t\n\tv_AddColor = a_AddColor;\t\t\t\t\t\t\t\t\n}"), GLHelper.getCompiledShader(GLES20.GL_FRAGMENT_SHADER, "precision mediump float;\t\t\t\t\t\t\t\t\t\nuniform sampler2D u_texture;\t\t\t\t\t\t\t\t\nuniform sampler2D s_AlphaTexture;\t\t\t\t\t\t\t\nuniform float u_AddAlpha;\t\t\t\t\t\t\t\t\t\nvarying float alpha;\t\t\t\t\t\t\t\t\t\t\nvarying vec4 v_AddColor;\t\t\t\t\t\t\t\t\t\nvoid main(){\t\t\t\t\t\t\t\t\t\t\t\t\n\tvec4 tex = texture2D(u_texture, gl_PointCoord);\t\t\t\n\tvec4 alphaTexture;\t\t\t\t\t\t\t\t\t\t\n\talphaTexture = texture2D(s_AlphaTexture, gl_PointCoord);\n\tgl_FragColor = tex + v_AddColor;\t\t\t\t\t\t\n\tgl_FragColor.w = (alphaTexture.r * alpha + u_AddAlpha) * 0.5;\t\t\t\n}"));
             this.mTextureID = GLHelper.getTexture(getContext(), R.drawable.particle_mip_0);
             this.mAlphaTextureId = GLHelper.getTexture(getContext(), R.drawable.particle_mip_0_alpha);
             this.mMVPMatrixHandle = GLES20.glGetUniformLocation(this.mProgramHandle, "u_MVPMatrix");
@@ -168,13 +168,13 @@ class JellyfishWaterDrops extends GLBaseView {
     @Override // com.reandroid.wallpaper.deepsea.GLBaseView
     public void setForDrawing() {
         GLES20.glUseProgram(this.mProgramHandle);
-        GLES20.glActiveTexture(33984);
-        GLES20.glBindTexture(3553, this.mTextureID);
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, this.mTextureID);
         GLES20.glUniform1i(this.mTextureHandle, 0);
-        GLES20.glActiveTexture(33985);
-        GLES20.glBindTexture(3553, this.mAlphaTextureId);
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE1);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, this.mAlphaTextureId);
         GLES20.glUniform1i(this.mAlphaTextureHandle, 1);
-        GLES20.glEnable(3553);
+        GLES20.glEnable(GLES20.GL_TEXTURE_2D);
         updateTimeCounter();
         int i = this.mAddColorHandle;
         float[] fArr = this.mAddColorData;
@@ -183,25 +183,25 @@ class JellyfishWaterDrops extends GLBaseView {
         GLES20.glVertexAttrib1f(this.mScaleHandle, this.mScale);
         GLES20.glDisableVertexAttribArray(this.mScaleHandle);
         this.mVertexBuffer.position(0);
-        GLES20.glVertexAttribPointer(this.mPositionHandle, 3, 5126, false, 52, (Buffer) this.mVertexBuffer);
+        GLES20.glVertexAttribPointer(this.mPositionHandle, 3, GLES20.GL_FLOAT, false, 52, (Buffer) this.mVertexBuffer);
         GLES20.glEnableVertexAttribArray(this.mPositionHandle);
         this.mVertexBuffer.position(3);
-        GLES20.glVertexAttribPointer(this.mMoveHandle, 3, 5126, false, 52, (Buffer) this.mVertexBuffer);
+        GLES20.glVertexAttribPointer(this.mMoveHandle, 3, GLES20.GL_FLOAT, false, 52, (Buffer) this.mVertexBuffer);
         GLES20.glEnableVertexAttribArray(this.mMoveHandle);
         this.mVertexBuffer.position(6);
-        GLES20.glVertexAttribPointer(this.mLifeHandle, 1, 5126, false, 52, (Buffer) this.mVertexBuffer);
+        GLES20.glVertexAttribPointer(this.mLifeHandle, 1, GLES20.GL_FLOAT, false, 52, (Buffer) this.mVertexBuffer);
         GLES20.glEnableVertexAttribArray(this.mLifeHandle);
         this.mVertexBuffer.position(7);
-        GLES20.glVertexAttribPointer(this.mAgeHandle, 1, 5126, false, 52, (Buffer) this.mVertexBuffer);
+        GLES20.glVertexAttribPointer(this.mAgeHandle, 1, GLES20.GL_FLOAT, false, 52, (Buffer) this.mVertexBuffer);
         GLES20.glEnableVertexAttribArray(this.mAgeHandle);
         this.mVertexBuffer.position(8);
-        GLES20.glVertexAttribPointer(this.mSizeHandle, 1, 5126, false, 52, (Buffer) this.mVertexBuffer);
+        GLES20.glVertexAttribPointer(this.mSizeHandle, 1, GLES20.GL_FLOAT, false, 52, (Buffer) this.mVertexBuffer);
         GLES20.glEnableVertexAttribArray(this.mSizeHandle);
         this.mVertexBuffer.position(9);
-        GLES20.glVertexAttribPointer(this.mSpeedHandle, 1, 5126, false, 52, (Buffer) this.mVertexBuffer);
+        GLES20.glVertexAttribPointer(this.mSpeedHandle, 1, GLES20.GL_FLOAT, false, 52, (Buffer) this.mVertexBuffer);
         GLES20.glEnableVertexAttribArray(this.mSpeedHandle);
         this.mVertexBuffer.position(10);
-        GLES20.glVertexAttribPointer(this.mEmitterHandle, 3, 5126, false, 52, (Buffer) this.mVertexBuffer);
+        GLES20.glVertexAttribPointer(this.mEmitterHandle, 3, GLES20.GL_FLOAT, false, 52, (Buffer) this.mVertexBuffer);
         GLES20.glEnableVertexAttribArray(this.mEmitterHandle);
         GLES20.glUniform1f(this.mTimesHandle, this.mTimeCounter);
         GLES20.glUniform1f(this.mAddAlphaHandle, this.mAddAlpha);
@@ -209,7 +209,7 @@ class JellyfishWaterDrops extends GLBaseView {
 
     @Override // com.reandroid.wallpaper.deepsea.GLBaseView
     public void draw() {
-        GLES20.glDrawArrays(0, 0, this.mNumberOfParticles);
+        GLES20.glDrawArrays(GLES20.GL_POINTS, 0, this.mNumberOfParticles);
     }
 
     @Override // com.reandroid.wallpaper.deepsea.GLBaseView
@@ -337,7 +337,7 @@ class Sea2 extends GLBaseView {
     @Override // com.reandroid.wallpaper.deepsea.GLBaseView
     public void initShader() {
         if (!isInitShader()) {
-            int createdAndLinkedProgram = GLHelper.getCreatedAndLinkedProgram(GLHelper.getCompiledShader(35633, "uniform mat4 u_MVPMatrix;\t\t\t\t\t\t\t\nattribute vec4 a_position;\t\t\t\t\t\t\t\nattribute vec2 a_texCoord;\t\t\t\t\t\t\t\nvarying vec2 v_texCoord;\t\t\t\t\t\t\t\nvoid main(){\t\t\t\t\t\t\t\t\t\t\n\tgl_Position = u_MVPMatrix * a_position;\t\t\t\n\tv_texCoord = a_texCoord;\t\t\t\t\t\t\n}"), GLHelper.getCompiledShader(35632, "precision mediump float;\t\t\t\t\t\t\t\nvarying vec2 v_texCoord;\t\t\t\t\t\t\t\nuniform float u_brightness;\t\t\t\t\t\t\nuniform sampler2D s_texture;\t\t\t\t\t\t\nvoid main(){\t\t\t\t\t\t\t\t\t\t\n\tfloat val = u_brightness;\t\t\t\t\t\t\n \tvec4 color = vec4(val, val, val, 0.0);\t\t\t\n\tgl_FragColor = texture2D(s_texture, v_texCoord) + color; \n}\t\t\t\t\t\t\t\t\t\t\t\t\t\n"));
+            int createdAndLinkedProgram = GLHelper.getCreatedAndLinkedProgram(GLHelper.getCompiledShader(GLES20.GL_VERTEX_SHADER, "uniform mat4 u_MVPMatrix;\t\t\t\t\t\t\t\nattribute vec4 a_position;\t\t\t\t\t\t\t\nattribute vec2 a_texCoord;\t\t\t\t\t\t\t\nvarying vec2 v_texCoord;\t\t\t\t\t\t\t\nvoid main(){\t\t\t\t\t\t\t\t\t\t\n\tgl_Position = u_MVPMatrix * a_position;\t\t\t\n\tv_texCoord = a_texCoord;\t\t\t\t\t\t\n}"), GLHelper.getCompiledShader(GLES20.GL_FRAGMENT_SHADER, "precision mediump float;\t\t\t\t\t\t\t\nvarying vec2 v_texCoord;\t\t\t\t\t\t\t\nuniform float u_brightness;\t\t\t\t\t\t\nuniform sampler2D s_texture;\t\t\t\t\t\t\nvoid main(){\t\t\t\t\t\t\t\t\t\t\n\tfloat val = u_brightness;\t\t\t\t\t\t\n \tvec4 color = vec4(val, val, val, 0.0);\t\t\t\n\tgl_FragColor = texture2D(s_texture, v_texCoord) + color; \n}\t\t\t\t\t\t\t\t\t\t\t\t\t\n"));
             this.mProgramHandle = createdAndLinkedProgram;
             this.mPositionHandle = GLES20.glGetAttribLocation(createdAndLinkedProgram, "a_position");
             this.mTexCoordHandle = GLES20.glGetAttribLocation(this.mProgramHandle, "a_texCoord");
@@ -353,21 +353,21 @@ class Sea2 extends GLBaseView {
     public void setForDrawing() {
         GLES20.glUseProgram(this.mProgramHandle);
         this.mVertices.position(0);
-        GLES20.glVertexAttribPointer(this.mPositionHandle, 3, 5126, false, 20, (Buffer) this.mVertices);
+        GLES20.glVertexAttribPointer(this.mPositionHandle, 3, GLES20.GL_FLOAT, false, 20, (Buffer) this.mVertices);
         this.mVertices.position(3);
-        GLES20.glVertexAttribPointer(this.mTexCoordHandle, 2, 5126, false, 20, (Buffer) this.mVertices);
+        GLES20.glVertexAttribPointer(this.mTexCoordHandle, 2, GLES20.GL_FLOAT, false, 20, (Buffer) this.mVertices);
         GLES20.glEnableVertexAttribArray(this.mPositionHandle);
         GLES20.glEnableVertexAttribArray(this.mTexCoordHandle);
-        GLES20.glActiveTexture(33984);
-        GLES20.glBindTexture(3553, this.mTextureId);
-        GLES20.glEnable(3553);
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, this.mTextureId);
+        GLES20.glEnable(GLES20.GL_TEXTURE_2D);
         GLES20.glUniform1i(this.mTextureHandle, 0);
         GLES20.glUniform1f(this.mBrightnessHandle, this.mBrightness);
     }
 
     @Override // com.reandroid.wallpaper.deepsea.GLBaseView
     public void draw() {
-        GLES20.glDrawElements(4, 6, 5123, this.mIndices);
+        GLES20.glDrawElements(GLES20.GL_TRIANGLES, 6, GLES20.GL_UNSIGNED_SHORT, this.mIndices);
     }
 
     @Override // com.reandroid.wallpaper.deepsea.GLBaseView
@@ -437,6 +437,8 @@ class Sea2 extends GLBaseView {
 }
 
 class SeaWaterDrops extends GLBaseView {
+        private static final int REF_WIDTH = 720;
+        private static final int REF_HEIGHT = 1184;
     private final int DISPLAY_HEIGHT;
     private final int DISPLAY_WIDTH;
     private int mAgeHandle;
@@ -461,8 +463,8 @@ class SeaWaterDrops extends GLBaseView {
     private FloatBuffer mVertexBuffer;
 
     public SeaWaterDrops() {
-        this.DISPLAY_WIDTH = 720;
-        this.DISPLAY_HEIGHT = 1184;
+        this.DISPLAY_WIDTH = REF_WIDTH;
+        this.DISPLAY_HEIGHT = REF_HEIGHT;
         this.mTimeCounter = 0.0f;
         this.mParticleVertices = new float[1170];
         this.mBackupVertices = new float[1170];
@@ -472,8 +474,8 @@ class SeaWaterDrops extends GLBaseView {
 
     public SeaWaterDrops(Context context) {
         super(context);
-        this.DISPLAY_WIDTH = 720;
-        this.DISPLAY_HEIGHT = 1184;
+        this.DISPLAY_WIDTH = REF_WIDTH;
+        this.DISPLAY_HEIGHT = REF_HEIGHT;
         this.mTimeCounter = 0.0f;
         this.mParticleVertices = new float[1170];
         this.mBackupVertices = new float[1170];
@@ -490,7 +492,7 @@ class SeaWaterDrops extends GLBaseView {
     @Override // com.reandroid.wallpaper.deepsea.GLBaseView
     public void initShader() {
         if (!isInitShader()) {
-            int createdAndLinkedProgram = GLHelper.getCreatedAndLinkedProgram(GLHelper.getCompiledShader(35633, "precision mediump float;\t\t\t\t\t\t\t\t\t\nuniform mat4 u_MVPMatrix;\t\t\t\t\t\t\t\t\t\nattribute vec4 a_Position;\t\t\t\t\t\t\t\t\t\nattribute vec4 a_EmitterPosition;\t\t\t\t\t\t\t\nattribute vec4 a_move;\t\t\t\t\t\t\t\t\t\t\nuniform float a_time;\t\t\t\t\t\t\t\t\t\t\nattribute float a_life;\t\t\t\t\t\t\t\t\t\nattribute float a_age;\t\t\t\t\t\t\t\t\t\t\nattribute float a_size;\t\t\t\t\t\t\t\t\t\nattribute float a_angle;\t\t\t\t\t\t\t\t\t\nattribute float a_speed;\t\t\t\t\t\t\t\t\t\nvarying float alpha;\t\t\t\t\t\t\t\t\t\t\nfloat time;\t\t\t\t\t\t\t\t\t\t\t\t\nvoid main(){\t\t\t\t\t\t\t\t\t\t\t\t\n\talpha = a_life - (a_time * 10.0 * a_age);\t\t\t\t\n\ttime = a_time;\t\t\t\t\t\t\t\t\t\t\t\n\tif(alpha < 0.0){\t\t\t\t\t\t\t\t\t\t\n\t\tfloat td = a_life/a_age;\t\t\t\t\t\t\t\n\t\ttd /= 10.0;\t\t\t\t\t\t\t\t\t\t\t\n\t\tfloat df = a_time/td;\t\t\t\t\t\t\t\t\n\t\tint div = int(df);\t\t\t\t\t\t\t\t\t\n\t\tdf = float(div);\t\t\t\t\t\t\t\t\t\n\t\ttd *= df;\t\t\t\t\t\t\t\t\t\t\t\n\t\ttime = a_time - td;\t\t\t\t\t\t\t\t\t\n\t\talpha = a_life - (time * 10.0 * a_age);\t\t\t\t\n\t}\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\tgl_PointSize = a_size;\t\t\t\t\t\t\t\t\t\n \tif(gl_PointSize < 0.0)gl_PointSize = 0.0;\t\t\t\t\n\tgl_Position = a_Position;\t\t\t\t\t\t\t\t\n\tgl_Position += (time * a_move * 0.3);\t\t\t\t\t\n\tgl_Position = u_MVPMatrix * gl_Position;\t\t\t\t\n}"), GLHelper.getCompiledShader(35632, "precision mediump float;\t\t\t\t\t\t\t\t\t\nuniform sampler2D u_texture;\t\t\t\t\t\t\t\t\nuniform sampler2D s_AlphaTexture;\t\t\t\t\t\t\t\nvarying float alpha;\t\t\t\t\t\t\t\t\t\t\nvoid main(){\t\t\t\t\t\t\t\t\t\t\t\t\n\tvec4 tex = texture2D(u_texture, gl_PointCoord);\t\t\t\n\tvec4 alphaTexture;\t\t\t\t\t\t\t\t\t\t\n\talphaTexture = texture2D(s_AlphaTexture, gl_PointCoord);\n\tgl_FragColor = tex;\t\t\t\t\t\t\t\t\t\t\n\tgl_FragColor.w = alphaTexture.r * alpha * 0.5;\t\t\t\t\t\t\t\n}"));
+            int createdAndLinkedProgram = GLHelper.getCreatedAndLinkedProgram(GLHelper.getCompiledShader(GLES20.GL_VERTEX_SHADER, "precision mediump float;\t\t\t\t\t\t\t\t\t\nuniform mat4 u_MVPMatrix;\t\t\t\t\t\t\t\t\t\nattribute vec4 a_Position;\t\t\t\t\t\t\t\t\t\nattribute vec4 a_EmitterPosition;\t\t\t\t\t\t\t\nattribute vec4 a_move;\t\t\t\t\t\t\t\t\t\t\nuniform float a_time;\t\t\t\t\t\t\t\t\t\t\nattribute float a_life;\t\t\t\t\t\t\t\t\t\nattribute float a_age;\t\t\t\t\t\t\t\t\t\t\nattribute float a_size;\t\t\t\t\t\t\t\t\t\nattribute float a_angle;\t\t\t\t\t\t\t\t\t\nattribute float a_speed;\t\t\t\t\t\t\t\t\t\nvarying float alpha;\t\t\t\t\t\t\t\t\t\t\nfloat time;\t\t\t\t\t\t\t\t\t\t\t\t\nvoid main(){\t\t\t\t\t\t\t\t\t\t\t\t\n\talpha = a_life - (a_time * 10.0 * a_age);\t\t\t\t\n\ttime = a_time;\t\t\t\t\t\t\t\t\t\t\t\n\tif(alpha < 0.0){\t\t\t\t\t\t\t\t\t\t\n\t\tfloat td = a_life/a_age;\t\t\t\t\t\t\t\n\t\ttd /= 10.0;\t\t\t\t\t\t\t\t\t\t\t\n\t\tfloat df = a_time/td;\t\t\t\t\t\t\t\t\n\t\tint div = int(df);\t\t\t\t\t\t\t\t\t\n\t\tdf = float(div);\t\t\t\t\t\t\t\t\t\n\t\ttd *= df;\t\t\t\t\t\t\t\t\t\t\t\n\t\ttime = a_time - td;\t\t\t\t\t\t\t\t\t\n\t\talpha = a_life - (time * 10.0 * a_age);\t\t\t\t\n\t}\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\tgl_PointSize = a_size;\t\t\t\t\t\t\t\t\t\n \tif(gl_PointSize < 0.0)gl_PointSize = 0.0;\t\t\t\t\n\tgl_Position = a_Position;\t\t\t\t\t\t\t\t\n\tgl_Position += (time * a_move * 0.3);\t\t\t\t\t\n\tgl_Position = u_MVPMatrix * gl_Position;\t\t\t\t\n}"), GLHelper.getCompiledShader(GLES20.GL_FRAGMENT_SHADER, "precision mediump float;\t\t\t\t\t\t\t\t\t\nuniform sampler2D u_texture;\t\t\t\t\t\t\t\t\nuniform sampler2D s_AlphaTexture;\t\t\t\t\t\t\t\nvarying float alpha;\t\t\t\t\t\t\t\t\t\t\nvoid main(){\t\t\t\t\t\t\t\t\t\t\t\t\n\tvec4 tex = texture2D(u_texture, gl_PointCoord);\t\t\t\n\tvec4 alphaTexture;\t\t\t\t\t\t\t\t\t\t\n\talphaTexture = texture2D(s_AlphaTexture, gl_PointCoord);\n\tgl_FragColor = tex;\t\t\t\t\t\t\t\t\t\t\n\tgl_FragColor.w = alphaTexture.r * alpha * 0.5;\t\t\t\t\t\t\t\n}"));
             this.mProgramHandle = createdAndLinkedProgram;
             this.mTextureID = GLHelper.getTexture(getContext(), R.drawable.particle_mip_0);
             this.mAlphaTextureId = GLHelper.getTexture(getContext(), R.drawable.particle_mip_0_alpha);
@@ -512,41 +514,41 @@ class SeaWaterDrops extends GLBaseView {
     @Override // com.reandroid.wallpaper.deepsea.GLBaseView
     public void setForDrawing() {
         GLES20.glUseProgram(this.mProgramHandle);
-        GLES20.glActiveTexture(33984);
-        GLES20.glBindTexture(3553, this.mTextureID);
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, this.mTextureID);
         GLES20.glUniform1i(this.mTextureHandle, 0);
-        GLES20.glActiveTexture(33985);
-        GLES20.glBindTexture(3553, this.mAlphaTextureId);
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE1);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, this.mAlphaTextureId);
         GLES20.glUniform1i(this.mAlphaTextureHandle, 1);
-        GLES20.glEnable(3553);
+        GLES20.glEnable(GLES20.GL_TEXTURE_2D);
         updateTimeCounter();
         this.mVertexBuffer.position(0);
-        GLES20.glVertexAttribPointer(this.mPositionHandle, 3, 5126, false, 52, (Buffer) this.mVertexBuffer);
+        GLES20.glVertexAttribPointer(this.mPositionHandle, 3, GLES20.GL_FLOAT, false, 52, (Buffer) this.mVertexBuffer);
         GLES20.glEnableVertexAttribArray(this.mPositionHandle);
         this.mVertexBuffer.position(3);
-        GLES20.glVertexAttribPointer(this.mMoveHandle, 3, 5126, false, 52, (Buffer) this.mVertexBuffer);
+        GLES20.glVertexAttribPointer(this.mMoveHandle, 3, GLES20.GL_FLOAT, false, 52, (Buffer) this.mVertexBuffer);
         GLES20.glEnableVertexAttribArray(this.mMoveHandle);
         this.mVertexBuffer.position(6);
-        GLES20.glVertexAttribPointer(this.mLifeHandle, 1, 5126, false, 52, (Buffer) this.mVertexBuffer);
+        GLES20.glVertexAttribPointer(this.mLifeHandle, 1, GLES20.GL_FLOAT, false, 52, (Buffer) this.mVertexBuffer);
         GLES20.glEnableVertexAttribArray(this.mLifeHandle);
         this.mVertexBuffer.position(7);
-        GLES20.glVertexAttribPointer(this.mAgeHandle, 1, 5126, false, 52, (Buffer) this.mVertexBuffer);
+        GLES20.glVertexAttribPointer(this.mAgeHandle, 1, GLES20.GL_FLOAT, false, 52, (Buffer) this.mVertexBuffer);
         GLES20.glEnableVertexAttribArray(this.mAgeHandle);
         this.mVertexBuffer.position(8);
-        GLES20.glVertexAttribPointer(this.mSizeHandle, 1, 5126, false, 52, (Buffer) this.mVertexBuffer);
+        GLES20.glVertexAttribPointer(this.mSizeHandle, 1, GLES20.GL_FLOAT, false, 52, (Buffer) this.mVertexBuffer);
         GLES20.glEnableVertexAttribArray(this.mSizeHandle);
         this.mVertexBuffer.position(9);
-        GLES20.glVertexAttribPointer(this.mSpeedHandle, 1, 5126, false, 52, (Buffer) this.mVertexBuffer);
+        GLES20.glVertexAttribPointer(this.mSpeedHandle, 1, GLES20.GL_FLOAT, false, 52, (Buffer) this.mVertexBuffer);
         GLES20.glEnableVertexAttribArray(this.mSpeedHandle);
         this.mVertexBuffer.position(10);
-        GLES20.glVertexAttribPointer(this.mEmitterHandle, 3, 5126, false, 52, (Buffer) this.mVertexBuffer);
+        GLES20.glVertexAttribPointer(this.mEmitterHandle, 3, GLES20.GL_FLOAT, false, 52, (Buffer) this.mVertexBuffer);
         GLES20.glEnableVertexAttribArray(this.mEmitterHandle);
         GLES20.glUniform1f(this.mTimesHandle, this.mTimeCounter);
     }
 
     @Override // com.reandroid.wallpaper.deepsea.GLBaseView
     public void draw() {
-        GLES20.glDrawArrays(0, 0, 90);
+        GLES20.glDrawArrays(GLES20.GL_POINTS, 0, 90);
     }
 
     @Override // com.reandroid.wallpaper.deepsea.GLBaseView
@@ -649,13 +651,13 @@ class SeaWaterDrops extends GLBaseView {
     }
 
     public void changeData(int i, int i2) {
-        if (i > 720) {
-            changeDataByWidth(i / 720.0f);
+        if (i > REF_WIDTH) {
+            changeDataByWidth(i / (float) REF_WIDTH);
         } else {
             changeDataByWidth(1.0f);
         }
-        if (i2 > 1184) {
-            changeDataByHeight(i2 / 1184.0f);
+        if (i2 > REF_HEIGHT) {
+            changeDataByHeight(i2 / (float) REF_HEIGHT);
         } else {
             changeDataByHeight(1.0f);
         }
@@ -709,6 +711,8 @@ class SeaWaterDrops extends GLBaseView {
 }
 
 class SeaWaterDrops2 extends GLBaseView {
+        private static final int REF_WIDTH = 720;
+        private static final int REF_HEIGHT = 1184;
     private final int DISPLAY_HEIGHT;
     private final int DISPLAY_WIDTH;
     private int mAgeHandle;
@@ -732,8 +736,8 @@ class SeaWaterDrops2 extends GLBaseView {
     private FloatBuffer mVertexBuffer;
 
     public SeaWaterDrops2() {
-        this.DISPLAY_WIDTH = 720;
-        this.DISPLAY_HEIGHT = 1184;
+        this.DISPLAY_WIDTH = REF_WIDTH;
+        this.DISPLAY_HEIGHT = REF_HEIGHT;
         this.mTimeCounter = 0.0f;
         this.mParticleVertices = new float[60];
         this.mBackupVertices = new float[60];
@@ -743,8 +747,8 @@ class SeaWaterDrops2 extends GLBaseView {
 
     public SeaWaterDrops2(Context context) {
         super(context);
-        this.DISPLAY_WIDTH = 720;
-        this.DISPLAY_HEIGHT = 1184;
+        this.DISPLAY_WIDTH = REF_WIDTH;
+        this.DISPLAY_HEIGHT = REF_HEIGHT;
         this.mTimeCounter = 0.0f;
         this.mParticleVertices = new float[60];
         this.mBackupVertices = new float[60];
@@ -761,7 +765,7 @@ class SeaWaterDrops2 extends GLBaseView {
     @Override // com.reandroid.wallpaper.deepsea.GLBaseView
     public void initShader() {
         if (!isInitShader()) {
-            int createdAndLinkedProgram = GLHelper.getCreatedAndLinkedProgram(GLHelper.getCompiledShader(35633, "precision mediump float;\t\t\t\t\t\t\t\t\t\nuniform mat4 u_MVPMatrix;\t\t\t\t\t\t\t\t\t\nattribute vec4 a_Position;\t\t\t\t\t\t\t\t\t\nattribute vec4 a_move;\t\t\t\t\t\t\t\t\t\t\nuniform float a_time;\t\t\t\t\t\t\t\t\t\t\nattribute float a_life;\t\t\t\t\t\t\t\t\t\nattribute float a_age;\t\t\t\t\t\t\t\t\t\t\nattribute float a_size;\t\t\t\t\t\t\t\t\t\nattribute float a_angle;\t\t\t\t\t\t\t\t\t\nattribute float a_speed;\t\t\t\t\t\t\t\t\t\nvarying float alpha;\t\t\t\t\t\t\t\t\t\t\nfloat time;\t\t\t\t\t\t\t\t\t\t\t\t\nvoid main(){\t\t\t\t\t\t\t\t\t\t\t\t\n\talpha = a_life - (a_time * 10.0 * a_age);\t\t\t\t\n\ttime = a_time;\t\t\t\t\t\t\t\t\t\t\t\n\tif(alpha < 0.0){\t\t\t\t\t\t\t\t\t\t\n\t\tfloat td = a_life/a_age;\t\t\t\t\t\t\t\n\t\ttd /= 10.0;\t\t\t\t\t\t\t\t\t\t\t\n\t\tfloat df = a_time/td;\t\t\t\t\t\t\t\t\n\t\tint div = int(df);\t\t\t\t\t\t\t\t\t\n\t\tdf = float(div);\t\t\t\t\t\t\t\t\t\n\t\ttd *= df;\t\t\t\t\t\t\t\t\t\t\t\n\t\ttime = a_time - td;\t\t\t\t\t\t\t\t\t\n\t\talpha = a_life - (time * 10.0 * a_age);\t\t\t\t\n\t}\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\tgl_PointSize = a_size;\t\t\t\t\t\t\t\t\t\n \tif(gl_PointSize < 0.0)gl_PointSize = 0.0;\t\t\t\t\n\tgl_Position = a_Position;\t\t\t\t\t\t\t\t\n\tgl_Position += (time * a_move * 0.5);\t\t\t\t\t\n\tfloat angle = time * 6.0;\t\t\t\t\t\t\t\t\n\tfloat r = 0.2;\t\t\t\t\t\t\t\t\t\t\t\n\tfloat moveX = gl_Position.x + r * cos(angle);\t\t\t\n\tgl_Position.x += moveX;\t\t\t\t\t\t\t\t\t\n\tgl_Position = u_MVPMatrix * gl_Position;\t\t\t\t\n}"), GLHelper.getCompiledShader(35632, "precision mediump float;\t\t\t\t\t\t\t\t\t\nuniform sampler2D u_texture;\t\t\t\t\t\t\t\t\nuniform sampler2D s_AlphaTexture;\t\t\t\t\t\t\t\nvarying float alpha;\t\t\t\t\t\t\t\t\t\t\nvoid main(){\t\t\t\t\t\t\t\t\t\t\t\t\n\tvec4 tex = texture2D(u_texture, gl_PointCoord);\t\t\t\n\tvec4 alphaTexture;\t\t\t\t\t\t\t\t\t\t\n\talphaTexture = texture2D(s_AlphaTexture, gl_PointCoord);\n\tgl_FragColor = tex;\t\t\t\t\t\t\t\t\t\t\n\tgl_FragColor.w = alphaTexture.r * alpha * 0.5;\t\t\t\t\t\t\t\n}"));
+            int createdAndLinkedProgram = GLHelper.getCreatedAndLinkedProgram(GLHelper.getCompiledShader(GLES20.GL_VERTEX_SHADER, "precision mediump float;\t\t\t\t\t\t\t\t\t\nuniform mat4 u_MVPMatrix;\t\t\t\t\t\t\t\t\t\nattribute vec4 a_Position;\t\t\t\t\t\t\t\t\t\nattribute vec4 a_move;\t\t\t\t\t\t\t\t\t\t\nuniform float a_time;\t\t\t\t\t\t\t\t\t\t\nattribute float a_life;\t\t\t\t\t\t\t\t\t\nattribute float a_age;\t\t\t\t\t\t\t\t\t\t\nattribute float a_size;\t\t\t\t\t\t\t\t\t\nattribute float a_angle;\t\t\t\t\t\t\t\t\t\nattribute float a_speed;\t\t\t\t\t\t\t\t\t\nvarying float alpha;\t\t\t\t\t\t\t\t\t\t\nfloat time;\t\t\t\t\t\t\t\t\t\t\t\t\nvoid main(){\t\t\t\t\t\t\t\t\t\t\t\t\n\talpha = a_life - (a_time * 10.0 * a_age);\t\t\t\t\n\ttime = a_time;\t\t\t\t\t\t\t\t\t\t\t\n\tif(alpha < 0.0){\t\t\t\t\t\t\t\t\t\t\n\t\tfloat td = a_life/a_age;\t\t\t\t\t\t\t\n\t\ttd /= 10.0;\t\t\t\t\t\t\t\t\t\t\t\n\t\tfloat df = a_time/td;\t\t\t\t\t\t\t\t\n\t\tint div = int(df);\t\t\t\t\t\t\t\t\t\n\t\tdf = float(div);\t\t\t\t\t\t\t\t\t\n\t\ttd *= df;\t\t\t\t\t\t\t\t\t\t\t\n\t\ttime = a_time - td;\t\t\t\t\t\t\t\t\t\n\t\talpha = a_life - (time * 10.0 * a_age);\t\t\t\t\n\t}\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\tgl_PointSize = a_size;\t\t\t\t\t\t\t\t\t\n \tif(gl_PointSize < 0.0)gl_PointSize = 0.0;\t\t\t\t\n\tgl_Position = a_Position;\t\t\t\t\t\t\t\t\n\tgl_Position += (time * a_move * 0.5);\t\t\t\t\t\n\tfloat angle = time * 6.0;\t\t\t\t\t\t\t\t\n\tfloat r = 0.2;\t\t\t\t\t\t\t\t\t\t\t\n\tfloat moveX = gl_Position.x + r * cos(angle);\t\t\t\n\tgl_Position.x += moveX;\t\t\t\t\t\t\t\t\t\n\tgl_Position = u_MVPMatrix * gl_Position;\t\t\t\t\n}"), GLHelper.getCompiledShader(GLES20.GL_FRAGMENT_SHADER, "precision mediump float;\t\t\t\t\t\t\t\t\t\nuniform sampler2D u_texture;\t\t\t\t\t\t\t\t\nuniform sampler2D s_AlphaTexture;\t\t\t\t\t\t\t\nvarying float alpha;\t\t\t\t\t\t\t\t\t\t\nvoid main(){\t\t\t\t\t\t\t\t\t\t\t\t\n\tvec4 tex = texture2D(u_texture, gl_PointCoord);\t\t\t\n\tvec4 alphaTexture;\t\t\t\t\t\t\t\t\t\t\n\talphaTexture = texture2D(s_AlphaTexture, gl_PointCoord);\n\tgl_FragColor = tex;\t\t\t\t\t\t\t\t\t\t\n\tgl_FragColor.w = alphaTexture.r * alpha * 0.5;\t\t\t\t\t\t\t\n}"));
             this.mProgramHandle = createdAndLinkedProgram;
             this.mTextureID = GLHelper.getTexture(getContext(), R.drawable.particle_mip_0);
             this.mAlphaTextureId = GLHelper.getTexture(getContext(), R.drawable.particle_mip_0_alpha);
@@ -782,38 +786,38 @@ class SeaWaterDrops2 extends GLBaseView {
     @Override // com.reandroid.wallpaper.deepsea.GLBaseView
     public void setForDrawing() {
         GLES20.glUseProgram(this.mProgramHandle);
-        GLES20.glActiveTexture(33984);
-        GLES20.glBindTexture(3553, this.mTextureID);
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, this.mTextureID);
         GLES20.glUniform1i(this.mTextureHandle, 0);
-        GLES20.glActiveTexture(33985);
-        GLES20.glBindTexture(3553, this.mAlphaTextureId);
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE1);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, this.mAlphaTextureId);
         GLES20.glUniform1i(this.mAlphaTextureHandle, 1);
-        GLES20.glEnable(3553);
+        GLES20.glEnable(GLES20.GL_TEXTURE_2D);
         updateTimeCounter();
         this.mVertexBuffer.position(0);
-        GLES20.glVertexAttribPointer(this.mPositionHandle, 3, 5126, false, 40, (Buffer) this.mVertexBuffer);
+        GLES20.glVertexAttribPointer(this.mPositionHandle, 3, GLES20.GL_FLOAT, false, 40, (Buffer) this.mVertexBuffer);
         GLES20.glEnableVertexAttribArray(this.mPositionHandle);
         this.mVertexBuffer.position(3);
-        GLES20.glVertexAttribPointer(this.mMoveHandle, 3, 5126, false, 40, (Buffer) this.mVertexBuffer);
+        GLES20.glVertexAttribPointer(this.mMoveHandle, 3, GLES20.GL_FLOAT, false, 40, (Buffer) this.mVertexBuffer);
         GLES20.glEnableVertexAttribArray(this.mMoveHandle);
         this.mVertexBuffer.position(6);
-        GLES20.glVertexAttribPointer(this.mLifeHandle, 1, 5126, false, 40, (Buffer) this.mVertexBuffer);
+        GLES20.glVertexAttribPointer(this.mLifeHandle, 1, GLES20.GL_FLOAT, false, 40, (Buffer) this.mVertexBuffer);
         GLES20.glEnableVertexAttribArray(this.mLifeHandle);
         this.mVertexBuffer.position(7);
-        GLES20.glVertexAttribPointer(this.mAgeHandle, 1, 5126, false, 40, (Buffer) this.mVertexBuffer);
+        GLES20.glVertexAttribPointer(this.mAgeHandle, 1, GLES20.GL_FLOAT, false, 40, (Buffer) this.mVertexBuffer);
         GLES20.glEnableVertexAttribArray(this.mAgeHandle);
         this.mVertexBuffer.position(8);
-        GLES20.glVertexAttribPointer(this.mSizeHandle, 1, 5126, false, 40, (Buffer) this.mVertexBuffer);
+        GLES20.glVertexAttribPointer(this.mSizeHandle, 1, GLES20.GL_FLOAT, false, 40, (Buffer) this.mVertexBuffer);
         GLES20.glEnableVertexAttribArray(this.mSizeHandle);
         this.mVertexBuffer.position(9);
-        GLES20.glVertexAttribPointer(this.mSpeedHandle, 1, 5126, false, 40, (Buffer) this.mVertexBuffer);
+        GLES20.glVertexAttribPointer(this.mSpeedHandle, 1, GLES20.GL_FLOAT, false, 40, (Buffer) this.mVertexBuffer);
         GLES20.glEnableVertexAttribArray(this.mSpeedHandle);
         GLES20.glUniform1f(this.mTimesHandle, this.mTimeCounter);
     }
 
     @Override // com.reandroid.wallpaper.deepsea.GLBaseView
     public void draw() {
-        GLES20.glDrawArrays(0, 0, 6);
+        GLES20.glDrawArrays(GLES20.GL_POINTS, 0, 6);
     }
 
     @Override // com.reandroid.wallpaper.deepsea.GLBaseView
@@ -891,13 +895,13 @@ class SeaWaterDrops2 extends GLBaseView {
     }
 
     public void changeData(int i, int i2) {
-        if (i > 720) {
-            changeDataByWidth(i / 720.0f);
+        if (i > REF_WIDTH) {
+            changeDataByWidth(i / (float) REF_WIDTH);
         } else {
             changeDataByWidth(1.0f);
         }
-        if (i2 > 1184) {
-            changeDataByHeight(i2 / 1184.0f);
+        if (i2 > REF_HEIGHT) {
+            changeDataByHeight(i2 / (float) REF_HEIGHT);
         } else {
             changeDataByHeight(1.0f);
         }
@@ -941,6 +945,8 @@ class SeaWaterDrops2 extends GLBaseView {
 }
 
 class SeaWaterDrops3 extends GLBaseView {
+        private static final int REF_WIDTH = 720;
+        private static final int REF_HEIGHT = 1184;
     private final int DISPLAY_HEIGHT;
     private final int DISPLAY_WIDTH;
     private int mAgeHandle;
@@ -964,8 +970,8 @@ class SeaWaterDrops3 extends GLBaseView {
     private FloatBuffer mVertexBuffer;
 
     public SeaWaterDrops3() {
-        this.DISPLAY_WIDTH = 720;
-        this.DISPLAY_HEIGHT = 1184;
+        this.DISPLAY_WIDTH = REF_WIDTH;
+        this.DISPLAY_HEIGHT = REF_HEIGHT;
         this.mTimeCounter = 0.0f;
         this.mParticleVertices = new float[1200];
         this.mBackupVertices = new float[1200];
@@ -975,8 +981,8 @@ class SeaWaterDrops3 extends GLBaseView {
 
     public SeaWaterDrops3(Context context) {
         super(context);
-        this.DISPLAY_WIDTH = 720;
-        this.DISPLAY_HEIGHT = 1184;
+        this.DISPLAY_WIDTH = REF_WIDTH;
+        this.DISPLAY_HEIGHT = REF_HEIGHT;
         this.mTimeCounter = 0.0f;
         this.mParticleVertices = new float[1200];
         this.mBackupVertices = new float[1200];
@@ -993,7 +999,7 @@ class SeaWaterDrops3 extends GLBaseView {
     @Override // com.reandroid.wallpaper.deepsea.GLBaseView
     public void initShader() {
         if (!isInitShader()) {
-            int createdAndLinkedProgram = GLHelper.getCreatedAndLinkedProgram(GLHelper.getCompiledShader(35633, "precision mediump float;\t\t\t\t\t\t\t\t\t\nuniform mat4 u_MVPMatrix;\t\t\t\t\t\t\t\t\t\nattribute vec4 a_Position;\t\t\t\t\t\t\t\t\t\nattribute vec4 a_move;\t\t\t\t\t\t\t\t\t\t\nuniform float a_time;\t\t\t\t\t\t\t\t\t\t\nattribute float a_life;\t\t\t\t\t\t\t\t\t\nattribute float a_age;\t\t\t\t\t\t\t\t\t\t\nattribute float a_size;\t\t\t\t\t\t\t\t\t\nattribute float a_angle;\t\t\t\t\t\t\t\t\t\nattribute float a_speed;\t\t\t\t\t\t\t\t\t\nvarying float alpha;\t\t\t\t\t\t\t\t\t\t\nfloat time;\t\t\t\t\t\t\t\t\t\t\t\t\nvoid main(){\t\t\t\t\t\t\t\t\t\t\t\t\n\tfloat temp;\t\t\t\t\t\t\t\t\t\t\t\t\n\talpha = a_life - (a_time * 10.0 * a_age);\t\t\t\t\n\ttemp = alpha;\t\t\t\t\t\t\t\t\t\t\t\n\ttime = a_time;\t\t\t\t\t\t\t\t\t\t\t\n\talpha = 0.0;\t\t\t\t\t\t\t\t\t\t\t\n\tif(temp < 0.0){\t\t\t\t\t\t\t\t\t\t\t\n\t\tfloat td = a_life/a_age;\t\t\t\t\t\t\t\n\t\ttd /= 10.0;\t\t\t\t\t\t\t\t\t\t\t\n\t\tfloat df = a_time/td;\t\t\t\t\t\t\t\t\n\t\tint div = int(df);\t\t\t\t\t\t\t\t\t\n\t\tdf = float(div);\t\t\t\t\t\t\t\t\t\n\t\ttd *= df;\t\t\t\t\t\t\t\t\t\t\t\n\t\ttime = a_time - td;\t\t\t\t\t\t\t\t\t\n\t\talpha = a_life - (time * 10.0 * a_age);\t\t\t\t\n\t\tif(div > 1)alpha=0.0;\t\t\t\t\t\t\t\t\n\t}\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\tgl_PointSize = a_size;\t\t\t\t\t\t\t\t\t\n \tif(gl_PointSize < 0.0)gl_PointSize = 0.0;\t\t\t\t\n\tgl_Position = a_Position;\t\t\t\t\t\t\t\t\n\tgl_Position += (time * a_move * 1.2);\t\t\t\t\t\n\tfloat angle = time * 6.0;\t\t\t\t\t\t\t\t\n\tfloat r = 0.5 * a_life;\t\t\t\t\t\t\t\t\t\t\n\tfloat moveX = gl_Position.x + r * cos(angle);\t\t\t\n\tgl_Position.x += moveX;\t\t\t\t\t\t\t\t\t\n\tgl_Position = u_MVPMatrix * gl_Position;\t\t\t\t\n}"), GLHelper.getCompiledShader(35632, "precision mediump float;\t\t\t\t\t\t\t\t\t\nuniform sampler2D u_texture;\t\t\t\t\t\t\t\t\nuniform sampler2D s_AlphaTexture;\t\t\t\t\t\t\t\nvarying float alpha;\t\t\t\t\t\t\t\t\t\t\nvoid main(){\t\t\t\t\t\t\t\t\t\t\t\t\n\tvec4 tex = texture2D(u_texture, gl_PointCoord);\t\t\t\n\tvec4 alphaTexture;\t\t\t\t\t\t\t\t\t\t\n\talphaTexture = texture2D(s_AlphaTexture, gl_PointCoord);\n\tgl_FragColor = tex;\t\t\t\t\t\t\t\t\t\t\n\tgl_FragColor.w = alphaTexture.r * alpha;\n}"));
+            int createdAndLinkedProgram = GLHelper.getCreatedAndLinkedProgram(GLHelper.getCompiledShader(GLES20.GL_VERTEX_SHADER, "precision mediump float;\t\t\t\t\t\t\t\t\t\nuniform mat4 u_MVPMatrix;\t\t\t\t\t\t\t\t\t\nattribute vec4 a_Position;\t\t\t\t\t\t\t\t\t\nattribute vec4 a_move;\t\t\t\t\t\t\t\t\t\t\nuniform float a_time;\t\t\t\t\t\t\t\t\t\t\nattribute float a_life;\t\t\t\t\t\t\t\t\t\nattribute float a_age;\t\t\t\t\t\t\t\t\t\t\nattribute float a_size;\t\t\t\t\t\t\t\t\t\nattribute float a_angle;\t\t\t\t\t\t\t\t\t\nattribute float a_speed;\t\t\t\t\t\t\t\t\t\nvarying float alpha;\t\t\t\t\t\t\t\t\t\t\nfloat time;\t\t\t\t\t\t\t\t\t\t\t\t\nvoid main(){\t\t\t\t\t\t\t\t\t\t\t\t\n\tfloat temp;\t\t\t\t\t\t\t\t\t\t\t\t\n\talpha = a_life - (a_time * 10.0 * a_age);\t\t\t\t\n\ttemp = alpha;\t\t\t\t\t\t\t\t\t\t\t\n\ttime = a_time;\t\t\t\t\t\t\t\t\t\t\t\n\talpha = 0.0;\t\t\t\t\t\t\t\t\t\t\t\n\tif(temp < 0.0){\t\t\t\t\t\t\t\t\t\t\t\n\t\tfloat td = a_life/a_age;\t\t\t\t\t\t\t\n\t\ttd /= 10.0;\t\t\t\t\t\t\t\t\t\t\t\n\t\tfloat df = a_time/td;\t\t\t\t\t\t\t\t\n\t\tint div = int(df);\t\t\t\t\t\t\t\t\t\n\t\tdf = float(div);\t\t\t\t\t\t\t\t\t\n\t\ttd *= df;\t\t\t\t\t\t\t\t\t\t\t\n\t\ttime = a_time - td;\t\t\t\t\t\t\t\t\t\n\t\talpha = a_life - (time * 10.0 * a_age);\t\t\t\t\n\t\tif(div > 1)alpha=0.0;\t\t\t\t\t\t\t\t\n\t}\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\tgl_PointSize = a_size;\t\t\t\t\t\t\t\t\t\n \tif(gl_PointSize < 0.0)gl_PointSize = 0.0;\t\t\t\t\n\tgl_Position = a_Position;\t\t\t\t\t\t\t\t\n\tgl_Position += (time * a_move * 1.2);\t\t\t\t\t\n\tfloat angle = time * 6.0;\t\t\t\t\t\t\t\t\n\tfloat r = 0.5 * a_life;\t\t\t\t\t\t\t\t\t\t\n\tfloat moveX = gl_Position.x + r * cos(angle);\t\t\t\n\tgl_Position.x += moveX;\t\t\t\t\t\t\t\t\t\n\tgl_Position = u_MVPMatrix * gl_Position;\t\t\t\t\n}"), GLHelper.getCompiledShader(GLES20.GL_FRAGMENT_SHADER, "precision mediump float;\t\t\t\t\t\t\t\t\t\nuniform sampler2D u_texture;\t\t\t\t\t\t\t\t\nuniform sampler2D s_AlphaTexture;\t\t\t\t\t\t\t\nvarying float alpha;\t\t\t\t\t\t\t\t\t\t\nvoid main(){\t\t\t\t\t\t\t\t\t\t\t\t\n\tvec4 tex = texture2D(u_texture, gl_PointCoord);\t\t\t\n\tvec4 alphaTexture;\t\t\t\t\t\t\t\t\t\t\n\talphaTexture = texture2D(s_AlphaTexture, gl_PointCoord);\n\tgl_FragColor = tex;\t\t\t\t\t\t\t\t\t\t\n\tgl_FragColor.w = alphaTexture.r * alpha;\n}"));
             this.mProgramHandle = createdAndLinkedProgram;
             this.mTextureID = GLHelper.getTexture(getContext(), R.drawable.particle_mip_0);
             this.mAlphaTextureId = GLHelper.getTexture(getContext(), R.drawable.particle_mip_0_alpha);
@@ -1014,38 +1020,38 @@ class SeaWaterDrops3 extends GLBaseView {
     @Override // com.reandroid.wallpaper.deepsea.GLBaseView
     public void setForDrawing() {
         GLES20.glUseProgram(this.mProgramHandle);
-        GLES20.glActiveTexture(33984);
-        GLES20.glBindTexture(3553, this.mTextureID);
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, this.mTextureID);
         GLES20.glUniform1i(this.mTextureHandle, 0);
-        GLES20.glActiveTexture(33985);
-        GLES20.glBindTexture(3553, this.mAlphaTextureId);
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE1);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, this.mAlphaTextureId);
         GLES20.glUniform1i(this.mAlphaTextureHandle, 1);
-        GLES20.glEnable(3553);
+        GLES20.glEnable(GLES20.GL_TEXTURE_2D);
         updateTimeCounter();
         this.mVertexBuffer.position(0);
-        GLES20.glVertexAttribPointer(this.mPositionHandle, 3, 5126, false, 40, (Buffer) this.mVertexBuffer);
+        GLES20.glVertexAttribPointer(this.mPositionHandle, 3, GLES20.GL_FLOAT, false, 40, (Buffer) this.mVertexBuffer);
         GLES20.glEnableVertexAttribArray(this.mPositionHandle);
         this.mVertexBuffer.position(3);
-        GLES20.glVertexAttribPointer(this.mMoveHandle, 3, 5126, false, 40, (Buffer) this.mVertexBuffer);
+        GLES20.glVertexAttribPointer(this.mMoveHandle, 3, GLES20.GL_FLOAT, false, 40, (Buffer) this.mVertexBuffer);
         GLES20.glEnableVertexAttribArray(this.mMoveHandle);
         this.mVertexBuffer.position(6);
-        GLES20.glVertexAttribPointer(this.mLifeHandle, 1, 5126, false, 40, (Buffer) this.mVertexBuffer);
+        GLES20.glVertexAttribPointer(this.mLifeHandle, 1, GLES20.GL_FLOAT, false, 40, (Buffer) this.mVertexBuffer);
         GLES20.glEnableVertexAttribArray(this.mLifeHandle);
         this.mVertexBuffer.position(7);
-        GLES20.glVertexAttribPointer(this.mAgeHandle, 1, 5126, false, 40, (Buffer) this.mVertexBuffer);
+        GLES20.glVertexAttribPointer(this.mAgeHandle, 1, GLES20.GL_FLOAT, false, 40, (Buffer) this.mVertexBuffer);
         GLES20.glEnableVertexAttribArray(this.mAgeHandle);
         this.mVertexBuffer.position(8);
-        GLES20.glVertexAttribPointer(this.mSizeHandle, 1, 5126, false, 40, (Buffer) this.mVertexBuffer);
+        GLES20.glVertexAttribPointer(this.mSizeHandle, 1, GLES20.GL_FLOAT, false, 40, (Buffer) this.mVertexBuffer);
         GLES20.glEnableVertexAttribArray(this.mSizeHandle);
         this.mVertexBuffer.position(9);
-        GLES20.glVertexAttribPointer(this.mSpeedHandle, 1, 5126, false, 40, (Buffer) this.mVertexBuffer);
+        GLES20.glVertexAttribPointer(this.mSpeedHandle, 1, GLES20.GL_FLOAT, false, 40, (Buffer) this.mVertexBuffer);
         GLES20.glEnableVertexAttribArray(this.mSpeedHandle);
         GLES20.glUniform1f(this.mTimesHandle, this.mTimeCounter);
     }
 
     @Override // com.reandroid.wallpaper.deepsea.GLBaseView
     public void draw() {
-        GLES20.glDrawArrays(0, 0, 120);
+        GLES20.glDrawArrays(GLES20.GL_POINTS, 0, 120);
     }
 
     @Override // com.reandroid.wallpaper.deepsea.GLBaseView
@@ -1125,13 +1131,13 @@ class SeaWaterDrops3 extends GLBaseView {
     }
 
     public void changeData(int i, int i2) {
-        if (i > 720) {
-            changeDataByWidth(i / 720.0f);
+        if (i > REF_WIDTH) {
+            changeDataByWidth(i / (float) REF_WIDTH);
         } else {
             changeDataByWidth(1.0f);
         }
-        if (i2 > 1184) {
-            changeDataByHeight(i2 / 1184.0f);
+        if (i2 > REF_HEIGHT) {
+            changeDataByHeight(i2 / (float) REF_HEIGHT);
         } else {
             changeDataByHeight(1.0f);
         }
@@ -1220,7 +1226,7 @@ class Sea extends GLBaseView {
     @Override // com.reandroid.wallpaper.deepsea.GLBaseView
     public void initShader() {
         if (!isInitShader()) {
-            int createdAndLinkedProgram = GLHelper.getCreatedAndLinkedProgram(GLHelper.getCompiledShader(35633, "uniform mat4 u_MVPMatrix;\t\t\t\t\t\t\t\nattribute vec4 a_position;\t\t\t\t\t\t\t\nattribute vec2 a_texCoord;\t\t\t\t\t\t\t\nvarying vec2 v_texCoord;\t\t\t\t\t\t\t\nvoid main(){\t\t\t\t\t\t\t\t\t\t\n\tgl_Position = u_MVPMatrix * a_position;\t\t\t\n\tv_texCoord = a_texCoord;\t\t\t\t\t\t\n}"), GLHelper.getCompiledShader(35632, "precision mediump float;\t\t\t\t\t\t\t\nvarying vec2 v_texCoord;\t\t\t\t\t\t\t\nuniform float u_brightness;\t\t\t\t\t\t\nuniform sampler2D s_texture;\t\t\t\t\t\t\nvoid main(){\t\t\t\t\t\t\t\t\t\t\n\tfloat val = u_brightness;\t\t\t\t\t\t\n \tvec4 color = vec4(val, val, val, 0.0);\t\t\t\n\tgl_FragColor = texture2D(s_texture, v_texCoord) + color; \n}\t\t\t\t\t\t\t\t\t\t\t\t\t\n"));
+            int createdAndLinkedProgram = GLHelper.getCreatedAndLinkedProgram(GLHelper.getCompiledShader(GLES20.GL_VERTEX_SHADER, "uniform mat4 u_MVPMatrix;\t\t\t\t\t\t\t\nattribute vec4 a_position;\t\t\t\t\t\t\t\nattribute vec2 a_texCoord;\t\t\t\t\t\t\t\nvarying vec2 v_texCoord;\t\t\t\t\t\t\t\nvoid main(){\t\t\t\t\t\t\t\t\t\t\n\tgl_Position = u_MVPMatrix * a_position;\t\t\t\n\tv_texCoord = a_texCoord;\t\t\t\t\t\t\n}"), GLHelper.getCompiledShader(GLES20.GL_FRAGMENT_SHADER, "precision mediump float;\t\t\t\t\t\t\t\nvarying vec2 v_texCoord;\t\t\t\t\t\t\t\nuniform float u_brightness;\t\t\t\t\t\t\nuniform sampler2D s_texture;\t\t\t\t\t\t\nvoid main(){\t\t\t\t\t\t\t\t\t\t\n\tfloat val = u_brightness;\t\t\t\t\t\t\n \tvec4 color = vec4(val, val, val, 0.0);\t\t\t\n\tgl_FragColor = texture2D(s_texture, v_texCoord) + color; \n}\t\t\t\t\t\t\t\t\t\t\t\t\t\n"));
             this.mProgramHandle = createdAndLinkedProgram;
             this.mPositionHandle = GLES20.glGetAttribLocation(createdAndLinkedProgram, "a_position");
             this.mTexCoordHandle = GLES20.glGetAttribLocation(this.mProgramHandle, "a_texCoord");
@@ -1238,21 +1244,21 @@ class Sea extends GLBaseView {
         Log.d("DeepSea", "Sea.setForDrawing() - mTextureId = " + this.mTextureId + ", mBrightness = " + this.mBrightness);
         GLES20.glUseProgram(this.mProgramHandle);
         this.mVertices.position(0);
-        GLES20.glVertexAttribPointer(this.mPositionHandle, 3, 5126, false, 20, (Buffer) this.mVertices);
+        GLES20.glVertexAttribPointer(this.mPositionHandle, 3, GLES20.GL_FLOAT, false, 20, (Buffer) this.mVertices);
         this.mVertices.position(3);
-        GLES20.glVertexAttribPointer(this.mTexCoordHandle, 2, 5126, false, 20, (Buffer) this.mVertices);
+        GLES20.glVertexAttribPointer(this.mTexCoordHandle, 2, GLES20.GL_FLOAT, false, 20, (Buffer) this.mVertices);
         GLES20.glEnableVertexAttribArray(this.mPositionHandle);
         GLES20.glEnableVertexAttribArray(this.mTexCoordHandle);
-        GLES20.glActiveTexture(33984);
-        GLES20.glBindTexture(3553, this.mTextureId);
-        GLES20.glEnable(3553);
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, this.mTextureId);
+        GLES20.glEnable(GLES20.GL_TEXTURE_2D);
         GLES20.glUniform1i(this.mTextureHandle, 0);
         GLES20.glUniform1f(this.mBrightnessHandle, this.mBrightness);
     }
 
     @Override // com.reandroid.wallpaper.deepsea.GLBaseView
     public void draw() {
-        GLES20.glDrawElements(4, 6, 5123, this.mIndices);
+        GLES20.glDrawElements(GLES20.GL_TRIANGLES, 6, GLES20.GL_UNSIGNED_SHORT, this.mIndices);
     }
 
     @Override // com.reandroid.wallpaper.deepsea.GLBaseView
@@ -1353,7 +1359,7 @@ class JellyfishWaterDrops2 extends GLBaseView {
     @Override // com.reandroid.wallpaper.deepsea.GLBaseView
     public void initShader() {
         if (!isInitShader()) {
-            this.mProgramHandle = GLHelper.getCreatedAndLinkedProgram(GLHelper.getCompiledShader(35633, "precision mediump float;\t\t\t\t\t\t\t\t\t\nuniform mat4 u_MVPMatrix;\t\t\t\t\t\t\t\t\t\nattribute vec4 a_Position;\t\t\t\t\t\t\t\t\t\nattribute vec4 a_EmitterPosition;\t\t\t\t\t\t\t\nattribute vec4 a_move;\t\t\t\t\t\t\t\t\t\t\nuniform float a_time;\t\t\t\t\t\t\t\t\t\t\nattribute float a_Scale;\t\t\t\t\t\t\t\t\t\nattribute float a_life;\t\t\t\t\t\t\t\t\t\nattribute float a_age;\t\t\t\t\t\t\t\t\t\t\nattribute float a_size;\t\t\t\t\t\t\t\t\t\nattribute float a_angle;\t\t\t\t\t\t\t\t\t\nattribute float a_speed;\t\t\t\t\t\t\t\t\t\nattribute vec4 a_AddColor;\t\t\t\t\t\t\t\t\t\nvarying float alpha;\t\t\t\t\t\t\t\t\t\t\nvarying vec4 v_AddColor;\t\t\t\t\t\t\t\t\t\nfloat time;\t\t\t\t\t\t\t\t\t\t\t\t\nvoid main(){\t\t\t\t\t\t\t\t\t\t\t\t\n\t\tfloat td = a_life/a_age;\t\t\t\t\t\t\t\n\t\ttd /= 10.0;\t\t\t\t\t\t\t\t\t\t\t\n\t\tfloat df = a_time/td;\t\t\t\t\t\t\t\t\n\t\tint div = int(df);\t\t\t\t\t\t\t\t\t\n\t\tdf = float(div);\t\t\t\t\t\t\t\t\t\n\t\ttd *= df;\t\t\t\t\t\t\t\t\t\t\t\n\t\ttime = a_time - td;\t\t\t\t\t\t\t\t\t\n\tfloat tempAlpha = (time * 20.0 * a_age);\t\t\t\t\n\tif(tempAlpha >= a_life){\t\t\t\t\t\t\t\t\n\t\talpha = a_life * 2.0 - tempAlpha;\t\t\t\t\t\n\t}else{\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\talpha = tempAlpha;\t\t\t\t\t\t\t\t\t\n\t}\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\tgl_Position = a_Position;\t\t\t\t\t\t\t\t\n\tvec4 move = a_move;\t\t\t\t\t\t\t\t\t\t\n\tmove.x *= a_Scale;\t\t\t\t\t\t\t\t\t\t\n\tmove.y *= a_Scale;\t\t\t\t\t\t\t\t\t\t\n\tgl_Position += (time * move * 0.3 * 0.3);\t\t\t\t\n\tgl_Position = u_MVPMatrix * gl_Position;\t\t\t\t\n\tgl_PointSize = (a_size - gl_Position.z) * a_Scale;\t\t\n \tif(gl_PointSize < 0.0)gl_PointSize = 0.0;\t\t\t\t\n\tvec4 ePosition = u_MVPMatrix * a_EmitterPosition;\t\t\n\tfloat speed = time * 0.5 * 0.4;\t\t\t\t\t\t\t\n\tgl_Position.x += (ePosition.x - gl_Position.x) * speed; \n\tgl_Position.y += (ePosition.y - gl_Position.y) * speed; \n\tv_AddColor = a_AddColor;\t\t\t\t\t\t\t\t\n}"), GLHelper.getCompiledShader(35632, "precision mediump float;\t\t\t\t\t\t\t\t\t\nuniform sampler2D u_texture;\t\t\t\t\t\t\t\t\nuniform sampler2D s_AlphaTexture;\t\t\t\t\t\t\t\nuniform float u_AddAlpha;\t\t\t\t\t\t\t\t\t\nvarying float alpha;\t\t\t\t\t\t\t\t\t\t\nvarying vec4 v_AddColor;\t\t\t\t\t\t\t\t\t\nvoid main(){\t\t\t\t\t\t\t\t\t\t\t\t\n\tvec4 tex = texture2D(u_texture, gl_PointCoord);\t\t\t\n\tvec4 alphaTexture;\t\t\t\t\t\t\t\t\t\t\n\talphaTexture = texture2D(s_AlphaTexture, gl_PointCoord);\n\tgl_FragColor = tex + v_AddColor;\t\t\t\t\t\t\n\tgl_FragColor.w = (alphaTexture.r * alpha + u_AddAlpha) * 0.25;\t\t\t\n}"));
+            this.mProgramHandle = GLHelper.getCreatedAndLinkedProgram(GLHelper.getCompiledShader(GLES20.GL_VERTEX_SHADER, "precision mediump float;\t\t\t\t\t\t\t\t\t\nuniform mat4 u_MVPMatrix;\t\t\t\t\t\t\t\t\t\nattribute vec4 a_Position;\t\t\t\t\t\t\t\t\t\nattribute vec4 a_EmitterPosition;\t\t\t\t\t\t\t\nattribute vec4 a_move;\t\t\t\t\t\t\t\t\t\t\nuniform float a_time;\t\t\t\t\t\t\t\t\t\t\nattribute float a_Scale;\t\t\t\t\t\t\t\t\t\nattribute float a_life;\t\t\t\t\t\t\t\t\t\nattribute float a_age;\t\t\t\t\t\t\t\t\t\t\nattribute float a_size;\t\t\t\t\t\t\t\t\t\nattribute float a_angle;\t\t\t\t\t\t\t\t\t\nattribute float a_speed;\t\t\t\t\t\t\t\t\t\nattribute vec4 a_AddColor;\t\t\t\t\t\t\t\t\t\nvarying float alpha;\t\t\t\t\t\t\t\t\t\t\nvarying vec4 v_AddColor;\t\t\t\t\t\t\t\t\t\nfloat time;\t\t\t\t\t\t\t\t\t\t\t\t\nvoid main(){\t\t\t\t\t\t\t\t\t\t\t\t\n\t\tfloat td = a_life/a_age;\t\t\t\t\t\t\t\n\t\ttd /= 10.0;\t\t\t\t\t\t\t\t\t\t\t\n\t\tfloat df = a_time/td;\t\t\t\t\t\t\t\t\n\t\tint div = int(df);\t\t\t\t\t\t\t\t\t\n\t\tdf = float(div);\t\t\t\t\t\t\t\t\t\n\t\ttd *= df;\t\t\t\t\t\t\t\t\t\t\t\n\t\ttime = a_time - td;\t\t\t\t\t\t\t\t\t\n\tfloat tempAlpha = (time * 20.0 * a_age);\t\t\t\t\n\tif(tempAlpha >= a_life){\t\t\t\t\t\t\t\t\n\t\talpha = a_life * 2.0 - tempAlpha;\t\t\t\t\t\n\t}else{\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\talpha = tempAlpha;\t\t\t\t\t\t\t\t\t\n\t}\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\tgl_Position = a_Position;\t\t\t\t\t\t\t\t\n\tvec4 move = a_move;\t\t\t\t\t\t\t\t\t\t\n\tmove.x *= a_Scale;\t\t\t\t\t\t\t\t\t\t\n\tmove.y *= a_Scale;\t\t\t\t\t\t\t\t\t\t\n\tgl_Position += (time * move * 0.3 * 0.3);\t\t\t\t\n\tgl_Position = u_MVPMatrix * gl_Position;\t\t\t\t\n\tgl_PointSize = (a_size - gl_Position.z) * a_Scale;\t\t\n \tif(gl_PointSize < 0.0)gl_PointSize = 0.0;\t\t\t\t\n\tvec4 ePosition = u_MVPMatrix * a_EmitterPosition;\t\t\n\tfloat speed = time * 0.5 * 0.4;\t\t\t\t\t\t\t\n\tgl_Position.x += (ePosition.x - gl_Position.x) * speed; \n\tgl_Position.y += (ePosition.y - gl_Position.y) * speed; \n\tv_AddColor = a_AddColor;\t\t\t\t\t\t\t\t\n}"), GLHelper.getCompiledShader(GLES20.GL_FRAGMENT_SHADER, "precision mediump float;\t\t\t\t\t\t\t\t\t\nuniform sampler2D u_texture;\t\t\t\t\t\t\t\t\nuniform sampler2D s_AlphaTexture;\t\t\t\t\t\t\t\nuniform float u_AddAlpha;\t\t\t\t\t\t\t\t\t\nvarying float alpha;\t\t\t\t\t\t\t\t\t\t\nvarying vec4 v_AddColor;\t\t\t\t\t\t\t\t\t\nvoid main(){\t\t\t\t\t\t\t\t\t\t\t\t\n\tvec4 tex = texture2D(u_texture, gl_PointCoord);\t\t\t\n\tvec4 alphaTexture;\t\t\t\t\t\t\t\t\t\t\n\talphaTexture = texture2D(s_AlphaTexture, gl_PointCoord);\n\tgl_FragColor = tex + v_AddColor;\t\t\t\t\t\t\n\tgl_FragColor.w = (alphaTexture.r * alpha + u_AddAlpha) * 0.25;\t\t\t\n}"));
             this.mTextureID = GLHelper.getTexture(getContext(), R.drawable.particle_mip_0);
             this.mAlphaTextureId = GLHelper.getTexture(getContext(), R.drawable.particle_mip_0_alpha);
             this.mMVPMatrixHandle = GLES20.glGetUniformLocation(this.mProgramHandle, "u_MVPMatrix");
@@ -1377,13 +1383,13 @@ class JellyfishWaterDrops2 extends GLBaseView {
     @Override // com.reandroid.wallpaper.deepsea.GLBaseView
     public void setForDrawing() {
         GLES20.glUseProgram(this.mProgramHandle);
-        GLES20.glActiveTexture(33984);
-        GLES20.glBindTexture(3553, this.mTextureID);
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, this.mTextureID);
         GLES20.glUniform1i(this.mTextureHandle, 0);
-        GLES20.glActiveTexture(33985);
-        GLES20.glBindTexture(3553, this.mAlphaTextureId);
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE1);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, this.mAlphaTextureId);
         GLES20.glUniform1i(this.mAlphaTextureHandle, 1);
-        GLES20.glEnable(3553);
+        GLES20.glEnable(GLES20.GL_TEXTURE_2D);
         updateTimeCounter();
         int i = this.mAddColorHandle;
         float[] fArr = this.mAddColorData;
@@ -1392,25 +1398,25 @@ class JellyfishWaterDrops2 extends GLBaseView {
         GLES20.glVertexAttrib1f(this.mScaleHandle, this.mScale);
         GLES20.glDisableVertexAttribArray(this.mScaleHandle);
         this.mVertexBuffer.position(0);
-        GLES20.glVertexAttribPointer(this.mPositionHandle, 3, 5126, false, 52, (Buffer) this.mVertexBuffer);
+        GLES20.glVertexAttribPointer(this.mPositionHandle, 3, GLES20.GL_FLOAT, false, 52, (Buffer) this.mVertexBuffer);
         GLES20.glEnableVertexAttribArray(this.mPositionHandle);
         this.mVertexBuffer.position(3);
-        GLES20.glVertexAttribPointer(this.mMoveHandle, 3, 5126, false, 52, (Buffer) this.mVertexBuffer);
+        GLES20.glVertexAttribPointer(this.mMoveHandle, 3, GLES20.GL_FLOAT, false, 52, (Buffer) this.mVertexBuffer);
         GLES20.glEnableVertexAttribArray(this.mMoveHandle);
         this.mVertexBuffer.position(6);
-        GLES20.glVertexAttribPointer(this.mLifeHandle, 1, 5126, false, 52, (Buffer) this.mVertexBuffer);
+        GLES20.glVertexAttribPointer(this.mLifeHandle, 1, GLES20.GL_FLOAT, false, 52, (Buffer) this.mVertexBuffer);
         GLES20.glEnableVertexAttribArray(this.mLifeHandle);
         this.mVertexBuffer.position(7);
-        GLES20.glVertexAttribPointer(this.mAgeHandle, 1, 5126, false, 52, (Buffer) this.mVertexBuffer);
+        GLES20.glVertexAttribPointer(this.mAgeHandle, 1, GLES20.GL_FLOAT, false, 52, (Buffer) this.mVertexBuffer);
         GLES20.glEnableVertexAttribArray(this.mAgeHandle);
         this.mVertexBuffer.position(8);
-        GLES20.glVertexAttribPointer(this.mSizeHandle, 1, 5126, false, 52, (Buffer) this.mVertexBuffer);
+        GLES20.glVertexAttribPointer(this.mSizeHandle, 1, GLES20.GL_FLOAT, false, 52, (Buffer) this.mVertexBuffer);
         GLES20.glEnableVertexAttribArray(this.mSizeHandle);
         this.mVertexBuffer.position(9);
-        GLES20.glVertexAttribPointer(this.mSpeedHandle, 1, 5126, false, 52, (Buffer) this.mVertexBuffer);
+        GLES20.glVertexAttribPointer(this.mSpeedHandle, 1, GLES20.GL_FLOAT, false, 52, (Buffer) this.mVertexBuffer);
         GLES20.glEnableVertexAttribArray(this.mSpeedHandle);
         this.mVertexBuffer.position(10);
-        GLES20.glVertexAttribPointer(this.mEmitterHandle, 3, 5126, false, 52, (Buffer) this.mVertexBuffer);
+        GLES20.glVertexAttribPointer(this.mEmitterHandle, 3, GLES20.GL_FLOAT, false, 52, (Buffer) this.mVertexBuffer);
         GLES20.glEnableVertexAttribArray(this.mEmitterHandle);
         GLES20.glUniform1f(this.mTimesHandle, this.mTimeCounter);
         GLES20.glUniform1f(this.mAddAlphaHandle, this.mAddAlpha);
@@ -1418,7 +1424,7 @@ class JellyfishWaterDrops2 extends GLBaseView {
 
     @Override // com.reandroid.wallpaper.deepsea.GLBaseView
     public void draw() {
-        GLES20.glDrawArrays(0, 0, this.mNumberOfParticles);
+        GLES20.glDrawArrays(GLES20.GL_POINTS, 0, this.mNumberOfParticles);
     }
 
     @Override // com.reandroid.wallpaper.deepsea.GLBaseView

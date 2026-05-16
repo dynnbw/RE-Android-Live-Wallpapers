@@ -10,6 +10,7 @@ import static com.reandroid.wallpaper.grass.GrassConstants.LEGACY_MAX_INTERVAL;
 import static com.reandroid.wallpaper.grass.GrassConstants.LEGACY_MAX_NORMAL;
 import static com.reandroid.wallpaper.grass.GrassConstants.LEGACY_TYPE_DANDELION;
 import static com.reandroid.wallpaper.grass.GrassConstants.LEGACY_TYPE_FIREFLY;
+import com.reandroid.wallpaper.MathUtils;
 
 final class GrassRenderDataBuilder {
     interface LegacyParticleOps {
@@ -73,7 +74,7 @@ final class GrassRenderDataBuilder {
         out[2] = 0.0f;
         out[3] = 0.0f;
         out[4] = sd.nightInvert ? 1.0f : 0.0f;
-        out[5] = clamp(sd.solarEclipseWeight, 0.0f, 1.0f);
+        out[5] = MathUtils.clamp(sd.solarEclipseWeight, 0.0f, 1.0f);
 
         if (sd.useAccurateSun) {
             out[0] = sd.accurateWeights[0];
@@ -83,48 +84,7 @@ final class GrassRenderDataBuilder {
             return out;
         }
 
-        float now = sd.timeFraction;
-        float dawn = sd.dawn;
-        float morning = sd.morning;
-        float afternoon = sd.afternoon;
-        float dusk = sd.dusk;
-
-        if (now >= 0.0f && now < dawn) {
-            out[0] = 1.0f;
-            return out;
-        }
-        if (now >= dawn && now <= morning) {
-            float half = dawn + (morning - dawn) * 0.5f;
-            if (now <= half) {
-                float t = normf(dawn, half, now);
-                out[0] = 1.0f - t;
-                out[1] = t;
-            } else {
-                float t = normf(half, morning, now);
-                out[1] = 1.0f - t;
-                out[3] = t;
-            }
-            return out;
-        }
-        if (now > morning && now < afternoon) {
-            out[3] = 1.0f;
-            return out;
-        }
-        if (now >= afternoon && now <= dusk) {
-            float half = afternoon + (dusk - afternoon) * 0.5f;
-            if (now <= half) {
-                float t = normf(afternoon, half, now);
-                out[3] = 1.0f - t;
-                out[2] = t;
-            } else {
-                float t = normf(half, dusk, now);
-                out[2] = 1.0f - t;
-                out[0] = t;
-            }
-            return out;
-        }
-
-        out[0] = 1.0f;
+        SceneData.computeSimpleSkyWeights(sd.timeFraction, sd.dawn, sd.morning, sd.afternoon, sd.dusk, out);
         return out;
     }
 
@@ -163,25 +123,25 @@ final class GrassRenderDataBuilder {
             return mVKGrassVertices;
         }
 
-        float eclipseImpact = sd.useAccurateSun ? clamp(sd.solarEclipseWeight, 0.0f, 1.0f) : 0.0f;
+        float eclipseImpact = sd.useAccurateSun ? MathUtils.clamp(sd.solarEclipseWeight, 0.0f, 1.0f) : 0.0f;
         float grassBrightness;
         float nightDesat;
         if (sd.useAccurateSun) {
             grassBrightness = sd.newB;
             nightDesat = 0.0f;
             if (sd.nightDesaturateGrass) {
-                grassBrightness = mix(1.0f, 0.72f, eclipseImpact);
+                grassBrightness = MathUtils.mix(1.0f, 0.72f, eclipseImpact);
                 float baseNightDesat = sd.accurateWeights[0];
-                nightDesat = clamp(baseNightDesat + eclipseImpact * 0.85f, 0.0f, 1.0f);
+                nightDesat = MathUtils.clamp(baseNightDesat + eclipseImpact * 0.85f, 0.0f, 1.0f);
             } else {
-                grassBrightness *= mix(1.0f, 0.62f, eclipseImpact);
+                grassBrightness *= MathUtils.mix(1.0f, 0.62f, eclipseImpact);
             }
         } else {
             grassBrightness = sd.newB;
             nightDesat = 0.0f;
             if (sd.nightDesaturateGrass) {
                 grassBrightness = 1.0f;
-                nightDesat = clamp(1.0f - sd.newB, 0.0f, 1.0f);
+                nightDesat = MathUtils.clamp(1.0f - sd.newB, 0.0f, 1.0f);
             }
         }
 
@@ -260,7 +220,7 @@ final class GrassRenderDataBuilder {
             mVKMoonFloatCount = 0;
             return mVKMoonVerts;
         }
-        float alpha = clamp(sd.moonAlpha * sd.moonBrightness, 0.0f, 1.0f);
+        float alpha = MathUtils.clamp(sd.moonAlpha * sd.moonBrightness, 0.0f, 1.0f);
         if (alpha <= 0.001f) {
             mVKMoonFloatCount = 0;
             return mVKMoonVerts;
@@ -483,17 +443,17 @@ final class GrassRenderDataBuilder {
 
         float h = blade.h;
         float s = blade.s;
-        float v = mix(0.0f, blade.b, brightness);
+        float v = MathUtils.mix(0.0f, blade.b, brightness);
         if (sd.useGrassTint) {
             h = sd.grassTintH;
             s = sd.grassTintS;
-            v = clamp(v * sd.grassTintV, 0.0f, 1.0f);
+            v = MathUtils.clamp(v * sd.grassTintV, 0.0f, 1.0f);
         }
         if (sd.nightDesaturateGrass && nightDesat > 0.0f) {
-            s = mix(s, 0.0f, clamp(nightDesat, 0.0f, 1.0f));
+            s = MathUtils.mix(s, 0.0f, MathUtils.clamp(nightDesat, 0.0f, 1.0f));
         }
 
-        int color = hsbToRgb(h, s, v);
+        int color = MathUtils.hsbToRgb(h, s, v);
         float r = Color.red(color) / 255.0f;
         float g = Color.green(color) / 255.0f;
         float b = Color.blue(color) / 255.0f;
@@ -600,67 +560,5 @@ final class GrassRenderDataBuilder {
         out[cursor++] = v;
         out[cursor++] = a;
         return cursor;
-    }
-
-    private static int hsbToRgb(float h, float s, float b) {
-        float red = 0.0f;
-        float green = 0.0f;
-        float blue = 0.0f;
-
-        float hf = (h - (int) h) * 6.0f;
-        int ihf = (int) hf;
-        float f = hf - ihf;
-        float pv = b * (1.0f - s);
-        float qv = b * (1.0f - s * f);
-        float tv = b * (1.0f - s * (1.0f - f));
-
-        switch (ihf) {
-            case 0:
-                red = b;
-                green = tv;
-                blue = pv;
-                break;
-            case 1:
-                red = qv;
-                green = b;
-                blue = pv;
-                break;
-            case 2:
-                red = pv;
-                green = b;
-                blue = tv;
-                break;
-            case 3:
-                red = pv;
-                green = qv;
-                blue = b;
-                break;
-            case 4:
-                red = tv;
-                green = pv;
-                blue = b;
-                break;
-            case 5:
-                red = b;
-                green = pv;
-                blue = qv;
-                break;
-            default:
-                break;
-        }
-
-        return Color.argb(255, (int) (red * 255), (int) (green * 255), (int) (blue * 255));
-    }
-
-    private static float clamp(float val, float min, float max) {
-        return Math.max(min, Math.min(max, val));
-    }
-
-    private static float mix(float a, float b, float t) {
-        return a * (1.0f - t) + b * t;
-    }
-
-    private static float normf(float start, float stop, float value) {
-        return (value - start) / (stop - start);
     }
 }

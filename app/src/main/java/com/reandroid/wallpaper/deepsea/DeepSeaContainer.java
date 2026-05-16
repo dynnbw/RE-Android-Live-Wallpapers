@@ -412,13 +412,13 @@ class DeepSeaContainer extends GLBaseView {
 
     public void screenOn() {
         GLES20.glClearColor(0.0f, 0.0f, 0.0f, 0.5f);
-        GLES20.glClear(16640);
+        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
         setNumberOfUnit(this.mUnitNumberVal);
     }
 
     public void screenOff() {
         GLES20.glClearColor(0.0f, 0.0f, 0.0f, 0.5f);
-        GLES20.glClear(16640);
+        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
     }
 
     private void setNumberOfUnit(int i) {
@@ -518,7 +518,7 @@ class DeepSeaContainer extends GLBaseView {
             this.mTempBackImageCount++;
             return;
         }
-        GLES20.glClear(16640);
+        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
         GLES20.glEnable(3042);
         GLES20.glBlendFunc(770, 1);
         if (this.mIsBackgroundChanged) {
@@ -810,7 +810,7 @@ class DeepSeaContainer extends GLBaseView {
         }
         this.mBatteryTime = 0;
         this.mIsSendedReceiver = false;
-        GLES20.glViewport(0, 0, i, i2);
+        GLES20.glViewport(GLES20.GL_POINTS, 0, i, i2);
         DeepSeaSettings.setScale(i, i2);
         float f = (float) i / (float) i2;
         float f2 = -f;

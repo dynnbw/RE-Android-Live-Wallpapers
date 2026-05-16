@@ -1,6 +1,8 @@
 package com.reandroid.wallpaper.deepsea;
 
 class PositionVO {
+    private static final int REF_WIDTH = 720;
+    private static final int REF_HEIGHT = 1280;
     private static float[] mRandomPositions;
     private static float[] mPositions = {-3.0f, -0.88f, 0.88f, -2.0f, 1.8f, -4.0f, -1.46f, 1.46f, -3.0f, 2.72f, -5.0f, -2.0f, 2.0f, -4.0f, 3.64f, -6.0f, -2.6f, 2.6f, -5.0f, 4.58f, -7.0f, -3.13f, 3.13f, -6.0f, 5.5f, -8.0f, -3.7f, 3.7f, -7.0f, 6.4f, -9.0f, -4.25f, 4.25f, -8.0f, 7.3f, -10.0f, -4.8f, 4.8f, -9.0f, 8.25f};
     private static final float[] mDefaultPositions = {-3.0f, -0.88f, 0.88f, -2.0f, 1.8f, -4.0f, -1.46f, 1.46f, -3.0f, 2.72f, -5.0f, -2.0f, 2.0f, -4.0f, 3.64f, -6.0f, -2.6f, 2.6f, -5.0f, 4.58f, -7.0f, -3.13f, 3.13f, -6.0f, 5.5f, -8.0f, -3.7f, 3.7f, -7.0f, 6.4f, -9.0f, -4.25f, 4.25f, -8.0f, 7.3f, -10.0f, -4.8f, 4.8f, -9.0f, 8.25f};
@@ -9,8 +11,8 @@ class PositionVO {
     }
 
     public static void changePositions(int i, int i2) {
-        if (i > 720 || i2 > 1280) {
-            float f = (i / 720.0f) * 2.0f;
+        if (i > REF_WIDTH || i2 > REF_HEIGHT) {
+            float f = (i / (float) REF_WIDTH) * 2.0f;
             float[] fArr = mPositions;
             float[] fArr2 = mDefaultPositions;
             float f2 = fArr2[2];
@@ -37,7 +39,7 @@ class PositionVO {
             float f9 = fArr2[37];
             fArr[36] = (-(f9 - fArr2[36])) * f;
             fArr[37] = (f9 - fArr2[36]) * f;
-            float f22 = (i2 / 1280.0f) * 2.0f;
+            float f22 = (i2 / (float) REF_HEIGHT) * 2.0f;
             float f10 = fArr2[4];
             fArr[3] = (-(f10 - fArr2[3])) * f22;
             fArr[4] = (f10 - fArr2[3]) * f22;

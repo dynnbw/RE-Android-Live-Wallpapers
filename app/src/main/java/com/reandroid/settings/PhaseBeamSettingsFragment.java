@@ -35,6 +35,7 @@ public class PhaseBeamSettingsFragment extends PreferenceFragmentCompat implemen
 
     @Override
     public void onCreatePreferences(@Nullable Bundle savedInstanceState, @Nullable String rootKey) {
+        getPreferenceManager().setSharedPreferencesName(PhaseBeamGL.PREFS_NAME);
         setPreferencesFromResource(R.xml.prefs_phasebeam, rootKey);
         SettingsResetHelper.attachResetPreference(this, SettingsResetHelper.TARGET_PHASEBEAM);
 

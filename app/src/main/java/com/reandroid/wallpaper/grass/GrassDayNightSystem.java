@@ -26,6 +26,7 @@ import com.reandroid.gles.GLESWallpaper;
 
 import java.util.Calendar;
 import java.util.TimeZone;
+import com.reandroid.wallpaper.MathUtils;
 
 final class GrassDayNightSystem {
     private static final float SECONDS_IN_DAY = 86400.0f;
@@ -33,6 +34,7 @@ final class GrassDayNightSystem {
     private final Location location = new Location("grass_wallpaper");
     private TimeZone timeZone = TimeZone.getDefault();
     private SunCalculator sunCalculator;
+    private final Calendar mCachedCalendar = Calendar.getInstance();
 
     private float dawn;
     private float morning;
@@ -58,10 +60,11 @@ final class GrassDayNightSystem {
 
     float timeFraction(boolean isPreview, boolean useAccurateSun) {
         if (!isPreview || useAccurateSun) {
-            Calendar now = Calendar.getInstance(timeZone);
-            return (now.get(Calendar.HOUR_OF_DAY) * 3600.0f
-                    + now.get(Calendar.MINUTE) * 60.0f
-                    + now.get(Calendar.SECOND)) / SECONDS_IN_DAY;
+            mCachedCalendar.setTimeZone(timeZone);
+            mCachedCalendar.setTimeInMillis(System.currentTimeMillis());
+            return (mCachedCalendar.get(Calendar.HOUR_OF_DAY) * 3600.0f
+                    + mCachedCalendar.get(Calendar.MINUTE) * 60.0f
+                    + mCachedCalendar.get(Calendar.SECOND)) / SECONDS_IN_DAY;
         }
         float t = (System.currentTimeMillis() % 30000L) / 30000.0f;
         return t - (int) t;
@@ -71,12 +74,12 @@ final class GrassDayNightSystem {
         if (now >= 0.0f && now < dawn) return 0.0f;
         if (now >= dawn && now <= morning) {
             float half = dawn + (morning - dawn) * 0.5f;
-            return now <= half ? normf(dawn, half, now) : 1.0f;
+            return now <= half ? MathUtils.norm(dawn, half, now) : 1.0f;
         }
         if (now > morning && now < afternoon) return 1.0f;
         if (now >= afternoon && now <= dusk) {
             float half = afternoon + (dusk - afternoon) * 0.5f;
-            return now <= half ? (1.0f - normf(afternoon, half, now)) : 0.0f;
+            return now <= half ? (1.0f - MathUtils.norm(afternoon, half, now)) : 0.0f;
         }
         return 0.0f;
     }
@@ -105,8 +108,8 @@ final class GrassDayNightSystem {
             }
         }
 
-        dawn = clamp(dawnValue, 0.0f, 1.0f);
-        dusk = clamp(duskValue, 0.0f, 1.0f);
+        dawn = MathUtils.clamp(dawnValue, 0.0f, 1.0f);
+        dusk = MathUtils.clamp(duskValue, 0.0f, 1.0f);
         morning = dawn + 1.0f / 12.0f;
         afternoon = dusk - 1.0f / 12.0f;
         lastSunUpdateMs = nowMs;
@@ -345,13 +348,5 @@ final class GrassDayNightSystem {
 
     long getLastSunUpdateMs() {
         return lastSunUpdateMs;
-    }
-
-    private static float normf(float start, float stop, float value) {
-        return (value - start) / (stop - start);
-    }
-
-    private static float clamp(float val, float min, float max) {
-        return Math.max(min, Math.min(max, val));
     }
 }

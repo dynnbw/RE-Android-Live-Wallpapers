@@ -47,6 +47,7 @@ import static com.reandroid.wallpaper.grass.GrassConstants.LEGACY_MAX_INTERVAL;
 import static com.reandroid.wallpaper.grass.GrassConstants.LEGACY_TYPE_DANDELION;
 import static com.reandroid.wallpaper.grass.GrassConstants.LEGACY_TYPE_FIREFLY;
 import static com.reandroid.wallpaper.grass.GrassConstants.SUN_PHOTOSPHERE_SCALE;
+import com.reandroid.wallpaper.MathUtils;
 
 /**
  * Grass 壁纸渲染层（OpenGL ES 2.0），所有状态委托 GrassScene 管理。
@@ -79,6 +80,8 @@ public class GrassGL extends GLESScene {
             setBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
         }
     };
+    private GrassLegacyParticleRenderer mLegacyParticleRenderer;
+
     private final GrassStarRenderer.RenderOps mStarRenderOps = new GrassStarRenderer.RenderOps() {
         @Override
         public void useBackgroundProgram() {
@@ -213,6 +216,7 @@ public class GrassGL extends GLESScene {
     public GrassGL(int width, int height) {
         super(width, height);
         mScene = new GrassScene(width, height);
+        mLegacyParticleRenderer = new GrassLegacyParticleRenderer(mScene, mSpriteRenderer);
         mBackgroundRenderer.setViewport(width, height);
         mWeatherRenderer.setViewport(width, height);
         mStarRenderer.setViewport(width, height);
@@ -270,6 +274,7 @@ public class GrassGL extends GLESScene {
     public void resize(int width, int height) {
         super.resize(width, height);
         mScene.resize(width, height);
+        mLegacyParticleRenderer = new GrassLegacyParticleRenderer(mScene, mSpriteRenderer);
         mBackgroundRenderer.setViewport(width, height);
         mWeatherRenderer.setViewport(width, height);
         mStarRenderer.setViewport(width, height);

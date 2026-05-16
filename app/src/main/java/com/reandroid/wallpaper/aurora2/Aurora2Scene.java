@@ -165,9 +165,9 @@ final class Aurora2Scene {
         mHeight = Math.max(1, height);
         mVerticalMode = mWidth < mHeight;
         if (mVerticalMode) {
-            mRatio = ((float) mHeight) / 1280.0f;
+            mRatio = ((float) mHeight) / PORTRAIT_HEIGHT;
         } else {
-            mRatio = ((float) mWidth) / 1280.0f;
+            mRatio = ((float) mWidth) / LANDSCAPE_HEIGHT;
         }
         mResolution = (mRatio > 0.74f && mRatio < 0.81f) ? 1 : 0;
         applyLayout(mVerticalMode);

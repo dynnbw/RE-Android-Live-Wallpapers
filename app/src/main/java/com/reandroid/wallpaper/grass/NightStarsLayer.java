@@ -3,6 +3,7 @@ package com.reandroid.wallpaper.grass;
 import com.reandroid.settings.WallpaperSettings;
 
 import java.util.Random;
+import com.reandroid.wallpaper.MathUtils;
 
 /**
  * Night sky star field for Grass wallpaper.
@@ -37,14 +38,14 @@ class NightStarsLayer {
             float x = s.xNorm * width;
             float y = s.yNorm * height;
             float twinkle = 0.65f + 0.35f * (float) Math.sin((t * s.twinkleSpeed) + s.twinklePhase);
-            float alpha = clamp(s.baseAlpha * twinkle, 0.03f, 0.82f);
+            float alpha = MathUtils.clamp(s.baseAlpha * twinkle, 0.03f, 0.82f);
             float shift = 0.5f + 0.5f * (float) Math.sin((t * s.shiftSpeed) + s.shiftPhase);
             drawer.draw(s.tintType, x, y, s.sizePx, alpha, shift);
         }
     }
 
     private void ensureStars(int width, int height, int configuredCount) {
-        int count = clamp(configuredCount, 0, 10000);
+        int count = MathUtils.clamp(configuredCount, 0, 10000);
         if (width == mLastWidth && height == mLastHeight
                 && count == mLastConfiguredCount && mStars.length > 0) {
             return;
@@ -63,7 +64,7 @@ class NightStarsLayer {
             // Full-height coverage to avoid missing stars near bottom on non-9:16 screens,
             // while keeping a slight upper-sky density bias.
             float y = random.nextFloat();
-            s.yNorm = clamp((float) Math.pow(y, 1.15f), 0.0f, 1.0f);
+            s.yNorm = MathUtils.clamp((float) Math.pow(y, 1.15f), 0.0f, 1.0f);
             s.sizePx = 1.2f + random.nextFloat() * 2.2f;
             s.baseAlpha = 0.22f + random.nextFloat() * 0.58f;
             s.twinklePhase = random.nextFloat() * 6.2831855f;
@@ -87,14 +88,6 @@ class NightStarsLayer {
             return STAR_TINT_BLUE;
         }
         return STAR_TINT_YELLOW;
-    }
-
-    private static int clamp(int v, int min, int max) {
-        return Math.max(min, Math.min(max, v));
-    }
-
-    private static float clamp(float v, float min, float max) {
-        return Math.max(min, Math.min(max, v));
     }
 
     private static final class Star {

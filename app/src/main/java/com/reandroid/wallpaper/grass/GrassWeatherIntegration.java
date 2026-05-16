@@ -11,6 +11,8 @@ import com.reandroid.weather.WeatherManager;
 import com.reandroid.weather.WeatherState;
 
 import java.util.Calendar;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 final class GrassWeatherIntegration {
 
@@ -27,8 +29,8 @@ final class GrassWeatherIntegration {
     private WeatherManager weatherManager;
     private SharedPreferences prefs;
 
-    private volatile WeatherState pendingWeatherState;
-    private volatile boolean clearWeatherStatePending;
+    private final AtomicReference<WeatherState> pendingWeatherState = new AtomicReference<>();
+    private final AtomicBoolean clearWeatherStatePending = new AtomicBoolean();
 
     private boolean weatherEnabled = true;
     private boolean weatherRunning;
@@ -52,7 +54,7 @@ final class GrassWeatherIntegration {
         }
 
         weatherRunning = false;
-        clearWeatherStatePending = true;
+        clearWeatherStatePending.set(true);
         previewWeatherActive = false;
         previewWeatherIndex = 0;
         previewWeatherNextMs = 0L;
@@ -85,7 +87,7 @@ final class GrassWeatherIntegration {
             updatePreviewWeatherCycle(timeMs);
         }
 
-        WeatherState weatherState = pendingWeatherState;
+        WeatherState weatherState = pendingWeatherState.get();
         boolean enabledNow = WallpaperSettings.isGrassWeatherEnabled(true);
         if (enabledNow != weatherEnabled) {
             weatherEnabled = enabledNow;
@@ -100,24 +102,24 @@ final class GrassWeatherIntegration {
             }
 
             if (!weatherEnabled) {
-                clearWeatherStatePending = true;
-                pendingWeatherState = null;
+                clearWeatherStatePending.set(true);
+                pendingWeatherState.set(null);
                 weatherState = null;
                 previewWeatherActive = false;
                 previewWeatherNextMs = 0L;
             } else if (isPreview) {
                 initPreviewWeatherCycle();
-                weatherState = pendingWeatherState;
+                weatherState = pendingWeatherState.get();
             }
         }
 
-        boolean shouldClear = clearWeatherStatePending;
+        boolean shouldClear = clearWeatherStatePending.get();
         if (shouldClear) {
-            clearWeatherStatePending = false;
+            clearWeatherStatePending.set(false);
         }
 
         if (weatherState != null) {
-            pendingWeatherState = null;
+            pendingWeatherState.set(null);
         }
 
         return new FrameUpdate(weatherState, shouldClear);
@@ -131,7 +133,7 @@ final class GrassWeatherIntegration {
         if (state == null || !weatherEnabled) {
             return;
         }
-        pendingWeatherState = state;
+        pendingWeatherState.set(state);
     }
 
     private boolean computePreviewIsNight() {
@@ -153,8 +155,8 @@ final class GrassWeatherIntegration {
         previewWeatherIndex = 0;
         previewWeatherNextMs = 0L;
         boolean isNight = computePreviewIsNight();
-        pendingWeatherState = new WeatherState(WeatherCondition.D1_CLEAR, isNight,
-                0.0f, 0.0f, 0L, 0L, 0L);
+        pendingWeatherState.set(new WeatherState(WeatherCondition.D1_CLEAR, isNight,
+                0.0f, 0.0f, 0L, 0L, 0L));
     }
 
     private void updatePreviewWeatherCycle(long timeMs) {
@@ -185,12 +187,12 @@ final class GrassWeatherIntegration {
         if (previewWeatherIndex >= order.length - 1) {
             previewWeatherIndex = 0;
             previewWeatherActive = false;
-            pendingWeatherState = new WeatherState(order[0], isNight,
-                    0.0f, 0.0f, 0L, 0L, 0L);
+            pendingWeatherState.set(new WeatherState(order[0], isNight,
+                    0.0f, 0.0f, 0L, 0L, 0L));
         } else {
             previewWeatherIndex++;
-            pendingWeatherState = new WeatherState(order[previewWeatherIndex], isNight,
-                    0.0f, 0.0f, 0L, 0L, 0L);
+            pendingWeatherState.set(new WeatherState(order[previewWeatherIndex], isNight,
+                    0.0f, 0.0f, 0L, 0L, 0L));
             previewWeatherNextMs = timeMs + 3000L;
         }
     }
