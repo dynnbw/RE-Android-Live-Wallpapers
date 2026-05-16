@@ -372,7 +372,7 @@
     <string name="pref_microbes_color_mode">配色風格</string>
     <string name="pref_microbes_color_mode_summary">切換經典版紅綠藍三色與新版（目前）增強配色</string>
     <string name="pref_microbes_color_mode_original">經典版</string>
-    <string name="pref_microbes_color_mode_modern">新版（目前）</string>
+    <string name="pref_microbes_color_mode_modern">新版</string>
     <string name="pref_open_wallpaper_chooser">開啟桌布選擇器</string>
     <string name="pref_live_preview">即時預覽</string>
     <string name="pref_nexus_background_title">背景</string>

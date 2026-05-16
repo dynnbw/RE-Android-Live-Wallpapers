@@ -294,7 +294,7 @@
     <string name="pref_microbes_color_mode">Color style</string>
     <string name="pref_microbes_color_mode_summary">Switch between original RGB-only palette and current enhanced palette</string>
     <string name="pref_microbes_color_mode_original">Original</string>
-    <string name="pref_microbes_color_mode_modern">New (current)</string>
+    <string name="pref_microbes_color_mode_modern">New</string>
     <string name="pref_nexus_background_title">Background</string>
     <string name="pref_nexus_custom_background_title">Custom background</string>
     <string name="pref_nexus_custom_background_summary">Select a background image</string>

@@ -258,7 +258,7 @@
     <string name="pref_microbes_color_mode">रंग शैली</string>
     <string name="pref_microbes_color_mode_summary">मूल आरजीबी-केवल पैलेट और वर्तमान उन्नत पैलेट के बीच स्विच करें</string>
     <string name="pref_microbes_color_mode_original">मूल</string>
-    <string name="pref_microbes_color_mode_modern">नया (वर्तमान)</string>
+    <string name="pref_microbes_color_mode_modern">नया</string>
     <string name="pref_nexus_background_title">पृष्ठभूमि</string>
     <string name="pref_nexus_custom_background_title">अनुकूलित पृष्ठभूमि</string>
     <string name="pref_nexus_custom_background_summary">पृष्ठभूमि छवि चुनें</string>

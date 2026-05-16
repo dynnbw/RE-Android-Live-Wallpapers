@@ -10,60 +10,60 @@ class PositionVO {
     PositionVO() {
     }
 
-    public static void changePositions(int i, int i2) {
-        if (i > REF_WIDTH || i2 > REF_HEIGHT) {
-            float f = (i / (float) REF_WIDTH) * 2.0f;
+    public static void changePositions(int width, int height) {
+        if (width > REF_WIDTH || height > REF_HEIGHT) {
+            float xScaleFactor = (width / (float) REF_WIDTH) * 2.0f;
             float[] fArr = mPositions;
             float[] fArr2 = mDefaultPositions;
             float f2 = fArr2[2];
-            fArr[1] = (-(f2 - fArr2[1])) * f;
-            fArr[2] = (f2 - fArr2[1]) * f;
+            fArr[1] = (-(f2 - fArr2[1])) * xScaleFactor;
+            fArr[2] = (f2 - fArr2[1]) * xScaleFactor;
             float f3 = fArr2[7];
-            fArr[6] = (-(f3 - fArr2[6])) * f;
-            fArr[7] = (f3 - fArr2[6]) * f;
+            fArr[6] = (-(f3 - fArr2[6])) * xScaleFactor;
+            fArr[7] = (f3 - fArr2[6]) * xScaleFactor;
             float f4 = fArr2[12];
-            fArr[11] = (-(f4 - fArr2[11])) * f;
-            fArr[12] = (f4 - fArr2[11]) * f;
+            fArr[11] = (-(f4 - fArr2[11])) * xScaleFactor;
+            fArr[12] = (f4 - fArr2[11]) * xScaleFactor;
             float f5 = fArr2[17];
-            fArr[16] = (-(f5 - fArr2[16])) * f;
-            fArr[17] = (f5 - fArr2[16]) * f;
+            fArr[16] = (-(f5 - fArr2[16])) * xScaleFactor;
+            fArr[17] = (f5 - fArr2[16]) * xScaleFactor;
             float f6 = fArr2[22];
-            fArr[21] = (-(f6 - fArr2[21])) * f;
-            fArr[22] = (f6 - fArr2[21]) * f;
+            fArr[21] = (-(f6 - fArr2[21])) * xScaleFactor;
+            fArr[22] = (f6 - fArr2[21]) * xScaleFactor;
             float f7 = fArr2[27];
-            fArr[26] = (-(f7 - fArr2[26])) * f;
-            fArr[27] = (f7 - fArr2[26]) * f;
+            fArr[26] = (-(f7 - fArr2[26])) * xScaleFactor;
+            fArr[27] = (f7 - fArr2[26]) * xScaleFactor;
             float f8 = fArr2[32];
-            fArr[31] = (-(f8 - fArr2[31])) * f;
-            fArr[32] = (f8 - fArr2[31]) * f;
+            fArr[31] = (-(f8 - fArr2[31])) * xScaleFactor;
+            fArr[32] = (f8 - fArr2[31]) * xScaleFactor;
             float f9 = fArr2[37];
-            fArr[36] = (-(f9 - fArr2[36])) * f;
-            fArr[37] = (f9 - fArr2[36]) * f;
-            float f22 = (i2 / (float) REF_HEIGHT) * 2.0f;
+            fArr[36] = (-(f9 - fArr2[36])) * xScaleFactor;
+            fArr[37] = (f9 - fArr2[36]) * xScaleFactor;
+            float yScaleFactor = (height / (float) REF_HEIGHT) * 2.0f;
             float f10 = fArr2[4];
-            fArr[3] = (-(f10 - fArr2[3])) * f22;
-            fArr[4] = (f10 - fArr2[3]) * f22;
+            fArr[3] = (-(f10 - fArr2[3])) * yScaleFactor;
+            fArr[4] = (f10 - fArr2[3]) * yScaleFactor;
             float f11 = fArr2[9];
-            fArr[8] = (-(f11 - fArr2[8])) * f22;
-            fArr[9] = (f11 - fArr2[8]) * f22;
+            fArr[8] = (-(f11 - fArr2[8])) * yScaleFactor;
+            fArr[9] = (f11 - fArr2[8]) * yScaleFactor;
             float f12 = fArr2[14];
-            fArr[13] = (-(f12 - fArr2[13])) * f22;
-            fArr[14] = (f12 - fArr2[13]) * f22;
+            fArr[13] = (-(f12 - fArr2[13])) * yScaleFactor;
+            fArr[14] = (f12 - fArr2[13]) * yScaleFactor;
             float f13 = fArr2[19];
-            fArr[18] = (-(f13 - fArr2[18])) * f22;
-            fArr[19] = (f13 - fArr2[18]) * f22;
+            fArr[18] = (-(f13 - fArr2[18])) * yScaleFactor;
+            fArr[19] = (f13 - fArr2[18]) * yScaleFactor;
             float f14 = fArr2[24];
-            fArr[23] = (-(f14 - fArr2[23])) * f22;
-            fArr[24] = (f14 - fArr2[23]) * f22;
+            fArr[23] = (-(f14 - fArr2[23])) * yScaleFactor;
+            fArr[24] = (f14 - fArr2[23]) * yScaleFactor;
             float f15 = fArr2[29];
-            fArr[28] = (-(f15 - fArr2[28])) * f22;
-            fArr[29] = (f15 - fArr2[28]) * f22;
+            fArr[28] = (-(f15 - fArr2[28])) * yScaleFactor;
+            fArr[29] = (f15 - fArr2[28]) * yScaleFactor;
             float f16 = fArr2[34];
-            fArr[33] = (-(f16 - fArr2[33])) * f22;
-            fArr[34] = (f16 - fArr2[33]) * f22;
+            fArr[33] = (-(f16 - fArr2[33])) * yScaleFactor;
+            fArr[34] = (f16 - fArr2[33]) * yScaleFactor;
             float f17 = fArr2[39];
-            fArr[38] = (-(f17 - fArr2[38])) * f22;
-            fArr[39] = (f17 - fArr2[38]) * f22;
+            fArr[38] = (-(f17 - fArr2[38])) * yScaleFactor;
+            fArr[39] = (f17 - fArr2[38]) * yScaleFactor;
             return;
         }
         float[] fArr3 = mPositions;
@@ -102,72 +102,72 @@ class PositionVO {
         fArr3[39] = fArr4[39];
     }
 
-    public static float[] getMinMaxXYByZ(float f) {
-        float f2 = f <= -2.0f ? f : -2.0f;
-        float f3 = f2 >= -10.0f ? f2 : -10.0f;
+    public static float[] getMinMaxXYByZ(float originalZ) {
+        float zClampedMin = originalZ <= -2.0f ? originalZ : -2.0f;
+        float zClampedFinal = zClampedMin >= -10.0f ? zClampedMin : -10.0f;
         int length = mPositions.length / 5;
-        int i = 0;
-        float f4 = 0.0f;
-        float f5 = 0.0f;
-        float f6 = 0.0f;
-        float f7 = 0.0f;
+        int depthIndex = 0;
+        float minX = 0.0f;
+        float maxX = 0.0f;
+        float minY = 0.0f;
+        float maxY = 0.0f;
         while (true) {
-            if (i >= length) {
+            if (depthIndex >= length) {
                 break;
             }
-            int i2 = i * 5;
-            if (i == length - 1) {
+            int arrayOffset = depthIndex * 5;
+            if (depthIndex == length - 1) {
                 float[] fArr = mPositions;
-                f6 = fArr[i2 + 1];
-                f4 = fArr[i2 + 2];
-                f7 = fArr[i2 + 3];
-                f5 = fArr[i2 + 4];
+                minY = fArr[arrayOffset + 1];
+                minX = fArr[arrayOffset + 2];
+                maxY = fArr[arrayOffset + 3];
+                maxX = fArr[arrayOffset + 4];
             } else {
                 float[] fArr2 = mPositions;
-                if (f3 > fArr2[i2 + 5]) {
-                    f6 = fArr2[i2 + 1];
-                    f4 = fArr2[i2 + 2];
-                    f7 = fArr2[i2 + 3];
-                    f5 = fArr2[i2 + 4];
+                if (zClampedFinal > fArr2[arrayOffset + 5]) {
+                    minY = fArr2[arrayOffset + 1];
+                    minX = fArr2[arrayOffset + 2];
+                    maxY = fArr2[arrayOffset + 3];
+                    maxX = fArr2[arrayOffset + 4];
                     break;
                 }
             }
-            i++;
+            depthIndex++;
         }
-        return new float[]{f6, f4, f7, f5};
+        return new float[]{minY, minX, maxY, maxX};
     }
 
     public static void initRandomPositions() {
         mRandomPositions = null;
         mRandomPositions = new float[80];
-        for (int i = 0; i < 8; i++) {
-            int i2 = i * 5 * 2;
-            float[] randomPositionByZindex = getRandomPositionByZindex(i);
+        for (int depthLayerIndex = 0; depthLayerIndex < 8; depthLayerIndex++) {
+            int arrayOffset = depthLayerIndex * 5 * 2;
+            float[] randomPositionByZindex = getRandomPositionByZindex(depthLayerIndex);
             float f = randomPositionByZindex[0];
             float f2 = randomPositionByZindex[1];
             float f3 = randomPositionByZindex[2];
             float f4 = randomPositionByZindex[3];
             float f5 = randomPositionByZindex[4];
             float[] fArr = mRandomPositions;
-            fArr[i2] = f;
-            fArr[i2 + 1] = f2;
-            fArr[i2 + 2] = f3;
-            fArr[i2 + 3] = f4;
-            fArr[i2 + 4] = f5;
+            fArr[arrayOffset] = f;
+            fArr[arrayOffset + 1] = f2;
+            fArr[arrayOffset + 2] = f3;
+            fArr[arrayOffset + 3] = f4;
+            fArr[arrayOffset + 4] = f5;
             float f6 = randomPositionByZindex[5];
             float f7 = randomPositionByZindex[6];
             float f8 = randomPositionByZindex[7];
             float f9 = randomPositionByZindex[8];
-            fArr[i2 + 5] = f;
-            fArr[i2 + 6] = f6;
-            fArr[i2 + 7] = f7;
-            fArr[i2 + 8] = f8;
-            fArr[i2 + 9] = f9;
+            fArr[arrayOffset + 5] = f;
+            fArr[arrayOffset + 6] = f6;
+            fArr[arrayOffset + 7] = f7;
+            fArr[arrayOffset + 8] = f8;
+            fArr[arrayOffset + 9] = f9;
         }
     }
 
-    public static float getZByIndex(int i) {
-        return getZs()[i];
+    public static float getZByIndex(int depthIndex) {
+        return getZs()[depthIndex];
     }
 
     public static int getNumberOfZs() {
@@ -181,7 +181,7 @@ class PositionVO {
             fArr[i] = mPositions[i * 5];
         }
         return fArr;
-    }  private static float[] getRandomPositionByZindex(int i) {
+    }  private static float[] getRandomPositionByZindex(int depthLayerIndex) {
         char c;
         float f;
         float f2;
@@ -191,7 +191,7 @@ class PositionVO {
         float f6;
         float f7;
         float f8;
-        float f9 = mPositions[i * 5];
+        float f9 = mPositions[depthLayerIndex * 5];
         int random = (int) (Math.random() * 4.0d);
         float[] minMaxXYByZ = getMinMaxXYByZ(f9);
         float f10 = minMaxXYByZ[0];

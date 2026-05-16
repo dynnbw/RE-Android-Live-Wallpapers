@@ -255,7 +255,7 @@
     <string name="pref_microbes_color_mode">Style de couleur</string>
     <string name="pref_microbes_color_mode_summary">Basculer entre la palette d’origine (uniquement RVB) et la palette améliorée actuelle</string>
     <string name="pref_microbes_color_mode_original">Original</string>
-    <string name="pref_microbes_color_mode_modern">Nouveau (actuel)</string>
+    <string name="pref_microbes_color_mode_modern">Nouveau</string>
     <string name="pref_nexus_background_title">Arrière-plan</string>
     <string name="pref_nexus_custom_background_title">Arrière-plan personnalisé</string>
     <string name="pref_nexus_custom_background_summary">Sélectionner une image d’arrière-plan</string>

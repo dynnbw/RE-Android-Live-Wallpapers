@@ -372,9 +372,9 @@
     <string name="pref_microbes_motion_activity">游动活跃度</string>
     <string name="pref_microbes_motion_activity_summary">调整自然巡游与摆动强度（%）</string>
     <string name="pref_microbes_color_mode">配色风格</string>
-    <string name="pref_microbes_color_mode_summary">切换原版红绿蓝三色与新版（当前）增强配色</string>
+    <string name="pref_microbes_color_mode_summary">切换原版红绿蓝三色与新版增强配色</string>
     <string name="pref_microbes_color_mode_original">原版</string>
-    <string name="pref_microbes_color_mode_modern">新版（当前）</string>
+    <string name="pref_microbes_color_mode_modern">新版</string>
     <string name="pref_open_wallpaper_chooser">打开壁纸选择器</string>
     <string name="pref_live_preview">实时预览</string>
     <string name="pref_nexus_background_title">背景</string>

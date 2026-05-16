@@ -142,29 +142,29 @@ class Sea2 extends GLBaseView {
         return this.mBackgroundImage != null;
     }
 
-    public void changeDisplay(int i, int i2) {
-        float f;
-        float f2;
-        float f3;
-        float f4 = (float) i / (float) i2;
-        if (i > i2) {
-            float f5 = 10.6f * f4;
-            f = 9.5f * f4;
-            f2 = f4 * 10.2f;
-            f3 = f5;
+    public void changeDisplay(int screenWidth, int screenHeight) {
+        float topY;
+        float bottomY;
+        float widthValue;
+        float aspectRatio = (float) screenWidth / (float) screenHeight;
+        if (screenWidth > screenHeight) {
+            float scaledWidth = 10.6f * aspectRatio;
+            topY = 9.5f * aspectRatio;
+            bottomY = aspectRatio * 10.2f;
+            widthValue = scaledWidth;
         } else {
-            f = 9.8f;
-            f2 = 10.6f;
-            f3 = 10.6f;
+            topY = 9.8f;
+            bottomY = 10.6f;
+            widthValue = 10.6f;
         }
-        this.mVerticesData[0] = -f3;
-        this.mVerticesData[5] = -f3;
-        this.mVerticesData[10] = f3;
-        this.mVerticesData[15] = f3;
-        this.mVerticesData[1] = f;
-        this.mVerticesData[6] = -f2;
-        this.mVerticesData[11] = -f2;
-        this.mVerticesData[16] = f;
+        this.mVerticesData[0] = -widthValue;
+        this.mVerticesData[5] = -widthValue;
+        this.mVerticesData[10] = widthValue;
+        this.mVerticesData[15] = widthValue;
+        this.mVerticesData[1] = topY;
+        this.mVerticesData[6] = -bottomY;
+        this.mVerticesData[11] = -bottomY;
+        this.mVerticesData[16] = topY;
     }
 
     @Override // com.reandroid.wallpaper.deepsea.GLBaseView

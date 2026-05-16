@@ -1,19 +1,3 @@
-/*
- * Copyright (C) 2009 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.reandroid.wallpaper.nexus;
 
 import android.app.WallpaperManager;
@@ -41,40 +25,11 @@ public class NexusGL extends GLESScene {
     // 日志标签
     private static final String TAG = "NexusGL";
 
-    // 可配置参数（由 NexusSettings 提供）
-    private int MAX_PULSES;
-    private int MAX_EXTRAS;
-    private int PULSE_SIZE;
-    private int HALF_PULSE_SIZE;
-    private int GLOW_SIZE;
-    private int HALF_GLOW_SIZE;
-    private float SPEED;
-    private float SPEED_DELTA_MIN;
-    private float SPEED_DELTA_MAX;
-    private int TRAIL_SIZE;
-    private int MAX_DELAY;
-
-    // 纹理UV坐标数据（从raw加载）
-    private float[] mUv0;
-    private float[] mUv90;
-    private float[] mUv180;
-    private float[] mUv270;
+    // ---- Scene (non-GL logic) ----
+    private final NexusScene mScene;
 
     // OpenGL初始化完成标记
     private boolean mGLInitialized;
-
-    // 初始宽高（创建时的尺寸）
-    private int mInitialWidth;
-    private int mInitialHeight;
-    // 世界坐标系X/Y轴缩放比例（适配屏幕尺寸）
-    private float mWorldScaleX = 1.0f;
-    private float mWorldScaleY = 1.0f;
-    // 壁纸横向偏移量（多屏滑动时）
-    private float mXOffset;
-    // 是否旋转（横屏/竖屏判断）
-    private boolean mRotate;
-    // 壁纸显示模式（配色模式）
-    private int mMode;
 
     // OpenGL着色器程序句柄
     private int mProgram;
@@ -101,8 +56,6 @@ public class NexusGL extends GLESScene {
     // 纹理坐标缓冲区
     private FloatBuffer mTexCoordBuffer;
 
-    // 投影矩阵（正交投影）
-    private final float[] mProjectionMatrix = new float[16];
     // 模型矩阵（模型变换）
     private final float[] mModelMatrix = new float[16];
     // MVP矩阵（投影*视图*模型）
@@ -111,12 +64,8 @@ public class NexusGL extends GLESScene {
     // 当前渲染颜色（RGBA）
     private final float[] mColor = new float[4];
 
-    // 非渲染职责外置管理器
+    // 背景管理器（含GL纹理操作）
     private final NexusBackgroundManager mBackgroundManager = new NexusBackgroundManager();
-    private final NexusSettings mDefaultSettings = NexusSettings.load(null);
-
-    // 脉冲状态管理（生命周期/点击注入）
-    private final NexusPulseController mPulseController = new NexusPulseController();
 
     /**
      * 构造方法
@@ -125,8 +74,7 @@ public class NexusGL extends GLESScene {
      */
     public NexusGL(int width, int height) {
         super(width, height);
-        mInitialWidth = width;
-        mInitialHeight = height;
+        mScene = new NexusScene(width, height);
     }
 
     /**
@@ -165,7 +113,7 @@ public class NexusGL extends GLESScene {
      */
     @Override
     public void setOffset(float xOffset, float yOffset, int xPixels, int yPixels) {
-        mXOffset = xOffset;
+        mScene.setOffset(xOffset);
     }
 
     /**
@@ -176,13 +124,7 @@ public class NexusGL extends GLESScene {
     @Override
     public void resize(int width, int height) {
         super.resize(width, height);
-        if (width > 0 && height > 0) {
-            // 计算缩放比例，适配不同屏幕尺寸
-            mWorldScaleX = (float) mInitialWidth / width;
-            mWorldScaleY = (float) mInitialHeight / height;
-            // 更新投影矩阵
-            updateProjection();
-        }
+        mScene.resize(width, height);
     }
 
     /**
@@ -197,15 +139,15 @@ public class NexusGL extends GLESScene {
         if (WallpaperManager.COMMAND_TAP.equals(action)
                 || WallpaperManager.COMMAND_SECONDARY_TAP.equals(action)
                 || WallpaperManager.COMMAND_DROP.equals(action)) {
-            if (mPulseController.getExtras() == null || MAX_EXTRAS <= 0 || PULSE_SIZE <= 0) {
+            if (mScene.mPulseController.getExtras() == null || mScene.MAX_EXTRAS <= 0 || mScene.PULSE_SIZE <= 0) {
                 return;
             }
             // 竖屏时修正X坐标（适配偏移）
             if (mWidth < mHeight) {
-                x = (int) (x + (mXOffset * mWidth / mWorldScaleX));
+                x = (int) (x + (mScene.mXOffset * mWidth / mScene.mWorldScaleX));
             }
             // 添加点击触发的脉冲
-            addTap(x, y);
+            mScene.addTap(x, y, SystemClock.uptimeMillis());
         }
     }
 
@@ -225,7 +167,7 @@ public class NexusGL extends GLESScene {
         mTexBackground = mBackgroundManager.reloadIfChanged(mResources, mTexBackground);
 
         // 判断是否横屏（宽>高则旋转渲染）
-        mRotate = mWidth > mHeight;
+        mScene.mRotate = mWidth > mHeight;
         // 设置视口大小
         GLES20.glViewport(0, 0, mWidth, mHeight);
         // 清空颜色缓冲区（黑色背景）
@@ -238,9 +180,9 @@ public class NexusGL extends GLESScene {
         // 获取当前时间，用于计算脉冲动画进度
         int now = (int) SystemClock.uptimeMillis();
         // 绘制常规脉冲
-        drawPulses(mPulseController.getPulses(), MAX_PULSES, now);
+        drawPulses(mScene.mPulseController.getPulses(), mScene.MAX_PULSES, now);
         // 绘制额外脉冲（点击触发）
-        drawPulses(mPulseController.getExtras(), MAX_EXTRAS, now);
+        drawPulses(mScene.mPulseController.getExtras(), mScene.MAX_EXTRAS, now);
     }
 
     /**
@@ -257,7 +199,7 @@ public class NexusGL extends GLESScene {
         // 启用混合（实现透明/光晕效果）
         GLES20.glEnable(GLES20.GL_BLEND);
 
-        applySettings(NexusSettings.load(mResources));
+        mScene.applySettings(NexusSettings.load(mResources));
 
         NexusShaderProgram.Handles handles = NexusShaderProgram.create(mResources);
         if (handles == null) {
@@ -278,14 +220,14 @@ public class NexusGL extends GLESScene {
             return;
         }
         // 加载UV坐标
-        mUv0 = RawResourceLoader.readRawFloatArray(mResources, R.raw.nexus_uv_0);
-        mUv90 = RawResourceLoader.readRawFloatArray(mResources, R.raw.nexus_uv_90);
-        mUv180 = RawResourceLoader.readRawFloatArray(mResources, R.raw.nexus_uv_180);
-        mUv270 = RawResourceLoader.readRawFloatArray(mResources, R.raw.nexus_uv_270);
+        mScene.mUv0 = RawResourceLoader.readRawFloatArray(mResources, R.raw.nexus_uv_0);
+        mScene.mUv90 = RawResourceLoader.readRawFloatArray(mResources, R.raw.nexus_uv_90);
+        mScene.mUv180 = RawResourceLoader.readRawFloatArray(mResources, R.raw.nexus_uv_180);
+        mScene.mUv270 = RawResourceLoader.readRawFloatArray(mResources, R.raw.nexus_uv_270);
         // 初始化脉冲数据
-        initPulses();
+        mScene.initPulses(mWidth, mHeight, SystemClock.uptimeMillis());
         // 更新投影矩阵
-        updateProjection();
+        mScene.updateProjection(mWidth, mHeight);
 
         // 初始化顶点缓冲区（4个顶点，每个顶点4个浮点值）
         mVertexBuffer = ByteBuffer.allocateDirect(4 * 4 * 4)
@@ -295,35 +237,6 @@ public class NexusGL extends GLESScene {
                 .order(ByteOrder.nativeOrder()).asFloatBuffer();
 
         mGLInitialized = true;
-    }
-
-    private void applySettings(NexusSettings settings) {
-        NexusSettings s = settings != null ? settings : mDefaultSettings;
-        MAX_PULSES = s.maxPulses;
-        MAX_EXTRAS = s.maxExtras;
-        PULSE_SIZE = s.pulseSize;
-        HALF_PULSE_SIZE = s.halfPulseSize;
-        GLOW_SIZE = s.glowSize;
-        HALF_GLOW_SIZE = s.halfGlowSize;
-        SPEED = s.speed;
-        SPEED_DELTA_MIN = s.speedDeltaMin;
-        SPEED_DELTA_MAX = s.speedDeltaMax;
-        TRAIL_SIZE = s.trailSize;
-        MAX_DELAY = s.maxDelay;
-        mMode = s.mode;
-        mPulseController.ensureCapacity(MAX_PULSES, MAX_EXTRAS);
-    }
-
-    /**
-     * 更新正交投影矩阵
-     * 适配当前屏幕尺寸
-     */
-    private void updateProjection() {
-        if (mWidth <= 0 || mHeight <= 0) {
-            return;
-        }
-        // 创建正交投影矩阵（左下角为(0,height)，右上角为(width,0)）
-        Matrix.orthoM(mProjectionMatrix, 0, 0, mWidth, mHeight, 0, -1f, 1f);
     }
 
     /**
@@ -375,24 +288,6 @@ public class NexusGL extends GLESScene {
     }
 
     /**
-     * 初始化脉冲数组
-     * 初始化常规脉冲和额外脉冲的初始状态
-     */
-    private void initPulses() {
-        mPulseController.initPulses(
-                MAX_PULSES,
-                MAX_EXTRAS,
-                mWidth,
-                mHeight,
-                PULSE_SIZE,
-                SPEED_DELTA_MIN,
-                SPEED_DELTA_MAX,
-                MAX_DELAY,
-                SystemClock.uptimeMillis()
-        );
-    }
-
-    /**
      * 绘制背景纹理
      * 适配屏幕缩放和横向偏移
      */
@@ -405,19 +300,19 @@ public class NexusGL extends GLESScene {
         // 初始化模型矩阵
         Matrix.setIdentityM(mModelMatrix, 0);
         // 应用缩放（适配屏幕尺寸）
-        Matrix.scaleM(mModelMatrix, 0, mWorldScaleX, mWorldScaleY, 1.0f);
+        Matrix.scaleM(mModelMatrix, 0, mScene.mWorldScaleX, mScene.mWorldScaleY, 1.0f);
         // 竖屏时应用横向偏移（多屏滑动）
-        if (!mRotate) {
-            Matrix.translateM(mModelMatrix, 0, -(mXOffset * mWidth), 0f, 0f);
+        if (!mScene.mRotate) {
+            Matrix.translateM(mModelMatrix, 0, -(mScene.mXOffset * mWidth), 0f, 0f);
         }
         // 计算MVP矩阵（投影*模型）
-        Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mModelMatrix, 0);
+        Matrix.multiplyMM(mMVPMatrix, 0, mScene.mProjectionMatrix, 0, mModelMatrix, 0);
 
         // 设置背景颜色（白色不透明）
         setColor(1f, 1f, 1f, 1f);
         // 计算背景绘制范围（横屏/竖屏适配）
-        float right = mRotate ? mHeight * 2f : mWidth * 2f;
-        float bottom = mRotate ? mWidth : mHeight;
+        float right = mScene.mRotate ? mHeight * 2f : mWidth * 2f;
+        float bottom = mScene.mRotate ? mWidth : mHeight;
         float[] bgUv = buildBackgroundUv(right, bottom);
         // 绘制背景矩形
         drawTexturedRect(mTexBackground, 0f, 0f, right, bottom, bgUv, mMVPMatrix);
@@ -484,17 +379,17 @@ public class NexusGL extends GLESScene {
                 // 初始化模型矩阵
                 Matrix.setIdentityM(mModelMatrix, 0);
                 // 竖屏时应用横向偏移
-                if (!mRotate) {
-                    Matrix.translateM(mModelMatrix, 0, -(mXOffset * mWidth), 0f, 0f);
+                if (!mScene.mRotate) {
+                    Matrix.translateM(mModelMatrix, 0, -(mScene.mXOffset * mWidth), 0f, 0f);
                 }
                 // 应用脉冲缩放和屏幕适配缩放
-                Matrix.scaleM(mModelMatrix, 0, p.scale * mWorldScaleX, p.scale * mWorldScaleY, 1.0f);
+                Matrix.scaleM(mModelMatrix, 0, p.scale * mScene.mWorldScaleX, p.scale * mScene.mWorldScaleY, 1.0f);
                 // 计算MVP矩阵
-                Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mModelMatrix, 0);
+                Matrix.multiplyMM(mMVPMatrix, 0, mScene.mProjectionMatrix, 0, mModelMatrix, 0);
 
                 // 计算脉冲当前位置
-                float x = p.originX + (p.dx * SPEED * delta);
-                float y = p.originY + (p.dy * SPEED * delta);
+                float x = p.originX + (p.dx * mScene.SPEED * delta);
+                float y = p.originY + (p.dy * mScene.SPEED * delta);
 
                 // 设置脉冲颜色
                 setColorForPulse(p.color);
@@ -502,113 +397,113 @@ public class NexusGL extends GLESScene {
                 // 根据移动方向绘制脉冲和光晕
                 if (p.dx < 0) {
                     // 向左移动
-                    float xx = x + (TRAIL_SIZE * PULSE_SIZE);
+                    float xx = x + (mScene.TRAIL_SIZE * mScene.PULSE_SIZE);
                     if (xx <= 0) {
                         // 超出屏幕，重新初始化脉冲
-                        mPulseController.resetPulse(
+                        mScene.mPulseController.resetPulse(
                                 p,
                                 p.pulseType,
                                 mWidth,
                                 mHeight,
-                                PULSE_SIZE,
-                                SPEED_DELTA_MIN,
-                                SPEED_DELTA_MAX,
-                                MAX_DELAY,
+                                mScene.PULSE_SIZE,
+                                mScene.SPEED_DELTA_MIN,
+                                mScene.SPEED_DELTA_MAX,
+                                mScene.MAX_DELAY,
                                 SystemClock.uptimeMillis()
                         );
                     } else {
                         // 绘制脉冲纹理
-                        drawTexturedRect(mTexPulse, x, y, xx, y + PULSE_SIZE, mUv0, mMVPMatrix);
+                        drawTexturedRect(mTexPulse, x, y, xx, y + mScene.PULSE_SIZE, mScene.mUv0, mMVPMatrix);
                         // 绘制光晕纹理（居中对齐）
                         drawTexturedRect(mTexGlow,
-                                x + HALF_PULSE_SIZE - HALF_GLOW_SIZE,
-                                y + HALF_PULSE_SIZE - HALF_GLOW_SIZE,
-                                x + HALF_PULSE_SIZE + HALF_GLOW_SIZE,
-                                y + HALF_PULSE_SIZE + HALF_GLOW_SIZE,
-                                mUv0, mMVPMatrix);
+                                x + mScene.HALF_PULSE_SIZE - mScene.HALF_GLOW_SIZE,
+                                y + mScene.HALF_PULSE_SIZE - mScene.HALF_GLOW_SIZE,
+                                x + mScene.HALF_PULSE_SIZE + mScene.HALF_GLOW_SIZE,
+                                y + mScene.HALF_PULSE_SIZE + mScene.HALF_GLOW_SIZE,
+                                mScene.mUv0, mMVPMatrix);
                     }
                 } else if (p.dx > 0) {
                     // 向右移动
-                    x += PULSE_SIZE;
-                    float xx = x - (TRAIL_SIZE * PULSE_SIZE);
+                    x += mScene.PULSE_SIZE;
+                    float xx = x - (mScene.TRAIL_SIZE * mScene.PULSE_SIZE);
                     if (xx >= mWidth * 2f) {
                         // 超出屏幕，重新初始化脉冲
-                        mPulseController.resetPulse(
+                        mScene.mPulseController.resetPulse(
                                 p,
                                 p.pulseType,
                                 mWidth,
                                 mHeight,
-                                PULSE_SIZE,
-                                SPEED_DELTA_MIN,
-                                SPEED_DELTA_MAX,
-                                MAX_DELAY,
+                                mScene.PULSE_SIZE,
+                                mScene.SPEED_DELTA_MIN,
+                                mScene.SPEED_DELTA_MAX,
+                                mScene.MAX_DELAY,
                                 SystemClock.uptimeMillis()
                         );
                     } else {
                         // 绘制脉冲纹理（180度旋转）
-                        drawTexturedRect(mTexPulse, xx, y, x, y + PULSE_SIZE, mUv180, mMVPMatrix);
+                        drawTexturedRect(mTexPulse, xx, y, x, y + mScene.PULSE_SIZE, mScene.mUv180, mMVPMatrix);
                         // 绘制光晕纹理（居中对齐，180度旋转）
                         drawTexturedRect(mTexGlow,
-                                x - HALF_PULSE_SIZE - HALF_GLOW_SIZE,
-                                y + HALF_PULSE_SIZE - HALF_GLOW_SIZE,
-                                x - HALF_PULSE_SIZE + HALF_GLOW_SIZE,
-                                y + HALF_PULSE_SIZE + HALF_GLOW_SIZE,
-                                mUv180, mMVPMatrix);
+                                x - mScene.HALF_PULSE_SIZE - mScene.HALF_GLOW_SIZE,
+                                y + mScene.HALF_PULSE_SIZE - mScene.HALF_GLOW_SIZE,
+                                x - mScene.HALF_PULSE_SIZE + mScene.HALF_GLOW_SIZE,
+                                y + mScene.HALF_PULSE_SIZE + mScene.HALF_GLOW_SIZE,
+                                mScene.mUv180, mMVPMatrix);
                     }
                 } else if (p.dy < 0) {
                     // 向上移动
-                    float yy = y + (TRAIL_SIZE * PULSE_SIZE);
+                    float yy = y + (mScene.TRAIL_SIZE * mScene.PULSE_SIZE);
                     if (yy <= 0) {
                         // 超出屏幕，重新初始化脉冲
-                        mPulseController.resetPulse(
+                        mScene.mPulseController.resetPulse(
                                 p,
                                 p.pulseType,
                                 mWidth,
                                 mHeight,
-                                PULSE_SIZE,
-                                SPEED_DELTA_MIN,
-                                SPEED_DELTA_MAX,
-                                MAX_DELAY,
+                                mScene.PULSE_SIZE,
+                                mScene.SPEED_DELTA_MIN,
+                                mScene.SPEED_DELTA_MAX,
+                                mScene.MAX_DELAY,
                                 SystemClock.uptimeMillis()
                         );
                     } else {
                         // 绘制脉冲纹理（270度旋转）
-                        drawTexturedRect(mTexPulse, x, y, x + PULSE_SIZE, yy, mUv270, mMVPMatrix);
+                        drawTexturedRect(mTexPulse, x, y, x + mScene.PULSE_SIZE, yy, mScene.mUv270, mMVPMatrix);
                         // 绘制光晕纹理（居中对齐，270度旋转）
                         drawTexturedRect(mTexGlow,
-                                x + HALF_PULSE_SIZE - HALF_GLOW_SIZE,
-                                y + HALF_PULSE_SIZE - HALF_GLOW_SIZE,
-                                x + HALF_PULSE_SIZE + HALF_GLOW_SIZE,
-                                y + HALF_PULSE_SIZE + HALF_GLOW_SIZE,
-                                mUv270, mMVPMatrix);
+                                x + mScene.HALF_PULSE_SIZE - mScene.HALF_GLOW_SIZE,
+                                y + mScene.HALF_PULSE_SIZE - mScene.HALF_GLOW_SIZE,
+                                x + mScene.HALF_PULSE_SIZE + mScene.HALF_GLOW_SIZE,
+                                y + mScene.HALF_PULSE_SIZE + mScene.HALF_GLOW_SIZE,
+                                mScene.mUv270, mMVPMatrix);
                     }
                 } else if (p.dy > 0) {
                     // 向下移动
-                    y += PULSE_SIZE;
-                    float yy = y - (TRAIL_SIZE * PULSE_SIZE);
+                    y += mScene.PULSE_SIZE;
+                    float yy = y - (mScene.TRAIL_SIZE * mScene.PULSE_SIZE);
                     if (yy >= mHeight) {
                         // 超出屏幕，重新初始化脉冲
-                        mPulseController.resetPulse(
+                        mScene.mPulseController.resetPulse(
                                 p,
                                 p.pulseType,
                                 mWidth,
                                 mHeight,
-                                PULSE_SIZE,
-                                SPEED_DELTA_MIN,
-                                SPEED_DELTA_MAX,
-                                MAX_DELAY,
+                                mScene.PULSE_SIZE,
+                                mScene.SPEED_DELTA_MIN,
+                                mScene.SPEED_DELTA_MAX,
+                                mScene.MAX_DELAY,
                                 SystemClock.uptimeMillis()
                         );
                     } else {
                         // 绘制脉冲纹理（90度旋转）
-                        drawTexturedRect(mTexPulse, x, yy, x + PULSE_SIZE, y, mUv90, mMVPMatrix);
+                        drawTexturedRect(mTexPulse, x, yy, x + mScene.PULSE_SIZE, y, mScene.mUv90, mMVPMatrix);
                         // 绘制光晕纹理（居中对齐，90度旋转）
                         drawTexturedRect(mTexGlow,
-                                x + HALF_PULSE_SIZE - HALF_GLOW_SIZE,
-                                y - HALF_PULSE_SIZE - HALF_GLOW_SIZE,
-                                x + HALF_PULSE_SIZE + HALF_GLOW_SIZE,
-                                y - HALF_PULSE_SIZE + HALF_GLOW_SIZE,
-                                mUv90, mMVPMatrix);
+                                x + mScene.HALF_PULSE_SIZE - mScene.HALF_GLOW_SIZE,
+                                y - mScene.HALF_PULSE_SIZE - mScene.HALF_GLOW_SIZE,
+                                x + mScene.HALF_PULSE_SIZE + mScene.HALF_GLOW_SIZE,
+                                y - mScene.HALF_PULSE_SIZE + mScene.HALF_GLOW_SIZE,
+                                mScene.mUv90, mMVPMatrix);
                     }
                 }
             }
@@ -620,31 +515,31 @@ public class NexusGL extends GLESScene {
      * @param c 颜色索引（0-3）
      */
     private void setColorForPulse(int c) {
-        if (mMode == 1) {
+        if (mScene.mMode == 1) {
             setColor(0.9f, 0.1f, 0.1f, 0.8f);
             return;
         }
-        if (mMode == 2) {
+        if (mScene.mMode == 2) {
             setColor(0.1f, 0.9f, 0.1f, 0.8f);
             return;
         }
-         if (mMode == 3) {
+         if (mScene.mMode == 3) {
             setColor(0.1f, 0.1f, 0.9f, 0.8f);
             return;
         }
-         if (mMode == 4) {
+         if (mScene.mMode == 4) {
             setColor(0.9f, 0.9f, 0.9f, 0.8f);
             return;
         }
-         if (mMode == 5) {
+         if (mScene.mMode == 5) {
             setColor(0.3f, 0.9f, 0.9f, 0.8f);
             return;
         }
-         if (mMode == 6) {
+         if (mScene.mMode == 6) {
             setColor(0.9f, 0.3f, 0.9f, 0.8f);
             return;
         }
-         if (mMode == 7) {
+         if (mScene.mMode == 7) {
             setColor(0.95f, 0.7f, 0.75f, 0.8f);
             return;
         }
@@ -733,14 +628,5 @@ public class NexusGL extends GLESScene {
         // 禁用属性（优化性能）
         GLES20.glDisableVertexAttribArray(mPositionHandle);
         GLES20.glDisableVertexAttribArray(mTexCoordHandle);
-    }
-
-    /**
-     * 处理点击事件，添加额外脉冲
-     * @param x 点击X坐标
-     * @param y 点击Y坐标
-     */
-    private void addTap(int x, int y) {
-        mPulseController.addTap(x, y, MAX_EXTRAS, PULSE_SIZE, SystemClock.uptimeMillis());
     }
 }

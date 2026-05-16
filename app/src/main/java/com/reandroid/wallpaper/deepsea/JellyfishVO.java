@@ -82,11 +82,11 @@ class JellyfishVO {
             this.mList = null;
         }
         this.mList = new ArrayList<>();
-        int i = this.mNumberOfJellyfish;
-        for (int i2 = 0; i2 < i; i2++) {
+        int jellyfishCount = this.mNumberOfJellyfish;
+        for (int index = 0; index < jellyfishCount; index++) {
             JellyfishVO jellyfishVO = new JellyfishVO();
-            jellyfishVO.setPosition(0.0f, 0.9f - (i2 * 0.21f), -0.5f);
-            if (i2 < i * 0.5d) {
+            jellyfishVO.setPosition(0.0f, 0.9f - (index * 0.21f), -0.5f);
+            if (index < jellyfishCount * 0.5d) {
                 jellyfishVO.setIsShakeUp(true);
             }
             this.mList.add(jellyfishVO);
@@ -100,16 +100,16 @@ class JellyfishVO {
         }
     }
 
-    public void setNumberOfJellyfish(int i) {
-        this.mNumberOfJellyfish = i;
+    public void setNumberOfJellyfish(int count) {
+        this.mNumberOfJellyfish = count;
     }
 
     public int getNumberOfJellyfish() {
         return this.mNumberOfJellyfish;
     }
 
-    public JellyfishVO getVOByIndex(int i) {
-        return this.mList.get(i);
+    public JellyfishVO getVOByIndex(int index) {
+        return this.mList.get(index);
     }
 
     public JellyfishVO getRandomVOByZDown() {
@@ -178,16 +178,16 @@ class JellyfishVO {
         return z;
     }
 
-    public boolean isAllFinishedRemoving(int i) {
-        int i2 = this.mNumberOfJellyfish;
-        int i3 = 0;
-        int i4 = 0;
-        while (i4 < i2) {
-            int i5 = this.mList.get(i4).isFinishedRemoving() ? i3 + 1 : i3;
-            i4++;
-            i3 = i5;
+    public boolean isAllFinishedRemoving(int requiredCount) {
+        int totalJellyfish = this.mNumberOfJellyfish;
+        int finishedCount = 0;
+        int currentIndex = 0;
+        while (currentIndex < totalJellyfish) {
+            int updatedCount = this.mList.get(currentIndex).isFinishedRemoving() ? finishedCount + 1 : finishedCount;
+            currentIndex++;
+            finishedCount = updatedCount;
         }
-        return i3 >= i;
+        return finishedCount >= requiredCount;
     }
 
     public void setABList() {

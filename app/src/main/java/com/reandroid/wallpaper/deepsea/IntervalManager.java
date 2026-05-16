@@ -21,29 +21,29 @@ class IntervalManager {
 
     public void initList() {
         this.mList = new ArrayList<>();
-        for (int i = 0; i < 45; i++) {
-            int i2 = i % 5;
-            int i3 = i % 9;
-            float f = this.mIntervalX;
-            float f2 = this.mMoveX;
-            float f3 = this.mIntervalX;
-            float f4 = this.mMoveX;
-            float f5 = this.mIntervalY;
-            float f6 = this.mMoveY;
-            float f7 = this.mIntervalY;
-            float f8 = this.mMoveY;
+        for (int gridIndex = 0; gridIndex < 45; gridIndex++) {
+            int columnIndex = gridIndex % 5;
+            int rowIndex = gridIndex % 9;
+            float intervalX = this.mIntervalX;
+            float moveX = this.mMoveX;
+            float intervalX2 = this.mIntervalX;
+            float moveX2 = this.mMoveX;
+            float intervalY = this.mIntervalY;
+            float moveY = this.mMoveY;
+            float intervalY2 = this.mIntervalY;
+            float moveY2 = this.mMoveY;
             IntervalVO intervalVO = new IntervalVO();
-            intervalVO.setID(i);
-            intervalVO.setMinX((i2 * f) + f2 + this.mMarginX);
-            intervalVO.setMaxX((((i2 + 1) * f3) + f4) - this.mMarginX);
-            intervalVO.setMinY(this.mMarginY + (i3 * f5) + f6);
-            intervalVO.setMaxY(this.mMarginY + ((i3 + 1) * f7) + f8);
+            intervalVO.setID(gridIndex);
+            intervalVO.setMinX((columnIndex * intervalX) + moveX + this.mMarginX);
+            intervalVO.setMaxX((((columnIndex + 1) * intervalX2) + moveX2) - this.mMarginX);
+            intervalVO.setMinY(this.mMarginY + (rowIndex * intervalY) + moveY);
+            intervalVO.setMaxY(this.mMarginY + ((rowIndex + 1) * intervalY2) + moveY2);
             this.mList.add(intervalVO);
         }
     }
 
-    public void setIsOccupiedToFalseByIndex(int i) {
-        IntervalVO intervalVO = this.mList.get(i);
+    public void setIsOccupiedToFalseByIndex(int index) {
+        IntervalVO intervalVO = this.mList.get(index);
         intervalVO.setIsOccupied(false);
         if (this.mNotOccupiedList == null) {
             this.mNotOccupiedList = new ArrayList<>();
@@ -54,8 +54,8 @@ class IntervalManager {
     public void setNotOccupiedList() {
         int size = this.mList.size();
         this.mNotOccupiedList = new ArrayList<>();
-        for (int i = 0; i < size; i++) {
-            IntervalVO intervalVO = this.mList.get(i);
+        for (int index = 0; index < size; index++) {
+            IntervalVO intervalVO = this.mList.get(index);
             if (!intervalVO.isOccupied()) {
                 this.mNotOccupiedList.add(intervalVO);
             }
@@ -73,59 +73,59 @@ class IntervalManager {
     }
 
     public IntervalVO getNotOccupiedVOByZUp() {
-        IntervalVO intervalVO;
+        IntervalVO result;
         if (this.mNotOccupiedList == null || this.mNotOccupiedList.isEmpty()) {
             return null;
         }
         int size = this.mNotOccupiedList.size();
-        int i = 0;
+        int listIndex = 0;
         while (true) {
-            if (i >= size) {
-                intervalVO = null;
+            if (listIndex >= size) {
+                result = null;
                 break;
             }
-            intervalVO = this.mNotOccupiedList.get(i);
-            int id = intervalVO.getID();
-            int i2 = id % 9;
-            if (id % 5 != 2 || i2 < 3 || i2 > 5) {
-                i++;
+            result = this.mNotOccupiedList.get(listIndex);
+            int id = result.getID();
+            int rowIndex = id % 9;
+            if (id % 5 != 2 || rowIndex < 3 || rowIndex > 5) {
+                listIndex++;
             } else {
-                this.mNotOccupiedList.remove(i);
+                this.mNotOccupiedList.remove(listIndex);
                 break;
             }
         }
-        return intervalVO == null ? getNotOccupiedVO() : intervalVO;
+        return result == null ? getNotOccupiedVO() : result;
     }
 
     public IntervalVO getNotOccupiedVOByZDown() {
-        IntervalVO intervalVO;
+        IntervalVO result;
         if (this.mNotOccupiedList == null || this.mNotOccupiedList.isEmpty()) {
             return null;
         }
         int size = this.mNotOccupiedList.size();
-        for (int i = 0; i < size; i++) {
-            intervalVO = this.mNotOccupiedList.get(i);
-            int id = intervalVO.getID();
-            int i2 = id % 9;
-            if (id % 5 != 2 || i2 < 3 || i2 > 5) {
-                this.mNotOccupiedList.remove(i);
+        for (int listIndex = 0; listIndex < size; listIndex++) {
+            result = this.mNotOccupiedList.get(listIndex);
+            int id = result.getID();
+            int rowIndex = id % 9;
+            if (id % 5 != 2 || rowIndex < 3 || rowIndex > 5) {
+                this.mNotOccupiedList.remove(listIndex);
                 break;
             }
         }
-        intervalVO = null;
-        return intervalVO == null ? getNotOccupiedVO() : intervalVO;
+        result = null;
+        return result == null ? getNotOccupiedVO() : result;
     }
 
-    public void changeMove(int i, int i2) {
-        if (i > REF_WIDTH || i2 > REF_HEIGHT) {
-            float f = (i / (float) REF_WIDTH) * 2.0f;
-            this.mMoveX = (-4.5f) * f;
-            this.mIntervalX = 1.8f * f;
-            this.mMarginX = f * 0.1f;
-            float f2 = (i2 / (float) REF_HEIGHT) * 2.0f;
-            this.mMoveY = (-8.1f) * f2;
-            this.mIntervalY = 1.8f * f2;
-            this.mMarginY = f2 * 0.1f;
+    public void changeMove(int width, int height) {
+        if (width > REF_WIDTH || height > REF_HEIGHT) {
+            float xScaleFactor = (width / (float) REF_WIDTH) * 2.0f;
+            this.mMoveX = (-4.5f) * xScaleFactor;
+            this.mIntervalX = 1.8f * xScaleFactor;
+            this.mMarginX = xScaleFactor * 0.1f;
+            float yScaleFactor = (height / (float) REF_HEIGHT) * 2.0f;
+            this.mMoveY = (-8.1f) * yScaleFactor;
+            this.mIntervalY = 1.8f * yScaleFactor;
+            this.mMarginY = yScaleFactor * 0.1f;
             return;
         }
         this.mMoveX = -4.5f;

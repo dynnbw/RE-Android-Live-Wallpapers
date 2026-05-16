@@ -266,7 +266,7 @@
     <string name="pref_microbes_color_mode">Estilo de color</string>
     <string name="pref_microbes_color_mode_summary">Cambiar entre la paleta original solo RGB y la paleta mejorada actual</string>
     <string name="pref_microbes_color_mode_original">Original</string>
-    <string name="pref_microbes_color_mode_modern">Nuevo (actual)</string>
+    <string name="pref_microbes_color_mode_modern">Nuevo</string>
     <string name="pref_nexus_background_title">Fondo</string>
     <string name="pref_nexus_custom_background_title">Fondo personalizado</string>
     <string name="pref_nexus_custom_background_summary">Seleccionar una imagen de fondo</string>

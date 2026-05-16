@@ -1,0 +1,370 @@
+package com.reandroid.wallpaper.phasebeam;
+
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.res.Resources;
+
+import com.reandroid.wallpaper.R;
+import com.reandroid.gles.RawResourceLoader;
+
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
+import java.util.Random;
+
+/**
+ * PhaseBeam 壁纸场景逻辑层（纯 Java，无 GL 调用）。
+ * 负责粒子动画、HSL 色彩调整、背景网格数据管理。
+ */
+final class PhaseBeamScene {
+
+    static final String PREFS_NAME = "phasebeam";
+    static final String KEY_ENABLED = "enabled";
+    static final String KEY_HUE = "hue";
+    static final String KEY_SATURATION = "saturation";
+    static final String KEY_BRIGHTNESS = "brightness";
+
+    static final int DOT_COUNT = 28;
+
+    private static final float ZX_PARTICLE_SPEED = 0.0000780f;
+    private static final float ZX_BEAM_SPEED = 0.00005f;
+    private static final float YZ_PARTICLE_SPEED = 0.00011f;
+    private static final float YZ_BEAM_SPEED = 0.000080f;
+
+    private final Context mContext;
+    private SharedPreferences mPrefs;
+
+    float mScaleSize = 1.0f;
+    float mXOffset = 0.5f;
+    float mOldOffset = 0.5f;
+
+    float mHue = 0.0f;
+    float mSaturation = 1.0f;
+    float mBrightness = 1.0f;
+    boolean mRecolorEnabled = false;
+    boolean mCanScroll = true;
+
+    final float[] mAdjust = new float[] { -1.0f, 1.0f, 1.0f };
+    final float[] mOldAdjust = new float[] { -1.0f, 1.0f, 1.0f };
+
+    boolean mDirtyBackground = true;
+    boolean mDirtyParticles = true;
+    boolean mDirtyTexture = true;
+    boolean mNeedViewport = true;
+
+    long mLastTimeMs = 0L;
+
+    // Background mesh data
+    float[] mBgRawVertices;
+    float[] mBgBaseColors;
+    int mBgVertexCount;
+
+    // Particle position/offset/adjust arrays
+    final float[] mDotPositions = new float[DOT_COUNT * 3];
+    final float[] mDotOffsets = new float[DOT_COUNT];
+    final float[] mDotAdjusts = new float[DOT_COUNT * 3];
+
+    final float[] mBeamPositions = new float[DOT_COUNT * 3];
+    final float[] mBeamOffsets = new float[DOT_COUNT];
+    final float[] mBeamAdjusts = new float[DOT_COUNT * 3];
+
+    // Background buffers (NIO, created by Scene, read by GL)
+    FloatBuffer mBgPositionBuffer;
+    FloatBuffer mBgOffsetBuffer;
+    FloatBuffer mBgRealColorBuffer;
+    FloatBuffer mBgAdjustBuffer;
+
+    // Particle buffers
+    FloatBuffer mDotPositionBuffer;
+    FloatBuffer mDotOffsetBuffer;
+    FloatBuffer mDotAdjustBuffer;
+
+    FloatBuffer mBeamPositionBuffer;
+    FloatBuffer mBeamOffsetBuffer;
+    FloatBuffer mBeamAdjustBuffer;
+
+    private final Random mRandom = new Random();
+
+    PhaseBeamScene(Context context) {
+        mContext = context;
+    }
+
+    /**
+     * 初始化设置和显示参数
+     * @param resources 资源管理器
+     */
+    void init(Resources resources) {
+        ensurePrefs();
+        mScaleSize = resources.getDisplayMetrics().densityDpi / 240.0f;
+        mCanScroll = resources.getBoolean(R.bool.scrolling_enabled);
+        readPrefs(resources);
+    }
+
+    void setOffset(float xOffset) {
+        if (mCanScroll) {
+            mXOffset = xOffset;
+        }
+    }
+
+    void reloadPreferences(Resources resources) {
+        readPrefs(resources);
+        mDirtyBackground = true;
+        mDirtyParticles = true;
+        mDirtyTexture = true;
+    }
+
+    void ensurePrefs() {
+        if (mPrefs == null && mContext != null) {
+            mPrefs = mContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        }
+    }
+
+    SharedPreferences getPrefs() {
+        return mPrefs;
+    }
+
+    private void readPrefs(Resources resources) {
+        if (resources == null || mPrefs == null) return;
+        mRecolorEnabled = mPrefs.getBoolean(KEY_ENABLED, resources.getBoolean(R.bool.recolor_enabled));
+        mHue = mPrefs.getFloat(KEY_HUE, Float.parseFloat(resources.getString(R.string.hue)));
+        mSaturation = mPrefs.getFloat(KEY_SATURATION, Float.parseFloat(resources.getString(R.string.saturation)));
+        mBrightness = mPrefs.getFloat(KEY_BRIGHTNESS, Float.parseFloat(resources.getString(R.string.brightness)));
+        updateAdjust();
+    }
+
+    void updateAdjust() {
+        if (mRecolorEnabled) {
+            mAdjust[0] = mHue;
+            mAdjust[1] = mSaturation;
+            mAdjust[2] = mBrightness;
+        } else {
+            mAdjust[0] = -1.0f;
+            mAdjust[1] = 1.0f;
+            mAdjust[2] = 1.0f;
+        }
+    }
+
+    boolean adjustChanged() {
+        return mAdjust[0] != mOldAdjust[0]
+                || mAdjust[1] != mOldAdjust[1]
+                || mAdjust[2] != mOldAdjust[2];
+    }
+
+    /**
+     * 从 raw 资源加载背景网格
+     * @param resources 资源管理器
+     */
+    void loadBackgroundMesh(Resources resources) {
+        if (resources == null) return;
+        float[] mesh = RawResourceLoader.readRawFloatArray(resources, R.raw.phasebeam_bg_mesh);
+        int count = mesh.length / 5;
+        mBgVertexCount = count;
+        mBgRawVertices = new float[count * 3];
+        mBgBaseColors = new float[count * 3];
+        for (int i = 0; i < count; i++) {
+            int src = i * 5;
+            int v = i * 3;
+            mBgRawVertices[v] = mesh[src];
+            mBgRawVertices[v + 1] = mesh[src + 1];
+            mBgRawVertices[v + 2] = 0.0f;
+            mBgBaseColors[v] = mesh[src + 2];
+            mBgBaseColors[v + 1] = mesh[src + 3];
+            mBgBaseColors[v + 2] = mesh[src + 4];
+        }
+    }
+
+    /**
+     * 更新背景缓冲区（位置、偏移、颜色、HSL调整）
+     * @param newOffset 新偏移值
+     */
+    void updateBackgroundBuffers(float newOffset) {
+        if (mBgVertexCount == 0) return;
+
+        float[] positions = new float[mBgVertexCount * 3];
+        float[] offsets = new float[mBgVertexCount];
+        float[] realColors = new float[mBgVertexCount * 4];
+        float[] adjusts = new float[mBgVertexCount * 3];
+
+        for (int i = 0; i < mBgVertexCount; i++) {
+            int v = i * 3;
+            positions[v] = mBgRawVertices[v];
+            positions[v + 1] = mBgRawVertices[v + 1];
+            positions[v + 2] = mBgRawVertices[v + 2];
+
+            offsets[i] = -mXOffset / 2.0f;
+
+            float r = mBgBaseColors[v];
+            float g = mBgBaseColors[v + 1];
+            float b = mBgBaseColors[v + 2];
+
+            if (mRecolorEnabled) {
+                float grey = 0.3f * r + 0.59f * g + 0.11f * b;
+                realColors[i * 4] = grey;
+                realColors[i * 4 + 1] = grey;
+                realColors[i * 4 + 2] = grey;
+                realColors[i * 4 + 3] = 1.0f;
+            } else {
+                realColors[i * 4] = r;
+                realColors[i * 4 + 1] = g;
+                realColors[i * 4 + 2] = b;
+                realColors[i * 4 + 3] = 1.0f;
+            }
+
+            adjusts[i * 3] = mAdjust[0];
+            adjusts[i * 3 + 1] = mAdjust[1];
+            adjusts[i * 3 + 2] = mAdjust[2];
+        }
+
+        mBgPositionBuffer = toFloatBuffer(positions);
+        mBgOffsetBuffer = toFloatBuffer(offsets);
+        mBgRealColorBuffer = toFloatBuffer(realColors);
+        mBgAdjustBuffer = toFloatBuffer(adjusts);
+    }
+
+    /**
+     * 初始化粒子位置
+     */
+    void positionParticles() {
+        for (int i = 0; i < DOT_COUNT; i++) {
+            int idx = i * 3;
+            mDotPositions[idx] = rand(0.0f, 3.0f);
+            mDotPositions[idx + 1] = rand(-1.25f, 1.25f);
+
+            float z;
+            if (i < 3) {
+                z = 14.0f;
+            } else if (i < 7) {
+                z = 25.0f;
+            } else if (i < 4) {
+                z = rand(10.0f, 20.0f);
+            } else if (i == 10) {
+                z = 24.0f;
+                mDotPositions[idx] = 1.0f;
+            } else {
+                z = rand(6.0f, 14.0f);
+            }
+            mDotPositions[idx + 2] = z;
+            mDotOffsets[i] = 0.0f;
+            setAdjust(mDotAdjusts, i, mAdjust);
+        }
+
+        for (int i = 0; i < DOT_COUNT; i++) {
+            int idx = i * 3;
+            float z;
+            if (i < 20) {
+                z = rand(4.0f, 10.0f) / 2.0f;
+            } else {
+                z = rand(4.0f, 35.0f) / 2.0f;
+            }
+            mBeamPositions[idx] = rand(-1.25f, 1.25f);
+            mBeamPositions[idx + 1] = rand(-1.05f, 1.205f);
+            mBeamPositions[idx + 2] = z;
+            mBeamOffsets[i] = 0.0f;
+            setAdjust(mBeamAdjusts, i, mAdjust);
+        }
+    }
+
+    /**
+     * 更新所有粒子的 HSL 调整值
+     */
+    void updateParticleAdjusts() {
+        for (int i = 0; i < DOT_COUNT; i++) {
+            setAdjust(mDotAdjusts, i, mAdjust);
+            setAdjust(mBeamAdjusts, i, mAdjust);
+        }
+        updateParticleBuffers();
+    }
+
+    /**
+     * 从当前数据数组创建 NIO 缓冲区
+     */
+    void updateParticleBuffers() {
+        mDotPositionBuffer = toFloatBuffer(mDotPositions);
+        mDotOffsetBuffer = toFloatBuffer(mDotOffsets);
+        mDotAdjustBuffer = toFloatBuffer(mDotAdjusts);
+
+        mBeamPositionBuffer = toFloatBuffer(mBeamPositions);
+        mBeamOffsetBuffer = toFloatBuffer(mBeamOffsets);
+        mBeamAdjustBuffer = toFloatBuffer(mBeamAdjusts);
+    }
+
+    /**
+     * 更新粒子动画（位置、环绕）
+     * @param timeScale 时间缩放因子
+     * @param newOffset 新偏移值
+     */
+    void updateParticles(float timeScale, float newOffset) {
+        for (int i = 0; i < DOT_COUNT; i++) {
+            int idx = i * 3;
+            float x = mBeamPositions[idx];
+            float y = mBeamPositions[idx + 1];
+            float z = mBeamPositions[idx + 2];
+
+            if (x / z > 0.5f) {
+                x = -1.0f;
+            }
+            if (y > 1.15f) {
+                y = -1.15f;
+                x = rand(-1.25f, 1.25f);
+            } else {
+                y += YZ_BEAM_SPEED * z * timeScale;
+            }
+            x += ZX_BEAM_SPEED * z * timeScale;
+
+            mBeamPositions[idx] = x;
+            mBeamPositions[idx + 1] = y;
+            mBeamOffsets[i] = newOffset;
+        }
+
+        for (int i = 0; i < DOT_COUNT; i++) {
+            int idx = i * 3;
+            float x = mDotPositions[idx];
+            float y = mDotPositions[idx + 1];
+            float z = mDotPositions[idx + 2];
+
+            if (x / z > 0.5f) {
+                x = -1.0f;
+            }
+
+            if (y > 1.25f) {
+                y = -1.25f;
+                x = rand(0.0f, 3.0f);
+            } else {
+                y += YZ_PARTICLE_SPEED * z * timeScale;
+            }
+
+            x += ZX_PARTICLE_SPEED * z * timeScale;
+
+            mDotPositions[idx] = x;
+            mDotPositions[idx + 1] = y;
+            mDotOffsets[i] = newOffset;
+        }
+
+        mBeamPositionBuffer = toFloatBuffer(mBeamPositions);
+        mBeamOffsetBuffer = toFloatBuffer(mBeamOffsets);
+        mDotPositionBuffer = toFloatBuffer(mDotPositions);
+        mDotOffsetBuffer = toFloatBuffer(mDotOffsets);
+    }
+
+    // ---- Utility methods ----
+
+    float rand(float min, float max) {
+        return min + mRandom.nextFloat() * (max - min);
+    }
+
+    void setAdjust(float[] target, int index, float[] adjust) {
+        int base = index * 3;
+        target[base] = adjust[0];
+        target[base + 1] = adjust[1];
+        target[base + 2] = adjust[2];
+    }
+
+    static FloatBuffer toFloatBuffer(float[] data) {
+        ByteBuffer bb = ByteBuffer.allocateDirect(data.length * 4);
+        bb.order(ByteOrder.nativeOrder());
+        FloatBuffer fb = bb.asFloatBuffer();
+        fb.put(data);
+        fb.position(0);
+        return fb;
+    }
+}

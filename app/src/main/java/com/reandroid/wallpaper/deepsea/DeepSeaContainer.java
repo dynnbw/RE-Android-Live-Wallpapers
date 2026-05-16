@@ -355,29 +355,29 @@ class DeepSeaContainer extends GLBaseView {
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String str) {
         if (str == null) {
             this.mUnitScaleVal = readIntPreference(sharedPreferences, "unitscale", 0);
-            int i = readIntPreference(sharedPreferences, "unitnumber", 0);
-            int i2 = readIntPreference(sharedPreferences, "backgroundbrightness", 0);
-            int i3 = readIntPreference(sharedPreferences, "backgroundlighting", 0);
-            int i4 = readIntPreference(sharedPreferences, "particlecolor", 8);
+            int unitNumber = readIntPreference(sharedPreferences, "unitnumber", 0);
+            int backgroundBrightness = readIntPreference(sharedPreferences, "backgroundbrightness", 0);
+            int backgroundLighting = readIntPreference(sharedPreferences, "backgroundlighting", 0);
+            int particleColor = readIntPreference(sharedPreferences, "particlecolor", 8);
             int parseInt = Integer.parseInt(sharedPreferences.getString("backgroundimagetype", "0"));
             setScale();
-            this.mUnitNumberVal = i;
-            setNumberOfUnit(i);
-            setBrightness(i2);
-            setLight(i3);
+            this.mUnitNumberVal = unitNumber;
+            setNumberOfUnit(unitNumber);
+            setBrightness(backgroundBrightness);
+            setLight(backgroundLighting);
             this.mNumberOfParticles = 35;
             this.mNumberOfParticles2 = 25;
             this.mWaterDropsInJellyfish.setNumberOfParticles(this.mNumberOfParticles);
             this.mWaterDropsInJellyfish2.setNumberOfParticles(this.mNumberOfParticles2);
-            setColorByColorValue(i4);
+            setColorByColorValue(particleColor);
             setBackgroundImageType(parseInt);
         } else if (str.equals("unitscale")) {
             this.mUnitScaleVal = readIntPreference(sharedPreferences, str, 0);
             setScale();
         } else if (str.equals("unitnumber")) {
-            int i5 = readIntPreference(sharedPreferences, str, 0);
-            this.mUnitNumberVal = i5;
-            setNumberOfUnit(i5);
+            int unitNumber = readIntPreference(sharedPreferences, str, 0);
+            this.mUnitNumberVal = unitNumber;
+            setNumberOfUnit(unitNumber);
         } else if (str.equals("backgroundbrightness")) {
             setBrightness(readIntPreference(sharedPreferences, str, 0));
         } else if (str.equals("backgroundlighting")) {
@@ -421,7 +421,7 @@ class DeepSeaContainer extends GLBaseView {
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
     }
 
-    private void setNumberOfUnit(int i) {
+    private void setNumberOfUnit(int unitCount) {
         int maxNumberOfJellyfish = this.mJellyfishVO.getMaxNumberOfJellyfish();
         this.mBlurAlpha = 0.0f;
         this.mIsBluring = true;
@@ -430,7 +430,7 @@ class DeepSeaContainer extends GLBaseView {
         this.mIsSendedReceiver = false;
         this.mIntervalManager.initList();
         this.mIntervalManager.setNotOccupiedList();
-        this.mJellyfishVO.setNumberOfJellyfish(maxNumberOfJellyfish + i);
+        this.mJellyfishVO.setNumberOfJellyfish(maxNumberOfJellyfish + unitCount);
         this.mJellyfishVO.initList();
         this.mWaterDropsInJellyfish.initTimeCounter();
         this.mWaterDropsInJellyfish2.initTimeCounter();
@@ -445,33 +445,33 @@ class DeepSeaContainer extends GLBaseView {
         this.mScale = (this.mUnitScaleVal * 0.1f) + this.mDefaultScale;
     }
 
-    private void setBrightness(int i) {
-        if (i < 0) {
-            this.mBrightness = ((i * 0.2f) / 5.0f) - 0.1f;
-        } else if (i == 0) {
+    private void setBrightness(int brightnessValue) {
+        if (brightnessValue < 0) {
+            this.mBrightness = ((brightnessValue * 0.2f) / 5.0f) - 0.1f;
+        } else if (brightnessValue == 0) {
             this.mBrightness = -0.1f;
         } else {
-            this.mBrightness = ((i * 0.3f) / 5.0f) - 0.1f;
+            this.mBrightness = ((brightnessValue * 0.3f) / 5.0f) - 0.1f;
         }
     }
 
-    private void setLight(int i) {
-        if (i < 0) {
-            this.mLight = ((i * 0.52f) / 5.0f) + 0.22f;
-        } else if (i == 0) {
+    private void setLight(int lightValue) {
+        if (lightValue < 0) {
+            this.mLight = ((lightValue * 0.52f) / 5.0f) + 0.22f;
+        } else if (lightValue == 0) {
             this.mLight = 0.22f;
         } else {
-            this.mLight = ((i * 0.65f) / 5.0f) + 0.22f;
+            this.mLight = ((lightValue * 0.65f) / 5.0f) + 0.22f;
         }
     }
 
-    private void setBackgroundImageType(int i) {
-        if (i == 0) {
+    private void setBackgroundImageType(int imageType) {
+        if (imageType == 0) {
             this.mSea2.removeBackgroundImage();
             DeepSeaSettings.deleteBitmap(this.mBackgroundImagePath);
             this.mIsBackgroundChanged = true;
             this.mTempBackImageCount = 0;
-        } else if (i == 1) {
+        } else if (imageType == 1) {
             this.mIsBackgroundChanged = true;
             this.mTempBackImageCount = 0;
         }
@@ -701,10 +701,10 @@ class DeepSeaContainer extends GLBaseView {
         }
     }
 
-    public void setStateByBattery(int i) {
+    public void setStateByBattery(int batteryState) {
         this.mBatteryTime = 0;
         this.mIsSendedReceiver = false;
-        switch (i) {
+        switch (batteryState) {
             case 0:
                 this.mBatteryState = 0;
                 if (this.mSeaWaterDrops.isSlow()) {
@@ -729,7 +729,7 @@ class DeepSeaContainer extends GLBaseView {
                 return;
             case 1:
             case 2:
-                this.mBatteryState = i;
+                this.mBatteryState = batteryState;
                 if (!this.mSeaWaterDrops.isSlow()) {
                     this.mSeaWaterDrops.setIsSlow(true);
                 }
@@ -801,21 +801,21 @@ class DeepSeaContainer extends GLBaseView {
         Matrix.setLookAtM(this.mViewMatrix, 0, 0.0f, 0.0f, -0.5f, 0.0f, 0.0f, -5.0f, 0.0f, 1.0f, 0.0f);
     }
 
-    public void setProjectionMatrix(int i, int i2) {
+    public void setProjectionMatrix(int width, int height) {
         Display defaultDisplay = ((WindowManager) getContext().getSystemService("window")).getDefaultDisplay();
-        this.mWidth = i;
-        this.mHeight = i2;
-        if (i <= 0 || i2 <= 0) {
+        this.mWidth = width;
+        this.mHeight = height;
+        if (width <= 0 || height <= 0) {
             return;
         }
         this.mBatteryTime = 0;
         this.mIsSendedReceiver = false;
-        GLES20.glViewport(GLES20.GL_POINTS, 0, i, i2);
-        DeepSeaSettings.setScale(i, i2);
-        float f = (float) i / (float) i2;
-        float f2 = -f;
-        if (i > 720) {
-            this.mDefaultScale = f;
+        GLES20.glViewport(GLES20.GL_POINTS, 0, width, height);
+        DeepSeaSettings.setScale(width, height);
+        float aspectRatio = (float) width / (float) height;
+        float negativeAspectRatio = -aspectRatio;
+        if (width > 720) {
+            this.mDefaultScale = aspectRatio;
         } else {
             this.mDefaultScale = 1.0f;
         }
@@ -824,11 +824,11 @@ class DeepSeaContainer extends GLBaseView {
         this.mIntervalManager.changeMove(defaultDisplay.getWidth(), defaultDisplay.getHeight());
         this.mIntervalManager.initList();
         this.mIntervalManager.setNotOccupiedList();
-        this.mSea.changeDisplay(i, i2);
-        this.mSea2.changeDisplay(i, i2);
-        this.mSunshine.changeDisplay(i, i2);
-        this.mSunshine2.changeDisplay(i, i2);
-        this.mSunshine3.changeDisplay(i, i2);
+        this.mSea.changeDisplay(width, height);
+        this.mSea2.changeDisplay(width, height);
+        this.mSunshine.changeDisplay(width, height);
+        this.mSunshine2.changeDisplay(width, height);
+        this.mSunshine3.changeDisplay(width, height);
         this.mSea.initByteBuffer();
         this.mSea2.initByteBuffer();
         this.mSunshine.initByteBuffer();
@@ -842,16 +842,16 @@ class DeepSeaContainer extends GLBaseView {
         this.mSeaWaterDrops.initByteBuffer();
         this.mSeaWaterDrops2.initByteBuffer();
         this.mSeaWaterDrops3.initByteBuffer();
-        this.mSeaWaterDrops.changeData(i, i2);
-        this.mSeaWaterDrops2.changeData(i, i2);
-        this.mSeaWaterDrops3.changeData(i, i2);
+        this.mSeaWaterDrops.changeData(width, height);
+        this.mSeaWaterDrops2.changeData(width, height);
+        this.mSeaWaterDrops3.changeData(width, height);
         this.mSeaWaterDrops.resetData();
         this.mSeaWaterDrops2.resetData();
         this.mSeaWaterDrops3.resetData();
         this.mSeaWaterDrops.initShader();
         this.mSeaWaterDrops2.initShader();
         this.mSeaWaterDrops3.initShader();
-        Matrix.frustumM(this.mProjectionMatrix, 0, f2, f, -1.0f, 1.0f, 1.0f, 10.0f);
+        Matrix.frustumM(this.mProjectionMatrix, 0, negativeAspectRatio, aspectRatio, -1.0f, 1.0f, 1.0f, 10.0f);
     }
 
     private void multiplyMVPMatrix() {
@@ -941,9 +941,9 @@ class DeepSeaContainer extends GLBaseView {
         }
     }
 
-    private void changeDestinationByIndex(int i) {
+    private void changeDestinationByIndex(int jellyfishIndex) {
         IntervalVO notOccupiedVOByZUp;
-        JellyfishVO vOByIndex = this.mJellyfishVO.getVOByIndex(i);
+        JellyfishVO vOByIndex = this.mJellyfishVO.getVOByIndex(jellyfishIndex);
         if (vOByIndex.isShaking()) {
             float positionZ = vOByIndex.getPositionZ();
             if (positionZ < -4.0f) {
@@ -991,17 +991,17 @@ class DeepSeaContainer extends GLBaseView {
             boolean isRemoving = jellyfishVO.isRemoving();
             boolean isFinishedRemoving = jellyfishVO.isFinishedRemoving();
             float reverseAlpha = jellyfishVO.getReverseAlpha();
-            float f3 = 1.0f - (((-(jellyfishVO.getPositionZ() + 3.0f)) * 1.0f) / 7.0f);
-            if (f3 < 0.0f) {
-                f3 = 0.0f;
+            float depthBasedAlpha = 1.0f - (((-(jellyfishVO.getPositionZ() + 3.0f)) * 1.0f) / 7.0f);
+            if (depthBasedAlpha < 0.0f) {
+                depthBasedAlpha = 0.0f;
             }
-            float f4 = 1.0f - f3;
+            float invertedDepthAlpha = 1.0f - depthBasedAlpha;
             if (isAppearing || isRemoving || isFinishedRemoving || !isFinishedAppearing) {
-                f = f4 - reverseAlpha;
-                f2 = f3 - reverseAlpha;
+                f = invertedDepthAlpha - reverseAlpha;
+                f2 = depthBasedAlpha - reverseAlpha;
             } else {
-                f = f4;
-                f2 = f3;
+                f = invertedDepthAlpha;
+                f2 = depthBasedAlpha;
             }
             if (!z) {
                 this.mJellyfish.setForDrawing();
@@ -1048,20 +1048,20 @@ class DeepSeaContainer extends GLBaseView {
             boolean isFinishedRemoving2 = vOByIndex2.isFinishedRemoving();
             float positionZ = vOByIndex2.getPositionZ();
             float reverseAlpha2 = vOByIndex2.getReverseAlpha();
-            float f5 = 1.0f - (((-(positionZ + 3.0f)) * 1.0f) / 7.0f);
-            if (f5 < 0.0f) {
-                f5 = 0.0f;
+            float positionDepthAlpha = 1.0f - (((-(positionZ + 3.0f)) * 1.0f) / 7.0f);
+            if (positionDepthAlpha < 0.0f) {
+                positionDepthAlpha = 0.0f;
             }
             if (isAppearing2 || isRemoving2 || isFinishedRemoving2 || !isFinishedAppearing2) {
-                f5 -= 0.4f + reverseAlpha2;
+                positionDepthAlpha -= 0.4f + reverseAlpha2;
             }
             this.mWaterDropsInJellyfish.setForDrawing();
-            this.mWaterDropsInJellyfish.setAddAlpha(f5 - 1.0f);
+            this.mWaterDropsInJellyfish.setAddAlpha(positionDepthAlpha - 1.0f);
             this.mWaterDropsInJellyfish.setScale(this.mScale);
             this.mWaterDropsInJellyfish.update(this.mMVPMatrix);
             this.mWaterDropsInJellyfish.draw();
             this.mWaterDropsInJellyfish2.setForDrawing();
-            this.mWaterDropsInJellyfish2.setAddAlpha(f5 - 1.0f);
+            this.mWaterDropsInJellyfish2.setAddAlpha(positionDepthAlpha - 1.0f);
             this.mWaterDropsInJellyfish2.setScale(this.mScale);
             this.mWaterDropsInJellyfish2.update(this.mMVPMatrix);
             this.mWaterDropsInJellyfish2.draw();
@@ -1084,22 +1084,22 @@ class DeepSeaContainer extends GLBaseView {
         }
     }
 
-    private void updateForGoingToMoveByIndex(int i) {
-        float f;
+    private void updateForGoingToMoveByIndex(int jellyfishIndex) {
+        float rotationIncrement;
         float destinationZ;
-        float f2;
-        float f3;
-        float f4;
-        float f5 = 8.0E-4f;
-        JellyfishVO vOByIndex = this.mJellyfishVO.getVOByIndex(i);
+        float newPositionY;
+        float newPositionX;
+        float resistance;
+        float baseIncrement = 8.0E-4f;
+        JellyfishVO vOByIndex = this.mJellyfishVO.getVOByIndex(jellyfishIndex);
         float rotate = vOByIndex.getRotate();
         float destinationRotate = vOByIndex.getDestinationRotate();
         if (this.mBatteryState == 0) {
-            f = 0.02f;
+            rotationIncrement = 0.02f;
         } else {
-            f = this.mBatteryState == 1 ? 0.002f : 8.0E-4f;
+            rotationIncrement = this.mBatteryState == 1 ? 0.002f : 8.0E-4f;
         }
-        vOByIndex.setRotate((f * (destinationRotate - rotate)) + rotate);
+        vOByIndex.setRotate((rotationIncrement * (destinationRotate - rotate)) + rotate);
         if (vOByIndex.isMovingZ()) {
             float positionX = vOByIndex.getPositionX();
             float positionY = vOByIndex.getPositionY();
@@ -1108,34 +1108,34 @@ class DeepSeaContainer extends GLBaseView {
             float movingZDestinationY = vOByIndex.getMovingZDestinationY();
             float movingZDestinationZ = vOByIndex.getMovingZDestinationZ();
             float movingZStartY = vOByIndex.getMovingZStartY();
-            float f6 = 0.01f + ((positionY - movingZStartY) / (movingZDestinationY - movingZStartY));
+            float progressRatio = 0.01f + ((positionY - movingZStartY) / (movingZDestinationY - movingZStartY));
             if (this.mBatteryState == 0) {
-                f4 = vOByIndex.getResistance();
+                resistance = vOByIndex.getResistance();
             } else if (this.mBatteryState == 1) {
-                f4 = 600.0f;
+                resistance = 600.0f;
             } else {
-                f4 = 300.0f;
+                resistance = 300.0f;
             }
-            float f7 = (movingZDestinationZ - positionZ) / f4;
-            f3 = positionX + (((movingZDestinationX - positionX) / f4) * f6);
-            f2 = (((movingZDestinationY - positionY) / f4) * f6 * vOByIndex.getDisport()) + positionY;
-            destinationZ = (f7 * f6) + positionZ;
+            float zStep = (movingZDestinationZ - positionZ) / resistance;
+            newPositionX = positionX + (((movingZDestinationX - positionX) / resistance) * progressRatio);
+            newPositionY = (((movingZDestinationY - positionY) / resistance) * progressRatio * vOByIndex.getDisport()) + positionY;
+            destinationZ = (zStep * progressRatio) + positionZ;
         } else {
             if (this.mBatteryState == 0) {
-                f5 = vOByIndex.getSpeed();
+                baseIncrement = vOByIndex.getSpeed();
             } else if (this.mBatteryState == 1) {
-                f5 = vOByIndex.getLowBatterySpeed();
+                baseIncrement = vOByIndex.getLowBatterySpeed();
             }
             float positionX2 = vOByIndex.getPositionX();
             float positionY2 = vOByIndex.getPositionY();
             float positionZ2 = vOByIndex.getPositionZ();
             float destinationX = vOByIndex.getDestinationX();
             float destinationY = vOByIndex.getDestinationY();
-            destinationZ = positionZ2 + ((vOByIndex.getDestinationZ() - positionZ2) * f5);
-            f2 = positionY2 + ((destinationY - positionY2) * f5);
-            f3 = (f5 * (destinationX - positionX2)) + positionX2;
+            destinationZ = positionZ2 + ((vOByIndex.getDestinationZ() - positionZ2) * baseIncrement);
+            newPositionY = positionY2 + ((destinationY - positionY2) * baseIncrement);
+            newPositionX = (baseIncrement * (destinationX - positionX2)) + positionX2;
         }
-        vOByIndex.setPosition(f3, f2, destinationZ);
+        vOByIndex.setPosition(newPositionX, newPositionY, destinationZ);
         boolean isAppearing = vOByIndex.isAppearing();
         boolean isRemoving = vOByIndex.isRemoving();
         float reverseAlpha = vOByIndex.getReverseAlpha();
@@ -1324,8 +1324,8 @@ class DeepSeaContainer extends GLBaseView {
         jellyfishVO.setDestinationRotate(((((float) Math.atan2(jellyfishVO.getMovingZDestinationY() - jellyfishVO.getMovingZStartY(), jellyfishVO.getMovingZDestinationX() - jellyfishVO.getMovingZStartX())) * 180.0f) / 3.1415927f) - 120.0f);
     }
 
-    private void setColorByColorValue(int i) {
-        float[] rgb = MathHelper.getRGB(Palette.mValuesOfColor[i]);
+    private void setColorByColorValue(int colorIndex) {
+        float[] rgb = MathHelper.getRGB(Palette.mValuesOfColor[colorIndex]);
         float[] rgb2 = MathHelper.getRGB(-5789785);
         this.mBlurColor[0] = rgb[0] - rgb2[0];
         this.mBlurColor[1] = rgb[1] - rgb2[1];

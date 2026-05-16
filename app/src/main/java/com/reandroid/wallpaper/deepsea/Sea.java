@@ -129,14 +129,14 @@ class Sea extends GLBaseView {
         Log.d("DeepSea", "Sea.setBrightness called: " + f);
     }
 
-    public void changeDisplay(int i, int i2) {
-        float f = (((float) i) / ((float) i2)) * 10.0f;
-        float f2 = (0.4f * f) + f;
+    public void changeDisplay(int screenWidth, int screenHeight) {
+        float aspectRatioScaled = (((float) screenWidth) / ((float) screenHeight)) * 10.0f;
+        float finalWidth = (0.4f * aspectRatioScaled) + aspectRatioScaled;
         float[] fArr = this.mVerticesData;
-        fArr[0] = -f2;
-        fArr[5] = -f2;
-        fArr[10] = f2;
-        fArr[15] = f2;
+        fArr[0] = -finalWidth;
+        fArr[5] = -finalWidth;
+        fArr[10] = finalWidth;
+        fArr[15] = finalWidth;
         fArr[1] = 15.5f;
         fArr[6] = -15.5f;
         fArr[11] = -15.5f;

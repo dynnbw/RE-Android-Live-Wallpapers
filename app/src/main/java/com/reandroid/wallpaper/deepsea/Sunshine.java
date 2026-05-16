@@ -105,18 +105,18 @@ class Sunshine extends GLBaseView {
         this.mLight = f;
     }
 
-    public void changeDisplay(int i, int i2) {
-        float f = ((float) i / (float) i2) * 10.0f;
-        float f2 = f + (0.5f * f);
-        this.mVerticesData[0] = -f2;
-        this.mVerticesData[5] = -f2;
-        this.mVerticesData[10] = f2;
-        this.mVerticesData[15] = f2;
-        float f3 = (0.55f * 10.0f) + 10.0f;
-        this.mVerticesData[1] = f3;
-        this.mVerticesData[6] = -f3;
-        this.mVerticesData[11] = -f3;
-        this.mVerticesData[16] = f3;
+    public void changeDisplay(int screenWidth, int screenHeight) {
+        float aspectRatioScaled = ((float) screenWidth / (float) screenHeight) * 10.0f;
+        float finalWidth = aspectRatioScaled + (0.5f * aspectRatioScaled);
+        this.mVerticesData[0] = -finalWidth;
+        this.mVerticesData[5] = -finalWidth;
+        this.mVerticesData[10] = finalWidth;
+        this.mVerticesData[15] = finalWidth;
+        float heightValue = (0.55f * 10.0f) + 10.0f;
+        this.mVerticesData[1] = heightValue;
+        this.mVerticesData[6] = -heightValue;
+        this.mVerticesData[11] = -heightValue;
+        this.mVerticesData[16] = heightValue;
     }
 
     @Override // com.reandroid.wallpaper.deepsea.GLBaseView
