@@ -23,6 +23,7 @@ import android.util.Log;
 
 import androidx.preference.PreferenceManager;
 
+import com.reandroid.wallpaper.MathUtils;
 import java.util.Random;
 
 final class GalaxyScene {
@@ -171,7 +172,7 @@ final class GalaxyScene {
     }
 
     void setParticleCount(int count) {
-        int clamped = clampInt(count, MIN_PARTICLE_COUNT, MAX_PARTICLE_COUNT);
+        int clamped = MathUtils.clamp(count, MIN_PARTICLE_COUNT, MAX_PARTICLE_COUNT);
         if (clamped != mParticleCount) {
             mParticleCount = clamped;
             persistInt("galaxy_particle_count", mParticleCount);
@@ -188,7 +189,7 @@ final class GalaxyScene {
     }
 
     void setParticleAlphaPercent(int alphaPercent) {
-        int clamped = clampInt(alphaPercent, MIN_PARTICLE_ALPHA_PERCENT, MAX_PARTICLE_ALPHA_PERCENT);
+        int clamped = MathUtils.clamp(alphaPercent, MIN_PARTICLE_ALPHA_PERCENT, MAX_PARTICLE_ALPHA_PERCENT);
         if (clamped != mParticleAlphaPercent) {
             mParticleAlphaPercent = clamped;
             mSceneData.particleAlphaMultiplier = mParticleAlphaPercent / 100.0f;
@@ -197,7 +198,7 @@ final class GalaxyScene {
     }
 
     void setArmCount(int armCount) {
-        int clamped = clampInt(armCount, MIN_ARM_COUNT, MAX_ARM_COUNT);
+        int clamped = MathUtils.clamp(armCount, MIN_ARM_COUNT, MAX_ARM_COUNT);
         if (clamped != mArmCount) {
             mArmCount = clamped;
             persistInt(KEY_ARM_COUNT, mArmCount);
@@ -208,7 +209,7 @@ final class GalaxyScene {
     }
 
     void setArmOffset(float armOffset) {
-        float clamped = clampFloat(armOffset, MIN_ARM_OFFSET, MAX_ARM_OFFSET);
+        float clamped = MathUtils.clamp(armOffset, MIN_ARM_OFFSET, MAX_ARM_OFFSET);
         if (clamped != mArmOffset) {
             mArmOffset = clamped;
             persistScaledFloat(KEY_ARM_OFFSET, mArmOffset, 1000.0f);
@@ -219,7 +220,7 @@ final class GalaxyScene {
     }
 
     void setPitchAngleDeg(float pitchAngleDeg) {
-        float clamped = clampFloat(pitchAngleDeg, MIN_PITCH_ANGLE_DEG, MAX_PITCH_ANGLE_DEG);
+        float clamped = MathUtils.clamp(pitchAngleDeg, MIN_PITCH_ANGLE_DEG, MAX_PITCH_ANGLE_DEG);
         if (clamped != mPitchAngleDeg) {
             mPitchAngleDeg = clamped;
             mPitchAngleRad = mPitchAngleDeg * PI / 180.0f;
@@ -231,7 +232,7 @@ final class GalaxyScene {
     }
 
     void setInnerScatter(float innerScatter) {
-        float clamped = clampFloat(innerScatter, MIN_SCATTER, MAX_SCATTER);
+        float clamped = MathUtils.clamp(innerScatter, MIN_SCATTER, MAX_SCATTER);
         if (clamped != mPreciseInnerScatter) {
             mPreciseInnerScatter = clamped;
             persistScaledFloat(KEY_INNER_SCATTER, mPreciseInnerScatter, 100.0f);
@@ -242,7 +243,7 @@ final class GalaxyScene {
     }
 
     void setOuterScatter(float outerScatter) {
-        float clamped = clampFloat(outerScatter, MIN_SCATTER, MAX_SCATTER);
+        float clamped = MathUtils.clamp(outerScatter, MIN_SCATTER, MAX_SCATTER);
         if (clamped != mPreciseOuterScatter) {
             mPreciseOuterScatter = clamped;
             persistScaledFloat(KEY_OUTER_SCATTER, mPreciseOuterScatter, 100.0f);
@@ -253,7 +254,7 @@ final class GalaxyScene {
     }
 
     void setTurbulence(float turbulence) {
-        float clamped = clampFloat(turbulence, MIN_TURBULENCE, MAX_TURBULENCE);
+        float clamped = MathUtils.clamp(turbulence, MIN_TURBULENCE, MAX_TURBULENCE);
         if (clamped != mPreciseTurbulence) {
             mPreciseTurbulence = clamped;
             persistScaledFloat(KEY_TURBULENCE, mPreciseTurbulence, 100.0f);
@@ -264,7 +265,7 @@ final class GalaxyScene {
     }
 
     void setForbiddenRadius(float forbiddenRadius) {
-        float clamped = clampFloat(forbiddenRadius, MIN_FORBIDDEN_RADIUS_KPC, MAX_FORBIDDEN_RADIUS_KPC);
+        float clamped = MathUtils.clamp(forbiddenRadius, MIN_FORBIDDEN_RADIUS_KPC, MAX_FORBIDDEN_RADIUS_KPC);
         if (clamped != mForbiddenRadiusKpc) {
             mForbiddenRadiusKpc = clamped;
             persistScaledFloat(KEY_FORBIDDEN_RADIUS, mForbiddenRadiusKpc, 100.0f);
@@ -275,7 +276,7 @@ final class GalaxyScene {
     }
 
     void setEllipseRatio(float ellipseRatio) {
-        float clamped = clampFloat(ellipseRatio, MIN_ELLIPSE_RATIO, MAX_ELLIPSE_RATIO);
+        float clamped = MathUtils.clamp(ellipseRatio, MIN_ELLIPSE_RATIO, MAX_ELLIPSE_RATIO);
         if (clamped != mEllipseRatio) {
             mEllipseRatio = clamped;
             persistScaledFloat(KEY_ELLIPSE_RATIO, mEllipseRatio, 1000.0f);
@@ -286,7 +287,7 @@ final class GalaxyScene {
     }
 
     void setEllipseTwist(float ellipseTwist) {
-        float clamped = clampFloat(ellipseTwist, MIN_ELLIPSE_TWIST, MAX_ELLIPSE_TWIST);
+        float clamped = MathUtils.clamp(ellipseTwist, MIN_ELLIPSE_TWIST, MAX_ELLIPSE_TWIST);
         if (clamped != mEllipseTwist) {
             mEllipseTwist = clamped;
             persistInt(KEY_ELLIPSE_TWIST, encodeEllipseTwist(mEllipseTwist));
@@ -445,32 +446,32 @@ final class GalaxyScene {
         }
 
         loadPreciseShapeSettings(defaultPrefs, legacyPrefs);
-        mParticleCount = clampInt(mParticleCount, MIN_PARTICLE_COUNT, MAX_PARTICLE_COUNT);
-        mParticleAlphaPercent = clampInt(mParticleAlphaPercent, MIN_PARTICLE_ALPHA_PERCENT, MAX_PARTICLE_ALPHA_PERCENT);
+        mParticleCount = MathUtils.clamp(mParticleCount, MIN_PARTICLE_COUNT, MAX_PARTICLE_COUNT);
+        mParticleAlphaPercent = MathUtils.clamp(mParticleAlphaPercent, MIN_PARTICLE_ALPHA_PERCENT, MAX_PARTICLE_ALPHA_PERCENT);
         mSceneData.particleAlphaMultiplier = mParticleAlphaPercent / 100.0f;
     }
 
     private void loadPreciseShapeSettings(SharedPreferences defaultPrefs, SharedPreferences legacyPrefs) {
         SharedPreferences.Editor migrateEditor = defaultPrefs.edit();
 
-        mArmCount = clampInt(readIntWithLegacy(defaultPrefs, legacyPrefs, KEY_ARM_COUNT,
+        mArmCount = MathUtils.clamp(readIntWithLegacy(defaultPrefs, legacyPrefs, KEY_ARM_COUNT,
                 DEFAULT_ARM_COUNT, migrateEditor), MIN_ARM_COUNT, MAX_ARM_COUNT);
-        mArmOffset = clampFloat(readScaledFloatWithLegacy(defaultPrefs, legacyPrefs, KEY_ARM_OFFSET,
+        mArmOffset = MathUtils.clamp(readScaledFloatWithLegacy(defaultPrefs, legacyPrefs, KEY_ARM_OFFSET,
                 DEFAULT_ARM_OFFSET, 1000.0f, migrateEditor), MIN_ARM_OFFSET, MAX_ARM_OFFSET);
-        mPitchAngleDeg = clampFloat(readScaledFloatWithLegacy(defaultPrefs, legacyPrefs, KEY_PITCH_ANGLE_DEG,
+        mPitchAngleDeg = MathUtils.clamp(readScaledFloatWithLegacy(defaultPrefs, legacyPrefs, KEY_PITCH_ANGLE_DEG,
                 DEFAULT_PITCH_ANGLE_DEG, 10.0f, migrateEditor), MIN_PITCH_ANGLE_DEG, MAX_PITCH_ANGLE_DEG);
-        mForbiddenRadiusKpc = clampFloat(readScaledFloatWithLegacy(defaultPrefs, legacyPrefs, KEY_FORBIDDEN_RADIUS,
+        mForbiddenRadiusKpc = MathUtils.clamp(readScaledFloatWithLegacy(defaultPrefs, legacyPrefs, KEY_FORBIDDEN_RADIUS,
                 DEFAULT_FORBIDDEN_RADIUS_KPC, 100.0f, migrateEditor), MIN_FORBIDDEN_RADIUS_KPC,
                 MAX_FORBIDDEN_RADIUS_KPC);
-        mPreciseInnerScatter = clampFloat(readScaledFloatWithLegacy(defaultPrefs, legacyPrefs, KEY_INNER_SCATTER,
+        mPreciseInnerScatter = MathUtils.clamp(readScaledFloatWithLegacy(defaultPrefs, legacyPrefs, KEY_INNER_SCATTER,
                 DEFAULT_PRECISE_INNER_SCATTER, 100.0f, migrateEditor), MIN_SCATTER, MAX_SCATTER);
-        mPreciseOuterScatter = clampFloat(readScaledFloatWithLegacy(defaultPrefs, legacyPrefs, KEY_OUTER_SCATTER,
+        mPreciseOuterScatter = MathUtils.clamp(readScaledFloatWithLegacy(defaultPrefs, legacyPrefs, KEY_OUTER_SCATTER,
                 DEFAULT_PRECISE_OUTER_SCATTER, 100.0f, migrateEditor), MIN_SCATTER, MAX_SCATTER);
-        mPreciseTurbulence = clampFloat(readScaledFloatWithLegacy(defaultPrefs, legacyPrefs, KEY_TURBULENCE,
+        mPreciseTurbulence = MathUtils.clamp(readScaledFloatWithLegacy(defaultPrefs, legacyPrefs, KEY_TURBULENCE,
                 DEFAULT_PRECISE_TURBULENCE, 100.0f, migrateEditor), MIN_TURBULENCE, MAX_TURBULENCE);
-        mEllipseRatio = clampFloat(readScaledFloatWithLegacy(defaultPrefs, legacyPrefs, KEY_ELLIPSE_RATIO,
+        mEllipseRatio = MathUtils.clamp(readScaledFloatWithLegacy(defaultPrefs, legacyPrefs, KEY_ELLIPSE_RATIO,
                 DEFAULT_ELLIPSE_RATIO, 1000.0f, migrateEditor), MIN_ELLIPSE_RATIO, MAX_ELLIPSE_RATIO);
-        mEllipseTwist = clampFloat(readEllipseTwistWithLegacy(defaultPrefs, legacyPrefs, migrateEditor),
+        mEllipseTwist = MathUtils.clamp(readEllipseTwistWithLegacy(defaultPrefs, legacyPrefs, migrateEditor),
                 MIN_ELLIPSE_TWIST, MAX_ELLIPSE_TWIST);
 
         mPitchAngleRad = mPitchAngleDeg * PI / 180.0f;
@@ -533,34 +534,34 @@ final class GalaxyScene {
         mLastSettingsSyncTime = now;
 
         SharedPreferences defaultPrefs = PreferenceManager.getDefaultSharedPreferences(getAppContext());
-        int prefParticleCount = clampInt(defaultPrefs.getInt("galaxy_particle_count", mParticleCount),
+        int prefParticleCount = MathUtils.clamp(defaultPrefs.getInt("galaxy_particle_count", mParticleCount),
                 MIN_PARTICLE_COUNT, MAX_PARTICLE_COUNT);
-        int prefParticleAlpha = clampInt(defaultPrefs.getInt("galaxy_particle_alpha", mParticleAlphaPercent),
+        int prefParticleAlpha = MathUtils.clamp(defaultPrefs.getInt("galaxy_particle_alpha", mParticleAlphaPercent),
                 MIN_PARTICLE_ALPHA_PERCENT, MAX_PARTICLE_ALPHA_PERCENT);
         boolean prefPreciseCalc = defaultPrefs.getBoolean("galaxy_precise_calc", mUsePreciseCalculation);
 
-        int prefArmCount = clampInt(defaultPrefs.getInt(KEY_ARM_COUNT, mArmCount), MIN_ARM_COUNT, MAX_ARM_COUNT);
-        float prefArmOffset = clampFloat(defaultPrefs.getInt(KEY_ARM_OFFSET, Math.round(mArmOffset * 1000.0f)) / 1000.0f,
+        int prefArmCount = MathUtils.clamp(defaultPrefs.getInt(KEY_ARM_COUNT, mArmCount), MIN_ARM_COUNT, MAX_ARM_COUNT);
+        float prefArmOffset = MathUtils.clamp(defaultPrefs.getInt(KEY_ARM_OFFSET, Math.round(mArmOffset * 1000.0f)) / 1000.0f,
                 MIN_ARM_OFFSET, MAX_ARM_OFFSET);
-        float prefPitchAngleDeg = clampFloat(
+        float prefPitchAngleDeg = MathUtils.clamp(
                 defaultPrefs.getInt(KEY_PITCH_ANGLE_DEG, Math.round(mPitchAngleDeg * 10.0f)) / 10.0f,
                 MIN_PITCH_ANGLE_DEG, MAX_PITCH_ANGLE_DEG);
-        float prefInnerScatter = clampFloat(
+        float prefInnerScatter = MathUtils.clamp(
                 defaultPrefs.getInt(KEY_INNER_SCATTER, Math.round(mPreciseInnerScatter * 100.0f)) / 100.0f,
                 MIN_SCATTER, MAX_SCATTER);
-        float prefOuterScatter = clampFloat(
+        float prefOuterScatter = MathUtils.clamp(
                 defaultPrefs.getInt(KEY_OUTER_SCATTER, Math.round(mPreciseOuterScatter * 100.0f)) / 100.0f,
                 MIN_SCATTER, MAX_SCATTER);
-        float prefTurbulence = clampFloat(
+        float prefTurbulence = MathUtils.clamp(
                 defaultPrefs.getInt(KEY_TURBULENCE, Math.round(mPreciseTurbulence * 100.0f)) / 100.0f,
                 MIN_TURBULENCE, MAX_TURBULENCE);
-        float prefForbiddenRadius = clampFloat(
+        float prefForbiddenRadius = MathUtils.clamp(
                 defaultPrefs.getInt(KEY_FORBIDDEN_RADIUS, Math.round(mForbiddenRadiusKpc * 100.0f)) / 100.0f,
                 MIN_FORBIDDEN_RADIUS_KPC, MAX_FORBIDDEN_RADIUS_KPC);
-        float prefEllipseRatio = clampFloat(
+        float prefEllipseRatio = MathUtils.clamp(
                 defaultPrefs.getInt(KEY_ELLIPSE_RATIO, Math.round(mEllipseRatio * 1000.0f)) / 1000.0f,
                 MIN_ELLIPSE_RATIO, MAX_ELLIPSE_RATIO);
-        float prefEllipseTwist = clampFloat(
+        float prefEllipseTwist = MathUtils.clamp(
                 decodeEllipseTwist(defaultPrefs.getInt(KEY_ELLIPSE_TWIST, encodeEllipseTwist(mEllipseTwist))),
                 MIN_ELLIPSE_TWIST, MAX_ELLIPSE_TWIST);
 
@@ -632,7 +633,7 @@ final class GalaxyScene {
             float armAngleOffset = armIndex * mArmOffset;
 
             float radiusLerp = (radiusKpc - safeForbiddenRadius) / (GALAXY_RADIUS_KPC - safeForbiddenRadius);
-            radiusLerp = clampFloat(radiusLerp, 0.0f, 1.0f);
+            radiusLerp = MathUtils.clamp(radiusLerp, 0.0f, 1.0f);
             float scatterAmp = mPreciseInnerScatter + (mPreciseOuterScatter - mPreciseInnerScatter) * radiusLerp;
 
             float uniformScatter = (mRandom.nextFloat() - 0.5f) * scatterAmp;
@@ -684,16 +685,9 @@ final class GalaxyScene {
         return maxStart + (maxStart - maxStop) * ((value - minStart) / (minStop - minStart));
     }
 
-    private int clampInt(int value, int min, int max) {
-        return Math.max(min, Math.min(max, value));
-    }
-
-    private float clampFloat(float value, float min, float max) {
-        return Math.max(min, Math.min(max, value));
-    }
 
     private int encodeEllipseTwist(float twist) {
-        return Math.round(clampFloat(twist, MIN_ELLIPSE_TWIST, MAX_ELLIPSE_TWIST) * 1000.0f)
+        return Math.round(MathUtils.clamp(twist, MIN_ELLIPSE_TWIST, MAX_ELLIPSE_TWIST) * 1000.0f)
                 + ELLIPSE_TWIST_STORAGE_OFFSET;
     }
 

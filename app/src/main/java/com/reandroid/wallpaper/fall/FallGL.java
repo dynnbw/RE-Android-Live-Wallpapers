@@ -28,6 +28,7 @@ import android.os.SystemClock;
 import android.util.Log;
 import android.view.MotionEvent;
 
+import com.reandroid.wallpaper.MathUtils;
 import com.reandroid.wallpaper.R;
 import com.reandroid.gles.GLESScene;
 import com.reandroid.gles.RawResourceLoader;
@@ -310,7 +311,7 @@ public class FallGL extends GLESScene {
             if (leaf.altitude >= 0.4f) {
                 shadowAlpha = 1.0f - (leaf.altitude - 0.4f) / 0.1f;
             }
-            shadowAlpha = clamp(shadowAlpha, 0.0f, 1.0f) * 0.15f;
+            shadowAlpha = MathUtils.clamp(shadowAlpha, 0.0f, 1.0f) * 0.15f;
 
             float shadowOffset = leaf.altitude * 0.2f;
             int texture = mLeafTextures[leaf.leafTextureIndex % mLeafTextures.length];
@@ -323,7 +324,7 @@ public class FallGL extends GLESScene {
             if (leaf.altitude >= 0.4f) {
                 leafAlpha = 1.0f - (leaf.altitude - 0.4f) / 0.1f;
             }
-            leafAlpha = clamp(leafAlpha, 0.0f, 1.0f);
+            leafAlpha = MathUtils.clamp(leafAlpha, 0.0f, 1.0f);
         }
 
         int texture = mLeafTextures[leaf.leafTextureIndex % mLeafTextures.length];
@@ -575,7 +576,4 @@ public class FallGL extends GLESScene {
         }
     }
 
-    private float clamp(float value, float min, float max) {
-        return Math.max(min, Math.min(max, value));
-    }
 }

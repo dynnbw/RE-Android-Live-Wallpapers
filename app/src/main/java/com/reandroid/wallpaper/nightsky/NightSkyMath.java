@@ -1,5 +1,7 @@
 package com.reandroid.wallpaper.nightsky;
 
+import com.reandroid.wallpaper.MathUtils;
+
 final class NightSkyMath {
     static final double DEG_TO_RAD = Math.PI / 180.0;
     static final double TWO_PI = Math.PI * 2.0;
@@ -40,12 +42,9 @@ final class NightSkyMath {
         outVec3[2] = up;
     }
 
-    static float clamp(float v, float min, float max) {
-        return Math.max(min, Math.min(max, v));
-    }
 
     static float[] bvToRgb(float bv) {
-        float x = clamp(bv, -0.4f, 2.0f);
+        float x = MathUtils.clamp(bv, -0.4f, 2.0f);
 
         float r;
         float g;
@@ -69,6 +68,6 @@ final class NightSkyMath {
             b = 0.30f - 0.20f * (x - 1.5f) / 0.5f;
         }
 
-        return new float[] { clamp(r, 0.0f, 1.0f), clamp(g, 0.0f, 1.0f), clamp(b, 0.0f, 1.0f) };
+        return new float[] { MathUtils.clamp(r, 0.0f, 1.0f), MathUtils.clamp(g, 0.0f, 1.0f), MathUtils.clamp(b, 0.0f, 1.0f) };
     }
 }

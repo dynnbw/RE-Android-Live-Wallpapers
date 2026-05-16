@@ -109,32 +109,28 @@ public class PhaseBeamSettingsFragment extends PreferenceFragmentCompat implemen
             app.getSharedPreferences(PhaseBeamGL.PREFS_NAME, Context.MODE_PRIVATE)
                     .edit()
                     .putBoolean(PhaseBeamGL.KEY_ENABLED, enabled)
-                    .apply();
-            updatePreview();
+                    .commit();
             return true;
         } else if ("phasebeam_hue".equals(key)) {
             float value = progressToFloat((Integer) newValue, 0.0f, 1.0f);
             app.getSharedPreferences(PhaseBeamGL.PREFS_NAME, Context.MODE_PRIVATE)
                     .edit()
                     .putFloat(PhaseBeamGL.KEY_HUE, value)
-                    .apply();
-            updatePreview();
+                    .commit();
             return true;
         } else if ("phasebeam_saturation".equals(key)) {
             float value = progressToFloat((Integer) newValue, 0.0f, 1.0f);
             app.getSharedPreferences(PhaseBeamGL.PREFS_NAME, Context.MODE_PRIVATE)
                     .edit()
                     .putFloat(PhaseBeamGL.KEY_SATURATION, value)
-                    .apply();
-            updatePreview();
+                    .commit();
             return true;
         } else if ("phasebeam_brightness".equals(key)) {
             float value = progressToFloat((Integer) newValue, 0.5f, 1.5f);
             app.getSharedPreferences(PhaseBeamGL.PREFS_NAME, Context.MODE_PRIVATE)
                     .edit()
                     .putFloat(PhaseBeamGL.KEY_BRIGHTNESS, value)
-                    .apply();
-            updatePreview();
+                    .commit();
             return true;
         }
         return false;

@@ -92,47 +92,38 @@ final class GrassBackgroundRenderer {
     }
 
     void drawBackground(SceneData sd) {
-        float now = sd.timeFraction;
-        float dawn = sd.dawn;
-        float morning = sd.morning;
-        float afternoon = sd.afternoon;
-        float dusk = sd.dusk;
+        // Compute sky blend weights once, shared with Vulkan path via SceneData
+        float[] w = new float[4];
+        SceneData.computeSimpleSkyWeights(sd.timeFraction, sd.dawn, sd.morning, sd.afternoon, sd.dusk, w);
+        float wNight = w[0], wSunrise = w[1], wSunset = w[2], wSky = w[3];
 
-        if (now >= 0.0f && now < dawn) {
+        // Two-weight transition phases: draw first layer at full alpha, second at blend alpha
+        if (wNight > 0.0f && wSunrise > 0.0f) {
             setAlpha(1.0f);
             drawNight(sd.nightInvert);
-        } else if (now >= dawn && now <= morning) {
-            float half = dawn + (morning - dawn) * 0.5f;
-            if (now <= half) {
-                setAlpha(1.0f);
-                drawNight(sd.nightInvert);
-                setAlpha(MathUtils.norm(dawn, half, now));
-                drawSunrise();
-            } else {
-                setAlpha(1.0f);
-                drawSunrise();
-                setAlpha(MathUtils.norm(half, morning, now));
-                drawNoon();
-            }
-        } else if (now > morning && now < afternoon) {
+            setAlpha(wSunrise);
+            drawSunrise();
+        } else if (wSunrise > 0.0f && wSky > 0.0f) {
+            setAlpha(1.0f);
+            drawSunrise();
+            setAlpha(wSky);
+            drawNoon();
+        } else if (wSky > 0.0f && wSunset > 0.0f) {
             setAlpha(1.0f);
             drawNoon();
-        } else if (now >= afternoon && now <= dusk) {
-            float half = afternoon + (dusk - afternoon) * 0.5f;
-            if (now <= half) {
-                setAlpha(1.0f);
-                drawNoon();
-                setAlpha(MathUtils.norm(afternoon, half, now));
-                drawSunset();
-            } else {
-                setAlpha(1.0f);
-                drawSunset();
-                setAlpha(MathUtils.norm(half, dusk, now));
-                drawNight(sd.nightInvert);
-            }
-        } else if (now > dusk) {
+            setAlpha(wSunset);
+            drawSunset();
+        } else if (wSunset > 0.0f && wNight > 0.0f) {
+            setAlpha(1.0f);
+            drawSunset();
+            setAlpha(wNight);
+            drawNight(sd.nightInvert);
+        } else if (wNight >= 1.0f) {
             setAlpha(1.0f);
             drawNight(sd.nightInvert);
+        } else if (wSky >= 1.0f) {
+            setAlpha(1.0f);
+            drawNoon();
         }
     }
 

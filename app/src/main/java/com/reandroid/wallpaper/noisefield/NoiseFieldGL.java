@@ -27,6 +27,7 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.app.WallpaperManager;
 
+import com.reandroid.wallpaper.MathUtils;
 import com.reandroid.wallpaper.R;
 import com.reandroid.gles.GLESScene;
 import com.reandroid.gles.RawResourceLoader;
@@ -491,15 +492,15 @@ public class NoiseFieldGL extends GLESScene {
         u = rx0 * q[0] + ry0 * q[1];
         q = g2[b10];
         v = rx1 * q[0] + ry0 * q[1];
-        a = mix(u, v, sx);
+        a = MathUtils.mix(u, v, sx);
 
         q = g2[b01];
         u = rx0 * q[0] + ry1 * q[1];
         q = g2[b11];
         v = rx1 * q[0] + ry1 * q[1];
-        b = mix(u, v, sx);
+        b = MathUtils.mix(u, v, sx);
 
-        return 1.5f * mix(a, b, sy);
+        return 1.5f * MathUtils.mix(a, b, sy);
     }
 
     private float noiseSCurve(float t) {
@@ -512,9 +513,6 @@ public class NoiseFieldGL extends GLESScene {
         v[1] = v[1] / s;
     }
 
-    private float mix(float a, float b, float t) {
-        return a + t * (b - a);
-    }
 
     private int loadTexture(int resId) {
         Bitmap bitmap = BitmapFactory.decodeResource(mResources, resId);

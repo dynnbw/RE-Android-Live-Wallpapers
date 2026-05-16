@@ -3,6 +3,8 @@ package com.reandroid.wallpaper.nightsky;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 
+import com.reandroid.wallpaper.MathUtils;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
@@ -146,7 +148,7 @@ final class NightSkyTrailRenderer {
             float g = catalog.starColors[cc + 1];
             float b = catalog.starColors[cc + 2];
 
-            float normBrightness = NightSkyMath.clamp(catalog.starParams[pp + 3], 0.0f, 1.0f);
+            float normBrightness = MathUtils.clamp(catalog.starParams[pp + 3], 0.0f, 1.0f);
             if (normBrightness < MIN_TRAIL_BRIGHTNESS) {
                 continue;
             }

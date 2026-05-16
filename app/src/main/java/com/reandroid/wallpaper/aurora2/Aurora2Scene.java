@@ -4,6 +4,7 @@ import android.opengl.Matrix;
 import android.view.MotionEvent;
 
 import java.util.Calendar;
+import com.reandroid.wallpaper.MathUtils;
 import java.util.Random;
 
 final class Aurora2Scene {
@@ -355,7 +356,7 @@ final class Aurora2Scene {
             sprite.x = nextX + (mXDrawOffset * 0.8f);
             sprite.y = nextY;
             sprite.z = -30.0f;
-            sprite.alpha = clamp(mStarAlpha1[i], 0.1f, 1.0f);
+            sprite.alpha = MathUtils.clamp(mStarAlpha1[i], 0.1f, 1.0f);
         }
     }
 
@@ -375,7 +376,7 @@ final class Aurora2Scene {
             sprite.x = SHINING_STAR_X2[i] + (mXDrawOffset * 0.7f);
             sprite.y = SHINING_STAR_Y2[i] + (mVerticalMode ? 400.0f : 0.0f);
             sprite.z = -30.0f;
-            sprite.alpha = clamp(mStarAlpha2[i], 0.1f, 0.8f);
+            sprite.alpha = MathUtils.clamp(mStarAlpha2[i], 0.1f, 0.8f);
         }
     }
 
@@ -517,9 +518,6 @@ final class Aurora2Scene {
         }
     }
 
-    private static float clamp(float value, float min, float max) {
-        return Math.max(min, Math.min(max, value));
-    }
 
     private static String[] buildTextureNames() {
         String[] names = new String[TEXTURE_COUNT];

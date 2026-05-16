@@ -87,7 +87,8 @@ final class GrassWeatherIntegration {
             updatePreviewWeatherCycle(timeMs);
         }
 
-        WeatherState weatherState = pendingWeatherState.get();
+        // Atomically consume the pending weather state (get + clear in one operation)
+        WeatherState weatherState = pendingWeatherState.getAndSet(null);
         boolean enabledNow = WallpaperSettings.isGrassWeatherEnabled(true);
         if (enabledNow != weatherEnabled) {
             weatherEnabled = enabledNow;
@@ -109,18 +110,12 @@ final class GrassWeatherIntegration {
                 previewWeatherNextMs = 0L;
             } else if (isPreview) {
                 initPreviewWeatherCycle();
-                weatherState = pendingWeatherState.get();
+                weatherState = pendingWeatherState.getAndSet(null);
             }
         }
 
-        boolean shouldClear = clearWeatherStatePending.get();
-        if (shouldClear) {
-            clearWeatherStatePending.set(false);
-        }
-
-        if (weatherState != null) {
-            pendingWeatherState.set(null);
-        }
+        // Atomically consume the clear-weather flag
+        boolean shouldClear = clearWeatherStatePending.getAndSet(false);
 
         return new FrameUpdate(weatherState, shouldClear);
     }

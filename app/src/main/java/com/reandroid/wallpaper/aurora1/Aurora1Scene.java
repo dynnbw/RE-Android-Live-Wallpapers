@@ -3,6 +3,7 @@ package com.reandroid.wallpaper.aurora1;
 import android.opengl.Matrix;
 import android.view.MotionEvent;
 
+import com.reandroid.wallpaper.MathUtils;
 import java.util.Random;
 
 final class Aurora1Scene {
@@ -352,7 +353,7 @@ final class Aurora1Scene {
             sprite.red = 0.94f;
             sprite.green = 0.88f;
             sprite.blue = 1.0f;
-            sprite.alpha = clamp01(state.alpha * (0.28f + 0.72f * pulse));
+            sprite.alpha = MathUtils.clamp(state.alpha * (0.28f + 0.72f * pulse), 0.0f, 1.0f);
             sprite.flowX = 0.0f;
             sprite.flowY = 0.0f;
             sprite.distort = 0.0f;
@@ -369,9 +370,9 @@ final class Aurora1Scene {
         for (int i = 0; i < LAYER_SPECS.length; i++) {
             AnimatedLayerSpec spec = LAYER_SPECS[i];
             Sprite sprite = mSceneData.auroraSprites[i];
-            float tx = lerp(spec.txStart, spec.txEnd, cycle01(mElapsedSec, spec.translationDuration));
-            float ty = lerp(spec.tyStart, spec.tyEnd, cycle01(mElapsedSec, spec.translationDuration));
-            float rotation = lerp(spec.rzStart, spec.rzEnd, cycle01(mElapsedSec, spec.rotationDuration));
+            float tx = MathUtils.lerp(spec.txStart, spec.txEnd, cycle01(mElapsedSec, spec.translationDuration));
+            float ty = MathUtils.lerp(spec.tyStart, spec.tyEnd, cycle01(mElapsedSec, spec.translationDuration));
+            float rotation = MathUtils.lerp(spec.rzStart, spec.rzEnd, cycle01(mElapsedSec, spec.rotationDuration));
             float scale = spec.baseScale;
             if (spec.scaleSequence != null && spec.scaleDuration > 0.0f) {
                 scale = sampleSequence(spec.scaleSequence, spec.scaleDuration, mElapsedSec);
@@ -519,18 +520,10 @@ final class Aurora1Scene {
         int index = (int) Math.floor(progress);
         int nextIndex = Math.min(values.length - 1, index + 1);
         float fraction = progress - index;
-        return lerp(values[index], values[nextIndex], fraction);
-    }
-
-    private float lerp(float start, float end, float t) {
-        return start + (end - start) * t;
+        return MathUtils.lerp(values[index], values[nextIndex], fraction);
     }
 
     private float randomRange(float min, float max) {
         return min + mRandom.nextFloat() * (max - min);
-    }
-
-    private float clamp01(float value) {
-        return Math.max(0.0f, Math.min(1.0f, value));
     }
 }

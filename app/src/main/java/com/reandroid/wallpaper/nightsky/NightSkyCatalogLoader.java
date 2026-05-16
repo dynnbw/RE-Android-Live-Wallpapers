@@ -3,6 +3,7 @@ package com.reandroid.wallpaper.nightsky;
 import android.content.Context;
 import android.content.res.Resources;
 
+import com.reandroid.wallpaper.MathUtils;
 import com.reandroid.wallpaper.R;
 
 import java.io.DataInputStream;
@@ -145,10 +146,10 @@ final class NightSkyCatalogLoader {
             int p = i * 4;
             float vmag = params[p + 2];
             float brightness = (float) Math.pow(2.512, MAG_LIMIT - vmag);
-            float normBrightness = NightSkyMath.clamp(brightness / maxBrightness, 0.0f, 1.0f);
+            float normBrightness = MathUtils.clamp(brightness / maxBrightness, 0.0f, 1.0f);
             params[p + 2] = brightness;
             params[p + 3] = normBrightness;
-            baseAlpha[i] = NightSkyMath.clamp(
+            baseAlpha[i] = MathUtils.clamp(
                     0.08f + 0.92f * (float) Math.pow(normBrightness, 0.42f),
                     0.08f,
                     1.0f

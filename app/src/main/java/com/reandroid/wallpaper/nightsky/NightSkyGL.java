@@ -15,6 +15,7 @@ import android.view.WindowManager;
 import com.reandroid.gles.GLESScene;
 import com.reandroid.gles.GLESWallpaper;
 import com.reandroid.gles.RawResourceLoader;
+import com.reandroid.wallpaper.MathUtils;
 import com.reandroid.wallpaper.R;
 
 import androidx.preference.PreferenceManager;
@@ -218,7 +219,7 @@ public class NightSkyGL extends GLESScene {
         );
         long baseTrailLookbackMs = touchTimeController.getAcceleratingRealElapsedMs() * TRAIL_LOOKBACK_SCALE;
         float speedScale = touchTimeController.getCurrentTimeScale();
-        float speedNorm = NightSkyMath.clamp(
+        float speedNorm = MathUtils.clamp(
             (speedScale - MIN_TIME_ACCEL_SPEED) / (MAX_TIME_ACCEL_SPEED - MIN_TIME_ACCEL_SPEED),
             0.0f,
             1.0f

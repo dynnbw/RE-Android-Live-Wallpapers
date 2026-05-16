@@ -23,6 +23,7 @@ import android.util.Log;
 
 import androidx.preference.PreferenceManager;
 
+import com.reandroid.wallpaper.MathUtils;
 import java.util.Random;
 
 final class Galaxy4Scene {
@@ -93,7 +94,7 @@ final class Galaxy4Scene {
     }
 
     void setBgStarCount(int count) {
-        int clamped = clampInt(count, MIN_BG_STAR_COUNT, MAX_BG_STAR_COUNT);
+        int clamped = MathUtils.clamp(count, MIN_BG_STAR_COUNT, MAX_BG_STAR_COUNT);
         if (clamped != mBgStarCount) {
             mBgStarCount = clamped;
             persistInt("galaxy4_bg_star_count", mBgStarCount);
@@ -102,7 +103,7 @@ final class Galaxy4Scene {
     }
 
     void setSpaceCloudCount(int count) {
-        int clamped = clampInt(count, MIN_SPACE_CLOUD_COUNT, MAX_SPACE_CLOUD_COUNT);
+        int clamped = MathUtils.clamp(count, MIN_SPACE_CLOUD_COUNT, MAX_SPACE_CLOUD_COUNT);
         if (clamped != mSpaceCloudCount) {
             mSpaceCloudCount = clamped;
             persistInt("galaxy4_space_cloud_count", mSpaceCloudCount);
@@ -153,8 +154,8 @@ final class Galaxy4Scene {
             }
         }
 
-        mBgStarCount = clampInt(mBgStarCount, MIN_BG_STAR_COUNT, MAX_BG_STAR_COUNT);
-        mSpaceCloudCount = clampInt(mSpaceCloudCount, MIN_SPACE_CLOUD_COUNT, MAX_SPACE_CLOUD_COUNT);
+        mBgStarCount = MathUtils.clamp(mBgStarCount, MIN_BG_STAR_COUNT, MAX_BG_STAR_COUNT);
+        mSpaceCloudCount = MathUtils.clamp(mSpaceCloudCount, MIN_SPACE_CLOUD_COUNT, MAX_SPACE_CLOUD_COUNT);
     }
 
     private void syncSettingsFromPreferencesIfNeeded(long now) {
@@ -167,9 +168,9 @@ final class Galaxy4Scene {
         mLastSettingsSyncTime = now;
 
         SharedPreferences defaultPrefs = PreferenceManager.getDefaultSharedPreferences(getAppContext());
-        int prefBgStarCount = clampInt(defaultPrefs.getInt("galaxy4_bg_star_count", mBgStarCount),
+        int prefBgStarCount = MathUtils.clamp(defaultPrefs.getInt("galaxy4_bg_star_count", mBgStarCount),
                 MIN_BG_STAR_COUNT, MAX_BG_STAR_COUNT);
-        int prefSpaceCloudCount = clampInt(defaultPrefs.getInt("galaxy4_space_cloud_count", mSpaceCloudCount),
+        int prefSpaceCloudCount = MathUtils.clamp(defaultPrefs.getInt("galaxy4_space_cloud_count", mSpaceCloudCount),
                 MIN_SPACE_CLOUD_COUNT, MAX_SPACE_CLOUD_COUNT);
 
         if (prefBgStarCount != mBgStarCount) {
@@ -298,9 +299,6 @@ final class Galaxy4Scene {
         return maxStart + (maxStart - maxStop) * ((value - minStart) / (minStop - minStart));
     }
 
-    private int clampInt(int value, int min, int max) {
-        return Math.max(min, Math.min(max, value));
-    }
 
     private void persistInt(String key, int value) {
         if (mContext == null) {
