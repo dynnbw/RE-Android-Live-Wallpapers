@@ -27,6 +27,7 @@ public class WallpaperSettings {
     public static final String KEY_GRASS_ACCURATE_SUN = "pref_grass_accurate_sun";
     public static final String KEY_GRASS_SUN = "pref_grass_sun";
     public static final String KEY_GRASS_MOON = "pref_grass_moon";
+    public static final String KEY_GRASS_PROCEDURAL_SUN = "pref_grass_procedural_sun";
     public static final String KEY_GRASS_DANDELION = "pref_grass_dandelion";
     public static final String KEY_GRASS_FIREFLY = "pref_grass_firefly";
     public static final String KEY_GRASS_WEATHER_ENABLED = "pref_grass_weather_enabled";
@@ -152,6 +153,12 @@ public class WallpaperSettings {
         SharedPreferences p = prefs();
         if (p == null) return defValue;
         return p.getBoolean(KEY_GRASS_SUN, defValue);
+    }
+
+    public static boolean isProceduralSunEnabled(boolean defValue) {
+        SharedPreferences p = prefs();
+        if (p == null) return defValue;
+        return p.getBoolean(KEY_GRASS_PROCEDURAL_SUN, defValue);
     }
 
     public static boolean isMoonEnabled(boolean defValue) {

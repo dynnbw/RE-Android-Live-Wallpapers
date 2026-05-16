@@ -26,7 +26,7 @@
     <string name="pref_flsorescence_pattern_summary">Cambia el patrón de movimiento</string>
 
     <!-- Wallpapers: -->
-    <skip />
+    
 
     <!-- Wallpaper showing the camera preview -->
     <string name="wallpaper_walkaround">Ver a través</string>

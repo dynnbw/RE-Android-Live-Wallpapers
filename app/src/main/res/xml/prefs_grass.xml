@@ -61,6 +61,9 @@
     <SwitchPreferenceCompat android:key="pref_grass_sun" android:title="@string/pref_grass_sun"
         android:summary="@string/pref_grass_sun_summary" android:defaultValue="true"
         android:layout="@layout/preference_modern_item" />
+    <SwitchPreferenceCompat android:key="pref_grass_procedural_sun" android:title="@string/pref_grass_procedural_sun"
+        android:summary="@string/pref_grass_procedural_sun_summary" android:defaultValue="true"
+        android:layout="@layout/preference_modern_item" />
     <SwitchPreferenceCompat android:key="pref_grass_moon" android:title="@string/pref_grass_moon"
         android:summary="@string/pref_grass_moon_summary" android:defaultValue="true"
         android:layout="@layout/preference_modern_item" />

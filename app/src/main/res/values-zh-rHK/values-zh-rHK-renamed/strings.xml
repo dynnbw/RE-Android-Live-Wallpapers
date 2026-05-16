@@ -22,12 +22,12 @@
     <string name="pref_grass_legacy_particles">原版蒲公英、螢火蟲</string>
     <string name="pref_grass_legacy_particles_summary">切換為MTK原版蒲公英和螢火蟲的視覺效果</string>
     <!-- General -->
-    
+    <skip />
     <!-- Application name -->
     <string name="wallpapers">REAndroid 動態壁紙</string>
 
     <!-- Wallpapers: -->
-    
+    <skip />
 
     <!-- Wallpaper showing the camera preview -->
     <string name="wallpaper_walkaround">透視</string>

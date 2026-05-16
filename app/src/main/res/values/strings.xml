@@ -20,7 +20,7 @@
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
 
 <string name="pref_grass_legacy_particles">Classic dandelion and fireflies</string>
-<string name="pref_grass_legacy_particles_summary">Switch to the visual effect of MTK's classic dandelions and fireflies</string>
+<string name="pref_grass_legacy_particles_summary">Switch to the visual effect of MTK\'s classic dandelions and fireflies</string>
     <!-- Application name -->
     <string name="wallpapers">REAndroid Live Wallpapers</string>
     <string name="app_name">REAndroid Live Wallpapers</string>
@@ -45,7 +45,7 @@
     <string name="pref_flsorescence_pattern_summary">Change motion pattern</string>
 
     <!-- Wallpapers: -->
-    <skip />
+    
 
     <!-- Wallpaper showing the camera preview -->
     <string name="wallpaper_walkaround">See Through</string>
@@ -260,6 +260,8 @@
         real-time and geographic location (affects performance)</string>
     <string name="pref_grass_sun">Show sun</string>
     <string name="pref_grass_sun_summary">Show or hide the sun</string>
+    <string name="pref_grass_procedural_sun">Procedural sun</string>
+    <string name="pref_grass_procedural_sun_summary">Use math-only procedural sun rendering instead of texture sprite</string>
     <string name="pref_grass_moon">Show moon (requires accurate sunrise/sunset)</string>
     <string name="pref_grass_moon_summary">Show or hide the moon with realistic lunar phases</string>
     <string name="pref_grass_dandelion">Show dandelion (day)</string>

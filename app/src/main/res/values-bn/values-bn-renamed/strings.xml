@@ -25,7 +25,7 @@
     <string name="pref_flsorescence_pattern_summary">গতির প্যাটার্ন পরিবর্তন করুন</string>
 
     <!-- ওয়ালপেপার -->
-    
+    <skip />
 
     <!-- ক্যামেরা প্রিভিউ দেখানো ওয়ালপেপার -->
     <string name="wallpaper_walkaround">স্বচ্ছ দৃশ্য</string>

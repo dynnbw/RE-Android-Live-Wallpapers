@@ -22,12 +22,12 @@
     <string name="pref_grass_legacy_particles">原版蒲公英、萤火虫</string>
     <string name="pref_grass_legacy_particles_summary">切换为MTK原版蒲公英和萤火虫的视觉效果</string>
     <!-- General -->
-    
+    <skip />
     <!-- Application name -->
     <string name="wallpapers">REAndroid 动态壁纸</string>
 
     <!-- Wallpapers: -->
-    
+    <skip />
 
     <!-- Wallpaper showing the camera preview -->
     <string name="wallpaper_walkaround">透视</string>
@@ -250,8 +250,6 @@
     <string name="pref_grass_accurate_sun_summary">根据真实时间和地理位置计算太阳和月亮的位置</string>
     <string name="pref_grass_sun">显示太阳（需开启精确计算）</string>
     <string name="pref_grass_sun_summary">显示或隐藏太阳</string>
-    <string name="pref_grass_procedural_sun">程序化太阳</string>
-    <string name="pref_grass_procedural_sun_summary">使用纯数学程序化渲染太阳，替代贴图精灵</string>
     <string name="pref_grass_moon">显示月亮（需开启精确计算）</string>
     <string name="pref_grass_moon_summary">显示或隐藏月亮，呈现真实月相</string>
     <string name="pref_grass_dandelion">显示蒲公英</string>

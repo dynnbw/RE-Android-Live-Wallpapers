@@ -99,6 +99,7 @@ public class GrassGL extends GLESScene {
     private int mSkyProgram;
     private int mGrassProgram;
     private int mMoonProgram;
+    private int mSunProgram;
 
     // Background / sprite program handles
     private int mBgPositionHandle;
@@ -150,6 +151,16 @@ public class GrassGL extends GLESScene {
     private int mMoonShadowColorHandle;
     private int mMoonPenumbraColorHandle;
     private int mMoonSolarOcclusionHandle;
+
+    // Sun program handles
+    private int mSunPositionHandle;
+    private int mSunTexHandle;
+    private int mSunMatrixHandle;
+    private int mSunTimeHandle;
+    private int mSunOpacityHandle;
+    private int mSunLineAlphaHandle;
+    private int mSunResolutionHandle;
+    private int mSunSunPosHandle;
 
     // Textures
     private int mTexNight;
@@ -250,6 +261,7 @@ public class GrassGL extends GLESScene {
         if (mSkyProgram != 0) { GLES20.glDeleteProgram(mSkyProgram); mSkyProgram = 0; }
         if (mGrassProgram != 0) { GLES20.glDeleteProgram(mGrassProgram); mGrassProgram = 0; }
         if (mMoonProgram != 0) { GLES20.glDeleteProgram(mMoonProgram); mMoonProgram = 0; }
+        if (mSunProgram != 0) { GLES20.glDeleteProgram(mSunProgram); mSunProgram = 0; }
 
         mGLInitialized = false;
     }
@@ -371,6 +383,7 @@ public class GrassGL extends GLESScene {
         createSkyProgram();
         createGrassProgram();
         createMoonProgram();
+        createSunProgram();
         loadTextures();
         loadMoonTextures();
 
@@ -460,6 +473,25 @@ public class GrassGL extends GLESScene {
         mMoonShadowColorHandle = GLES20.glGetUniformLocation(mMoonProgram, "uShadowColor");
         mMoonPenumbraColorHandle = GLES20.glGetUniformLocation(mMoonProgram, "uPenumbraColor");
         mMoonSolarOcclusionHandle = GLES20.glGetUniformLocation(mMoonProgram, "uSolarOcclusion");
+    }
+
+    private void createSunProgram() {
+        String vs = RawResourceLoader.readRawText(mResources, R.raw.grass_sun_vs);
+        String fs = RawResourceLoader.readRawText(mResources, R.raw.grass_sun_fs);
+        mSunProgram = createProgram(vs, fs);
+        if (mSunProgram != 0) {
+            Log.i(TAG, "Procedural sun shader compiled successfully");
+        } else {
+            Log.w(TAG, "Procedural sun shader compilation failed");
+        }
+        mSunPositionHandle = GLES20.glGetAttribLocation(mSunProgram, "aPosition");
+        mSunTexHandle = GLES20.glGetAttribLocation(mSunProgram, "aTexCoord");
+        mSunMatrixHandle = GLES20.glGetUniformLocation(mSunProgram, "uMVPMatrix");
+        mSunTimeHandle = GLES20.glGetUniformLocation(mSunProgram, "uTime");
+        mSunOpacityHandle = GLES20.glGetUniformLocation(mSunProgram, "uOpacity");
+        mSunLineAlphaHandle = GLES20.glGetUniformLocation(mSunProgram, "uLineAlpha");
+        mSunResolutionHandle = GLES20.glGetUniformLocation(mSunProgram, "uResolution");
+        mSunSunPosHandle = GLES20.glGetUniformLocation(mSunProgram, "uSunPos");
     }
 
     private int createProgram(String vertexSource, String fragmentSource) {
@@ -772,6 +804,13 @@ public class GrassGL extends GLESScene {
     }
 
     private void drawSun(SceneData sd) {
+        if (sd.proceduralSunEnabled && mSunProgram != 0) {
+            drawProceduralSun(sd);
+            if (sd.hasSolarEclipseOcclusion && mTexMoonMask != 0) {
+                drawSolarEclipseOcclusion(sd);
+            }
+            return;
+        }
         if (mTexSun == 0) return;
         useProgram(mBackgroundProgram);
         setBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
@@ -780,6 +819,41 @@ public class GrassGL extends GLESScene {
         if (sd.hasSolarEclipseOcclusion && mTexMoonMask != 0) {
             drawSolarEclipseOcclusion(sd);
         }
+    }
+
+    private void drawProceduralSun(SceneData sd) {
+        useProgram(mSunProgram);
+        setBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE);
+
+        GLES20.glUniformMatrix4fv(mSunMatrixHandle, 1, false, sd.projectionMatrix, 0);
+        GLES20.glUniform2f(mSunResolutionHandle, (float) mWidth, (float) mHeight);
+        GLES20.glUniform2f(mSunSunPosHandle, sd.sunX, sd.sunY);
+        GLES20.glUniform1f(mSunTimeHandle, sd.animNowMs * 0.001f);
+        GLES20.glUniform1f(mSunOpacityHandle, sd.sunAlpha);
+        GLES20.glUniform1f(mSunLineAlphaHandle, 320.0f);
+
+        // draw full-screen quad via moon buffer (reused)
+        if (mMoonBuffer == null) {
+            mMoonBuffer = ByteBuffer.allocateDirect(4 * 4 * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
+        }
+        float[] qv = mQuadVerts;
+        qv[0] = 0.0f;  qv[1] = 0.0f;    qv[2] = 0.0f; qv[3] = 0.0f;
+        qv[4] = 0.0f;  qv[5] = (float) mHeight; qv[6] = 0.0f; qv[7] = 1.0f;
+        qv[8] = (float) mWidth; qv[9] = (float) mHeight; qv[10] = 1.0f; qv[11] = 1.0f;
+        qv[12] = (float) mWidth; qv[13] = 0.0f;  qv[14] = 1.0f; qv[15] = 0.0f;
+        mMoonBuffer.clear();
+        mMoonBuffer.put(qv).position(0);
+
+        GLES20.glEnableVertexAttribArray(mSunPositionHandle);
+        GLES20.glVertexAttribPointer(mSunPositionHandle, 2, GLES20.GL_FLOAT, false, 16, mMoonBuffer);
+        mMoonBuffer.position(2);
+        GLES20.glEnableVertexAttribArray(mSunTexHandle);
+        GLES20.glVertexAttribPointer(mSunTexHandle, 2, GLES20.GL_FLOAT, false, 16, mMoonBuffer);
+
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, 4);
+
+        GLES20.glDisableVertexAttribArray(mSunPositionHandle);
+        GLES20.glDisableVertexAttribArray(mSunTexHandle);
     }
 
     private void drawSolarEclipseOcclusion(SceneData sd) {

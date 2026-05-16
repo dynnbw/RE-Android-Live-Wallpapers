@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="nexus_mode_entries">
+        <item>預設</item>
+        <item>紅</item>
+        <item>綠</item>
+        <item>藍</item>
+        <item>白</item>
+        <item>青</item>
+        <item>紫</item>
+        <item>粉</item>
+    </string-array>
+
+    <string-array name="magicsmoke_preset_names">
+        <item>黑白（經典）</item>
+        <item>藍白</item>
+        <item>綠白</item>
+        <item>綠（預乘）</item>
+        <item>綠色光暈</item>
+        <item>紅色火焰</item>
+        <item>黑色直通</item>
+        <item>藍黃漸變</item>
+        <item>綠色光暈 2</item>
+        <item>紅色火焰（預乘）</item>
+        <item>灰色（預乘）</item>
+        <item>藍色（預乘）</item>
+        <item>藍黃靜態</item>
+        <item>藍黃旋轉</item>
+        <item>藍黃旋轉 2</item>
+        <item>灰色經典</item>
+        <item>黑色交換（預設）</item>
+        <item>深藍等離子</item>
+        <item>淺藍等離子</item>
+        <item>白色等離子</item>
+    </string-array>
+
+    <string-array name="weather_update_entries">
+        <item>15 分鐘</item>
+        <item>30 分鐘</item>
+        <item>1 小時</item>
+        <item>3 小時</item>
+    </string-array>
+
+    <string-array name="deepsea_background_type">
+        <item>預設</item>
+        <item>自訂圖片</item>
+    </string-array>
+</resources>

@@ -25,7 +25,7 @@
     <string name="pref_flsorescence_pattern_summary">Modifier le motif de déplacement</string>
 
     <!-- Fonds d’écran -->
-    
+    <skip />
 
     <!-- Fond d’écran montrant l’aperçu de l’appareil photo -->
     <string name="wallpaper_walkaround">Vision transparente</string>

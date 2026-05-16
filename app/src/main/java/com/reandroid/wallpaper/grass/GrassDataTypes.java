@@ -58,7 +58,7 @@ final class SceneData {
     final float[] projectionMatrix = new float[16];
 
     boolean grassEnabled, nightInvert, nightDesaturateGrass;
-    boolean useAccurateSun, sunEnabled, moonEnabled;
+    boolean useAccurateSun, sunEnabled, moonEnabled, proceduralSunEnabled;
     float grassHeightScale, grassWidthScale, grassHardnessScale;
     boolean useGrassTint;
     float grassTintH, grassTintS, grassTintV;

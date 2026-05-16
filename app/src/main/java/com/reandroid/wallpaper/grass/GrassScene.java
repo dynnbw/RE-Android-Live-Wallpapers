@@ -1,3 +1,18 @@
+/*
+ * Copyright (C) 2009 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.reandroid.wallpaper.grass;
 
 import android.content.Context;
@@ -48,6 +63,7 @@ class GrassScene {
     private boolean mUseAccurateSun = false;
     private boolean mSunEnabled = false;
     private boolean mMoonEnabled = false;
+    private boolean mProceduralSun = true;
     private float mGrassHeightScale = 1.0f;
     private float mGrassWidthScale = 1.0f;
     private float mGrassHardnessScale = 1.0f;
@@ -297,6 +313,7 @@ class GrassScene {
         mSceneData.useAccurateSun = mUseAccurateSun;
         mSceneData.sunEnabled = mSunEnabled;
         mSceneData.moonEnabled = mMoonEnabled;
+        mSceneData.proceduralSunEnabled = mProceduralSun;
         mSceneData.grassHeightScale = mGrassHeightScale;
         mSceneData.grassWidthScale = mGrassWidthScale;
         mSceneData.grassHardnessScale = mGrassHardnessScale;
@@ -551,6 +568,7 @@ class GrassScene {
         boolean newAccurateSun = WallpaperSettings.isAccurateSunEnabled(false);
         boolean newSunEnabled = WallpaperSettings.isSunEnabled(true);
         boolean newMoonEnabled = WallpaperSettings.isMoonEnabled(true);
+        boolean newProceduralSun = WallpaperSettings.isProceduralSunEnabled(true);
         float newHeightScale = WallpaperSettings.getGrassHeightScale(1.0f);
         float newWidthScale = WallpaperSettings.getGrassWidthScale(1.0f);
         float newHardnessScale = WallpaperSettings.getGrassHardnessScale(1.0f);
@@ -568,6 +586,7 @@ class GrassScene {
         hash = 31 * hash + (newAccurateSun ? 1 : 0);
         hash = 31 * hash + (newSunEnabled ? 1 : 0);
         hash = 31 * hash + (newMoonEnabled ? 1 : 0);
+        hash = 31 * hash + (newProceduralSun ? 1 : 0);
         hash = 31 * hash + Float.floatToIntBits(newHeightScale);
         hash = 31 * hash + Float.floatToIntBits(newWidthScale);
         hash = 31 * hash + Float.floatToIntBits(newHardnessScale);
@@ -588,6 +607,7 @@ class GrassScene {
         mUseAccurateSun = newAccurateSun;
         mSunEnabled = newSunEnabled;
         mMoonEnabled = newMoonEnabled;
+        mProceduralSun = newProceduralSun;
         mGrassHeightScale = newHeightScale;
         mGrassWidthScale = newWidthScale;
         mGrassHardnessScale = newHardnessScale;

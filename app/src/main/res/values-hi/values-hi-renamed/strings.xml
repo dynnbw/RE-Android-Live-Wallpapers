@@ -25,7 +25,7 @@
     <string name="pref_flsorescence_pattern_summary">गति पैटर्न बदलें</string>
 
     <!-- वॉलपेपर -->
-    
+    <skip />
 
     <!-- कैमरा पूर्वावलोकन दिखाने वाला वॉलपेपर -->
     <string name="wallpaper_walkaround">पारदर्शी दृश्य</string>

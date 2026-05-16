@@ -32,6 +32,7 @@ public class GrassSettingsFragment extends PreferenceFragmentCompat
     private SwitchPreferenceCompat mAccurateSunPref;
     private SwitchPreferenceCompat mSunPref;
     private SwitchPreferenceCompat mMoonPref;
+    private SwitchPreferenceCompat mProceduralSunPref;
     private SwitchPreferenceCompat mLegacyParticlesPref;
     private SwitchPreferenceCompat mDandelionPref;
     private SwitchPreferenceCompat mFireflyPref;
@@ -52,6 +53,7 @@ public class GrassSettingsFragment extends PreferenceFragmentCompat
         mAccurateSunPref = findPreference("pref_grass_accurate_sun");
         mSunPref = findPreference("pref_grass_sun");
         mMoonPref = findPreference("pref_grass_moon");
+        mProceduralSunPref = findPreference("pref_grass_procedural_sun");
 
         mLegacyParticlesPref = findPreference("pref_grass_legacy_particles");
         mDandelionPref = findPreference("pref_grass_dandelion");
@@ -86,6 +88,7 @@ public class GrassSettingsFragment extends PreferenceFragmentCompat
                 if (!enable) {
                     updateSunToggleState(false);
                     updateMoonToggleState(false);
+                    updateProceduralSunToggleState(false);
                     return true;
                 }
                 if (getContext() == null) return false;
@@ -98,6 +101,7 @@ public class GrassSettingsFragment extends PreferenceFragmentCompat
                 if (hasFine || hasCoarse) {
                     updateSunToggleState(true);
                     updateMoonToggleState(true);
+                    updateProceduralSunToggleState(true);
                     return true;
                 }
                 requestPermissions(new String[] {
@@ -116,12 +120,15 @@ public class GrassSettingsFragment extends PreferenceFragmentCompat
                     mSunPref.setChecked(false);
                     return false;
                 }
+                updateProceduralSunToggleState(enableSun && accurateSunEnabled);
                 return true;
             });
         }
 
         updateSunToggleState(mAccurateSunPref != null && mAccurateSunPref.isChecked());
         updateMoonToggleState(mAccurateSunPref != null && mAccurateSunPref.isChecked());
+        updateProceduralSunToggleState(mSunPref != null && mSunPref.isChecked()
+                && mAccurateSunPref != null && mAccurateSunPref.isChecked());
 
         Preference openPicker = findPreference("pref_open_wallpaper_picker");
         if (openPicker != null) {
@@ -236,6 +243,11 @@ public class GrassSettingsFragment extends PreferenceFragmentCompat
         } else {
             mMoonPref.setEnabled(true);
         }
+    }
+
+    private void updateProceduralSunToggleState(boolean sunEnabled) {
+        if (mProceduralSunPref == null) return;
+        mProceduralSunPref.setEnabled(sunEnabled);
     }
 
     private boolean isLegacyParticlesEnabled() {

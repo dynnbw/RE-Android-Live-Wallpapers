@@ -1,7 +1,7 @@
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
 
-    <string name="pref_grass_legacy_particles">Классические одуванчики и светлячки</string>
-    <string name="pref_grass_legacy_particles_summary">Переключиться на классический визуальный эффект одуванчиков и светлячков от MTK</string>
+<string name="pref_grass_legacy_particles">Классические одуванчики и светлячки</string>
+<string name="pref_grass_legacy_particles_summary">Переключиться на классический визуальный эффект одуванчиков и светлячков от MTK</string>
     <!-- Название приложения -->
     <string name="wallpapers">REAndroid Живые обои</string>
     <string name="app_name">REAndroid Живые обои</string>
@@ -25,7 +25,7 @@
     <string name="pref_flsorescence_pattern_summary">Изменить шаблон движения</string>
 
     <!-- Обои -->
-    
+    <skip />
 
     <!-- Обои с предпросмотром камеры -->
     <string name="wallpaper_walkaround">Сквозь телефон</string>
