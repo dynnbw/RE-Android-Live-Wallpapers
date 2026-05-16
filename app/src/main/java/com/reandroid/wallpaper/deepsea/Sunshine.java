@@ -2,6 +2,8 @@ package com.reandroid.wallpaper.deepsea;
 
 import android.content.Context;
 import android.opengl.GLES20;
+import com.reandroid.gles.RawResourceLoader;
+import com.reandroid.wallpaper.R;
 import android.util.Log;
 import com.reandroid.gles.GLESWallpaper;
 import com.reandroid.wallpaper.R;
@@ -49,7 +51,7 @@ class Sunshine extends GLBaseView {
     @Override // com.reandroid.wallpaper.deepsea.GLBaseView
     public void initShader() {
         if (!isInitShader()) {
-            int createdAndLinkedProgram = GLHelper.getCreatedAndLinkedProgram(GLHelper.getCompiledShader(GLES20.GL_VERTEX_SHADER, "uniform mat4 u_MVPMatrix;\t\t\t\t\t\t\t\nattribute vec4 a_position;\t\t\t\t\t\t\t\nattribute vec2 a_texCoord;\t\t\t\t\t\t\t\nvarying vec2 v_texCoord;\t\t\t\t\t\t\t\nvoid main(){\t\t\t\t\t\t\t\t\t\t\n\tgl_Position = u_MVPMatrix * a_position;\t\t\t\n\tv_texCoord = a_texCoord;\t\t\t\t\t\t\n}"), GLHelper.getCompiledShader(GLES20.GL_FRAGMENT_SHADER, "precision mediump float;\t\t\t\t\t\t\t\nuniform sampler2D s_texture;\t\t\t\t\t\t\nuniform float u_Light;\t\t\t\t\t\t\t\t\nuniform float u_AddAlpha;\t\t\t\t\t\t\t\nvarying vec2 v_texCoord;\t\t\t\t\t\t\t\nvoid main(){\t\t\t\t\t\t\t\t\t\t\n\tfloat val = u_Light;\t\t\t\t\t\t\t\n\tvec4 addColor = vec4(val, val, val, u_AddAlpha);\t\t\n\tgl_FragColor = texture2D(s_texture, v_texCoord) + addColor; \n}\t\t\t\t\t\t\t\t\t\t\t\t\t\n"));
+            int createdAndLinkedProgram = GLHelper.getCreatedAndLinkedProgram(GLHelper.getCompiledShader(GLES20.GL_VERTEX_SHADER, RawResourceLoader.readRawText(getContext().getResources(), R.raw.deepsea_sunshine_0_vs)), GLHelper.getCompiledShader(GLES20.GL_FRAGMENT_SHADER, RawResourceLoader.readRawText(getContext().getResources(), R.raw.deepsea_sunshine_1_fs)));
             this.mProgramHandle = createdAndLinkedProgram;
             this.mPositionHandle = GLES20.glGetAttribLocation(createdAndLinkedProgram, "a_position");
             this.mTexCoordHandle = GLES20.glGetAttribLocation(this.mProgramHandle, "a_texCoord");

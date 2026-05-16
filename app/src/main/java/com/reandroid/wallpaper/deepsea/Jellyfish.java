@@ -2,6 +2,8 @@ package com.reandroid.wallpaper.deepsea;
 
 import android.content.Context;
 import android.opengl.GLES20;
+import com.reandroid.gles.RawResourceLoader;
+import com.reandroid.wallpaper.R;
 import com.reandroid.gles.GLESWallpaper;
 import com.reandroid.wallpaper.R;
 import java.nio.Buffer;
@@ -53,7 +55,7 @@ class Jellyfish extends GLBaseView {
     @Override // com.reandroid.wallpaper.deepsea.GLBaseView
     public void initShader() {
         if (!isInitShader()) {
-            int createdAndLinkedProgram = GLHelper.getCreatedAndLinkedProgram(GLHelper.getCompiledShader(GLES20.GL_VERTEX_SHADER, "uniform mat4 u_MVPMatrix;\t\t\t\t\t\t\nattribute vec4 a_Position;\t\t\t\t\t\t\nattribute float a_Scale;\t\t\t\t\t\t\nattribute vec4 a_AddColor;\t\t\t\t\t\t\nattribute vec2 a_TexCoord;\t\t\t\t\t\t\nvarying vec4 v_AddColor;\t\t\t\t\t\t\nvarying vec2 v_TexCoord;\t\t\t\t\t\t\nvoid main(){\t\t\t\t\t\t\t\t\t\n\tgl_Position = a_Position;\t\t\t\t\t\n\tgl_Position.x *= a_Scale;\t\t\t\t\t\n\tgl_Position.y *= a_Scale;\t\t\t\t\t\n\tgl_Position = u_MVPMatrix * gl_Position;\t\n \tv_TexCoord = a_TexCoord;\t\t\t\t\t\n \tv_AddColor = a_AddColor;\t\t\t\t\t\n}"), GLHelper.getCompiledShader(GLES20.GL_FRAGMENT_SHADER, "precision mediump float;\t\t\t\t\t\t\nvarying vec4 v_AddColor;\t\t\t\t\t\t\nvarying vec2 v_TexCoord;\t\t\t\t\t\t\nuniform sampler2D s_Texture;\t\t\t\t\t\nuniform sampler2D s_AlphaTexture;\t\t\t\t\nuniform float u_AddAlpha;\t\t\t\t\t\t\nvoid main(){\t\t\t\t\t\t\t\t\t\n\tvec4 texture;\t\t\t\t\t\t\t\t\n\tvec4 alphaTexture;\t\t\t\t\t\t\t\n\ttexture = texture2D(s_Texture, v_TexCoord);\t\n\talphaTexture = texture2D(s_AlphaTexture, v_TexCoord);\n\ttexture.a = alphaTexture.r;\t\t\t\t\t\n\tgl_FragColor = texture + v_AddColor + vec4(0.0, 0.0, 0.0, u_AddAlpha); \n}"));
+            int createdAndLinkedProgram = GLHelper.getCreatedAndLinkedProgram(GLHelper.getCompiledShader(GLES20.GL_VERTEX_SHADER, RawResourceLoader.readRawText(getContext().getResources(), R.raw.deepsea_jellyfish_0_vs)), GLHelper.getCompiledShader(GLES20.GL_FRAGMENT_SHADER, RawResourceLoader.readRawText(getContext().getResources(), R.raw.deepsea_jellyfish_1_fs)));
             this.mPointProgramHandle = createdAndLinkedProgram;
             this.mPointMVPMatrixHandle = GLES20.glGetUniformLocation(this.mPointProgramHandle, "u_MVPMatrix");
             this.mPointTextureHandle = GLES20.glGetUniformLocation(this.mPointProgramHandle, "s_Texture");
