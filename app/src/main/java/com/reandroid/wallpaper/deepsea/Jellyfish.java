@@ -11,7 +11,11 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
-class Jellyfish extends GLBaseView {
+class Jellyfish {
+    private Context mContext;
+    private boolean mIsInitShader;
+    Context getContext() { return mContext; }
+    boolean isInitShader() { return mIsInitShader; }
     private float mAddAlpha;
     private int mAddAlphaHandle;
     private float[] mAddColorData;
@@ -36,7 +40,7 @@ class Jellyfish extends GLBaseView {
     }
 
     public Jellyfish(Context context) {
-        super(context);
+        this.mContext = context;
         this.mScale = 1.0f;
         this.mVerticesData = new float[]{-0.6f, 0.6f, 0.0f, 0.0f, 0.0f, -0.6f, -0.6f, 0.0f, 0.0f, 1.0f, 0.6f, -0.6f, 0.0f, 1.0f, 1.0f, 0.6f, 0.6f, 0.0f, 1.0f, 0.0f};
         this.mIndicesData = new short[]{0, 1, 2, 0, 2, 3};
@@ -44,7 +48,6 @@ class Jellyfish extends GLBaseView {
         this.mAddAlpha = -1.0f;
     }
 
-    @Override // com.reandroid.wallpaper.deepsea.GLBaseView
     public void initByteBuffer() {
         this.mVertices = ByteBuffer.allocateDirect(this.mVerticesData.length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
         this.mVertices.put(this.mVerticesData).position(0);
@@ -52,7 +55,6 @@ class Jellyfish extends GLBaseView {
         this.mIndices.put(this.mIndicesData).position(0);
     }
 
-    @Override // com.reandroid.wallpaper.deepsea.GLBaseView
     public void initShader() {
         if (!isInitShader()) {
             int createdAndLinkedProgram = GLHelper.getCreatedAndLinkedProgram(GLHelper.getCompiledShader(GLES20.GL_VERTEX_SHADER, RawResourceLoader.readRawText(getContext().getResources(), R.raw.deepsea_jellyfish_0_vs)), GLHelper.getCompiledShader(GLES20.GL_FRAGMENT_SHADER, RawResourceLoader.readRawText(getContext().getResources(), R.raw.deepsea_jellyfish_1_fs)));
@@ -67,11 +69,10 @@ class Jellyfish extends GLBaseView {
             this.mAddAlphaHandle = GLES20.glGetUniformLocation(this.mPointProgramHandle, "u_AddAlpha");
             this.mJellyfishTextureId = getTextureId();
             this.mAlphaTextureId = getAlphaTextureId();
-            super.initShader();
+            this.mIsInitShader = true;
         }
     }
 
-    @Override // com.reandroid.wallpaper.deepsea.GLBaseView
     public void setForDrawing() {
         GLES20.glUseProgram(this.mPointProgramHandle);
         GLES20.glVertexAttrib4f(this.mAddColorHandle, this.mAddColorData[0], this.mAddColorData[1], this.mAddColorData[2], this.mAddColorData[3]);
@@ -94,12 +95,10 @@ class Jellyfish extends GLBaseView {
         GLES20.glUniform1f(this.mAddAlphaHandle, this.mAddAlpha);
     }
 
-    @Override // com.reandroid.wallpaper.deepsea.GLBaseView
     public void draw() {
         GLES20.glDrawElements(GLES20.GL_TRIANGLES, 6, GLES20.GL_UNSIGNED_SHORT, this.mIndices);
     }
 
-    @Override // com.reandroid.wallpaper.deepsea.GLBaseView
     public void update(float[] fArr) {
         GLES20.glUniformMatrix4fv(this.mPointMVPMatrixHandle, 1, false, fArr, 0);
     }
@@ -125,10 +124,9 @@ class Jellyfish extends GLBaseView {
         this.mAddAlpha = f;
     }
 
-    @Override // com.reandroid.wallpaper.deepsea.GLBaseView
     public void remove() {
         GLHelper.deleteTextures(this.mJellyfishTextureId);
         GLHelper.deleteTextures(this.mAlphaTextureId);
-        super.remove();
+        this.mContext = null;
     }
 }

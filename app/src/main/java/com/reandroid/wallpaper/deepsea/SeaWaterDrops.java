@@ -37,7 +37,11 @@ import java.util.Random;
 /**
  * Extracted from DeepSeaGL inner class.
  */
-class SeaWaterDrops extends GLBaseView {
+class SeaWaterDrops {
+    private Context mContext;
+    private boolean mIsInitShader;
+    Context getContext() { return mContext; }
+    boolean isInitShader() { return mIsInitShader; }
         private static final int REF_WIDTH = 720;
         private static final int REF_HEIGHT = 1184;
     private final int DISPLAY_HEIGHT;
@@ -74,7 +78,7 @@ class SeaWaterDrops extends GLBaseView {
     }
 
     public SeaWaterDrops(Context context) {
-        super(context);
+        this.mContext = context;
         this.DISPLAY_WIDTH = REF_WIDTH;
         this.DISPLAY_HEIGHT = REF_HEIGHT;
         this.mTimeCounter = 0.0f;
@@ -84,13 +88,11 @@ class SeaWaterDrops extends GLBaseView {
         this.mIsSlow = false;
     }
 
-    @Override // com.reandroid.wallpaper.deepsea.GLBaseView
     public void initByteBuffer() {
         this.mVertexBuffer = ByteBuffer.allocateDirect(this.mParticleVertices.length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
         setParticleData(0.0f, 0.0f, 0.0f);
     }
 
-    @Override // com.reandroid.wallpaper.deepsea.GLBaseView
     public void initShader() {
         if (!isInitShader()) {
             int createdAndLinkedProgram = GLHelper.getCreatedAndLinkedProgram(GLHelper.getCompiledShader(GLES20.GL_VERTEX_SHADER, RawResourceLoader.readRawText(getContext().getResources(), R.raw.deepsea_seawaterdrops_0_vs)), GLHelper.getCompiledShader(GLES20.GL_FRAGMENT_SHADER, RawResourceLoader.readRawText(getContext().getResources(), R.raw.deepsea_seawaterdrops_1_fs)));
@@ -108,11 +110,10 @@ class SeaWaterDrops extends GLBaseView {
             this.mSizeHandle = GLES20.glGetAttribLocation(this.mProgramHandle, "a_size");
             this.mSpeedHandle = GLES20.glGetAttribLocation(this.mProgramHandle, "a_speed");
             this.mEmitterHandle = GLES20.glGetAttribLocation(this.mProgramHandle, "a_EmitterPosition");
-            super.initShader();
+            this.mIsInitShader = true;
         }
     }
 
-    @Override // com.reandroid.wallpaper.deepsea.GLBaseView
     public void setForDrawing() {
         GLES20.glUseProgram(this.mProgramHandle);
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
@@ -147,12 +148,10 @@ class SeaWaterDrops extends GLBaseView {
         GLES20.glUniform1f(this.mTimesHandle, this.mTimeCounter);
     }
 
-    @Override // com.reandroid.wallpaper.deepsea.GLBaseView
     public void draw() {
         GLES20.glDrawArrays(GLES20.GL_POINTS, 0, 90);
     }
 
-    @Override // com.reandroid.wallpaper.deepsea.GLBaseView
     public void update(float[] fArr) {
         GLES20.glUniformMatrix4fv(this.mMVPMatrixHandle, 1, false, fArr, 0);
     }
@@ -303,10 +302,9 @@ class SeaWaterDrops extends GLBaseView {
         this.mVertexBuffer.put(this.mParticleVertices).position(0);
     }
 
-    @Override // com.reandroid.wallpaper.deepsea.GLBaseView
     public void remove() {
         GLHelper.deleteTextures(this.mTextureID);
         GLHelper.deleteTextures(this.mAlphaTextureId);
-        super.remove();
+        this.mContext = null;
     }
 }

@@ -12,7 +12,11 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
-class Sunshine extends GLBaseView {
+class Sunshine {
+    private Context mContext;
+    private boolean mIsInitShader;
+    Context getContext() { return mContext; }
+    boolean isInitShader() { return mIsInitShader; }
     private float mAddAlpha;
     private int mAddAlphaHandle;
     private ShortBuffer mIndices;
@@ -33,14 +37,13 @@ class Sunshine extends GLBaseView {
     }
 
     public Sunshine(Context context) {
-        super(context);
+        this.mContext = context;
         this.mVerticesData = new float[]{-10.5f, 16.0f, -10.0f, 0.0f, 0.0f, -10.5f, -16.0f, -10.0f, 0.0f, 1.0f, 10.5f, -16.0f, -10.0f, 1.0f, 1.0f, 10.5f, 16.0f, -10.0f, 1.0f, 0.0f};
         this.mIndicesData = new short[]{0, 1, 2, 0, 2, 3};
         this.mAddAlpha = -1.0f;
         this.mLight = -1.0f;
     }
 
-    @Override // com.reandroid.wallpaper.deepsea.GLBaseView
     public void initByteBuffer() {
         this.mVertices = ByteBuffer.allocateDirect(this.mVerticesData.length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
         this.mVertices.put(this.mVerticesData).position(0);
@@ -48,7 +51,6 @@ class Sunshine extends GLBaseView {
         this.mIndices.put(this.mIndicesData).position(0);
     }
 
-    @Override // com.reandroid.wallpaper.deepsea.GLBaseView
     public void initShader() {
         if (!isInitShader()) {
             int createdAndLinkedProgram = GLHelper.getCreatedAndLinkedProgram(GLHelper.getCompiledShader(GLES20.GL_VERTEX_SHADER, RawResourceLoader.readRawText(getContext().getResources(), R.raw.deepsea_sunshine_0_vs)), GLHelper.getCompiledShader(GLES20.GL_FRAGMENT_SHADER, RawResourceLoader.readRawText(getContext().getResources(), R.raw.deepsea_sunshine_1_fs)));
@@ -60,11 +62,10 @@ class Sunshine extends GLBaseView {
             this.mAddAlphaHandle = GLES20.glGetUniformLocation(this.mProgramHandle, "u_AddAlpha");
             this.mLightHandle = GLES20.glGetUniformLocation(this.mProgramHandle, "u_Light");
             this.mTextureId = getTextureId();
-            super.initShader();
+            this.mIsInitShader = true;
         }
     }
 
-    @Override // com.reandroid.wallpaper.deepsea.GLBaseView
     public void setForDrawing() {
         GLES20.glUseProgram(this.mProgramHandle);
         this.mVertices.position(0);
@@ -81,14 +82,12 @@ class Sunshine extends GLBaseView {
         GLES20.glUniform1f(this.mLightHandle, this.mLight);
     }
 
-    @Override // com.reandroid.wallpaper.deepsea.GLBaseView
     public void draw() {
         Log.d("DeepSea", "Sea.draw() executing - about to call glDrawElements");
         GLES20.glDrawElements(GLES20.GL_TRIANGLES, 6, GLES20.GL_UNSIGNED_SHORT, this.mIndices);
         Log.d("DeepSea", "Sea.draw() completed");
     }
 
-    @Override // com.reandroid.wallpaper.deepsea.GLBaseView
     public void update(float[] fArr) {
         GLES20.glUniformMatrix4fv(this.mMVPMatrixHandle, 1, false, fArr, 0);
     }
@@ -119,9 +118,8 @@ class Sunshine extends GLBaseView {
         this.mVerticesData[16] = heightValue;
     }
 
-    @Override // com.reandroid.wallpaper.deepsea.GLBaseView
     public void remove() {
         GLHelper.deleteTextures(this.mTextureId);
-        super.remove();
+        this.mContext = null;
     }
 }

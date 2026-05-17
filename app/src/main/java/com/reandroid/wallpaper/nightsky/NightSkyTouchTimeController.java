@@ -4,7 +4,7 @@ import android.os.SystemClock;
 import android.view.MotionEvent;
 
 final class NightSkyTouchTimeController {
-    private static final long LONG_PRESS_MS = 350L;
+    private static final long LONG_PRESS_MS = 0L;
     private static final float TIME_SCALE_NORMAL = 1.0f;
     private static final float DEFAULT_TIME_SCALE_ACCEL = 360.0f;
 
@@ -76,6 +76,11 @@ final class NightSkyTouchTimeController {
 
         if (!autoAccelerating && pressing && !accelerating && (nowUptime - pressDownUptimeMs) >= LONG_PRESS_MS) {
             accelerating = true;
+            // Seed trail sim time so star trails appear immediately
+            long seedSimMs = (long)(accelerationScale * 2000f);
+            if (acceleratingSimElapsedMs < seedSimMs) {
+                acceleratingSimElapsedMs = seedSimMs;
+            }
         }
         if (!autoAccelerating && !pressing) {
             accelerating = false;

@@ -37,7 +37,11 @@ import java.util.Random;
 /**
  * Extracted from DeepSeaGL inner class.
  */
-class Sea2 extends GLBaseView {
+class Sea2 {
+    private Context mContext;
+    private boolean mIsInitShader;
+    Context getContext() { return mContext; }
+    boolean isInitShader() { return mIsInitShader; }
     private Bitmap mBackgroundImage;
     private float mBrightness;
     private int mBrightnessHandle;
@@ -60,14 +64,13 @@ class Sea2 extends GLBaseView {
     }
 
     public Sea2(Context context) {
-        super(context);
+        this.mContext = context;
         this.mVerticesData = new float[]{-10.0f, 10.0f, -10.0f, 0.0f, 0.0f, -10.0f, -10.0f, -10.0f, 0.0f, 1.0f, 10.0f, -10.0f, -10.0f, 1.0f, 1.0f, 10.0f, 10.0f, -10.0f, 1.0f, 0.0f};
         this.mIndicesData = new short[]{0, 1, 2, 0, 2, 3};
         this.mBrightness = 0.0f;
         this.mBackgroundImage = null;
     }
 
-    @Override // com.reandroid.wallpaper.deepsea.GLBaseView
     public void initByteBuffer() {
         this.mVertices = ByteBuffer.allocateDirect(this.mVerticesData.length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
         this.mVertices.put(this.mVerticesData).position(0);
@@ -75,7 +78,6 @@ class Sea2 extends GLBaseView {
         this.mIndices.put(this.mIndicesData).position(0);
     }
 
-    @Override // com.reandroid.wallpaper.deepsea.GLBaseView
     public void initShader() {
         if (!isInitShader()) {
             int createdAndLinkedProgram = GLHelper.getCreatedAndLinkedProgram(GLHelper.getCompiledShader(GLES20.GL_VERTEX_SHADER, RawResourceLoader.readRawText(getContext().getResources(), R.raw.deepsea_sea2_0_vs)), GLHelper.getCompiledShader(GLES20.GL_FRAGMENT_SHADER, RawResourceLoader.readRawText(getContext().getResources(), R.raw.deepsea_sea2_1_fs)));
@@ -86,11 +88,10 @@ class Sea2 extends GLBaseView {
             this.mMVPMatrixHandle = GLES20.glGetUniformLocation(this.mProgramHandle, "u_MVPMatrix");
             this.mBrightnessHandle = GLES20.glGetUniformLocation(this.mProgramHandle, "u_brightness");
             changeTextureToBackground();
-            super.initShader();
+            this.mIsInitShader = true;
         }
     }
 
-    @Override // com.reandroid.wallpaper.deepsea.GLBaseView
     public void setForDrawing() {
         GLES20.glUseProgram(this.mProgramHandle);
         this.mVertices.position(0);
@@ -106,12 +107,10 @@ class Sea2 extends GLBaseView {
         GLES20.glUniform1f(this.mBrightnessHandle, this.mBrightness);
     }
 
-    @Override // com.reandroid.wallpaper.deepsea.GLBaseView
     public void draw() {
         GLES20.glDrawElements(GLES20.GL_TRIANGLES, 6, GLES20.GL_UNSIGNED_SHORT, this.mIndices);
     }
 
-    @Override // com.reandroid.wallpaper.deepsea.GLBaseView
     public void update(float[] fArr) {
         GLES20.glUniformMatrix4fv(this.mMVPMatrixHandle, 1, false, fArr, 0);
     }
@@ -167,12 +166,11 @@ class Sea2 extends GLBaseView {
         this.mVerticesData[16] = topY;
     }
 
-    @Override // com.reandroid.wallpaper.deepsea.GLBaseView
     public void remove() {
         GLHelper.deleteTextures(this.mTextureId);
         if (this.mBackgroundImage != null) {
             this.mBackgroundImage = null;
         }
-        super.remove();
+        this.mContext = null;
     }
 }

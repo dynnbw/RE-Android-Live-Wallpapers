@@ -33,7 +33,6 @@ import com.reandroid.wallpaper.deepsea.BlurEffect;
 import com.reandroid.wallpaper.deepsea.BlurEffect2;
 import com.reandroid.wallpaper.deepsea.DeepSeaContainer;
 import com.reandroid.wallpaper.deepsea.DeepSeaSettings;
-import com.reandroid.wallpaper.deepsea.GLBaseView;
 import com.reandroid.wallpaper.deepsea.GLHelper;
 import com.reandroid.wallpaper.deepsea.IntervalManager;
 import com.reandroid.wallpaper.deepsea.IntervalVO;
@@ -80,7 +79,7 @@ class Blur extends Jellyfish {
         return GLHelper.getTexture(getContext(), R.drawable.unit_a_core_glow_s256x256_eeee_mip_0_alpha);
     }
 
-    @Override // com.reandroid.wallpaper.deepsea.Jellyfish, com.reandroid.wallpaper.deepsea.GLBaseView
+    @Override // com.reandroid.wallpaper.deepsea.Jellyfish
     public void remove() {
     }
 }
@@ -123,76 +122,82 @@ class BlurEffect2 extends BlurEffect {
     }
 }
 
-class DeepSeaContainer extends GLBaseView {
-    private final int BATTERY_STATE_HIGHT;
-    private final int BATTERY_STATE_LOW;
-    private final int BATTERY_STATE_WARRING;
-    private float mAlphaOfSunshine;
-    private float mAlphaOfSunshine1;
-    private float mAlphaOfSunshine2;
-    private int mAppearingIndex;
-    private String mBackgroundImagePath;
-    private int mBatteryState;
-    private int mBatteryTime;
-    private Blur mBlur;
-    private float mBlurAlpha;
-    private float[] mBlurColor;
-    private BlurEffect mBlurEffect;
-    private BlurEffect2 mBlurEffect2;
-    private float mBrightness;
-    private Bitmap mCheckBitmap;
+class DeepSeaContainer {
+    private Context mContext;
+    private boolean mIsInitShader;
+
+    Context getContext() { return mContext; }
+    boolean isInitShader() { return mIsInitShader; }
+
+    final int BATTERY_STATE_HIGHT;
+    final int BATTERY_STATE_LOW;
+    final int BATTERY_STATE_WARRING;
+    float mAlphaOfSunshine;
+    float mAlphaOfSunshine1;
+    float mAlphaOfSunshine2;
+    int mAppearingIndex;
+    String mBackgroundImagePath;
+    int mBatteryState;
+    int mBatteryTime;
+    Blur mBlur;
+    float mBlurAlpha;
+    float[] mBlurColor;
+    BlurEffect mBlurEffect;
+    BlurEffect2 mBlurEffect2;
+    float mBrightness;
+    Bitmap mCheckBitmap;
     private final float mCycleOfChaingDestination;
     private final float mCycleOfStartingRandomZMotion;
-    private float mDefaultScale;
-    private float mDestinationAlphaOfSunshine;
-    private float mDestinationAlphaOfSunshine1;
-    private float mDestinationAlphaOfSunshine2;
-    private float mForce;
-    private int mHeight;
+    float mDefaultScale;
+    float mDestinationAlphaOfSunshine;
+    float mDestinationAlphaOfSunshine1;
+    float mDestinationAlphaOfSunshine2;
+    float mForce;
+    int mHeight;
     private final float mIntervalAlphaOfSunshine;
     private final float mIntervalAlphaOfSunshine1;
     IntervalManager mIntervalManager;
-    private boolean mIsAfterShaking;
-    private boolean mIsAllFinishedAppearing;
-    private boolean mIsAllFinishedRemoving;
-    private boolean mIsAppearingRemoved;
-    private boolean mIsBackgroundChanged;
-    private boolean mIsBluring;
-    private boolean mIsRemoving;
-    private boolean mIsSendedReceiver;
-    private boolean mIsShaking;
-    private Jellyfish mJellyfish;
-    private Jellyfish2 mJellyfish2;
-    private JellyfishVO mJellyfishVO;
-    private float mLight;
-    private float[] mMVPMatrix;
+    boolean mIsAfterShaking;
+    boolean mIsAllFinishedAppearing;
+    boolean mIsAllFinishedRemoving;
+    boolean mIsAppearingRemoved;
+    boolean mIsBackgroundChanged;
+    boolean mIsBluring;
+    boolean mIsRemoving;
+    boolean mIsSendedReceiver;
+    boolean mIsShaking;
+    Jellyfish mJellyfish;
+    Jellyfish2 mJellyfish2;
+    JellyfishVO mJellyfishVO;
+    float mLight;
+    float[] mMVPMatrix;
     private final float mMaxRotation;
     private final float mMaxSpeed;
     private final float mMinRotation;
     private final float mMinSpeed;
-    private float[] mModelMatrix;
-    private int mNumberOfParticles;
-    private int mNumberOfParticles2;
-    private int mNumberOfRemoving;
-    private float[] mProjectionMatrix;
-    private float mScale;
-    private Sea mSea;
-    private Sea2 mSea2;
-    private SeaWaterDrops mSeaWaterDrops;
-    private SeaWaterDrops2 mSeaWaterDrops2;
-    private SeaWaterDrops3 mSeaWaterDrops3;
-    private float mStartShakingTime;
-    private Sunshine mSunshine;
-    private Sunshine2 mSunshine2;
-    private Sunshine3 mSunshine3;
-    private int mTempBackImageCount;
-    private float mTime;
-    private int mUnitNumberVal;
-    private int mUnitScaleVal;
-    private float[] mViewMatrix;
-    private JellyfishWaterDrops mWaterDropsInJellyfish;
-    private JellyfishWaterDrops2 mWaterDropsInJellyfish2;
-    private int mWidth;
+    float[] mModelMatrix;
+    int mNumberOfParticles;
+    int mNumberOfParticles2;
+    int mNumberOfRemoving;
+    float[] mProjectionMatrix;
+    float mScale;
+    Sea mSea;
+    Sea2 mSea2;
+    SeaWaterDrops mSeaWaterDrops;
+    SeaWaterDrops2 mSeaWaterDrops2;
+    SeaWaterDrops3 mSeaWaterDrops3;
+    float mStartShakingTime;
+    Sunshine mSunshine;
+    Sunshine2 mSunshine2;
+    Sunshine3 mSunshine3;
+    int mTempBackImageCount;
+    float mTime;
+    int mUnitNumberVal;
+    int mUnitScaleVal;
+    float[] mViewMatrix;
+    JellyfishWaterDrops mWaterDropsInJellyfish;
+    JellyfishWaterDrops2 mWaterDropsInJellyfish2;
+    int mWidth;
 
     public DeepSeaContainer() {
         this.BATTERY_STATE_HIGHT = 0;
@@ -247,7 +252,7 @@ class DeepSeaContainer extends GLBaseView {
     }
 
     public DeepSeaContainer(Context context) {
-        super(context);
+        this.mContext = context;
         this.BATTERY_STATE_HIGHT = 0;
         this.BATTERY_STATE_LOW = 1;
         this.BATTERY_STATE_WARRING = 2;
@@ -316,7 +321,7 @@ class DeepSeaContainer extends GLBaseView {
         this.mBlurEffect2 = new BlurEffect2(context);
     }
 
-    @Override // com.reandroid.wallpaper.deepsea.GLBaseView
+    
     public void remove() {
         this.mJellyfish.remove();
         this.mJellyfish2.remove();
@@ -348,66 +353,8 @@ class DeepSeaContainer extends GLBaseView {
         this.mSeaWaterDrops3 = null;
         this.mBlurEffect = null;
         this.mBlurEffect2 = null;
-        super.remove();
+        this.mContext = null;
         System.gc();
-    }
-
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String str) {
-        if (str == null) {
-            this.mUnitScaleVal = readIntPreference(sharedPreferences, "unitscale", 0);
-            int unitNumber = readIntPreference(sharedPreferences, "unitnumber", 0);
-            int backgroundBrightness = readIntPreference(sharedPreferences, "backgroundbrightness", 0);
-            int backgroundLighting = readIntPreference(sharedPreferences, "backgroundlighting", 0);
-            int particleColor = readIntPreference(sharedPreferences, "particlecolor", 8);
-            int parseInt = Integer.parseInt(sharedPreferences.getString("backgroundimagetype", "0"));
-            setScale();
-            this.mUnitNumberVal = unitNumber;
-            setNumberOfUnit(unitNumber);
-            setBrightness(backgroundBrightness);
-            setLight(backgroundLighting);
-            this.mNumberOfParticles = 35;
-            this.mNumberOfParticles2 = 25;
-            this.mWaterDropsInJellyfish.setNumberOfParticles(this.mNumberOfParticles);
-            this.mWaterDropsInJellyfish2.setNumberOfParticles(this.mNumberOfParticles2);
-            setColorByColorValue(particleColor);
-            setBackgroundImageType(parseInt);
-        } else if (str.equals("unitscale")) {
-            this.mUnitScaleVal = readIntPreference(sharedPreferences, str, 0);
-            setScale();
-        } else if (str.equals("unitnumber")) {
-            int unitNumber = readIntPreference(sharedPreferences, str, 0);
-            this.mUnitNumberVal = unitNumber;
-            setNumberOfUnit(unitNumber);
-        } else if (str.equals("backgroundbrightness")) {
-            setBrightness(readIntPreference(sharedPreferences, str, 0));
-        } else if (str.equals("backgroundlighting")) {
-            setLight(readIntPreference(sharedPreferences, str, 0));
-        } else if (str.equals("particlenumber")) {
-            this.mNumberOfParticles = 35;
-            this.mNumberOfParticles2 = 25;
-            this.mWaterDropsInJellyfish.setNumberOfParticles(this.mNumberOfParticles);
-            this.mWaterDropsInJellyfish2.setNumberOfParticles(this.mNumberOfParticles2);
-        } else if (str.equals("particlecolor")) {
-            setColorByColorValue(readIntPreference(sharedPreferences, str, 8));
-        } else if (str.equals("backgroundimagetype")) {
-            setBackgroundImageType(Integer.parseInt(sharedPreferences.getString(str, "0")));
-        }
-    }
-
-    private static int readIntPreference(SharedPreferences prefs, String key, int defaultValue) {
-        try {
-            return prefs.getInt(key, defaultValue);
-        } catch (ClassCastException e) {
-            String value = prefs.getString(key, null);
-            if (value == null) {
-                return defaultValue;
-            }
-            try {
-                return Integer.parseInt(value);
-            } catch (NumberFormatException ex) {
-                return defaultValue;
-            }
-        }
     }
 
     public void screenOn() {
@@ -421,7 +368,7 @@ class DeepSeaContainer extends GLBaseView {
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
     }
 
-    private void setNumberOfUnit(int unitCount) {
+    void setNumberOfUnit(int unitCount) {
         int maxNumberOfJellyfish = this.mJellyfishVO.getMaxNumberOfJellyfish();
         this.mBlurAlpha = 0.0f;
         this.mIsBluring = true;
@@ -441,11 +388,11 @@ class DeepSeaContainer extends GLBaseView {
         checkBlur();
     }
 
-    private void setScale() {
+    void setScale() {
         this.mScale = (this.mUnitScaleVal * 0.1f) + this.mDefaultScale;
     }
 
-    private void setBrightness(int brightnessValue) {
+    void setBrightness(int brightnessValue) {
         if (brightnessValue < 0) {
             this.mBrightness = ((brightnessValue * 0.2f) / 5.0f) - 0.1f;
         } else if (brightnessValue == 0) {
@@ -455,7 +402,7 @@ class DeepSeaContainer extends GLBaseView {
         }
     }
 
-    private void setLight(int lightValue) {
+    void setLight(int lightValue) {
         if (lightValue < 0) {
             this.mLight = ((lightValue * 0.52f) / 5.0f) + 0.22f;
         } else if (lightValue == 0) {
@@ -465,7 +412,7 @@ class DeepSeaContainer extends GLBaseView {
         }
     }
 
-    private void setBackgroundImageType(int imageType) {
+    void setBackgroundImageType(int imageType) {
         if (imageType == 0) {
             this.mSea2.removeBackgroundImage();
             DeepSeaSettings.deleteBitmap(this.mBackgroundImagePath);
@@ -486,7 +433,7 @@ class DeepSeaContainer extends GLBaseView {
         this.mSea2.changeTextureToBackground();
     }
 
-    @Override // com.reandroid.wallpaper.deepsea.GLBaseView
+    
     public void initByteBuffer() {
         this.mJellyfish.initByteBuffer();
         this.mJellyfish2.initByteBuffer();
@@ -497,7 +444,7 @@ class DeepSeaContainer extends GLBaseView {
         this.mBlurEffect2.initByteBuffer();
     }
 
-    @Override // com.reandroid.wallpaper.deepsea.GLBaseView
+    
     public void initShader() {
         if (!isInitShader()) {
             this.mJellyfish.initShader();
@@ -508,11 +455,11 @@ class DeepSeaContainer extends GLBaseView {
             this.mBlurEffect.initShader();
             this.mBlurEffect2.initShader();
             GLES20.glClearColor(0.0f, 0.0f, 0.0f, 0.5f);
-            super.initShader();
+            this.mIsInitShader = true;
         }
     }
 
-    @Override // com.reandroid.wallpaper.deepsea.GLBaseView
+    
     public void draw() {
         if (this.mTempBackImageCount == 0 && this.mIsBackgroundChanged) {
             this.mTempBackImageCount++;
@@ -642,7 +589,7 @@ class DeepSeaContainer extends GLBaseView {
         this.mBatteryTime++;
     }
 
-    @Override // com.reandroid.wallpaper.deepsea.GLBaseView
+    
     public void update(float[] fArr) {
         this.mJellyfish.update(fArr);
         this.mJellyfish2.update(fArr);
@@ -1322,15 +1269,6 @@ class DeepSeaContainer extends GLBaseView {
         jellyfishVO.setMovingZStartPosition(jellyfishVO.getPositionX(), jellyfishVO.getPositionY(), jellyfishVO.getPositionZ());
         jellyfishVO.setMovingZDestination(f, f2, f3);
         jellyfishVO.setDestinationRotate(((((float) Math.atan2(jellyfishVO.getMovingZDestinationY() - jellyfishVO.getMovingZStartY(), jellyfishVO.getMovingZDestinationX() - jellyfishVO.getMovingZStartX())) * 180.0f) / 3.1415927f) - 120.0f);
-    }
-
-    private void setColorByColorValue(int colorIndex) {
-        float[] rgb = MathHelper.getRGB(Palette.mValuesOfColor[colorIndex]);
-        float[] rgb2 = MathHelper.getRGB(-5789785);
-        this.mBlurColor[0] = rgb[0] - rgb2[0];
-        this.mBlurColor[1] = rgb[1] - rgb2[1];
-        this.mBlurColor[2] = rgb[2] - rgb2[2];
-        this.mBlur.setAddColor(this.mBlurColor[0], this.mBlurColor[1], this.mBlurColor[2], 0.0f);
     }
 
     public void setBackgroundImagePath(String str) {
