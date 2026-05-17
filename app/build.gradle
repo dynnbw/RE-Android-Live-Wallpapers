@@ -71,7 +71,7 @@ android {
         versionName resolvedAppVersionName
 
         ndk {
-            abiFilters 'arm64-v8a', 'armeabi-v7a'
+            abiFilters 'arm64-v8a', 'armeabi-v7a', 'x86', 'x86_64'
         }
     }
 
@@ -116,7 +116,7 @@ tasks.register('buildVulkanNative', Exec) {
             'NDK_APPLICATION_MK=Application.mk',
             'NDK_OUT=../../../build/galaxyvk/obj',
             'NDK_LIBS_OUT=../jniLibs',
-            'APP_ABI=arm64-v8a,armeabi-v7a',
+            'APP_ABI=arm64-v8a,armeabi-v7a,x86,x86_64',
             'APP_PLATFORM=android-24'
 }
 
