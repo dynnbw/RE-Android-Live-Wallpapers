@@ -25,7 +25,7 @@ import java.nio.FloatBuffer;
 public class WindmillGL extends GLESScene {
     private static final String TAG = "WindmillGL";
 
-    // ---- Scene (non-GL logic) ----
+    // ---- 场景逻辑层（非 GL）----
     private final WindmillScene mScene;
 
     private final SpriteDrawer mSpriteDrawer = new SpriteDrawer();

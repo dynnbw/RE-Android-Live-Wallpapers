@@ -24,7 +24,7 @@ import static com.reandroid.wallpaper.fireworks.FireworksScene.*;
  */
 public class FireworksGL extends GLESScene {
 
-    // ---- Scene (non-GL logic) ----
+    // ---- 场景逻辑层（非 GL） ----
     private final FireworksScene mScene;
 
     // OpenGL相关初始化标记
@@ -163,7 +163,7 @@ public class FireworksGL extends GLESScene {
         checkAndReloadBackground();
 
         // 更新当前时间
-        mScene.gNow = (int) SystemClock.uptimeMillis();
+        mScene.mNow = (int) SystemClock.uptimeMillis();
 
         // 处理待执行的触摸事件
         if (mScene.mTapPending) {
@@ -448,7 +448,7 @@ public class FireworksGL extends GLESScene {
     private void drawFireworks(FireworkParticle[] arr, int index, float offsetX) {
         for (int i = 0; i < STRIDE; i++) {
             FireworkParticle p = arr[index + i];
-            int delta = mScene.gNow - p.time;
+            int delta = mScene.mNow - p.time;
             // 仅绘制激活且时间差为正的粒子
             if (p.active && delta >= 0) {
                 setParticleColor(p, p.life);
@@ -497,15 +497,15 @@ public class FireworksGL extends GLESScene {
     private void draw(float offsetX) {
         // 绘制常规烟花
         for (int i = 0; i < MAX_NORMAL; i++) {
-            drawFireworks(mScene.gNormal, i * STRIDE, offsetX);
+            drawFireworks(mScene.mNormal, i * STRIDE, offsetX);
         }
         // 绘制额外烟花
         for (int i = 0; i < MAX_EXTRAS; i++) {
-            drawFireworks(mScene.gExtras, i * STRIDE, offsetX);
+            drawFireworks(mScene.mExtras, i * STRIDE, offsetX);
         }
         // 绘制拖尾粒子
         for (int i = 0; i < MAX_TAILS; i++) {
-            drawTails(mScene.gTails[i], offsetX);
+            drawTails(mScene.mTails[i], offsetX);
         }
     }
 

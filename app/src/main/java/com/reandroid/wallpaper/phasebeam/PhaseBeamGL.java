@@ -19,14 +19,14 @@ import com.reandroid.gles.RawResourceLoader;
 public class PhaseBeamGL extends GLESScene implements SharedPreferences.OnSharedPreferenceChangeListener {
     private static final String TAG = "PhaseBeamGL";
 
-    // Re-exported constants for external access (settings UI)
+    // 重新导出的常量，供外部使用（设置界面）
     public static final String PREFS_NAME = PhaseBeamScene.PREFS_NAME;
     public static final String KEY_ENABLED = PhaseBeamScene.KEY_ENABLED;
     public static final String KEY_HUE = PhaseBeamScene.KEY_HUE;
     public static final String KEY_SATURATION = PhaseBeamScene.KEY_SATURATION;
     public static final String KEY_BRIGHTNESS = PhaseBeamScene.KEY_BRIGHTNESS;
 
-    // ---- Scene (non-GL logic) ----
+    // ---- 场景逻辑层（非 GL）----
     private final PhaseBeamScene mScene;
 
     private int mBgProgram;

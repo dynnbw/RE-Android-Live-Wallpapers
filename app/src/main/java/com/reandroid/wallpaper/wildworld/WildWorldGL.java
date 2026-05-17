@@ -64,7 +64,7 @@ public class WildWorldGL extends GLESScene {
     protected void onCreate() {
         mScene.init();
         mScene.setDensity(0);
-        if (isPreview()) mScene.gXOffset = mScene.screenWidth / 2;
+        if (isPreview()) mScene.mXOffset = mScene.mScreenWidth / 2;
     }
 
     @Override
@@ -82,7 +82,7 @@ public class WildWorldGL extends GLESScene {
     public void resize(int width, int height) {
         super.resize(width, height);
         mScene.storeScreenSize(width, height);
-        mScene.setDensity(mScene.gDensity == 0 ? 0 : mScene.gDensity);
+        mScene.setDensity(mScene.mDensity == 0 ? 0 : mScene.mDensity);
         if (mGlReady) {
             GLES20.glViewport(0, 0, mWidth, mHeight);
             Matrix.orthoM(mProjMatrix, 0, 0, width, height, 0, -1f, 1f);
@@ -111,7 +111,7 @@ public class WildWorldGL extends GLESScene {
         }
 
         // RS main(): gXOffset = State->xOffset - screenWidth / 2
-        mScene.gXOffset = (int)(mScrollPixels - mScene.screenWidth / 2f);
+        mScene.mXOffset = (int)(mScrollPixels - mScene.mScreenWidth / 2f);
 
         if (mTouchPending) {
             mTouchPending = false;
@@ -120,12 +120,12 @@ public class WildWorldGL extends GLESScene {
 
         // RS timing: gCurTime = uptimeMillis(); gDT = (gCurTime - gOldTime) / 1000; minf(gDT, MIN_DT)
         long now = SystemClock.uptimeMillis();
-        mScene.gCurTime = now;
-        if (mScene.gOldTime == 0) mScene.gOldTime = mScene.gCurTime;
-        float dt = (mScene.gCurTime - mScene.gOldTime) / 1000f;
+        mScene.mCurTime = now;
+        if (mScene.mOldTime == 0) mScene.mOldTime = mScene.mCurTime;
+        float dt = (mScene.mCurTime - mScene.mOldTime) / 1000f;
         if (dt > WildWorldScene.MIN_DT) dt = WildWorldScene.MIN_DT;
-        mScene.gOldTime = mScene.gCurTime;
-        mScene.gDT = dt;
+        mScene.mOldTime = mScene.mCurTime;
+        mScene.mDT = dt;
 
         float frameScale = dt * 25f; // RS targets 25fps (main returns 25)
         mScene.update(frameScale);
@@ -182,20 +182,20 @@ public class WildWorldGL extends GLESScene {
         GLES20.glUseProgram(mProgram);
         GLES20.glUniformMatrix4fv(mMatrixHandle, 1, false, mProjMatrix, 0);
 
-        if (mScene.gDayNight > 0) {
-            drawLayer(mTexBgDay1, mScene.gDay[WildWorldScene.UP]);
-            drawLayer(mTexBgDay, mScene.gDay[WildWorldScene.DOWN]);
-            if (mScene.gAnimation == 0) {
-                drawLayer(mTexBgNight1, mScene.gNight[WildWorldScene.UP]);
-                drawLayer(mTexBgNight, mScene.gNight[WildWorldScene.DOWN]);
+        if (mScene.mDayNight > 0) {
+            drawLayer(mTexBgDay1, mScene.mDay[WildWorldScene.UP]);
+            drawLayer(mTexBgDay, mScene.mDay[WildWorldScene.DOWN]);
+            if (mScene.mAnimation == 0) {
+                drawLayer(mTexBgNight1, mScene.mNight[WildWorldScene.UP]);
+                drawLayer(mTexBgNight, mScene.mNight[WildWorldScene.DOWN]);
             }
         } else {
-            if (mScene.gAnimation != 0) {
-                drawLayer(mTexBgDay1, mScene.gDay[WildWorldScene.UP]);
-                drawLayer(mTexBgDay, mScene.gDay[WildWorldScene.DOWN]);
+            if (mScene.mAnimation != 0) {
+                drawLayer(mTexBgDay1, mScene.mDay[WildWorldScene.UP]);
+                drawLayer(mTexBgDay, mScene.mDay[WildWorldScene.DOWN]);
             }
-            drawLayer(mTexBgNight1, mScene.gNight[WildWorldScene.UP]);
-            drawLayer(mTexBgNight, mScene.gNight[WildWorldScene.DOWN]);
+            drawLayer(mTexBgNight1, mScene.mNight[WildWorldScene.UP]);
+            drawLayer(mTexBgNight, mScene.mNight[WildWorldScene.DOWN]);
         }
     }
 
@@ -204,89 +204,89 @@ public class WildWorldGL extends GLESScene {
         GLES20.glUniformMatrix4fv(mMatrixHandle, 1, false, mProjMatrix, 0);
 
         // Fireballs
-        if (mScene.gFireballsShow != 0) {
+        if (mScene.mFireballsShow != 0) {
             for (int i = 0; i < WildWorldScene.FIREBALL_COUNT; i++) {
-                WildWorldScene.Fireball f = mScene.fbs[i];
-                if (mScene.gCurTime > f.startTime && f.steps > 0) {
-                    float offX = f.x + mScene.gXOffset;
+                WildWorldScene.Fireball f = mScene.mFireballs[i];
+                if (mScene.mCurTime > f.startTime && f.steps > 0) {
+                    float offX = f.x + mScene.mXOffset;
                     drawRect(mTexFireball, offX, f.y, offX + f.w, f.y + f.h);
                 }
             }
         }
 
         // VCN Layer
-        float offX = mScene.gVcnLayer[WildWorldScene.UP].x + mScene.gXOffset;
-        while (offX < 0) offX += mScene.gVcnLayer[WildWorldScene.UP].w;
-        drawRect(mTexLayer5, offX, mScene.gVcnLayer[WildWorldScene.UP].y,
-                offX + mScene.gVcnLayer[WildWorldScene.UP].w, mScene.gVcnLayer[WildWorldScene.UP].y + mScene.gVcnLayer[WildWorldScene.UP].h);
-        drawRect(mTexLayer5, offX - mScene.gVcnLayer[WildWorldScene.UP].w, mScene.gVcnLayer[WildWorldScene.UP].y,
-                offX, mScene.gVcnLayer[WildWorldScene.UP].y + mScene.gVcnLayer[WildWorldScene.UP].h);
-        drawLayer(mTexLayer51, mScene.gVcnLayer[WildWorldScene.DOWN]);
+        float offX = mScene.mVcnLayer[WildWorldScene.UP].x + mScene.mXOffset;
+        while (offX < 0) offX += mScene.mVcnLayer[WildWorldScene.UP].w;
+        drawRect(mTexLayer5, offX, mScene.mVcnLayer[WildWorldScene.UP].y,
+                offX + mScene.mVcnLayer[WildWorldScene.UP].w, mScene.mVcnLayer[WildWorldScene.UP].y + mScene.mVcnLayer[WildWorldScene.UP].h);
+        drawRect(mTexLayer5, offX - mScene.mVcnLayer[WildWorldScene.UP].w, mScene.mVcnLayer[WildWorldScene.UP].y,
+                offX, mScene.mVcnLayer[WildWorldScene.UP].y + mScene.mVcnLayer[WildWorldScene.UP].h);
+        drawLayer(mTexLayer51, mScene.mVcnLayer[WildWorldScene.DOWN]);
 
         // Pterosaur
         drawPterosaur();
 
         // Layer 4
-        offX = mScene.gLayer4[WildWorldScene.UP].x + mScene.gXOffset;
-        while (offX < 0) offX += mScene.gLayer4[WildWorldScene.UP].w;
-        drawRect(mTexLayer4, offX, mScene.gLayer4[WildWorldScene.UP].y,
-                offX + mScene.gLayer4[WildWorldScene.UP].w, mScene.gLayer4[WildWorldScene.UP].y + mScene.gLayer4[WildWorldScene.UP].h);
-        drawRect(mTexLayer4, offX - mScene.gLayer4[WildWorldScene.UP].w, mScene.gLayer4[WildWorldScene.UP].y,
-                offX, mScene.gLayer4[WildWorldScene.UP].y + mScene.gLayer4[WildWorldScene.UP].h);
-        drawLayer(mTexLayer41, mScene.gLayer4[WildWorldScene.DOWN]);
+        offX = mScene.mLayer4[WildWorldScene.UP].x + mScene.mXOffset;
+        while (offX < 0) offX += mScene.mLayer4[WildWorldScene.UP].w;
+        drawRect(mTexLayer4, offX, mScene.mLayer4[WildWorldScene.UP].y,
+                offX + mScene.mLayer4[WildWorldScene.UP].w, mScene.mLayer4[WildWorldScene.UP].y + mScene.mLayer4[WildWorldScene.UP].h);
+        drawRect(mTexLayer4, offX - mScene.mLayer4[WildWorldScene.UP].w, mScene.mLayer4[WildWorldScene.UP].y,
+                offX, mScene.mLayer4[WildWorldScene.UP].y + mScene.mLayer4[WildWorldScene.UP].h);
+        drawLayer(mTexLayer41, mScene.mLayer4[WildWorldScene.DOWN]);
 
         // Dinosaur 1 (UP)
         drawDinosaur(WildWorldScene.UP);
 
         // Layer 3
-        offX = mScene.gLayer3[WildWorldScene.UP].x + mScene.gXOffset;
-        while (offX < 0) offX += mScene.gLayer3[WildWorldScene.UP].w;
-        drawRect(mTexLayer3, offX, mScene.gLayer3[WildWorldScene.UP].y,
-                offX + mScene.gLayer3[WildWorldScene.UP].w, mScene.gLayer3[WildWorldScene.UP].y + mScene.gLayer3[WildWorldScene.UP].h);
-        drawRect(mTexLayer3, offX - mScene.gLayer3[WildWorldScene.UP].w, mScene.gLayer3[WildWorldScene.UP].y,
-                offX, mScene.gLayer3[WildWorldScene.UP].y + mScene.gLayer3[WildWorldScene.UP].h);
-        drawLayer(mTexLayer31, mScene.gLayer3[WildWorldScene.DOWN]);
+        offX = mScene.mLayer3[WildWorldScene.UP].x + mScene.mXOffset;
+        while (offX < 0) offX += mScene.mLayer3[WildWorldScene.UP].w;
+        drawRect(mTexLayer3, offX, mScene.mLayer3[WildWorldScene.UP].y,
+                offX + mScene.mLayer3[WildWorldScene.UP].w, mScene.mLayer3[WildWorldScene.UP].y + mScene.mLayer3[WildWorldScene.UP].h);
+        drawRect(mTexLayer3, offX - mScene.mLayer3[WildWorldScene.UP].w, mScene.mLayer3[WildWorldScene.UP].y,
+                offX, mScene.mLayer3[WildWorldScene.UP].y + mScene.mLayer3[WildWorldScene.UP].h);
+        drawLayer(mTexLayer31, mScene.mLayer3[WildWorldScene.DOWN]);
 
         // Dinosaur 2 (DOWN)
         drawDinosaur(WildWorldScene.DOWN);
 
         // Layer 2
-        offX = mScene.gLayer2[WildWorldScene.UP].x + mScene.gXOffset;
-        while (offX < 0) offX += mScene.gLayer2[WildWorldScene.UP].w;
-        drawRect(mTexLayer2, offX, mScene.gLayer2[WildWorldScene.UP].y,
-                offX + mScene.gLayer2[WildWorldScene.UP].w, mScene.gLayer2[WildWorldScene.UP].y + mScene.gLayer2[WildWorldScene.UP].h);
-        drawRect(mTexLayer2, offX - mScene.gLayer2[WildWorldScene.UP].w, mScene.gLayer2[WildWorldScene.UP].y,
-                offX, mScene.gLayer2[WildWorldScene.UP].y + mScene.gLayer2[WildWorldScene.UP].h);
-        drawLayer(mTexLayer21, mScene.gLayer2[WildWorldScene.DOWN]);
+        offX = mScene.mLayer2[WildWorldScene.UP].x + mScene.mXOffset;
+        while (offX < 0) offX += mScene.mLayer2[WildWorldScene.UP].w;
+        drawRect(mTexLayer2, offX, mScene.mLayer2[WildWorldScene.UP].y,
+                offX + mScene.mLayer2[WildWorldScene.UP].w, mScene.mLayer2[WildWorldScene.UP].y + mScene.mLayer2[WildWorldScene.UP].h);
+        drawRect(mTexLayer2, offX - mScene.mLayer2[WildWorldScene.UP].w, mScene.mLayer2[WildWorldScene.UP].y,
+                offX, mScene.mLayer2[WildWorldScene.UP].y + mScene.mLayer2[WildWorldScene.UP].h);
+        drawLayer(mTexLayer21, mScene.mLayer2[WildWorldScene.DOWN]);
 
         // Layer 1
-        offX = mScene.gLayer1[WildWorldScene.UP].x + mScene.gXOffset;
-        while (offX < 0) offX += mScene.gLayer1[WildWorldScene.UP].w;
-        drawRect(mTexLayer1, offX, mScene.gLayer1[WildWorldScene.UP].y,
-                offX + mScene.gLayer1[WildWorldScene.UP].w, mScene.gLayer1[WildWorldScene.UP].y + mScene.gLayer1[WildWorldScene.UP].h);
-        drawRect(mTexLayer1, offX - mScene.gLayer1[WildWorldScene.UP].w, mScene.gLayer1[WildWorldScene.UP].y,
-                offX, mScene.gLayer1[WildWorldScene.UP].y + mScene.gLayer1[WildWorldScene.UP].h);
-        drawLayer(mTexLayer11, mScene.gLayer1[WildWorldScene.DOWN]);
+        offX = mScene.mLayer1[WildWorldScene.UP].x + mScene.mXOffset;
+        while (offX < 0) offX += mScene.mLayer1[WildWorldScene.UP].w;
+        drawRect(mTexLayer1, offX, mScene.mLayer1[WildWorldScene.UP].y,
+                offX + mScene.mLayer1[WildWorldScene.UP].w, mScene.mLayer1[WildWorldScene.UP].y + mScene.mLayer1[WildWorldScene.UP].h);
+        drawRect(mTexLayer1, offX - mScene.mLayer1[WildWorldScene.UP].w, mScene.mLayer1[WildWorldScene.UP].y,
+                offX, mScene.mLayer1[WildWorldScene.UP].y + mScene.mLayer1[WildWorldScene.UP].h);
+        drawLayer(mTexLayer11, mScene.mLayer1[WildWorldScene.DOWN]);
     }
 
     private void drawPterosaur() {
-        WildWorldScene.Pterosaur p = mScene.gPterosaur;
+        WildWorldScene.Pterosaur p = mScene.mPterosaur;
         if (p.alive == 0) return;
-        float offX = p.x + mScene.gXOffset;
-        if (offX + p.w > 0 && offX < mScene.screenWidth) {
+        float offX = p.x + mScene.mXOffset;
+        if (offX + p.w > 0 && offX < mScene.mScreenWidth) {
             drawRect(mTexPterosaur, offX, p.y, offX + p.w, p.y + p.h);
-        } else if (p.x + mScene.gXOffset > mScene.screenWidth) {
+        } else if (p.x + mScene.mXOffset > mScene.mScreenWidth) {
             p.alive = 0;
         }
     }
 
     private void drawDinosaur(int ud) {
-        WildWorldScene.Dinosaur d = mScene.gDinosaur[ud];
+        WildWorldScene.Dinosaur d = mScene.mDinosaur[ud];
         if (d.alive == 0) return;
-        float offX = d.x + mScene.gXOffset;
-        if (offX + d.w > 0 && offX < mScene.screenWidth) {
+        float offX = d.x + mScene.mXOffset;
+        if (offX + d.w > 0 && offX < mScene.mScreenWidth) {
             drawRect(mTexDinosaur, offX, d.y - d.stepY, offX + d.w, d.y + d.h - d.stepY);
-        } else if (d.x + d.w + mScene.gXOffset < 0) {
+        } else if (d.x + d.w + mScene.mXOffset < 0) {
             d.alive = 0;
         }
     }

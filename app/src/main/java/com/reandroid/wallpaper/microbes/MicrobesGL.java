@@ -16,7 +16,7 @@ import static com.reandroid.wallpaper.microbes.MicrobesScene.*;
 
 public class MicrobesGL extends GLESScene {
 
-    // ---- Scene (non-GL logic) ----
+    // ---- 场景逻辑层（非 GL）----
     private final MicrobesScene mScene;
 
     // ---- NIO buffers ----

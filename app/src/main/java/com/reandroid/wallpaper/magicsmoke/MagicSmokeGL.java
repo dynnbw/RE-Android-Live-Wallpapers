@@ -22,7 +22,7 @@ import java.nio.FloatBuffer;
 public class MagicSmokeGL extends GLESScene {
     private static final String TAG = "MagicSmokeGL";
 
-    // ---- Scene (non-GL logic) ----
+    // ---- 场景逻辑层（非 GL）----
     private final MagicSmokeScene mScene;
 
     // Shader programs

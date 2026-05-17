@@ -35,7 +35,7 @@ final class WildWorldScene {
     static final float DINOSAUR2_DISTANCE = 0.75f;
     static final int FIREBALL_COUNT = 6;
 
-    // ---- Entity types (package-private, accessed by GL) ----
+    // ---- 实体类型（包级私有，GL 访问）----
     static final class Layer {
         float x, y, w, h;
     }
@@ -55,49 +55,49 @@ final class WildWorldScene {
     }
 
     // ---- State (exact matches of RS globals) ----
-    int screenWidth, screenHeight;
-    int gBgSpeed, gDensity;
-    int gAnimation = 1;
-    int gDayNight = 1;
-    int gDayAndNightSpeed;
+    int mScreenWidth, mScreenHeight;
+    int mBgSpeed, mDensity;
+    int mAnimation = 1;
+    int mDayNight = 1;
+    int mDayAndNightSpeed;
 
-    final Layer[] gDay = {new Layer(), new Layer()};
-    final Layer[] gNight = {new Layer(), new Layer()};
-    final Layer[] gVcnLayer = {new Layer(), new Layer()};
-    final Layer[] gLayer4 = {new Layer(), new Layer()};
-    final Layer[] gLayer3 = {new Layer(), new Layer()};
-    final Layer[] gLayer2 = {new Layer(), new Layer()};
-    final Layer[] gLayer1 = {new Layer(), new Layer()};
-    int gVcnMouseOffx, gVcnMouseW;
+    final Layer[] mDay = {new Layer(), new Layer()};
+    final Layer[] mNight = {new Layer(), new Layer()};
+    final Layer[] mVcnLayer = {new Layer(), new Layer()};
+    final Layer[] mLayer4 = {new Layer(), new Layer()};
+    final Layer[] mLayer3 = {new Layer(), new Layer()};
+    final Layer[] mLayer2 = {new Layer(), new Layer()};
+    final Layer[] mLayer1 = {new Layer(), new Layer()};
+    int mVcnMouseOffx, mVcnMouseW;
 
-    final Pterosaur gPterosaur = new Pterosaur();
-    int gPterosaurW, gPterosaurH, gPterosaurSpeed;
+    final Pterosaur mPterosaur = new Pterosaur();
+    int mPterosaurW, mPterosaurH, mPterosaurSpeed;
 
-    final Dinosaur[] gDinosaur = {new Dinosaur(), new Dinosaur()};
-    int gDinosaurSpeedX, gDinosaurSpeedY;
+    final Dinosaur[] mDinosaur = {new Dinosaur(), new Dinosaur()};
+    int mDinosaurSpeedX, mDinosaurSpeedY;
 
-    final Fireball[] fbs = new Fireball[FIREBALL_COUNT];
-    int gFireballBaseSpeed, gFireballW, gFireballH;
-    int gFireballsShow;
+    final Fireball[] mFireballs = new Fireball[FIREBALL_COUNT];
+    int mFireballBaseSpeed, mFireballW, mFireballH;
+    int mFireballsShow;
 
-    int gSunLeft, gSunRight, gSunTop, gSunBottom;
-    int gMoonLeft, gMoonRight, gMoonTop, gMoonBottom;
+    int mSunLeft, mSunRight, mSunTop, mSunBottom;
+    int mMoonLeft, mMoonRight, mMoonTop, mMoonBottom;
 
-    float gOldTime, gCurTime, gGenTime, gDT;
-    int gXOffset;
+    float mOldTime, mCurTime, mGenTime, mDT;
+    int mXOffset;
 
     final Random mRandom = new Random();
 
     WildWorldScene() {
-        for (int i = 0; i < FIREBALL_COUNT; i++) fbs[i] = new Fireball();
+        for (int i = 0; i < FIREBALL_COUNT; i++) mFireballs[i] = new Fireball();
     }
 
     // ---- init / density (exact RS logic, 4 fixed presets) ----
 
     void init() {
-        gDensity = 0;
-        gAnimation = 1;
-        gDayNight = 1;
+        mDensity = 0;
+        mAnimation = 1;
+        mDayNight = 1;
     }
 
     // ---- density preset table (eliminates the 133-line copy-paste if/else chain) ----
@@ -120,7 +120,7 @@ final class WildWorldScene {
         // Dinosaur UP
         final float dinoUpY, dinoUpW, dinoUpH;
         // Dinosaur DOWN
-        final float dinoDownXFactor;  // multiplier on screenWidth
+        final float dinoDownXFactor;  // multiplier on mScreenWidth
         final float dinoDownY, dinoDownW, dinoDownH;
         // Dino speeds
         final int dinoSpeedX, dinoSpeedY;
@@ -172,46 +172,46 @@ final class WildWorldScene {
     private void applyLayer(Layer l, float y, float w, float h) { l.x = 0; l.y = y; l.w = w; l.h = h; }
 
     void setDensity(int den) {
-        gDensity = den == 0 ? DENSITY_480x800 : den;
+        mDensity = den == 0 ? DENSITY_480x800 : den;
         int sw = getScreenWidth();
         int sh = getScreenHeight();
-        screenWidth = sw;
-        screenHeight = sh;
+        mScreenWidth = sw;
+        mScreenHeight = sh;
 
-        DensityPreset p = DENSITY_PRESETS[gDensity - 1];
-        gBgSpeed = p.bgSpeed; gDayAndNightSpeed = p.dayNightSpeed; gFireballBaseSpeed = p.fireballBaseSpeed;
-        gFireballW = p.fireballW; gFireballH = p.fireballH;
+        DensityPreset p = DENSITY_PRESETS[mDensity - 1];
+        mBgSpeed = p.bgSpeed; mDayAndNightSpeed = p.dayNightSpeed; mFireballBaseSpeed = p.fireballBaseSpeed;
+        mFireballW = p.fireballW; mFireballH = p.fireballH;
 
-        applyLayer(gDay[UP],   0,                sw, p.dayUpH);
-        applyLayer(gDay[DOWN], p.dayUpH,         sw, p.dayDownH);
-        applyLayer(gNight[UP], -(p.nightUpH + p.nightDownH), sw, p.nightUpH);
-        applyLayer(gNight[DOWN], -p.nightDownH,  sw, p.nightDownH);
+        applyLayer(mDay[UP],   0,                sw, p.dayUpH);
+        applyLayer(mDay[DOWN], p.dayUpH,         sw, p.dayDownH);
+        applyLayer(mNight[UP], -(p.nightUpH + p.nightDownH), sw, p.nightUpH);
+        applyLayer(mNight[DOWN], -p.nightDownH,  sw, p.nightDownH);
 
-        applyLayer(gVcnLayer[UP],   p.vcnUpY,        sw, p.vcnUpH);
-        applyLayer(gVcnLayer[DOWN], p.vcnUpY + p.vcnUpH, sw, p.vcnDownH);
-        gVcnMouseOffx = p.vcnMouseOffx; gVcnMouseW = p.vcnMouseW;
+        applyLayer(mVcnLayer[UP],   p.vcnUpY,        sw, p.vcnUpH);
+        applyLayer(mVcnLayer[DOWN], p.vcnUpY + p.vcnUpH, sw, p.vcnDownH);
+        mVcnMouseOffx = p.vcnMouseOffx; mVcnMouseW = p.vcnMouseW;
 
-        applyLayer(gLayer4[UP],   p.layer4UpY,         sw, p.layer4UpH);
-        applyLayer(gLayer4[DOWN], p.layer4UpY + p.layer4UpH, sw, p.layer4DownH);
-        applyLayer(gLayer3[UP],   p.layer3UpY,         sw, p.layer3UpH);
-        applyLayer(gLayer3[DOWN], p.layer3UpY + p.layer3UpH, sw, p.layer3DownH);
-        applyLayer(gLayer2[UP],   p.layer2UpY,         sw, p.layer2UpH);
-        applyLayer(gLayer2[DOWN], p.layer2UpY + p.layer2UpH, sw, p.layer2DownH);
-        applyLayer(gLayer1[UP],   p.layer1UpY,         sw, p.layer1UpH);
-        applyLayer(gLayer1[DOWN], p.layer1UpY + p.layer1UpH, sw, p.layer1DownH);
+        applyLayer(mLayer4[UP],   p.layer4UpY,         sw, p.layer4UpH);
+        applyLayer(mLayer4[DOWN], p.layer4UpY + p.layer4UpH, sw, p.layer4DownH);
+        applyLayer(mLayer3[UP],   p.layer3UpY,         sw, p.layer3UpH);
+        applyLayer(mLayer3[DOWN], p.layer3UpY + p.layer3UpH, sw, p.layer3DownH);
+        applyLayer(mLayer2[UP],   p.layer2UpY,         sw, p.layer2UpH);
+        applyLayer(mLayer2[DOWN], p.layer2UpY + p.layer2UpH, sw, p.layer2DownH);
+        applyLayer(mLayer1[UP],   p.layer1UpY,         sw, p.layer1UpH);
+        applyLayer(mLayer1[DOWN], p.layer1UpY + p.layer1UpH, sw, p.layer1DownH);
 
-        gPterosaur.x = p.pteroX; gPterosaur.y = p.pteroY;
-        gPterosaur.w = p.pteroW; gPterosaur.h = p.pteroH;
-        gPterosaur.scale = 1.0f; gPterosaurSpeed = p.pteroSpeed;
+        mPterosaur.x = p.pteroX; mPterosaur.y = p.pteroY;
+        mPterosaur.w = p.pteroW; mPterosaur.h = p.pteroH;
+        mPterosaur.scale = 1.0f; mPterosaurSpeed = p.pteroSpeed;
 
-        gDinosaur[UP].distance = DINOSAUR1_DISTANCE; gDinosaur[UP].x = sw;
-        gDinosaur[UP].y = p.dinoUpY; gDinosaur[UP].w = p.dinoUpW; gDinosaur[UP].h = p.dinoUpH;
-        gDinosaur[DOWN].distance = DINOSAUR2_DISTANCE; gDinosaur[DOWN].x = sw * p.dinoDownXFactor;
-        gDinosaur[DOWN].y = p.dinoDownY; gDinosaur[DOWN].w = p.dinoDownW; gDinosaur[DOWN].h = p.dinoDownH;
-        gDinosaurSpeedX = p.dinoSpeedX; gDinosaurSpeedY = p.dinoSpeedY;
+        mDinosaur[UP].distance = DINOSAUR1_DISTANCE; mDinosaur[UP].x = sw;
+        mDinosaur[UP].y = p.dinoUpY; mDinosaur[UP].w = p.dinoUpW; mDinosaur[UP].h = p.dinoUpH;
+        mDinosaur[DOWN].distance = DINOSAUR2_DISTANCE; mDinosaur[DOWN].x = sw * p.dinoDownXFactor;
+        mDinosaur[DOWN].y = p.dinoDownY; mDinosaur[DOWN].w = p.dinoDownW; mDinosaur[DOWN].h = p.dinoDownH;
+        mDinosaurSpeedX = p.dinoSpeedX; mDinosaurSpeedY = p.dinoSpeedY;
 
-        gSunLeft = p.sunLeft; gSunRight = p.sunRight; gSunTop = p.sunTop; gSunBottom = p.sunBottom;
-        gMoonLeft = p.moonLeft; gMoonRight = p.moonRight; gMoonTop = p.moonTop; gMoonBottom = p.moonBottom;
+        mSunLeft = p.sunLeft; mSunRight = p.sunRight; mSunTop = p.sunTop; mSunBottom = p.sunBottom;
+        mMoonLeft = p.moonLeft; mMoonRight = p.moonRight; mMoonTop = p.moonTop; mMoonBottom = p.moonBottom;
     }
 
     // Stored by GL for use in setDensity
@@ -224,19 +224,19 @@ final class WildWorldScene {
 
     void update(float frameScale) {
         // Day/night transition
-        if (gDayNight > 0) {
-            if (gAnimation == 0) {
-                gNight[UP].y -= gDayAndNightSpeed * frameScale;
-                gNight[DOWN].y -= gDayAndNightSpeed * frameScale;
-                if (gNight[DOWN].y + gNight[DOWN].h <= 0) gAnimation = 1;
+        if (mDayNight > 0) {
+            if (mAnimation == 0) {
+                mNight[UP].y -= mDayAndNightSpeed * frameScale;
+                mNight[DOWN].y -= mDayAndNightSpeed * frameScale;
+                if (mNight[DOWN].y + mNight[DOWN].h <= 0) mAnimation = 1;
             }
         } else {
-            if (gAnimation == 1) {
-                gNight[UP].y += gDayAndNightSpeed * frameScale;
-                gNight[DOWN].y += gDayAndNightSpeed * frameScale;
-                if (gNight[UP].y >= 0) {
-                    gAnimation = 0;
-                    gNight[UP].y = 0;
+            if (mAnimation == 1) {
+                mNight[UP].y += mDayAndNightSpeed * frameScale;
+                mNight[DOWN].y += mDayAndNightSpeed * frameScale;
+                if (mNight[UP].y >= 0) {
+                    mAnimation = 0;
+                    mNight[UP].y = 0;
                 }
             }
         }
@@ -248,135 +248,135 @@ final class WildWorldScene {
         updateFireballs(frameScale);
 
         // Random entity generation
-        if (gCurTime - gGenTime > GEN_TIME) {
-            gGenTime = gCurTime;
+        if (mCurTime - mGenTime > GEN_TIME) {
+            mGenTime = mCurTime;
             float random = rand(GEN_RANDOM);
-            if (gPterosaur.alive == 0 && random > 0.04f && random < 0.14f) {
-                gPterosaur.time = SystemClock.uptimeMillis();
-                gPterosaur.alive = 1;
-                gPterosaur.x = -screenWidth;
-                gPterosaur.y = 32 + screenHeight * rand(0.2f);
+            if (mPterosaur.alive == 0 && random > 0.04f && random < 0.14f) {
+                mPterosaur.time = SystemClock.uptimeMillis();
+                mPterosaur.alive = 1;
+                mPterosaur.x = -mScreenWidth;
+                mPterosaur.y = 32 + mScreenHeight * rand(0.2f);
             }
             if (random < 0.1f) {
-                if (gDinosaur[UP].alive == 0) {
-                    gDinosaur[UP].time = SystemClock.uptimeMillis();
-                    gDinosaur[UP].alive = 1;
-                    gDinosaur[UP].x = screenWidth * 3;
-                    gDinosaur[UP].stepY = 0;
+                if (mDinosaur[UP].alive == 0) {
+                    mDinosaur[UP].time = SystemClock.uptimeMillis();
+                    mDinosaur[UP].alive = 1;
+                    mDinosaur[UP].x = mScreenWidth * 3;
+                    mDinosaur[UP].stepY = 0;
                 }
             } else if (random < 0.18f) {
-                if (gDinosaur[DOWN].alive == 0) {
-                    gDinosaur[UP].time = SystemClock.uptimeMillis();
-                    gDinosaur[DOWN].alive = 1;
-                    gDinosaur[DOWN].x = screenWidth * 3;
-                    gDinosaur[DOWN].stepY = 0;
+                if (mDinosaur[DOWN].alive == 0) {
+                    mDinosaur[UP].time = SystemClock.uptimeMillis();
+                    mDinosaur[DOWN].alive = 1;
+                    mDinosaur[DOWN].x = mScreenWidth * 3;
+                    mDinosaur[DOWN].stepY = 0;
                 }
             }
         }
     }
 
     private void updateLayers(float fs) {
-        gVcnLayer[UP].x += gBgSpeed * fs * (1 - VCN_DISTANCE);
-        if (gVcnLayer[UP].x + gXOffset >= screenWidth) gVcnLayer[UP].x = -gXOffset;
-        gLayer4[UP].x += gBgSpeed * fs * (1 - LAYER4_DISTANCE);
-        if (gLayer4[UP].x + gXOffset >= screenWidth) gLayer4[UP].x = -gXOffset;
-        gLayer3[UP].x += gBgSpeed * fs * (1 - LAYER3_DISTANCE);
-        if (gLayer3[UP].x + gXOffset >= screenWidth) gLayer3[UP].x = -gXOffset;
-        gLayer2[UP].x += gBgSpeed * fs * (1 - LAYER2_DISTANCE);
-        if (gLayer2[UP].x + gXOffset >= screenWidth) gLayer2[UP].x = -gXOffset;
-        gLayer1[UP].x += gBgSpeed * fs * (1 - LAYER1_DISTANCE);
-        if (gLayer1[UP].x + gXOffset >= screenWidth) gLayer1[UP].x = -gXOffset;
+        mVcnLayer[UP].x += mBgSpeed * fs * (1 - VCN_DISTANCE);
+        if (mVcnLayer[UP].x + mXOffset >= mScreenWidth) mVcnLayer[UP].x = -mXOffset;
+        mLayer4[UP].x += mBgSpeed * fs * (1 - LAYER4_DISTANCE);
+        if (mLayer4[UP].x + mXOffset >= mScreenWidth) mLayer4[UP].x = -mXOffset;
+        mLayer3[UP].x += mBgSpeed * fs * (1 - LAYER3_DISTANCE);
+        if (mLayer3[UP].x + mXOffset >= mScreenWidth) mLayer3[UP].x = -mXOffset;
+        mLayer2[UP].x += mBgSpeed * fs * (1 - LAYER2_DISTANCE);
+        if (mLayer2[UP].x + mXOffset >= mScreenWidth) mLayer2[UP].x = -mXOffset;
+        mLayer1[UP].x += mBgSpeed * fs * (1 - LAYER1_DISTANCE);
+        if (mLayer1[UP].x + mXOffset >= mScreenWidth) mLayer1[UP].x = -mXOffset;
     }
 
     private void updatePterosaur(float fs) {
-        if (gPterosaur.alive == 0) return;
-        if (gCurTime - gPterosaur.time > PTERO_DT) {
-            gPterosaur.time = gCurTime;
-            if (gPterosaur.duration != 0) {
-                if (gPterosaur.scale < PTEROSAUR_DISTANCE) gPterosaur.scale = PTEROSAUR_DISTANCE;
-                else if (gPterosaur.scale == PTEROSAUR_DISTANCE) gPterosaur.scale = PTEROSAUR_DISTANCE + 0.06f;
-                else { gPterosaur.scale = PTEROSAUR_DISTANCE; gPterosaur.duration = 0; }
+        if (mPterosaur.alive == 0) return;
+        if (mCurTime - mPterosaur.time > PTERO_DT) {
+            mPterosaur.time = mCurTime;
+            if (mPterosaur.duration != 0) {
+                if (mPterosaur.scale < PTEROSAUR_DISTANCE) mPterosaur.scale = PTEROSAUR_DISTANCE;
+                else if (mPterosaur.scale == PTEROSAUR_DISTANCE) mPterosaur.scale = PTEROSAUR_DISTANCE + 0.06f;
+                else { mPterosaur.scale = PTEROSAUR_DISTANCE; mPterosaur.duration = 0; }
             } else {
-                if (gPterosaur.scale > PTEROSAUR_DISTANCE) gPterosaur.scale = PTEROSAUR_DISTANCE;
-                else if (gPterosaur.scale == PTEROSAUR_DISTANCE) gPterosaur.scale = PTEROSAUR_DISTANCE - 0.06f;
-                else { gPterosaur.scale = PTEROSAUR_DISTANCE; gPterosaur.duration = 1; }
+                if (mPterosaur.scale > PTEROSAUR_DISTANCE) mPterosaur.scale = PTEROSAUR_DISTANCE;
+                else if (mPterosaur.scale == PTEROSAUR_DISTANCE) mPterosaur.scale = PTEROSAUR_DISTANCE - 0.06f;
+                else { mPterosaur.scale = PTEROSAUR_DISTANCE; mPterosaur.duration = 1; }
             }
-            gPterosaur.w = gPterosaurW * gPterosaur.scale;
-            gPterosaur.h = gPterosaurH * gPterosaur.scale;
+            mPterosaur.w = mPterosaurW * mPterosaur.scale;
+            mPterosaur.h = mPterosaurH * mPterosaur.scale;
         }
-        gPterosaur.x += gPterosaurSpeed * fs * gPterosaur.scale;
+        mPterosaur.x += mPterosaurSpeed * fs * mPterosaur.scale;
     }
 
     private void updateDinosaur(int ud, float fs) {
-        Dinosaur d = gDinosaur[ud];
+        Dinosaur d = mDinosaur[ud];
         if (d.alive == 0) return;
-        if (gCurTime - d.time > DINO_DT) {
-            d.time = gCurTime;
+        if (mCurTime - d.time > DINO_DT) {
+            d.time = mCurTime;
             d.stepY = 0;
         } else {
-            d.stepY += gDinosaurSpeedY * (1.7f - d.distance) * fs;
+            d.stepY += mDinosaurSpeedY * (1.7f - d.distance) * fs;
         }
-        d.x -= gDinosaurSpeedX * (1.7f - d.distance) * fs;
+        d.x -= mDinosaurSpeedX * (1.7f - d.distance) * fs;
     }
 
     private void updateFireballs(float fs) {
-        if (gFireballsShow == 0) return;
+        if (mFireballsShow == 0) return;
         int count = 0;
         for (int i = 0; i < FIREBALL_COUNT; i++) {
-            Fireball f = fbs[i];
+            Fireball f = mFireballs[i];
             if (f.steps > 0) {
-                if (gCurTime > f.startTime) {
-                    f.x += gBgSpeed * fs * (1 - FIREBALL_DISTANCE) + f.dir * f.speed * FIREBALL_DISTANCE * fs;
+                if (mCurTime > f.startTime) {
+                    f.x += mBgSpeed * fs * (1 - FIREBALL_DISTANCE) + f.dir * f.speed * FIREBALL_DISTANCE * fs;
                     f.y -= f.speed * FIREBALL_DISTANCE * fs;
                     f.steps--;
                     f.angle = 120.0f;
                 } else {
-                    f.x += gBgSpeed * fs * (1 - FIREBALL_DISTANCE);
+                    f.x += mBgSpeed * fs * (1 - FIREBALL_DISTANCE);
                 }
                 if (f.steps > 0) count++;
             }
         }
-        if (count == 0) gFireballsShow = 0;
+        if (count == 0) mFireballsShow = 0;
     }
 
     // ---- Touch (exact RS onTouchCommand) ----
 
     void onTouch(float touchX, float touchY) {
-        if (touchX > gSunLeft && touchX < gSunRight && touchY > gSunTop && touchY < gSunBottom) {
-            if (gDayNight > 0 && gAnimation == 1) gDayNight = 0;
-        } else if (touchX > gMoonLeft && touchX < gMoonRight && touchY > gMoonTop && touchY < gMoonBottom) {
-            if (gDayNight == 0 && gAnimation == 0) gDayNight = 1;
+        if (touchX > mSunLeft && touchX < mSunRight && touchY > mSunTop && touchY < mSunBottom) {
+            if (mDayNight > 0 && mAnimation == 1) mDayNight = 0;
+        } else if (touchX > mMoonLeft && touchX < mMoonRight && touchY > mMoonTop && touchY < mMoonBottom) {
+            if (mDayNight == 0 && mAnimation == 0) mDayNight = 1;
         } else {
-            float xPos = gVcnLayer[UP].x + gXOffset;
-            while (xPos < 0) xPos += screenWidth;
-            float vcn1L = xPos + gVcnMouseOffx - gVcnMouseW / 2f;
-            float vcn1R = vcn1L + gVcnMouseW;
-            float vcn2L = vcn1L - screenWidth;
-            float vcn2R = vcn2L + gVcnMouseW;
-            if (touchX > vcn1L && touchX < vcn1R && touchY > gVcnLayer[UP].y && touchY < gVcnLayer[UP].y + gVcnLayer[UP].h) {
-                createFireballs(vcn1L + gVcnMouseW / 2f - gXOffset);
-            } else if (touchX > vcn2L && touchX < vcn2R && touchY > gVcnLayer[UP].y && touchY < gVcnLayer[UP].y + gVcnLayer[UP].h) {
-                createFireballs(vcn2L + gVcnMouseW / 2f - gXOffset);
+            float xPos = mVcnLayer[UP].x + mXOffset;
+            while (xPos < 0) xPos += mScreenWidth;
+            float vcn1L = xPos + mVcnMouseOffx - mVcnMouseW / 2f;
+            float vcn1R = vcn1L + mVcnMouseW;
+            float vcn2L = vcn1L - mScreenWidth;
+            float vcn2R = vcn2L + mVcnMouseW;
+            if (touchX > vcn1L && touchX < vcn1R && touchY > mVcnLayer[UP].y && touchY < mVcnLayer[UP].y + mVcnLayer[UP].h) {
+                createFireballs(vcn1L + mVcnMouseW / 2f - mXOffset);
+            } else if (touchX > vcn2L && touchX < vcn2R && touchY > mVcnLayer[UP].y && touchY < mVcnLayer[UP].y + mVcnLayer[UP].h) {
+                createFireballs(vcn2L + mVcnMouseW / 2f - mXOffset);
             }
         }
     }
 
     private void createFireballs(float xpos) {
         for (int i = 0; i < FIREBALL_COUNT; i++) {
-            if (fbs[i].steps <= 0) {
+            if (mFireballs[i].steps <= 0) {
                 float random = rand(0.3f);
                 float scale = 0.6f + random;
-                fbs[i].w = gFireballW * scale;
-                fbs[i].h = gFireballH * scale;
-                fbs[i].x = xpos - fbs[i].w / 2f;
-                fbs[i].y = gVcnLayer[UP].y + 8;
-                fbs[i].speed = gFireballBaseSpeed + gFireballBaseSpeed * random;
-                fbs[i].dir = 0.3f - rand(0.6f);
-                fbs[i].steps = (int)(30 + random * 40);
-                fbs[i].startTime = SystemClock.uptimeMillis() + rand(0.4f) * 10000f;
+                mFireballs[i].w = mFireballW * scale;
+                mFireballs[i].h = mFireballH * scale;
+                mFireballs[i].x = xpos - mFireballs[i].w / 2f;
+                mFireballs[i].y = mVcnLayer[UP].y + 8;
+                mFireballs[i].speed = mFireballBaseSpeed + mFireballBaseSpeed * random;
+                mFireballs[i].dir = 0.3f - rand(0.6f);
+                mFireballs[i].steps = (int)(30 + random * 40);
+                mFireballs[i].startTime = SystemClock.uptimeMillis() + rand(0.4f) * 10000f;
             }
         }
-        gFireballsShow = 1;
+        mFireballsShow = 1;
     }
 
     float rand(float max) { return mRandom.nextFloat() * max; }

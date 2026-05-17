@@ -61,14 +61,14 @@ final class FireworksScene {
     final Random mRandom = new Random(System.currentTimeMillis());
 
     // 常规烟花粒子数组
-    final FireworkParticle[] gNormal = new FireworkParticle[NORMAL_FIREWORKS];
+    final FireworkParticle[] mNormal = new FireworkParticle[NORMAL_FIREWORKS];
     // 额外烟花粒子数组（点击触发）
-    final FireworkParticle[] gExtras = new FireworkParticle[EXTRAS_FIREWORKS];
+    final FireworkParticle[] mExtras = new FireworkParticle[EXTRAS_FIREWORKS];
     // 拖尾粒子数组
-    final TailParticle[] gTails = new TailParticle[MAX_TAILS];
+    final TailParticle[] mTails = new TailParticle[MAX_TAILS];
 
     // 当前系统时间（毫秒）
-    int gNow;
+    int mNow;
 
     // 基础初始化标记
     boolean mInitialized = false;
@@ -100,31 +100,31 @@ final class FireworksScene {
      * 创建粒子实例并初始化默认状态
      */
     void initialize() {
-        gNow = (int) SystemClock.uptimeMillis();
+        mNow = (int) SystemClock.uptimeMillis();
 
         // 初始化常规烟花粒子
         for (int i = 0; i < NORMAL_FIREWORKS; i++) {
-            gNormal[i] = new FireworkParticle();
+            mNormal[i] = new FireworkParticle();
         }
         // 初始化额外烟花粒子
         for (int i = 0; i < EXTRAS_FIREWORKS; i++) {
-            gExtras[i] = new FireworkParticle();
+            mExtras[i] = new FireworkParticle();
         }
         // 初始化拖尾粒子
         for (int i = 0; i < MAX_TAILS; i++) {
-            gTails[i] = new TailParticle();
-            initTails(gTails[i]);
+            mTails[i] = new TailParticle();
+            initTails(mTails[i]);
         }
 
         // 初始化默认的常规烟花组
         for (int i = 0; i < MAX_NORMAL; i++) {
             int index = i * STRIDE;
-            initFireworks(gNormal, index, PARTICLE_NORMAL);
+            initFireworks(mNormal, index, PARTICLE_NORMAL);
         }
         // 初始化默认的额外烟花组
         for (int i = 0; i < MAX_EXTRAS; i++) {
             int index = i * STRIDE;
-            initFireworks(gExtras, index, PARTICLE_EXTRAS);
+            initFireworks(mExtras, index, PARTICLE_EXTRAS);
         }
     }
 
@@ -185,7 +185,7 @@ final class FireworksScene {
      */
     void initTails(TailParticle p) {
         p.root = null;
-        p.time = gNow;
+        p.time = mNow;
         p.type = 0;
         p.life = -1.0f;
         p.posX = 0.0f;
@@ -203,8 +203,8 @@ final class FireworksScene {
         normalize(vec);
         float s = (float) Math.sqrt(vec[0] * vec[0] + vec[1] * vec[1]);
         float life = root.life * 0.8f * (float) Math.sqrt(s);
-        int indexInNormal = indexOf(gNormal, root);
-        int indexInExtras = indexOf(gExtras, root);
+        int indexInNormal = indexOf(mNormal, root);
+        int indexInExtras = indexOf(mExtras, root);
         // 组首粒子的拖尾生命值降低
         if ((indexInNormal != -1 && indexInNormal % STRIDE == 0)
                 || (indexInExtras != -1 && indexInExtras % STRIDE == 0)) {
@@ -217,10 +217,10 @@ final class FireworksScene {
 
         // 寻找空闲的拖尾粒子
         for (int i = 0; i < MAX_TAILS; i++) {
-            TailParticle p = gTails[i];
+            TailParticle p = mTails[i];
             if (p.life < 0.0f) {
                 p.root = root;
-                p.time = gNow;
+                p.time = mNow;
                 root.ds = 0;
                 p.life = life;
                 p.posX = root.posX;
@@ -240,8 +240,8 @@ final class FireworksScene {
         if (p.root == null || p.life < 0.0f) return;
         if (p.type == 0) {
             // 计算时间差
-            int delta = gNow - p.time;
-            p.time = gNow;
+            int delta = mNow - p.time;
+            p.time = mNow;
             FireworkParticle root = p.root;
             // 衰减生命值
             p.life -= FADE_MAGNIFY * root.fade * delta;
@@ -265,10 +265,10 @@ final class FireworksScene {
 
         // 寻找空闲的拖尾粒子
         for (int i = 0; i < MAX_TAILS; i++) {
-            TailParticle p = gTails[i];
+            TailParticle p = mTails[i];
             if (p.life < 0.0f) {
                 p.root = first;
-                p.time = gNow;
+                p.time = mNow;
                 p.type = 1; // 标记为闪光类型
                 first.ds = 0;
                 p.life = 1.0f;
@@ -300,7 +300,7 @@ final class FireworksScene {
 
         // 初始化组内所有粒子
         for (int i = 0; i < STRIDE; i++) {
-            p.time = gNow;
+            p.time = mNow;
             p.active = false;
             // 设置是否生成拖尾
             if (c < tailsCount) {
@@ -340,7 +340,7 @@ final class FireworksScene {
         if (type == PARTICLE_NORMAL) {
             first.active = true;
             first.life = 1.0f;
-            first.time = gNow + (int) randf(MAX_DELAY); // 随机延迟发射
+            first.time = mNow + (int) randf(MAX_DELAY); // 随机延迟发射
         } else {
             first.active = false;
             first.life = -1.0f;
@@ -355,7 +355,7 @@ final class FireworksScene {
     void explode(FireworkParticle[] arr, int index) {
         FireworkParticle p = arr[index];
         p.active = false; // 主粒子停止移动
-        p.time = gNow;
+        p.time = mNow;
         p.life = 1.0f;
         p.ds = FLARE_DURATION + 1; // 触发闪光效果
 
@@ -366,7 +366,7 @@ final class FireworksScene {
             FireworkParticle e = arr[index + i + 1];
             e.active = true;
             e.life = 1.0f;
-            e.time = gNow;
+            e.time = mNow;
             e.posX = p.posX; // 与主粒子同位置
             e.posY = p.posY;
             // 随机爆炸方向（0~2π）
@@ -388,7 +388,7 @@ final class FireworksScene {
         if (p == null) return;
 
         // 计算时间差
-        int delta = gNow - p.time;
+        int delta = mNow - p.time;
         float[] vec = new float[]{p.dx, p.dy};
         // 计算空气阻力
         resistance(vec);
@@ -398,7 +398,7 @@ final class FireworksScene {
             return;
         } else if (p.active) {
             // 主粒子上升阶段
-            p.time = gNow;
+            p.time = mNow;
             p.life = Math.abs(p.dy); // 生命值关联垂直速度
 
             // 更新位置
@@ -428,7 +428,7 @@ final class FireworksScene {
             p.posY = p.posY + (p.dy + (GRAVITY + vec[1]) * delta * SPEED * 0.5f) * delta * SPEED;
             // 更新主粒子速度
             p.dy = p.dy + (GRAVITY + vec[1]) * delta;
-            p.time = gNow;
+            p.time = mNow;
             // 衰减生命值
             p.life -= p.fade * delta;
             // 生命值耗尽则重置粒子组
@@ -440,8 +440,8 @@ final class FireworksScene {
             // 更新爆炸后的子粒子
             for (int i = 0; i < EXPLODE_FIREWORKS; i++) {
                 FireworkParticle e = arr[index + i + 1];
-                delta = gNow - e.time;
-                e.time = gNow;
+                delta = mNow - e.time;
+                e.time = mNow;
                 vec[0] = e.dx;
                 vec[1] = e.dy;
                 resistance(vec); // 计算阻力
@@ -481,15 +481,15 @@ final class FireworksScene {
     void update() {
         // 更新常规烟花
         for (int i = 0; i < MAX_NORMAL; i++) {
-            updateFireworks(gNormal, i * STRIDE);
+            updateFireworks(mNormal, i * STRIDE);
         }
         // 更新额外烟花
         for (int i = 0; i < MAX_EXTRAS; i++) {
-            updateFireworks(gExtras, i * STRIDE);
+            updateFireworks(mExtras, i * STRIDE);
         }
         // 更新拖尾粒子
         for (int i = 0; i < MAX_TAILS; i++) {
-            updateTails(gTails[i]);
+            updateTails(mTails[i]);
         }
     }
 
@@ -502,11 +502,11 @@ final class FireworksScene {
         // 寻找空闲的额外烟花组
         for (int i = 0; i < MAX_EXTRAS; i++) {
             int index = i * STRIDE;
-            FireworkParticle p = gExtras[index];
+            FireworkParticle p = mExtras[index];
             if (p.life < 0.0f) {
                 // 初始化烟花组
-                initFireworks(gExtras, index, PARTICLE_EXTRAS);
-                p = gExtras[index];
+                initFireworks(mExtras, index, PARTICLE_EXTRAS);
+                p = mExtras[index];
                 // 设置触摸位置为发射位置
                 p.posX = x;
                 p.posY = y;
@@ -515,7 +515,7 @@ final class FireworksScene {
                 p.life = 1.0f;
                 p.active = true;
                 // 立即触发爆炸
-                explode(gExtras, index);
+                explode(mExtras, index);
                 break;
             }
         }

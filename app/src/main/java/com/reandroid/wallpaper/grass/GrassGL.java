@@ -63,7 +63,7 @@ public class GrassGL extends GLESScene {
     private static final int LEGACY_FLOATS_PER_VERTEX = 4;
     private static final int LEGACY_FLOATS_PER_QUAD = 6 * LEGACY_FLOATS_PER_VERTEX;
 
-    // ---- Scene (non-GL logic) ----
+    // ---- 场景逻辑层（非 GL）----
     private final GrassScene mScene;
     private final GrassSpriteRenderer mSpriteRenderer = new GrassSpriteRenderer();
     private final GrassBackgroundRenderer mBackgroundRenderer = new GrassBackgroundRenderer();

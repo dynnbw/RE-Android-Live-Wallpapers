@@ -24,7 +24,7 @@ import java.nio.FloatBuffer;
 
 public class OceanWeatherGL extends GLESScene {
 
-    // ---- Scene (non-GL logic) ----
+    // ---- 场景逻辑层（非 GL）----
     private final OceanWeatherScene mScene;
 
     private final SpriteDrawer mSpriteDrawer = new SpriteDrawer();

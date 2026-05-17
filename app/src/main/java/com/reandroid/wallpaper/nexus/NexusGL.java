@@ -25,7 +25,7 @@ public class NexusGL extends GLESScene {
     // 日志标签
     private static final String TAG = "NexusGL";
 
-    // ---- Scene (non-GL logic) ----
+    // ---- 场景逻辑层（非 GL）----
     private final NexusScene mScene;
 
     // OpenGL初始化完成标记
