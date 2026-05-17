@@ -785,7 +785,7 @@ public class GrassGL extends GLESScene {
         mGrassVertexBuffer = ByteBuffer.allocateDirect(vertexTotal * stride * 4)
                 .order(ByteOrder.nativeOrder()).asFloatBuffer();
 
-        short[] idx = mScene.buildGrassIndexArray();
+        short[] idx = mScene.mRenderDataBuilder.buildGrassIndexArray();
         mGrassIndexBuffer = ByteBuffer.allocateDirect(idx.length * 2)
                 .order(ByteOrder.nativeOrder()).asShortBuffer();
         mGrassIndexBuffer.put(idx).position(0);
@@ -962,14 +962,14 @@ public class GrassGL extends GLESScene {
         if (!sd.grassEnabled || sd.blades == null) return;
         if (mGrassVertexBuffer == null || mGrassIndexBuffer == null) return;
 
-        float[] sharedVerts = mScene.buildGrassVertexArray(sd);
-        int sharedVertCount = mScene.getGrassVertexCount();
+        float[] sharedVerts = mScene.mRenderDataBuilder.buildGrassVertexArray(sd);
+        int sharedVertCount = mScene.mRenderDataBuilder.getGrassVertexCount();
         int floatCount = sharedVertCount * 8;
         if (sharedVerts == null || floatCount <= 0 || floatCount > sharedVerts.length) {
             return;
         }
 
-        if (mScene.wasGrassVertexArrayUpdated()) {
+        if (mScene.mRenderDataBuilder.wasGrassVertexArrayUpdated()) {
             mGrassVertexBuffer.clear();
             mGrassVertexBuffer.put(sharedVerts, 0, floatCount);
         }

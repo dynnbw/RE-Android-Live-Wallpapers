@@ -24,6 +24,8 @@ class Jellyfish {
     private int mAlphaTextureId;
     private ShortBuffer mIndices;
     private final short[] mIndicesData;
+    private final int mCustomTextureId;
+    private final int mCustomAlphaTextureId;
     private int mJellyfishTextureId;
     private int mPointMVPMatrixHandle;
     private int mPointProgramHandle;
@@ -35,12 +37,13 @@ class Jellyfish {
     private FloatBuffer mVertices;
     private final float[] mVerticesData;
 
-    public Jellyfish() {
-        this(GLESWallpaper.getAppContext());
-    }
+    public Jellyfish() { this(GLESWallpaper.getAppContext(), 0, 0); }
+    public Jellyfish(Context context) { this(context, 0, 0); }
 
-    public Jellyfish(Context context) {
+    public Jellyfish(Context context, int textureId, int alphaTextureId) {
         this.mContext = context;
+        this.mCustomTextureId = textureId;
+        this.mCustomAlphaTextureId = alphaTextureId;
         this.mScale = 1.0f;
         this.mVerticesData = new float[]{-0.6f, 0.6f, 0.0f, 0.0f, 0.0f, -0.6f, -0.6f, 0.0f, 0.0f, 1.0f, 0.6f, -0.6f, 0.0f, 1.0f, 1.0f, 0.6f, 0.6f, 0.0f, 1.0f, 0.0f};
         this.mIndicesData = new short[]{0, 1, 2, 0, 2, 3};
@@ -104,11 +107,13 @@ class Jellyfish {
     }
 
     protected int getTextureId() {
-        return GLHelper.getTexture(getContext(), R.drawable.unit_a_s256x256_e_mip_0);
+        int resId = mCustomTextureId != 0 ? mCustomTextureId : R.drawable.unit_a_s256x256_e_mip_0;
+        return GLHelper.getTexture(getContext(), resId);
     }
 
     protected int getAlphaTextureId() {
-        return GLHelper.getTexture(getContext(), R.drawable.unit_a_s256x256_e_mip_0_alpha);
+        int resId = mCustomAlphaTextureId != 0 ? mCustomAlphaTextureId : R.drawable.unit_a_s256x256_e_mip_0_alpha;
+        return GLHelper.getTexture(getContext(), resId);
     }
 
     public void setScale(float f) {

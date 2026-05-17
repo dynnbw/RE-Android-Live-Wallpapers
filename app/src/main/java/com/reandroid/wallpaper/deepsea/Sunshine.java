@@ -29,15 +29,16 @@ class Sunshine {
     private int mTexCoordHandle;
     private int mTextureHandle;
     private int mTextureId;
+    private final int mCustomTextureId;
     private FloatBuffer mVertices;
     private float[] mVerticesData;
 
-    public Sunshine() {
-        this(GLESWallpaper.getAppContext());
-    }
+    public Sunshine() { this(GLESWallpaper.getAppContext(), 0); }
+    public Sunshine(Context context) { this(context, 0); }
 
-    public Sunshine(Context context) {
+    public Sunshine(Context context, int textureId) {
         this.mContext = context;
+        this.mCustomTextureId = textureId;
         this.mVerticesData = new float[]{-10.5f, 16.0f, -10.0f, 0.0f, 0.0f, -10.5f, -16.0f, -10.0f, 0.0f, 1.0f, 10.5f, -16.0f, -10.0f, 1.0f, 1.0f, 10.5f, 16.0f, -10.0f, 1.0f, 0.0f};
         this.mIndicesData = new short[]{0, 1, 2, 0, 2, 3};
         this.mAddAlpha = -1.0f;
@@ -93,7 +94,8 @@ class Sunshine {
     }
 
     protected int getTextureId() {
-        return GLHelper.getTexture(getContext(), R.drawable.light_s512x512_opt);
+        int resId = mCustomTextureId != 0 ? mCustomTextureId : R.drawable.light_s512x512_opt;
+        return GLHelper.getTexture(getContext(), resId);
     }
 
     public void setAddAlpha(float f) {

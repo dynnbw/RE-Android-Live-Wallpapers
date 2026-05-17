@@ -55,8 +55,7 @@ class GrassScene {
     private final GrassWindField mWindField = new GrassWindField();
     private final GrassBladeSystem mBladeSystem;
     private final GrassDayNightSystem mDayNightSystem = new GrassDayNightSystem();
-    private final GrassRenderDataBuilder mRenderDataBuilder;
-    private final GrassVKBridge mVKBridge;
+    final GrassRenderDataBuilder mRenderDataBuilder;
 
     // Sun state
     private float mXOffset = 0.0f;
@@ -155,7 +154,6 @@ class GrassScene {
                 GrassScene.this.flyLegacyDandelion(p, isInit);
             }
         });
-        mVKBridge = new GrassVKBridge(mRenderDataBuilder);
     }
 
     // ---- Lifecycle ----
@@ -826,129 +824,6 @@ class GrassScene {
         return t * t * (3.0f - 2.0f * t);
     }
 
-    float[] computeSkyParams(SceneData sd) {
-        return computeVKSkyParams(sd);
-    }
-
-    float[] buildMoonParams(SceneData sd) {
-        return buildMoonParamsForVK(sd);
-    }
-
-    float[] buildGrassVertexArray(SceneData sd) {
-        return buildGrassVertexArrayForVK(sd);
-    }
-
-    boolean wasGrassVertexArrayUpdated() {
-        return mRenderDataBuilder.wasGrassVertexArrayUpdated();
-    }
-
-    int getGrassVertexCount() {
-        return getVKGrassVertexCount();
-    }
-
-    int getSunVertexCount() {
-        return getVKSunVertexCount();
-    }
-
-    int getDandelionVertexCount() {
-        return getVKDandelionVertexCount();
-    }
-
-    int getFireflyVertexCount() {
-        return getVKFireflyVertexCount();
-    }
-
-    int getFireflyFlareVertexCount() {
-        return getVKFireflyFlareVertexCount();
-    }
-
-    int getMoonVertexCount() {
-        return getVKMoonVertexCount();
-    }
-
-    short[] buildGrassIndexArray() {
-        return buildGrassIndexArrayForVK();
-    }
-
-    float[] buildSunSpriteVertices(SceneData sd) {
-        return buildSunSpriteVerticesForVK(sd);
-    }
-
-    float[] buildMoonSpriteVertices(SceneData sd) {
-        return buildMoonSpriteVerticesForVK(sd);
-    }
-
-    float[] buildDandelionSpriteVertices(SceneData sd) {
-        return buildDandelionSpriteVerticesForVK(sd);
-    }
-
-    float[] buildFireflySpriteVertices(SceneData sd) {
-        return buildFireflySpriteVerticesForVK(sd);
-    }
-
-    float[] buildFireflyFlareSpriteVertices(SceneData sd) {
-        return buildFireflyFlareSpriteVerticesForVK(sd);
-    }
-
-    float[] computeVKSkyParams(SceneData sd) {
-        return mRenderDataBuilder.computeSkyParams(sd);
-    }
-
-    float[] buildMoonParamsForVK(SceneData sd) {
-        return mRenderDataBuilder.buildMoonParams(sd);
-    }
-
-    float[] buildGrassVertexArrayForVK(SceneData sd) {
-        return mRenderDataBuilder.buildGrassVertexArray(sd);
-    }
-
-    int getVKGrassVertexCount() {
-        return mRenderDataBuilder.getGrassVertexCount();
-    }
-
-    int getVKSunVertexCount() {
-        return mRenderDataBuilder.getSunVertexCount();
-    }
-
-    int getVKDandelionVertexCount() {
-        return mRenderDataBuilder.getDandelionVertexCount();
-    }
-
-    int getVKFireflyVertexCount() {
-        return mRenderDataBuilder.getFireflyVertexCount();
-    }
-
-    int getVKFireflyFlareVertexCount() {
-        return mRenderDataBuilder.getFireflyFlareVertexCount();
-    }
-
-    int getVKMoonVertexCount() {
-        return mRenderDataBuilder.getMoonVertexCount();
-    }
-
-    short[] buildGrassIndexArrayForVK() {
-        return mRenderDataBuilder.buildGrassIndexArray();
-    }
-
-    float[] buildSunSpriteVerticesForVK(SceneData sd) {
-        return mRenderDataBuilder.buildSunSpriteVertices(sd);
-    }
-
-    float[] buildMoonSpriteVerticesForVK(SceneData sd) {
-        return mRenderDataBuilder.buildMoonSpriteVertices(sd);
-    }
-
-    float[] buildDandelionSpriteVerticesForVK(SceneData sd) {
-        return mRenderDataBuilder.buildDandelionSpriteVertices(sd);
-    }
-
-    float[] buildFireflySpriteVerticesForVK(SceneData sd) {
-        return mRenderDataBuilder.buildFireflySpriteVertices(sd);
-    }
-
-    float[] buildFireflyFlareSpriteVerticesForVK(SceneData sd) {
-        return mRenderDataBuilder.buildFireflyFlareSpriteVertices(sd);
-    }
 
     int hsbToRgb(float h, float s, float b) {
         float red = 0.0f, green = 0.0f, blue = 0.0f;

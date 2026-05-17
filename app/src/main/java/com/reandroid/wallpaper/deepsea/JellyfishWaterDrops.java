@@ -68,23 +68,23 @@ class JellyfishWaterDrops {
     private float mTimeCounter;
     private int mTimesHandle;
     private FloatBuffer mVertexBuffer;
+    private final int mVsResId, mFsResId;
 
-    public JellyfishWaterDrops() {
-        this.mNumberOfParticles = 35;
-        this.mTimeCounter = 0.0f;
-        this.mParticleVertices = new float[35 * 13];
-        this.mGenerater = new Random(System.currentTimeMillis());
-        this.mAddAlpha = 0.0f;
-        this.mAddColorData = new float[]{0.0f, 0.0f, 0.0f, 0.0f};
-        this.mScale = 1.0f;
-        this.mIsSlow = false;
+    public JellyfishWaterDrops() { this(35); }
+    public JellyfishWaterDrops(Context context) { this(context, 35); }
+    public JellyfishWaterDrops(int particleCount) { this(null, particleCount); }
+
+    public JellyfishWaterDrops(Context context, int particleCount) {
+        this(context, particleCount, R.raw.deepsea_jellyfishwaterdrops_0_vs, R.raw.deepsea_jellyfishwaterdrops_1_fs);
     }
 
-    public JellyfishWaterDrops(Context context) {
+    public JellyfishWaterDrops(Context context, int particleCount, int vsResId, int fsResId) {
         this.mContext = context;
-        this.mNumberOfParticles = 35;
+        this.mNumberOfParticles = particleCount;
+        this.mVsResId = vsResId;
+        this.mFsResId = fsResId;
         this.mTimeCounter = 0.0f;
-        this.mParticleVertices = new float[35 * 13];
+        this.mParticleVertices = new float[particleCount * 13];
         this.mGenerater = new Random(System.currentTimeMillis());
         this.mAddAlpha = 0.0f;
         this.mAddColorData = new float[]{0.0f, 0.0f, 0.0f, 0.0f};
@@ -99,7 +99,9 @@ class JellyfishWaterDrops {
 
     public void initShader() {
         if (!isInitShader()) {
-            this.mProgramHandle = GLHelper.getCreatedAndLinkedProgram(GLHelper.getCompiledShader(GLES20.GL_VERTEX_SHADER, RawResourceLoader.readRawText(getContext().getResources(), R.raw.deepsea_jellyfishwaterdrops_0_vs)), GLHelper.getCompiledShader(GLES20.GL_FRAGMENT_SHADER, RawResourceLoader.readRawText(getContext().getResources(), R.raw.deepsea_jellyfishwaterdrops_1_fs)));
+            int vsRes = mVsResId != 0 ? mVsResId : R.raw.deepsea_jellyfishwaterdrops_0_vs;
+            int fsRes = mFsResId != 0 ? mFsResId : R.raw.deepsea_jellyfishwaterdrops_1_fs;
+            this.mProgramHandle = GLHelper.getCreatedAndLinkedProgram(GLHelper.getCompiledShader(GLES20.GL_VERTEX_SHADER, RawResourceLoader.readRawText(getContext().getResources(), vsRes)), GLHelper.getCompiledShader(GLES20.GL_FRAGMENT_SHADER, RawResourceLoader.readRawText(getContext().getResources(), fsRes)));
             this.mTextureID = GLHelper.getTexture(getContext(), R.drawable.particle_mip_0);
             this.mAlphaTextureId = GLHelper.getTexture(getContext(), R.drawable.particle_mip_0_alpha);
             this.mMVPMatrixHandle = GLES20.glGetUniformLocation(this.mProgramHandle, "u_MVPMatrix");
