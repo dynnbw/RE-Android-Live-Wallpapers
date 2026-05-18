@@ -62,6 +62,6 @@ public class Fall extends Activity {
         mView.pause();
 
         // 退出当前进程
-        Runtime.getRuntime().exit(0);
+        finish();
     }
 }

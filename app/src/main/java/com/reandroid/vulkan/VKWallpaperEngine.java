@@ -4,11 +4,8 @@ import android.graphics.Rect;
 import android.os.Process;
 import android.os.SystemClock;
 import android.service.wallpaper.WallpaperService;
-import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
-
-import com.reandroid.settings.WallpaperSettings;
 
 /**
  * Vulkan 壁纸 Engine 共享基类，封装线程管理、Surface 生命周期和帧率诊断。
@@ -18,25 +15,16 @@ import com.reandroid.settings.WallpaperSettings;
  */
 public abstract class VKWallpaperEngine<T> extends WallpaperService.Engine implements Runnable {
 
-    protected static final long PERF_SYNC_INTERVAL_MS = 1000L;
-    protected static final long ANR_FRAME_THRESHOLD_MS = 200L;
-
     protected Thread mThread;
     protected volatile boolean mRunning;
     protected boolean mVisible;
     protected SurfaceHolder mHolder;
-    protected T mScene;
+    protected volatile T mScene;
     protected long mRendererHandle;
     protected int mWidth, mHeight;
 
-    // 帧率控制
-    private int mTargetFps = 30;
-    private long mTargetFrameMs = 33L;
-    private boolean mAnrDiagEnabled;
-    private long mLastPerfSyncMs;
-    private long mDiagFrameCount;
-    private long mDiagAccumulatedMs;
-    private long mDiagMaxMs;
+    // 共享帧率控制与诊断
+    private final FrameRateManager mFrameRate = new FrameRateManager(getLogTag());
 
     protected VKWallpaperEngine(WallpaperService service) {
         service.super();
@@ -136,7 +124,7 @@ public abstract class VKWallpaperEngine<T> extends WallpaperService.Engine imple
 
         while (mRunning) {
             long frameStart = SystemClock.uptimeMillis();
-            syncPerfSettingsIfNeeded(frameStart);
+            mFrameRate.syncPerfSettingsIfNeeded(frameStart);
 
             if (mRendererHandle != 0L && mScene != null) {
                 syncTexturesIfNeeded();
@@ -144,10 +132,10 @@ public abstract class VKWallpaperEngine<T> extends WallpaperService.Engine imple
             }
 
             long frameCost = SystemClock.uptimeMillis() - frameStart;
-            recordFrameCost(frameCost);
+            mFrameRate.recordFrameCost(frameCost);
 
             try {
-                long sleepMs = Math.max(1L, mTargetFrameMs - frameCost);
+                long sleepMs = Math.max(1L, mFrameRate.getTargetFrameMs() - frameCost);
                 Thread.sleep(sleepMs);
             } catch (InterruptedException ignored) {
                 Thread.currentThread().interrupt();
@@ -174,34 +162,6 @@ public abstract class VKWallpaperEngine<T> extends WallpaperService.Engine imple
                 Thread.currentThread().interrupt();
             }
             mThread = null;
-        }
-    }
-
-    // ---- 帧率诊断 ----
-
-    private void syncPerfSettingsIfNeeded(long nowMs) {
-        if (nowMs - mLastPerfSyncMs < PERF_SYNC_INTERVAL_MS) return;
-        mLastPerfSyncMs = nowMs;
-        int fps = WallpaperSettings.getGlobalFrameRate(30);
-        mTargetFps = Math.max(1, fps);
-        mTargetFrameMs = Math.max(1L, 1000L / mTargetFps);
-        mAnrDiagEnabled = WallpaperSettings.isVulkanAnrDiagnosticsEnabled(true);
-    }
-
-    private void recordFrameCost(long frameCostMs) {
-        if (!mAnrDiagEnabled) return;
-        if (frameCostMs >= ANR_FRAME_THRESHOLD_MS) {
-            Log.w(getLogTag(), "Slow frame: " + frameCostMs + "ms, targetFps=" + mTargetFps);
-        }
-        mDiagFrameCount++;
-        mDiagAccumulatedMs += frameCostMs;
-        if (frameCostMs > mDiagMaxMs) mDiagMaxMs = frameCostMs;
-        if (mDiagFrameCount >= 120) {
-            long avg = mDiagAccumulatedMs / Math.max(1L, mDiagFrameCount);
-            Log.i(getLogTag(), "FrameStats avg=" + avg + "ms max=" + mDiagMaxMs + "ms fpsTarget=" + mTargetFps);
-            mDiagFrameCount = 0L;
-            mDiagAccumulatedMs = 0L;
-            mDiagMaxMs = 0L;
         }
     }
 

@@ -351,7 +351,6 @@ class DeepSeaContainer {
         this.mBlurEffect = null;
         this.mBlurEffect2 = null;
         this.mContext = null;
-        System.gc();
     }
 
     public void screenOn() {

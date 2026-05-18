@@ -59,6 +59,6 @@ public class Galaxy extends Activity {
         mView.pause();
 
         // 退出进程（预览结束后清理资源）
-        Runtime.getRuntime().exit(0);
+        finish();
     }
 }

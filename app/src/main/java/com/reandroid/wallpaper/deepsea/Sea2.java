@@ -122,7 +122,6 @@ class Sea2 {
             GLHelper.deleteTextures(this.mTextureId);
             this.mTextureId = 0;
         }
-        System.gc();
     }
 
     public void setBackgroundImage(Bitmap bitmap) {
@@ -132,7 +131,6 @@ class Sea2 {
     public void removeBackgroundImage() {
         if (this.mBackgroundImage != null) {
             this.mBackgroundImage.recycle();
-            System.gc();
         }
         this.mBackgroundImage = null;
     }

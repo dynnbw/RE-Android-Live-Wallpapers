@@ -23,6 +23,6 @@ public class Aurora1 extends Activity {
     protected void onPause() {
         super.onPause();
         mView.pause();
-        Runtime.getRuntime().exit(0);
+        finish();
     }
 }

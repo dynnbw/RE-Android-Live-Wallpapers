@@ -45,7 +45,6 @@ public class NexusSettingsFragment extends PreferenceFragmentCompat {
                                         Intent.FLAG_GRANT_READ_URI_PERMISSION
                                 );
                             } catch (Exception e) {
-                                e.printStackTrace();
                             }
 
                             Toast.makeText(requireContext(),

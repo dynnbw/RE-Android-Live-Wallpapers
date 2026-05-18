@@ -308,7 +308,6 @@ public class FireworksGL extends GLESScene {
             }
         } catch (Exception e) {
             android.util.Log.e("FireworksGL", "背景检查/重新加载异常", e);
-            e.printStackTrace();
         }
     }
 
@@ -381,7 +380,6 @@ public class FireworksGL extends GLESScene {
 
             return tex[0];
         } catch (Exception e) {
-            e.printStackTrace();
             return 0;
         }
     }

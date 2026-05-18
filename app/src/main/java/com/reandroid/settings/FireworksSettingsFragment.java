@@ -57,7 +57,6 @@ public class FireworksSettingsFragment extends PreferenceFragmentCompat {
                                 Intent.FLAG_GRANT_READ_URI_PERMISSION
                             );
                         } catch (Exception e) {
-                            e.printStackTrace();
                         }
                         
                         Toast.makeText(requireContext(), R.string.fireworks_custom_background_set_toast, Toast.LENGTH_LONG).show();
