@@ -532,4 +532,8 @@
     <string name="reset_current_settings_message">इस वॉलपेपर की सेटिंग्स को उनके डिफ़ॉल्ट मानों पर पुनर्स्थापित करें?</string>
     <string name="reset_current_settings_done">वॉलपेपर सेटिंग्स डिफ़ॉल्ट पर पुनर्स्थापित</string>
     <string name="reset_action_confirm">पुनर्स्थापित करें</string>
+    <string name="wallpaper_forest">वन</string>
+    <string name="wallpaper_forest_author">HU1</string>
+    <string name="wallpaper_forest_desc">हिलते पेड़ों के बीच से सूरज की रोशनी छन रही है।</string>
+    <string name="settings_entry_forest">वन</string>
 </resources>

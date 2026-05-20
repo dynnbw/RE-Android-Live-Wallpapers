@@ -544,4 +544,8 @@
     <string name="reset_current_settings_message">Die Einstellungen dieses Hintergrunds auf ihre Standardwerte zurücksetzen?</string>
     <string name="reset_current_settings_done">Hintergrundeinstellungen auf Standard zurückgesetzt</string>
     <string name="reset_action_confirm">Wiederherstellen</string>
+    <string name="wallpaper_forest">Wald</string>
+    <string name="wallpaper_forest_author">HU1</string>
+    <string name="wallpaper_forest_desc">Sonnenlicht fällt durch schwankende Bäume und schwebende Partikel.</string>
+    <string name="settings_entry_forest">Wald</string>
 </resources>

@@ -513,4 +513,8 @@
     <string name="pref_weather_api_guide_link_text">https://openweathermap.org/</string>
     <string name="pref_weather_api_guide_open_web_button">OpenWeather 공식 웹사이트 열기</string>
 
+    <string name="wallpaper_forest">숲</string>
+    <string name="wallpaper_forest_author">HU1</string>
+    <string name="wallpaper_forest_desc">흔들리는 나무 사이로 햇빛이 스며들고 입자가 흩날립니다.</string>
+    <string name="settings_entry_forest">숲</string>
 </resources>

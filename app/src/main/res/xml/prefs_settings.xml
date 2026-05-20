@@ -16,6 +16,9 @@
     <Preference android:key="pref_aurora2" android:title="@string/settings_entry_aurora2"
         app:fragment="com.reandroid.settings.Aurora2SettingsFragment"
         android:layout="@layout/preference_modern_item" />
+    <Preference android:key="pref_forest" android:title="@string/settings_entry_forest"
+        app:fragment="com.reandroid.settings.ForestSettingsFragment"
+        android:layout="@layout/preference_modern_item" />
     <Preference android:key="pref_wildworld" android:title="@string/settings_entry_wildworld"
         app:fragment="com.reandroid.settings.WildWorldSettingsFragment"
         android:layout="@layout/preference_modern_item" />

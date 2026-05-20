@@ -541,4 +541,8 @@
     <string name="pref_weather_api_guide_illustration">API 教程插图</string>
     <string name="pref_weather_api_guide_link_text">https://openweathermap.org/</string>
     <string name="pref_weather_api_guide_open_web_button">打开 OpenWeather 官网</string>
+    <string name="wallpaper_forest">森林</string>
+    <string name="wallpaper_forest_author">HU1</string>
+    <string name="wallpaper_forest_desc">阳光透过摇曳的树木，飘散粒子飞舞。</string>
+    <string name="settings_entry_forest">森林</string>
 </resources>

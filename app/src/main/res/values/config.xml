@@ -44,6 +44,7 @@
     <bool name="config_enable_holospiral_wallpaper">true</bool>
     <bool name="config_enable_bluesea_wallpaper">true</bool>
     <bool name="config_enable_deepsea_wallpaper">true</bool>
+    <bool name="config_enable_forest_wallpaper">true</bool>
 
     <!-- Phase Beam defaults -->
     <bool name="recolor_enabled">false</bool>

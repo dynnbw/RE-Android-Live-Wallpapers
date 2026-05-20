@@ -483,4 +483,8 @@
     <string name="pref_weather_api_guide_link_text">https://openweathermap.org/</string>
     <string name="pref_weather_api_guide_open_web_button">OpenWeather公式サイトを開く</string>
 
+    <string name="wallpaper_forest">森</string>
+    <string name="wallpaper_forest_author">HU1</string>
+    <string name="wallpaper_forest_desc">揺れる木々の間から陽光が差し込み、粒子が漂う。</string>
+    <string name="settings_entry_forest">森</string>
 </resources>

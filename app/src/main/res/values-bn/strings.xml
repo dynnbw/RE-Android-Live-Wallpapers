@@ -529,4 +529,8 @@
     <string name="reset_current_settings_message">এই ওয়ালপেপারের সেটিংস তাদের ডিফল্ট মানগুলিতে পুনরুদ্ধার করবেন?</string>
     <string name="reset_current_settings_done">ওয়ালপেপার সেটিংস ডিফল্টে পুনরুদ্ধার করা হয়েছে</string>
     <string name="reset_action_confirm">পুনরুদ্ধার করুন</string>
+    <string name="wallpaper_forest">বন</string>
+    <string name="wallpaper_forest_author">HU1</string>
+    <string name="wallpaper_forest_desc">দোল খাওয়া গাছের মধ্য দিয়ে সূর্যের আলো ঝলমল করছে।</string>
+    <string name="settings_entry_forest">বন</string>
 </resources>

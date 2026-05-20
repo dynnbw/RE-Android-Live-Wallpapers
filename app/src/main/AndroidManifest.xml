@@ -276,6 +276,18 @@
 
         <service
             android:exported="true"
+            android:label="@string/wallpaper_forest"
+            android:name="com.reandroid.wallpaper.forest.ForestWallpaper"
+            android:permission="android.permission.BIND_WALLPAPER"
+            android:enabled="@bool/config_enable_forest_wallpaper">
+            <intent-filter>
+                <action android:name="android.service.wallpaper.WallpaperService" />
+            </intent-filter>
+            <meta-data android:name="android.service.wallpaper" android:resource="@xml/forest" />
+        </service>
+
+        <service
+            android:exported="true"
             android:label="@string/wallpaper_galaxy"
             android:name="com.reandroid.wallpaper.galaxy.GalaxyWallpaper"
             android:permission="android.permission.BIND_WALLPAPER"
@@ -571,6 +583,13 @@
             android:theme="@style/Theme.WallpaperSettings"
             android:exported="true"
             android:enabled="@bool/config_enable_aurora2_wallpaper" />
+
+        <activity
+            android:label="@string/wallpaper_forest"
+            android:name="com.reandroid.settings.ForestSettingsActivity"
+            android:theme="@style/Theme.WallpaperSettings"
+            android:exported="true"
+            android:enabled="@bool/config_enable_forest_wallpaper" />
 
         <activity
             android:label="@string/wallpaper_wildworld"

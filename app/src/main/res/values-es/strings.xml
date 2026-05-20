@@ -540,4 +540,8 @@
     <string name="reset_current_settings_message">¿Restaurar la configuración de este fondo de pantalla a sus valores predeterminados?</string>
     <string name="reset_current_settings_done">Configuración del fondo de pantalla restaurada a los valores predeterminados</string>
     <string name="reset_action_confirm">Restaurar</string>
+    <string name="wallpaper_forest">Bosque</string>
+    <string name="wallpaper_forest_author">HU1</string>
+    <string name="wallpaper_forest_desc">La luz del sol se filtra entre los árboles que se mecen con partículas.</string>
+    <string name="settings_entry_forest">Bosque</string>
 </resources>

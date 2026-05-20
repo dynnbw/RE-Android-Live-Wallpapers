@@ -534,4 +534,8 @@
     <string name="reset_current_settings_message">Restaurar as configurações deste papel de parede para seus valores padrão?</string>
     <string name="reset_current_settings_done">Configurações do papel de parede restauradas para os padrões</string>
     <string name="reset_action_confirm">Restaurar</string>
+    <string name="wallpaper_forest">Floresta</string>
+    <string name="wallpaper_forest_author">HU1</string>
+    <string name="wallpaper_forest_desc">A luz do sol filtra através das árvores balançando com partículas.</string>
+    <string name="settings_entry_forest">Floresta</string>
 </resources>

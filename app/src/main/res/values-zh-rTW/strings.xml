@@ -538,4 +538,8 @@
     <string name="pref_weather_api_guide_illustration">API 教學插圖</string>
     <string name="pref_weather_api_guide_link_text">https://openweathermap.org/</string>
     <string name="pref_weather_api_guide_open_web_button">開啟 OpenWeather 官網</string>
+    <string name="wallpaper_forest">森林</string>
+    <string name="wallpaper_forest_author">HU1</string>
+    <string name="wallpaper_forest_desc">陽光透過搖曳的樹木，飄散粒子飛舞。</string>
+    <string name="settings_entry_forest">森林</string>
 </resources>

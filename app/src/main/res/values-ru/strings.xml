@@ -529,4 +529,8 @@
     <string name="reset_current_settings_message">Восстановить настройки этих обоев до значений по умолчанию?</string>
     <string name="reset_current_settings_done">Настройки обоев восстановлены до значений по умолчанию</string>
     <string name="reset_action_confirm">Восстановить</string>
+    <string name="wallpaper_forest">Лес</string>
+    <string name="wallpaper_forest_author">HU1</string>
+    <string name="wallpaper_forest_desc">Солнечный свет пробивается сквозь качающиеся деревья.</string>
+    <string name="settings_entry_forest">Лес</string>
 </resources>

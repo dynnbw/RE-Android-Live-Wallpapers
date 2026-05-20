@@ -529,4 +529,8 @@
     <string name="reset_current_settings_message">Restaurer les paramètres de ce fond d’écran à leurs valeurs par défaut ?</string>
     <string name="reset_current_settings_done">Les paramètres du fond d’écran ont été rétablis par défaut</string>
     <string name="reset_action_confirm">Restaurer</string>
+    <string name="wallpaper_forest">Forêt</string>
+    <string name="wallpaper_forest_author">HU1</string>
+    <string name="wallpaper_forest_desc">La lumière du soleil filtre à travers les arbres qui se balancent.</string>
+    <string name="settings_entry_forest">Forêt</string>
 </resources>

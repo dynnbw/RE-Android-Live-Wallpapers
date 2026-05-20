@@ -13,6 +13,7 @@ import com.reandroid.wallpaper.wildworld.WildWorldWallpaper;
 import com.reandroid.wallpaper.fireworks.FireworksWallpaper;
 import com.reandroid.wallpaper.nightsky.NightSkyWallpaper;
 import com.reandroid.wallpaper.microbes.MicrobesWallpaper;
+import com.reandroid.wallpaper.forest.ForestWallpaper;
 import com.reandroid.wallpaper.polarclock.PolarClockWallpaper;
 
 /**
@@ -84,6 +85,10 @@ public class SetWallpaperActivity extends Activity {
             case "microbes":
                 // 微生物壁纸
                 wallpaperClass = MicrobesWallpaper.class;
+                break;
+            case "forest":
+                // 森林壁纸
+                wallpaperClass = ForestWallpaper.class;
                 break;
             case "clock":
                 // 极地时钟壁纸

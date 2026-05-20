@@ -69,6 +69,9 @@
     <string name="wallpaper_aurora2">Aurora 2</string>
     <string name="wallpaper_aurora2_author">HU1</string>
     <string name="wallpaper_aurora2_desc">Animated aurora curtains drift over themed night landscapes with twinkling stars and shooting stars.</string>
+    <string name="wallpaper_forest">Forest</string>
+    <string name="wallpaper_forest_author">HU1</string>
+    <string name="wallpaper_forest_desc">Sunlight filters through swaying trees with drifting particles.</string>
 
     <!-- Wallpaper showing a galaxy -->
     <string name="wallpaper_galaxy">Galaxy</string>
@@ -202,6 +205,7 @@
     <string name="settings_entry_grass">Sky &amp; Grass</string>
     <string name="settings_entry_aurora1">Aurora</string>
     <string name="settings_entry_aurora2">Aurora 2</string>
+    <string name="settings_entry_forest">Forest</string>
     <string name="settings_entry_wildworld">Wild World</string>
     <string name="settings_entry_fireworks">Fireworks</string>
     <string name="settings_entry_windmill">Windmill</string>
