@@ -481,13 +481,13 @@
     <string name="about_project_highlights">মূল বৈশিষ্ট্য</string>
     <string name="about_project_highlights_detail">কম শক্তি, উচ্চ সামঞ্জস্য, মূল ভিজুয়াল নির্ভুলতা, জিপিইউ ত্বরণ, দীর্ঘমেয়াদী রক্ষণাবেক্ষণ।</string>
     <string name="about_links">লিঙ্ক এবং যোগাযোগ</string>
-    <string name="about_official_website">অফিসিয়াল ওয়েবসাইট</string>
-    <string name="about_official_website_url">https://github.com/zyfxv/android-live-wallpapers</string>
+    <string name="about_official_website">ওপেন সোর্স</string>
+    <string name="about_official_website_url">https://github.com/dynnbw/RE-Android-Live-Wallpapers</string>
     <string name="about_email">ইমেইল</string>
     <string name="about_email_address">3471348199@qq.com</string>
     <string name="about_email_address_alt">xujiekai508@gmail.com</string>
-    <string name="about_qq">কিউকিউ গ্রুপ</string>
-    <string name="about_qq_number">3471348199</string>
+    <string name="about_qq">QQ চ্যানেল</string>
+    
     <string name="about_bilibili">বিলিবিলি</string>
     <string name="about_bilibili_url">https://space.bilibili.com/470023065</string>
     <string name="about_feedback">মতামত</string>

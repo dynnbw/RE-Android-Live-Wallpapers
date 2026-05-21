@@ -56,12 +56,11 @@ public class AboutFragment extends PreferenceFragmentCompat {
                 return true;
             });
         }
-        // QQ
+        // QQ频道
         Preference qq = findPreference("about_qq");
         if (qq != null) {
             qq.setOnPreferenceClickListener(pref -> {
-                copyToClipboard(getString(R.string.about_qq_number));
-                Toast.makeText(getContext(), R.string.copied_to_clipboard, Toast.LENGTH_SHORT).show();
+                openUrl(getString(R.string.about_qq_url));
                 return true;
             });
         }

@@ -42,7 +42,7 @@
         android:key="about_bilibili" />
     <Preference
         android:title="@string/about_qq"
-        android:summary="@string/about_qq_number"
+        android:summary="@string/about_qq_url"
         android:key="about_qq" />
     <Preference
         android:title="@string/about_feedback"

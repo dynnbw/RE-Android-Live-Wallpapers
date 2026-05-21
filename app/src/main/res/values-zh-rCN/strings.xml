@@ -470,13 +470,13 @@
     <string name="about_project_highlights">亮点</string>
     <string name="about_project_highlights_detail">低功耗、高兼容、原汁原味、GPU 加速、长期维护</string>
     <string name="about_links">链接与联系方式</string>
-    <string name="about_official_website">官方网站</string>
-    <string name="about_official_website_url">https://github.com/zyfxv/android-live-wallpapers</string>
+    <string name="about_official_website">开源项目</string>
+    <string name="about_official_website_url">https://github.com/dynnbw/RE-Android-Live-Wallpapers</string>
     <string name="about_email">邮箱</string>
     <string name="about_email_address">3471348199@qq.com</string>
     <string name="about_email_address_alt">xujiekai508@gmail.com</string>
-    <string name="about_qq">QQ</string>
-    <string name="about_qq_number">3471348199</string>
+    <string name="about_qq">QQ频道</string>
+    
     <string name="about_feedback">反馈</string>
     <string name="about_bilibili">Bilibili主页</string>
     <string name="about_bilibili_url">https://space.bilibili.com/470023065</string>

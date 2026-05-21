@@ -481,13 +481,13 @@
     <string name="about_project_highlights">Особенности</string>
     <string name="about_project_highlights_detail">Низкое энергопотребление, высокая совместимость, оригинальная визуальная точность, ускорение GPU, долгосрочное обслуживание.</string>
     <string name="about_links">Ссылки и контакты</string>
-    <string name="about_official_website">Официальный сайт</string>
-    <string name="about_official_website_url">https://github.com/zyfxv/android-live-wallpapers</string>
+    <string name="about_official_website">Открытый исходный код</string>
+    <string name="about_official_website_url">https://github.com/dynnbw/RE-Android-Live-Wallpapers</string>
     <string name="about_email">Электронная почта</string>
     <string name="about_email_address">3471348199@qq.com</string>
     <string name="about_email_address_alt">xujiekai508@gmail.com</string>
-    <string name="about_qq">Группа QQ</string>
-    <string name="about_qq_number">3471348199</string>
+    <string name="about_qq">QQ Канал</string>
+    
     <string name="about_bilibili">Bilibili</string>
     <string name="about_bilibili_url">https://space.bilibili.com/470023065</string>
     <string name="about_feedback">Обратная связь</string>

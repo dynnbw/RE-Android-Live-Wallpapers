@@ -496,13 +496,13 @@
     <string name="about_project_highlights">Highlights</string>
     <string name="about_project_highlights_detail">Geringer Stromverbrauch, hohe Kompatibilität, originale visuelle Treue, GPU-Beschleunigung, langfristige Wartung.</string>
     <string name="about_links">Links und Kontakt</string>
-    <string name="about_official_website">Offizielle Website</string>
-    <string name="about_official_website_url">https://github.com/zyfxv/android-live-wallpapers</string>
+    <string name="about_official_website">Open Source</string>
+    <string name="about_official_website_url">https://github.com/dynnbw/RE-Android-Live-Wallpapers</string>
     <string name="about_email">E-Mail</string>
     <string name="about_email_address">3471348199@qq.com</string>
     <string name="about_email_address_alt">xujiekai508@gmail.com</string>
-    <string name="about_qq">QQ-Gruppe</string>
-    <string name="about_qq_number">3471348199</string>
+    <string name="about_qq">QQ-Kanal</string>
+    
     <string name="about_bilibili">Bilibili</string>
     <string name="about_bilibili_url">https://space.bilibili.com/470023065</string>
     <string name="about_feedback">Feedback</string>
