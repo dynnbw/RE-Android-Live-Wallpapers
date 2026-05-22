@@ -1,6 +1,8 @@
 package com.reandroid.wallpaper.musicvis;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 
@@ -48,6 +50,7 @@ public class MusicVisManyScene extends GLESScene {
 
     private final float[] mProj = new float[16];
     private final float[] mMvp = new float[16];
+    private final float[] mBgColor = new float[3];
     private final float[] mTmp = new float[16];
 
     private final float[] mPointData = new float[LINE_COUNT * 8];
@@ -141,7 +144,7 @@ public class MusicVisManyScene extends GLESScene {
         applyIdleAndFade();
         updateLineBuffers();
 
-        GLES20.glClearColor(0f, 0f, 0f, 1f);
+        GLES20.glClearColor(mBgColor[0], mBgColor[1], mBgColor[2], 1.0f);
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
         GLES20.glEnable(GLES20.GL_BLEND);
         GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE_MINUS_SRC_ALPHA);
@@ -212,12 +215,15 @@ public class MusicVisManyScene extends GLESScene {
     }
 
     private void updateRenderMode() {
-        boolean pref = PreferenceManager.getDefaultSharedPreferences(mContext)
-                .getBoolean("musicvis_use_triangle_strip", true);
+        SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(mContext);
+        boolean pref = p.getBoolean("musicvis_use_triangle_strip", true);
         if (!mHasPrefInit || pref != mUseTriangleStrip) {
             mUseTriangleStrip = pref;
             mHasPrefInit = true;
         }
+        String hex = p.getString("musicvis_bg_color", "#000000");
+        try { int c = Color.parseColor(hex); mBgColor[0]=Color.red(c)/255f; mBgColor[1]=Color.green(c)/255f; mBgColor[2]=Color.blue(c)/255f; }
+        catch (Exception e) { mBgColor[0]=mBgColor[1]=mBgColor[2]=0f; }
     }
 
     private void drawVizLayer(float[] baseMatrix) {

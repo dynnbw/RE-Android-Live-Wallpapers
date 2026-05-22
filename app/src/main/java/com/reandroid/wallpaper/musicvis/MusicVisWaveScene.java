@@ -2,6 +2,7 @@ package com.reandroid.wallpaper.musicvis;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 import android.util.Log;
@@ -77,6 +78,7 @@ public class MusicVisWaveScene extends GLESScene {
     private final float[] mAdjustData = new float[LINE_COUNT * 2 * 3];
     private float mHue, mSaturation = 1f, mBrightness = 1f;
     private boolean mRecolorEnabled;
+    private final float[] mBgColor = new float[3];
 
     private static final int FADEOUT_LENGTH = 100;
     private static final float FADEOUT_FACTOR = 0.95f;
@@ -132,6 +134,7 @@ public class MusicVisWaveScene extends GLESScene {
         updateAdjustBuffer();
         updateMvp();
 
+        GLES20.glClearColor(mBgColor[0], mBgColor[1], mBgColor[2], 1.0f);
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
 
         if (mRecolorEnabled && mColorProgram != 0) {
@@ -204,6 +207,9 @@ public class MusicVisWaveScene extends GLESScene {
         mHue = safeGetInt(p, "musicvis_hue", 0) / 255f;
         mSaturation = safeGetInt(p, "musicvis_saturation", 255) / 255f;
         mBrightness = safeGetInt(p, "musicvis_brightness", 255) / 255f;
+        String hex = p.getString("musicvis_bg_color", "#000000");
+        try { int c = Color.parseColor(hex); mBgColor[0] = Color.red(c)/255f; mBgColor[1] = Color.green(c)/255f; mBgColor[2] = Color.blue(c)/255f; }
+        catch (Exception e) { mBgColor[0] = mBgColor[1] = mBgColor[2] = 0f; }
     }
 
     private static int safeGetInt(SharedPreferences p, String k, int d) {

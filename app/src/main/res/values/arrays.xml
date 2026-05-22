@@ -312,4 +312,22 @@
         <item>3</item>
         <item>4</item>
     </string-array>
+    <string-array name="musicvis_bg_entries" translatable="false">
+        <item>@string/musicvis_bg_black</item>
+        <item>@string/musicvis_bg_dark_red</item>
+        <item>@string/musicvis_bg_dark_blue</item>
+        <item>@string/musicvis_bg_dark_green</item>
+        <item>@string/musicvis_bg_pink</item>
+        <item>@string/musicvis_bg_light_green</item>
+        <item>@string/musicvis_bg_light_purple</item>
+    </string-array>
+    <string-array name="musicvis_bg_values" translatable="false">
+        <item>#000000</item>
+        <item>#300303</item>
+        <item>#50330</item>
+        <item>#2F4F4F</item>
+        <item>#FFE4DE</item>
+        <item>#F0FFFF</item>
+        <item>#EDDEFF</item>
+    </string-array>
 </resources>
