@@ -622,4 +622,12 @@
     <string name="pref_musicvis_recolor_mode">Recolor mode</string>
     <string name="musicvis_recolor_mode_static">Static</string>
     <string name="musicvis_recolor_mode_dynamic">Audio-driven</string>
+    <string name="wallpaper_vis6">Circular Spectrum</string>
+    <string name="wallpaper_vis6_author">念.</string>
+    <string name="wallpaper_vis6_desc">Audio-reactive concentric rings that pulse with music.</string>
+    <string name="settings_entry_vis6">Circular Spectrum</string>
+    <string name="pref_circle_ring_count">Ring count</string>
+    <string name="pref_circle_ring_count_summary">Number of concentric rings (4–32)</string>
+    <string name="pref_circle_line_width">Line width</string>
+    <string name="pref_circle_line_width_summary">Ring line thickness (1–30)</string>
 </resources>

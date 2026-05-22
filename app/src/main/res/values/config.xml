@@ -52,4 +52,5 @@
     <item name="saturation" format="float" type="string">1.0</item>
     <item name="brightness" format="float" type="string">1.0</item>
     <bool name="scrolling_enabled">true</bool>
+    <bool name="config_enable_vis6_wallpaper">true</bool>
 </resources>

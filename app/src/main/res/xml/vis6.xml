@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wallpaper xmlns:android="http://schemas.android.com/apk/res/android"
+    android:author="@string/wallpaper_vis6_author"
+    android:description="@string/wallpaper_vis6_desc"
+    android:thumbnail="@drawable/musicvis_grey"
+    android:showMetadataInPreview="true"
+    android:settingsActivity="com.reandroid.settings.MusicVis6SettingsActivity" />

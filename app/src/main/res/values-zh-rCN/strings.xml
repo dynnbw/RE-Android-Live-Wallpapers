@@ -565,4 +565,12 @@
     <string name="pref_musicvis_recolor_mode">着色模式</string>
     <string name="musicvis_recolor_mode_static">静态</string>
     <string name="musicvis_recolor_mode_dynamic">音频驱动</string>
+    <string name="wallpaper_vis6">环形频谱</string>
+    <string name="wallpaper_vis6_author">念.</string>
+    <string name="wallpaper_vis6_desc">音频驱动同心圆环，随音乐律动变形。</string>
+    <string name="settings_entry_vis6">环形频谱</string>
+    <string name="pref_circle_ring_count">环形层数</string>
+    <string name="pref_circle_ring_count_summary">同心圆环层数（4–32）</string>
+    <string name="pref_circle_line_width">线条宽度</string>
+    <string name="pref_circle_line_width_summary">圆环线条粗细（1–30）</string>
 </resources>
