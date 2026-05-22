@@ -619,4 +619,7 @@
     <string name="musicvis_bg_pink">Pink</string>
     <string name="musicvis_bg_light_green">Light green</string>
     <string name="musicvis_bg_light_purple">Light purple</string>
+    <string name="pref_musicvis_recolor_mode">Recolor mode</string>
+    <string name="musicvis_recolor_mode_static">Static</string>
+    <string name="musicvis_recolor_mode_dynamic">Audio-driven</string>
 </resources>

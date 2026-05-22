@@ -330,4 +330,12 @@
         <item>#F0FFFF</item>
         <item>#EDDEFF</item>
     </string-array>
+    <string-array name="musicvis_recolor_mode_entries" translatable="false">
+        <item>@string/musicvis_recolor_mode_static</item>
+        <item>@string/musicvis_recolor_mode_dynamic</item>
+    </string-array>
+    <string-array name="musicvis_recolor_mode_values" translatable="false">
+        <item>static</item>
+        <item>dynamic</item>
+    </string-array>
 </resources>

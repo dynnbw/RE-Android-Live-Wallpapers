@@ -562,4 +562,7 @@
     <string name="musicvis_bg_pink">粉色</string>
     <string name="musicvis_bg_light_green">淡绿</string>
     <string name="musicvis_bg_light_purple">淡紫</string>
+    <string name="pref_musicvis_recolor_mode">着色模式</string>
+    <string name="musicvis_recolor_mode_static">静态</string>
+    <string name="musicvis_recolor_mode_dynamic">音频驱动</string>
 </resources>

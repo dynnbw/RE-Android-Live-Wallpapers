@@ -11,6 +11,12 @@
         android:title="@string/pref_musicvis_recolor"
         android:summary="@string/pref_musicvis_recolor_summary" android:defaultValue="false"
         android:layout="@layout/preference_modern_item" />
+    <ListPreference android:key="musicvis_recolor_mode"
+        android:title="@string/pref_musicvis_recolor_mode"
+        android:entries="@array/musicvis_recolor_mode_entries"
+        android:entryValues="@array/musicvis_recolor_mode_values"
+        android:defaultValue="static"
+        android:layout="@layout/preference_modern_item" />
     <SeekBarPreference android:key="musicvis_hue"
         android:title="@string/pref_musicvis_hue" android:summary="@string/pref_musicvis_hue_summary"
         android:min="0" android:max="255" android:defaultValue="0"

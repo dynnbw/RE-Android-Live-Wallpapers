@@ -78,6 +78,7 @@ public class MusicVisWaveScene extends GLESScene {
     private final float[] mAdjustData = new float[LINE_COUNT * 2 * 3];
     private float mHue, mSaturation = 1f, mBrightness = 1f;
     private boolean mRecolorEnabled;
+    private boolean mRecolorDynamic;
     private final float[] mBgColor = new float[3];
 
     private static final int FADEOUT_LENGTH = 100;
@@ -204,7 +205,10 @@ public class MusicVisWaveScene extends GLESScene {
         SharedPreferences p = mContext.getSharedPreferences(pn, Context.MODE_PRIVATE);
         mUseTriangleStrip = p.getBoolean("musicvis_use_triangle_strip", true);
         mRecolorEnabled = p.getBoolean("musicvis_recolor", false);
-        mHue = safeGetInt(p, "musicvis_hue", 0) / 255f;
+        mRecolorDynamic = "dynamic".equals(p.getString("musicvis_recolor_mode", "static"));
+        if (!mRecolorDynamic) {
+            mHue = safeGetInt(p, "musicvis_hue", 0) / 255f;
+        }
         mSaturation = safeGetInt(p, "musicvis_saturation", 255) / 255f;
         mBrightness = safeGetInt(p, "musicvis_brightness", 255) / 255f;
         String hex = p.getString("musicvis_bg_color", "#000000");
@@ -303,6 +307,30 @@ public class MusicVisWaveScene extends GLESScene {
             }
         }
         mWaveCounter++;
+        if (mRecolorDynamic && mRecolorEnabled && len > 0) {
+            updateDynamicHue();
+        }
+    }
+
+    private void updateDynamicHue() {
+        float sum = 0f;
+        int count = 0;
+        int outlen = mPointData.length / 8;
+        int width = Math.min(mWidth, outlen);
+        if (width <= 0) width = outlen;
+        int skip = (outlen - width) / 2;
+        int end = outlen - skip;
+        if (skip < 0) skip = 0;
+        if (end > outlen) end = outlen;
+        for (int i = skip; i < end; i++) {
+            sum += Math.abs(mPointData[i * 8 + 1]);
+            count++;
+        }
+        if (count > 0) {
+            float avg = sum / count;
+            float norm = Math.min(1f, avg / 800f);
+            mHue = (mHue + norm * 0.03f) % 1.0f;
+        }
     }
 
     private void applyIdleAndFade() {
