@@ -716,6 +716,7 @@ public class GrassGL extends GLESScene {
     private int loadTexture(int resId, boolean repeat, boolean mipmap) {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inScaled = false;
+        options.inPremultiplied = false;
         Bitmap bitmap = BitmapFactory.decodeResource(mResources, resId, options);
         int[] tex = new int[1];
         GLES20.glGenTextures(1, tex, 0);

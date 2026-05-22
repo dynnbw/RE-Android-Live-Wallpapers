@@ -267,7 +267,9 @@ public class PhaseBeamGL extends GLESScene implements SharedPreferences.OnShared
     }
 
     private int loadTexture(int resId) {
-        Bitmap bitmap = BitmapFactory.decodeResource(mResources, resId);
+        BitmapFactory.Options opts = new BitmapFactory.Options();
+        opts.inPremultiplied = false;
+        Bitmap bitmap = BitmapFactory.decodeResource(mResources, resId, opts);
         if (bitmap == null) {
             Log.e(TAG, "Failed to decode texture: " + resId);
             return 0;

@@ -21,6 +21,7 @@ public final class GLTextureUtils {
 
         final BitmapFactory.Options options = new BitmapFactory.Options();
         options.inScaled = false;
+        options.inPremultiplied = false;
         Bitmap bitmap = BitmapFactory.decodeResource(res, resId, options);
         if (bitmap == null) {
             GLES20.glDeleteTextures(1, textures, 0);

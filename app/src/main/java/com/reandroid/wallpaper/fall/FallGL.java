@@ -436,6 +436,7 @@ public class FallGL extends GLESScene {
     private int loadTexture(int resourceId) {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inScaled = false;
+        options.inPremultiplied = false;
         options.inPreferredConfig = Bitmap.Config.ARGB_8888;
         Bitmap bitmap = BitmapFactory.decodeResource(mResources, resourceId, options);
         if (bitmap == null) {
@@ -499,6 +500,7 @@ public class FallGL extends GLESScene {
     private int loadLeafTexture(int resourceId) {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inScaled = false;
+        options.inPremultiplied = false;
         options.inPreferredConfig = Bitmap.Config.ARGB_8888;
         Bitmap bitmap = BitmapFactory.decodeResource(mResources, resourceId, options);
         if (bitmap == null) {

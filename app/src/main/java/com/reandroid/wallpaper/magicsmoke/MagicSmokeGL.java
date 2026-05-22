@@ -226,6 +226,7 @@ public class MagicSmokeGL extends GLESScene {
         // Load source bitmap
         BitmapFactory.Options opts = new BitmapFactory.Options();
         opts.inPreferredConfig = Bitmap.Config.ARGB_8888;
+        opts.inPremultiplied = false;
         Bitmap sourceBitmap = BitmapFactory.decodeResource(mResources, MagicSmokeScene.NOISE_RES_IDS[index], opts);
         if (sourceBitmap == null) {
             Log.e(TAG, "Failed to decode texture: " + MagicSmokeScene.NOISE_RES_IDS[index]);

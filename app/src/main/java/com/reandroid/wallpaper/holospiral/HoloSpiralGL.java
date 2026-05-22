@@ -231,7 +231,9 @@ public class HoloSpiralGL extends GLESScene {
     }
 
     private void createTexture() {
-        Bitmap bmp = BitmapFactory.decodeResource(mResources, R.drawable.points_red_green);
+        BitmapFactory.Options opts = new BitmapFactory.Options();
+        opts.inPremultiplied = false;
+        Bitmap bmp = BitmapFactory.decodeResource(mResources, R.drawable.points_red_green, opts);
         if (bmp == null) {
             Log.e(TAG, "Failed to decode point texture");
             return;

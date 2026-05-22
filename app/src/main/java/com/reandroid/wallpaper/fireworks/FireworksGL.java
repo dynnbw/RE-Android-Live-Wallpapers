@@ -567,6 +567,7 @@ public class FireworksGL extends GLESScene {
         // 加载位图（不缩放）
         BitmapFactory.Options opts = new BitmapFactory.Options();
         opts.inScaled = false;
+        opts.inPremultiplied = false;
         Bitmap bmp = BitmapFactory.decodeResource(res, resId, opts);
         if (bmp == null) return 0;
 

@@ -205,6 +205,7 @@ public class ForestGL extends GLESScene {
     private int loadTexture(int resId) {
         BitmapFactory.Options opts = new BitmapFactory.Options();
         opts.inScaled = false;
+        opts.inPremultiplied = false;
         Bitmap bmp = BitmapFactory.decodeResource(mResources, resId, opts);
         if (bmp == null) return 0;
 
