@@ -1,12 +1,6 @@
 package com.reandroid.settings;
 
-import android.app.AlertDialog;
-import android.content.ActivityNotFoundException;
-import android.content.ComponentName;
-import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -47,7 +41,7 @@ public class MusicVis6SettingsFragment extends PreferenceFragmentCompat
         Preference openPicker = findPreference("pref_open_wallpaper_picker");
         if (openPicker != null) {
             openPicker.setOnPreferenceClickListener(pref -> {
-                launchLivePreview(MusicVisWallpaper6.class);
+                MiuiPermissionHelper.launchLivePreview(this, MusicVisWallpaper6.class);
                 return true;
             });
         }
@@ -65,28 +59,4 @@ public class MusicVis6SettingsFragment extends PreferenceFragmentCompat
 
     private boolean isRecolorEnabled() { return mRecolorPref != null && mRecolorPref.isChecked(); }
 
-    private void launchLivePreview(Class<?> wallpaperClass) {
-        if (isMIUI() && !hasShownMIUIPermissionDialog()) { showMIUIPermissionDialog(wallpaperClass); return; }
-        try {
-            Intent intent = new Intent("android.service.wallpaper.CHANGE_LIVE_WALLPAPER");
-            intent.putExtra("android.service.wallpaper.extra.LIVE_WALLPAPER_COMPONENT",
-                    new ComponentName(requireContext(), wallpaperClass));
-            startActivity(intent);
-        } catch (ActivityNotFoundException e) {
-            Toast.makeText(requireContext(), R.string.pref_open_wallpaper_picker_failed, Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    private boolean isMIUI() { return !getSystemProperty("ro.miui.ui.version.name","").isEmpty() || !getSystemProperty("ro.miui.ui.version.code","").isEmpty(); }
-    private String getSystemProperty(String k, String d) { try { return (String) Class.forName("android.os.SystemProperties").getMethod("get",String.class,String.class).invoke(null,k,d); } catch(Exception e) { return d; } }
-    private boolean hasShownMIUIPermissionDialog() { return requireContext().getSharedPreferences("wallpaper_prefs",0).getBoolean("miui_permission_dialog_shown",false); }
-    private void showMIUIPermissionDialog(Class<?> c) {
-        new AlertDialog.Builder(requireContext())
-            .setTitle(R.string.miui_permission_title).setMessage(R.string.miui_permission_message)
-            .setPositiveButton(R.string.miui_permission_go_settings,(d,w)->{
-                requireContext().getSharedPreferences("wallpaper_prefs",0).edit().putBoolean("miui_permission_dialog_shown",true).apply();
-                try{startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).setData(Uri.parse("package:"+requireContext().getPackageName())));}catch(Exception e){Toast.makeText(requireContext(),R.string.miui_permission_open_failed,Toast.LENGTH_SHORT).show();}})
-            .setNeutralButton(R.string.miui_permission_continue,(d,w)->{requireContext().getSharedPreferences("wallpaper_prefs",0).edit().putBoolean("miui_permission_dialog_shown",true).apply();launchLivePreview(c);})
-            .setNegativeButton(android.R.string.cancel,null).show();
-    }
 }

@@ -1,9 +1,6 @@
 package com.reandroid.settings;
 
 import android.Manifest;
-import android.content.ActivityNotFoundException;
-import android.content.ComponentName;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.widget.Toast;
@@ -34,7 +31,7 @@ public class WalkAroundSettingsFragment extends PreferenceFragmentCompat {
         if (openPicker != null) {
             openPicker.setOnPreferenceClickListener(pref -> {
                 if (!ensureCameraPermission()) return true;
-                launchLivePreview(WalkAroundWallpaper.class);
+                MiuiPermissionHelper.launchLivePreview(this, WalkAroundWallpaper.class);
                 return true;
             });
         }
@@ -63,15 +60,4 @@ public class WalkAroundSettingsFragment extends PreferenceFragmentCompat {
         }
     }
 
-    private void launchLivePreview(Class<?> wallpaperClass) {
-        try {
-            Intent intent = new Intent();
-            ComponentName componentName = new ComponentName(requireContext(), wallpaperClass);
-            intent.setAction("android.service.wallpaper.CHANGE_LIVE_WALLPAPER");
-            intent.putExtra("android.service.wallpaper.extra.LIVE_WALLPAPER_COMPONENT", componentName);
-            startActivity(intent);
-        } catch (ActivityNotFoundException e) {
-            Toast.makeText(requireContext(), R.string.wallpaper_preview_not_supported, Toast.LENGTH_SHORT).show();
-        }
-    }
 }

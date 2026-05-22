@@ -1,8 +1,5 @@
 package com.reandroid.settings;
 
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.Nullable;
@@ -17,7 +14,6 @@ public class ForestSettingsFragment extends PreferenceFragmentCompat {
 
     @Override
     public void onCreatePreferences(@Nullable Bundle savedInstanceState, @Nullable String rootKey) {
-        Context ctx = requireContext();
         getPreferenceManager().setSharedPreferencesName("forest_prefs");
         setPreferencesFromResource(R.xml.prefs_forest, rootKey);
 
@@ -29,13 +25,7 @@ public class ForestSettingsFragment extends PreferenceFragmentCompat {
         Preference openPicker = findPreference("pref_open_wallpaper_picker");
         if (openPicker != null) {
             openPicker.setOnPreferenceClickListener(pref -> {
-                try {
-                    Intent intent = new Intent("android.service.wallpaper.CHANGE_LIVE_WALLPAPER");
-                    intent.putExtra("android.service.wallpaper.extra.LIVE_WALLPAPER_COMPONENT",
-                            new ComponentName(ctx, ForestWallpaper.class));
-                    startActivity(intent);
-                } catch (Exception ignored) {
-                }
+                MiuiPermissionHelper.launchLivePreview(this, ForestWallpaper.class);
                 return true;
             });
         }

@@ -6,6 +6,7 @@ import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import com.reandroid.wallpaper.R;
 import com.reandroid.wallpaper.flsorescence.FlsorescenceGL;
+import com.reandroid.wallpaper.flsorescence.FlsorescenceWallpaper;
 
 public class FlsorescenceSettingsFragment extends PreferenceFragmentCompat {
     private static final String KEY_FLSORESCENCE_SHAPE = "flsorescence_shape";
@@ -26,7 +27,7 @@ public class FlsorescenceSettingsFragment extends PreferenceFragmentCompat {
         Preference openPicker = findPreference("pref_open_wallpaper_picker");
         if (openPicker != null) {
             openPicker.setOnPreferenceClickListener(pref -> {
-                launchLivePreview();
+                MiuiPermissionHelper.launchLivePreview(this, FlsorescenceWallpaper.class);
                 return true;
             });
         }
@@ -68,17 +69,6 @@ public class FlsorescenceSettingsFragment extends PreferenceFragmentCompat {
                     break;
             }
             preference.setSummary(summary);
-        }
-    }
-
-    private void launchLivePreview() {
-        try {
-            android.content.ComponentName componentName = new android.content.ComponentName(requireContext(), com.reandroid.wallpaper.flsorescence.FlsorescenceWallpaper.class);
-            android.content.Intent intent = new android.content.Intent(android.app.WallpaperManager.ACTION_CHANGE_LIVE_WALLPAPER);
-            intent.putExtra(android.app.WallpaperManager.EXTRA_LIVE_WALLPAPER_COMPONENT, componentName);
-            startActivity(intent);
-        } catch (android.content.ActivityNotFoundException e) {
-            android.widget.Toast.makeText(requireContext(), R.string.no_live_wallpaper_support, android.widget.Toast.LENGTH_SHORT).show();
         }
     }
 
