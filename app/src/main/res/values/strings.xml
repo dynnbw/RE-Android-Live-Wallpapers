@@ -602,4 +602,13 @@
     <string name="reset_current_settings_message">Restore this wallpaper settings to their default values?</string>
     <string name="reset_current_settings_done">Wallpaper settings restored to defaults</string>
     <string name="reset_action_confirm">Restore</string>
+    <string name="pref_musicvis_recolor">着色模式</string>
+    <string name="pref_musicvis_recolor_summary">使用灰度纹理 + HSL 着色替换原始纹理</string>
+    <string name="pref_musicvis_hue">色相</string>
+    <string name="pref_musicvis_hue_summary">调整颜色色相（0–255）</string>
+    <string name="pref_musicvis_saturation">饱和度</string>
+    <string name="pref_musicvis_saturation_summary">调整颜色饱和度（0–255）</string>
+    <string name="pref_musicvis_brightness">亮度</string>
+    <string name="pref_musicvis_brightness_summary">调整颜色亮度（0–255）</string>
+    <string name="musicvis_enable_recolor_first">请先启用着色模式</string>
 </resources>

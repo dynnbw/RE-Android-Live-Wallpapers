@@ -1,6 +1,7 @@
 package com.reandroid.wallpaper.musicvis;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 import android.util.Log;
@@ -69,6 +70,14 @@ public class MusicVisWaveScene extends GLESScene {
     private boolean mUseTriangleStrip = true;
     private boolean mHasPrefInit = false;
 
+    // HSL colorization
+    private int mColorProgram, mColorPosLoc, mColorTexLoc, mColorMvpLoc, mColorSamplerLoc, mColorAdjustLoc;
+    private int mGreyTextureId;
+    private FloatBuffer mAdjustBuffer;
+    private final float[] mAdjustData = new float[LINE_COUNT * 2 * 3];
+    private float mHue, mSaturation = 1f, mBrightness = 1f;
+    private boolean mRecolorEnabled;
+
     private static final int FADEOUT_LENGTH = 100;
     private static final float FADEOUT_FACTOR = 0.95f;
     private static final int FADEIN_LENGTH = 15;
@@ -115,33 +124,48 @@ public class MusicVisWaveScene extends GLESScene {
         initGLIfNeeded();
         if (mProgram == 0) return;
 
-        updateRenderMode();
+        updateSettings();
 
         updateWaveData();
         applyIdleAndFade();
         updateBuffers();
+        updateAdjustBuffer();
         updateMvp();
 
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
-        GLES20.glUseProgram(mProgram);
 
-        GLES20.glUniformMatrix4fv(mMvpLoc, 1, false, mMvp, 0);
-        GLES20.glUniform1i(mSamplerLoc, 0);
-
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTextureId);
-
-        GLES20.glEnableVertexAttribArray(mPosLoc);
-        GLES20.glEnableVertexAttribArray(mTexLoc);
-
-        GLES20.glVertexAttribPointer(mPosLoc, 2, GLES20.GL_FLOAT, false, 0, mPosBuffer);
-        GLES20.glVertexAttribPointer(mTexLoc, 2, GLES20.GL_FLOAT, false, 0, mTexBuffer);
-
-        int mode = mUseTriangleStrip ? GLES20.GL_TRIANGLE_STRIP : GLES20.GL_LINES;
-        GLES20.glDrawArrays(mode, 0, LINE_COUNT * 2);
-
-        GLES20.glDisableVertexAttribArray(mPosLoc);
-        GLES20.glDisableVertexAttribArray(mTexLoc);
+        if (mRecolorEnabled && mColorProgram != 0) {
+            GLES20.glUseProgram(mColorProgram);
+            GLES20.glUniformMatrix4fv(mColorMvpLoc, 1, false, mMvp, 0);
+            GLES20.glUniform1i(mColorSamplerLoc, 0);
+            GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mGreyTextureId);
+            GLES20.glEnableVertexAttribArray(mColorPosLoc);
+            GLES20.glEnableVertexAttribArray(mColorTexLoc);
+            GLES20.glEnableVertexAttribArray(mColorAdjustLoc);
+            GLES20.glVertexAttribPointer(mColorPosLoc, 2, GLES20.GL_FLOAT, false, 0, mPosBuffer);
+            GLES20.glVertexAttribPointer(mColorTexLoc, 2, GLES20.GL_FLOAT, false, 0, mTexBuffer);
+            GLES20.glVertexAttribPointer(mColorAdjustLoc, 3, GLES20.GL_FLOAT, false, 0, mAdjustBuffer);
+            int dm = mUseTriangleStrip ? GLES20.GL_TRIANGLE_STRIP : GLES20.GL_LINES;
+            GLES20.glDrawArrays(dm, 0, LINE_COUNT * 2);
+            GLES20.glDisableVertexAttribArray(mColorPosLoc);
+            GLES20.glDisableVertexAttribArray(mColorTexLoc);
+            GLES20.glDisableVertexAttribArray(mColorAdjustLoc);
+        } else {
+            GLES20.glUseProgram(mProgram);
+            GLES20.glUniformMatrix4fv(mMvpLoc, 1, false, mMvp, 0);
+            GLES20.glUniform1i(mSamplerLoc, 0);
+            GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTextureId);
+            GLES20.glEnableVertexAttribArray(mPosLoc);
+            GLES20.glEnableVertexAttribArray(mTexLoc);
+            GLES20.glVertexAttribPointer(mPosLoc, 2, GLES20.GL_FLOAT, false, 0, mPosBuffer);
+            GLES20.glVertexAttribPointer(mTexLoc, 2, GLES20.GL_FLOAT, false, 0, mTexBuffer);
+            int dm = mUseTriangleStrip ? GLES20.GL_TRIANGLE_STRIP : GLES20.GL_LINES;
+            GLES20.glDrawArrays(dm, 0, LINE_COUNT * 2);
+            GLES20.glDisableVertexAttribArray(mPosLoc);
+            GLES20.glDisableVertexAttribArray(mTexLoc);
+        }
     }
 
     private void initGLIfNeeded() {
@@ -152,26 +176,48 @@ public class MusicVisWaveScene extends GLESScene {
         String vs = RawResourceLoader.readRawText(mResources, R.raw.musicvis_wave_vs);
         String fs = RawResourceLoader.readRawText(mResources, R.raw.musicvis_wave_fs);
         mProgram = createProgram(vs, fs);
-        if (mProgram == 0) {
-            Log.e(TAG, "Program creation failed");
-            return;
-        }
-
+        if (mProgram == 0) { Log.e(TAG, "Program creation failed"); return; }
         mPosLoc = GLES20.glGetAttribLocation(mProgram, "aPosition");
         mTexLoc = GLES20.glGetAttribLocation(mProgram, "aTexCoord");
         mMvpLoc = GLES20.glGetUniformLocation(mProgram, "uMVP");
         mSamplerLoc = GLES20.glGetUniformLocation(mProgram, "uTex");
-
         mTextureId = GLTextureUtils.loadTexture(mResources, mTextureResId);
+
+        String cvs = RawResourceLoader.readRawText(mResources, R.raw.musicvis_wave_color_vs);
+        String cfs = RawResourceLoader.readRawText(mResources, R.raw.musicvis_wave_color_fs);
+        mColorProgram = createProgram(cvs, cfs);
+        if (mColorProgram != 0) {
+            mColorPosLoc = GLES20.glGetAttribLocation(mColorProgram, "aPosition");
+            mColorTexLoc = GLES20.glGetAttribLocation(mColorProgram, "aTexCoord");
+            mColorAdjustLoc = GLES20.glGetAttribLocation(mColorProgram, "aAdjust");
+            mColorMvpLoc = GLES20.glGetUniformLocation(mColorProgram, "uMVP");
+            mColorSamplerLoc = GLES20.glGetUniformLocation(mColorProgram, "uTex");
+        }
+        mGreyTextureId = GLTextureUtils.loadTexture(mResources, R.drawable.musicvis_grey);
     }
 
-    private void updateRenderMode() {
-        boolean pref = PreferenceManager.getDefaultSharedPreferences(mContext)
-                .getBoolean("musicvis_use_triangle_strip", true);
-        if (!mHasPrefInit || pref != mUseTriangleStrip) {
-            mUseTriangleStrip = pref;
-            mHasPrefInit = true;
+    private void updateSettings() {
+        String pn = (mMode == Mode.PCM) ? "musicvis2_prefs" : "musicvis3_prefs";
+        SharedPreferences p = mContext.getSharedPreferences(pn, Context.MODE_PRIVATE);
+        mUseTriangleStrip = p.getBoolean("musicvis_use_triangle_strip", true);
+        mRecolorEnabled = p.getBoolean("musicvis_recolor", false);
+        mHue = safeGetInt(p, "musicvis_hue", 0) / 255f;
+        mSaturation = safeGetInt(p, "musicvis_saturation", 255) / 255f;
+        mBrightness = safeGetInt(p, "musicvis_brightness", 255) / 255f;
+    }
+
+    private static int safeGetInt(SharedPreferences p, String k, int d) {
+        try { return p.getInt(k, d); } catch (ClassCastException e) { return d; }
+    }
+
+    private void updateAdjustBuffer() {
+        float h = mRecolorEnabled ? mHue : -1f;
+        float s = mRecolorEnabled ? mSaturation : 1f;
+        float v = mRecolorEnabled ? mBrightness : 1f;
+        for (int i = 0; i < LINE_COUNT * 2; i++) {
+            int b = i * 3; mAdjustData[b] = h; mAdjustData[b + 1] = s; mAdjustData[b + 2] = v;
         }
+        mAdjustBuffer = toFloatBuffer(mAdjustData);
     }
 
     private void initPointData() {

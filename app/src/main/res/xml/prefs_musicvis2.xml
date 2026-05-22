@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <com.reandroid.settings.PreviewPreference android:key="pref_preview"
+        android:title="@string/pref_live_preview" />
+    <androidx.preference.SwitchPreferenceCompat android:key="musicvis_use_triangle_strip"
+        android:title="@string/pref_musicvis_mesh_mode_title"
+        android:summary="@string/pref_musicvis_mesh_mode_summary" android:defaultValue="true"
+        android:layout="@layout/preference_modern_item" />
+    <SwitchPreferenceCompat android:key="musicvis_recolor"
+        android:title="@string/pref_musicvis_recolor"
+        android:summary="@string/pref_musicvis_recolor_summary" android:defaultValue="false"
+        android:layout="@layout/preference_modern_item" />
+    <SeekBarPreference android:key="musicvis_hue"
+        android:title="@string/pref_musicvis_hue" android:summary="@string/pref_musicvis_hue_summary"
+        android:min="0" android:max="255" android:defaultValue="0"
+        android:layout="@layout/preference_modern_seekbar" />
+    <SeekBarPreference android:key="musicvis_saturation"
+        android:title="@string/pref_musicvis_saturation" android:summary="@string/pref_musicvis_saturation_summary"
+        android:min="0" android:max="255" android:defaultValue="255"
+        android:layout="@layout/preference_modern_seekbar" />
+    <SeekBarPreference android:key="musicvis_brightness"
+        android:title="@string/pref_musicvis_brightness" android:summary="@string/pref_musicvis_brightness_summary"
+        android:min="0" android:max="255" android:defaultValue="255"
+        android:layout="@layout/preference_modern_seekbar" />
+    <Preference android:key="pref_open_wallpaper_picker"
+        android:title="@string/pref_open_wallpaper_picker"
+        android:layout="@layout/preference_modern_item" />
+</PreferenceScreen>
