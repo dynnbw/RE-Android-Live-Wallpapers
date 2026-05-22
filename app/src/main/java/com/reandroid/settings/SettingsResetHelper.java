@@ -44,6 +44,7 @@ public final class SettingsResetHelper {
     public static final String TARGET_MUSICVIS = "musicvis";
     public static final String TARGET_MUSICVIS2 = "musicvis2";
     public static final String TARGET_MUSICVIS3 = "musicvis3";
+    public static final String TARGET_MUSICVIS6 = "musicvis6";
     public static final String TARGET_NEXUS = "nexus";
     public static final String TARGET_POLARCLOCK = "polarclock";
     public static final String TARGET_MAGICSMOKE = "magicsmoke";
@@ -203,6 +204,8 @@ public final class SettingsResetHelper {
                 return new ResetSpec(R.xml.prefs_noisefield, null, null);
             case TARGET_MUSICVIS2:
                 return new ResetSpec(R.xml.prefs_musicvis2, "musicvis2_prefs", null);
+            case TARGET_MUSICVIS6:
+                return new ResetSpec(R.xml.prefs_musicvis6, "musicvis6_prefs", null);
             case TARGET_MUSICVIS3:
                 return new ResetSpec(R.xml.prefs_musicvis3, "musicvis3_prefs", null);
             case TARGET_MUSICVIS:
@@ -265,6 +268,7 @@ public final class SettingsResetHelper {
         targets.add(TARGET_MUSICVIS);
         targets.add(TARGET_MUSICVIS2);
         targets.add(TARGET_MUSICVIS3);
+        targets.add(TARGET_MUSICVIS6);
         targets.add(TARGET_NEXUS);
         targets.add(TARGET_POLARCLOCK);
         targets.add(TARGET_MAGICSMOKE);

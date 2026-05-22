@@ -480,6 +480,18 @@
 
         <service
             android:exported="true"
+            android:label="@string/wallpaper_vis6"
+            android:name="com.reandroid.wallpaper.musicvis.MusicVisWallpaper6"
+            android:permission="android.permission.BIND_WALLPAPER"
+            android:enabled="@bool/config_enable_vis6_wallpaper">
+            <intent-filter>
+                <action android:name="android.service.wallpaper.WallpaperService" />
+            </intent-filter>
+            <meta-data android:name="android.service.wallpaper" android:resource="@xml/vis6" />
+        </service>
+
+        <service
+            android:exported="true"
             android:label="@string/wallpaper_deepsea"
             android:name="com.reandroid.wallpaper.deepsea.DeepSeaWallpaper"
             android:permission="android.permission.BIND_WALLPAPER"
@@ -519,7 +531,14 @@
             android:theme="@style/Theme.WallpaperSettings"
             android:exported="true"
             android:enabled="@bool/config_enable_vis5_wallpaper" />
-            
+
+        <activity
+            android:label="@string/wallpaper_vis6"
+            android:name="com.reandroid.settings.MusicVis6SettingsActivity"
+            android:theme="@style/Theme.WallpaperSettings"
+            android:exported="true"
+            android:enabled="@bool/config_enable_vis6_wallpaper" />
+
 
         <service
             android:exported="true"
