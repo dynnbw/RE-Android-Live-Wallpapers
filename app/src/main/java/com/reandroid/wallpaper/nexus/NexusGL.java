@@ -247,6 +247,7 @@ public class NexusGL extends GLESScene {
         BitmapFactory.Options options = new BitmapFactory.Options();
         // 禁用自动缩放（保持原始尺寸）
         options.inScaled = false;
+        options.inPremultiplied = false;
 
         // 加载背景纹理
         mTexBackground = mBackgroundManager.loadInitialTexture(mResources);

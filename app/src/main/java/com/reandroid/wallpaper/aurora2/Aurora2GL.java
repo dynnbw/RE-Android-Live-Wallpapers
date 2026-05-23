@@ -224,6 +224,7 @@ public class Aurora2GL extends GLESScene {
     private void initTextures() {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inScaled = false;
+        options.inPremultiplied = false;
         for (int i = 0; i < Aurora2Scene.TEXTURE_NAMES.length; i++) {
             String name = Aurora2Scene.TEXTURE_NAMES[i];
             if (name == null) {

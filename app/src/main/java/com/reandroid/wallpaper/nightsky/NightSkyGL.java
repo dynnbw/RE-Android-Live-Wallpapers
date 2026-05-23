@@ -284,6 +284,7 @@ public class NightSkyGL extends GLESScene {
         if (res == null) return 0;
         BitmapFactory.Options opts = new BitmapFactory.Options();
         opts.inScaled = false;
+        opts.inPremultiplied = false;
         Bitmap bitmap = BitmapFactory.decodeResource(res, resId, opts);
         if (bitmap == null) return 0;
         int[] tex = new int[1];

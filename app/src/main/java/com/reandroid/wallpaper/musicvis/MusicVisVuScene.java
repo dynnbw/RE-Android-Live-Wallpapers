@@ -90,7 +90,7 @@ public class MusicVisVuScene extends GLESScene {
         GLES20.glClearColor(0f, 0f, 0f, 1f);
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
         GLES20.glEnable(GLES20.GL_BLEND);
-        GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
 
         // background
         setModelMatrix(0f, -90f * 0.0041f, 0f, 0f, 0f, 0f, 1f, 0.0041f, 0.0041f, 0.0041f);

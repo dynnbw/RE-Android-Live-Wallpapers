@@ -57,7 +57,9 @@ class GLHelper {
         Log.d("DeepSea", "getTexture called with ID: " + i + " -> " + resolvedId);
         try {
             // 使用 BitmapFactory.decodeResource 来加载 drawable 目录中的资源
-            bitmap = BitmapFactory.decodeResource(context.getResources(), resolvedId);
+            BitmapFactory.Options opts = new BitmapFactory.Options();
+            opts.inPremultiplied = false;
+            bitmap = BitmapFactory.decodeResource(context.getResources(), resolvedId, opts);
             if (bitmap != null) {
                 Log.d("DeepSea", "Bitmap decoded successfully: " + bitmap.getWidth() + "x" + bitmap.getHeight());
             } else {

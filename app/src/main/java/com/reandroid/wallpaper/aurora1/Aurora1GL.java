@@ -177,6 +177,7 @@ public class Aurora1GL extends GLESScene {
     private void initTextures() {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inScaled = false;
+        options.inPremultiplied = false;
 
         mTextures[Aurora1Scene.TEXTURE_BG] = loadTexture(R.drawable.aurora1_bg, options);
         mTextures[Aurora1Scene.TEXTURE_BG_LANDSCAPE] = loadTexture(R.drawable.aurora1_bg_landscape, options);

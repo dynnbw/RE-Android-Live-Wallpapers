@@ -147,7 +147,7 @@ public class MusicVisManyScene extends GLESScene {
         GLES20.glClearColor(mBgColor[0], mBgColor[1], mBgColor[2], 1.0f);
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
         GLES20.glEnable(GLES20.GL_BLEND);
-        GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
 
         float[] base = new float[16];
         Matrix.setIdentityM(base, 0);

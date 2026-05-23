@@ -241,7 +241,8 @@ public class Galaxy4GL extends GLESScene {
     private void loadTextures() {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inScaled = false; // 禁用位图自动缩放（保持原始尺寸）
-        
+        options.inPremultiplied = false; // 禁用预乘alpha，避免黑色光晕
+
         // 加载各纹理
         mTexBg = loadTexture(R.drawable.galaxy4_bg, options);
         mTexCloud = loadTexture(R.drawable.galaxy4_cloud, options);

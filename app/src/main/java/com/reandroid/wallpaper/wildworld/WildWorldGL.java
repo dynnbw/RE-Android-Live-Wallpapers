@@ -323,6 +323,7 @@ public class WildWorldGL extends GLESScene {
     private int loadTexture(Resources res, int resId) {
         BitmapFactory.Options opts = new BitmapFactory.Options();
         opts.inScaled = false;
+        opts.inPremultiplied = false;
         Bitmap bmp = BitmapFactory.decodeResource(res, resId, opts);
         if (bmp == null) return 0;
         int[] tex = new int[1];

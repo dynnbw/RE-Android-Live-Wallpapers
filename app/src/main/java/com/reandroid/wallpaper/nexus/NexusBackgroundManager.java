@@ -23,6 +23,7 @@ final class NexusBackgroundManager {
     int loadInitialTexture(android.content.res.Resources resources) {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inScaled = false;
+        options.inPremultiplied = false;
         return loadBackgroundTexture(resources, options);
     }
 
@@ -58,6 +59,7 @@ final class NexusBackgroundManager {
 
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inScaled = false;
+        options.inPremultiplied = false;
 
         if (useCustom) {
             currentTexture = loadCustomBackgroundTexture(ctx, customUri);

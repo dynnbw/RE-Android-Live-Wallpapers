@@ -246,9 +246,8 @@ public class ForestGL extends GLESScene {
     }
 
     private void drawStems() {
-        // 茎纹理为预乘 alpha，使用预乘混合避免透明边缘发黑
         GLES20.glEnable(GLES20.GL_BLEND);
-        GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
         bindVertex(mVertexStem);
         bindTexCoord(mTexCoordDefault);
 

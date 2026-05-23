@@ -142,7 +142,7 @@ public class OceanWeatherGL extends GLESScene {
         mScene.mWeatherFlagManager.update(mScene.mCondition, mScene.mIsNight);
 
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
-        GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
         drawObjects();
     }
 

@@ -263,6 +263,7 @@ public class GalaxyGL extends GLESScene {
 
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inScaled = false;
+        options.inPremultiplied = false;
         mTexLight1 = loadTexture(desiredUseLight2 ? R.drawable.light2 : R.drawable.light1, options);
         mUseLight2 = desiredUseLight2;
     }
