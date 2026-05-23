@@ -432,6 +432,15 @@
     <string name="copied_to_clipboard">클립보드에 복사됨</string>
     <string name="no_browser_found">브라우저를 찾을 수 없음</string>
     <string name="no_email_found">이메일 앱을 찾을 수 없음</string>
+    <!-- 版本更新 -->
+    <string name="check_for_updates">업데이트 확인</string>
+    <string name="checking_for_updates">확인 중…</string>
+    <string name="up_to_date_message">최신 버전입니다 (v%1$s)</string>
+    <string name="update_available_title">새 버전 v%1$s</string>
+    <string name="update_button">다운로드</string>
+    <string name="update_later_button">나중에</string>
+    <string name="update_check_failed">업데이트 확인 실패: %1$s</string>
+    <string name="update_downloading_title">업데이트 다운로드 중…</string>
 
     <!-- Warning messages -->
     <string name="galaxy_enable_precise_calc_first">먼저 정밀 나선 계산을 활성화하세요</string>

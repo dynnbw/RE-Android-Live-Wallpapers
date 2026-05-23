@@ -579,6 +579,16 @@
     <string name="copied_to_clipboard">Copied to clipboard</string>
     <string name="no_browser_found">No browser found</string>
     <string name="no_email_found">No email app found</string>
+
+    <!-- 版本更新 -->
+    <string name="check_for_updates">Check for Updates</string>
+    <string name="checking_for_updates">Checking…</string>
+    <string name="up_to_date_message">You\'re up to date (v%1$s)</string>
+    <string name="update_available_title">New Version v%1$s</string>
+    <string name="update_button">Download</string>
+    <string name="update_later_button">Later</string>
+    <string name="update_check_failed">Failed to check for updates: %1$s</string>
+    <string name="update_downloading_title">Downloading update…</string>
     <string name="galaxy_enable_precise_calc_first">Please enable precise spiral calculation first</string>
     <string name="grass_disable_dandelion_firefly_first">Please disable dandelion and fireflies first</string>
     <string name="grass_disable_legacy_particles_first">Please disable legacy (MTK) particle motion first</string>

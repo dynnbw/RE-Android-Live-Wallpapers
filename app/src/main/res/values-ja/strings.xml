@@ -402,6 +402,15 @@
     <string name="copied_to_clipboard">クリップボードにコピーされました</string>
     <string name="no_browser_found">ブラウザが見つかりません</string>
     <string name="no_email_found">メールアプリが見つかりません</string>
+    <!-- 版本更新 -->
+    <string name="check_for_updates">アップデートを確認</string>
+    <string name="checking_for_updates">確認中…</string>
+    <string name="up_to_date_message">最新です (v%1$s)</string>
+    <string name="update_available_title">新しいバージョン v%1$s</string>
+    <string name="update_button">ダウンロード</string>
+    <string name="update_later_button">後で</string>
+    <string name="update_check_failed">アップデートの確認に失敗しました: %1$s</string>
+    <string name="update_downloading_title">アップデートをダウンロード中…</string>
 
     <!-- Warning messages -->
     <string name="galaxy_enable_precise_calc_first">まず精密螺旋計算を有効にしてください</string>

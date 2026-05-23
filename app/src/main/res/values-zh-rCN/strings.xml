@@ -495,6 +495,16 @@
     <string name="copied_to_clipboard">已复制到剪贴板</string>
     <string name="no_browser_found">未找到浏览器</string>
     <string name="no_email_found">未找到邮件应用</string>
+
+    <!-- 版本更新 -->
+    <string name="check_for_updates">检查更新</string>
+    <string name="checking_for_updates">正在检查…</string>
+    <string name="up_to_date_message">已是最新版本 (v%1$s)</string>
+    <string name="update_available_title">发现新版本 v%1$s</string>
+    <string name="update_button">下载</string>
+    <string name="update_later_button">稍后</string>
+    <string name="update_check_failed">检查更新失败：%1$s</string>
+    <string name="update_downloading_title">正在下载更新…</string>
     <string name="galaxy_enable_precise_calc_first">请先开启精确螺旋计算</string>
     <string name="grass_disable_dandelion_firefly_first">请先关闭蒲公英和萤火虫</string>
     <string name="grass_disable_legacy_particles_first">请先关闭传统(MTK)粒子运动方式</string>

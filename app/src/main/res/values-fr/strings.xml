@@ -506,6 +506,15 @@
     <string name="copied_to_clipboard">Copié dans le presse-papiers</string>
     <string name="no_browser_found">Aucun navigateur trouvé</string>
     <string name="no_email_found">Aucune application de messagerie trouvée</string>
+    <!-- 版本更新 -->
+    <string name="check_for_updates">Rechercher les mises à jour</string>
+    <string name="checking_for_updates">Recherche…</string>
+    <string name="up_to_date_message">Vous utilisez la dernière version (v%1$s)</string>
+    <string name="update_available_title">Nouvelle version v%1$s</string>
+    <string name="update_button">Télécharger</string>
+    <string name="update_later_button">Plus tard</string>
+    <string name="update_check_failed">Échec de la recherche de mises à jour : %1$s</string>
+    <string name="update_downloading_title">Téléchargement de la mise à jour…</string>
     <string name="galaxy_enable_precise_calc_first">Veuillez d’abord activer le calcul spiral précis</string>
     <string name="grass_disable_dandelion_firefly_first">Veuillez d’abord désactiver les pissenlits et les lucioles</string>
     <string name="grass_disable_legacy_particles_first">Veuillez d’abord désactiver le mouvement de particules hérité (MTK)</string>

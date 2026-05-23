@@ -506,6 +506,15 @@
     <string name="copied_to_clipboard">ক্লিপবোর্ডে কপি করা হয়েছে</string>
     <string name="no_browser_found">কোন ব্রাউজার পাওয়া যায়নি</string>
     <string name="no_email_found">কোন ইমেইল অ্যাপ পাওয়া যায়নি</string>
+    <!-- 版本更新 -->
+    <string name="check_for_updates">Check for Updates</string>
+    <string name="checking_for_updates">Checking…</string>
+    <string name="up_to_date_message">You\'re up to date (v%1$s)</string>
+    <string name="update_available_title">New Version v%1$s</string>
+    <string name="update_button">Download</string>
+    <string name="update_later_button">Later</string>
+    <string name="update_check_failed">Failed to check for updates: %1$s</string>
+    <string name="update_downloading_title">Downloading update…</string>
     <string name="galaxy_enable_precise_calc_first">অনুগ্রহ করে প্রথমে সুনির্দিষ্ট সর্পিল গণনা সক্ষম করুন</string>
     <string name="grass_disable_dandelion_firefly_first">অনুগ্রহ করে প্রথমে ড্যান্ডেলিয়ন এবং জোনাকি নিষ্ক্রিয় করুন</string>
     <string name="grass_disable_legacy_particles_first">অনুগ্রহ করে প্রথমে লিগ্যাসি (এমটিকে) কণা গতি নিষ্ক্রিয় করুন</string>

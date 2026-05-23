@@ -521,6 +521,15 @@
     <string name="copied_to_clipboard">In die Zwischenablage kopiert</string>
     <string name="no_browser_found">Kein Browser gefunden</string>
     <string name="no_email_found">Keine E-Mail-App gefunden</string>
+    <!-- 版本更新 -->
+    <string name="check_for_updates">Nach Updates suchen</string>
+    <string name="checking_for_updates">Suche…</string>
+    <string name="up_to_date_message">Sie sind auf dem neuesten Stand (v%1$s)</string>
+    <string name="update_available_title">Neue Version v%1$s</string>
+    <string name="update_button">Herunterladen</string>
+    <string name="update_later_button">Später</string>
+    <string name="update_check_failed">Updateprüfung fehlgeschlagen: %1$s</string>
+    <string name="update_downloading_title">Update wird heruntergeladen…</string>
     <string name="galaxy_enable_precise_calc_first">Bitte aktivieren Sie zuerst die präzise Spiralberechnung</string>
     <string name="grass_disable_dandelion_firefly_first">Bitte deaktivieren Sie zuerst Löwenzahn und Glühwürmchen</string>
     <string name="grass_disable_legacy_particles_first">Bitte deaktivieren Sie zuerst die alte (MTK) Partikelbewegung</string>

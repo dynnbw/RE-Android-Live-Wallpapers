@@ -509,6 +509,15 @@
     <string name="copied_to_clipboard">क्लिपबोर्ड पर कॉपी किया गया</string>
     <string name="no_browser_found">कोई ब्राउज़र नहीं मिला</string>
     <string name="no_email_found">कोई ईमेल ऐप नहीं मिला</string>
+    <!-- 版本更新 -->
+    <string name="check_for_updates">अपडेट जांचें</string>
+    <string name="checking_for_updates">जांच हो रही है…</string>
+    <string name="up_to_date_message">आप अपडेट हैं (v%1$s)</string>
+    <string name="update_available_title">नया संस्करण v%1$s</string>
+    <string name="update_button">डाउनलोड करें</string>
+    <string name="update_later_button">बाद में</string>
+    <string name="update_check_failed">अपडेट जांच विफल: %1$s</string>
+    <string name="update_downloading_title">अपडेट डाउनलोड हो रहा है…</string>
     <string name="galaxy_enable_precise_calc_first">कृपया पहले सटीक सर्पिल गणना सक्षम करें</string>
     <string name="grass_disable_dandelion_firefly_first">कृपया पहले सिंहपर्णी और जुगनू अक्षम करें</string>
     <string name="grass_disable_legacy_particles_first">कृपया पहले विरासत (एमटीके) कण गति अक्षम करें</string>

@@ -506,6 +506,15 @@
     <string name="copied_to_clipboard">Скопировано в буфер обмена</string>
     <string name="no_browser_found">Браузер не найден</string>
     <string name="no_email_found">Почтовое приложение не найдено</string>
+    <!-- 版本更新 -->
+    <string name="check_for_updates">Проверить обновления</string>
+    <string name="checking_for_updates">Проверка…</string>
+    <string name="up_to_date_message">Установлена последняя версия (v%1$s)</string>
+    <string name="update_available_title">Новая версия v%1$s</string>
+    <string name="update_button">Скачать</string>
+    <string name="update_later_button">Позже</string>
+    <string name="update_check_failed">Не удалось проверить обновления: %1$s</string>
+    <string name="update_downloading_title">Загрузка обновления…</string>
     <string name="galaxy_enable_precise_calc_first">Сначала включите точный спиральный расчёт</string>
     <string name="grass_disable_dandelion_firefly_first">Сначала отключите одуванчики и светлячков</string>
     <string name="grass_disable_legacy_particles_first">Сначала отключите устаревшее движение частиц (MTK)</string>
