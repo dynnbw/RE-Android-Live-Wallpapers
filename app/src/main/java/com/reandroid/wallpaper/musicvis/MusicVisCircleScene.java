@@ -68,12 +68,13 @@ public class MusicVisCircleScene extends GLESScene {
         mRingAmps = new float[mRingCount];
         mBinStart = new int[mRingCount];
         mBinEnd = new int[mRingCount];
+        final int binMin = 2;
+        final int binMax = 120;
         for (int i = 0; i < mRingCount; i++) {
             double t0 = (double) i / mRingCount;
             double t1 = (double) (i + 1) / mRingCount;
-            mBinStart[i] = (int) Math.pow(256, t0);
-            mBinEnd[i] = (int) Math.pow(256, t1);
-            if (mBinStart[i] < 1) mBinStart[i] = 0;
+            mBinStart[i] = (int) (binMin * Math.pow((double) binMax / binMin, t0));
+            mBinEnd[i] = (int) (binMin * Math.pow((double) binMax / binMin, t1));
         }
     }
 
