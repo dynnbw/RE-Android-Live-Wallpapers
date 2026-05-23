@@ -27,6 +27,7 @@ import androidx.preference.PreferenceManager;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 
+import com.reandroid.update.UpdateHelper;
 import com.reandroid.wallpaper.R;
 import com.reandroid.weather.WeatherCondition;
 import com.reandroid.weather.WeatherManager;
@@ -40,6 +41,7 @@ public class SettingsActivity extends AppCompatActivity
     private static final String DEFAULT_PREVIEW_RATIO = "9:16";
     private static final String KEY_PREVIEW = "pref_preview";
 
+    private boolean mUpdateChecked;
     private ImageButton weatherButton;
     private WeatherManager weatherManager;
     private WeatherState lastWeatherState;
@@ -86,6 +88,15 @@ public class SettingsActivity extends AppCompatActivity
             }
             updateWeatherMenuVisibility();
         });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (!mUpdateChecked) {
+            mUpdateChecked = true;
+            UpdateHelper.checkAndShow(this, true);
+        }
     }
 
     @Override

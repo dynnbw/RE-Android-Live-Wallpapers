@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 
+import com.reandroid.update.UpdateHelper;
 import com.reandroid.wallpaper.BuildConfig;
 import com.reandroid.wallpaper.R;
 
@@ -72,6 +73,16 @@ public class AboutFragment extends PreferenceFragmentCompat {
                 return true;
             });
         }
+
+        // 检查更新
+        Preference checkUpdate = findPreference("about_check_update");
+        if (checkUpdate != null) {
+            checkUpdate.setSummary(getString(R.string.app_version_summary, BuildConfig.VERSION_NAME));
+            checkUpdate.setOnPreferenceClickListener(pref -> {
+                UpdateHelper.checkAndShow(this);
+                return true;
+            });
+        }
     }
 
     // 保持Material2风格，无需包裹overlay
@@ -110,4 +121,5 @@ public class AboutFragment extends PreferenceFragmentCompat {
         android.content.ClipData clip = android.content.ClipData.newPlainText("label", text);
         clipboard.setPrimaryClip(clip);
     }
+
 }

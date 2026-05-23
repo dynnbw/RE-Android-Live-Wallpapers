@@ -11,6 +11,11 @@
         android:selectable="false"
         android:key="about_version" />
 
+    <Preference
+        android:title="@string/check_for_updates"
+        android:summary="@string/app_version_summary"
+        android:key="about_check_update" />
+
     <!-- 项目简介 -->
     <PreferenceCategory android:title="@string/about_project_intro" />
     <Preference
