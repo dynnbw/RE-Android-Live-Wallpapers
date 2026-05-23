@@ -2,7 +2,10 @@
   "versionCode": 7,
   "versionName": "1.5",
   "apkSize": 0,
-  "changelog": "",
+  "changelog": {
+    "en": "- Fix WildWorld texture flickering\n- Add spectrum ring count setting\n- Unified MIUI permission prompts\n- optimize the update prompt interface \n- add a new audio response wallpaper \n- add a new function of audio response wallpaper",
+    "zh": "- 修复野生世界纹理闪烁\n- 新增频谱环数可调设置\n- 统一MIUI权限提示弹窗\n- 优化更新提示界面\n- 添加新的音频响应壁纸\n- 添加音频响应壁纸新功能"
+  },
   "forceUpdate": false,
   "minVersionCode": 1
 }
