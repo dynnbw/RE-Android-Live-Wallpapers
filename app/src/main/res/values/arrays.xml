@@ -438,4 +438,248 @@
         <item>17 18</item>
         <item>18 19</item>
     </string-array>
+
+    <!-- Tetrahedron: 4 vertices, 6 edges -->
+    <string-array name="tetrahedronpoints" translatable="false">
+        <item>400.000000 400.000000 400.000000</item>
+        <item>400.000000 -400.000000 -400.000000</item>
+        <item>-400.000000 400.000000 -400.000000</item>
+        <item>-400.000000 -400.000000 400.000000</item>
+    </string-array>
+    <string-array name="tetrahedronlines" translatable="false">
+        <item>0 1</item>
+        <item>0 2</item>
+        <item>0 3</item>
+        <item>1 2</item>
+        <item>1 3</item>
+        <item>2 3</item>
+    </string-array>
+
+    <!-- Octahedron: 6 vertices, 12 edges -->
+    <string-array name="octahedronpoints" translatable="false">
+        <item>400.000000 0.000000 0.000000</item>
+        <item>-400.000000 0.000000 0.000000</item>
+        <item>0.000000 400.000000 0.000000</item>
+        <item>0.000000 -400.000000 0.000000</item>
+        <item>0.000000 0.000000 400.000000</item>
+        <item>0.000000 0.000000 -400.000000</item>
+    </string-array>
+    <string-array name="octahedronlines" translatable="false">
+        <item>0 2</item>
+        <item>0 3</item>
+        <item>0 4</item>
+        <item>0 5</item>
+        <item>1 2</item>
+        <item>1 3</item>
+        <item>1 4</item>
+        <item>1 5</item>
+        <item>2 4</item>
+        <item>2 5</item>
+        <item>3 4</item>
+        <item>3 5</item>
+    </string-array>
+
+    <!-- Icosahedron: 12 vertices, 30 edges -->
+    <string-array name="icosahedronpoints" translatable="false">
+        <item>0.000000 210.292000 340.292000</item>
+        <item>0.000000 210.292000 -340.292000</item>
+        <item>0.000000 -210.292000 340.292000</item>
+        <item>0.000000 -210.292000 -340.292000</item>
+        <item>210.292000 340.292000 0.000000</item>
+        <item>210.292000 -340.292000 0.000000</item>
+        <item>-210.292000 340.292000 0.000000</item>
+        <item>-210.292000 -340.292000 0.000000</item>
+        <item>340.292000 0.000000 210.292000</item>
+        <item>340.292000 0.000000 -210.292000</item>
+        <item>-340.292000 0.000000 210.292000</item>
+        <item>-340.292000 0.000000 -210.292000</item>
+    </string-array>
+    <string-array name="icosahedronlines" translatable="false">
+        <item>0 1</item>
+        <item>0 4</item>
+        <item>0 6</item>
+        <item>0 8</item>
+        <item>0 10</item>
+        <item>1 4</item>
+        <item>1 6</item>
+        <item>1 9</item>
+        <item>1 11</item>
+        <item>2 3</item>
+        <item>2 5</item>
+        <item>2 7</item>
+        <item>2 8</item>
+        <item>2 10</item>
+        <item>3 5</item>
+        <item>3 7</item>
+        <item>3 9</item>
+        <item>3 11</item>
+        <item>4 5</item>
+        <item>4 8</item>
+        <item>4 9</item>
+        <item>5 8</item>
+        <item>5 9</item>
+        <item>6 7</item>
+        <item>6 10</item>
+        <item>6 11</item>
+        <item>7 10</item>
+        <item>7 11</item>
+        <item>8 9</item>
+        <item>10 11</item>
+    </string-array>
+
+    <!-- Star Dodecahedron: 12 vertices (same as icosahedron), 30 edges (different connections) -->
+    <string-array name="stardodecahedronpoints" translatable="false">
+        <item>0.000000 210.292000 340.292000</item>
+        <item>0.000000 210.292000 -340.292000</item>
+        <item>0.000000 -210.292000 340.292000</item>
+        <item>0.000000 -210.292000 -340.292000</item>
+        <item>210.292000 340.292000 0.000000</item>
+        <item>210.292000 -340.292000 0.000000</item>
+        <item>-210.292000 340.292000 0.000000</item>
+        <item>-210.292000 -340.292000 0.000000</item>
+        <item>340.292000 0.000000 210.292000</item>
+        <item>340.292000 0.000000 -210.292000</item>
+        <item>-340.292000 0.000000 210.292000</item>
+        <item>-340.292000 0.000000 -210.292000</item>
+    </string-array>
+    <string-array name="stardodecahedronlines" translatable="false">
+        <item>0 2</item>
+        <item>0 5</item>
+        <item>0 7</item>
+        <item>0 9</item>
+        <item>0 11</item>
+        <item>1 3</item>
+        <item>1 5</item>
+        <item>1 7</item>
+        <item>1 8</item>
+        <item>1 10</item>
+        <item>2 4</item>
+        <item>2 6</item>
+        <item>2 9</item>
+        <item>2 11</item>
+        <item>3 4</item>
+        <item>3 6</item>
+        <item>3 8</item>
+        <item>3 10</item>
+        <item>4 6</item>
+        <item>4 10</item>
+        <item>4 11</item>
+        <item>5 7</item>
+        <item>5 10</item>
+        <item>5 11</item>
+        <item>6 8</item>
+        <item>6 9</item>
+        <item>7 8</item>
+        <item>7 9</item>
+        <item>8 10</item>
+        <item>9 11</item>
+    </string-array>
+
+    <!-- Cuboctahedron: 12 vertices, 24 edges -->
+    <string-array name="cuboctahedronpoints" translatable="false">
+        <item>282.843000 282.843000 0.000000</item>
+        <item>282.843000 -282.843000 0.000000</item>
+        <item>-282.843000 282.843000 0.000000</item>
+        <item>-282.843000 -282.843000 0.000000</item>
+        <item>282.843000 0.000000 282.843000</item>
+        <item>282.843000 0.000000 -282.843000</item>
+        <item>-282.843000 0.000000 282.843000</item>
+        <item>-282.843000 0.000000 -282.843000</item>
+        <item>0.000000 282.843000 282.843000</item>
+        <item>0.000000 282.843000 -282.843000</item>
+        <item>0.000000 -282.843000 282.843000</item>
+        <item>0.000000 -282.843000 -282.843000</item>
+    </string-array>
+    <string-array name="cuboctahedronlines" translatable="false">
+        <item>0 4</item>
+        <item>0 5</item>
+        <item>0 8</item>
+        <item>0 9</item>
+        <item>1 4</item>
+        <item>1 5</item>
+        <item>1 10</item>
+        <item>1 11</item>
+        <item>2 6</item>
+        <item>2 7</item>
+        <item>2 8</item>
+        <item>2 9</item>
+        <item>3 6</item>
+        <item>3 7</item>
+        <item>3 10</item>
+        <item>3 11</item>
+        <item>4 8</item>
+        <item>4 10</item>
+        <item>5 9</item>
+        <item>5 11</item>
+        <item>6 8</item>
+        <item>6 10</item>
+        <item>7 9</item>
+        <item>7 11</item>
+    </string-array>
+
+    <!-- Truncated Cube: 24 vertices, 36 edges -->
+    <string-array name="truncatedcubepoints" translatable="false">
+        <item>112.436000 271.424000 271.424000</item>
+        <item>112.436000 271.424000 -271.424000</item>
+        <item>112.436000 -271.424000 271.424000</item>
+        <item>112.436000 -271.424000 -271.424000</item>
+        <item>-112.436000 271.424000 271.424000</item>
+        <item>-112.436000 271.424000 -271.424000</item>
+        <item>-112.436000 -271.424000 271.424000</item>
+        <item>-112.436000 -271.424000 -271.424000</item>
+        <item>271.424000 112.436000 271.424000</item>
+        <item>271.424000 112.436000 -271.424000</item>
+        <item>271.424000 -112.436000 271.424000</item>
+        <item>271.424000 -112.436000 -271.424000</item>
+        <item>-271.424000 112.436000 271.424000</item>
+        <item>-271.424000 112.436000 -271.424000</item>
+        <item>-271.424000 -112.436000 271.424000</item>
+        <item>-271.424000 -112.436000 -271.424000</item>
+        <item>271.424000 271.424000 112.436000</item>
+        <item>271.424000 271.424000 -112.436000</item>
+        <item>271.424000 -271.424000 112.436000</item>
+        <item>271.424000 -271.424000 -112.436000</item>
+        <item>-271.424000 271.424000 112.436000</item>
+        <item>-271.424000 271.424000 -112.436000</item>
+        <item>-271.424000 -271.424000 112.436000</item>
+        <item>-271.424000 -271.424000 -112.436000</item>
+    </string-array>
+    <string-array name="truncatedcubelines" translatable="false">
+        <item>0 4</item>
+        <item>0 8</item>
+        <item>0 16</item>
+        <item>1 5</item>
+        <item>1 9</item>
+        <item>1 17</item>
+        <item>2 6</item>
+        <item>2 10</item>
+        <item>2 18</item>
+        <item>3 7</item>
+        <item>3 11</item>
+        <item>3 19</item>
+        <item>4 12</item>
+        <item>4 20</item>
+        <item>5 13</item>
+        <item>5 21</item>
+        <item>6 14</item>
+        <item>6 22</item>
+        <item>7 15</item>
+        <item>7 23</item>
+        <item>8 9</item>
+        <item>8 16</item>
+        <item>9 17</item>
+        <item>10 11</item>
+        <item>10 18</item>
+        <item>11 19</item>
+        <item>12 13</item>
+        <item>12 20</item>
+        <item>13 21</item>
+        <item>14 15</item>
+        <item>14 22</item>
+        <item>15 23</item>
+        <item>16 17</item>
+        <item>18 19</item>
+        <item>20 21</item>
+        <item>22 23</item>
+    </string-array>
 </resources>

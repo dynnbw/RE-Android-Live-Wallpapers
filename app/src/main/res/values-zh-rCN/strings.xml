@@ -85,6 +85,13 @@
     <string name="wallpaper_phasebeam_author">Google</string>
     <string name="wallpaper_phasebeam_desc">柔和的光束与粒子在背景中掠过。</string>
 
+    <!-- Cube wallpaper -->
+    <string name="wallpaper_cube">立方体</string>
+    <string name="wallpaper_cube_author">Google</string>
+    <string name="wallpaper_cube_desc">旋转的3D线框立方体，支持启动器滚动和触摸效果。</string>
+    <string name="cube_shape_title">形状</string>
+    <string name="cube_shape_summary">选择要显示的3D线框形状</string>
+
     <!-- Wallpaper showing leaves floating on water -->
     <string name="wallpaper_fall">水面落叶</string>
     <string name="wallpaper_fall_author">Google</string>
@@ -584,4 +591,14 @@
     <string name="pref_circle_ring_count_summary">同心圆环层数（4–32）</string>
     <string name="pref_circle_line_width">线条宽度</string>
     <string name="pref_circle_line_width_summary">圆环线条粗细（1–30）</string>
+    <string-array name="cube_shapenames">
+        <item>立方体</item>
+        <item>十二面体</item>
+        <item>正四面体</item>
+        <item>正八面体</item>
+        <item>正二十面体</item>
+        <item>星形十二面体</item>
+        <item>立方八面体</item>
+        <item>截角立方体</item>
+    </string-array>
 </resources>

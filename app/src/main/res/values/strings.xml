@@ -500,7 +500,7 @@
     <string name="wallpaper_cube_author">Google</string>
     <string name="wallpaper_cube_desc">A rotating wireframe 3D cube with launcher scroll and touch effects.</string>
     <string name="cube_shape_title">Shape</string>
-    <string name="cube_shape_summary">Choose between cube or dodecahedron wireframe</string>
+    <string name="cube_shape_summary">Choose a 3D wireframe shape to display</string>
     <string name="miui_permienable_recolor_summary">When enabled, you can customize beam colors</string>
     <string name="phasebeam_color_label">Color</string>
     <string name="phasebeam_saturation_label">Saturation</string>

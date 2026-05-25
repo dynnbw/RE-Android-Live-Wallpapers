@@ -42,7 +42,7 @@
     <string name="wallpaper_cube_author">Google</string>
     <string name="wallpaper_cube_desc">ランチャースクロールとタッチエフェクト付きの回転する3D立方体ワイヤーフレーム。</string>
     <string name="cube_shape_title">形状</string>
-    <string name="cube_shape_summary">立方体または十二面体のワイヤーフレームを選択</string>
+    <string name="cube_shape_summary">表示する3Dワイヤーフレーム形状を選択</string>
 
     <string name="wallpaper_fall">水面の落ち葉</string>
     <string name="wallpaper_fall_author">Google</string>
@@ -504,4 +504,14 @@
     <string name="wallpaper_forest_author">HU1</string>
     <string name="wallpaper_forest_desc">揺れる木々の間から陽光が差し込み、粒子が漂う。</string>
     <string name="settings_entry_forest">森</string>
+    <string-array name="cube_shapenames">
+        <item>立方体</item>
+        <item>十二面体</item>
+        <item>正四面体</item>
+        <item>正八面体</item>
+        <item>正二十面体</item>
+        <item>星形十二面体</item>
+        <item>立方八面体</item>
+        <item>切頂立方体</item>
+    </string-array>
 </resources>

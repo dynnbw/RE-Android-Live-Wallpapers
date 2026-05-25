@@ -61,7 +61,7 @@
     <string name="wallpaper_cube_author">Google</string>
     <string name="wallpaper_cube_desc">런처 스크롤 및 터치 효과가 있는 회전하는 3D 큐브 와이어프레임입니다.</string>
     <string name="cube_shape_title">모양</string>
-    <string name="cube_shape_summary">큐브 또는 십이면체 와이어프레임 중에서 선택하세요</string>
+    <string name="cube_shape_summary">표시할 3D 와이어프레임 모양을 선택하세요</string>
 
     <string name="wallpaper_fall">수면 위 낙엽</string>
     <string name="wallpaper_fall_author">Google</string>
@@ -534,4 +534,14 @@
     <string name="wallpaper_forest_author">HU1</string>
     <string name="wallpaper_forest_desc">흔들리는 나무 사이로 햇빛이 스며들고 입자가 흩날립니다.</string>
     <string name="settings_entry_forest">숲</string>
+    <string-array name="cube_shapenames">
+        <item>정육면체</item>
+        <item>십이면체</item>
+        <item>정사면체</item>
+        <item>정팔면체</item>
+        <item>정이십면체</item>
+        <item>별모양 십이면체</item>
+        <item>육팔면체</item>
+        <item>깎은 정육면체</item>
+    </string-array>
 </resources>
