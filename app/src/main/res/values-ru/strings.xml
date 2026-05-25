@@ -427,6 +427,13 @@
     <string name="wallpaper_phasebeam_author">Google</string>
     <string name="wallpaper_phasebeam_desc">Мягкие лучи и частицы, проходящие по яркому фону.</string>
 
+    <!-- Cube wallpaper -->
+    <string name="wallpaper_cube">Куб</string>
+    <string name="wallpaper_cube_author">Google</string>
+    <string name="wallpaper_cube_desc">Вращающийся 3D-каркас куба с эффектами прокрутки и касания.</string>
+    <string name="cube_shape_title">Фигура</string>
+    <string name="cube_shape_summary">Выберите между каркасом куба или додекаэдра</string>
+
     <string name="phasebeam_enable_recolor">Настроить цвета лучей</string>
     <string name="phasebeam_enable_recolor_summary">При включении вы можете настраивать цвета лучей</string>
     <string name="miui_permienable_recolor_summary">При включении вы можете настраивать цвета лучей</string>

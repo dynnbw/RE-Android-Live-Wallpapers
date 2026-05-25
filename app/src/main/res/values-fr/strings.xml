@@ -427,6 +427,13 @@
     <string name="wallpaper_phasebeam_author">Google</string>
     <string name="wallpaper_phasebeam_desc">Des faisceaux doux et des particules balayant un fond vivant.</string>
 
+    <!-- Cube wallpaper -->
+    <string name="wallpaper_cube">Cube</string>
+    <string name="wallpaper_cube_author">Google</string>
+    <string name="wallpaper_cube_desc">Un cube filaire 3D rotatif avec défilement du lanceur et effets tactiles.</string>
+    <string name="cube_shape_title">Forme</string>
+    <string name="cube_shape_summary">Choisissez entre un filaire cube ou dodécaèdre</string>
+
     <string name="phasebeam_enable_recolor">Ajuster les couleurs des faisceaux</string>
     <string name="phasebeam_enable_recolor_summary">Une fois activé, vous pouvez personnaliser les couleurs des faisceaux</string>
     <string name="miui_permienable_recolor_summary">Une fois activé, vous pouvez personnaliser les couleurs des faisceaux</string>

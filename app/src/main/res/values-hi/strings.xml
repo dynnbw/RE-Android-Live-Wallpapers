@@ -430,6 +430,13 @@
     <string name="wallpaper_phasebeam_author">गूगल</string>
     <string name="wallpaper_phasebeam_desc">जीवंत पृष्ठभूमि पर नरम बीम और कण बह रहे हैं।</string>
 
+    <!-- Cube wallpaper -->
+    <string name="wallpaper_cube">क्यूब</string>
+    <string name="wallpaper_cube_author">Google</string>
+    <string name="wallpaper_cube_desc">लॉन्चर स्क्रॉल और टच इफेक्ट के साथ एक घूमने वाला 3D क्यूब वायरफ्रेम।</string>
+    <string name="cube_shape_title">आकार</string>
+    <string name="cube_shape_summary">क्यूब या डोडेकाहेड्रॉन वायरफ्रेम के बीच चुनें</string>
+
     <string name="phasebeam_enable_recolor">बीम रंग समायोजित करें</string>
     <string name="phasebeam_enable_recolor_summary">सक्षम होने पर, आप बीम रंगों को अनुकूलित कर सकते हैं</string>
     <string name="miui_permienable_recolor_summary">सक्षम होने पर, आप बीम रंगों को अनुकूलित कर सकते हैं</string>

@@ -427,6 +427,13 @@
     <string name="wallpaper_phasebeam_author">গুগল</string>
     <string name="wallpaper_phasebeam_desc">একটি প্রাণবন্ত পটভূমি জুড়ে নরম রশ্মি এবং কণা প্রবাহিত হচ্ছে।</string>
 
+    <!-- Cube wallpaper -->
+    <string name="wallpaper_cube">কিউব</string>
+    <string name="wallpaper_cube_author">Google</string>
+    <string name="wallpaper_cube_desc">একটি ঘূর্ণায়মান 3D কিউব ওয়্যারফ্রেম লঞ্চার স্ক্রোল এবং স্পর্শ প্রভাব সহ।</string>
+    <string name="cube_shape_title">আকৃতি</string>
+    <string name="cube_shape_summary">কিউব বা ডোডেকাহেড্রন ওয়্যারফ্রেমের মধ্যে বেছে নিন</string>
+
     <string name="phasebeam_enable_recolor">রশ্মির রঙ সামঞ্জস্য করুন</string>
     <string name="phasebeam_enable_recolor_summary">সক্ষম থাকলে, আপনি রশ্মির রঙ কাস্টমাইজ করতে পারেন</string>
     <string name="miui_permienable_recolor_summary">সক্ষম থাকলে, আপনি রশ্মির রঙ কাস্টমাইজ করতে পারেন</string>

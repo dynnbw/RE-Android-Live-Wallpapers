@@ -432,6 +432,13 @@
     <string name="wallpaper_phasebeam_author">Google</string>
     <string name="wallpaper_phasebeam_desc">Feixes suaves e partículas percorrendo um fundo vívido.</string>
 
+    <!-- Cube wallpaper -->
+    <string name="wallpaper_cube">Cubo</string>
+    <string name="wallpaper_cube_author">Google</string>
+    <string name="wallpaper_cube_desc">Um cubo 3D de wireframe giratório com rolagem do launcher e efeitos de toque.</string>
+    <string name="cube_shape_title">Forma</string>
+    <string name="cube_shape_summary">Escolha entre estrutura de arame de cubo ou dodecaedro</string>
+
     <string name="phasebeam_enable_recolor">Ajustar cores do feixe</string>
     <string name="phasebeam_enable_recolor_summary">Quando ativado, você pode personalizar as cores do feixe</string>
     <string name="miui_permienable_recolor_summary">Quando ativado, você pode personalizar as cores do feixe</string>
