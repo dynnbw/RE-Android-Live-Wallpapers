@@ -343,10 +343,22 @@
     <string-array name="cube_shapenames">
         <item>Cube</item>
         <item>Dodecahedron</item>
+        <item>Tetrahedron</item>
+        <item>Octahedron</item>
+        <item>Icosahedron</item>
+        <item>Star Dodecahedron</item>
+        <item>Cuboctahedron</item>
+        <item>Truncated Cube</item>
     </string-array>
     <string-array name="cube_shapeprefix" translatable="false">
         <item>cube</item>
         <item>dodecahedron</item>
+        <item>tetrahedron</item>
+        <item>octahedron</item>
+        <item>icosahedron</item>
+        <item>stardodecahedron</item>
+        <item>cuboctahedron</item>
+        <item>truncatedcube</item>
     </string-array>
     <string-array name="cubepoints" translatable="false">
         <item>-400 -400 -400</item>

@@ -565,6 +565,18 @@
 
         <service
             android:exported="true"
+            android:label="@string/wallpaper_cube"
+            android:name="com.reandroid.wallpaper.cube.CubeWallpaper"
+            android:permission="android.permission.BIND_WALLPAPER"
+            android:enabled="@bool/config_enable_cube_wallpaper">
+            <intent-filter>
+                <action android:name="android.service.wallpaper.WallpaperService" />
+            </intent-filter>
+            <meta-data android:name="android.service.wallpaper" android:resource="@xml/cube" />
+        </service>
+
+        <service
+            android:exported="true"
             android:label="@string/wallpaper_nebula"
             android:name="com.reandroid.wallpaper.nebula.NebulaWallpaper"
             android:permission="android.permission.BIND_WALLPAPER"
@@ -715,6 +727,14 @@
             android:theme="@style/Theme.WallpaperSettings"
             android:exported="true"
             android:enabled="@bool/config_enable_phasebeam_wallpaper">
+        </activity>
+
+        <activity
+            android:label="@string/wallpaper_cube"
+            android:name="com.reandroid.settings.CubeSettingsActivity"
+            android:theme="@style/Theme.WallpaperSettings"
+            android:exported="true"
+            android:enabled="@bool/config_enable_cube_wallpaper">
         </activity>
 
         <activity
