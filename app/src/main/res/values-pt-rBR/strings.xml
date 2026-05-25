@@ -194,6 +194,7 @@
     <string name="settings_entry_holospiral">Espiral Holo</string>
     <string name="settings_entry_bluesea">Mar Azul</string>
     <string name="settings_entry_deepsea">Mar Profundo</string>
+    <string name="settings_entry_cube">Cubo</string>
 
     <string name="pref_fall_leaf_count">Quantidade de folhas</string>
     <string name="pref_fall_leaf_count_summary">Ajustar o número de folhas caindo (afeta o desempenho)</string>

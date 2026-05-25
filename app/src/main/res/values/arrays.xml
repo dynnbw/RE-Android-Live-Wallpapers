@@ -338,4 +338,92 @@
         <item>static</item>
         <item>dynamic</item>
     </string-array>
+
+    <!-- Cube wallpaper shapes -->
+    <string-array name="cube_shapenames">
+        <item>Cube</item>
+        <item>Dodecahedron</item>
+    </string-array>
+    <string-array name="cube_shapeprefix" translatable="false">
+        <item>cube</item>
+        <item>dodecahedron</item>
+    </string-array>
+    <string-array name="cubepoints" translatable="false">
+        <item>-400 -400 -400</item>
+        <item>400 -400 -400</item>
+        <item>400 400 -400</item>
+        <item>-400 400 -400</item>
+        <item>-400 -400 400</item>
+        <item>400 -400 400</item>
+        <item>400 400 400</item>
+        <item>-400 400 400</item>
+    </string-array>
+    <string-array name="cubelines" translatable="false">
+        <item>0 1</item>
+        <item>1 2</item>
+        <item>2 3</item>
+        <item>3 0</item>
+        <item>4 5</item>
+        <item>5 6</item>
+        <item>6 7</item>
+        <item>7 4</item>
+        <item>0 4</item>
+        <item>1 5</item>
+        <item>2 6</item>
+        <item>3 7</item>
+    </string-array>
+    <string-array name="dodecahedronpoints" translatable="false">
+        <item>333.850000 0.000000 437.250000</item>
+        <item>103.400000 317.350000 437.250000</item>
+        <item>-270.050000 196.350000 437.250000</item>
+        <item>-270.050000 -196.350000 437.250000</item>
+        <item>103.400000 -317.350000 437.250000</item>
+        <item>540.100000 0.000000 103.400000</item>
+        <item>167.200000 513.700000 103.400000</item>
+        <item>-437.250000 317.350000 103.400000</item>
+        <item>-437.250000 -317.350000 103.400000</item>
+        <item>167.200000 -513.700000 103.400000</item>
+        <item>437.250000 317.350000 -103.400000</item>
+        <item>-167.200000 513.700000 -103.400000</item>
+        <item>-540.100000 0.000000 -103.400000</item>
+        <item>-167.200000 -513.700000 -103.400000</item>
+        <item>437.250000 -317.350000 -103.400000</item>
+        <item>270.050000 196.350000 -437.250000</item>
+        <item>-103.400000 317.350000 -437.250000</item>
+        <item>-333.850000 0.000000 -437.250000</item>
+        <item>-103.400000 -317.350000 -437.250000</item>
+        <item>270.050000 -196.350000 -437.250000</item>
+    </string-array>
+    <string-array name="dodecahedronlines" translatable="false">
+        <item>0 1</item>
+        <item>0 4</item>
+        <item>0 5</item>
+        <item>1 2</item>
+        <item>1 6</item>
+        <item>2 3</item>
+        <item>2 7</item>
+        <item>3 4</item>
+        <item>3 8</item>
+        <item>4 9</item>
+        <item>5 10</item>
+        <item>5 14</item>
+        <item>6 10</item>
+        <item>6 11</item>
+        <item>7 11</item>
+        <item>7 12</item>
+        <item>8 12</item>
+        <item>8 13</item>
+        <item>9 13</item>
+        <item>9 14</item>
+        <item>10 15</item>
+        <item>11 16</item>
+        <item>12 17</item>
+        <item>13 18</item>
+        <item>14 19</item>
+        <item>15 16</item>
+        <item>15 19</item>
+        <item>16 17</item>
+        <item>17 18</item>
+        <item>18 19</item>
+    </string-array>
 </resources>

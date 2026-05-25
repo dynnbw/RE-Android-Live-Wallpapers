@@ -189,6 +189,7 @@
     <string name="settings_entry_holospiral">Spirale Holo</string>
     <string name="settings_entry_bluesea">Mer bleue</string>
     <string name="settings_entry_deepsea">Grand fond</string>
+    <string name="settings_entry_cube">Cube</string>
 
     <string name="pref_fall_leaf_count">Nombre de feuilles</string>
     <string name="pref_fall_leaf_count_summary">Ajuster le nombre de feuilles tombantes (affecte les performances)</string>

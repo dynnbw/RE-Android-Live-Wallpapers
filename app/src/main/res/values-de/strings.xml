@@ -202,6 +202,7 @@
     <string name="settings_entry_holospiral">Holo-Spirale</string>
     <string name="settings_entry_bluesea">Blaues Meer</string>
     <string name="settings_entry_deepsea">Tiefsee</string>
+    <string name="settings_entry_cube">Würfel</string>
 
     <string name="pref_fall_leaf_count">Anzahl Blätter</string>
     <string name="pref_fall_leaf_count_summary">Anzahl der fallenden Blätter anpassen (beeinflusst Leistung)</string>
@@ -438,6 +439,13 @@
     <string name="phasebeam_phasebeam">Phase Beam</string>
     <string name="wallpaper_phasebeam_author">Google</string>
     <string name="wallpaper_phasebeam_desc">Weiche Strahlen und Partikel, die über einen lebendigen Hintergrund streichen.</string>
+
+    <!-- Cube wallpaper -->
+    <string name="wallpaper_cube">Würfel</string>
+    <string name="wallpaper_cube_author">Google</string>
+    <string name="wallpaper_cube_desc">Ein rotierendes 3D-Würfeldrahtmodell mit Launcher-Scroll- und Berührungseffekten.</string>
+    <string name="cube_shape_title">Form</string>
+    <string name="cube_shape_summary">Wählen Sie zwischen Würfel- oder Dodekaeder-Drahtmodell</string>
 
     <string name="phasebeam_enable_recolor">Strahlfarben anpassen</string>
     <string name="phasebeam_enable_recolor_summary">Wenn aktiviert, können Sie Strahlfarben anpassen</string>

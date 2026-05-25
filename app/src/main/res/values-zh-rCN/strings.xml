@@ -216,6 +216,7 @@
 
     <string name="settings_entry_bluesea">蓝色海洋</string>
     <string name="settings_entry_deepsea">深海</string>
+    <string name="settings_entry_cube">立方体</string>
 
     <string name="pref_fall_leaf_count">落叶数量</string>
     <string name="pref_fall_leaf_count_summary">修改落叶的数量（影响性能）</string>

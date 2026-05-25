@@ -192,6 +192,7 @@
     <string name="settings_entry_holospiral">होलो सर्पिल</string>
     <string name="settings_entry_bluesea">नीला समुद्र</string>
     <string name="settings_entry_deepsea">गहरा समुद्र</string>
+    <string name="settings_entry_cube">क्यूब</string>
 
     <string name="pref_fall_leaf_count">पत्तियों की संख्या</string>
     <string name="pref_fall_leaf_count_summary">गिरने वाली पत्तियों की संख्या समायोजित करें (प्रदर्शन को प्रभावित करता है)</string>

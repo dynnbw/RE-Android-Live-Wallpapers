@@ -189,6 +189,7 @@
     <string name="settings_entry_holospiral">Голографическая спираль</string>
     <string name="settings_entry_bluesea">Синее море</string>
     <string name="settings_entry_deepsea">Глубокое море</string>
+    <string name="settings_entry_cube">Куб</string>
 
     <string name="pref_fall_leaf_count">Количество листьев</string>
     <string name="pref_fall_leaf_count_summary">Изменить количество падающих листьев (влияет на производительность)</string>

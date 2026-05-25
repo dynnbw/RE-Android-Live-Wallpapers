@@ -37,6 +37,13 @@
     <string name="wallpaper_phasebeam_author">Google</string>
     <string name="wallpaper_phasebeam_desc">柔らかな光線と粒子が背景を横切ります。</string>
 
+    <!-- Cube wallpaper -->
+    <string name="wallpaper_cube">キューブ</string>
+    <string name="wallpaper_cube_author">Google</string>
+    <string name="wallpaper_cube_desc">ランチャースクロールとタッチエフェクト付きの回転する3D立方体ワイヤーフレーム。</string>
+    <string name="cube_shape_title">形状</string>
+    <string name="cube_shape_summary">立方体または十二面体のワイヤーフレームを選択</string>
+
     <string name="wallpaper_fall">水面の落ち葉</string>
     <string name="wallpaper_fall_author">Google</string>
     <string name="wallpaper_fall_desc">秋の落ち葉が静かな池に舞い落ちます：\n流れる背景スタイル</string>
@@ -137,6 +144,7 @@
     <string name="settings_entry_vis4">音量計</string>
     <string name="settings_entry_bluesea">ブルーシー</string>
     <string name="settings_entry_deepsea">深海</string>
+    <string name="settings_entry_cube">キューブ</string>
 
     <!-- Fall leaves preferences -->
     <string name="pref_fall_leaf_count">落ち葉の数</string>

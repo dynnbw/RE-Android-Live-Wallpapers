@@ -189,6 +189,7 @@
     <string name="settings_entry_holospiral">হলো সর্পিল</string>
     <string name="settings_entry_bluesea">নীল সমুদ্র</string>
     <string name="settings_entry_deepsea">গভীর সমুদ্র</string>
+    <string name="settings_entry_cube">কিউব</string>
 
     <string name="pref_fall_leaf_count">পাতার সংখ্যা</string>
     <string name="pref_fall_leaf_count_summary">পতিত পাতার সংখ্যা সামঞ্জস্য করুন (কর্মক্ষমতা প্রভাবিত করে)</string>

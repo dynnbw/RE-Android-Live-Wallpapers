@@ -85,6 +85,13 @@
     <string name="wallpaper_phasebeam_author">Google</string>
     <string name="wallpaper_phasebeam_desc">柔和的光束與粒子在背景中掠過。</string>
 
+    <!-- Cube wallpaper -->
+    <string name="wallpaper_cube">立方體</string>
+    <string name="wallpaper_cube_author">Google</string>
+    <string name="wallpaper_cube_desc">旋轉的3D線框立方體，支援啟動器滾動和觸摸效果。</string>
+    <string name="cube_shape_title">形狀</string>
+    <string name="cube_shape_summary">選擇立方體或十二面體線框</string>
+
     <!-- Wallpaper showing leaves floating on water -->
     <string name="wallpaper_fall">水面落葉</string>
     <string name="wallpaper_fall_author">Google</string>
@@ -216,6 +223,7 @@
 
     <string name="settings_entry_bluesea">藍色海洋</string>
     <string name="settings_entry_deepsea">深海</string>
+    <string name="settings_entry_cube">立方體</string>
 
     <string name="pref_fall_leaf_count">落葉數量</string>
     <string name="pref_fall_leaf_count_summary">修改落葉的數量（影響性能）</string>

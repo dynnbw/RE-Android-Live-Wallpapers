@@ -227,6 +227,7 @@
     <string name="settings_entry_holospiral">Holo Spiral</string>
     <string name="settings_entry_bluesea">Blue Sea</string>
     <string name="settings_entry_deepsea">Deep Sea</string>
+    <string name="settings_entry_cube">Cube</string>
 
     <string name="pref_fall_leaf_count">Leaf count</string>
     <string name="pref_fall_leaf_count_summary">Adjust the number of falling leaves (affects
@@ -493,6 +494,13 @@
 
     <string name="phasebeam_enable_recolor">Adjust beam colors</string>
     <string name="phasebeam_enable_recolor_summary">When enabled, you can customize beam colors</string>
+
+    <!-- Cube wallpaper -->
+    <string name="wallpaper_cube">Cube</string>
+    <string name="wallpaper_cube_author">Google</string>
+    <string name="wallpaper_cube_desc">A rotating wireframe 3D cube with launcher scroll and touch effects.</string>
+    <string name="cube_shape_title">Shape</string>
+    <string name="cube_shape_summary">Choose between cube or dodecahedron wireframe</string>
     <string name="miui_permienable_recolor_summary">When enabled, you can customize beam colors</string>
     <string name="phasebeam_color_label">Color</string>
     <string name="phasebeam_saturation_label">Saturation</string>

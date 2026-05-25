@@ -82,6 +82,9 @@
     <Preference android:key="pref_deepsea" android:title="@string/settings_entry_deepsea"
         app:fragment="com.reandroid.settings.DeepSeaSettingsFragment"
         android:layout="@layout/preference_modern_item" />
+    <Preference android:key="pref_cube" android:title="@string/settings_entry_cube"
+        app:fragment="com.reandroid.settings.CubeSettingsFragment"
+        android:layout="@layout/preference_modern_item" />
     <Preference android:key="pref_vis6" android:title="@string/settings_entry_vis6"
         app:fragment="com.reandroid.settings.MusicVis6SettingsFragment"
         android:layout="@layout/preference_modern_item" />

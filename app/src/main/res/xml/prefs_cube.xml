@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <com.reandroid.settings.PreviewPreference
+        android:key="pref_preview"
+        android:title="@string/pref_live_preview" />
+    <Preference
+        android:key="pref_open_wallpaper_picker"
+        android:title="@string/pref_open_wallpaper_picker"
+        android:layout="@layout/preference_modern_item" />
+    <ListPreference
+        android:key="cube_shape"
+        android:title="@string/cube_shape_title"
+        android:summary="@string/cube_shape_summary"
+        android:entries="@array/cube_shapenames"
+        android:entryValues="@array/cube_shapeprefix"
+        android:defaultValue="cube"
+        android:layout="@layout/preference_modern_item" />
+</PreferenceScreen>

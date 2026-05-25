@@ -56,6 +56,13 @@
     <string name="wallpaper_phasebeam_author">Google</string>
     <string name="wallpaper_phasebeam_desc">부드러운 광선과 입자들이 배경을 가로지릅니다.</string>
 
+    <!-- Cube wallpaper -->
+    <string name="wallpaper_cube">큐브</string>
+    <string name="wallpaper_cube_author">Google</string>
+    <string name="wallpaper_cube_desc">런처 스크롤 및 터치 효과가 있는 회전하는 3D 큐브 와이어프레임입니다.</string>
+    <string name="cube_shape_title">모양</string>
+    <string name="cube_shape_summary">큐브 또는 십이면체 와이어프레임 중에서 선택하세요</string>
+
     <string name="wallpaper_fall">수면 위 낙엽</string>
     <string name="wallpaper_fall_author">Google</string>
     <string name="wallpaper_fall_desc">가을 낙엽이 아래 잔잔한 연못으로 떨어집니다:\n유체 배경 스타일</string>
@@ -156,6 +163,7 @@
     <string name="settings_entry_vis4">볼륨 미터</string>
     <string name="settings_entry_bluesea">푸른 바다</string>
     <string name="settings_entry_deepsea">깊은 바다</string>
+    <string name="settings_entry_cube">큐브</string>
 
     <!-- Fall leaves preferences -->
     <string name="pref_fall_leaf_count">낙엽 수</string>

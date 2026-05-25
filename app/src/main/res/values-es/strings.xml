@@ -200,6 +200,7 @@
     <string name="settings_entry_holospiral">Espiral holográfica</string>
     <string name="settings_entry_bluesea">Mar azul</string>
     <string name="settings_entry_deepsea">Mar profundo</string>
+    <string name="settings_entry_cube">Cubo</string>
 
     <string name="pref_fall_leaf_count">Número de hojas</string>
     <string name="pref_fall_leaf_count_summary">Ajusta el número de hojas que caen (afecta el rendimiento)</string>
@@ -436,6 +437,13 @@
     <string name="phasebeam_phasebeam">Phase Beam</string>
     <string name="wallpaper_phasebeam_author">Google</string>
     <string name="wallpaper_phasebeam_desc">Haces suaves y partículas barriendo un fondo vívido.</string>
+
+    <!-- Cube wallpaper -->
+    <string name="wallpaper_cube">Cubo</string>
+    <string name="wallpaper_cube_author">Google</string>
+    <string name="wallpaper_cube_desc">Un cubo 3D de estructura alámbrica giratorio con efectos de desplazamiento y táctiles.</string>
+    <string name="cube_shape_title">Forma</string>
+    <string name="cube_shape_summary">Elija entre estructura alámbrica de cubo o dodecaedro</string>
 
     <string name="phasebeam_enable_recolor">Ajustar colores del haz</string>
     <string name="phasebeam_enable_recolor_summary">Cuando está habilitado, puede personalizar los colores del haz</string>
