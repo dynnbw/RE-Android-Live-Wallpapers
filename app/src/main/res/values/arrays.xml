@@ -682,4 +682,12 @@
         <item>20 21</item>
         <item>22 23</item>
     </string-array>
+    <string-array name="phasebeam_theme_entries" translatable="false">
+        <item>@string/phasebeam_theme_phasebeam</item>
+        <item>@string/phasebeam_theme_sunbeam</item>
+    </string-array>
+    <string-array name="phasebeam_theme_values" translatable="false">
+        <item>phasebeam</item>
+        <item>sunbeam</item>
+    </string-array>
 </resources>

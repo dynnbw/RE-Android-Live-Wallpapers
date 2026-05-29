@@ -25,6 +25,7 @@ public class PhaseBeamGL extends GLESScene implements SharedPreferences.OnShared
     public static final String KEY_HUE = PhaseBeamScene.KEY_HUE;
     public static final String KEY_SATURATION = PhaseBeamScene.KEY_SATURATION;
     public static final String KEY_BRIGHTNESS = PhaseBeamScene.KEY_BRIGHTNESS;
+    public static final String KEY_THEME = PhaseBeamScene.KEY_THEME;
 
     // ---- 场景逻辑层（非 GL）----
     private final PhaseBeamScene mScene;
@@ -115,8 +116,17 @@ public class PhaseBeamGL extends GLESScene implements SharedPreferences.OnShared
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         if (PhaseBeamScene.KEY_ENABLED.equals(key) || PhaseBeamScene.KEY_HUE.equals(key)
                 || PhaseBeamScene.KEY_SATURATION.equals(key)
-                || PhaseBeamScene.KEY_BRIGHTNESS.equals(key)) {
+                || PhaseBeamScene.KEY_BRIGHTNESS.equals(key)
+                || PhaseBeamScene.KEY_THEME.equals(key)) {
             mScene.reloadPreferences(mResources);
+            if (PhaseBeamScene.KEY_THEME.equals(key)) {
+                mScene.mDirtyTexture = true;
+                mScene.mDirtyBackground = true;
+                mScene.mDirtyParticles = true;
+                // Reload mesh with new theme
+                mScene.loadBackgroundMesh(mResources,
+                        "sunbeam".equals(mScene.mTheme) ? R.raw.sunbeam_bg_mesh : R.raw.phasebeam_bg_mesh);
+            }
         }
     }
 
@@ -195,7 +205,8 @@ public class PhaseBeamGL extends GLESScene implements SharedPreferences.OnShared
         mDotTexLoc = GLES20.glGetUniformLocation(mDotProgram, "UNI_Tex0");
         mDotScaleLoc = GLES20.glGetUniformLocation(mDotProgram, "UNI_scaleSize");
 
-        mScene.loadBackgroundMesh(mResources);
+        mScene.loadBackgroundMesh(mResources,
+                "sunbeam".equals(mScene.mTheme) ? R.raw.sunbeam_bg_mesh : R.raw.phasebeam_bg_mesh);
         mScene.positionParticles();
         mScene.updateBackgroundBuffers(mScene.mXOffset * 2.0f);
         mScene.updateParticleBuffers();
@@ -208,8 +219,15 @@ public class PhaseBeamGL extends GLESScene implements SharedPreferences.OnShared
         int[] tex = new int[] { mTexDot, mTexBeam };
         GLES20.glDeleteTextures(tex.length, tex, 0);
 
-        int dotRes = mScene.mRecolorEnabled ? R.drawable.phasebeam_dot_grey : R.drawable.phasebeam_dot;
-        int beamRes = mScene.mRecolorEnabled ? R.drawable.phasebeam_beam_grey : R.drawable.phasebeam_beam;
+        boolean isSunbeam = "sunbeam".equals(mScene.mTheme);
+        int dotRes, beamRes;
+        if (mScene.mRecolorEnabled) {
+            dotRes = isSunbeam ? R.drawable.sunbeam_dot : R.drawable.phasebeam_dot_grey;
+            beamRes = isSunbeam ? R.drawable.sunbeam_beam : R.drawable.phasebeam_beam_grey;
+        } else {
+            dotRes = isSunbeam ? R.drawable.sunbeam_dot : R.drawable.phasebeam_dot;
+            beamRes = isSunbeam ? R.drawable.sunbeam_beam : R.drawable.phasebeam_beam;
+        }
         mTexDot = loadTexture(dotRes);
         mTexBeam = loadTexture(beamRes);
         mScene.mDirtyTexture = false;

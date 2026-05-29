@@ -272,6 +272,10 @@
     <string name="pref_grass_star_count_summary">调整星星数量（0 到 10000）</string>
     <string name="pref_grass_dandelion_speed">蒲公英速度</string>
 
+    <string name="phasebeam_theme_title">配色主题</string>
+    <string name="phasebeam_theme_summary">在经典蓝色和暖色日光之间切换</string>
+    <string name="phasebeam_theme_phasebeam">Phase Beam（蓝色）</string>
+    <string name="phasebeam_theme_sunbeam">Sunbeam（暖色）</string>
     <string name="phasebeam_enable_recolor">调整光束颜色</string>
     <string name="phasebeam_enable_recolor_summary">启用后可以调整光束的颜色</string>
     <string name="pref_galaxenable_recolor_summary">启用后可以自定义光束颜色</string>

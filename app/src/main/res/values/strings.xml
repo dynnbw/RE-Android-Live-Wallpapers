@@ -492,6 +492,10 @@
     <string name="wallpaper_phasebeam_desc">Soft beams and particles sweeping across a vivid
         background.</string>
 
+    <string name="phasebeam_theme_title">Color theme</string>
+    <string name="phasebeam_theme_summary">Switch between classic blue and warm sunbeam palettes</string>
+    <string name="phasebeam_theme_phasebeam">Phase Beam (blue)</string>
+    <string name="phasebeam_theme_sunbeam">Sunbeam (warm)</string>
     <string name="phasebeam_enable_recolor">Adjust beam colors</string>
     <string name="phasebeam_enable_recolor_summary">When enabled, you can customize beam colors</string>
 

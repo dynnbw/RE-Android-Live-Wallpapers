@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.SeekBarPreference;
@@ -22,6 +23,7 @@ public class PhaseBeamSettingsFragment extends PreferenceFragmentCompat implemen
     private SeekBarPreference mHue;
     private SeekBarPreference mSaturation;
     private SeekBarPreference mBrightness;
+    private ListPreference mTheme;
 
     private boolean isRecolorEnabled() {
         return mEnableRecolor != null && mEnableRecolor.isChecked();
@@ -57,6 +59,8 @@ public class PhaseBeamSettingsFragment extends PreferenceFragmentCompat implemen
         if (mHue != null) mHue.setOnPreferenceChangeListener(this);
         if (mSaturation != null) mSaturation.setOnPreferenceChangeListener(this);
         if (mBrightness != null) mBrightness.setOnPreferenceChangeListener(this);
+        mTheme = findPreference("theme");
+        if (mTheme != null) mTheme.setOnPreferenceChangeListener(this);
 
         syncFromPrefs();
     }
@@ -125,6 +129,19 @@ public class PhaseBeamSettingsFragment extends PreferenceFragmentCompat implemen
                     .edit()
                     .putFloat(PhaseBeamGL.KEY_BRIGHTNESS, value)
                     .commit();
+            return true;
+        }
+
+        if ("theme".equals(key)) {
+            app.getSharedPreferences(PhaseBeamGL.PREFS_NAME, Context.MODE_PRIVATE)
+                    .edit()
+                    .putString(PhaseBeamGL.KEY_THEME, (String) newValue)
+                    .commit();
+            if (mPreview != null && mPreview.getScene() instanceof PhaseBeamGL) {
+                ((PhaseBeamGL) mPreview.getScene()).onSharedPreferenceChanged(
+                        app.getSharedPreferences(PhaseBeamGL.PREFS_NAME, Context.MODE_PRIVATE),
+                        PhaseBeamGL.KEY_THEME);
+            }
             return true;
         }
         return false;

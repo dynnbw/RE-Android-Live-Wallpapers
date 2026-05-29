@@ -23,6 +23,7 @@ final class PhaseBeamScene {
     static final String KEY_HUE = "hue";
     static final String KEY_SATURATION = "saturation";
     static final String KEY_BRIGHTNESS = "brightness";
+    static final String KEY_THEME = "theme";
 
     static final int DOT_COUNT = 28;
 
@@ -43,6 +44,8 @@ final class PhaseBeamScene {
     float mBrightness = 1.0f;
     boolean mRecolorEnabled = false;
     boolean mCanScroll = true;
+    String mTheme = "phasebeam";
+    float mSpeedMultiplier = 1.0f;
 
     final float[] mAdjust = new float[] { -1.0f, 1.0f, 1.0f };
     final float[] mOldAdjust = new float[] { -1.0f, 1.0f, 1.0f };
@@ -125,6 +128,8 @@ final class PhaseBeamScene {
 
     private void readPrefs(Resources resources) {
         if (resources == null || mPrefs == null) return;
+        mTheme = mPrefs.getString(KEY_THEME, "phasebeam");
+        mSpeedMultiplier = "sunbeam".equals(mTheme) ? 3.0f : 1.0f;
         mRecolorEnabled = mPrefs.getBoolean(KEY_ENABLED, resources.getBoolean(R.bool.recolor_enabled));
         mHue = mPrefs.getFloat(KEY_HUE, Float.parseFloat(resources.getString(R.string.hue)));
         mSaturation = mPrefs.getFloat(KEY_SATURATION, Float.parseFloat(resources.getString(R.string.saturation)));
@@ -154,9 +159,9 @@ final class PhaseBeamScene {
      * 从 raw 资源加载背景网格
      * @param resources 资源管理器
      */
-    void loadBackgroundMesh(Resources resources) {
+    void loadBackgroundMesh(Resources resources, int meshResId) {
         if (resources == null) return;
-        float[] mesh = RawResourceLoader.readRawFloatArray(resources, R.raw.phasebeam_bg_mesh);
+        float[] mesh = RawResourceLoader.readRawFloatArray(resources, meshResId);
         int count = mesh.length / 5;
         mBgVertexCount = count;
         mBgRawVertices = new float[count * 3];
@@ -294,6 +299,8 @@ final class PhaseBeamScene {
      * @param newOffset 新偏移值
      */
     void updateParticles(float timeScale, float newOffset) {
+        final float sm = mSpeedMultiplier;
+
         for (int i = 0; i < DOT_COUNT; i++) {
             int idx = i * 3;
             float x = mBeamPositions[idx];
@@ -307,9 +314,9 @@ final class PhaseBeamScene {
                 y = -1.15f;
                 x = rand(-1.25f, 1.25f);
             } else {
-                y += YZ_BEAM_SPEED * z * timeScale;
+                y += YZ_BEAM_SPEED * z * timeScale * sm;
             }
-            x += ZX_BEAM_SPEED * z * timeScale;
+            x += ZX_BEAM_SPEED * z * timeScale * sm;
 
             mBeamPositions[idx] = x;
             mBeamPositions[idx + 1] = y;
@@ -330,10 +337,10 @@ final class PhaseBeamScene {
                 y = -1.25f;
                 x = rand(0.0f, 3.0f);
             } else {
-                y += YZ_PARTICLE_SPEED * z * timeScale;
+                y += YZ_PARTICLE_SPEED * z * timeScale * sm;
             }
 
-            x += ZX_PARTICLE_SPEED * z * timeScale;
+            x += ZX_PARTICLE_SPEED * z * timeScale * sm;
 
             mDotPositions[idx] = x;
             mDotPositions[idx + 1] = y;
