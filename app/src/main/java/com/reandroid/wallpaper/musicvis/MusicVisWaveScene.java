@@ -48,8 +48,10 @@ public class MusicVisWaveScene extends GLESScene implements SharedPreferences.On
     private final float[] mMvp = new float[16];
 
     private AudioCapture mAudioCapture;
-    private int[] mVizData = new int[1024];
-    private short[] mAnalyzer = new short[512];
+    private int[] mVizData;
+    private short[] mAnalyzer;
+    private int mFftSize = 512;
+    private boolean mFftSizeChanged;
 
     private int mIdle = 0;
     private int mWaveCounter = 0;
@@ -101,16 +103,21 @@ public class MusicVisWaveScene extends GLESScene implements SharedPreferences.On
 
     @Override
     public void start() {
-        if (mAudioCapture == null) {
-            int type = (mMode == Mode.FFT) ? AudioCapture.TYPE_FFT : AudioCapture.TYPE_PCM;
-            int size = (mMode == Mode.FFT) ? 512 : 1024;
-            mAudioCapture = new AudioCapture(type, size);
-        }
-        mAudioCapture.start();
         String pn = (mMode == Mode.PCM) ? "musicvis2_prefs" : "musicvis3_prefs";
         SharedPreferences p = mContext.getSharedPreferences(pn, Context.MODE_PRIVATE);
         readPrefs(p);
         p.registerOnSharedPreferenceChangeListener(this);
+
+        int type = (mMode == Mode.FFT) ? AudioCapture.TYPE_FFT : AudioCapture.TYPE_PCM;
+        int size = (mMode == Mode.FFT) ? mFftSize : 1024;
+        if (mAudioCapture == null || mAudioCapture.getSize() != size) {
+            if (mAudioCapture != null) mAudioCapture.release();
+            mAudioCapture = new AudioCapture(type, size);
+            int capSize = mAudioCapture.getSize();
+            mVizData = new int[capSize];
+            mAnalyzer = new short[capSize / 2];
+        }
+        mAudioCapture.start();
     }
 
     @Override
@@ -132,6 +139,18 @@ public class MusicVisWaveScene extends GLESScene implements SharedPreferences.On
     public void drawFrame(long timeMs) {
         initGLIfNeeded();
         if (mProgram == 0) return;
+
+        if (mFftSizeChanged && mMode == Mode.FFT) {
+            mFftSizeChanged = false;
+            if (mAudioCapture != null) {
+                mAudioCapture.stop();
+                mAudioCapture.release();
+            }
+            mAudioCapture = new AudioCapture(AudioCapture.TYPE_FFT, mFftSize);
+            mVizData = new int[mAudioCapture.getSize()];
+            mAnalyzer = new short[mAudioCapture.getSize() / 2];
+            mAudioCapture.start();
+        }
 
         updateWaveData();
         applyIdleAndFade();
@@ -208,6 +227,7 @@ public class MusicVisWaveScene extends GLESScene implements SharedPreferences.On
     }
 
     private void readPrefs(SharedPreferences p) {
+        mFftSize = safeParseInt(p.getString("musicvis_fft_size", "512"), 512);
         mUseTriangleStrip = p.getBoolean("musicvis_use_triangle_strip", true);
         mRecolorEnabled = p.getBoolean("musicvis_recolor", false);
         mRecolorDynamic = "dynamic".equals(p.getString("musicvis_recolor_mode", "static"));
@@ -222,9 +242,17 @@ public class MusicVisWaveScene extends GLESScene implements SharedPreferences.On
         catch (Exception e) { mBgColor[0] = mBgColor[1] = mBgColor[2] = 0f; }
     }
 
+    private static int safeParseInt(String s, int def) {
+        try { return Integer.parseInt(s); } catch (Exception e) { return def; }
+    }
+
     @Override
     public void onSharedPreferenceChanged(SharedPreferences p, String key) {
+        int oldFftSize = mFftSize;
         readPrefs(p);
+        if ("musicvis_fft_size".equals(key) && mFftSize != oldFftSize) {
+            mFftSizeChanged = true;
+        }
     }
 
     private static int safeGetInt(SharedPreferences p, String k, int d) {

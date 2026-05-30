@@ -415,6 +415,7 @@
     <string name="pref_weather_debug_restore">Returned to normal weather logic</string>
     <string name="pref_weather_debug_override">Weather override applied: %1$s</string>
     <string name="weather_toolbar_title">Weather settings</string>
+    <string name="pref_musicvis_fft_size">resolution</string>
     <string name="pref_musicvis_mesh_mode_title">Use legacy triangle strip mesh</string>
     <string name="pref_musicvis_mesh_mode_summary">On: original RS mesh/primitive (triangle strip).
         Off: current line mesh.</string>

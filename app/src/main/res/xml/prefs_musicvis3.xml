@@ -3,6 +3,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <com.reandroid.settings.PreviewPreference android:key="pref_preview"
         android:title="@string/pref_live_preview" />
+    <ListPreference android:key="musicvis_fft_size"
+        android:title="@string/pref_musicvis_fft_size"
+        android:entries="@array/musicvis_fft_entries"
+        android:entryValues="@array/musicvis_fft_values"
+        android:defaultValue="512"
+        android:layout="@layout/preference_modern_item" />
     <androidx.preference.SwitchPreferenceCompat android:key="musicvis_use_triangle_strip"
         android:title="@string/pref_musicvis_mesh_mode_title"
         android:summary="@string/pref_musicvis_mesh_mode_summary" android:defaultValue="true"

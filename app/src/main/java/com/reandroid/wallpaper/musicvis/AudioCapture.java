@@ -62,6 +62,8 @@ public class AudioCapture {
         }
     }
 
+    public int getSize() { return mSize; }
+
     public void start() {
         if (mVisualizer == null) return;
         try {

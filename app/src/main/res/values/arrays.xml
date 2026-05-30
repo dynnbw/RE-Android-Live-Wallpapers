@@ -330,6 +330,18 @@
         <item>#F0FFFF</item>
         <item>#EDDEFF</item>
     </string-array>
+    <string-array name="musicvis_fft_entries">
+        <item>256</item>
+        <item>512</item>
+        <item>768</item>
+        <item>1024</item>
+    </string-array>
+    <string-array name="musicvis_fft_values" translatable="false">
+        <item>256</item>
+        <item>512</item>
+        <item>768</item>
+        <item>1024</item>
+    </string-array>
     <string-array name="musicvis_recolor_mode_entries" translatable="false">
         <item>@string/musicvis_recolor_mode_static</item>
         <item>@string/musicvis_recolor_mode_dynamic</item>

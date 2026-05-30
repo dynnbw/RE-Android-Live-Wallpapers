@@ -463,6 +463,7 @@
     <string name="walkaround_permission_denied">未授予相机权限，无法显示透视画面</string>
     <string name="pref_musicvis_mesh_mode_title">使用原版三角条带网格</string>
     <string name="pref_musicvis_mesh_mode_summary">开启：还原原版网格/绘制基元。关闭：当前线段网格。</string>
+    <string name="pref_musicvis_fft_size">分辨率</string>
 
     <string name="musicvis_permission_granted">音频权限已授予</string>
     <string name="musicvis_permission_denied">未授予音频权限，无法获取音频可视化效果</string>
