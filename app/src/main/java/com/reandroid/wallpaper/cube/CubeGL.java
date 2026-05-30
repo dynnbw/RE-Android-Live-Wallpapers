@@ -188,10 +188,11 @@ public class CubeGL extends GLESScene implements SharedPreferences.OnSharedPrefe
         float ndcX = (mScene.mTouchX / mScene.mScreenWidth) * 2f - 1f;
         float ndcY = -((mScene.mTouchY / mScene.mScreenHeight) * 2f - 1f);
 
+        float ringRX = TOUCH_CIRCLE_RADIUS * mHalfHeight / mHalfWidth;
         float[] ring = new float[CIRCLE_SEGMENTS * 2];
         for (int i = 0; i < CIRCLE_SEGMENTS; i++) {
             double angle = i * 2.0 * Math.PI / CIRCLE_SEGMENTS;
-            ring[i * 2] = ndcX + (float) Math.cos(angle) * TOUCH_CIRCLE_RADIUS;
+            ring[i * 2] = ndcX + (float) Math.cos(angle) * ringRX;
             ring[i * 2 + 1] = ndcY + (float) Math.sin(angle) * TOUCH_CIRCLE_RADIUS;
         }
 
