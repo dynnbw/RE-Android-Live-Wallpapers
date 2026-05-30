@@ -1,0 +1,17 @@
+{
+  "title": "蛍光",
+  "author": "念.",
+  "desc": "光る点が画面を滑らかに動き、まるで生きているかのようです。",
+  "pref_shape": "点の形状",
+  "pref_shape_summary": "各点の形状を変更します",
+  "pref_color": "点の配色",
+  "pref_color_summary": "配色を変更します",
+  "pref_scale": "点の拡大縮小",
+  "pref_scale_summary": "各点のサイズを変更します",
+  "pref_speed": "移動速度",
+  "pref_speed_summary": "移動速度を変更します",
+  "pref_amount": "点の数",
+  "pref_amount_summary": "点の数を変更します",
+  "pref_pattern": "動作パターン",
+  "pref_pattern_summary": "動作パターンを変更します"
+}

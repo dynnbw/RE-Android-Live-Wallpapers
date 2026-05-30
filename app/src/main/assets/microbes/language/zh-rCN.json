@@ -1,0 +1,15 @@
+{
+  "title": "微生物",
+  "author": "Samsung",
+  "desc": "显微镜下的生命，支持触摸驱动移动、觅食行为与有机粒子动画。",
+  "settings_entry": "微生物",
+  "pref_preview_hint": "提示：可在预览中触摸拖动吸引微生物，再点“打开系统预览”应用壁纸。",
+  "pref_lifecycle_speed": "生命周期速度",
+  "pref_lifecycle_speed_summary": "调整代谢、繁殖与衰减速度（%）",
+  "pref_motion_activity": "游动活跃度",
+  "pref_motion_activity_summary": "调整自然巡游与摆动强度（%）",
+  "pref_color_mode": "配色风格",
+  "pref_color_mode_summary": "切换原版红绿蓝三色与新版增强配色",
+  "pref_color_mode_original": "原版",
+  "pref_color_mode_modern": "新版"
+}

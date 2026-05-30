@@ -1,0 +1,10 @@
+{
+  "title": "Feux d’artifice",
+  "author": "MediaTek",
+  "desc": "        Des feux d’artifice colorés illuminent le ciel nocturne.    ",
+  "settings_entry": "Feux d’artifice",
+  "pref_custom_background_title": "Image d’arrière-plan personnalisée",
+  "pref_custom_background_summary": "Appuyez pour sélectionner une image d’arrière-plan personnalisée",
+  "pref_reset_background_title": "Rétablir l’arrière-plan par défaut",
+  "pref_reset_background_summary": "Supprimer l’arrière-plan personnalisé et utiliser celui par défaut"
+}

@@ -1,0 +1,10 @@
+{
+  "title": "透視",
+  "author": "Google",
+  "desc": "スマートフォンを通して周囲を見渡し、安心して歩き回れます。",
+  "settings_entry": "透視",
+  "pref_use_front": "フロントカメラを使用",
+  "pref_use_front_summary": "フロントカメラとバックカメラを切り替えます。",
+  "pref_mirror_front": "フロントカメラをミラー",
+  "pref_mirror_front_summary": "フロント画面を左右反転します。"
+}

@@ -1,0 +1,9 @@
+{
+  "title": "Galáxia 4",
+  "author": "Google",
+  "settings_entry": "Galáxia 4",
+  "pref_bg_star_count": "Quantidade de estrelas de fundo",
+  "pref_bg_star_count_summary": "Número de estrelas de fundo na galáxia (afeta o desempenho)",
+  "pref_space_cloud_count": "Quantidade de nuvens espaciais",
+  "pref_space_cloud_count_summary": "Número de nuvens na galáxia"
+}

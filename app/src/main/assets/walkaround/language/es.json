@@ -1,0 +1,10 @@
+{
+  "title": "Ver a través",
+  "author": "Google",
+  "desc": "        Mira a través de tu teléfono y camina sin riesgo de accidentes.    ",
+  "settings_entry": "Ver a través",
+  "pref_use_front": "Usar cámara frontal",
+  "pref_use_front_summary": "Cambiar entre cámara frontal y trasera.",
+  "pref_mirror_front": "Reflejar cámara frontal",
+  "pref_mirror_front_summary": "Voltear la cámara frontal horizontalmente."
+}

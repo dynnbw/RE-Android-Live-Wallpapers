@@ -1,0 +1,15 @@
+{
+  "title": "밤하늘",
+  "author": "念.",
+  "desc": "실제 항성 목록을 기반으로 한 밤하늘 배경화면으로, 항성 일주 운동, 센서 방향 연동, 길게 누르기 시간 가속, 별 궤적 점진적 페이드 효과를 포함합니다.",
+  "settings_entry": "밤하늘",
+  "pref_preview_hint": "힌트: 위쪽에서 앱 내 실시간 미리보기를 먼저 사용한 후, \\"시스템 미리보기 열기\\"를 눌러 밤하늘 배경화면을 적용하세요.",
+  "pref_camera_focal": "카메라 초점 거리",
+  "pref_camera_focal_summary": "렌즈 초점 거리(mm)를 조정합니다. 값이 클수록 시야가 좁아집니다",
+  "pref_use_sensor": "센서 방향 사용",
+  "pref_use_sensor_summary": "비활성화하면 바탕화면 스크롤로 시점을 제어합니다 (페이지당 45°)",
+  "pref_auto_time_accel": "자동 시간 가속",
+  "pref_auto_time_accel_summary": "하늘 시간을 지속적으로 가속하고 별 궤적을 유지합니다",
+  "pref_time_accel_speed": "가속 단계",
+  "pref_time_accel_speed_summary": "자동 가속/길게 누르기 가속의 속도 단계를 선택합니다"
+}

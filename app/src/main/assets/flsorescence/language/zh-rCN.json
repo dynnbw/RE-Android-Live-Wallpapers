@@ -1,0 +1,17 @@
+{
+  "title": "荧光",
+  "author": "念.",
+  "desc": "发光点在屏幕上流畅移动，仿佛有生命一般。",
+  "pref_shape": "点的形状",
+  "pref_shape_summary": "更改每个点的形状",
+  "pref_color": "点的配色方案",
+  "pref_color_summary": "更改配色方案",
+  "pref_scale": "点的缩放",
+  "pref_scale_summary": "更改每个点的大小",
+  "pref_speed": "运动速度",
+  "pref_speed_summary": "更改移动速度",
+  "pref_amount": "点的数量",
+  "pref_amount_summary": "更改点的数量",
+  "pref_pattern": "运动模式",
+  "pref_pattern_summary": "更改运动模式"
+}

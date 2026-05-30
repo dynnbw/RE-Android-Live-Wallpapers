@@ -1,0 +1,15 @@
+{
+  "title": "미생물",
+  "author": "Samsung",
+  "desc": "현미경 속 생명체로, 터치 기반 이동, 먹이 찾기 행동, 유기적 입자 애니메이션을 지원합니다.",
+  "settings_entry": "미생물",
+  "pref_preview_hint": "힌트: 미리보기에서 터치하여 드래그하면 미생물을 끌어당길 수 있으며, 그런 다음 \\"시스템 미리보기 열기\\"를 눌러 배경화면을 적용하세요.",
+  "pref_lifecycle_speed": "생명 주기 속도",
+  "pref_lifecycle_speed_summary": "대사, 번식 및 감소 속도를 조정합니다 (%)",
+  "pref_motion_activity": "움직임 활발도",
+  "pref_motion_activity_summary": "자연스러운 이동과 흔들림 강도를 조정합니다 (%)",
+  "pref_color_mode": "색상 스타일",
+  "pref_color_mode_summary": "클래식 버전 빨강/초록/파랑 3색과 새 버전 (현재) 강화 색상 사이를 전환합니다",
+  "pref_color_mode_original": "클래식 버전",
+  "pref_color_mode_modern": "새 버전"
+}

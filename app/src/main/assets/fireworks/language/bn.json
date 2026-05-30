@@ -1,0 +1,10 @@
+{
+  "title": "আতশবাজি",
+  "author": "মিডিয়াটেক",
+  "desc": "        রাতের আকাশে রঙিন আতশবাজি ফুটে ওঠে।    ",
+  "settings_entry": "আতশবাজি",
+  "pref_custom_background_title": "কাস্টম পটভূমি ছবি",
+  "pref_custom_background_summary": "একটি কাস্টম পটভূমি ছবি নির্বাচন করতে ট্যাপ করুন",
+  "pref_reset_background_title": "ডিফল্ট পটভূমিতে রিসেট করুন",
+  "pref_reset_background_summary": "কাস্টম পটভূমি সরান এবং ডিফল্টটি ব্যবহার করুন"
+}

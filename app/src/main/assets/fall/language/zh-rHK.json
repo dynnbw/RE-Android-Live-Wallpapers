@@ -1,0 +1,14 @@
+{
+  "title": "水面落葉",
+  "author": "Google",
+  "desc": "        秋葉飄零\n落入下方微波蕩漾的池塘：\n流體背景風格    ",
+  "settings_entry": "水面落葉",
+  "pref_leaf_count": "落葉數量",
+  "pref_leaf_count_summary": "修改落葉的數量（影響性能）",
+  "pref_green_leaves": "綠色樹葉",
+  "pref_green_leaves_summary": "啟用後部分落葉將為綠色",
+  "pref_max_drops": "最大漣漪數量",
+  "pref_max_drops_summary": "屏幕上同時顯示的最大水波漣漪數量（影響性能）",
+  "pref_precise_calc": "精確計算",
+  "pref_precise_calc_summary": "啟用基於波傳播與衰減的物理漣漪模擬"
+}

@@ -1,0 +1,15 @@
+{
+  "title": "微生物",
+  "author": "Samsung",
+  "desc": "顕微鏡下の生命体。タッチで移動、採餌行動、有機的なパーティクルアニメーションをサポートします。",
+  "settings_entry": "微生物",
+  "pref_preview_hint": "ヒント：プレビュー内でタッチしてドラッグすると微生物を引き寄せられます。その後「システムプレビューを開く」を押して壁紙を適用してください。",
+  "pref_lifecycle_speed": "ライフサイクル速度",
+  "pref_lifecycle_speed_summary": "代謝、繁殖、減衰の速度を調整します（％）",
+  "pref_motion_activity": "遊泳活発度",
+  "pref_motion_activity_summary": "自然な徘徊と揺れの強さを調整します（％）",
+  "pref_color_mode": "配色スタイル",
+  "pref_color_mode_summary": "クラシック版（赤・緑・青）と新バージョン（強化）のカラーを切り替えます",
+  "pref_color_mode_original": "クラシック版",
+  "pref_color_mode_modern": "新バージョン"
+}

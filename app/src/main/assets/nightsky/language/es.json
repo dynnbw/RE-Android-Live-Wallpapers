@@ -1,0 +1,15 @@
+{
+  "title": "Cielo nocturno",
+  "author": "念.",
+  "desc": "Cielo nocturno con estrellas reales, movimiento sidéreo, orientación por sensor, aceleración temporal con pulsación larga y estelas de estrellas que se desvanecen.",
+  "settings_entry": "Cielo nocturno",
+  "pref_preview_hint": "Consejo: Use la vista previa en vivo en la aplicación arriba, luego toque Abrir vista previa del sistema para aplicar Cielo nocturno.",
+  "pref_camera_focal": "Longitud focal de la cámara",
+  "pref_camera_focal_summary": "Ajustar la distancia focal del objetivo (mm); valores más grandes amplían más",
+  "pref_use_sensor": "Usar orientación del sensor",
+  "pref_use_sensor_summary": "Cuando está desactivado, usar desplazamiento de página de la pantalla de inicio para rotar la vista (45° por página)",
+  "pref_auto_time_accel": "Aceleración de tiempo automática",
+  "pref_auto_time_accel_summary": "Acelerar continuamente el tiempo del cielo y mantener visibles las estelas de estrellas",
+  "pref_time_accel_speed": "Velocidad de aceleración",
+  "pref_time_accel_speed_summary": "Seleccionar nivel de velocidad para la aceleración automática/pulsación larga"
+}

@@ -1,1 +1,14 @@
-{"title":"水面の落ち葉","desc":"秋の落ち葉が静かな池に舞い落ちます：\n流れる背景スタイル","settings_entry":"水面の落ち葉","pref_leaf_count":"落ち葉の数","pref_leaf_count_summary":"落ち葉の数を変更します（パフォーマンスに影響）","pref_green_leaves":"緑の葉","pref_green_leaves_summary":"有効にすると一部の落ち葉が緑色になります","pref_max_drops":"最大波紋数","pref_max_drops_summary":"画面に同時に表示される最大の水波紋の数（パフォーマンスに影響）","pref_precise_calc":"精密計算","pref_precise_calc_summary":"波の伝播と減衰に基づく物理波紋シミュレーションを有効にします"}
+{
+  "title": "水面の落ち葉",
+  "author": "Google",
+  "desc": "秋の落ち葉が静かな池に舞い落ちます：\n流れる背景スタイル",
+  "settings_entry": "水面の落ち葉",
+  "pref_leaf_count": "落ち葉の数",
+  "pref_leaf_count_summary": "落ち葉の数を変更します（パフォーマンスに影響）",
+  "pref_green_leaves": "緑の葉",
+  "pref_green_leaves_summary": "有効にすると一部の落ち葉が緑色になります",
+  "pref_max_drops": "最大波紋数",
+  "pref_max_drops_summary": "画面に同時に表示される最大の水波紋の数（パフォーマンスに影響）",
+  "pref_precise_calc": "精密計算",
+  "pref_precise_calc_summary": "波の伝播と減衰に基づく物理波紋シミュレーションを有効にします"
+}

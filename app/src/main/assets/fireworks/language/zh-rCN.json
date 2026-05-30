@@ -1,0 +1,10 @@
+{
+  "title": "烟火",
+  "author": "MediaTek",
+  "desc": "        绚丽烟花在夜空中绽放。    ",
+  "settings_entry": "烟火",
+  "pref_custom_background_title": "自定义背景图片",
+  "pref_custom_background_summary": "点击选择自定义背景图片",
+  "pref_reset_background_title": "恢复默认背景",
+  "pref_reset_background_summary": "清除自定义背景，使用默认背景"
+}

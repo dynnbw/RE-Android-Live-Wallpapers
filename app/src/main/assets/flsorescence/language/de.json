@@ -1,0 +1,17 @@
+{
+  "title": "Flsorescence",
+  "author": "念.",
+  "desc": "Leuchtende Punkte gleiten sanft über den Bildschirm, als ob sie lebendig wären.",
+  "pref_shape": "Punktform",
+  "pref_shape_summary": "Form jedes Punktes ändern",
+  "pref_color": "Farbschema der Punkte",
+  "pref_color_summary": "Farbschema ändern",
+  "pref_scale": "Punktgröße",
+  "pref_scale_summary": "Größe jedes Punktes ändern",
+  "pref_speed": "Bewegungsgeschwindigkeit",
+  "pref_speed_summary": "Geschwindigkeit der Bewegung ändern",
+  "pref_amount": "Anzahl der Punkte",
+  "pref_amount_summary": "Anzahl der Punkte ändern",
+  "pref_pattern": "Bewegungsmuster",
+  "pref_pattern_summary": "Bewegungsmuster ändern"
+}

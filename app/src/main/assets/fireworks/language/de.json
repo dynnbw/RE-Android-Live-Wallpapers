@@ -1,0 +1,10 @@
+{
+  "title": "Feuerwerk",
+  "author": "MediaTek",
+  "desc": "        Farbenfrohes Feuerwerk erblüht vor dem Nachthimmel.    ",
+  "settings_entry": "Feuerwerk",
+  "pref_custom_background_title": "Benutzerdefiniertes Hintergrundbild",
+  "pref_custom_background_summary": "Tippen, um ein benutzerdefiniertes Hintergrundbild auszuwählen",
+  "pref_reset_background_title": "Auf Standardhintergrund zurücksetzen",
+  "pref_reset_background_summary": "Benutzerdefinierten Hintergrund entfernen und den Standard verwenden"
+}

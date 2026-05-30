@@ -45,12 +45,31 @@ public final class PluginResources {
 
     /**
      * Load language for the current device locale, falling back to "default".
+     * Tries full locale (e.g. zh-rCN) first, then language-only (zh), then default.
      */
     public static JSONObject loadLanguageForLocale(Context context, String pluginId) {
-        String lang = Locale.getDefault().getLanguage();
-        JSONObject json = loadLanguage(context, pluginId, lang);
-        if (json == null) json = loadLanguage(context, pluginId, "default");
+        Locale locale = Locale.getDefault();
+        // Try full locale: zh-rCN, pt-rBR, etc.
+        String fullTag = toAssetLocaleTag(locale);
+        JSONObject json = loadLanguage(context, pluginId, fullTag);
+        // Try language only: zh, pt, etc.
+        if (json == null) {
+            json = loadLanguage(context, pluginId, locale.getLanguage());
+        }
+        // Fallback to default
+        if (json == null) {
+            json = loadLanguage(context, pluginId, "default");
+        }
         return json;
+    }
+
+    private static String toAssetLocaleTag(Locale locale) {
+        String lang = locale.getLanguage();
+        String country = locale.getCountry();
+        if (country != null && !country.isEmpty()) {
+            return lang + "-r" + country;
+        }
+        return lang;
     }
 
     /**

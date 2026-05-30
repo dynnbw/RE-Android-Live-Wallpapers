@@ -1,0 +1,15 @@
+{
+  "title": "夜空",
+  "author": "念.",
+  "desc": "基於真實星表的夜空桌布，包含恆星周日運動、感測器方向連動、長按時間加速與星軌漸隱效果。",
+  "settings_entry": "夜空",
+  "pref_preview_hint": "提示：可先在上方應用程式內即時預覽，再點「開啟系統預覽」套用夜空桌布。",
+  "pref_camera_focal": "相機焦距",
+  "pref_camera_focal_summary": "調整鏡頭焦距（mm），數值越大視角越窄",
+  "pref_use_sensor": "使用感測器朝向",
+  "pref_use_sensor_summary": "關閉後改為按桌面滾動控制視角（每頁 45°）",
+  "pref_auto_time_accel": "自動時間加速",
+  "pref_auto_time_accel_summary": "持續加速天空時間，並保持顯示星軌",
+  "pref_time_accel_speed": "加速檔位",
+  "pref_time_accel_speed_summary": "選擇自動加速/長按加速的速度檔位"
+}

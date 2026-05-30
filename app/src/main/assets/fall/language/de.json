@@ -1,1 +1,14 @@
-{"title":"Wasserblätter","desc":"Herbstblätter fallen in den kräuselnden Teich: Flüssiger Hintergrund-Stil","settings_entry":"Wasseroberflächenblätter","pref_leaf_count":"Anzahl Blätter","pref_leaf_count_summary":"Anzahl der fallenden Blätter anpassen (beeinflusst Leistung)","pref_green_leaves":"Grüne Blätter","pref_green_leaves_summary":"Wenn aktiviert, werden einige Blätter grün sein","pref_max_drops":"Max. Wellentropfen","pref_max_drops_summary":"Maximale Anzahl gleichzeitig angezeigter Wasserwellen (beeinflusst Leistung)","pref_precise_calc":"Präzise Berechnung","pref_precise_calc_summary":"Physikbasierte Wellensimulation verwenden (Wellenausbreitung und Dämpfung)"}
+{
+  "title": "Wasserblätter",
+  "author": "Google",
+  "desc": "         Herbstblätter purzeln \n In den kräuselnden Teich: \n Flüssiger Hintergrund Zen    ",
+  "settings_entry": "Wasseroberflächenblätter",
+  "pref_leaf_count": "Anzahl Blätter",
+  "pref_leaf_count_summary": "Anzahl der fallenden Blätter anpassen (beeinflusst Leistung)",
+  "pref_green_leaves": "Grüne Blätter",
+  "pref_green_leaves_summary": "Wenn aktiviert, werden einige Blätter grün sein",
+  "pref_max_drops": "Max. Wellentropfen",
+  "pref_max_drops_summary": "Maximale Anzahl gleichzeitig angezeigter Wasserwellen (beeinflusst Leistung)",
+  "pref_precise_calc": "Präzise Berechnung",
+  "pref_precise_calc_summary": "Physikbasierte Wellensimulation verwenden (Wellenausbreitung und Dämpfung)"
+}

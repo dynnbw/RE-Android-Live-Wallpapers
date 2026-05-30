@@ -1,0 +1,15 @@
+{
+  "title": "Night Sky",
+  "author": "念.",
+  "desc": "Real-star night sky with sidereal motion, sensor-based orientation, long-press time acceleration, and fading star trails.",
+  "settings_entry": "Night Sky",
+  "pref_preview_hint": "Tip: Use in-app live preview above, then tap Open system preview to apply Night Sky.",
+  "pref_camera_focal": "Camera focal length",
+  "pref_camera_focal_summary": "Adjust lens focal length (mm); larger values zoom in more",
+  "pref_use_sensor": "Use sensor orientation",
+  "pref_use_sensor_summary": "When off, use home-screen page scrolling to rotate view (45° per page)",
+  "pref_auto_time_accel": "Auto time acceleration",
+  "pref_auto_time_accel_summary": "Continuously speed up sky time and keep star trails visible",
+  "pref_time_accel_speed": "Acceleration speed",
+  "pref_time_accel_speed_summary": "Select speed tier for auto/long-press acceleration"
+}

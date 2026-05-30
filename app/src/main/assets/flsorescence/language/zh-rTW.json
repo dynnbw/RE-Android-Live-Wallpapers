@@ -1,0 +1,17 @@
+{
+  "title": "螢光",
+  "author": "念.",
+  "desc": "發光點在螢幕上流暢移動，彷彿有生命一般。",
+  "pref_shape": "點的形狀",
+  "pref_shape_summary": "更改每個點的形狀",
+  "pref_color": "點的配色方案",
+  "pref_color_summary": "更改配色方案",
+  "pref_scale": "點的縮放",
+  "pref_scale_summary": "更改每個點的大小",
+  "pref_speed": "運動速度",
+  "pref_speed_summary": "更改移動速度",
+  "pref_amount": "點的數量",
+  "pref_amount_summary": "更改點的數量",
+  "pref_pattern": "運動模式",
+  "pref_pattern_summary": "更改運動模式"
+}

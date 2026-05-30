@@ -1,1 +1,14 @@
-{"title":"수면 위 낙엽","desc":"가을 낙엽이 아래 잔잔한 연못으로 떨어집니다:\n유체 배경 스타일","settings_entry":"수면 위 낙엽","pref_leaf_count":"낙엽 수","pref_leaf_count_summary":"낙엽의 수를 변경합니다 (성능에 영향)","pref_green_leaves":"초록색 잎","pref_green_leaves_summary":"활성화하면 일부 낙엽이 초록색이 됩니다","pref_max_drops":"최대 물결 수","pref_max_drops_summary":"화면에 동시에 표시되는 최대 물결 수 (성능에 영향)","pref_precise_calc":"정밀 계산","pref_precise_calc_summary":"파동 전파와 감쇠에 기반한 물리적 물결 시뮬레이션을 활성화합니다"}
+{
+  "title": "수면 위 낙엽",
+  "author": "Google",
+  "desc": "가을 낙엽이 아래 잔잔한 연못으로 떨어집니다:\n유체 배경 스타일",
+  "settings_entry": "수면 위 낙엽",
+  "pref_leaf_count": "낙엽 수",
+  "pref_leaf_count_summary": "낙엽의 수를 변경합니다 (성능에 영향)",
+  "pref_green_leaves": "초록색 잎",
+  "pref_green_leaves_summary": "활성화하면 일부 낙엽이 초록색이 됩니다",
+  "pref_max_drops": "최대 물결 수",
+  "pref_max_drops_summary": "화면에 동시에 표시되는 최대 물결 수 (성능에 영향)",
+  "pref_precise_calc": "정밀 계산",
+  "pref_precise_calc_summary": "파동 전파와 감쇠에 기반한 물리적 물결 시뮬레이션을 활성화합니다"
+}

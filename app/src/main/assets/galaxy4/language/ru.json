@@ -1,0 +1,9 @@
+{
+  "title": "Галактика 4",
+  "author": "Google",
+  "settings_entry": "Галактика 4",
+  "pref_bg_star_count": "Количество фоновых звёзд",
+  "pref_bg_star_count_summary": "Количество фоновых звёзд в галактике (влияет на производительность)",
+  "pref_space_cloud_count": "Количество космических облаков",
+  "pref_space_cloud_count_summary": "Количество облаков в галактике"
+}

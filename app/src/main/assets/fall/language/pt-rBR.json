@@ -1,0 +1,14 @@
+{
+  "title": "Folhas na Água",
+  "author": "Google",
+  "desc": "         Folhas de outono caem \n No lago ondulado: \n Fundo líquido Zen    ",
+  "settings_entry": "Folhas na Superfície da Água",
+  "pref_leaf_count": "Quantidade de folhas",
+  "pref_leaf_count_summary": "Ajustar o número de folhas caindo (afeta o desempenho)",
+  "pref_green_leaves": "Folhas verdes",
+  "pref_green_leaves_summary": "Quando ativado, algumas folhas serão verdes",
+  "pref_max_drops": "Máx. de ondulações",
+  "pref_max_drops_summary": "Número máximo de ondulações da água exibidas simultaneamente na tela (afeta o desempenho)",
+  "pref_precise_calc": "Cálculo preciso",
+  "pref_precise_calc_summary": "Usar simulação de ondulações inspirada na física (propagação e decaimento de ondas)"
+}

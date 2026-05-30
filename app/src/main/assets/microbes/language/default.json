@@ -1,0 +1,15 @@
+{
+  "title": "Microbes",
+  "author": "Samsung",
+  "desc": "Life under the microscope with touch-driven motion, feeding behavior, and organic particle animation.",
+  "settings_entry": "Microbes",
+  "pref_preview_hint": "Tip: Touch and drag in preview to attract microbes, then tap Open system preview to apply.",
+  "pref_lifecycle_speed": "Lifecycle speed",
+  "pref_lifecycle_speed_summary": "Adjust metabolism, reproduction, and decay speed (%)",
+  "pref_motion_activity": "Motion activity",
+  "pref_motion_activity_summary": "Adjust natural roaming and swimming intensity (%)",
+  "pref_color_mode": "Color style",
+  "pref_color_mode_summary": "Switch between original RGB-only palette and current enhanced palette",
+  "pref_color_mode_original": "Original",
+  "pref_color_mode_modern": "New"
+}

@@ -1,0 +1,17 @@
+{
+  "title": "प्रतिदीप्ति",
+  "author": "念.",
+  "desc": "चमकते बिंदु स्क्रीन पर आसानी से घूमते हैं मानो जीवित हों।",
+  "pref_shape": "बिंदु का आकार",
+  "pref_shape_summary": "प्रत्येक बिंदु का आकार बदलें",
+  "pref_color": "बिंदु रंग योजना",
+  "pref_color_summary": "रंग योजना बदलें",
+  "pref_scale": "बिंदु पैमाना",
+  "pref_scale_summary": "प्रत्येक बिंदु का आकार बदलें",
+  "pref_speed": "गति की रफ्तार",
+  "pref_speed_summary": "गति की रफ्तार बदलें",
+  "pref_amount": "बिंदुओं की मात्रा",
+  "pref_amount_summary": "बिंदुओं की संख्या बदलें",
+  "pref_pattern": "गति पैटर्न",
+  "pref_pattern_summary": "गति पैटर्न बदलें"
+}

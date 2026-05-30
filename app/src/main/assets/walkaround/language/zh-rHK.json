@@ -1,0 +1,10 @@
+{
+  "title": "透視",
+  "author": "Google",
+  "desc": "        透過手機觀察，安心愜意地四處走動。    ",
+  "settings_entry": "透視",
+  "pref_use_front": "使用前置攝像頭",
+  "pref_use_front_summary": "在前置與後置攝像頭之間切換。",
+  "pref_mirror_front": "鏡像前置攝像頭",
+  "pref_mirror_front_summary": "對前置畫面進行左右鏡像。"
+}

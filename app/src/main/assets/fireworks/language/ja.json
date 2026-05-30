@@ -1,0 +1,10 @@
+{
+  "title": "花火",
+  "author": "MediaTek",
+  "desc": "華やかな花火が夜空に咲き誇ります。",
+  "settings_entry": "花火",
+  "pref_custom_background_title": "カスタム背景画像",
+  "pref_custom_background_summary": "クリックしてカスタム背景画像を選択",
+  "pref_reset_background_title": "デフォルト背景に戻す",
+  "pref_reset_background_summary": "カスタム背景をクリアし、デフォルト背景を使用します"
+}
