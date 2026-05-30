@@ -1,6 +1,9 @@
 package com.reandroid.plugin;
 
+import android.app.WallpaperManager;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
@@ -35,6 +38,18 @@ public class ProxyWallpaperService extends WallpaperService {
     public static String getActivePlugin(Context context) {
         return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
                 .getString(KEY_PLUGIN_ID, null);
+    }
+
+    /**
+     * Apply a plugin as wallpaper: set the active plugin and open the system
+     * wallpaper preview directly (skips the chooser list).
+     */
+    public static void applyPluginAndOpenPreview(Context context, String pluginId) {
+        setActivePlugin(context, pluginId);
+        Intent intent = new Intent(WallpaperManager.ACTION_CHANGE_LIVE_WALLPAPER);
+        intent.putExtra(WallpaperManager.EXTRA_LIVE_WALLPAPER_COMPONENT,
+                new ComponentName(context, ProxyWallpaperService.class));
+        context.startActivity(intent);
     }
 
     @Override

@@ -167,6 +167,12 @@
             </intent-filter>
         </activity>
 
+        <!-- 通用插件设置页 -->
+        <activity
+            android:name="com.reandroid.settings.PluginSettingsActivity"
+            android:theme="@style/Theme.WallpaperSettings"
+            android:exported="true" />
+
         <!-- 代理壁纸服务（插件化入口） -->
         <service
             android:name="com.reandroid.plugin.ProxyWallpaperService"

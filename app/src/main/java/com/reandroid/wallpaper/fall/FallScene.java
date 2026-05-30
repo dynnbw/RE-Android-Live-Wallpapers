@@ -16,6 +16,7 @@
 
 package com.reandroid.wallpaper.fall;
 
+import android.content.SharedPreferences;
 import android.opengl.Matrix;
 import android.util.Log;
 
@@ -161,12 +162,18 @@ final class FallScene {
     private boolean mWaterTexCoordsDirty = true;
     private float[] mVkLeafData = new float[0];
     private int mVkLeafFloatCount = 0;
+    private SharedPreferences mPrefs;
 
     FallScene(int width, int height) {
         mWidth = width;
         mHeight = height;
         mLastTimeMs = System.currentTimeMillis();
         prepareNonGLResources();
+    }
+
+    /** Plugin path: use host-provided prefs instead of WallpaperSettings. */
+    void setPluginPrefs(SharedPreferences prefs) {
+        mPrefs = prefs;
     }
 
     void setLeafTextureCount(int leafTextureCount) {
@@ -287,8 +294,8 @@ final class FallScene {
         }
         mInitialized = true;
 
-        mLeafTextureCount = WallpaperSettings.isGreenLeavesEnabled(false) ? 20 : 14;
-        mLeafCount = WallpaperSettings.getFallLeafCount(DEFAULT_LEAVES_COUNT);
+        mLeafTextureCount = isGreenLeaves() ? 20 : 14;
+        mLeafCount = getLeafCount();
         mLastLeafCount = mLeafCount;
         mSceneData.leaves = new Leaf[mLeafCount];
         for (int i = 0; i < mLeafCount; i++) {
@@ -307,7 +314,7 @@ final class FallScene {
         float height = mWidth > mHeight ? mWidth : mHeight;
         mGlHeight = 2.0f * height / width;
 
-        mWaterDropCount = Math.max(1, WallpaperSettings.getFallMaxDrops(DEFAULT_WATER_MESH_DROPS));
+        mWaterDropCount = Math.max(1, getMaxDrops());
         mLastWaterDropCount = mWaterDropCount;
         mWaterDrops = new Drop[mWaterDropCount];
         for (int i = 0; i < mWaterDropCount; i++) {
@@ -383,7 +390,7 @@ final class FallScene {
     }
 
     private void ensureWaterDropCount() {
-        int desired = Math.max(1, WallpaperSettings.getFallMaxDrops(DEFAULT_WATER_MESH_DROPS));
+        int desired = Math.max(1, getMaxDrops());
         if (desired == mLastWaterDropCount && mWaterDrops != null) {
             return;
         }
@@ -413,7 +420,7 @@ final class FallScene {
     }
 
     private void updateLeaves() {
-        int desiredCount = WallpaperSettings.getFallLeafCount(DEFAULT_LEAVES_COUNT);
+        int desiredCount = getLeafCount();
         if (desiredCount != mLastLeafCount && desiredCount > 0) {
             mLeafCount = desiredCount;
             mLastLeafCount = desiredCount;
@@ -551,5 +558,22 @@ final class FallScene {
 
         mSceneData.waterMeshTexCoords = deformedTex;
         mWaterTexCoordsDirty = true;
+    }
+
+    // ---- Plugin-aware settings fallback ----
+
+    private boolean isGreenLeaves() {
+        if (mPrefs != null) return mPrefs.getBoolean(WallpaperSettings.KEY_FALL_GREEN_LEAVES, false);
+        return WallpaperSettings.isGreenLeavesEnabled(false);
+    }
+
+    private int getLeafCount() {
+        if (mPrefs != null) return mPrefs.getInt(WallpaperSettings.KEY_FALL_LEAF_COUNT, DEFAULT_LEAVES_COUNT);
+        return WallpaperSettings.getFallLeafCount(DEFAULT_LEAVES_COUNT);
+    }
+
+    private int getMaxDrops() {
+        if (mPrefs != null) return mPrefs.getInt(WallpaperSettings.KEY_FALL_MAX_DROPS, DEFAULT_WATER_MESH_DROPS);
+        return WallpaperSettings.getFallMaxDrops(DEFAULT_WATER_MESH_DROPS);
     }
 }

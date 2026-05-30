@@ -48,7 +48,7 @@ public class GalaxySettingsFragment extends PreferenceFragmentCompat
         Preference openPicker = findPreference("pref_open_wallpaper_picker");
         if (openPicker != null) {
             openPicker.setOnPreferenceClickListener(pref -> {
-                MiuiPermissionHelper.launchLivePreview(this, GalaxyWallpaper.class);
+                com.reandroid.plugin.ProxyWallpaperService.applyPluginAndOpenPreview(requireContext(), "galaxy");
                 return true;
             });
         }

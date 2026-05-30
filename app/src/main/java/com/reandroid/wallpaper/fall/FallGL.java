@@ -17,6 +17,7 @@
 package com.reandroid.wallpaper.fall;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -79,6 +80,11 @@ public class FallGL extends GLESScene {
         mContext = context;
         mScene = new FallScene(width, height);
         Log.d(TAG, "FallGL创建: " + width + "x" + height);
+    }
+
+    /** Plugin path: set host-provided prefs for settings isolation. */
+    public void setPluginPrefs(SharedPreferences prefs) {
+        mScene.setPluginPrefs(prefs);
     }
 
     @Override

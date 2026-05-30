@@ -20,6 +20,7 @@ public class FallSettingsFragment extends PreferenceFragmentCompat {
 
     @Override
     public void onCreatePreferences(@Nullable Bundle savedInstanceState, @Nullable String rootKey) {
+        getPreferenceManager().setSharedPreferencesName("plugin_fall");
         setPreferencesFromResource(R.xml.prefs_fall, rootKey);
         SettingsResetHelper.attachResetPreference(this, SettingsResetHelper.TARGET_FALL);
 
@@ -31,7 +32,7 @@ public class FallSettingsFragment extends PreferenceFragmentCompat {
         Preference openPicker = findPreference("pref_open_wallpaper_picker");
         if (openPicker != null) {
             openPicker.setOnPreferenceClickListener(pref -> {
-                MiuiPermissionHelper.launchLivePreview(this, FallWallpaper.class);
+                com.reandroid.plugin.ProxyWallpaperService.applyPluginAndOpenPreview(requireContext(), "fall");
                 return true;
             });
         }

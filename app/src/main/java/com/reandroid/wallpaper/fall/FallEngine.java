@@ -25,6 +25,7 @@ public class FallEngine implements WallpaperEngine {
     private static final String TAG = "FallEngine";
 
     private final Context mContext;
+    private final WallpaperPluginHost mHost;
     private FallGL mScene;
 
     private EGLDisplay mDisplay;
@@ -37,6 +38,7 @@ public class FallEngine implements WallpaperEngine {
 
     public FallEngine(Context context, WallpaperPluginHost host) {
         mContext = context;
+        mHost = host;
     }
 
     // ---- WallpaperEngine lifecycle ----
@@ -73,6 +75,7 @@ public class FallEngine implements WallpaperEngine {
                 if (mEglCreated) {
                     mScene = new FallGL(mContext, mWidth, mHeight);
                     mScene.init(surface, mContext.getResources(), false);
+                    if (mHost != null) mScene.setPluginPrefs(mHost.getSharedPreferences());
                     // start() deferred to render thread (needs EGL context)
                     Log.d(TAG, "EGL initialized, scene created");
                 } else {

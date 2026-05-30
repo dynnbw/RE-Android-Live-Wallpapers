@@ -1,0 +1,10 @@
+{
+  "prefs": [
+    {
+      "type": "switch",
+      "key": "galaxy_recolor",
+      "title": "Recolor particles",
+      "default": false
+    }
+  ]
+}
