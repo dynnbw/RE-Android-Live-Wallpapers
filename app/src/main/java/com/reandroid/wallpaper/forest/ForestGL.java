@@ -2,19 +2,14 @@ package com.reandroid.wallpaper.forest;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
 import android.opengl.Matrix;
-import android.os.SystemClock;
 import android.view.MotionEvent;
 
-import com.reandroid.wallpaper.R;
+import com.reandroid.gles.AssetLoader;
 import com.reandroid.gles.GLESScene;
-import com.reandroid.gles.RawResourceLoader;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
@@ -26,6 +21,7 @@ import java.nio.FloatBuffer;
 public class ForestGL extends GLESScene {
 
     // ---- Scene ----
+    private final Context mContext;
     private final ForestScene mScene;
 
     // ---- GL resources ----
@@ -62,8 +58,9 @@ public class ForestGL extends GLESScene {
         0,1, 1,1, 0,0, 1,0
     };
 
-    public ForestGL(int width, int height) {
+    public ForestGL(int width, int height, Context context) {
         super(width, height);
+        mContext = context.getApplicationContext();
         mScene = new ForestScene();
     }
 
@@ -187,38 +184,23 @@ public class ForestGL extends GLESScene {
     // ---- texture loading ----
 
     private void loadTextures() {
-        String[] assets = {"forest_bg_16_16", "forest_bg_overlay_256_512", "forest_bg2_16_16",
+        String[] assetNames = {"forest_bg_16_16", "forest_bg_overlay_256_512", "forest_bg2_16_16",
                 "forest_particle_32_32", "forest_stem_a_64_512", "forest_stem_b_01_64_512",
                 "forest_stem_c_64_512", "forest_stem_b_02_64_512"};
-        int[] ids = {R.drawable.forest_bg_16_16, R.drawable.forest_bg_overlay_256_512,
-                R.drawable.forest_bg2_16_16, R.drawable.forest_particle_32_32,
-                R.drawable.forest_stem_a_64_512, R.drawable.forest_stem_b_01_64_512,
-                R.drawable.forest_stem_c_64_512, R.drawable.forest_stem_b_02_64_512};
 
-        mTexIndex = new int[assets.length];
-        GLES20.glGenTextures(assets.length, mTexIndex, 0);
-        for (int i = 0; i < assets.length; i++) {
-            mTexIndex[i] = loadTexture(ids[i]);
+        mTexIndex = new int[assetNames.length];
+        GLES20.glGenTextures(assetNames.length, mTexIndex, 0);
+        for (int i = 0; i < assetNames.length; i++) {
+            String assetPath = "forest/drawable/" + assetNames[i] + ".png";
+            Bitmap bmp = AssetLoader.decodeBitmap(mContext, assetPath);
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTexIndex[i]);
+            GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
+            GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
+            GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
+            GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
+            GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bmp, 0);
+            bmp.recycle();
         }
-    }
-
-    private int loadTexture(int resId) {
-        BitmapFactory.Options opts = new BitmapFactory.Options();
-        opts.inScaled = false;
-        opts.inPremultiplied = false;
-        Bitmap bmp = BitmapFactory.decodeResource(mResources, resId, opts);
-        if (bmp == null) return 0;
-
-        int[] tex = new int[1];
-        GLES20.glGenTextures(1, tex, 0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, tex[0]);
-        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
-        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
-        GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bmp, 0);
-        bmp.recycle();
-        return tex[0];
     }
 
     // ---- draw calls ----

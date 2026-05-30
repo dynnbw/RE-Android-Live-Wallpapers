@@ -19,7 +19,7 @@ public class ForestSettingsFragment extends PreferenceFragmentCompat {
 
         Preference preview = findPreference("pref_preview");
         if (preview instanceof PreviewPreference) {
-            ((PreviewPreference) preview).setSceneFactory((w, h) -> new ForestGL(w, h));
+            ((PreviewPreference) preview).setSceneFactory((w, h) -> new ForestGL(w, h, requireContext()));
         }
 
         Preference openPicker = findPreference("pref_open_wallpaper_picker");

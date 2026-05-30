@@ -18,15 +18,13 @@ package com.reandroid.wallpaper.holospiral;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
 import android.opengl.Matrix;
 import android.util.Log;
 
-import com.reandroid.wallpaper.R;
+import com.reandroid.gles.AssetLoader;
 import com.reandroid.gles.GLESScene;
-import com.reandroid.gles.RawResourceLoader;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -82,6 +80,8 @@ public class HoloSpiralGL extends GLESScene {
 
     private int mPointTextureId;
 
+    private final Context mContext;
+
     private final float[] mProjection = new float[16];
     private final float[] mBaseModelView = new float[16];
     private final float[] mModelView = new float[16];
@@ -96,6 +96,7 @@ public class HoloSpiralGL extends GLESScene {
 
     public HoloSpiralGL(Context context, int width, int height) {
         super(width, height);
+        mContext = context;
     }
 
     @Override
@@ -164,10 +165,10 @@ public class HoloSpiralGL extends GLESScene {
     }
 
     private void createPrograms() {
-        String bgVs = RawResourceLoader.readRawText(mResources, R.raw.holospiral_vertex_background);
-        String bgFs = RawResourceLoader.readRawText(mResources, R.raw.holospiral_fragment_background);
-        String geoVs = RawResourceLoader.readRawText(mResources, R.raw.holospiral_vertex_geometry);
-        String geoFs = RawResourceLoader.readRawText(mResources, R.raw.holospiral_fragment_geometry);
+        String bgVs = AssetLoader.readText(mContext, "holospiral/shaders/GLES/holospiral_vertex_background.glsl");
+        String bgFs = AssetLoader.readText(mContext, "holospiral/shaders/GLES/holospiral_fragment_background.glsl");
+        String geoVs = AssetLoader.readText(mContext, "holospiral/shaders/GLES/holospiral_vertex_geometry.glsl");
+        String geoFs = AssetLoader.readText(mContext, "holospiral/shaders/GLES/holospiral_fragment_geometry.glsl");
 
         mProgramBackground = createProgram(bgVs, bgFs);
         mProgramGeometry = createProgram(geoVs, geoFs);
@@ -231,9 +232,7 @@ public class HoloSpiralGL extends GLESScene {
     }
 
     private void createTexture() {
-        BitmapFactory.Options opts = new BitmapFactory.Options();
-        opts.inPremultiplied = false;
-        Bitmap bmp = BitmapFactory.decodeResource(mResources, R.drawable.points_red_green, opts);
+        Bitmap bmp = AssetLoader.decodeBitmap(mContext, "holospiral/drawable/points_red_green.png");
         if (bmp == null) {
             Log.e(TAG, "Failed to decode point texture");
             return;

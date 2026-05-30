@@ -1,12 +1,11 @@
 package com.reandroid.wallpaper.microbes;
 
-import android.content.res.Resources;
+import android.content.Context;
 import android.opengl.GLES20;
 import android.view.MotionEvent;
 
+import com.reandroid.gles.AssetLoader;
 import com.reandroid.gles.GLESScene;
-import com.reandroid.gles.RawResourceLoader;
-import com.reandroid.wallpaper.R;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -17,6 +16,7 @@ import static com.reandroid.wallpaper.microbes.MicrobesScene.*;
 public class MicrobesGL extends GLESScene {
 
     // ---- 场景逻辑层（非 GL）----
+    private final Context mContext;
     private final MicrobesScene mScene;
 
     // ---- NIO buffers ----
@@ -54,8 +54,9 @@ public class MicrobesGL extends GLESScene {
     // ---- Frame timing ----
     private long lastFrameMs = -1L;
 
-    public MicrobesGL(int width, int height) {
+    public MicrobesGL(int width, int height, Context context) {
         super(width, height);
+        mContext = context.getApplicationContext();
         mScene = new MicrobesScene();
     }
 
@@ -199,25 +200,22 @@ public class MicrobesGL extends GLESScene {
     }
 
     private void initGL() {
-        Resources res = getResources();
-        if (res == null) {
-            return;
-        }
+        final String shaderPath = "microbes/shaders/GLES/";
         microbeProgram = createProgram(
-            RawResourceLoader.readRawText(res, R.raw.microbes_microbe_vs),
-            RawResourceLoader.readRawText(res, R.raw.microbes_microbe_fs)
+            AssetLoader.readText(mContext, shaderPath + "microbes_microbe_vs.glsl"),
+            AssetLoader.readText(mContext, shaderPath + "microbes_microbe_fs.glsl")
         );
         foodProgram = createProgram(
-            RawResourceLoader.readRawText(res, R.raw.microbes_food_vs),
-            RawResourceLoader.readRawText(res, R.raw.microbes_food_fs)
+            AssetLoader.readText(mContext, shaderPath + "microbes_food_vs.glsl"),
+            AssetLoader.readText(mContext, shaderPath + "microbes_food_fs.glsl")
         );
         deadProgram = createProgram(
-            RawResourceLoader.readRawText(res, R.raw.microbes_dead_vs),
-            RawResourceLoader.readRawText(res, R.raw.microbes_dead_fs)
+            AssetLoader.readText(mContext, shaderPath + "microbes_dead_vs.glsl"),
+            AssetLoader.readText(mContext, shaderPath + "microbes_dead_fs.glsl")
         );
         decorProgram = createProgram(
-            RawResourceLoader.readRawText(res, R.raw.microbes_decor_vs),
-            RawResourceLoader.readRawText(res, R.raw.microbes_decor_fs)
+            AssetLoader.readText(mContext, shaderPath + "microbes_decor_vs.glsl"),
+            AssetLoader.readText(mContext, shaderPath + "microbes_decor_fs.glsl")
         );
 
         microbeAPosition = GLES20.glGetAttribLocation(microbeProgram, "aPosition");

@@ -5,7 +5,7 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 
 import com.reandroid.wallpaper.R;
-import com.reandroid.gles.RawResourceLoader;
+import com.reandroid.gles.AssetLoader;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -159,9 +159,9 @@ final class PhaseBeamScene {
      * 从 raw 资源加载背景网格
      * @param resources 资源管理器
      */
-    void loadBackgroundMesh(Resources resources, int meshResId) {
-        if (resources == null) return;
-        float[] mesh = RawResourceLoader.readRawFloatArray(resources, meshResId);
+    void loadBackgroundMesh(Context context, String assetPath) {
+        if (context == null || assetPath == null) return;
+        float[] mesh = AssetLoader.readFloatArray(context, assetPath);
         int count = mesh.length / 5;
         mBgVertexCount = count;
         mBgRawVertices = new float[count * 3];

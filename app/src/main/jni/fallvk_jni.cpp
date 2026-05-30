@@ -527,10 +527,10 @@ private:
     }
 
     bool createPipelinesLocked() {
-        VkShaderModule bgVert = createShaderModuleLocked({"shaders/fallvk_water.vert.spv", "fallvk_water.vert.spv"});
-        VkShaderModule bgFrag = createShaderModuleLocked({"shaders/fallvk_water.frag.spv", "fallvk_water.frag.spv"});
-        VkShaderModule leafVert = createShaderModuleLocked({"shaders/fallvk_leaf.vert.spv", "fallvk_leaf.vert.spv"});
-        VkShaderModule leafFrag = createShaderModuleLocked({"shaders/fallvk_leaf.frag.spv", "fallvk_leaf.frag.spv"});
+        VkShaderModule bgVert = createShaderModuleLocked({"shaders/fallvk_water.vert.spv", "shaders/fallvk_water.vert.spv"});
+        VkShaderModule bgFrag = createShaderModuleLocked({"shaders/fallvk_water.frag.spv", "shaders/fallvk_water.frag.spv"});
+        VkShaderModule leafVert = createShaderModuleLocked({"shaders/fallvk_leaf.vert.spv", "shaders/fallvk_leaf.vert.spv"});
+        VkShaderModule leafFrag = createShaderModuleLocked({"shaders/fallvk_leaf.frag.spv", "shaders/fallvk_leaf.frag.spv"});
         if (bgVert == VK_NULL_HANDLE || bgFrag == VK_NULL_HANDLE || leafVert == VK_NULL_HANDLE || leafFrag == VK_NULL_HANDLE) {
             if (bgVert != VK_NULL_HANDLE) vkDestroyShaderModule(device_, bgVert, nullptr);
             if (bgFrag != VK_NULL_HANDLE) vkDestroyShaderModule(device_, bgFrag, nullptr);

@@ -11,7 +11,7 @@ import android.util.Log;
 
 import androidx.preference.PreferenceManager;
 
-import com.reandroid.wallpaper.R;
+import com.reandroid.gles.AssetLoader;
 
 final class NexusBackgroundManager {
     private static final String TAG = "NexusBackgroundManager";
@@ -20,22 +20,18 @@ final class NexusBackgroundManager {
     private String lastBackgroundPreset;
     private float backgroundAspect = 1.0f;
 
-    int loadInitialTexture(android.content.res.Resources resources) {
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inScaled = false;
-        options.inPremultiplied = false;
-        return loadBackgroundTexture(resources, options);
+    int loadInitialTexture(Context context) {
+        return loadBackgroundTexture(context);
     }
 
-    int reloadIfChanged(android.content.res.Resources resources, int currentTexture) {
-        Context ctx = com.reandroid.gles.GLESWallpaper.getAppContext();
-        if (ctx == null || resources == null) {
+    int reloadIfChanged(Context context, int currentTexture) {
+        if (context == null) {
             return currentTexture;
         }
 
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(ctx);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         String preset = prefs.getString("nexus_background_preset", "pyramid_background");
-        String customUri = ctx.getSharedPreferences("wallpaper_prefs", 0)
+        String customUri = context.getSharedPreferences("wallpaper_prefs", 0)
                 .getString("nexus_custom_background_uri", null);
 
         boolean useCustom = customUri != null;
@@ -57,15 +53,11 @@ final class NexusBackgroundManager {
             currentTexture = 0;
         }
 
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inScaled = false;
-        options.inPremultiplied = false;
-
         if (useCustom) {
-            currentTexture = loadCustomBackgroundTexture(ctx, customUri);
+            currentTexture = loadCustomBackgroundTexture(context, customUri);
         }
         if (currentTexture == 0) {
-            currentTexture = loadBackgroundResourceTexture(resources, resolvePresetDrawable(preset), options);
+            currentTexture = loadBackgroundAssetTexture(context, resolvePresetAssetPath(preset));
         }
 
         lastBackgroundUri = customUri;
@@ -77,34 +69,33 @@ final class NexusBackgroundManager {
         return backgroundAspect;
     }
 
-    private int loadBackgroundTexture(android.content.res.Resources resources, BitmapFactory.Options options) {
-        Context ctx = com.reandroid.gles.GLESWallpaper.getAppContext();
-        if (ctx == null) {
-            return loadBackgroundResourceTexture(resources, R.drawable.pyramid_background, options);
+    private int loadBackgroundTexture(Context context) {
+        if (context == null) {
+            return 0;
         }
 
-        String customUri = ctx.getSharedPreferences("wallpaper_prefs", 0)
+        String customUri = context.getSharedPreferences("wallpaper_prefs", 0)
                 .getString("nexus_custom_background_uri", null);
         if (customUri != null) {
-            int tex = loadCustomBackgroundTexture(ctx, customUri);
+            int tex = loadCustomBackgroundTexture(context, customUri);
             if (tex != 0) {
                 lastBackgroundUri = customUri;
                 return tex;
             }
         }
 
-        String preset = PreferenceManager.getDefaultSharedPreferences(ctx)
+        String preset = PreferenceManager.getDefaultSharedPreferences(context)
                 .getString("nexus_background_preset", "pyramid_background");
         lastBackgroundPreset = preset;
-        return loadBackgroundResourceTexture(resources, resolvePresetDrawable(preset), options);
+        return loadBackgroundAssetTexture(context, resolvePresetAssetPath(preset));
     }
 
-    private int resolvePresetDrawable(String preset) {
-        if ("pyramid_background1".equals(preset)) return R.drawable.pyramid_background1;
-        if ("pyramid_background2".equals(preset)) return R.drawable.pyramid_background2;
-        if ("pyramid_background3".equals(preset)) return R.drawable.pyramid_background3;
-        if ("pyramid_background4".equals(preset)) return R.drawable.pyramid_background4;
-        return R.drawable.pyramid_background;
+    private String resolvePresetAssetPath(String preset) {
+        if ("pyramid_background1".equals(preset)) return "nexus/drawable/pyramid_background1.png";
+        if ("pyramid_background2".equals(preset)) return "nexus/drawable/pyramid_background2.png";
+        if ("pyramid_background3".equals(preset)) return "nexus/drawable/pyramid_background3.png";
+        if ("pyramid_background4".equals(preset)) return "nexus/drawable/pyramid_background4.png";
+        return "nexus/drawable/pyramid_background.png";
     }
 
     private int loadCustomBackgroundTexture(Context ctx, String uriString) {
@@ -139,10 +130,8 @@ final class NexusBackgroundManager {
         }
     }
 
-    private int loadBackgroundResourceTexture(android.content.res.Resources resources,
-                                              int resourceId,
-                                              BitmapFactory.Options options) {
-        Bitmap bitmap = BitmapFactory.decodeResource(resources, resourceId, options);
+    private int loadBackgroundAssetTexture(Context context, String assetPath) {
+        Bitmap bitmap = AssetLoader.decodeBitmap(context, assetPath);
         if (bitmap == null) return 0;
         if (bitmap.getWidth() > 0 && bitmap.getHeight() > 0) {
             backgroundAspect = bitmap.getWidth() / (float) bitmap.getHeight();

@@ -2,11 +2,9 @@ package com.reandroid.wallpaper.deepsea;
 
 import android.content.Context;
 import android.opengl.GLES20;
-import com.reandroid.gles.RawResourceLoader;
-import com.reandroid.wallpaper.R;
 import android.util.Log;
+import com.reandroid.gles.AssetLoader;
 import com.reandroid.gles.GLESWallpaper;
-import com.reandroid.wallpaper.R;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -29,16 +27,16 @@ class Sunshine {
     private int mTexCoordHandle;
     private int mTextureHandle;
     private int mTextureId;
-    private final int mCustomTextureId;
+    private final String mCustomTextureAsset;
     private FloatBuffer mVertices;
     private float[] mVerticesData;
 
-    public Sunshine() { this(GLESWallpaper.getAppContext(), 0); }
-    public Sunshine(Context context) { this(context, 0); }
+    public Sunshine() { this(GLESWallpaper.getAppContext(), null); }
+    public Sunshine(Context context) { this(context, null); }
 
-    public Sunshine(Context context, int textureId) {
+    public Sunshine(Context context, String textureAsset) {
         this.mContext = context;
-        this.mCustomTextureId = textureId;
+        this.mCustomTextureAsset = textureAsset;
         this.mVerticesData = new float[]{-10.5f, 16.0f, -10.0f, 0.0f, 0.0f, -10.5f, -16.0f, -10.0f, 0.0f, 1.0f, 10.5f, -16.0f, -10.0f, 1.0f, 1.0f, 10.5f, 16.0f, -10.0f, 1.0f, 0.0f};
         this.mIndicesData = new short[]{0, 1, 2, 0, 2, 3};
         this.mAddAlpha = -1.0f;
@@ -54,7 +52,7 @@ class Sunshine {
 
     public void initShader() {
         if (!isInitShader()) {
-            int createdAndLinkedProgram = GLHelper.getCreatedAndLinkedProgram(GLHelper.getCompiledShader(GLES20.GL_VERTEX_SHADER, RawResourceLoader.readRawText(getContext().getResources(), R.raw.deepsea_sunshine_0_vs)), GLHelper.getCompiledShader(GLES20.GL_FRAGMENT_SHADER, RawResourceLoader.readRawText(getContext().getResources(), R.raw.deepsea_sunshine_1_fs)));
+            int createdAndLinkedProgram = GLHelper.getCreatedAndLinkedProgram(GLHelper.getCompiledShader(GLES20.GL_VERTEX_SHADER, AssetLoader.readText(getContext(), "deepsea/shaders/GLES/deepsea_sunshine_0_vs.glsl")), GLHelper.getCompiledShader(GLES20.GL_FRAGMENT_SHADER, AssetLoader.readText(getContext(), "deepsea/shaders/GLES/deepsea_sunshine_1_fs.glsl")));
             this.mProgramHandle = createdAndLinkedProgram;
             this.mPositionHandle = GLES20.glGetAttribLocation(createdAndLinkedProgram, "a_position");
             this.mTexCoordHandle = GLES20.glGetAttribLocation(this.mProgramHandle, "a_texCoord");
@@ -94,8 +92,8 @@ class Sunshine {
     }
 
     protected int getTextureId() {
-        int resId = mCustomTextureId != 0 ? mCustomTextureId : R.drawable.light_s512x512_opt;
-        return GLHelper.getTexture(getContext(), resId);
+        String asset = mCustomTextureAsset != null ? mCustomTextureAsset : "deepsea/drawable/light_s512x512_opt.png";
+        return GLHelper.getTextureFromAsset(getContext(), asset);
     }
 
     public void setAddAlpha(float f) {

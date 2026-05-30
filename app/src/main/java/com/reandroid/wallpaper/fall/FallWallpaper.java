@@ -32,6 +32,6 @@ public class FallWallpaper extends GLESWallpaper {
      */
     @Override
     protected GLESScene createScene(int width, int height) {
-        return new FallGL(width, height);
+        return new FallGL(this, width, height);
     }
 }

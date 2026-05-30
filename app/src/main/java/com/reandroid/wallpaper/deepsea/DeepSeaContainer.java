@@ -1,38 +1,14 @@
 package com.reandroid.wallpaper.deepsea;
 
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
-import android.opengl.ETC1Util;
 import android.opengl.GLES20;
-import android.opengl.GLUtils;
 import android.opengl.Matrix;
 import android.os.SystemClock;
-import android.util.AttributeSet;
-import android.util.Log;
 import android.view.Display;
-import android.view.KeyEvent;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.FrameLayout;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import androidx.annotation.Nullable;
-import com.reandroid.wallpaper.deepsea.Blur;
-import com.reandroid.wallpaper.deepsea.BlurEffect;
-import com.reandroid.wallpaper.deepsea.BlurEffect2;
-import com.reandroid.wallpaper.deepsea.DeepSeaContainer;
-import com.reandroid.wallpaper.deepsea.DeepSeaSettings;
+import com.reandroid.gles.AssetLoader;
 import com.reandroid.wallpaper.deepsea.GLHelper;
 import com.reandroid.wallpaper.deepsea.IntervalManager;
 import com.reandroid.wallpaper.deepsea.IntervalVO;
@@ -43,20 +19,11 @@ import com.reandroid.wallpaper.deepsea.SeaWaterDrops;
 import com.reandroid.wallpaper.deepsea.SeaWaterDrops2;
 import com.reandroid.wallpaper.deepsea.SeaWaterDrops3;
 import com.reandroid.wallpaper.deepsea.Sunshine;
-import com.reandroid.gles.GLESScene;
-import com.reandroid.gles.GLESWallpaper;
-import com.reandroid.gles.RawResourceLoader;
-import com.reandroid.wallpaper.R;
-import java.io.File;
-import java.io.InputStream;
-import java.io.IOException;
-import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 import java.util.ArrayList;
-import java.util.Random;
 
 class Blur extends Jellyfish {
     public Blur() {
@@ -68,12 +35,12 @@ class Blur extends Jellyfish {
 
     @Override // com.reandroid.wallpaper.deepsea.Jellyfish
     protected int getTextureId() {
-        return GLHelper.getTexture(getContext(), R.drawable.unit_a_core_glow_s256x256_eeee_mip_0);
+        return GLHelper.getTextureFromAsset(getContext(), "deepsea/drawable/unit_a_core_glow_s256x256_eeee_mip_0.png");
     }
 
     @Override // com.reandroid.wallpaper.deepsea.Jellyfish
     protected int getAlphaTextureId() {
-        return GLHelper.getTexture(getContext(), R.drawable.unit_a_core_glow_s256x256_eeee_mip_0_alpha);
+        return GLHelper.getTextureFromAsset(getContext(), "deepsea/drawable/unit_a_core_glow_s256x256_eeee_mip_0_alpha.png");
     }
 
     @Override // com.reandroid.wallpaper.deepsea.Jellyfish
@@ -91,12 +58,12 @@ class BlurEffect extends Jellyfish {
 
     @Override // com.reandroid.wallpaper.deepsea.Jellyfish
     protected int getTextureId() {
-        return GLHelper.getTexture(getContext(), R.drawable.unit_a_blured_12_s256x256_mip_0);
+        return GLHelper.getTextureFromAsset(getContext(), "deepsea/drawable/unit_a_blured_12_s256x256_mip_0.png");
     }
 
     @Override // com.reandroid.wallpaper.deepsea.Jellyfish
     protected int getAlphaTextureId() {
-        return GLHelper.getTexture(getContext(), R.drawable.unit_a_blured_12_s256x256_mip_0_alpha);
+        return GLHelper.getTextureFromAsset(getContext(), "deepsea/drawable/unit_a_blured_12_s256x256_mip_0_alpha.png");
     }
 }
 
@@ -110,12 +77,12 @@ class BlurEffect2 extends BlurEffect {
 
     @Override // com.reandroid.wallpaper.deepsea.BlurEffect, com.reandroid.wallpaper.deepsea.Jellyfish
     protected int getTextureId() {
-        return GLHelper.getTexture(getContext(), R.drawable.unit_b_blured_12_s256x256_mip_0);
+        return GLHelper.getTextureFromAsset(getContext(), "deepsea/drawable/unit_b_blured_12_s256x256_mip_0.png");
     }
 
     @Override // com.reandroid.wallpaper.deepsea.BlurEffect, com.reandroid.wallpaper.deepsea.Jellyfish
     protected int getAlphaTextureId() {
-        return GLHelper.getTexture(getContext(), R.drawable.unit_b_blured_12_s256x256_mip_0_alpha);
+        return GLHelper.getTextureFromAsset(getContext(), "deepsea/drawable/unit_b_blured_12_s256x256_mip_0_alpha.png");
     }
 }
 
@@ -300,17 +267,17 @@ class DeepSeaContainer {
         this.mCheckBitmap = null;
         this.mTempBackImageCount = 0;
         this.mJellyfish = new Jellyfish(context);
-        this.mJellyfish2 = new Jellyfish(context, R.drawable.unit_b_s256x256_e_mip_0, R.drawable.unit_b_s256x256_e_mip_0_alpha);
+        this.mJellyfish2 = new Jellyfish(context, "deepsea/drawable/unit_b_s256x256_e_mip_0.png", "deepsea/drawable/unit_b_s256x256_e_mip_0_alpha.png");
         this.mBlur = new Blur(context);
         this.mSea = new Sea(context);
         this.mSea2 = new Sea2(context);
         this.mWaterDropsInJellyfish = new JellyfishWaterDrops(context);
-        this.mWaterDropsInJellyfish2 = new JellyfishWaterDrops(context, 25, R.raw.deepsea_jellyfishwaterdrops2_0_vs, R.raw.deepsea_jellyfishwaterdrops2_1_fs);
+        this.mWaterDropsInJellyfish2 = new JellyfishWaterDrops(context, 25, "deepsea/shaders/GLES/deepsea_jellyfishwaterdrops2_0_vs.glsl", "deepsea/shaders/GLES/deepsea_jellyfishwaterdrops2_1_fs.glsl");
         this.mIntervalManager = new IntervalManager();
         this.mJellyfishVO = new JellyfishVO();
         this.mSunshine = new Sunshine(context);
-        this.mSunshine2 = new Sunshine(context, R.drawable.light_animation_0_s512x512_opt);
-        this.mSunshine3 = new Sunshine(context, R.drawable.light_animation_1_s512x512_opt);
+        this.mSunshine2 = new Sunshine(context, "deepsea/drawable/light_animation_0_s512x512_opt.png");
+        this.mSunshine3 = new Sunshine(context, "deepsea/drawable/light_animation_1_s512x512_opt.png");
         this.mSeaWaterDrops = new SeaWaterDrops(context);
         this.mSeaWaterDrops2 = new SeaWaterDrops2(context);
         this.mSeaWaterDrops3 = new SeaWaterDrops3(context);

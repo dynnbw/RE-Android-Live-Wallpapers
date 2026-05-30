@@ -23,6 +23,7 @@ import android.util.Log;
 
 import androidx.preference.PreferenceManager;
 
+import com.reandroid.gles.AssetLoader;
 import com.reandroid.wallpaper.MathUtils;
 import java.util.Random;
 

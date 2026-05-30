@@ -16,6 +16,6 @@ public class FireworksWallpaper extends GLESWallpaper {
      */
     @Override
     protected GLESScene createScene(int width, int height) {
-        return new FireworksGL(width, height);
+        return new FireworksGL(width, height, this);
     }
 }

@@ -18,7 +18,7 @@ public class NebulaSettingsFragment extends PreferenceFragmentCompat {
 
         PreviewPreference preview = findPreference("pref_preview");
         if (preview != null) {
-            preview.setSceneFactory((width, height) -> new NebulaGL(width, height));
+            preview.setSceneFactory((width, height) -> new NebulaGL(width, height, requireContext()));
         }
 
         Preference openPicker = findPreference("pref_open_wallpaper_picker");

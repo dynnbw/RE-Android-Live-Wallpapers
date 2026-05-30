@@ -1,14 +1,13 @@
 package com.reandroid.wallpaper.nightsky;
 
 import android.content.Context;
-import android.content.res.Resources;
 
+import com.reandroid.gles.AssetLoader;
 import com.reandroid.wallpaper.MathUtils;
-import com.reandroid.wallpaper.R;
 
+import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 
 final class NightSkyCatalogLoader {
     private static final int MAX_STAR_COUNT = 200_000;
@@ -30,60 +29,61 @@ final class NightSkyCatalogLoader {
     }
 
     private static NightSkyCatalog tryLoadCompact(Context context) {
-        Resources resources = context.getResources();
-        if (resources == null) {
+        if (context == null) {
             return null;
         }
 
-        try (InputStream input = resources.openRawResource(R.raw.hip_v65);
-             DataInputStream din = new DataInputStream(input)) {
-            int starCount = readIntLE(din);
-            if (starCount < 0 || starCount > MAX_STAR_COUNT) {
-                return null;
-            }
-            float[] starParams = new float[starCount * 4];
-            float[] starColors = new float[starCount * 3];
-            for (int i = 0; i < starCount; i++) {
-                int p = i * 4;
-                int c = i * 3;
-                starParams[p] = readFloatLE(din);
-                starParams[p + 1] = readFloatLE(din);
-                starParams[p + 2] = readFloatLE(din);
-                starParams[p + 3] = readFloatLE(din);
-                starColors[c] = readFloatLE(din);
-                starColors[c + 1] = readFloatLE(din);
-                starColors[c + 2] = readFloatLE(din);
-            }
+        try {
+            byte[] data = AssetLoader.readBytes(context, "nightsky/data/hip_v65.bin");
+            try (DataInputStream din = new DataInputStream(new ByteArrayInputStream(data))) {
+                int starCount = readIntLE(din);
+                if (starCount < 0 || starCount > MAX_STAR_COUNT) {
+                    return null;
+                }
+                float[] starParams = new float[starCount * 4];
+                float[] starColors = new float[starCount * 3];
+                for (int i = 0; i < starCount; i++) {
+                    int p = i * 4;
+                    int c = i * 3;
+                    starParams[p] = readFloatLE(din);
+                    starParams[p + 1] = readFloatLE(din);
+                    starParams[p + 2] = readFloatLE(din);
+                    starParams[p + 3] = readFloatLE(din);
+                    starColors[c] = readFloatLE(din);
+                    starColors[c + 1] = readFloatLE(din);
+                    starColors[c + 2] = readFloatLE(din);
+                }
 
-            int brightCount = readIntLE(din);
-            if (brightCount < 0 || brightCount > starCount) {
-                return null;
-            }
-            float[] brightParams = new float[brightCount * 4];
-            float[] brightColors = new float[brightCount * 3];
-            for (int i = 0; i < brightCount; i++) {
-                int p = i * 4;
-                int c = i * 3;
-                brightParams[p] = readFloatLE(din);
-                brightParams[p + 1] = readFloatLE(din);
-                brightParams[p + 2] = readFloatLE(din);
-                brightParams[p + 3] = readFloatLE(din);
-                brightColors[c] = readFloatLE(din);
-                brightColors[c + 1] = readFloatLE(din);
-                brightColors[c + 2] = readFloatLE(din);
-            }
+                int brightCount = readIntLE(din);
+                if (brightCount < 0 || brightCount > starCount) {
+                    return null;
+                }
+                float[] brightParams = new float[brightCount * 4];
+                float[] brightColors = new float[brightCount * 3];
+                for (int i = 0; i < brightCount; i++) {
+                    int p = i * 4;
+                    int c = i * 3;
+                    brightParams[p] = readFloatLE(din);
+                    brightParams[p + 1] = readFloatLE(din);
+                    brightParams[p + 2] = readFloatLE(din);
+                    brightParams[p + 3] = readFloatLE(din);
+                    brightColors[c] = readFloatLE(din);
+                    brightColors[c + 1] = readFloatLE(din);
+                    brightColors[c + 2] = readFloatLE(din);
+                }
 
-            float[] starBaseAlpha = new float[starCount];
-            float[] brightBaseAlpha = new float[brightCount];
-            precomputePhotometryChannels(starParams, starBaseAlpha, brightParams, brightBaseAlpha);
-            return new NightSkyCatalog(
-                    starParams,
-                    starColors,
-                    starBaseAlpha,
-                    brightParams,
-                    brightColors,
-                    brightBaseAlpha
-            );
+                float[] starBaseAlpha = new float[starCount];
+                float[] brightBaseAlpha = new float[brightCount];
+                precomputePhotometryChannels(starParams, starBaseAlpha, brightParams, brightBaseAlpha);
+                return new NightSkyCatalog(
+                        starParams,
+                        starColors,
+                        starBaseAlpha,
+                        brightParams,
+                        brightColors,
+                        brightBaseAlpha
+                );
+            }
         } catch (IOException | RuntimeException ignored) {
             return null;
         }

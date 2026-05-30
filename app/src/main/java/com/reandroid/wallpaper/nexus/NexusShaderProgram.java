@@ -1,10 +1,10 @@
 package com.reandroid.wallpaper.nexus;
 
+import android.content.Context;
 import android.opengl.GLES20;
 import android.util.Log;
 
-import com.reandroid.gles.RawResourceLoader;
-import com.reandroid.wallpaper.R;
+import com.reandroid.gles.AssetLoader;
 
 final class NexusShaderProgram {
     private static final String TAG = "NexusShaderProgram";
@@ -18,9 +18,9 @@ final class NexusShaderProgram {
         int texture;
     }
 
-    static Handles create(android.content.res.Resources resources) {
-        String vertexShader = RawResourceLoader.readRawText(resources, R.raw.nexus_vs);
-        String fragmentShader = RawResourceLoader.readRawText(resources, R.raw.nexus_fs);
+    static Handles create(Context context, android.content.res.Resources resources) {
+        String vertexShader = AssetLoader.readText(context, "nexus/shaders/GLES/nexus_vs.glsl");
+        String fragmentShader = AssetLoader.readText(context, "nexus/shaders/GLES/nexus_fs.glsl");
 
         int vs = compile(GLES20.GL_VERTEX_SHADER, vertexShader);
         int fs = compile(GLES20.GL_FRAGMENT_SHADER, fragmentShader);

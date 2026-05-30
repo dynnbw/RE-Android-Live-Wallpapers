@@ -1,5 +1,6 @@
 package com.reandroid.settings;
 
+import com.reandroid.wallpaper.R;
 import android.os.Bundle;
 import android.widget.Toast;
 
@@ -9,7 +10,6 @@ import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.SeekBarPreference;
 import androidx.preference.SwitchPreferenceCompat;
 
-import com.reandroid.wallpaper.R;
 import com.reandroid.wallpaper.musicvis.MusicVisWallpaper3;
 import com.reandroid.wallpaper.musicvis.MusicVisWaveScene;
 
@@ -28,7 +28,7 @@ public class MusicVis3SettingsFragment extends PreferenceFragmentCompat
         PreviewPreference preview = findPreference("pref_preview");
         if (preview != null) {
             preview.setSceneFactory((w, h) -> new MusicVisWaveScene(w, h, requireContext(),
-                    MusicVisWaveScene.Mode.FFT, R.drawable.musicvis_ice));
+                    MusicVisWaveScene.Mode.FFT, "musicvis/drawable/musicvis_ice.png"));
         }
 
         mRecolorPref = findPreference("musicvis_recolor");

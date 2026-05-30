@@ -17,9 +17,7 @@
 package com.reandroid.wallpaper.noisefield;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
 import android.opengl.Matrix;
@@ -28,9 +26,8 @@ import android.view.MotionEvent;
 import android.app.WallpaperManager;
 
 import com.reandroid.wallpaper.MathUtils;
-import com.reandroid.wallpaper.R;
+import com.reandroid.gles.AssetLoader;
 import com.reandroid.gles.GLESScene;
-import com.reandroid.gles.RawResourceLoader;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -208,10 +205,10 @@ public class NoiseFieldGL extends GLESScene {
         GLES20.glEnable(GLES20.GL_BLEND);
         GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE);
 
-        String bgVs = RawResourceLoader.readRawText(mResources, R.raw.noisefield_bg_vs);
-        String bgFs = RawResourceLoader.readRawText(mResources, R.raw.noisefield_bg_fs);
-        String dotVs = RawResourceLoader.readRawText(mResources, R.raw.noisefield_dot_vs);
-        String dotFs = RawResourceLoader.readRawText(mResources, R.raw.noisefield_dot_fs);
+        String bgVs = AssetLoader.readText(mContext, "noisefield/shaders/GLES/noisefield_bg_vs.glsl");
+        String bgFs = AssetLoader.readText(mContext, "noisefield/shaders/GLES/noisefield_bg_fs.glsl");
+        String dotVs = AssetLoader.readText(mContext, "noisefield/shaders/GLES/noisefield_dot_vs.glsl");
+        String dotFs = AssetLoader.readText(mContext, "noisefield/shaders/GLES/noisefield_dot_fs.glsl");
         mBgProgram = createProgram(bgVs, bgFs);
         mDotProgram = createProgram(dotVs, dotFs);
         if (mBgProgram == 0 || mDotProgram == 0) {
@@ -233,13 +230,13 @@ public class NoiseFieldGL extends GLESScene {
         positionParticles();
         updateParticleBuffers();
         updateMvp();
-        mDotTexture = loadTexture(R.drawable.noisefield_dot);
+        mDotTexture = loadTexture("noisefield/drawable/noisefield_dot.png");
 
         mInitialized = true;
     }
 
     private void createBackgroundMesh() {
-        float[] mesh = RawResourceLoader.readRawFloatArray(mResources, R.raw.noisefield_bg_mesh);
+        float[] mesh = AssetLoader.readFloatArray(mContext, "noisefield/data/noisefield_bg_mesh.csv");
         int count = mesh.length / 5;
         mBgVertexCount = count;
         mBgPositions = new float[count * 3];
@@ -514,12 +511,10 @@ public class NoiseFieldGL extends GLESScene {
     }
 
 
-    private int loadTexture(int resId) {
-        BitmapFactory.Options opts = new BitmapFactory.Options();
-        opts.inPremultiplied = false;
-        Bitmap bitmap = BitmapFactory.decodeResource(mResources, resId, opts);
+    private int loadTexture(String assetPath) {
+        Bitmap bitmap = AssetLoader.decodeBitmap(mContext, assetPath);
         if (bitmap == null) {
-            Log.e(TAG, "Failed to decode texture: " + resId);
+            Log.e(TAG, "Failed to decode texture: " + assetPath);
             return 0;
         }
         int[] tex = new int[1];

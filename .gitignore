@@ -1,6 +1,15 @@
 # IDE / Editor
 .idea/
 .vscode/
+.aider*
+.cursor/
+.claude/
+.windsurf/
+.gemini/
+.crush/
+.aiexclude
+.codebuddy/
+.continue/
 
 # Gradle / Android build artifacts
 .gradle/
@@ -23,15 +32,8 @@ build_output.txt
 luminousdots_log.txt
 luminousdots_full_log.txt
 
-# Project local backups / copies
-safety_backup/
-app/src - 副本/
-app/src - 副本 (2)/
-app/src - 副本 (3)/
-
 # Large local-only resources / notes
 RESOURCE/
-png/
 DebugTools/
 win32_wallpaper_engine/
 strings.txt

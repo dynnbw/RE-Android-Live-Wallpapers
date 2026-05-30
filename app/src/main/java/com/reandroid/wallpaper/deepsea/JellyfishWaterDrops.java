@@ -1,37 +1,13 @@
 package com.reandroid.wallpaper.deepsea;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.opengl.ETC1Util;
 import android.opengl.GLES20;
-import android.opengl.GLUtils;
-import android.opengl.Matrix;
-import android.os.SystemClock;
-import android.util.AttributeSet;
-import android.util.Log;
-import android.view.Display;
-import android.view.KeyEvent;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.WindowManager;
-import android.widget.FrameLayout;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import com.reandroid.gles.GLESScene;
+import com.reandroid.gles.AssetLoader;
 import com.reandroid.gles.GLESWallpaper;
-import com.reandroid.gles.RawResourceLoader;
-import com.reandroid.wallpaper.R;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
-import java.nio.ShortBuffer;
-import java.util.ArrayList;
 import java.util.Random;
 
 /**
@@ -68,21 +44,21 @@ class JellyfishWaterDrops {
     private float mTimeCounter;
     private int mTimesHandle;
     private FloatBuffer mVertexBuffer;
-    private final int mVsResId, mFsResId;
+    private final String mVsAssetPath, mFsAssetPath;
 
     public JellyfishWaterDrops() { this(35); }
     public JellyfishWaterDrops(Context context) { this(context, 35); }
     public JellyfishWaterDrops(int particleCount) { this(null, particleCount); }
 
     public JellyfishWaterDrops(Context context, int particleCount) {
-        this(context, particleCount, R.raw.deepsea_jellyfishwaterdrops_0_vs, R.raw.deepsea_jellyfishwaterdrops_1_fs);
+        this(context, particleCount, null, null);
     }
 
-    public JellyfishWaterDrops(Context context, int particleCount, int vsResId, int fsResId) {
+    public JellyfishWaterDrops(Context context, int particleCount, String vsAssetPath, String fsAssetPath) {
         this.mContext = context;
         this.mNumberOfParticles = particleCount;
-        this.mVsResId = vsResId;
-        this.mFsResId = fsResId;
+        this.mVsAssetPath = vsAssetPath;
+        this.mFsAssetPath = fsAssetPath;
         this.mTimeCounter = 0.0f;
         this.mParticleVertices = new float[particleCount * 13];
         this.mGenerater = new Random(System.currentTimeMillis());
@@ -99,11 +75,11 @@ class JellyfishWaterDrops {
 
     public void initShader() {
         if (!isInitShader()) {
-            int vsRes = mVsResId != 0 ? mVsResId : R.raw.deepsea_jellyfishwaterdrops_0_vs;
-            int fsRes = mFsResId != 0 ? mFsResId : R.raw.deepsea_jellyfishwaterdrops_1_fs;
-            this.mProgramHandle = GLHelper.getCreatedAndLinkedProgram(GLHelper.getCompiledShader(GLES20.GL_VERTEX_SHADER, RawResourceLoader.readRawText(getContext().getResources(), vsRes)), GLHelper.getCompiledShader(GLES20.GL_FRAGMENT_SHADER, RawResourceLoader.readRawText(getContext().getResources(), fsRes)));
-            this.mTextureID = GLHelper.getTexture(getContext(), R.drawable.particle_mip_0);
-            this.mAlphaTextureId = GLHelper.getTexture(getContext(), R.drawable.particle_mip_0_alpha);
+            String vsAsset = mVsAssetPath != null ? mVsAssetPath : "deepsea/shaders/GLES/deepsea_jellyfishwaterdrops_0_vs.glsl";
+            String fsAsset = mFsAssetPath != null ? mFsAssetPath : "deepsea/shaders/GLES/deepsea_jellyfishwaterdrops_1_fs.glsl";
+            this.mProgramHandle = GLHelper.getCreatedAndLinkedProgram(GLHelper.getCompiledShader(GLES20.GL_VERTEX_SHADER, AssetLoader.readText(getContext(), vsAsset)), GLHelper.getCompiledShader(GLES20.GL_FRAGMENT_SHADER, AssetLoader.readText(getContext(), fsAsset)));
+            this.mTextureID = GLHelper.getTextureFromAsset(getContext(), "deepsea/drawable/particle_mip_0.png");
+            this.mAlphaTextureId = GLHelper.getTextureFromAsset(getContext(), "deepsea/drawable/particle_mip_0_alpha.png");
             this.mMVPMatrixHandle = GLES20.glGetUniformLocation(this.mProgramHandle, "u_MVPMatrix");
             this.mPositionHandle = GLES20.glGetAttribLocation(this.mProgramHandle, "a_Position");
             this.mTextureHandle = GLES20.glGetUniformLocation(this.mProgramHandle, "u_texture");

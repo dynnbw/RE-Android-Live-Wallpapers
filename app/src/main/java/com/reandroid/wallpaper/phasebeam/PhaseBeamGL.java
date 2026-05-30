@@ -3,14 +3,12 @@ package com.reandroid.wallpaper.phasebeam;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
 import android.util.Log;
 
-import com.reandroid.wallpaper.R;
+import com.reandroid.gles.AssetLoader;
 import com.reandroid.gles.GLESScene;
-import com.reandroid.gles.RawResourceLoader;
 
 /**
  * Phase Beam - 从RenderScript完整移植到OpenGL ES 2.0
@@ -28,6 +26,7 @@ public class PhaseBeamGL extends GLESScene implements SharedPreferences.OnShared
     public static final String KEY_THEME = PhaseBeamScene.KEY_THEME;
 
     // ---- 场景逻辑层（非 GL）----
+    private final Context mContext;
     private final PhaseBeamScene mScene;
 
     private int mBgProgram;
@@ -51,6 +50,7 @@ public class PhaseBeamGL extends GLESScene implements SharedPreferences.OnShared
 
     public PhaseBeamGL(int width, int height, Context context) {
         super(width, height);
+        mContext = context.getApplicationContext();
         mScene = new PhaseBeamScene(context);
     }
 
@@ -124,8 +124,10 @@ public class PhaseBeamGL extends GLESScene implements SharedPreferences.OnShared
                 mScene.mDirtyBackground = true;
                 mScene.mDirtyParticles = true;
                 // Reload mesh with new theme
-                mScene.loadBackgroundMesh(mResources,
-                        "sunbeam".equals(mScene.mTheme) ? R.raw.sunbeam_bg_mesh : R.raw.phasebeam_bg_mesh);
+                mScene.loadBackgroundMesh(mContext,
+                        "sunbeam".equals(mScene.mTheme)
+                                ? "phasebeam/data/sunbeam_bg_mesh.csv"
+                                : "phasebeam/data/phasebeam_bg_mesh.csv");
             }
         }
     }
@@ -182,10 +184,11 @@ public class PhaseBeamGL extends GLESScene implements SharedPreferences.OnShared
         GLES20.glEnable(GLES20.GL_BLEND);
         GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE);
 
-        String bgVs = RawResourceLoader.readRawText(mResources, R.raw.phasebeam_bg_vs);
-        String bgFs = RawResourceLoader.readRawText(mResources, R.raw.phasebeam_bg_fs);
-        String dotVs = RawResourceLoader.readRawText(mResources, R.raw.phasebeam_dot_vs);
-        String dotFs = RawResourceLoader.readRawText(mResources, R.raw.phasebeam_dot_fs);
+        final String shaderPath = "phasebeam/shaders/GLES/";
+        String bgVs = AssetLoader.readText(mContext, shaderPath + "phasebeam_bg_vs.glsl");
+        String bgFs = AssetLoader.readText(mContext, shaderPath + "phasebeam_bg_fs.glsl");
+        String dotVs = AssetLoader.readText(mContext, shaderPath + "phasebeam_dot_vs.glsl");
+        String dotFs = AssetLoader.readText(mContext, shaderPath + "phasebeam_dot_fs.glsl");
         mBgProgram = createProgram(bgVs, bgFs);
         mDotProgram = createProgram(dotVs, dotFs);
 
@@ -205,8 +208,10 @@ public class PhaseBeamGL extends GLESScene implements SharedPreferences.OnShared
         mDotTexLoc = GLES20.glGetUniformLocation(mDotProgram, "UNI_Tex0");
         mDotScaleLoc = GLES20.glGetUniformLocation(mDotProgram, "UNI_scaleSize");
 
-        mScene.loadBackgroundMesh(mResources,
-                "sunbeam".equals(mScene.mTheme) ? R.raw.sunbeam_bg_mesh : R.raw.phasebeam_bg_mesh);
+        mScene.loadBackgroundMesh(mContext,
+                "sunbeam".equals(mScene.mTheme)
+                        ? "phasebeam/data/sunbeam_bg_mesh.csv"
+                        : "phasebeam/data/phasebeam_bg_mesh.csv");
         mScene.positionParticles();
         mScene.updateBackgroundBuffers(mScene.mXOffset * 2.0f);
         mScene.updateParticleBuffers();
@@ -220,16 +225,17 @@ public class PhaseBeamGL extends GLESScene implements SharedPreferences.OnShared
         GLES20.glDeleteTextures(tex.length, tex, 0);
 
         boolean isSunbeam = "sunbeam".equals(mScene.mTheme);
-        int dotRes, beamRes;
+        final String texPath = "phasebeam/drawable/";
+        String dotFile, beamFile;
         if (mScene.mRecolorEnabled) {
-            dotRes = isSunbeam ? R.drawable.sunbeam_dot : R.drawable.phasebeam_dot_grey;
-            beamRes = isSunbeam ? R.drawable.sunbeam_beam : R.drawable.phasebeam_beam_grey;
+            dotFile = isSunbeam ? "sunbeam_dot.png" : "phasebeam_dot_grey.png";
+            beamFile = isSunbeam ? "sunbeam_beam.png" : "phasebeam_beam_grey.png";
         } else {
-            dotRes = isSunbeam ? R.drawable.sunbeam_dot : R.drawable.phasebeam_dot;
-            beamRes = isSunbeam ? R.drawable.sunbeam_beam : R.drawable.phasebeam_beam;
+            dotFile = isSunbeam ? "sunbeam_dot.png" : "phasebeam_dot.png";
+            beamFile = isSunbeam ? "sunbeam_beam.png" : "phasebeam_beam.png";
         }
-        mTexDot = loadTexture(dotRes);
-        mTexBeam = loadTexture(beamRes);
+        mTexDot = loadTexture(texPath + dotFile);
+        mTexBeam = loadTexture(texPath + beamFile);
         mScene.mDirtyTexture = false;
     }
 
@@ -284,12 +290,10 @@ public class PhaseBeamGL extends GLESScene implements SharedPreferences.OnShared
         GLES20.glDisableVertexAttribArray(mDotAdjustLoc);
     }
 
-    private int loadTexture(int resId) {
-        BitmapFactory.Options opts = new BitmapFactory.Options();
-        opts.inPremultiplied = false;
-        Bitmap bitmap = BitmapFactory.decodeResource(mResources, resId, opts);
+    private int loadTexture(String assetPath) {
+        Bitmap bitmap = AssetLoader.decodeBitmap(mContext, assetPath);
         if (bitmap == null) {
-            Log.e(TAG, "Failed to decode texture: " + resId);
+            Log.e(TAG, "Failed to decode texture: " + assetPath);
             return 0;
         }
         int[] tex = new int[1];

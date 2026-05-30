@@ -4,9 +4,8 @@ import android.content.Context;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 
+import com.reandroid.gles.AssetLoader;
 import com.reandroid.gles.GLESScene;
-import com.reandroid.wallpaper.R;
-import com.reandroid.gles.RawResourceLoader;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -113,9 +112,9 @@ public class MusicVisVuScene extends GLESScene {
     }
 
     private void initGLIfNeeded() {
-        if (mProgram != 0 || mResources == null) return;
-        String vs = RawResourceLoader.readRawText(mResources, R.raw.musicvis_vu_vs);
-        String fs = RawResourceLoader.readRawText(mResources, R.raw.musicvis_vu_fs);
+        if (mProgram != 0 || mContext == null) return;
+        String vs = AssetLoader.readText(mContext, "musicvis/shaders/GLES/musicvis_vu_vs.glsl");
+        String fs = AssetLoader.readText(mContext, "musicvis/shaders/GLES/musicvis_vu_fs.glsl");
         mProgram = createProgram(vs, fs);
         if (mProgram == 0) return;
         mPosLoc = GLES20.glGetAttribLocation(mProgram, "aPosition");
@@ -123,14 +122,14 @@ public class MusicVisVuScene extends GLESScene {
         mMvpLoc = GLES20.glGetUniformLocation(mProgram, "uMVP");
         mSamplerLoc = GLES20.glGetUniformLocation(mProgram, "uTex");
 
-        mQuadUvs = RawResourceLoader.readRawFloatArray(mResources, R.raw.musicvis_quad_uv);
+        mQuadUvs = AssetLoader.readFloatArray(mContext, "musicvis/data/musicvis_quad_uv.csv");
 
-        mTexBackground = GLTextureUtils.loadTexture(mResources, R.drawable.musicvis_vu_background);
-        mTexFrame = GLTextureUtils.loadTexture(mResources, R.drawable.musicvis_vu_frame);
-        mTexNeedle = GLTextureUtils.loadTexture(mResources, R.drawable.musicvis_vu_needle);
-        mTexPeakOn = GLTextureUtils.loadTexture(mResources, R.drawable.musicvis_vu_peak_on);
-        mTexPeakOff = GLTextureUtils.loadTexture(mResources, R.drawable.musicvis_vu_peak_off);
-        mTexBlack = GLTextureUtils.loadTexture(mResources, R.drawable.musicvis_black);
+        mTexBackground = GLTextureUtils.loadTextureFromAsset(mContext, "musicvis/drawable/musicvis_vu_background.png");
+        mTexFrame = GLTextureUtils.loadTextureFromAsset(mContext, "musicvis/drawable/musicvis_vu_frame.png");
+        mTexNeedle = GLTextureUtils.loadTextureFromAsset(mContext, "musicvis/drawable/musicvis_vu_needle.png");
+        mTexPeakOn = GLTextureUtils.loadTextureFromAsset(mContext, "musicvis/drawable/musicvis_vu_peak_on.png");
+        mTexPeakOff = GLTextureUtils.loadTextureFromAsset(mContext, "musicvis/drawable/musicvis_vu_peak_off.png");
+        mTexBlack = GLTextureUtils.loadTextureFromAsset(mContext, "musicvis/drawable/musicvis_black.png");
 
         updateProjection();
     }

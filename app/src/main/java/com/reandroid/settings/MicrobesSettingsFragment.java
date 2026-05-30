@@ -18,7 +18,7 @@ public class MicrobesSettingsFragment extends PreferenceFragmentCompat {
 
         PreviewPreference preview = findPreference("pref_preview");
         if (preview != null) {
-            preview.setSceneFactory((width, height) -> new MicrobesGL(width, height));
+            preview.setSceneFactory((width, height) -> new MicrobesGL(width, height, requireContext()));
         }
 
         Preference openPicker = findPreference("pref_open_wallpaper_picker");

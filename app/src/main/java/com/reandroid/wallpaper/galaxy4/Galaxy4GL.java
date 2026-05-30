@@ -18,14 +18,12 @@ package com.reandroid.wallpaper.galaxy4;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
 import android.util.Log;
 
-import com.reandroid.wallpaper.R;
+import com.reandroid.gles.AssetLoader;
 import com.reandroid.gles.GLESScene;
-import com.reandroid.gles.RawResourceLoader;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -50,6 +48,7 @@ public class Galaxy4GL extends GLESScene {
     private FloatBuffer mSpaceCloudBuffer;
     private FloatBuffer mBgStarBuffer;
     private FloatBuffer mStaticStarBuffer;
+    private final Context mContext;
     private final Galaxy4Scene mScene;
     
     /**
@@ -60,6 +59,7 @@ public class Galaxy4GL extends GLESScene {
      */
     public Galaxy4GL(int width, int height, Context context) {
         super(width, height);
+        mContext = context;
         mScene = new Galaxy4Scene(width, height, context);
     }
     
@@ -148,26 +148,26 @@ public class Galaxy4GL extends GLESScene {
     private void createPrograms() {
         // 1. 背景着色器程序：绘制全屏纹理四边形
         mBgProgram = createShaderProgram(
-            RawResourceLoader.readRawText(mResources, R.raw.galaxy4_bg_vs),
-            RawResourceLoader.readRawText(mResources, R.raw.galaxy4_bg_fs)
+            AssetLoader.readText(mContext, "galaxy4/shaders/GLES/galaxy4_bg_vs.glsl"),
+            AssetLoader.readText(mContext, "galaxy4/shaders/GLES/galaxy4_bg_fs.glsl")
         );
         
         // 2. 星云着色器程序：绘制带旋转的点精灵粒子
         mCloudProgram = createShaderProgram(
-            RawResourceLoader.readRawText(mResources, R.raw.galaxy4_cloud_vs),
-            RawResourceLoader.readRawText(mResources, R.raw.galaxy4_cloud_fs)
+            AssetLoader.readText(mContext, "galaxy4/shaders/GLES/galaxy4_cloud_vs.glsl"),
+            AssetLoader.readText(mContext, "galaxy4/shaders/GLES/galaxy4_cloud_fs.glsl")
         );
         
         // 3. 背景星星着色器程序：绘制固定大小的白色点精灵
         mBgStarProgram = createShaderProgram(
-            RawResourceLoader.readRawText(mResources, R.raw.galaxy4_bg_star_vs),
-            RawResourceLoader.readRawText(mResources, R.raw.galaxy4_bg_star_fs)
+            AssetLoader.readText(mContext, "galaxy4/shaders/GLES/galaxy4_bg_star_vs.glsl"),
+            AssetLoader.readText(mContext, "galaxy4/shaders/GLES/galaxy4_bg_star_fs.glsl")
         );
         
         // 4. 静态星星着色器程序：双纹理混合实现脉冲效果
         mStaticStarProgram = createShaderProgram(
-            RawResourceLoader.readRawText(mResources, R.raw.galaxy4_static_star_vs),
-            RawResourceLoader.readRawText(mResources, R.raw.galaxy4_static_star_fs)
+            AssetLoader.readText(mContext, "galaxy4/shaders/GLES/galaxy4_static_star_vs.glsl"),
+            AssetLoader.readText(mContext, "galaxy4/shaders/GLES/galaxy4_static_star_fs.glsl")
         );
         
         Log.d(TAG, "着色器程序创建完成");
@@ -239,28 +239,23 @@ public class Galaxy4GL extends GLESScene {
      * 包括：背景、星云、静态星星1、静态星星2
      */
     private void loadTextures() {
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inScaled = false; // 禁用位图自动缩放（保持原始尺寸）
-        options.inPremultiplied = false; // 禁用预乘alpha，避免黑色光晕
-
         // 加载各纹理
-        mTexBg = loadTexture(R.drawable.galaxy4_bg, options);
-        mTexCloud = loadTexture(R.drawable.galaxy4_cloud, options);
-        mTexStaticStar = loadTexture(R.drawable.galaxy4_staticstar, options);
-        mTexStaticStar2 = loadTexture(R.drawable.galaxy4_staticstar2, options);
-        
+        mTexBg = loadTexture("galaxy4/drawable/galaxy4_bg.png");
+        mTexCloud = loadTexture("galaxy4/drawable/galaxy4_cloud.png");
+        mTexStaticStar = loadTexture("galaxy4/drawable/galaxy4_staticstar.png");
+        mTexStaticStar2 = loadTexture("galaxy4/drawable/galaxy4_staticstar2.png");
+
         Log.d(TAG, "纹理加载完成");
     }
     
     /**
-     * 从资源ID加载OpenGL纹理
-     * @param resourceId 纹理资源ID（R.drawable.xxx）
-     * @param options 位图解码选项
+     * 从assets路径加载OpenGL纹理
+     * @param assetPath 纹理在assets中的路径（如"galaxy4/drawable/galaxy4_bg.png"）
      * @return 加载成功的纹理句柄
      */
-    private int loadTexture(int resourceId, BitmapFactory.Options options) {
-        // 从资源解码位图
-        Bitmap bitmap = BitmapFactory.decodeResource(mResources, resourceId, options);
+    private int loadTexture(String assetPath) {
+        // 从assets解码位图
+        Bitmap bitmap = AssetLoader.decodeBitmap(mContext, assetPath);
         
         // 生成纹理句柄
         int[] textureHandle = new int[1];

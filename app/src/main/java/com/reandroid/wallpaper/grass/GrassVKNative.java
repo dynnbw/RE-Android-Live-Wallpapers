@@ -3,10 +3,9 @@ package com.reandroid.wallpaper.grass;
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.view.Surface;
 
-import com.reandroid.wallpaper.R;
+import com.reandroid.gles.AssetLoader;
 
 final class GrassVKNative {
     static {
@@ -54,19 +53,19 @@ final class GrassVKNative {
     static native boolean nIsVulkanSupported();
 
     static void uploadSkyTextures(Context context, long handle) {
-        uploadSkyTexture(context, handle, 0, R.drawable.night);
-        uploadSkyTexture(context, handle, 1, R.drawable.sunrise);
-        uploadSkyTexture(context, handle, 2, R.drawable.sunset);
-        uploadSkyTexture(context, handle, 3, R.drawable.sky);
-        uploadSkyTexture(context, handle, 4, R.drawable.solar_eclipse);
+        uploadSkyTexture(context, handle, 0, "grass/drawable/night.jpg");
+        uploadSkyTexture(context, handle, 1, "grass/drawable/sunrise.jpg");
+        uploadSkyTexture(context, handle, 2, "grass/drawable/sunset.jpg");
+        uploadSkyTexture(context, handle, 3, "grass/drawable/sky.jpg");
+        uploadSkyTexture(context, handle, 4, "grass/drawable/solar_eclipse.jpg");
     }
 
     static void uploadSpriteTextures(Context context, long handle) {
-        uploadSpriteTexture(context, handle, 0, R.drawable.sun);
-        uploadSpriteTexture(context, handle, 1, R.drawable.dandelion);
-        uploadSpriteTexture(context, handle, 2, R.drawable.firefly1);
-        uploadSpriteTexture(context, handle, 3, R.drawable.grass_moon);
-        uploadSpriteTexture(context, handle, 4, R.drawable.firefly2);
+        uploadSpriteTexture(context, handle, 0, "grass/drawable/sun.png");
+        uploadSpriteTexture(context, handle, 1, "grass/drawable/dandelion.png");
+        uploadSpriteTexture(context, handle, 2, "grass/drawable/firefly1.png");
+        uploadSpriteTexture(context, handle, 3, "grass/drawable/grass_moon.png");
+        uploadSpriteTexture(context, handle, 4, "grass/drawable/firefly2.png");
     }
 
     static void uploadAATexture(long handle) {
@@ -82,14 +81,12 @@ final class GrassVKNative {
         nSetAATexture(handle, pixels, 4, 1);
     }
 
-    private static void uploadSkyTexture(Context context, long handle, int slot, int drawableRes) {
+    private static void uploadSkyTexture(Context context, long handle, int slot, String assetPath) {
         if (context == null || handle == 0L) {
             return;
         }
 
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inScaled = false;
-        Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(), drawableRes, options);
+        Bitmap bitmap = AssetLoader.decodeBitmap(context, assetPath);
         if (bitmap == null) {
             return;
         }
@@ -114,14 +111,12 @@ final class GrassVKNative {
         bitmap.recycle();
     }
 
-    private static void uploadSpriteTexture(Context context, long handle, int slot, int drawableRes) {
+    private static void uploadSpriteTexture(Context context, long handle, int slot, String assetPath) {
         if (context == null || handle == 0L) {
             return;
         }
 
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inScaled = false;
-        Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(), drawableRes, options);
+        Bitmap bitmap = AssetLoader.decodeBitmap(context, assetPath);
         if (bitmap == null) {
             return;
         }

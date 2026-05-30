@@ -4,7 +4,7 @@ import android.opengl.GLES20;
 
 import android.content.Context;
 
-import com.reandroid.wallpaper.R;
+import com.reandroid.gles.AssetLoader;
 import com.reandroid.gles.GLESScene;
 import com.reandroid.wallpaper.musicvis.GLTextureUtils;
 import com.reandroid.wallpaper.weatherwallpapers.AnimationController;
@@ -16,13 +16,14 @@ import com.reandroid.wallpaper.weatherwallpapers.SkyRenderer;
 import com.reandroid.wallpaper.weatherwallpapers.SpriteDrawer;
 import com.reandroid.wallpaper.weatherwallpapers.ThunderRenderer;
 import com.reandroid.wallpaper.weatherwallpapers.WeatherStateManager;
-import com.reandroid.gles.RawResourceLoader;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
 public class OceanWeatherGL extends GLESScene {
+
+    private final Context mContext;
 
     // ---- 场景逻辑层（非 GL）----
     private final OceanWeatherScene mScene;
@@ -88,8 +89,9 @@ public class OceanWeatherGL extends GLESScene {
     private int[] mWave;
     private int[] mRaindrop1, mRaindrop2;
 
-    public OceanWeatherGL(int width, int height) {
+    public OceanWeatherGL(Context context, int width, int height) {
         super(width, height);
+        mContext = context;
         mScene = new OceanWeatherScene();
     }
 
@@ -157,8 +159,8 @@ public class OceanWeatherGL extends GLESScene {
     }
 
     private void initGl() {
-        String vs = RawResourceLoader.readRawText(mResources, R.raw.ocean_weather_vs);
-        String fs = RawResourceLoader.readRawText(mResources, R.raw.ocean_weather_fs);
+        String vs = AssetLoader.readText(mContext, "ocean/shaders/GLES/ocean_weather_vs.glsl");
+        String fs = AssetLoader.readText(mContext, "ocean/shaders/GLES/ocean_weather_fs.glsl");
         mProgram = createProgram(vs, fs);
         mPositionHandle = GLES20.glGetAttribLocation(mProgram, "aPosition");
         mTexCoordHandle = GLES20.glGetAttribLocation(mProgram, "aTexCoord");
@@ -166,10 +168,10 @@ public class OceanWeatherGL extends GLESScene {
         mColorHandle = GLES20.glGetUniformLocation(mProgram, "uColor");
         mSamplerHandle = GLES20.glGetUniformLocation(mProgram, "uTexture");
 
-        float[] quadVertices = RawResourceLoader.readRawFloatArray(mResources, R.raw.ocean_quad_vertices);
-        float[] rectOneToTwoVertices = RawResourceLoader.readRawFloatArray(mResources, R.raw.ocean_rect_one_to_two_vertices);
-        float[] rectOneToFourVertices = RawResourceLoader.readRawFloatArray(mResources, R.raw.ocean_rect_one_to_four_vertices);
-        float[] quadTex = RawResourceLoader.readRawFloatArray(mResources, R.raw.ocean_quad_tex);
+        float[] quadVertices = AssetLoader.readFloatArray(mContext, "ocean/data/ocean_quad_vertices.csv");
+        float[] rectOneToTwoVertices = AssetLoader.readFloatArray(mContext, "ocean/data/ocean_rect_one_to_two_vertices.csv");
+        float[] rectOneToFourVertices = AssetLoader.readFloatArray(mContext, "ocean/data/ocean_rect_one_to_four_vertices.csv");
+        float[] quadTex = AssetLoader.readFloatArray(mContext, "ocean/data/ocean_quad_tex.csv");
 
         FloatBuffer vb = ByteBuffer.allocateDirect(quadVertices.length*4).order(ByteOrder.nativeOrder()).asFloatBuffer();
         vb.put(quadVertices).position(0);
@@ -191,69 +193,68 @@ public class OceanWeatherGL extends GLESScene {
     }
 
     private void loadTextures() {
-        mSkyA = GLTextureUtils.loadTexture(mResources, R.drawable.a_sky);
-        mSkyB = GLTextureUtils.loadTexture(mResources, R.drawable.b_sky);
-        mSkyC = GLTextureUtils.loadTexture(mResources, R.drawable.c_sky);
-        mSkyD = GLTextureUtils.loadTexture(mResources, R.drawable.d_sky);
-        mSkyG = GLTextureUtils.loadTexture(mResources, R.drawable.g_sky);
-        mSkyStars = GLTextureUtils.loadTexture(mResources, R.drawable.d_sky_stars);
-        mCloudA01 = GLTextureUtils.loadTexture(mResources, R.drawable.cloud_a_01);
-        mCloudA02 = GLTextureUtils.loadTexture(mResources, R.drawable.cloud_a_02);
-        mCloudA03 = GLTextureUtils.loadTexture(mResources, R.drawable.cloud_a_03);
-        mCloudB01 = GLTextureUtils.loadTexture(mResources, R.drawable.cloud_b_01);
-        mCloudB02 = GLTextureUtils.loadTexture(mResources, R.drawable.cloud_b_02);
-        mCloudB03 = GLTextureUtils.loadTexture(mResources, R.drawable.cloud_b_03);
-        mCloudLightA1 = GLTextureUtils.loadTexture(mResources, R.drawable.cloud_a_light_01);
-        mCloudLightA2 = GLTextureUtils.loadTexture(mResources, R.drawable.cloud_a_light_02);
-        mCloudLightA3 = GLTextureUtils.loadTexture(mResources, R.drawable.cloud_a_light_03);
-        mCloudLightB1 = GLTextureUtils.loadTexture(mResources, R.drawable.cloud_b_light_01);
-        mCloudLightB2 = GLTextureUtils.loadTexture(mResources, R.drawable.cloud_b_light_02);
-        mCloudLightB3 = GLTextureUtils.loadTexture(mResources, R.drawable.cloud_b_light_03);
-        mSun1 = GLTextureUtils.loadTexture(mResources, R.drawable.a_sun_01);
-        mSun2 = GLTextureUtils.loadTexture(mResources, R.drawable.a_sun_02);
-        mSun3 = GLTextureUtils.loadTexture(mResources, R.drawable.a_sun_03);
-        mSun4 = GLTextureUtils.loadTexture(mResources, R.drawable.ocean_a_sun_04);
-        mStar = GLTextureUtils.loadTexture(mResources, R.drawable.d_star);
-        mMeteor = GLTextureUtils.loadTexture(mResources, R.drawable.ocean_d_meteor);
-        mMoon = GLTextureUtils.loadTexture(mResources, R.drawable.ocean_d_moon);
-        mWatercover1 = GLTextureUtils.loadTexture(mResources, R.drawable.a_watercover_01);
-        mWatercover2 = GLTextureUtils.loadTexture(mResources, R.drawable.a_watercover_02);
-        mWatercover3 = GLTextureUtils.loadTexture(mResources, R.drawable.a_watercover_03);
-        mWatercover4 = GLTextureUtils.loadTexture(mResources, R.drawable.a_watercover_04);
-        mNightcover = GLTextureUtils.loadTexture(mResources, R.drawable.nightcover_01);
-        mCapCover = GLTextureUtils.loadTexture(mResources, R.drawable.a_cap_01);
-        mFog01 = GLTextureUtils.loadTexture(mResources, R.drawable.fog_01);
-        mFog02 = GLTextureUtils.loadTexture(mResources, R.drawable.fog_02);
-        mIce = GLTextureUtils.loadTexture(mResources, R.drawable.ice);
-        mRain1 = GLTextureUtils.loadTexture(mResources, R.drawable.c_rain_01);
-        mRain2 = GLTextureUtils.loadTexture(mResources, R.drawable.c_rain_02);
-        mRain3 = GLTextureUtils.loadTexture(mResources, R.drawable.c_rain_03);
-        mRain4 = GLTextureUtils.loadTexture(mResources, R.drawable.c_rain_04);
-        mWaterdrop = GLTextureUtils.loadTexture(mResources, R.drawable.c_waterdrop);
-        mCloudcover = GLTextureUtils.loadTexture(mResources, R.drawable.ocean_c_cloudcover);
-        mFrostC = GLTextureUtils.loadTexture(mResources, R.drawable.c_frost);
-        mFrostE = GLTextureUtils.loadTexture(mResources, R.drawable.e_frost);
-        mFrostF = GLTextureUtils.loadTexture(mResources, R.drawable.f_frost);
-        mSnow1 = GLTextureUtils.loadTexture(mResources, R.drawable.e_snow_01);
-        mSnow2 = GLTextureUtils.loadTexture(mResources, R.drawable.e_snow_02);
-        mSnow3 = GLTextureUtils.loadTexture(mResources, R.drawable.e_snow_03);
-        mSnow4 = GLTextureUtils.loadTexture(mResources, R.drawable.e_snow_04);
-        mSkyFlash = GLTextureUtils.loadTexture(mResources, R.drawable.g_sky_flash);
-        mLightning1 = GLTextureUtils.loadTexture(mResources, R.drawable.g_lightning_01);
-        mLightning2 = GLTextureUtils.loadTexture(mResources, R.drawable.g_lightning_02);
-        mLightning3 = GLTextureUtils.loadTexture(mResources, R.drawable.g_lightning_03);
-        mWaveBack = GLTextureUtils.loadTexture(mResources, R.drawable.sand);
+        mSkyA = GLTextureUtils.loadTextureFromAsset(mContext, "ocean/drawable/a_sky.jpg");
+        mSkyB = GLTextureUtils.loadTextureFromAsset(mContext, "ocean/drawable/b_sky.jpg");
+        mSkyC = GLTextureUtils.loadTextureFromAsset(mContext, "ocean/drawable/c_sky.jpg");
+        mSkyD = GLTextureUtils.loadTextureFromAsset(mContext, "ocean/drawable/d_sky.png");
+        mSkyG = GLTextureUtils.loadTextureFromAsset(mContext, "ocean/drawable/g_sky.jpg");
+        mSkyStars = GLTextureUtils.loadTextureFromAsset(mContext, "ocean/drawable/d_sky_stars.png");
+        mCloudA01 = GLTextureUtils.loadTextureFromAsset(mContext, "ocean/drawable/cloud_a_01.png");
+        mCloudA02 = GLTextureUtils.loadTextureFromAsset(mContext, "ocean/drawable/cloud_a_02.png");
+        mCloudA03 = GLTextureUtils.loadTextureFromAsset(mContext, "ocean/drawable/cloud_a_03.png");
+        mCloudB01 = GLTextureUtils.loadTextureFromAsset(mContext, "ocean/drawable/cloud_b_01.png");
+        mCloudB02 = GLTextureUtils.loadTextureFromAsset(mContext, "ocean/drawable/cloud_b_02.png");
+        mCloudB03 = GLTextureUtils.loadTextureFromAsset(mContext, "ocean/drawable/cloud_b_03.png");
+        mCloudLightA1 = GLTextureUtils.loadTextureFromAsset(mContext, "ocean/drawable/cloud_a_light_01.png");
+        mCloudLightA2 = GLTextureUtils.loadTextureFromAsset(mContext, "ocean/drawable/cloud_a_light_02.png");
+        mCloudLightA3 = GLTextureUtils.loadTextureFromAsset(mContext, "ocean/drawable/cloud_a_light_03.png");
+        mCloudLightB1 = GLTextureUtils.loadTextureFromAsset(mContext, "ocean/drawable/cloud_b_light_01.png");
+        mCloudLightB2 = GLTextureUtils.loadTextureFromAsset(mContext, "ocean/drawable/cloud_b_light_02.png");
+        mCloudLightB3 = GLTextureUtils.loadTextureFromAsset(mContext, "ocean/drawable/cloud_b_light_03.png");
+        mSun1 = GLTextureUtils.loadTextureFromAsset(mContext, "ocean/drawable/a_sun_01.png");
+        mSun2 = GLTextureUtils.loadTextureFromAsset(mContext, "ocean/drawable/a_sun_02.png");
+        mSun3 = GLTextureUtils.loadTextureFromAsset(mContext, "ocean/drawable/a_sun_03.png");
+        mSun4 = GLTextureUtils.loadTextureFromAsset(mContext, "ocean/drawable/ocean_a_sun_04.png");
+        mStar = GLTextureUtils.loadTextureFromAsset(mContext, "ocean/drawable/d_star.png");
+        mMeteor = GLTextureUtils.loadTextureFromAsset(mContext, "ocean/drawable/ocean_d_meteor.png");
+        mMoon = GLTextureUtils.loadTextureFromAsset(mContext, "ocean/drawable/ocean_d_moon.png");
+        mWatercover1 = GLTextureUtils.loadTextureFromAsset(mContext, "ocean/drawable/a_watercover_01.png");
+        mWatercover2 = GLTextureUtils.loadTextureFromAsset(mContext, "ocean/drawable/a_watercover_02.png");
+        mWatercover3 = GLTextureUtils.loadTextureFromAsset(mContext, "ocean/drawable/a_watercover_03.png");
+        mWatercover4 = GLTextureUtils.loadTextureFromAsset(mContext, "ocean/drawable/a_watercover_04.png");
+        mNightcover = GLTextureUtils.loadTextureFromAsset(mContext, "ocean/drawable/nightcover_01.png");
+        mCapCover = GLTextureUtils.loadTextureFromAsset(mContext, "ocean/drawable/a_cap_01.png");
+        mFog01 = GLTextureUtils.loadTextureFromAsset(mContext, "ocean/drawable/fog_01.png");
+        mFog02 = GLTextureUtils.loadTextureFromAsset(mContext, "ocean/drawable/fog_02.png");
+        mIce = GLTextureUtils.loadTextureFromAsset(mContext, "ocean/drawable/ice.png");
+        mRain1 = GLTextureUtils.loadTextureFromAsset(mContext, "ocean/drawable/c_rain_01.png");
+        mRain2 = GLTextureUtils.loadTextureFromAsset(mContext, "ocean/drawable/c_rain_02.png");
+        mRain3 = GLTextureUtils.loadTextureFromAsset(mContext, "ocean/drawable/c_rain_03.png");
+        mRain4 = GLTextureUtils.loadTextureFromAsset(mContext, "ocean/drawable/c_rain_04.png");
+        mWaterdrop = GLTextureUtils.loadTextureFromAsset(mContext, "ocean/drawable/c_waterdrop.png");
+        mCloudcover = GLTextureUtils.loadTextureFromAsset(mContext, "ocean/drawable/ocean_c_cloudcover.png");
+        mFrostC = GLTextureUtils.loadTextureFromAsset(mContext, "ocean/drawable/c_frost.png");
+        mFrostE = GLTextureUtils.loadTextureFromAsset(mContext, "ocean/drawable/e_frost.png");
+        mFrostF = GLTextureUtils.loadTextureFromAsset(mContext, "ocean/drawable/f_frost.png");
+        mSnow1 = GLTextureUtils.loadTextureFromAsset(mContext, "ocean/drawable/e_snow_01.png");
+        mSnow2 = GLTextureUtils.loadTextureFromAsset(mContext, "ocean/drawable/e_snow_02.png");
+        mSnow3 = GLTextureUtils.loadTextureFromAsset(mContext, "ocean/drawable/e_snow_03.png");
+        mSnow4 = GLTextureUtils.loadTextureFromAsset(mContext, "ocean/drawable/e_snow_04.png");
+        mSkyFlash = GLTextureUtils.loadTextureFromAsset(mContext, "ocean/drawable/g_sky_flash.png");
+        mLightning1 = GLTextureUtils.loadTextureFromAsset(mContext, "ocean/drawable/g_lightning_01.png");
+        mLightning2 = GLTextureUtils.loadTextureFromAsset(mContext, "ocean/drawable/g_lightning_02.png");
+        mLightning3 = GLTextureUtils.loadTextureFromAsset(mContext, "ocean/drawable/g_lightning_03.png");
+        mWaveBack = GLTextureUtils.loadTextureFromAsset(mContext, "ocean/drawable/sand.png");
 
         mWave = new int[32];
         for (int i = 0; i < 32; i++) {
-            int resId = mResources.getIdentifier(String.format("sea_a_%02d", i+1), "drawable", "com.reandroid.wallpaper");
-            mWave[i] = GLTextureUtils.loadTexture(mResources, resId);
+            mWave[i] = GLTextureUtils.loadTextureFromAsset(mContext, String.format("ocean/drawable/sea_a_%02d.png", i+1));
         }
         mRaindrop1 = new int[25];
         mRaindrop2 = new int[25];
         for (int i = 0; i < 25; i++) {
-            mRaindrop1[i] = GLTextureUtils.loadTexture(mResources, mResources.getIdentifier(String.format("waterdrop_a_%d", i), "drawable", "com.reandroid.wallpaper"));
-            mRaindrop2[i] = GLTextureUtils.loadTexture(mResources, mResources.getIdentifier(String.format("waterdrop_b_%d", i), "drawable", "com.reandroid.wallpaper"));
+            mRaindrop1[i] = GLTextureUtils.loadTextureFromAsset(mContext, String.format("ocean/drawable/waterdrop_a_%d.png", i));
+            mRaindrop2[i] = GLTextureUtils.loadTextureFromAsset(mContext, String.format("ocean/drawable/waterdrop_b_%d.png", i));
         }
     }
 

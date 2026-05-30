@@ -22,7 +22,7 @@ import com.reandroid.gles.GLESScene;
 public class GrassWallpaper extends GLESWallpaper {
     @Override
     protected GLESScene createScene(int width, int height) {
-        return new GrassGL(width, height);
+        return new GrassGL(width, height, this);
     }
 }
 

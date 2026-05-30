@@ -6,6 +6,6 @@ import com.reandroid.gles.GLESWallpaper;
 public class ForestWallpaper extends GLESWallpaper {
     @Override
     protected GLESScene createScene(int width, int height) {
-        return new ForestGL(width, height);
+        return new ForestGL(width, height, this);
     }
 }

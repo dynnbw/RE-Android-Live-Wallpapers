@@ -13,13 +13,13 @@ public class Aurora1View extends GLSurfaceView implements GLSurfaceView.Renderer
 
     public Aurora1View(Context context) {
         super(context);
-        mScene = new Aurora1GL(1, 1);
+        mScene = new Aurora1GL(context, 1, 1);
         init();
     }
 
     public Aurora1View(Context context, AttributeSet attrs) {
         super(context, attrs);
-        mScene = new Aurora1GL(1, 1);
+        mScene = new Aurora1GL(context, 1, 1);
         init();
     }
 

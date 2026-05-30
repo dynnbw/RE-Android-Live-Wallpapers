@@ -1,37 +1,12 @@
 package com.reandroid.wallpaper.deepsea;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.opengl.ETC1Util;
 import android.opengl.GLES20;
-import android.opengl.GLUtils;
-import android.opengl.Matrix;
-import android.os.SystemClock;
-import android.util.AttributeSet;
-import android.util.Log;
-import android.view.Display;
-import android.view.KeyEvent;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.WindowManager;
-import android.widget.FrameLayout;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import com.reandroid.gles.GLESScene;
-import com.reandroid.gles.GLESWallpaper;
-import com.reandroid.gles.RawResourceLoader;
-import com.reandroid.wallpaper.R;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import com.reandroid.gles.AssetLoader;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
-import java.nio.ShortBuffer;
-import java.util.ArrayList;
 import java.util.Random;
 
 /**
@@ -95,10 +70,10 @@ class SeaWaterDrops {
 
     public void initShader() {
         if (!isInitShader()) {
-            int createdAndLinkedProgram = GLHelper.getCreatedAndLinkedProgram(GLHelper.getCompiledShader(GLES20.GL_VERTEX_SHADER, RawResourceLoader.readRawText(getContext().getResources(), R.raw.deepsea_seawaterdrops_0_vs)), GLHelper.getCompiledShader(GLES20.GL_FRAGMENT_SHADER, RawResourceLoader.readRawText(getContext().getResources(), R.raw.deepsea_seawaterdrops_1_fs)));
+            int createdAndLinkedProgram = GLHelper.getCreatedAndLinkedProgram(GLHelper.getCompiledShader(GLES20.GL_VERTEX_SHADER, AssetLoader.readText(getContext(), "deepsea/shaders/GLES/deepsea_seawaterdrops_0_vs.glsl")), GLHelper.getCompiledShader(GLES20.GL_FRAGMENT_SHADER, AssetLoader.readText(getContext(), "deepsea/shaders/GLES/deepsea_seawaterdrops_1_fs.glsl")));
             this.mProgramHandle = createdAndLinkedProgram;
-            this.mTextureID = GLHelper.getTexture(getContext(), R.drawable.particle_mip_0);
-            this.mAlphaTextureId = GLHelper.getTexture(getContext(), R.drawable.particle_mip_0_alpha);
+            this.mTextureID = GLHelper.getTextureFromAsset(getContext(), "deepsea/drawable/particle_mip_0.png");
+            this.mAlphaTextureId = GLHelper.getTextureFromAsset(getContext(), "deepsea/drawable/particle_mip_0_alpha.png");
             this.mAlphaTextureHandle = GLES20.glGetUniformLocation(this.mProgramHandle, "s_AlphaTexture");
             this.mMVPMatrixHandle = GLES20.glGetUniformLocation(this.mProgramHandle, "u_MVPMatrix");
             this.mPositionHandle = GLES20.glGetAttribLocation(this.mProgramHandle, "a_Position");

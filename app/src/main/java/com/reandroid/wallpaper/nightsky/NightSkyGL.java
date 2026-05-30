@@ -1,23 +1,18 @@
 package com.reandroid.wallpaper.nightsky;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
 import android.opengl.Matrix;
 import android.view.MotionEvent;
 
+import java.nio.FloatBuffer;
+
+import com.reandroid.gles.AssetLoader;
 import com.reandroid.gles.GLESScene;
 import com.reandroid.gles.GLESWallpaper;
-import com.reandroid.gles.RawResourceLoader;
-import com.reandroid.wallpaper.R;
 import com.reandroid.wallpaper.MathUtils;
-
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
 
 public class NightSkyGL extends GLESScene {
     private static final long TRAIL_LOOKBACK_SCALE = 5L;
@@ -25,6 +20,7 @@ public class NightSkyGL extends GLESScene {
     private static final float TRAIL_SPEED_LENGTH_BOOST_MAX = 4.0f;
 
     // ---- Scene (non-GL logic) ----
+    private final Context mContext;
     private final NightSkyScene mScene;
 
     private final NightSkyTrailRenderer trailRenderer = new NightSkyTrailRenderer();
@@ -54,8 +50,9 @@ public class NightSkyGL extends GLESScene {
 
     private boolean initialized;
 
-    public NightSkyGL(int width, int height) {
+    public NightSkyGL(int width, int height, Context context) {
         super(width, height);
+        mContext = context.getApplicationContext();
         mScene = new NightSkyScene();
     }
 
@@ -192,18 +189,17 @@ public class NightSkyGL extends GLESScene {
     }
 
     private void initGL() {
-        Resources res = getResources();
-        if (res == null) return;
+        if (mContext == null) return;
 
         programSphere = createProgram(
-                RawResourceLoader.readRawText(res, R.raw.nightsky_sphere_vs),
-                RawResourceLoader.readRawText(res, R.raw.nightsky_sphere_fs));
+                AssetLoader.readText(mContext, "nightsky/shaders/GLES/nightsky_sphere_vs.glsl"),
+                AssetLoader.readText(mContext, "nightsky/shaders/GLES/nightsky_sphere_fs.glsl"));
         programStar = createProgram(
-                RawResourceLoader.readRawText(res, R.raw.nightsky_star_vs),
-                RawResourceLoader.readRawText(res, R.raw.nightsky_star_fs));
+                AssetLoader.readText(mContext, "nightsky/shaders/GLES/nightsky_star_vs.glsl"),
+                AssetLoader.readText(mContext, "nightsky/shaders/GLES/nightsky_star_fs.glsl"));
         programTrail = createProgram(
-            RawResourceLoader.readRawText(res, R.raw.nightsky_trail_vs),
-            RawResourceLoader.readRawText(res, R.raw.nightsky_trail_fs));
+            AssetLoader.readText(mContext, "nightsky/shaders/GLES/nightsky_trail_vs.glsl"),
+            AssetLoader.readText(mContext, "nightsky/shaders/GLES/nightsky_trail_fs.glsl"));
         cacheSphereLocations();
         cacheStarLocations();
         trailRenderer.init(programTrail);
@@ -211,7 +207,7 @@ public class NightSkyGL extends GLESScene {
         mScene.buildSphereGrid(96, 48);
         mScene.updateProjectionMatrix(mWidth, mHeight);
 
-        milkyTex = loadTextureFromResource(R.drawable.nightsky_milkyway);
+        milkyTex = loadTextureFromAsset("nightsky/drawable/nightsky_milkyway.jpg");
 
         GLES20.glDisable(GLES20.GL_DEPTH_TEST);
         GLES20.glDisable(GLES20.GL_CULL_FACE);
@@ -279,13 +275,9 @@ public class NightSkyGL extends GLESScene {
         starUTrail = GLES20.glGetUniformLocation(programStar, "uTrailMode");
     }
 
-    private int loadTextureFromResource(int resId) {
-        Resources res = getResources();
-        if (res == null) return 0;
-        BitmapFactory.Options opts = new BitmapFactory.Options();
-        opts.inScaled = false;
-        opts.inPremultiplied = false;
-        Bitmap bitmap = BitmapFactory.decodeResource(res, resId, opts);
+    private int loadTextureFromAsset(String assetPath) {
+        if (mContext == null) return 0;
+        Bitmap bitmap = AssetLoader.decodeBitmap(mContext, assetPath);
         if (bitmap == null) return 0;
         int[] tex = new int[1];
         GLES20.glGenTextures(1, tex, 0);

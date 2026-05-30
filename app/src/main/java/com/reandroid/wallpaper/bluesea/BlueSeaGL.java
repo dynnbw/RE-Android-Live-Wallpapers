@@ -1,16 +1,15 @@
 package com.reandroid.wallpaper.bluesea;
 
+import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
 import android.opengl.Matrix;
 import android.util.Log;
 import android.view.MotionEvent;
 
-import com.reandroid.wallpaper.R;
+import com.reandroid.gles.AssetLoader;
 import com.reandroid.gles.GLESScene;
-import com.reandroid.gles.RawResourceLoader;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -44,26 +43,26 @@ public class BlueSeaGL extends GLESScene {
     };
 
     private static final JellyConfig[] JELLY_CONFIGS = new JellyConfig[] {
-        new JellyConfig(R.drawable.bluesea_bubble_1, R.drawable.bluesea_bubble_press, 180, 1000, 5.8f, 9.1f),
-        new JellyConfig(R.drawable.bluesea_bubble_4, R.drawable.bluesea_bubble_press, 162, 1300, 7.7f, 5.6f),
-        new JellyConfig(R.drawable.bluesea_bubble_1, R.drawable.bluesea_bubble_press, 170, 1500, 6.5f, 7.7f),
-        new JellyConfig(R.drawable.bluesea_bubble_4, R.drawable.bluesea_bubble_press, 200, 1100, 8.2f, 7.4f),
-        new JellyConfig(R.drawable.bluesea_bubble_1, R.drawable.bluesea_bubble_press, 180, 1200, 5.2f, 9.9f),
-        new JellyConfig(R.drawable.bluesea_bubble_4, R.drawable.bluesea_bubble_press, 160, 1600, 7.9f, 5.8f),
-        new JellyConfig(R.drawable.bluesea_bubble_1, R.drawable.bluesea_bubble_press, 200, 1000, 5.8f, 9.1f),
-        new JellyConfig(R.drawable.bluesea_bubble_4, R.drawable.bluesea_bubble_press, 160, 1300, 7.7f, 5.6f),
-        new JellyConfig(R.drawable.bluesea_bubble_1, R.drawable.bluesea_bubble_press, 170, 1500, 7.5f, 6.7f),
-        new JellyConfig(R.drawable.bluesea_bubble_4, R.drawable.bluesea_bubble_press, 190, 1100, 8.4f, 7.2f),
-        new JellyConfig(R.drawable.bluesea_bubble_1_blur1, R.drawable.bluesea_bubble_press_blur1, 150, 1200, 8.2f, 5.9f),
-        new JellyConfig(R.drawable.bluesea_bubble_4_blur1, R.drawable.bluesea_bubble_press_blur1, 140, 1600, 7.9f, 8.4f),
-        new JellyConfig(R.drawable.bluesea_bubble_1_blur1, R.drawable.bluesea_bubble_press_blur1, 140, 1800, 6.2f, 5.4f),
-        new JellyConfig(R.drawable.bluesea_bubble_4_blur1, R.drawable.bluesea_bubble_press_blur1, 150, 1600, 5.7f, 8.2f),
-        new JellyConfig(R.drawable.bluesea_bubble_1_blur1, R.drawable.bluesea_bubble_press_blur1, 130, 1200, 8.3f, 6.9f),
-        new JellyConfig(R.drawable.bluesea_bubble_4_blur1, R.drawable.bluesea_bubble_press_blur1, 150, 1500, 6.2f, 7.5f),
-        new JellyConfig(R.drawable.bluesea_bubble_1_blur2, R.drawable.bluesea_bubble_press_blur2, 120, 1300, 7.1f, 5.8f),
-        new JellyConfig(R.drawable.bluesea_bubble_4_blur2, R.drawable.bluesea_bubble_press_blur2, 110, 1700, 5.9f, 7.1f),
-        new JellyConfig(R.drawable.bluesea_bubble_1_blur2, R.drawable.bluesea_bubble_press_blur2, 100, 1100, 8.0f, 6.7f),
-        new JellyConfig(R.drawable.bluesea_bubble_4_blur2, R.drawable.bluesea_bubble_press_blur2, 120, 1000, 6.8f, 5.8f)
+        new JellyConfig("bluesea/drawable/bluesea_bubble_1.png", "bluesea/drawable/bluesea_bubble_press.png", 180, 1000, 5.8f, 9.1f),
+        new JellyConfig("bluesea/drawable/bluesea_bubble_4.png", "bluesea/drawable/bluesea_bubble_press.png", 162, 1300, 7.7f, 5.6f),
+        new JellyConfig("bluesea/drawable/bluesea_bubble_1.png", "bluesea/drawable/bluesea_bubble_press.png", 170, 1500, 6.5f, 7.7f),
+        new JellyConfig("bluesea/drawable/bluesea_bubble_4.png", "bluesea/drawable/bluesea_bubble_press.png", 200, 1100, 8.2f, 7.4f),
+        new JellyConfig("bluesea/drawable/bluesea_bubble_1.png", "bluesea/drawable/bluesea_bubble_press.png", 180, 1200, 5.2f, 9.9f),
+        new JellyConfig("bluesea/drawable/bluesea_bubble_4.png", "bluesea/drawable/bluesea_bubble_press.png", 160, 1600, 7.9f, 5.8f),
+        new JellyConfig("bluesea/drawable/bluesea_bubble_1.png", "bluesea/drawable/bluesea_bubble_press.png", 200, 1000, 5.8f, 9.1f),
+        new JellyConfig("bluesea/drawable/bluesea_bubble_4.png", "bluesea/drawable/bluesea_bubble_press.png", 160, 1300, 7.7f, 5.6f),
+        new JellyConfig("bluesea/drawable/bluesea_bubble_1.png", "bluesea/drawable/bluesea_bubble_press.png", 170, 1500, 7.5f, 6.7f),
+        new JellyConfig("bluesea/drawable/bluesea_bubble_4.png", "bluesea/drawable/bluesea_bubble_press.png", 190, 1100, 8.4f, 7.2f),
+        new JellyConfig("bluesea/drawable/bluesea_bubble_1_blur1.png", "bluesea/drawable/bluesea_bubble_press_blur1.png", 150, 1200, 8.2f, 5.9f),
+        new JellyConfig("bluesea/drawable/bluesea_bubble_4_blur1.png", "bluesea/drawable/bluesea_bubble_press_blur1.png", 140, 1600, 7.9f, 8.4f),
+        new JellyConfig("bluesea/drawable/bluesea_bubble_1_blur1.png", "bluesea/drawable/bluesea_bubble_press_blur1.png", 140, 1800, 6.2f, 5.4f),
+        new JellyConfig("bluesea/drawable/bluesea_bubble_4_blur1.png", "bluesea/drawable/bluesea_bubble_press_blur1.png", 150, 1600, 5.7f, 8.2f),
+        new JellyConfig("bluesea/drawable/bluesea_bubble_1_blur1.png", "bluesea/drawable/bluesea_bubble_press_blur1.png", 130, 1200, 8.3f, 6.9f),
+        new JellyConfig("bluesea/drawable/bluesea_bubble_4_blur1.png", "bluesea/drawable/bluesea_bubble_press_blur1.png", 150, 1500, 6.2f, 7.5f),
+        new JellyConfig("bluesea/drawable/bluesea_bubble_1_blur2.png", "bluesea/drawable/bluesea_bubble_press_blur2.png", 120, 1300, 7.1f, 5.8f),
+        new JellyConfig("bluesea/drawable/bluesea_bubble_4_blur2.png", "bluesea/drawable/bluesea_bubble_press_blur2.png", 110, 1700, 5.9f, 7.1f),
+        new JellyConfig("bluesea/drawable/bluesea_bubble_1_blur2.png", "bluesea/drawable/bluesea_bubble_press_blur2.png", 100, 1100, 8.0f, 6.7f),
+        new JellyConfig("bluesea/drawable/bluesea_bubble_4_blur2.png", "bluesea/drawable/bluesea_bubble_press_blur2.png", 120, 1000, 6.8f, 5.8f)
     };
 
     private static final int PARTICLE_COUNT = 40;
@@ -72,6 +71,7 @@ public class BlueSeaGL extends GLESScene {
     private static final float JELLY_SPEED_MIN = 18.0f;
     private static final float JELLY_SPEED_MAX = 46.0f;
 
+    private final Context mContext;
     private final Random mRandom = new Random();
 
     private int mProgram;
@@ -103,8 +103,9 @@ public class BlueSeaGL extends GLESScene {
     private JellyState[] mJellies;
     private Particle[] mParticles;
 
-    public BlueSeaGL(int width, int height) {
+    public BlueSeaGL(Context context, int width, int height) {
         super(width, height);
+        mContext = context;
     }
 
     @Override
@@ -209,8 +210,8 @@ public class BlueSeaGL extends GLESScene {
     }
 
     private void initProgram() {
-        String vs = RawResourceLoader.readRawText(mResources, R.raw.bluesea_sprite_vs);
-        String fs = RawResourceLoader.readRawText(mResources, R.raw.bluesea_sprite_fs);
+        String vs = AssetLoader.readText(mContext, "bluesea/shaders/GLES/bluesea_sprite_vs.glsl");
+        String fs = AssetLoader.readText(mContext, "bluesea/shaders/GLES/bluesea_sprite_fs.glsl");
         mProgram = createProgram(vs, fs);
         if (mProgram == 0) {
             Log.e(TAG, "Failed to create sprite program");
@@ -249,13 +250,13 @@ public class BlueSeaGL extends GLESScene {
         if (mProgram == 0) {
             return;
         }
-        mBackground = loadTexture(R.drawable.bluesea_bg);
-        mParticle = loadTexture(R.drawable.bluesea_particle);
+        mBackground = loadTexture("bluesea/drawable/bluesea_bg.png");
+        mParticle = loadTexture("bluesea/drawable/bluesea_particle.png");
 
         if (mJellies != null) {
             for (JellyState jelly : mJellies) {
-                jelly.image = loadTexture(jelly.config.imageResId);
-                jelly.glow = loadTexture(jelly.config.glowResId);
+                jelly.image = loadTexture(jelly.config.imageAsset);
+                jelly.glow = loadTexture(jelly.config.glowAsset);
             }
         }
 
@@ -468,12 +469,10 @@ public class BlueSeaGL extends GLESScene {
         GLES20.glDisableVertexAttribArray(mTexCoordHandle);
     }
 
-    private Texture loadTexture(int resId) {
-        BitmapFactory.Options opts = new BitmapFactory.Options();
-        opts.inPremultiplied = false;
-        Bitmap bitmap = BitmapFactory.decodeResource(mResources, resId, opts);
+    private Texture loadTexture(String assetPath) {
+        Bitmap bitmap = AssetLoader.decodeBitmap(mContext, assetPath);
         if (bitmap == null) {
-            Log.e(TAG, "Failed to decode texture: " + resId);
+            Log.e(TAG, "Failed to decode texture: " + assetPath);
             return null;
         }
         int[] ids = new int[1];
@@ -555,17 +554,17 @@ public class BlueSeaGL extends GLESScene {
     }
 
     private static class JellyConfig {
-        final int imageResId;
-        final int glowResId;
+        final String imageAsset;
+        final String glowAsset;
         final float size;
         final float swimTimeMs;
         final float driftDurX;
         final float driftDurY;
 
-        JellyConfig(int imageResId, int glowResId, float size, float swimTimeMs,
+        JellyConfig(String imageAsset, String glowAsset, float size, float swimTimeMs,
                 float driftDurX, float driftDurY) {
-            this.imageResId = imageResId;
-            this.glowResId = glowResId;
+            this.imageAsset = imageAsset;
+            this.glowAsset = glowAsset;
             this.size = size;
             this.swimTimeMs = swimTimeMs;
             this.driftDurX = driftDurX;

@@ -2,10 +2,8 @@ package com.reandroid.wallpaper.deepsea;
 
 import android.content.Context;
 import android.opengl.GLES20;
-import com.reandroid.gles.RawResourceLoader;
-import com.reandroid.wallpaper.R;
+import com.reandroid.gles.AssetLoader;
 import com.reandroid.gles.GLESWallpaper;
-import com.reandroid.wallpaper.R;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -24,8 +22,8 @@ class Jellyfish {
     private int mAlphaTextureId;
     private ShortBuffer mIndices;
     private final short[] mIndicesData;
-    private final int mCustomTextureId;
-    private final int mCustomAlphaTextureId;
+    private final String mCustomTextureAsset;
+    private final String mCustomAlphaTextureAsset;
     private int mJellyfishTextureId;
     private int mPointMVPMatrixHandle;
     private int mPointProgramHandle;
@@ -37,13 +35,13 @@ class Jellyfish {
     private FloatBuffer mVertices;
     private final float[] mVerticesData;
 
-    public Jellyfish() { this(GLESWallpaper.getAppContext(), 0, 0); }
-    public Jellyfish(Context context) { this(context, 0, 0); }
+    public Jellyfish() { this(GLESWallpaper.getAppContext(), null, null); }
+    public Jellyfish(Context context) { this(context, null, null); }
 
-    public Jellyfish(Context context, int textureId, int alphaTextureId) {
+    public Jellyfish(Context context, String textureAsset, String alphaTextureAsset) {
         this.mContext = context;
-        this.mCustomTextureId = textureId;
-        this.mCustomAlphaTextureId = alphaTextureId;
+        this.mCustomTextureAsset = textureAsset;
+        this.mCustomAlphaTextureAsset = alphaTextureAsset;
         this.mScale = 1.0f;
         this.mVerticesData = new float[]{-0.6f, 0.6f, 0.0f, 0.0f, 0.0f, -0.6f, -0.6f, 0.0f, 0.0f, 1.0f, 0.6f, -0.6f, 0.0f, 1.0f, 1.0f, 0.6f, 0.6f, 0.0f, 1.0f, 0.0f};
         this.mIndicesData = new short[]{0, 1, 2, 0, 2, 3};
@@ -60,7 +58,7 @@ class Jellyfish {
 
     public void initShader() {
         if (!isInitShader()) {
-            int createdAndLinkedProgram = GLHelper.getCreatedAndLinkedProgram(GLHelper.getCompiledShader(GLES20.GL_VERTEX_SHADER, RawResourceLoader.readRawText(getContext().getResources(), R.raw.deepsea_jellyfish_0_vs)), GLHelper.getCompiledShader(GLES20.GL_FRAGMENT_SHADER, RawResourceLoader.readRawText(getContext().getResources(), R.raw.deepsea_jellyfish_1_fs)));
+            int createdAndLinkedProgram = GLHelper.getCreatedAndLinkedProgram(GLHelper.getCompiledShader(GLES20.GL_VERTEX_SHADER, AssetLoader.readText(mContext, "deepsea/shaders/GLES/deepsea_jellyfish_0_vs.glsl")), GLHelper.getCompiledShader(GLES20.GL_FRAGMENT_SHADER, AssetLoader.readText(mContext, "deepsea/shaders/GLES/deepsea_jellyfish_1_fs.glsl")));
             this.mPointProgramHandle = createdAndLinkedProgram;
             this.mPointMVPMatrixHandle = GLES20.glGetUniformLocation(this.mPointProgramHandle, "u_MVPMatrix");
             this.mPointTextureHandle = GLES20.glGetUniformLocation(this.mPointProgramHandle, "s_Texture");
@@ -107,13 +105,13 @@ class Jellyfish {
     }
 
     protected int getTextureId() {
-        int resId = mCustomTextureId != 0 ? mCustomTextureId : R.drawable.unit_a_s256x256_e_mip_0;
-        return GLHelper.getTexture(getContext(), resId);
+        String asset = mCustomTextureAsset != null ? mCustomTextureAsset : "deepsea/drawable/unit_a_s256x256_e_mip_0.png";
+        return GLHelper.getTextureFromAsset(getContext(), asset);
     }
 
     protected int getAlphaTextureId() {
-        int resId = mCustomAlphaTextureId != 0 ? mCustomAlphaTextureId : R.drawable.unit_a_s256x256_e_mip_0_alpha;
-        return GLHelper.getTexture(getContext(), resId);
+        String asset = mCustomAlphaTextureAsset != null ? mCustomAlphaTextureAsset : "deepsea/drawable/unit_a_s256x256_e_mip_0_alpha.png";
+        return GLHelper.getTextureFromAsset(getContext(), asset);
     }
 
     public void setScale(float f) {

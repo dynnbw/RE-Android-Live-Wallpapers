@@ -1,6 +1,6 @@
 package com.reandroid.wallpaper.fireworks;
 
-import android.content.res.Resources;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.opengl.GLES20;
@@ -8,9 +8,8 @@ import android.opengl.GLUtils;
 import android.opengl.Matrix;
 import android.os.SystemClock;
 
-import com.reandroid.wallpaper.R;
+import com.reandroid.gles.AssetLoader;
 import com.reandroid.gles.GLESScene;
-import com.reandroid.gles.RawResourceLoader;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -26,6 +25,7 @@ public class FireworksGL extends GLESScene {
 
     // ---- 场景逻辑层（非 GL） ----
     private final FireworksScene mScene;
+    private final Context mContext;
 
     // OpenGL相关初始化标记
     private boolean mGLInitialized = false;
@@ -67,8 +67,9 @@ public class FireworksGL extends GLESScene {
      * @param width 渲染宽度
      * @param height 渲染高度
      */
-    public FireworksGL(int width, int height) {
+    public FireworksGL(int width, int height, Context context) {
         super(width, height);
+        mContext = context;
         mScene = new FireworksScene(width, height);
     }
 
@@ -154,9 +155,8 @@ public class FireworksGL extends GLESScene {
         if (!mScene.mInitialized) return;
         // 延迟初始化OpenGL资源（避免提前初始化导致异常）
         if (!mGLInitialized) {
-            Resources res = getResources();
-            if (res == null) return;
-            initGL(res);
+            if (mContext == null) return;
+            initGL();
         }
 
         // 检查并重新加载背景（如果URI变化）
@@ -202,9 +202,8 @@ public class FireworksGL extends GLESScene {
 
     /**
      * 初始化OpenGL相关资源
-     * @param res 资源管理器
      */
-    private void initGL(Resources res) {
+    private void initGL() {
         mGLInitialized = true;
 
         // 禁用深度测试（2D渲染不需要）
@@ -216,11 +215,9 @@ public class FireworksGL extends GLESScene {
         // 创建正交投影矩阵（适配屏幕坐标）
         Matrix.orthoM(mProjectionMatrix, 0, 0, mWidth, mHeight, 0, -1.0f, 1.0f);
 
-        // 顶点着色器代码
-        String vs = RawResourceLoader.readRawText(res, R.raw.fireworks_vs);
-
-        // 片段着色器代码
-        String fs = RawResourceLoader.readRawText(res, R.raw.fireworks_fs);
+        // 从assets加载着色器
+        String vs = AssetLoader.readText(mContext, "fireworks/shaders/GLES/fireworks_vs.glsl");
+        String fs = AssetLoader.readText(mContext, "fireworks/shaders/GLES/fireworks_fs.glsl");
 
         // 创建并链接着色器程序
         mProgram = createProgram(vs, fs);
@@ -237,25 +234,24 @@ public class FireworksGL extends GLESScene {
                 .order(ByteOrder.nativeOrder()).asFloatBuffer();
 
         // 尝试加载自定义背景纹理
-        android.content.Context ctx = com.reandroid.gles.GLESWallpaper.getAppContext();
-        if (ctx != null) {
-            mTexBackground = loadCustomBackgroundTexture(ctx, res);
+        if (mContext != null) {
+            mTexBackground = loadCustomBackgroundTexture(mContext);
         }
 
         // 自定义背景加载失败时使用默认背景
         if (mTexBackground == 0) {
-            BitmapFactory.Options bounds = new BitmapFactory.Options();
-            bounds.inJustDecodeBounds = true;
-            bounds.inScaled = false;
-            BitmapFactory.decodeResource(res, R.drawable.background, bounds);
-            if (bounds.outWidth > 0 && bounds.outHeight > 0) {
-                mBackgroundAspect = bounds.outWidth / (float) bounds.outHeight;
+            Bitmap bmp = AssetLoader.decodeBitmap(mContext, "fireworks/drawable/background.jpg");
+            if (bmp != null) {
+                mBackgroundAspect = bmp.getWidth() / (float) bmp.getHeight();
+                mTexBackground = loadTexture(bmp, false);
             }
-            mTexBackground = loadTexture(res, R.drawable.background, false);
         }
 
         // 加载星星（粒子）纹理
-        mTexStar = loadTexture(res, R.drawable.star, true);
+        Bitmap starBmp = AssetLoader.decodeBitmap(mContext, "fireworks/drawable/star.png");
+        if (starBmp != null) {
+            mTexStar = loadTexture(starBmp, true);
+        }
     }
 
     /**
@@ -263,11 +259,10 @@ public class FireworksGL extends GLESScene {
      */
     private void checkAndReloadBackground() {
         try {
-            android.content.Context ctx = com.reandroid.gles.GLESWallpaper.getAppContext();
-            if (ctx == null) return;
+            if (mContext == null) return;
 
             // 获取当前保存的自定义背景URI
-            String currentUri = ctx.getSharedPreferences("wallpaper_prefs", 0)
+            String currentUri = mContext.getSharedPreferences("wallpaper_prefs", 0)
                 .getString("fireworks_custom_background_uri", null);
 
             // 检查URI是否发生变化
@@ -284,23 +279,17 @@ public class FireworksGL extends GLESScene {
                 }
 
                 // 重新加载背景纹理
-                Resources res = getResources();
-                if (res != null) {
-                    mTexBackground = loadCustomBackgroundTexture(ctx, res);
-                    if (mTexBackground == 0) {
-                        android.util.Log.d("FireworksGL", "自定义背景加载失败，使用默认背景");
-                        // 加载默认背景
-                        BitmapFactory.Options bounds = new BitmapFactory.Options();
-                        bounds.inJustDecodeBounds = true;
-                        bounds.inScaled = false;
-                        BitmapFactory.decodeResource(res, R.drawable.background, bounds);
-                        if (bounds.outWidth > 0 && bounds.outHeight > 0) {
-                            mBackgroundAspect = bounds.outWidth / (float) bounds.outHeight;
-                        }
-                        mTexBackground = loadTexture(res, R.drawable.background, false);
-                    } else {
-                        android.util.Log.d("FireworksGL", "自定义背景加载成功");
+                mTexBackground = loadCustomBackgroundTexture(mContext);
+                if (mTexBackground == 0) {
+                    android.util.Log.d("FireworksGL", "自定义背景加载失败，使用默认背景");
+                    // 加载默认背景
+                    Bitmap bmp = AssetLoader.decodeBitmap(mContext, "fireworks/drawable/background.jpg");
+                    if (bmp != null) {
+                        mBackgroundAspect = bmp.getWidth() / (float) bmp.getHeight();
+                        mTexBackground = loadTexture(bmp, false);
                     }
+                } else {
+                    android.util.Log.d("FireworksGL", "自定义背景加载成功");
                 }
 
                 // 更新缓存的URI
@@ -314,10 +303,9 @@ public class FireworksGL extends GLESScene {
     /**
      * 加载自定义背景纹理
      * @param ctx 上下文
-     * @param res 资源管理器
      * @return 纹理ID（0表示加载失败）
      */
-    private int loadCustomBackgroundTexture(android.content.Context ctx, Resources res) {
+    private int loadCustomBackgroundTexture(Context ctx) {
         try {
             if (ctx == null) {
                 android.util.Log.e("FireworksGL", "上下文为空");
@@ -557,18 +545,12 @@ public class FireworksGL extends GLESScene {
     }
 
     /**
-     * 加载纹理资源
-     * @param res 资源管理器
-     * @param resId 资源ID
+     * 从Bitmap创建GL纹理
+     * @param bmp 位图数据
      * @param repeat 是否重复纹理
      * @return 纹理ID（0=失败）
      */
-    private int loadTexture(Resources res, int resId, boolean repeat) {
-        // 加载位图（不缩放）
-        BitmapFactory.Options opts = new BitmapFactory.Options();
-        opts.inScaled = false;
-        opts.inPremultiplied = false;
-        Bitmap bmp = BitmapFactory.decodeResource(res, resId, opts);
+    private int loadTexture(Bitmap bmp, boolean repeat) {
         if (bmp == null) return 0;
 
         // 创建OpenGL纹理

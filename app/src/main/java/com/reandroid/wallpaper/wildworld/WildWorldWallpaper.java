@@ -16,6 +16,6 @@ public class WildWorldWallpaper extends GLESWallpaper {
      */
     @Override
     protected GLESScene createScene(int width, int height) {
-        return new WildWorldGL(width, height);
+        return new WildWorldGL(width, height, this);
     }
 }

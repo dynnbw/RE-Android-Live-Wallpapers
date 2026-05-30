@@ -1,15 +1,13 @@
 package com.reandroid.wallpaper.wildworld;
 
-import android.content.res.Resources;
+import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
 import android.opengl.Matrix;
 
-import com.reandroid.wallpaper.R;
+import com.reandroid.gles.AssetLoader;
 import com.reandroid.gles.GLESScene;
-import com.reandroid.gles.RawResourceLoader;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -23,6 +21,7 @@ import java.nio.FloatBuffer;
 public class WildWorldGL extends GLESScene {
 
     // ---- 场景逻辑层 ----
+    private final Context mContext;
     private final WildWorldScene mScene;
 
     // ---- OpenGL 状态 ----
@@ -65,8 +64,9 @@ public class WildWorldGL extends GLESScene {
      * @param width  初始宽度
      * @param height 初始高度
      */
-    public WildWorldGL(int width, int height) {
+    public WildWorldGL(int width, int height, Context context) {
         super(width, height);
+        mContext = context;
         mScene = new WildWorldScene();
     }
 
@@ -145,9 +145,7 @@ public class WildWorldGL extends GLESScene {
     @Override
     public void drawFrame(long timeMs) {
         if (!mGLInitialized) {
-            Resources res = getResources();
-            if (res == null) return;
-            initGL(res);
+            initGL();
         }
 
         // 更新场景逻辑（时间步长、触摸处理、动画状态）
@@ -315,7 +313,7 @@ public class WildWorldGL extends GLESScene {
     /**
      * 初始化 OpenGL 环境（着色器 / 纹理 / 投影矩阵）
      */
-    private void initGL(Resources res) {
+    private void initGL() {
         mGLInitialized = true;
         GLES20.glDisable(GLES20.GL_DEPTH_TEST);
         GLES20.glEnable(GLES20.GL_BLEND);
@@ -323,8 +321,8 @@ public class WildWorldGL extends GLESScene {
 
         Matrix.orthoM(mProjectionMatrix, 0, 0, mWidth, mHeight, 0, -1.0f, 1.0f);
 
-        String vs = RawResourceLoader.readRawText(res, R.raw.wildworld_vs);
-        String fs = RawResourceLoader.readRawText(res, R.raw.wildworld_fs);
+        String vs = AssetLoader.readText(mContext, "wildworld/shaders/GLES/wildworld_vs.glsl");
+        String fs = AssetLoader.readText(mContext, "wildworld/shaders/GLES/wildworld_fs.glsl");
 
         mProgram = createProgram(vs, fs);
         mPositionHandle = GLES20.glGetAttribLocation(mProgram, "aPosition");
@@ -337,32 +335,30 @@ public class WildWorldGL extends GLESScene {
                 .order(ByteOrder.nativeOrder()).asFloatBuffer();
 
         // 加载所有纹理
-        mTexBgDay = loadTexture(res, R.drawable.ww_bgday);
-        mTexBgDay1 = loadTexture(res, R.drawable.ww_bgday1);
-        mTexBgNight = loadTexture(res, R.drawable.ww_bgnight);
-        mTexBgNight1 = loadTexture(res, R.drawable.ww_bgnight1);
-        mTexLayer5 = loadTexture(res, R.drawable.ww_layer5);
-        mTexLayer51 = loadTexture(res, R.drawable.ww_layer51);
-        mTexLayer4 = loadTexture(res, R.drawable.ww_layer4);
-        mTexLayer41 = loadTexture(res, R.drawable.ww_layer41);
-        mTexLayer3 = loadTexture(res, R.drawable.ww_layer3);
-        mTexLayer31 = loadTexture(res, R.drawable.ww_layer31);
-        mTexLayer2 = loadTexture(res, R.drawable.ww_layer2);
-        mTexLayer21 = loadTexture(res, R.drawable.ww_layer21);
-        mTexLayer1 = loadTexture(res, R.drawable.ww_layer1);
-        mTexLayer11 = loadTexture(res, R.drawable.ww_layer11);
-        mTexPterosaur = loadTexture(res, R.drawable.ww_pterosaur);
-        mTexDinosaur = loadTexture(res, R.drawable.ww_dinosaur);
-        mTexFireball = loadTexture(res, R.drawable.ww_fireball);
+        mTexBgDay = loadTexture("wildworld/drawable/ww_bgday.png");
+        mTexBgDay1 = loadTexture("wildworld/drawable/ww_bgday1.jpg");
+        mTexBgNight = loadTexture("wildworld/drawable/ww_bgnight.png");
+        mTexBgNight1 = loadTexture("wildworld/drawable/ww_bgnight1.jpg");
+        mTexLayer5 = loadTexture("wildworld/drawable/ww_layer5.png");
+        mTexLayer51 = loadTexture("wildworld/drawable/ww_layer51.png");
+        mTexLayer4 = loadTexture("wildworld/drawable/ww_layer4.png");
+        mTexLayer41 = loadTexture("wildworld/drawable/ww_layer41.png");
+        mTexLayer3 = loadTexture("wildworld/drawable/ww_layer3.png");
+        mTexLayer31 = loadTexture("wildworld/drawable/ww_layer31.png");
+        mTexLayer2 = loadTexture("wildworld/drawable/ww_layer2.png");
+        mTexLayer21 = loadTexture("wildworld/drawable/ww_layer21.png");
+        mTexLayer1 = loadTexture("wildworld/drawable/ww_layer1.png");
+        mTexLayer11 = loadTexture("wildworld/drawable/ww_layer11.png");
+        mTexPterosaur = loadTexture("wildworld/drawable/ww_pterosaur.png");
+        mTexDinosaur = loadTexture("wildworld/drawable/ww_dinosaur.png");
+        mTexFireball = loadTexture("wildworld/drawable/ww_fireball.png");
     }
 
     /**
      * 加载纹理资源
      */
-    private int loadTexture(Resources res, int resId) {
-        BitmapFactory.Options opts = new BitmapFactory.Options();
-        opts.inScaled = false;
-        Bitmap bmp = BitmapFactory.decodeResource(res, resId, opts);
+    private int loadTexture(String assetPath) {
+        Bitmap bmp = AssetLoader.decodeBitmap(mContext, assetPath);
         if (bmp == null) return 0;
 
         int[] tex = new int[1];

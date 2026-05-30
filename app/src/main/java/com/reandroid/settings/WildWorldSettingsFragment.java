@@ -18,7 +18,7 @@ public class WildWorldSettingsFragment extends PreferenceFragmentCompat {
 
         PreviewPreference preview = findPreference("pref_preview");
         if (preview != null) {
-            preview.setSceneFactory((width, height) -> new WildWorldGL(width, height));
+            preview.setSceneFactory((width, height) -> new WildWorldGL(width, height, requireContext()));
         }
 
         Preference openPicker = findPreference("pref_open_wallpaper_picker");

@@ -18,16 +18,14 @@ package com.reandroid.wallpaper.galaxy;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
 import android.os.Process;
 import android.os.SystemClock;
 import android.util.Log;
 
-import com.reandroid.wallpaper.R;
+import com.reandroid.gles.AssetLoader;
 import com.reandroid.gles.GLESScene;
-import com.reandroid.gles.RawResourceLoader;
 import com.reandroid.settings.WallpaperSettings;
 
 import java.nio.ByteBuffer;
@@ -43,6 +41,7 @@ public class GalaxyGL extends GLESScene {
     private static final long PERF_SYNC_INTERVAL_MS = 1000L;
     private static final long ANR_FRAME_THRESHOLD_MS = 200L;
 
+    private final Context mContext;
     private boolean mGLInitialized = false;
     private int mBgProgram;
     private int mParticleProgram;
@@ -72,6 +71,7 @@ public class GalaxyGL extends GLESScene {
      */
     public GalaxyGL(int width, int height, Context context) {
         super(width, height);
+        mContext = context;
         mScene = new GalaxyScene(width, height, context);
     }
     
@@ -181,18 +181,18 @@ public class GalaxyGL extends GLESScene {
 
     private void createPrograms() {
         mBgProgram = createShaderProgram(
-            RawResourceLoader.readRawText(mResources, R.raw.galaxy_bg_vs),
-            RawResourceLoader.readRawText(mResources, R.raw.galaxy_bg_fs)
+            AssetLoader.readText(mContext, "galaxy/shaders/GLES/galaxy_bg_vs.glsl"),
+            AssetLoader.readText(mContext, "galaxy/shaders/GLES/galaxy_bg_fs.glsl")
         );
 
         mParticleProgram = createShaderProgram(
-            RawResourceLoader.readRawText(mResources, R.raw.galaxy_particle_vs),
-            RawResourceLoader.readRawText(mResources, R.raw.galaxy_particle_fs)
+            AssetLoader.readText(mContext, "galaxy/shaders/GLES/galaxy_particle_vs.glsl"),
+            AssetLoader.readText(mContext, "galaxy/shaders/GLES/galaxy_particle_fs.glsl")
         );
 
         mLightProgram = createShaderProgram(
-            RawResourceLoader.readRawText(mResources, R.raw.galaxy_light_vs),
-            RawResourceLoader.readRawText(mResources, R.raw.galaxy_light_fs)
+            AssetLoader.readText(mContext, "galaxy/shaders/GLES/galaxy_light_vs.glsl"),
+            AssetLoader.readText(mContext, "galaxy/shaders/GLES/galaxy_light_fs.glsl")
         );
 
         Log.d(TAG, "着色器程序创建完成");
@@ -238,20 +238,18 @@ public class GalaxyGL extends GLESScene {
     }
 
     private void loadTextures() {
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inScaled = false;
-
-        mTexSpace = loadTexture(R.drawable.galaxy_space, options);
-        mTexFlares = loadTexture(R.drawable.galaxy_flares, options);
+        mTexSpace = loadTexture(AssetLoader.decodeBitmap(mContext, "galaxy/drawable/galaxy_space.jpg"));
+        mTexFlares = loadTexture(AssetLoader.decodeBitmap(mContext, "galaxy/drawable/galaxy_flares.png"));
         mUseLight2 = WallpaperSettings.isGalaxyLight2Enabled(false);
-        mTexLight1 = loadTexture(mUseLight2 ? R.drawable.light2 : R.drawable.light1, options);
+        mTexLight1 = loadTexture(AssetLoader.decodeBitmap(mContext,
+                mUseLight2 ? "galaxy/drawable/light2.png" : "galaxy/drawable/light1.jpg"));
 
         Log.d(TAG, "纹理加载完成");
     }
 
     private void syncLightTexturePreference() {
         boolean desiredUseLight2 = WallpaperSettings.isGalaxyLight2Enabled(false);
-        if (desiredUseLight2 == mUseLight2 || mResources == null) {
+        if (desiredUseLight2 == mUseLight2 || mContext == null) {
             return;
         }
 
@@ -261,16 +259,12 @@ public class GalaxyGL extends GLESScene {
             mTexLight1 = 0;
         }
 
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inScaled = false;
-        options.inPremultiplied = false;
-        mTexLight1 = loadTexture(desiredUseLight2 ? R.drawable.light2 : R.drawable.light1, options);
+        mTexLight1 = loadTexture(AssetLoader.decodeBitmap(mContext,
+                desiredUseLight2 ? "galaxy/drawable/light2.png" : "galaxy/drawable/light1.jpg"));
         mUseLight2 = desiredUseLight2;
     }
 
-    private int loadTexture(int resourceId, BitmapFactory.Options options) {
-        Bitmap bitmap = BitmapFactory.decodeResource(mResources, resourceId, options);
-
+    private int loadTexture(Bitmap bitmap) {
         int[] textureHandle = new int[1];
         GLES20.glGenTextures(1, textureHandle, 0);
 

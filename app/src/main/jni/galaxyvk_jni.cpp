@@ -775,22 +775,22 @@ private:
     bool createPipelinesLocked() {
         VkShaderModule bgVert = createShaderModuleLocked({
                 "shaders/galaxyvk_bg.vert.spv",
-                "galaxyvk_bg.vert.spv"});
+                "shaders/galaxyvk_bg.vert.spv"});
         VkShaderModule bgFrag = createShaderModuleLocked({
                 "shaders/galaxyvk_bg.frag.spv",
-                "galaxyvk_bg.frag.spv"});
+                "shaders/galaxyvk_bg.frag.spv"});
         VkShaderModule particleVert = createShaderModuleLocked({
                 "shaders/galaxyvk_particles.vert.spv",
-                "galaxyvk_particles.vert.spv"});
+                "shaders/galaxyvk_particles.vert.spv"});
         VkShaderModule particleFrag = createShaderModuleLocked({
                 "shaders/galaxyvk_particles.frag.spv",
-                "galaxyvk_particles.frag.spv"});
+                "shaders/galaxyvk_particles.frag.spv"});
         VkShaderModule lightVert = createShaderModuleLocked({
             "shaders/galaxyvk_light.vert.spv",
-            "galaxyvk_light.vert.spv"});
+            "shaders/galaxyvk_light.vert.spv"});
         VkShaderModule lightFrag = createShaderModuleLocked({
             "shaders/galaxyvk_light.frag.spv",
-            "galaxyvk_light.frag.spv"});
+            "shaders/galaxyvk_light.frag.spv"});
         if (bgVert == VK_NULL_HANDLE || bgFrag == VK_NULL_HANDLE
             || particleVert == VK_NULL_HANDLE || particleFrag == VK_NULL_HANDLE
             || lightVert == VK_NULL_HANDLE || lightFrag == VK_NULL_HANDLE) {

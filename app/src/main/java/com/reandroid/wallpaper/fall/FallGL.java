@@ -16,8 +16,8 @@
 
 package com.reandroid.wallpaper.fall;
 
+import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.opengl.GLES20;
@@ -29,9 +29,8 @@ import android.util.Log;
 import android.view.MotionEvent;
 
 import com.reandroid.wallpaper.MathUtils;
-import com.reandroid.wallpaper.R;
+import com.reandroid.gles.AssetLoader;
 import com.reandroid.gles.GLESScene;
-import com.reandroid.gles.RawResourceLoader;
 import com.reandroid.settings.WallpaperSettings;
 
 import java.nio.ByteBuffer;
@@ -63,6 +62,7 @@ public class FallGL extends GLESScene {
     private boolean mGLInitialized = false;
     private int mFrameCount = 0;
     private final FallScene mScene;
+    private final Context mContext;
     private int mTargetFps = 30;
     private long mTargetFrameMs = 33L;
     private boolean mAnrDiagEnabled = false;
@@ -74,8 +74,9 @@ public class FallGL extends GLESScene {
     private float mLastTouchTriggerX = -1.0f;
     private float mLastTouchTriggerY = -1.0f;
 
-    public FallGL(int width, int height) {
+    public FallGL(Context context, int width, int height) {
         super(width, height);
+        mContext = context;
         mScene = new FallScene(width, height);
         Log.d(TAG, "FallGL创建: " + width + "x" + height);
     }
@@ -141,7 +142,7 @@ public class FallGL extends GLESScene {
         mScene.setLeafTextureCount(mLeafTextures.length);
 
         try {
-            mRiverbedTexture = loadTexture(R.drawable.pond);
+            mRiverbedTexture = loadTexture("fall/drawable/pond.jpg");
         } catch (Exception e) {
             Log.e(TAG, "GL线程加载河床纹理失败", e);
             mRiverbedTexture = createPlaceholderTexture(256, 256, Color.parseColor("#4A6FA5"));
@@ -389,8 +390,8 @@ public class FallGL extends GLESScene {
     }
 
     private void createProgram() {
-        String vertexShader = RawResourceLoader.readRawText(mResources, R.raw.fall_vs);
-        String fragmentShader = RawResourceLoader.readRawText(mResources, R.raw.fall_fs);
+        String vertexShader = AssetLoader.readText(mContext, "fall/shaders/GLES/fall_vs.glsl");
+        String fragmentShader = AssetLoader.readText(mContext, "fall/shaders/GLES/fall_fs.glsl");
         int vs = compileShader(GLES20.GL_VERTEX_SHADER, vertexShader);
         int fs = compileShader(GLES20.GL_FRAGMENT_SHADER, fragmentShader);
         if (vs == 0 || fs == 0) {
@@ -433,12 +434,8 @@ public class FallGL extends GLESScene {
         return shader;
     }
 
-    private int loadTexture(int resourceId) {
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inScaled = false;
-        options.inPremultiplied = false;
-        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-        Bitmap bitmap = BitmapFactory.decodeResource(mResources, resourceId, options);
+    private int loadTexture(String assetPath) {
+        Bitmap bitmap = AssetLoader.decodeBitmap(mContext, assetPath);
         if (bitmap == null) {
             return 0;
         }
@@ -472,37 +469,16 @@ public class FallGL extends GLESScene {
 
     private int[] loadLeafTextures() {
         boolean greenLeavesEnabled = WallpaperSettings.isGreenLeavesEnabled(false);
-        int[] leafResourceIds;
-        if (greenLeavesEnabled) {
-            leafResourceIds = new int[] {
-                    R.drawable.leaves_0, R.drawable.leaves_1, R.drawable.leaves_2, R.drawable.leaves_3,
-                    R.drawable.leaves_4, R.drawable.leaves_5, R.drawable.leaves_6, R.drawable.leaves_7,
-                    R.drawable.leaves_8, R.drawable.leaves_9, R.drawable.leaves_10, R.drawable.leaves_11,
-                    R.drawable.leaves_12, R.drawable.leaves_13, R.drawable.leaves_14, R.drawable.leaves_15,
-                    R.drawable.leaves_16, R.drawable.leaves_17, R.drawable.leaves_18, R.drawable.leaves_19
-            };
-        } else {
-            leafResourceIds = new int[] {
-                    R.drawable.leaves_0, R.drawable.leaves_1, R.drawable.leaves_2, R.drawable.leaves_3,
-                    R.drawable.leaves_4, R.drawable.leaves_5, R.drawable.leaves_6, R.drawable.leaves_7,
-                    R.drawable.leaves_8, R.drawable.leaves_9, R.drawable.leaves_10, R.drawable.leaves_11,
-                    R.drawable.leaves_12, R.drawable.leaves_13
-            };
-        }
-
-        int[] textures = new int[leafResourceIds.length];
-        for (int i = 0; i < leafResourceIds.length; i++) {
-            textures[i] = loadLeafTexture(leafResourceIds[i]);
+        int leafCount = greenLeavesEnabled ? 20 : 14;
+        int[] textures = new int[leafCount];
+        for (int i = 0; i < leafCount; i++) {
+            textures[i] = loadLeafTexture("fall/drawable/leaves_" + i + ".png");
         }
         return textures;
     }
 
-    private int loadLeafTexture(int resourceId) {
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inScaled = false;
-        options.inPremultiplied = false;
-        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-        Bitmap bitmap = BitmapFactory.decodeResource(mResources, resourceId, options);
+    private int loadLeafTexture(String assetPath) {
+        Bitmap bitmap = AssetLoader.decodeBitmap(mContext, assetPath);
         if (bitmap == null) {
             return 0;
         }

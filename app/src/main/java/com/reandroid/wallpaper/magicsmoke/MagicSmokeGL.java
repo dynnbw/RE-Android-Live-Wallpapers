@@ -2,14 +2,12 @@ package com.reandroid.wallpaper.magicsmoke;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
 import android.util.Log;
 
-import com.reandroid.wallpaper.R;
+import com.reandroid.gles.AssetLoader;
 import com.reandroid.gles.GLESScene;
-import com.reandroid.gles.RawResourceLoader;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -21,6 +19,8 @@ import java.nio.FloatBuffer;
  */
 public class MagicSmokeGL extends GLESScene {
     private static final String TAG = "MagicSmokeGL";
+
+    private final Context mContext;
 
     // ---- 场景逻辑层（非 GL）----
     private final MagicSmokeScene mScene;
@@ -56,6 +56,7 @@ public class MagicSmokeGL extends GLESScene {
 
     public MagicSmokeGL(Context context, int width, int height) {
         super(width, height);
+        mContext = context;
         mScene = new MagicSmokeScene(context);
     }
 
@@ -107,11 +108,11 @@ public class MagicSmokeGL extends GLESScene {
     }
 
     private void createPrograms() {
-        // Load shader source from raw resources
-        String vertex5Src = RawResourceLoader.readRawText(mResources, R.raw.magicsmoke_5tex_vs);
-        String fragment5Src = RawResourceLoader.readRawText(mResources, R.raw.magicsmoke_5tex_fs);
-        String vertex4Src = RawResourceLoader.readRawText(mResources, R.raw.magicsmoke_4tex_vs);
-        String fragment4Src = RawResourceLoader.readRawText(mResources, R.raw.magicsmoke_4tex_fs);
+        // Load shader source from assets
+        String vertex5Src = AssetLoader.readText(mContext, "magicsmoke/shaders/GLES/magicsmoke_5tex_vs.glsl");
+        String fragment5Src = AssetLoader.readText(mContext, "magicsmoke/shaders/GLES/magicsmoke_5tex_fs.glsl");
+        String vertex4Src = AssetLoader.readText(mContext, "magicsmoke/shaders/GLES/magicsmoke_4tex_vs.glsl");
+        String fragment4Src = AssetLoader.readText(mContext, "magicsmoke/shaders/GLES/magicsmoke_4tex_fs.glsl");
 
         // Create programs
         mProgram5Tex = createShaderProgram(vertex5Src, fragment5Src);
@@ -223,13 +224,10 @@ public class MagicSmokeGL extends GLESScene {
     }
 
     private void processAndLoadTexture(int index, MagicSmokeScene.Preset preset, float alphaFactor) {
-        // Load source bitmap
-        BitmapFactory.Options opts = new BitmapFactory.Options();
-        opts.inPreferredConfig = Bitmap.Config.ARGB_8888;
-        opts.inPremultiplied = false;
-        Bitmap sourceBitmap = BitmapFactory.decodeResource(mResources, MagicSmokeScene.NOISE_RES_IDS[index], opts);
+        // Load source bitmap from assets
+        Bitmap sourceBitmap = AssetLoader.decodeBitmap(mContext, "magicsmoke/drawable/noise" + (index + 1) + ".png");
         if (sourceBitmap == null) {
-            Log.e(TAG, "Failed to decode texture: " + MagicSmokeScene.NOISE_RES_IDS[index]);
+            Log.e(TAG, "Failed to decode texture at index: " + index);
             return;
         }
 

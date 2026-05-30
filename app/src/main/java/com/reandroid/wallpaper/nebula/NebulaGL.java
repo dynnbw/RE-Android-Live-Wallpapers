@@ -5,7 +5,8 @@ import android.util.Log;
 
 import com.reandroid.wallpaper.R;
 import com.reandroid.gles.GLESScene;
-import com.reandroid.gles.RawResourceLoader;
+import android.content.Context;
+import com.reandroid.gles.AssetLoader;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -13,6 +14,8 @@ import java.nio.FloatBuffer;
 
 public class NebulaGL extends GLESScene {
     private static final String TAG = "NebulaGL";
+
+    private final Context mContext;
 
     private int mProgram;
     private int mPositionHandle;
@@ -26,8 +29,9 @@ public class NebulaGL extends GLESScene {
     private float mXOffset = 0.5f;
     private boolean mInitialized;
 
-    public NebulaGL(int width, int height) {
+    public NebulaGL(int width, int height, Context context) {
         super(width, height);
+        mContext = context.getApplicationContext();
     }
 
     @Override
@@ -100,8 +104,8 @@ public class NebulaGL extends GLESScene {
             return;
         }
 
-        String vertexSource = RawResourceLoader.readRawText(mResources, R.raw.nebula_vs);
-        String fragmentSource = RawResourceLoader.readRawText(mResources, R.raw.nebula_fs);
+        String vertexSource = AssetLoader.readText(mContext, "nebula/shaders/GLES/nebula_vs.glsl");
+        String fragmentSource = AssetLoader.readText(mContext, "nebula/shaders/GLES/nebula_fs.glsl");
         mProgram = createProgram(vertexSource, fragmentSource);
         if (mProgram == 0) {
             Log.e(TAG, "Unable to create shader program");

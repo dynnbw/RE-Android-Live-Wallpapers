@@ -6,6 +6,6 @@ import com.reandroid.gles.GLESWallpaper;
 public class OceanWallpaper extends GLESWallpaper {
     @Override
     protected GLESScene createScene(int width, int height) {
-        return new OceanWeatherGL(width, height);
+        return new OceanWeatherGL(this, width, height);
     }
 }

@@ -14,9 +14,8 @@ import android.view.WindowManager;
 import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
 
-import com.reandroid.wallpaper.R;
+import com.reandroid.gles.AssetLoader;
 import com.reandroid.gles.GLESScene;
-import com.reandroid.gles.RawResourceLoader;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -56,8 +55,8 @@ public class WalkAroundGL extends GLESScene {
     public WalkAroundGL(int width, int height, Context context) {
         super(width, height);
         mContext = context.getApplicationContext();
-        float[] quadPos = RawResourceLoader.readRawFloatArray(mContext.getResources(), R.raw.walkaround_quad_pos);
-        float[] quadTex = RawResourceLoader.readRawFloatArray(mContext.getResources(), R.raw.walkaround_quad_tex);
+        float[] quadPos = AssetLoader.readFloatArray(mContext, "walkaround/data/walkaround_quad_pos.csv");
+        float[] quadTex = AssetLoader.readFloatArray(mContext, "walkaround/data/walkaround_quad_tex.csv");
         mPosBuffer = toFloatBuffer(quadPos);
         mTexBuffer = toFloatBuffer(quadTex);
         Matrix.setIdentityM(mMvp, 0);
@@ -145,8 +144,8 @@ public class WalkAroundGL extends GLESScene {
     private void initGLIfNeeded() {
         if (mProgram != 0) return;
 
-        String vs = RawResourceLoader.readRawText(mContext.getResources(), R.raw.walkaround_vs);
-        String fs = RawResourceLoader.readRawText(mContext.getResources(), R.raw.walkaround_fs);
+        String vs = AssetLoader.readText(mContext, "walkaround/shaders/GLES/walkaround_vs.glsl");
+        String fs = AssetLoader.readText(mContext, "walkaround/shaders/GLES/walkaround_fs.glsl");
         int v = loadShader(GLES20.GL_VERTEX_SHADER, vs);
         int f = loadShader(GLES20.GL_FRAGMENT_SHADER, fs);
         if (v == 0 || f == 0) return;

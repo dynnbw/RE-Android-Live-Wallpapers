@@ -43,7 +43,7 @@ public class PolarClockWallpaper extends GLESWallpaper {
      */
     @Override
     protected GLESScene createScene(int width, int height) {
-        return new PolarClockGL(width, height);
+        return new PolarClockGL(width, height, this);
     }
 
     /**

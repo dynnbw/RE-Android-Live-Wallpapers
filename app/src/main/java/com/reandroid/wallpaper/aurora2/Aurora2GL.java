@@ -1,7 +1,7 @@
 package com.reandroid.wallpaper.aurora2;
 
+import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
 import android.opengl.Matrix;
@@ -9,10 +9,8 @@ import android.os.Process;
 import android.util.Log;
 import android.view.MotionEvent;
 
-import com.reandroid.wallpaper.BuildConfig;
-import com.reandroid.wallpaper.R;
+import com.reandroid.gles.AssetLoader;
 import com.reandroid.gles.GLESScene;
-import com.reandroid.gles.RawResourceLoader;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -23,6 +21,7 @@ public class Aurora2GL extends GLESScene {
     private static final String TAG = "Aurora2GL";
     private static final int AURORA_STRIPS = 40;
 
+    private final Context mContext;
     private final Aurora2Scene mScene;
     private final float[] mModelMatrix = new float[16];
     private final float[] mTempMatrix = new float[16];
@@ -42,8 +41,9 @@ public class Aurora2GL extends GLESScene {
     private int mColorHandle;
     private int mTextureHandle;
 
-    public Aurora2GL(int width, int height) {
+    public Aurora2GL(Context context, int width, int height) {
         super(width, height);
+        mContext = context;
         mScene = new Aurora2Scene(width, height, false);
     }
 
@@ -158,8 +158,8 @@ public class Aurora2GL extends GLESScene {
     }
 
     private void initBuffers() {
-        float[] quadVertices = RawResourceLoader.readRawFloatArray(mResources, R.raw.aurora2_quad_pos3);
-        float[] quadTexCoords = RawResourceLoader.readRawFloatArray(mResources, R.raw.aurora2_quad_tex);
+        float[] quadVertices = AssetLoader.readFloatArray(mContext, "aurora2/data/aurora2_quad_pos3.csv");
+        float[] quadTexCoords = AssetLoader.readFloatArray(mContext, "aurora2/data/aurora2_quad_tex.csv");
         if (quadVertices.length != 12 || quadTexCoords.length != 8) {
             throw new IllegalStateException("Aurora2 quad data size mismatch");
         }
@@ -212,8 +212,8 @@ public class Aurora2GL extends GLESScene {
 
     private void initProgram() {
         mProgram = createProgram(
-                RawResourceLoader.readRawText(mResources, R.raw.aurora2_texture_vs),
-                RawResourceLoader.readRawText(mResources, R.raw.aurora2_texture_fs));
+                AssetLoader.readText(mContext, "aurora2/shaders/GLES/aurora2_texture_vs.glsl"),
+                AssetLoader.readText(mContext, "aurora2/shaders/GLES/aurora2_texture_fs.glsl"));
         mPositionHandle = GLES20.glGetAttribLocation(mProgram, "aPosition");
         mTexCoordHandle = GLES20.glGetAttribLocation(mProgram, "aTexCoord");
         mMatrixHandle = GLES20.glGetUniformLocation(mProgram, "uMatrix");
@@ -222,27 +222,20 @@ public class Aurora2GL extends GLESScene {
     }
 
     private void initTextures() {
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inScaled = false;
-        options.inPremultiplied = false;
         for (int i = 0; i < Aurora2Scene.TEXTURE_NAMES.length; i++) {
             String name = Aurora2Scene.TEXTURE_NAMES[i];
             if (name == null) {
                 continue;
             }
-            int resId = mResources.getIdentifier(name, "drawable", BuildConfig.APPLICATION_ID);
-            if (resId == 0) {
-                Log.w(TAG, "Missing texture resource: " + name);
-                continue;
-            }
-            mTextures[i] = loadTexture(resId, options);
+            String assetPath = "aurora2/drawable/" + name + ".png";
+            mTextures[i] = loadTexture(assetPath);
         }
     }
 
-    private int loadTexture(int resId, BitmapFactory.Options options) {
-        Bitmap bitmap = BitmapFactory.decodeResource(mResources, resId, options);
+    private int loadTexture(String assetPath) {
+        Bitmap bitmap = AssetLoader.decodeBitmap(mContext, assetPath);
         if (bitmap == null) {
-            throw new IllegalStateException("Failed to decode texture " + resId);
+            throw new IllegalStateException("Failed to decode texture " + assetPath);
         }
         int[] texture = new int[1];
         GLES20.glGenTextures(1, texture, 0);

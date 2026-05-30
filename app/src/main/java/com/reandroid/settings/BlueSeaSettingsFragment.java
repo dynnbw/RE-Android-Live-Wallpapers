@@ -18,7 +18,7 @@ public class BlueSeaSettingsFragment extends PreferenceFragmentCompat {
 
         PreviewPreference preview = findPreference("pref_preview");
         if (preview != null) {
-            preview.setSceneFactory((width, height) -> new BlueSeaGL(width, height));
+            preview.setSceneFactory((width, height) -> new BlueSeaGL(requireContext(), width, height));
         }
 
         Preference openPicker = findPreference("pref_open_wallpaper_picker");

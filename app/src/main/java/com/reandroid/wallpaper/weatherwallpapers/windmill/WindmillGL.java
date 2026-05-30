@@ -5,8 +5,9 @@ import android.util.Log;
 
 import android.content.Context;
 
-import com.reandroid.wallpaper.R;
+import com.reandroid.gles.AssetLoader;
 import com.reandroid.gles.GLESScene;
+import com.reandroid.gles.GLESWallpaper;
 import com.reandroid.wallpaper.musicvis.GLTextureUtils;
 import com.reandroid.wallpaper.weatherwallpapers.AnimationController;
 import com.reandroid.wallpaper.weatherwallpapers.CloudRenderer;
@@ -16,7 +17,6 @@ import com.reandroid.wallpaper.weatherwallpapers.SkyRenderer;
 import com.reandroid.wallpaper.weatherwallpapers.SpriteDrawer;
 import com.reandroid.wallpaper.weatherwallpapers.ThunderRenderer;
 import com.reandroid.wallpaper.weatherwallpapers.WeatherStateManager;
-import com.reandroid.gles.RawResourceLoader;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -25,6 +25,7 @@ import java.nio.FloatBuffer;
 public class WindmillGL extends GLESScene {
     private static final String TAG = "WindmillGL";
 
+    private final Context mContext;
     // ---- 场景逻辑层（非 GL）----
     private final WindmillScene mScene;
 
@@ -112,6 +113,7 @@ public class WindmillGL extends GLESScene {
 
     public WindmillGL(int width, int height) {
         super(width, height);
+        mContext = GLESWallpaper.getAppContext();
         mScene = new WindmillScene();
     }
 
@@ -189,8 +191,8 @@ public class WindmillGL extends GLESScene {
     }
 
     private void initGl() {
-        String vs = RawResourceLoader.readRawText(mResources, R.raw.windmill_vs);
-        String fs = RawResourceLoader.readRawText(mResources, R.raw.windmill_fs);
+        String vs = AssetLoader.readText(mContext, "windmill/shaders/GLES/windmill_vs.glsl");
+        String fs = AssetLoader.readText(mContext, "windmill/shaders/GLES/windmill_fs.glsl");
         mProgram = createProgram(vs, fs);
         mPositionHandle = GLES20.glGetAttribLocation(mProgram, "aPosition");
         mTexCoordHandle = GLES20.glGetAttribLocation(mProgram, "aTexCoord");
@@ -198,10 +200,10 @@ public class WindmillGL extends GLESScene {
         mColorHandle = GLES20.glGetUniformLocation(mProgram, "uColor");
         mSamplerHandle = GLES20.glGetUniformLocation(mProgram, "uTexture");
 
-        float[] quadVertices = RawResourceLoader.readRawFloatArray(mResources, R.raw.windmill_quad_vertices);
-        float[] rectOneToTwoVertices = RawResourceLoader.readRawFloatArray(mResources, R.raw.windmill_rect_one_to_two_vertices);
-        float[] rectOneToFourVertices = RawResourceLoader.readRawFloatArray(mResources, R.raw.windmill_rect_one_to_four_vertices);
-        float[] quadTex = RawResourceLoader.readRawFloatArray(mResources, R.raw.windmill_quad_tex);
+        float[] quadVertices = AssetLoader.readFloatArray(mContext, "windmill/data/windmill_quad_vertices.csv");
+        float[] rectOneToTwoVertices = AssetLoader.readFloatArray(mContext, "windmill/data/windmill_rect_one_to_two_vertices.csv");
+        float[] rectOneToFourVertices = AssetLoader.readFloatArray(mContext, "windmill/data/windmill_rect_one_to_four_vertices.csv");
+        float[] quadTex = AssetLoader.readFloatArray(mContext, "windmill/data/windmill_quad_tex.csv");
 
         mVertexBuffer = ByteBuffer.allocateDirect(quadVertices.length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
         mVertexBuffer.put(quadVertices).position(0);
@@ -226,78 +228,76 @@ public class WindmillGL extends GLESScene {
     }
 
     private void loadTextures() {
-        mSky01 = GLTextureUtils.loadTexture(mResources, R.drawable.sky_01);
-        mSky02 = GLTextureUtils.loadTexture(mResources, R.drawable.sky_02);
-        mSky03 = GLTextureUtils.loadTexture(mResources, R.drawable.sky_03);
-        mSky04 = GLTextureUtils.loadTexture(mResources, R.drawable.sky_04);
-        mSkyStars = GLTextureUtils.loadTexture(mResources, R.drawable.d_sky_stars);
-        mCloudA01 = GLTextureUtils.loadTexture(mResources, R.drawable.cloud_a_01);
-        mCloudA02 = GLTextureUtils.loadTexture(mResources, R.drawable.cloud_a_02);
-        mCloudA03 = GLTextureUtils.loadTexture(mResources, R.drawable.cloud_a_03);
-        mCloudB01 = GLTextureUtils.loadTexture(mResources, R.drawable.cloud_b_01);
-        mCloudB02 = GLTextureUtils.loadTexture(mResources, R.drawable.cloud_b_02);
-        mCloudB03 = GLTextureUtils.loadTexture(mResources, R.drawable.cloud_b_03);
-        mSun1 = GLTextureUtils.loadTexture(mResources, R.drawable.a_sun_01);
-        mSun2 = GLTextureUtils.loadTexture(mResources, R.drawable.a_sun_02);
-        mSun3 = GLTextureUtils.loadTexture(mResources, R.drawable.a_sun_03);
-        mSun4 = GLTextureUtils.loadTexture(mResources, R.drawable.a_sun_04);
-        mStar = GLTextureUtils.loadTexture(mResources, R.drawable.d_star);
-        mMeteor = GLTextureUtils.loadTexture(mResources, R.drawable.d_meteor);
-        mMoon = GLTextureUtils.loadTexture(mResources, R.drawable.d_moon);
-        mRain1 = GLTextureUtils.loadTexture(mResources, R.drawable.c_rain_01);
-        mRain2 = GLTextureUtils.loadTexture(mResources, R.drawable.c_rain_02);
-        mRain3 = GLTextureUtils.loadTexture(mResources, R.drawable.c_rain_03);
-        mRain4 = GLTextureUtils.loadTexture(mResources, R.drawable.c_rain_04);
-        mFog02 = GLTextureUtils.loadTexture(mResources, R.drawable.fog_02);
-        mIce = GLTextureUtils.loadTexture(mResources, R.drawable.ice);
-        mWaterdrop = GLTextureUtils.loadTexture(mResources, R.drawable.c_waterdrop);
-        mFrostE = GLTextureUtils.loadTexture(mResources, R.drawable.e_frost);
-        mFrostF = GLTextureUtils.loadTexture(mResources, R.drawable.f_frost);
-        mSnow1 = GLTextureUtils.loadTexture(mResources, R.drawable.e_snow_01);
-        mSnow2 = GLTextureUtils.loadTexture(mResources, R.drawable.e_snow_02);
-        mSnow3 = GLTextureUtils.loadTexture(mResources, R.drawable.e_snow_03);
-        mSnow4 = GLTextureUtils.loadTexture(mResources, R.drawable.e_snow_04);
-        mNightcover = GLTextureUtils.loadTexture(mResources, R.drawable.nightcover_01);
-        mSkyFlash = GLTextureUtils.loadTexture(mResources, R.drawable.g_sky_flash);
-        mLightning1 = GLTextureUtils.loadTexture(mResources, R.drawable.g_lightning_01);
-        mLightning2 = GLTextureUtils.loadTexture(mResources, R.drawable.g_lightning_02);
-        mLightning3 = GLTextureUtils.loadTexture(mResources, R.drawable.g_lightning_03);
-        mCloudLightA1 = GLTextureUtils.loadTexture(mResources, R.drawable.cloud_a_light_01);
-        mCloudLightA2 = GLTextureUtils.loadTexture(mResources, R.drawable.cloud_a_light_02);
-        mCloudLightA3 = GLTextureUtils.loadTexture(mResources, R.drawable.cloud_a_light_03);
-        mCloudLightB1 = GLTextureUtils.loadTexture(mResources, R.drawable.cloud_b_light_01);
-        mCloudLightB2 = GLTextureUtils.loadTexture(mResources, R.drawable.cloud_b_light_02);
-        mCloudLightB3 = GLTextureUtils.loadTexture(mResources, R.drawable.cloud_b_light_03);
-        mWindmillWing = GLTextureUtils.loadTexture(mResources, R.drawable.a_windmill_wing);
-        mWindmillWingBlur = GLTextureUtils.loadTexture(mResources, R.drawable.a_windmill_wing_blur2);
-        mWindmillCenter1 = GLTextureUtils.loadTexture(mResources, R.drawable.a_windmill_center_01);
-        mWindmillCenter2 = GLTextureUtils.loadTexture(mResources, R.drawable.a_windmill_center_02);
-        mWindmillPillar1 = GLTextureUtils.loadTexture(mResources, R.drawable.a_windmill_pillar_01);
-        mWindmillPillar2 = GLTextureUtils.loadTexture(mResources, R.drawable.a_windmill_pillar_02);
-        mWindmillPillarFlip1 = GLTextureUtils.loadTexture(mResources, R.drawable.a_windmill_pillar_flip_01);
-        mWindmillPillarFlip2 = GLTextureUtils.loadTexture(mResources, R.drawable.a_windmill_pillar_flip_blur2_02);
-        mLand01 = GLTextureUtils.loadTexture(mResources, R.drawable.a_land_01);
-        mLand02 = GLTextureUtils.loadTexture(mResources, R.drawable.a_land_02);
-        mLand03 = GLTextureUtils.loadTexture(mResources, R.drawable.a_land_03);
-        mLand04 = GLTextureUtils.loadTexture(mResources, R.drawable.a_land_04);
-        mLand05 = GLTextureUtils.loadTexture(mResources, R.drawable.a_land_05);
-        mLand06 = GLTextureUtils.loadTexture(mResources, R.drawable.a_land_06);
-        mLand07 = GLTextureUtils.loadTexture(mResources, R.drawable.a_land_07);
-        mLand08 = GLTextureUtils.loadTexture(mResources, R.drawable.a_land_08);
-        mLand09 = GLTextureUtils.loadTexture(mResources, R.drawable.a_land_09);
-        mLawn01 = GLTextureUtils.loadTexture(mResources, R.drawable.a_lawn_01);
-        mLawn02 = GLTextureUtils.loadTexture(mResources, R.drawable.a_lawn_02);
-        mLawn03 = GLTextureUtils.loadTexture(mResources, R.drawable.a_lawn_03);
-        mLawn04 = GLTextureUtils.loadTexture(mResources, R.drawable.a_lawn_04);
-        mLawn05 = GLTextureUtils.loadTexture(mResources, R.drawable.a_lawn_05);
+        mSky01 = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/sky_01.jpg");
+        mSky02 = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/sky_02.jpg");
+        mSky03 = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/sky_03.png");
+        mSky04 = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/sky_04.png");
+        mSkyStars = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/d_sky_stars.png");
+        mCloudA01 = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/cloud_a_01.png");
+        mCloudA02 = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/cloud_a_02.png");
+        mCloudA03 = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/cloud_a_03.png");
+        mCloudB01 = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/cloud_b_01.png");
+        mCloudB02 = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/cloud_b_02.png");
+        mCloudB03 = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/cloud_b_03.png");
+        mSun1 = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/a_sun_01.png");
+        mSun2 = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/a_sun_02.png");
+        mSun3 = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/a_sun_03.png");
+        mSun4 = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/a_sun_04.png");
+        mStar = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/d_star.png");
+        mMeteor = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/d_meteor.png");
+        mMoon = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/d_moon.png");
+        mRain1 = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/c_rain_01.png");
+        mRain2 = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/c_rain_02.png");
+        mRain3 = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/c_rain_03.png");
+        mRain4 = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/c_rain_04.png");
+        mFog02 = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/fog_02.png");
+        mIce = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/ice.png");
+        mWaterdrop = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/c_waterdrop.png");
+        mFrostE = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/e_frost.png");
+        mFrostF = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/f_frost.png");
+        mSnow1 = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/e_snow_01.png");
+        mSnow2 = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/e_snow_02.png");
+        mSnow3 = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/e_snow_03.png");
+        mSnow4 = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/e_snow_04.png");
+        mNightcover = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/nightcover_01.png");
+        mSkyFlash = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/g_sky_flash.png");
+        mLightning1 = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/g_lightning_01.png");
+        mLightning2 = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/g_lightning_02.png");
+        mLightning3 = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/g_lightning_03.png");
+        mCloudLightA1 = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/cloud_a_light_01.png");
+        mCloudLightA2 = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/cloud_a_light_02.png");
+        mCloudLightA3 = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/cloud_a_light_03.png");
+        mCloudLightB1 = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/cloud_b_light_01.png");
+        mCloudLightB2 = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/cloud_b_light_02.png");
+        mCloudLightB3 = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/cloud_b_light_03.png");
+        mWindmillWing = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/a_windmill_wing.png");
+        mWindmillWingBlur = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/a_windmill_wing_blur2.png");
+        mWindmillCenter1 = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/a_windmill_center_01.png");
+        mWindmillCenter2 = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/a_windmill_center_02.png");
+        mWindmillPillar1 = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/a_windmill_pillar_01.png");
+        mWindmillPillar2 = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/a_windmill_pillar_02.png");
+        mWindmillPillarFlip1 = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/a_windmill_pillar_flip_01.png");
+        mWindmillPillarFlip2 = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/a_windmill_pillar_flip_blur2_02.png");
+        mLand01 = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/a_land_01.png");
+        mLand02 = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/a_land_02.png");
+        mLand03 = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/a_land_03.png");
+        mLand04 = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/a_land_04.png");
+        mLand05 = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/a_land_05.png");
+        mLand06 = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/a_land_06.png");
+        mLand07 = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/a_land_07.png");
+        mLand08 = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/a_land_08.png");
+        mLand09 = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/a_land_09.png");
+        mLawn01 = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/a_lawn_01.png");
+        mLawn02 = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/a_lawn_02.png");
+        mLawn03 = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/a_lawn_03.png");
+        mLawn04 = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/a_lawn_04.png");
+        mLawn05 = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/a_lawn_05.png");
 
         mRaindrop1 = new int[25];
         mRaindrop2 = new int[25];
-        int[] raindropRes1 = {R.drawable.waterdrop_a_0,R.drawable.waterdrop_a_1,R.drawable.waterdrop_a_2,R.drawable.waterdrop_a_3,R.drawable.waterdrop_a_4,R.drawable.waterdrop_a_5,R.drawable.waterdrop_a_6,R.drawable.waterdrop_a_7,R.drawable.waterdrop_a_8,R.drawable.waterdrop_a_9,R.drawable.waterdrop_a_10,R.drawable.waterdrop_a_11,R.drawable.waterdrop_a_12,R.drawable.waterdrop_a_13,R.drawable.waterdrop_a_14,R.drawable.waterdrop_a_15,R.drawable.waterdrop_a_16,R.drawable.waterdrop_a_17,R.drawable.waterdrop_a_18,R.drawable.waterdrop_a_19,R.drawable.waterdrop_a_20,R.drawable.waterdrop_a_21,R.drawable.waterdrop_a_22,R.drawable.waterdrop_a_23,R.drawable.waterdrop_a_24};
-        int[] raindropRes2 = {R.drawable.waterdrop_b_0,R.drawable.waterdrop_b_1,R.drawable.waterdrop_b_2,R.drawable.waterdrop_b_3,R.drawable.waterdrop_b_4,R.drawable.waterdrop_b_5,R.drawable.waterdrop_b_6,R.drawable.waterdrop_b_7,R.drawable.waterdrop_b_8,R.drawable.waterdrop_b_9,R.drawable.waterdrop_b_10,R.drawable.waterdrop_b_11,R.drawable.waterdrop_b_12,R.drawable.waterdrop_b_13,R.drawable.waterdrop_b_14,R.drawable.waterdrop_b_15,R.drawable.waterdrop_b_16,R.drawable.waterdrop_b_17,R.drawable.waterdrop_b_18,R.drawable.waterdrop_b_19,R.drawable.waterdrop_b_20,R.drawable.waterdrop_b_21,R.drawable.waterdrop_b_22,R.drawable.waterdrop_b_23,R.drawable.waterdrop_b_24};
         for (int i = 0; i < 25; i++) {
-            mRaindrop1[i] = GLTextureUtils.loadTexture(mResources, raindropRes1[i]);
-            mRaindrop2[i] = GLTextureUtils.loadTexture(mResources, raindropRes2[i]);
+            mRaindrop1[i] = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/waterdrop_a_" + i + ".png");
+            mRaindrop2[i] = GLTextureUtils.loadTextureFromAsset(mContext, "windmill/drawable/waterdrop_b_" + i + ".png");
         }
     }
 

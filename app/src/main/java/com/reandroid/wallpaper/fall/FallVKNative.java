@@ -3,13 +3,12 @@ package com.reandroid.wallpaper.fall;
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.view.Surface;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import com.reandroid.wallpaper.R;
+import com.reandroid.gles.AssetLoader;
 import com.reandroid.settings.WallpaperSettings;
 
 final class FallVKNative {
@@ -44,27 +43,27 @@ final class FallVKNative {
     static native boolean nIsVulkanSupported();
 
     static int uploadTextures(Context context, long handle) {
-        uploadTexture(context, handle, R.drawable.pond, false);
+        uploadTexture(context, handle, "fall/drawable/pond.jpg", false);
         return uploadLeafAtlas(context, handle);
     }
 
     private static int uploadLeafAtlas(Context context, long handle) {
         boolean greenLeavesEnabled = WallpaperSettings.isGreenLeavesEnabled(false);
-        int[] candidates;
+        String[] candidates;
         if (greenLeavesEnabled) {
-            candidates = new int[] {
-                R.drawable.leaves_0, R.drawable.leaves_1, R.drawable.leaves_2, R.drawable.leaves_3,
-                R.drawable.leaves_4, R.drawable.leaves_5, R.drawable.leaves_6, R.drawable.leaves_7,
-                R.drawable.leaves_8, R.drawable.leaves_9, R.drawable.leaves_10, R.drawable.leaves_11,
-                R.drawable.leaves_12, R.drawable.leaves_13, R.drawable.leaves_14, R.drawable.leaves_15,
-                R.drawable.leaves_16, R.drawable.leaves_17, R.drawable.leaves_18, R.drawable.leaves_19
+            candidates = new String[] {
+                "fall/drawable/leaves_0.png", "fall/drawable/leaves_1.png", "fall/drawable/leaves_2.png", "fall/drawable/leaves_3.png",
+                "fall/drawable/leaves_4.png", "fall/drawable/leaves_5.png", "fall/drawable/leaves_6.png", "fall/drawable/leaves_7.png",
+                "fall/drawable/leaves_8.png", "fall/drawable/leaves_9.png", "fall/drawable/leaves_10.png", "fall/drawable/leaves_11.png",
+                "fall/drawable/leaves_12.png", "fall/drawable/leaves_13.png", "fall/drawable/leaves_14.png", "fall/drawable/leaves_15.png",
+                "fall/drawable/leaves_16.png", "fall/drawable/leaves_17.png", "fall/drawable/leaves_18.png", "fall/drawable/leaves_19.png"
             };
         } else {
-            candidates = new int[] {
-                R.drawable.leaves_0, R.drawable.leaves_1, R.drawable.leaves_2, R.drawable.leaves_3,
-                R.drawable.leaves_4, R.drawable.leaves_5, R.drawable.leaves_6, R.drawable.leaves_7,
-                R.drawable.leaves_8, R.drawable.leaves_9, R.drawable.leaves_10, R.drawable.leaves_11,
-                R.drawable.leaves_12, R.drawable.leaves_13
+            candidates = new String[] {
+                "fall/drawable/leaves_0.png", "fall/drawable/leaves_1.png", "fall/drawable/leaves_2.png", "fall/drawable/leaves_3.png",
+                "fall/drawable/leaves_4.png", "fall/drawable/leaves_5.png", "fall/drawable/leaves_6.png", "fall/drawable/leaves_7.png",
+                "fall/drawable/leaves_8.png", "fall/drawable/leaves_9.png", "fall/drawable/leaves_10.png", "fall/drawable/leaves_11.png",
+                "fall/drawable/leaves_12.png", "fall/drawable/leaves_13.png"
             };
         }
 
@@ -72,8 +71,8 @@ final class FallVKNative {
         int frameWidth = 0;
         int frameHeight = 0;
 
-        for (int resId : candidates) {
-            Bitmap bitmap = decodeArgbBitmap(context, resId);
+        for (String assetPath : candidates) {
+            Bitmap bitmap = decodeArgbBitmap(context, assetPath);
             if (bitmap == null) {
                 continue;
             }
@@ -92,7 +91,7 @@ final class FallVKNative {
         }
 
         if (leafBitmaps.isEmpty()) {
-            uploadTexture(context, handle, R.drawable.leaves_5, true);
+            uploadTexture(context, handle, "fall/drawable/leaves_5.png", true);
             nSetLeafAtlasFrameCount(handle, 1);
             return 1;
         }
@@ -119,14 +118,12 @@ final class FallVKNative {
         return frameCount;
     }
 
-    private static Bitmap decodeArgbBitmap(Context context, int drawableRes) {
+    private static Bitmap decodeArgbBitmap(Context context, String assetPath) {
         if (context == null) {
             return null;
         }
 
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inScaled = false;
-        Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(), drawableRes, options);
+        Bitmap bitmap = AssetLoader.decodeBitmap(context, assetPath);
         if (bitmap == null) {
             return null;
         }
@@ -140,8 +137,8 @@ final class FallVKNative {
         return argb;
     }
 
-    private static int[] decodeArgbPixels(Context context, int drawableRes) {
-        Bitmap argbBitmap = decodeArgbBitmap(context, drawableRes);
+    private static int[] decodeArgbPixels(Context context, String assetPath) {
+        Bitmap argbBitmap = decodeArgbBitmap(context, assetPath);
         if (argbBitmap == null) {
             return new int[0];
         }
@@ -173,12 +170,12 @@ final class FallVKNative {
         return packed;
     }
 
-    private static void uploadTexture(Context context, long handle, int drawableRes, boolean leaf) {
+    private static void uploadTexture(Context context, long handle, String assetPath, boolean leaf) {
         if (context == null || handle == 0L) {
             return;
         }
 
-        int[] pixelData = decodeArgbPixels(context, drawableRes);
+        int[] pixelData = decodeArgbPixels(context, assetPath);
         if (pixelData.length < 3) {
             return;
         }

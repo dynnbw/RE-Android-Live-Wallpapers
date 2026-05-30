@@ -25,7 +25,7 @@ public class PolarClockSettingsFragment extends PreferenceFragmentCompat {
 
         previewPreference = findPreference("pref_preview");
         if (previewPreference != null) {
-            previewPreference.setSceneFactory((width, height) -> new PolarClockGL(width, height));
+            previewPreference.setSceneFactory((width, height) -> new PolarClockGL(width, height, requireContext()));
         }
 
 

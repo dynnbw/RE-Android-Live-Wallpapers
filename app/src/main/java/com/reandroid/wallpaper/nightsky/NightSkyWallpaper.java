@@ -6,6 +6,6 @@ import com.reandroid.gles.GLESWallpaper;
 public class NightSkyWallpaper extends GLESWallpaper {
     @Override
     protected GLESScene createScene(int width, int height) {
-        return new NightSkyGL(width, height);
+        return new NightSkyGL(width, height, this);
     }
 }

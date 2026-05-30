@@ -6,6 +6,6 @@ import com.reandroid.gles.GLESWallpaper;
 public class BlueSeaWallpaper extends GLESWallpaper {
     @Override
     protected GLESScene createScene(int width, int height) {
-        return new BlueSeaGL(width, height);
+        return new BlueSeaGL(this, width, height);
     }
 }

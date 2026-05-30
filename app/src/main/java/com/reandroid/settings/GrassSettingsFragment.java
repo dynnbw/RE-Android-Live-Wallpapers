@@ -41,7 +41,7 @@ public class GrassSettingsFragment extends PreferenceFragmentCompat
 
         PreviewPreference preview = findPreference("pref_preview");
         if (preview != null) {
-            preview.setSceneFactory((width, height) -> new GrassGL(width, height));
+            preview.setSceneFactory((width, height) -> new GrassGL(width, height, requireContext()));
         }
 
         mAccurateSunPref = findPreference("pref_grass_accurate_sun");

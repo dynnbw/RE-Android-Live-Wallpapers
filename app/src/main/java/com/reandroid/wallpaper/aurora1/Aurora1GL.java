@@ -1,7 +1,7 @@
 package com.reandroid.wallpaper.aurora1;
 
+import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
 import android.opengl.Matrix;
@@ -9,9 +9,8 @@ import android.os.Process;
 import android.util.Log;
 import android.view.MotionEvent;
 
-import com.reandroid.wallpaper.R;
+import com.reandroid.gles.AssetLoader;
 import com.reandroid.gles.GLESScene;
-import com.reandroid.gles.RawResourceLoader;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -20,6 +19,7 @@ import java.nio.FloatBuffer;
 public class Aurora1GL extends GLESScene {
     private static final String TAG = "Aurora1GL";
 
+    private final Context mContext;
     private final Aurora1Scene mScene;
     private final float[] mModelMatrix = new float[16];
     private final float[] mMvpMatrix = new float[16];
@@ -40,8 +40,9 @@ public class Aurora1GL extends GLESScene {
     private final int[] mTextures = new int[10];
     private long mShaderStartTimeMs;
 
-    public Aurora1GL(int width, int height) {
+    public Aurora1GL(Context context, int width, int height) {
         super(width, height);
+        mContext = context;
         mScene = new Aurora1Scene(width, height);
     }
 
@@ -144,8 +145,8 @@ public class Aurora1GL extends GLESScene {
     }
 
     private void initBuffers() {
-        float[] vertices = RawResourceLoader.readRawFloatArray(mResources, R.raw.aurora1_quad_pos);
-        float[] texCoords = RawResourceLoader.readRawFloatArray(mResources, R.raw.aurora1_quad_tex);
+        float[] vertices = AssetLoader.readFloatArray(mContext, "aurora1/data/aurora1_quad_pos.csv");
+        float[] texCoords = AssetLoader.readFloatArray(mContext, "aurora1/data/aurora1_quad_tex.csv");
         if (vertices.length != 8 || texCoords.length != 8) {
             throw new IllegalStateException("Aurora1 quad data size mismatch");
         }
@@ -162,8 +163,8 @@ public class Aurora1GL extends GLESScene {
 
     private void initProgram() {
         mProgram = createProgram(
-                RawResourceLoader.readRawText(mResources, R.raw.aurora1_sprite_vs),
-                RawResourceLoader.readRawText(mResources, R.raw.aurora1_sprite_fs));
+                AssetLoader.readText(mContext, "aurora1/shaders/GLES/aurora1_sprite_vs.glsl"),
+                AssetLoader.readText(mContext, "aurora1/shaders/GLES/aurora1_sprite_fs.glsl"));
         mPositionHandle = GLES20.glGetAttribLocation(mProgram, "aPosition");
         mTexCoordHandle = GLES20.glGetAttribLocation(mProgram, "aTexCoord");
         mMatrixHandle = GLES20.glGetUniformLocation(mProgram, "uMatrix");
@@ -175,36 +176,32 @@ public class Aurora1GL extends GLESScene {
     }
 
     private void initTextures() {
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inScaled = false;
-        options.inPremultiplied = false;
-
-        mTextures[Aurora1Scene.TEXTURE_BG] = loadTexture(R.drawable.aurora1_bg, options);
-        mTextures[Aurora1Scene.TEXTURE_BG_LANDSCAPE] = loadTexture(R.drawable.aurora1_bg_landscape, options);
-        mTextures[Aurora1Scene.TEXTURE_AURORA_1] = loadTexture(R.drawable.aurora1_aurora_1, options);
-        mTextures[Aurora1Scene.TEXTURE_AURORA_2] = loadTexture(R.drawable.aurora1_aurora_2, options);
-        mTextures[Aurora1Scene.TEXTURE_AURORA_3] = loadTexture(R.drawable.aurora1_aurora_3, options);
-        mTextures[Aurora1Scene.TEXTURE_STAR] = loadTexture(R.drawable.aurora1_star, options);
-        mTextures[Aurora1Scene.TEXTURE_PARTICLE_P1_1] = loadTexture(R.drawable.aurora1_particle_p1_1, options);
-        mTextures[Aurora1Scene.TEXTURE_PARTICLE_P1_2] = loadTexture(R.drawable.aurora1_particle_p1_2, options);
-        mTextures[Aurora1Scene.TEXTURE_PARTICLE_P1_3] = loadTexture(R.drawable.aurora1_particle_p1_3, options);
-        mTextures[Aurora1Scene.TEXTURE_PARTICLE_S1] = loadTexture(R.drawable.aurora1_particle_s1, options);
+        mTextures[Aurora1Scene.TEXTURE_BG] = loadTextureFromAsset("aurora1/drawable/aurora1_bg.png");
+        mTextures[Aurora1Scene.TEXTURE_BG_LANDSCAPE] = loadTextureFromAsset("aurora1/drawable/aurora1_bg_landscape.png");
+        mTextures[Aurora1Scene.TEXTURE_AURORA_1] = loadTextureFromAsset("aurora1/drawable/aurora1_aurora_1.png");
+        mTextures[Aurora1Scene.TEXTURE_AURORA_2] = loadTextureFromAsset("aurora1/drawable/aurora1_aurora_2.png");
+        mTextures[Aurora1Scene.TEXTURE_AURORA_3] = loadTextureFromAsset("aurora1/drawable/aurora1_aurora_3.png");
+        mTextures[Aurora1Scene.TEXTURE_STAR] = loadTextureFromAsset("aurora1/drawable/aurora1_star.png");
+        mTextures[Aurora1Scene.TEXTURE_PARTICLE_P1_1] = loadTextureFromAsset("aurora1/drawable/aurora1_particle_p1_1.png");
+        mTextures[Aurora1Scene.TEXTURE_PARTICLE_P1_2] = loadTextureFromAsset("aurora1/drawable/aurora1_particle_p1_2.png");
+        mTextures[Aurora1Scene.TEXTURE_PARTICLE_P1_3] = loadTextureFromAsset("aurora1/drawable/aurora1_particle_p1_3.png");
+        mTextures[Aurora1Scene.TEXTURE_PARTICLE_S1] = loadTextureFromAsset("aurora1/drawable/aurora1_particle_s1.png");
     }
 
-    private int loadTexture(int resId, BitmapFactory.Options options) {
+    private int loadTextureFromAsset(String assetPath) {
         Bitmap bitmap = null;
         try {
-            bitmap = BitmapFactory.decodeResource(mResources, resId, options);
+            bitmap = AssetLoader.decodeBitmap(mContext, assetPath);
         } catch (Exception e) {
-            Log.e(TAG, "Failed to decode resource " + resId, e);
-            return 0;  // 返回0让drawSprite跳过这个精灵
-        }
-        
-        if (bitmap == null) {
-            Log.e(TAG, "Failed to decode texture " + resId + " - bitmap is null");
+            Log.e(TAG, "Failed to decode asset " + assetPath, e);
             return 0;
         }
-        
+
+        if (bitmap == null) {
+            Log.e(TAG, "Failed to decode texture " + assetPath + " - bitmap is null");
+            return 0;
+        }
+
         int[] texture = new int[1];
         GLES20.glGenTextures(1, texture, 0);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture[0]);
@@ -214,7 +211,7 @@ public class Aurora1GL extends GLESScene {
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
         GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
         bitmap.recycle();
-        Log.d(TAG, "Loaded texture " + resId + " -> " + texture[0]);
+        Log.d(TAG, "Loaded texture " + assetPath + " -> " + texture[0]);
         return texture[0];
     }
 

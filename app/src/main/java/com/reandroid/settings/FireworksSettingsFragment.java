@@ -72,7 +72,7 @@ public class FireworksSettingsFragment extends PreferenceFragmentCompat {
 
         PreviewPreference preview = findPreference("pref_preview");
         if (preview != null) {
-            preview.setSceneFactory((width, height) -> new FireworksGL(width, height));
+            preview.setSceneFactory((width, height) -> new FireworksGL(width, height, requireContext()));
         }
 
         Preference openPicker = findPreference("pref_open_wallpaper_picker");

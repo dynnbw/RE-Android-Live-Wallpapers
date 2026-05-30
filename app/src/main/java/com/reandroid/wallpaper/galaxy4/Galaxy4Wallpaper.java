@@ -16,6 +16,9 @@
 
 package com.reandroid.wallpaper.galaxy4;
 
+import android.content.Context;
+
+import com.reandroid.gles.AssetLoader;
 import com.reandroid.gles.GLESScene;
 import com.reandroid.gles.GLESWallpaper;
 
@@ -24,6 +27,12 @@ import com.reandroid.gles.GLESWallpaper;
  * 继承自GLESWallpaper（OpenGL ES壁纸基类），负责创建Galaxy4壁纸的OpenGL场景
  */
 public class Galaxy4Wallpaper extends GLESWallpaper {
+    private final Context mContext;
+
+    public Galaxy4Wallpaper() {
+        mContext = this;
+    }
+
     /**
      * 创建壁纸的OpenGL渲染场景
      * @param width 屏幕宽度

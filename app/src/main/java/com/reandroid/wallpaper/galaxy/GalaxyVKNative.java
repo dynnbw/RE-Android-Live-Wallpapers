@@ -3,10 +3,9 @@ package com.reandroid.wallpaper.galaxy;
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.view.Surface;
 
-import com.reandroid.wallpaper.R;
+import com.reandroid.gles.AssetLoader;
 import com.reandroid.settings.WallpaperSettings;
 
 final class GalaxyVKNative {
@@ -37,23 +36,20 @@ final class GalaxyVKNative {
     static native boolean nIsVulkanSupported();
 
     static void uploadLightTexture(Context context, long handle) {
-        int lightRes = WallpaperSettings.isGalaxyLight2Enabled(false)
-                ? R.drawable.light2
-                : R.drawable.light1;
-        uploadTexture(context, handle, lightRes, true);
+        boolean useLight2 = WallpaperSettings.isGalaxyLight2Enabled(false);
+        String assetPath = useLight2 ? "galaxy/drawable/light2.png" : "galaxy/drawable/light1.jpg";
+        uploadTexture(context, handle, assetPath, true);
     }
 
     static void uploadBackgroundTexture(Context context, long handle) {
-        uploadTexture(context, handle, R.drawable.galaxy_space, false);
+        uploadTexture(context, handle, "galaxy/drawable/galaxy_space.jpg", false);
     }
 
-    private static void uploadTexture(Context context, long handle, int drawableRes, boolean isLight) {
+    private static void uploadTexture(Context context, long handle, String assetPath, boolean isLight) {
         if (context == null || handle == 0L) {
             return;
         }
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inScaled = false;
-        Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(), drawableRes, options);
+        Bitmap bitmap = AssetLoader.decodeBitmap(context, assetPath);
         if (bitmap == null) {
             return;
         }

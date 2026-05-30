@@ -18,7 +18,7 @@ public class Aurora1SettingsFragment extends PreferenceFragmentCompat {
 
         PreviewPreference preview = findPreference("pref_preview");
         if (preview != null) {
-            preview.setSceneFactory(Aurora1GL::new);
+            preview.setSceneFactory((w, h) -> new Aurora1GL(requireContext(), w, h));
         }
 
         Preference openPicker = findPreference("pref_open_wallpaper_picker");

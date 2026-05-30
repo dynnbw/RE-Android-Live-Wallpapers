@@ -27,8 +27,8 @@ import android.util.Log;
 import androidx.annotation.Nullable;
 
 import com.reandroid.wallpaper.R;
+import com.reandroid.gles.AssetLoader;
 import com.reandroid.gles.GLESScene;
-import com.reandroid.gles.RawResourceLoader;
 import com.reandroid.gles.GLESWallpaper;
 
 import java.nio.ByteBuffer;
@@ -46,6 +46,8 @@ import static org.xmlpull.v1.XmlPullParser.START_TAG;
  */
 public class PolarClockGL extends GLESScene implements SharedPreferences.OnSharedPreferenceChangeListener {
     private static final String TAG = "PolarClockGL";
+
+    private final Context mContext;
 
     // 时钟环的厚度常量（单位：像素）
     private static final float SMALL_RING_THICKNESS = 8.0f;    // 小环厚度
@@ -93,9 +95,11 @@ public class PolarClockGL extends GLESScene implements SharedPreferences.OnShare
      * 构造函数，初始化渲染场景的宽高
      * @param width 渲染宽度
      * @param height 渲染高度
+     * @param context 应用上下文
      */
-    public PolarClockGL(int width, int height) {
+    public PolarClockGL(int width, int height, Context context) {
         super(width, height);
+        mContext = context.getApplicationContext();
     }
 
     /**
@@ -363,9 +367,9 @@ public class PolarClockGL extends GLESScene implements SharedPreferences.OnShare
      */
     private void setupProgram() {
         // 顶点着色器代码：处理顶点位置和矩阵变换
-        String vertex = RawResourceLoader.readRawText(mResources, R.raw.polarclock_vs);
+        String vertex = AssetLoader.readText(mContext, "polarclock/shaders/GLES/polarclock_vs.glsl");
         // 片元着色器代码：处理像素颜色
-        String fragment = RawResourceLoader.readRawText(mResources, R.raw.polarclock_fs);
+        String fragment = AssetLoader.readText(mContext, "polarclock/shaders/GLES/polarclock_fs.glsl");
 
         // 加载并编译着色器
         int vShader = loadShader(GLES20.GL_VERTEX_SHADER, vertex);

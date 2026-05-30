@@ -6,9 +6,8 @@ import android.graphics.Color;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 
+import com.reandroid.gles.AssetLoader;
 import com.reandroid.gles.GLESScene;
-import com.reandroid.wallpaper.R;
-import com.reandroid.gles.RawResourceLoader;
 
 import androidx.preference.PreferenceManager;
 
@@ -175,12 +174,12 @@ public class MusicVisManyScene extends GLESScene {
     }
 
     private void initGLIfNeeded() {
-        if (mQuadProgram != 0 || mResources == null) return;
+        if (mQuadProgram != 0 || mContext == null) return;
 
-        String quadVs = RawResourceLoader.readRawText(mResources, R.raw.musicvis_many_quad_vs);
-        String quadFs = RawResourceLoader.readRawText(mResources, R.raw.musicvis_many_quad_fs);
-        String lineVs = RawResourceLoader.readRawText(mResources, R.raw.musicvis_many_line_vs);
-        String lineFs = RawResourceLoader.readRawText(mResources, R.raw.musicvis_many_line_fs);
+        String quadVs = AssetLoader.readText(mContext, "musicvis/shaders/GLES/musicvis_many_quad_vs.glsl");
+        String quadFs = AssetLoader.readText(mContext, "musicvis/shaders/GLES/musicvis_many_quad_fs.glsl");
+        String lineVs = AssetLoader.readText(mContext, "musicvis/shaders/GLES/musicvis_many_line_vs.glsl");
+        String lineFs = AssetLoader.readText(mContext, "musicvis/shaders/GLES/musicvis_many_line_fs.glsl");
         mQuadProgram = createProgram(quadVs, quadFs);
         mLineProgram = createProgram(lineVs, lineFs);
         if (mQuadProgram == 0 || mLineProgram == 0) return;
@@ -195,16 +194,16 @@ public class MusicVisManyScene extends GLESScene {
         mLineMvpLoc = GLES20.glGetUniformLocation(mLineProgram, "uMVP");
         mLineSamplerLoc = GLES20.glGetUniformLocation(mLineProgram, "uTex");
 
-        mTexBackground = GLTextureUtils.loadTexture(mResources, R.drawable.musicvis_vu_background);
-        mTexFrame = GLTextureUtils.loadTexture(mResources, R.drawable.musicvis_vu_frame);
-        mTexNeedle = GLTextureUtils.loadTexture(mResources, R.drawable.musicvis_vu_needle);
-        mTexPeakOn = GLTextureUtils.loadTexture(mResources, R.drawable.musicvis_vu_peak_on);
-        mTexPeakOff = GLTextureUtils.loadTexture(mResources, R.drawable.musicvis_vu_peak_off);
-        mTexBlack = GLTextureUtils.loadTexture(mResources, R.drawable.musicvis_black);
-        mTexAlbum = GLTextureUtils.loadTexture(mResources, R.drawable.musicvis_albumart);
-        mTexLine = GLTextureUtils.loadTexture(mResources, R.drawable.musicvis_fire);
+        mTexBackground = GLTextureUtils.loadTextureFromAsset(mContext, "musicvis/drawable/musicvis_vu_background.png");
+        mTexFrame = GLTextureUtils.loadTextureFromAsset(mContext, "musicvis/drawable/musicvis_vu_frame.png");
+        mTexNeedle = GLTextureUtils.loadTextureFromAsset(mContext, "musicvis/drawable/musicvis_vu_needle.png");
+        mTexPeakOn = GLTextureUtils.loadTextureFromAsset(mContext, "musicvis/drawable/musicvis_vu_peak_on.png");
+        mTexPeakOff = GLTextureUtils.loadTextureFromAsset(mContext, "musicvis/drawable/musicvis_vu_peak_off.png");
+        mTexBlack = GLTextureUtils.loadTextureFromAsset(mContext, "musicvis/drawable/musicvis_black.png");
+        mTexAlbum = GLTextureUtils.loadTextureFromAsset(mContext, "musicvis/drawable/musicvis_albumart.png");
+        mTexLine = GLTextureUtils.loadTextureFromAsset(mContext, "musicvis/drawable/musicvis_fire.png");
 
-        mQuadUvs = RawResourceLoader.readRawFloatArray(mResources, R.raw.musicvis_quad_uv);
+        mQuadUvs = AssetLoader.readFloatArray(mContext, "musicvis/data/musicvis_quad_uv.csv");
 
         updateProjection();
     }

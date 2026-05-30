@@ -870,14 +870,14 @@ private:
     // ===== pipelines =====
 
     bool createPipelinesLocked() {
-        VkShaderModule skyVert  = createShaderModuleLocked({"shaders/grassvk_sky.vert.spv",  "grassvk_sky.vert.spv"});
-        VkShaderModule skyFrag  = createShaderModuleLocked({"shaders/grassvk_sky.frag.spv",  "grassvk_sky.frag.spv"});
-        VkShaderModule gVert    = createShaderModuleLocked({"shaders/grassvk_grass.vert.spv", "grassvk_grass.vert.spv"});
-        VkShaderModule gFrag    = createShaderModuleLocked({"shaders/grassvk_grass.frag.spv", "grassvk_grass.frag.spv"});
-        VkShaderModule sVert    = createShaderModuleLocked({"shaders/grassvk_sprite.vert.spv", "grassvk_sprite.vert.spv"});
-        VkShaderModule sFrag    = createShaderModuleLocked({"shaders/grassvk_sprite.frag.spv", "grassvk_sprite.frag.spv"});
-        VkShaderModule mVert    = createShaderModuleLocked({"shaders/grassvk_moon.vert.spv", "grassvk_moon.vert.spv"});
-        VkShaderModule mFrag    = createShaderModuleLocked({"shaders/grassvk_moon.frag.spv", "grassvk_moon.frag.spv"});
+        VkShaderModule skyVert  = createShaderModuleLocked({"shaders/grassvk_sky.vert.spv",  "shaders/grassvk_sky.vert.spv"});
+        VkShaderModule skyFrag  = createShaderModuleLocked({"shaders/grassvk_sky.frag.spv",  "shaders/grassvk_sky.frag.spv"});
+        VkShaderModule gVert    = createShaderModuleLocked({"shaders/grassvk_grass.vert.spv", "shaders/grassvk_grass.vert.spv"});
+        VkShaderModule gFrag    = createShaderModuleLocked({"shaders/grassvk_grass.frag.spv", "shaders/grassvk_grass.frag.spv"});
+        VkShaderModule sVert    = createShaderModuleLocked({"shaders/grassvk_sprite.vert.spv", "shaders/grassvk_sprite.vert.spv"});
+        VkShaderModule sFrag    = createShaderModuleLocked({"shaders/grassvk_sprite.frag.spv", "shaders/grassvk_sprite.frag.spv"});
+        VkShaderModule mVert    = createShaderModuleLocked({"shaders/grassvk_moon.vert.spv", "shaders/grassvk_moon.vert.spv"});
+        VkShaderModule mFrag    = createShaderModuleLocked({"shaders/grassvk_moon.frag.spv", "shaders/grassvk_moon.frag.spv"});
 
         auto cleanup = [&](){
             if (skyVert  != VK_NULL_HANDLE) vkDestroyShaderModule(device_, skyVert,  nullptr);

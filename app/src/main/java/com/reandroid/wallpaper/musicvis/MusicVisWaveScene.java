@@ -7,9 +7,8 @@ import android.opengl.GLES20;
 import android.opengl.Matrix;
 import android.util.Log;
 
-import com.reandroid.wallpaper.R;
+import com.reandroid.gles.AssetLoader;
 import com.reandroid.gles.GLESScene;
-import com.reandroid.gles.RawResourceLoader;
 
 import androidx.preference.PreferenceManager;
 
@@ -27,7 +26,7 @@ public class MusicVisWaveScene extends GLESScene {
 
     private final Context mContext;
     private final Mode mMode;
-    private final int mTextureResId;
+    private final String mLineTextureAssetPath;
 
     private int mProgram;
     private int mPosLoc;
@@ -85,11 +84,11 @@ public class MusicVisWaveScene extends GLESScene {
     private static final float FADEOUT_FACTOR = 0.95f;
     private static final int FADEIN_LENGTH = 15;
 
-    public MusicVisWaveScene(int width, int height, Context context, Mode mode, int textureResId) {
+    public MusicVisWaveScene(int width, int height, Context context, Mode mode, String textureAssetPath) {
         super(width, height);
         mContext = context;
         mMode = mode;
-        mTextureResId = textureResId;
+        mLineTextureAssetPath = textureAssetPath;
         initPointData();
     }
 
@@ -177,18 +176,18 @@ public class MusicVisWaveScene extends GLESScene {
 
         GLES20.glClearColor(0f, 0f, 0f, 1f);
 
-        String vs = RawResourceLoader.readRawText(mResources, R.raw.musicvis_wave_vs);
-        String fs = RawResourceLoader.readRawText(mResources, R.raw.musicvis_wave_fs);
+        String vs = AssetLoader.readText(mContext, "musicvis/shaders/GLES/musicvis_wave_vs.glsl");
+        String fs = AssetLoader.readText(mContext, "musicvis/shaders/GLES/musicvis_wave_fs.glsl");
         mProgram = createProgram(vs, fs);
         if (mProgram == 0) { Log.e(TAG, "Program creation failed"); return; }
         mPosLoc = GLES20.glGetAttribLocation(mProgram, "aPosition");
         mTexLoc = GLES20.glGetAttribLocation(mProgram, "aTexCoord");
         mMvpLoc = GLES20.glGetUniformLocation(mProgram, "uMVP");
         mSamplerLoc = GLES20.glGetUniformLocation(mProgram, "uTex");
-        mTextureId = GLTextureUtils.loadTexture(mResources, mTextureResId);
+        mTextureId = GLTextureUtils.loadTextureFromAsset(mContext, mLineTextureAssetPath);
 
-        String cvs = RawResourceLoader.readRawText(mResources, R.raw.musicvis_wave_color_vs);
-        String cfs = RawResourceLoader.readRawText(mResources, R.raw.musicvis_wave_color_fs);
+        String cvs = AssetLoader.readText(mContext, "musicvis/shaders/GLES/musicvis_wave_color_vs.glsl");
+        String cfs = AssetLoader.readText(mContext, "musicvis/shaders/GLES/musicvis_wave_color_fs.glsl");
         mColorProgram = createProgram(cvs, cfs);
         if (mColorProgram != 0) {
             mColorPosLoc = GLES20.glGetAttribLocation(mColorProgram, "aPosition");
@@ -197,7 +196,7 @@ public class MusicVisWaveScene extends GLESScene {
             mColorMvpLoc = GLES20.glGetUniformLocation(mColorProgram, "uMVP");
             mColorSamplerLoc = GLES20.glGetUniformLocation(mColorProgram, "uTex");
         }
-        mGreyTextureId = GLTextureUtils.loadTexture(mResources, R.drawable.musicvis_grey);
+        mGreyTextureId = GLTextureUtils.loadTextureFromAsset(mContext, "musicvis/drawable/musicvis_grey.png");
     }
 
     private void updateSettings() {

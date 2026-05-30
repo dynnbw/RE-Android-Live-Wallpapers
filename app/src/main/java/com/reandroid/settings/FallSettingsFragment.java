@@ -25,7 +25,7 @@ public class FallSettingsFragment extends PreferenceFragmentCompat {
 
         PreviewPreference preview = findPreference("pref_preview");
         if (preview != null) {
-            preview.setSceneFactory((width, height) -> new FallGL(width, height));
+            preview.setSceneFactory((width, height) -> new FallGL(requireContext(), width, height));
         }
 
         Preference openPicker = findPreference("pref_open_wallpaper_picker");

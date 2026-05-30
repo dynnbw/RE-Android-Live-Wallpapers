@@ -1,17 +1,17 @@
 package com.reandroid.wallpaper.nexus;
 
 import android.app.WallpaperManager;
+import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
 import android.opengl.Matrix;
 import android.os.SystemClock;
 import android.util.Log;
 
-import com.reandroid.wallpaper.R;
+import com.reandroid.gles.AssetLoader;
 import com.reandroid.gles.GLESScene;
-import com.reandroid.gles.RawResourceLoader;
+import com.reandroid.gles.GLESWallpaper;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -67,6 +67,9 @@ public class NexusGL extends GLESScene {
     // 背景管理器（含GL纹理操作）
     private final NexusBackgroundManager mBackgroundManager = new NexusBackgroundManager();
 
+    // 应用上下文（用于AssetLoader读取assets目录）
+    private final Context mContext;
+
     /**
      * 构造方法
      * @param width 初始宽度
@@ -74,6 +77,7 @@ public class NexusGL extends GLESScene {
      */
     public NexusGL(int width, int height) {
         super(width, height);
+        mContext = GLESWallpaper.getAppContext();
         mScene = new NexusScene(width, height);
     }
 
@@ -164,7 +168,7 @@ public class NexusGL extends GLESScene {
         }
 
         // 背景设置变化时重新加载纹理
-        mTexBackground = mBackgroundManager.reloadIfChanged(mResources, mTexBackground);
+        mTexBackground = mBackgroundManager.reloadIfChanged(mContext, mTexBackground);
 
         // 判断是否横屏（宽>高则旋转渲染）
         mScene.mRotate = mWidth > mHeight;
@@ -201,7 +205,7 @@ public class NexusGL extends GLESScene {
 
         mScene.applySettings(NexusSettings.load(mResources));
 
-        NexusShaderProgram.Handles handles = NexusShaderProgram.create(mResources);
+        NexusShaderProgram.Handles handles = NexusShaderProgram.create(mContext, mResources);
         if (handles == null) {
             Log.e(TAG, "createProgram failed, skip GL init");
             return;
@@ -220,10 +224,10 @@ public class NexusGL extends GLESScene {
             return;
         }
         // 加载UV坐标
-        mScene.mUv0 = RawResourceLoader.readRawFloatArray(mResources, R.raw.nexus_uv_0);
-        mScene.mUv90 = RawResourceLoader.readRawFloatArray(mResources, R.raw.nexus_uv_90);
-        mScene.mUv180 = RawResourceLoader.readRawFloatArray(mResources, R.raw.nexus_uv_180);
-        mScene.mUv270 = RawResourceLoader.readRawFloatArray(mResources, R.raw.nexus_uv_270);
+        mScene.mUv0 = AssetLoader.readFloatArray(mContext, "nexus/data/nexus_uv_0.csv");
+        mScene.mUv90 = AssetLoader.readFloatArray(mContext, "nexus/data/nexus_uv_90.csv");
+        mScene.mUv180 = AssetLoader.readFloatArray(mContext, "nexus/data/nexus_uv_180.csv");
+        mScene.mUv270 = AssetLoader.readFloatArray(mContext, "nexus/data/nexus_uv_270.csv");
         // 初始化脉冲数据
         mScene.initPulses(mWidth, mHeight, SystemClock.uptimeMillis());
         // 更新投影矩阵
@@ -244,30 +248,24 @@ public class NexusGL extends GLESScene {
      * 包括背景、脉冲、光晕纹理
      */
     private void loadTextures() {
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        // 禁用自动缩放（保持原始尺寸）
-        options.inScaled = false;
-        options.inPremultiplied = false;
-
         // 加载背景纹理
-        mTexBackground = mBackgroundManager.loadInitialTexture(mResources);
+        mTexBackground = mBackgroundManager.loadInitialTexture(mContext);
         // 加载脉冲纹理
-        mTexPulse = loadTexture(R.drawable.pulse, options);
+        mTexPulse = loadTexture("nexus/drawable/pulse.png");
         // 加载光晕纹理
-        mTexGlow = loadTexture(R.drawable.glow, options);
+        mTexGlow = loadTexture("nexus/drawable/glow.png");
     }
 
     /**
      * 加载单个纹理资源
-     * @param resourceId 资源ID
-     * @param options 位图加载选项
+     * @param assetPath assets目录下的纹理路径
      * @return 纹理ID
      */
-    private int loadTexture(int resourceId, BitmapFactory.Options options) {
-        // 从资源解码位图
-        Bitmap bitmap = BitmapFactory.decodeResource(mResources, resourceId, options);
+    private int loadTexture(String assetPath) {
+        // 从assets解码位图
+        Bitmap bitmap = AssetLoader.decodeBitmap(mContext, assetPath);
         if (bitmap == null) {
-            Log.e(TAG, "纹理解码失败: resId=" + resourceId);
+            Log.e(TAG, "纹理解码失败: assetPath=" + assetPath);
             return 0;
         }
         int[] textureHandle = new int[1];

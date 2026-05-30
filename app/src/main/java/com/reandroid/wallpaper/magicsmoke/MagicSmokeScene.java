@@ -3,8 +3,6 @@ package com.reandroid.wallpaper.magicsmoke;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-import com.reandroid.wallpaper.R;
-
 /**
  * Magic Smoke 壁纸场景逻辑层（纯 Java，无 GL 调用）。
  * 负责预设管理、动画状态更新、像素处理。
@@ -12,15 +10,6 @@ import com.reandroid.wallpaper.R;
 final class MagicSmokeScene {
 
     static final float REF_ASPECT = 3.0f / 4.0f;
-
-    // Noise texture resources
-    static final int[] NOISE_RES_IDS = {
-        R.drawable.noise1,
-        R.drawable.noise2,
-        R.drawable.noise3,
-        R.drawable.noise4,
-        R.drawable.noise5
-    };
 
     // Preset definitions (from original RenderScript)
     static class Preset {

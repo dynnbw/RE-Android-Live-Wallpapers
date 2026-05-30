@@ -6,9 +6,8 @@ import android.graphics.Color;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 
-import com.reandroid.wallpaper.R;
+import com.reandroid.gles.AssetLoader;
 import com.reandroid.gles.GLESScene;
-import com.reandroid.gles.RawResourceLoader;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -144,7 +143,7 @@ public class MusicVisCircleScene extends GLESScene {
     }
 
     private void initGLIfNeeded() {
-        if (mProgram != 0 || mResources == null) return;
+        if (mProgram != 0 || mContext == null) return;
         GLES20.glClearColor(0, 0, 0, 1);
 
         String vs = "attribute vec2 aPosition;uniform mat4 uMVP;void main(){gl_Position=uMVP*vec4(aPosition,0,1);}";
@@ -153,8 +152,8 @@ public class MusicVisCircleScene extends GLESScene {
         mPosLoc = GLES20.glGetAttribLocation(mProgram, "aPosition");
         mMvpLoc = GLES20.glGetUniformLocation(mProgram, "uMVP");
 
-        String cvs = RawResourceLoader.readRawText(mResources, R.raw.musicvis_wave_color_vs);
-        String cfs = RawResourceLoader.readRawText(mResources, R.raw.musicvis_wave_color_fs);
+        String cvs = AssetLoader.readText(mContext, "musicvis/shaders/GLES/musicvis_wave_color_vs.glsl");
+        String cfs = AssetLoader.readText(mContext, "musicvis/shaders/GLES/musicvis_wave_color_fs.glsl");
         mColorProgram = createProgram(cvs, cfs);
         if (mColorProgram != 0) {
             mColorPosLoc = GLES20.glGetAttribLocation(mColorProgram, "aPosition");
@@ -162,7 +161,7 @@ public class MusicVisCircleScene extends GLESScene {
             mColorMvpLoc = GLES20.glGetUniformLocation(mColorProgram, "uMVP");
             mColorSamplerLoc = GLES20.glGetUniformLocation(mColorProgram, "uTex");
         }
-        mGreyTextureId = GLTextureUtils.loadTexture(mResources, R.drawable.musicvis_grey);
+        mGreyTextureId = GLTextureUtils.loadTextureFromAsset(mContext, "musicvis/drawable/musicvis_grey.png");
     }
 
     private void updateSettings() {

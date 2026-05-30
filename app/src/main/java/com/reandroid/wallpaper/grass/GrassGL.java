@@ -26,10 +26,9 @@ import android.os.Process;
 import android.os.SystemClock;
 import android.util.Log;
 
-import com.reandroid.wallpaper.R;
+import com.reandroid.gles.AssetLoader;
 import com.reandroid.gles.GLESScene;
 import com.reandroid.gles.GLESWallpaper;
-import com.reandroid.gles.RawResourceLoader;
 import com.reandroid.settings.WallpaperSettings;
 
 import java.util.ArrayList;
@@ -64,6 +63,7 @@ public class GrassGL extends GLESScene {
     private static final int LEGACY_FLOATS_PER_QUAD = 6 * LEGACY_FLOATS_PER_VERTEX;
 
     // ---- 场景逻辑层（非 GL）----
+    private final Context mContext;
     private final GrassScene mScene;
     private final GrassSpriteRenderer mSpriteRenderer = new GrassSpriteRenderer();
     private final GrassBackgroundRenderer mBackgroundRenderer = new GrassBackgroundRenderer();
@@ -213,8 +213,9 @@ public class GrassGL extends GLESScene {
 
     // ---- Constructor ----
 
-    public GrassGL(int width, int height) {
+    public GrassGL(int width, int height, Context context) {
         super(width, height);
+        mContext = context;
         mScene = new GrassScene(width, height);
         mLegacyParticleRenderer = new GrassLegacyParticleRenderer(mScene, mSpriteRenderer);
         mBackgroundRenderer.setViewport(width, height);
@@ -396,8 +397,8 @@ public class GrassGL extends GLESScene {
         }
 
         private void createBackgroundProgram() {
-        String vs = RawResourceLoader.readRawText(mResources, R.raw.grass_bg_vs);
-        String fs = RawResourceLoader.readRawText(mResources, R.raw.grass_bg_fs);
+        String vs = AssetLoader.readText(mContext, "grass/shaders/GLES/grass_bg_vs.glsl");
+        String fs = AssetLoader.readText(mContext, "grass/shaders/GLES/grass_bg_fs.glsl");
         mBackgroundProgram = createProgram(vs, fs);
         mBgPositionHandle = GLES20.glGetAttribLocation(mBackgroundProgram, "aPosition");
         mBgTexHandle = GLES20.glGetAttribLocation(mBackgroundProgram, "aTexCoord");
@@ -411,8 +412,8 @@ public class GrassGL extends GLESScene {
     }
 
     private void createSkyProgram() {
-        String vs = RawResourceLoader.readRawText(mResources, R.raw.grass_sky_vs);
-        String fs = RawResourceLoader.readRawText(mResources, R.raw.grass_sky_fs);
+        String vs = AssetLoader.readText(mContext, "grass/shaders/GLES/grass_sky_vs.glsl");
+        String fs = AssetLoader.readText(mContext, "grass/shaders/GLES/grass_sky_fs.glsl");
         mSkyProgram = createProgram(vs, fs);
         mSkyPositionHandle = GLES20.glGetAttribLocation(mSkyProgram, "aPosition");
         mSkyTexHandle = GLES20.glGetAttribLocation(mSkyProgram, "aTexCoord");
@@ -445,8 +446,8 @@ public class GrassGL extends GLESScene {
     }
 
     private void createGrassProgram() {
-        String vs = RawResourceLoader.readRawText(mResources, R.raw.grass_grass_vs);
-        String fs = RawResourceLoader.readRawText(mResources, R.raw.grass_grass_fs);
+        String vs = AssetLoader.readText(mContext, "grass/shaders/GLES/grass_grass_vs.glsl");
+        String fs = AssetLoader.readText(mContext, "grass/shaders/GLES/grass_grass_fs.glsl");
         mGrassProgram = createProgram(vs, fs);
         mGrassPositionHandle = GLES20.glGetAttribLocation(mGrassProgram, "aPosition");
         mGrassColorHandle = GLES20.glGetAttribLocation(mGrassProgram, "aColor");
@@ -456,8 +457,8 @@ public class GrassGL extends GLESScene {
     }
 
     private void createMoonProgram() {
-        String vs = RawResourceLoader.readRawText(mResources, R.raw.grass_moon_vs);
-        String fs = RawResourceLoader.readRawText(mResources, R.raw.grass_moon_fs);
+        String vs = AssetLoader.readText(mContext, "grass/shaders/GLES/grass_moon_vs.glsl");
+        String fs = AssetLoader.readText(mContext, "grass/shaders/GLES/grass_moon_fs.glsl");
         mMoonProgram = createProgram(vs, fs);
         mMoonPositionHandle = GLES20.glGetAttribLocation(mMoonProgram, "aPosition");
         mMoonTexHandle = GLES20.glGetAttribLocation(mMoonProgram, "aTexCoord");
@@ -481,8 +482,8 @@ public class GrassGL extends GLESScene {
     }
 
     private void createSunProgram() {
-        String vs = RawResourceLoader.readRawText(mResources, R.raw.grass_sun_vs);
-        String fs = RawResourceLoader.readRawText(mResources, R.raw.grass_sun_fs);
+        String vs = AssetLoader.readText(mContext, "grass/shaders/GLES/grass_sun_vs.glsl");
+        String fs = AssetLoader.readText(mContext, "grass/shaders/GLES/grass_sun_fs.glsl");
         mSunProgram = createProgram(vs, fs);
         if (mSunProgram != 0) {
             Log.i(TAG, "Procedural sun shader compiled successfully");
@@ -541,14 +542,14 @@ public class GrassGL extends GLESScene {
         mTexSunrise = createSkyFieldTexture(mSkyFieldSunrise, true);
         mTexSunset = createSkyFieldTexture(mSkyFieldSunset, true);
         mTexSky = createSkyFieldTexture(mSkyFieldDay, true);
-        mTexSolarEclipse = loadTexture(R.drawable.solar_eclipse, false, false);
+        mTexSolarEclipse = loadTexture("grass/drawable/solar_eclipse.jpg", false, false);
         mBackgroundRenderer.setSkyTextures(mTexNight, mTexSunrise, mTexSunset, mTexSky, mTexSolarEclipse);
-        mTexSun = loadTexture(R.drawable.sun, false, false);
+        mTexSun = loadTexture("grass/drawable/sun.png", false, false);
         mTexAA = createAlphaTexture();
-        mTexDandelion = loadTexture(R.drawable.dandelion, false, false);
-        mTexFirefly = loadTexture(R.drawable.firefly, false, false);
-        mTexFirefly1 = loadTexture(R.drawable.firefly1, false, false);
-        mTexFirefly2 = loadTexture(R.drawable.firefly2, false, false);
+        mTexDandelion = loadTexture("grass/drawable/dandelion.png", false, false);
+        mTexFirefly = loadTexture("grass/drawable/firefly.png", false, false);
+        mTexFirefly1 = loadTexture("grass/drawable/firefly1.png", false, false);
+        mTexFirefly2 = loadTexture("grass/drawable/firefly2.png", false, false);
         mWeatherRenderer.loadTextures(this::loadTexture, this::createSolidColorTexture);
         mStarRenderer.loadTextures(this::createSolidColorTexture);
     }
@@ -558,7 +559,7 @@ public class GrassGL extends GLESScene {
                 && mSkyFieldSunset != null && mSkyFieldDay != null) {
             return;
         }
-        String text = RawResourceLoader.readRawText(mResources, R.raw.grass_sky_fields);
+        String text = AssetLoader.readText(mContext, "grass/data/grass_sky_fields.txt");
         mSkyFieldNight = parseSkyFieldSection(text, "SKY_FIELD_NIGHT");
         mSkyFieldSunrise = parseSkyFieldSection(text, "SKY_FIELD_SUNRISE");
         mSkyFieldSunset = parseSkyFieldSection(text, "SKY_FIELD_SUNSET");
@@ -676,7 +677,7 @@ public class GrassGL extends GLESScene {
     }
 
     private void loadMoonTextures() {
-        mTexMoonBase = loadTexture(R.drawable.grass_moon, false, false);
+        mTexMoonBase = loadTexture("grass/drawable/grass_moon.png", false, false);
         mTexMoonMask = createMoonMaskTexture(512);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTexMoonBase);
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
@@ -718,6 +719,27 @@ public class GrassGL extends GLESScene {
         options.inScaled = false;
         options.inPremultiplied = false;
         Bitmap bitmap = BitmapFactory.decodeResource(mResources, resId, options);
+        int[] tex = new int[1];
+        GLES20.glGenTextures(1, tex, 0);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, tex[0]);
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER,
+                mipmap ? GLES20.GL_LINEAR_MIPMAP_LINEAR : GLES20.GL_LINEAR);
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S,
+                repeat ? GLES20.GL_REPEAT : GLES20.GL_CLAMP_TO_EDGE);
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T,
+                repeat ? GLES20.GL_REPEAT : GLES20.GL_CLAMP_TO_EDGE);
+        GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
+        if (mipmap) GLES20.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
+        bitmap.recycle();
+        return tex[0];
+    }
+
+    private int loadTexture(String assetPath, boolean repeat, boolean mipmap) {
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inScaled = false;
+        options.inPremultiplied = false;
+        Bitmap bitmap = AssetLoader.decodeBitmap(mContext, assetPath);
         int[] tex = new int[1];
         GLES20.glGenTextures(1, tex, 0);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, tex[0]);

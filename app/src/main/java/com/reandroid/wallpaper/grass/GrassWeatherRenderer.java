@@ -3,7 +3,6 @@ package com.reandroid.wallpaper.grass;
 import android.graphics.Color;
 import android.opengl.GLES20;
 
-import com.reandroid.wallpaper.R;
 import com.reandroid.settings.WallpaperSettings;
 import com.reandroid.weather.WeatherCondition;
 
@@ -19,7 +18,7 @@ final class GrassWeatherRenderer {
     private static final int FLOATS_PER_QUAD = 6 * FLOATS_PER_VERTEX;
 
     interface TextureLoader {
-        int load(int resId, boolean repeat, boolean mipmap);
+        int load(String assetPath, boolean repeat, boolean mipmap);
     }
 
     interface SolidColorTextureFactory {
@@ -90,22 +89,22 @@ final class GrassWeatherRenderer {
     }
 
     void loadTextures(TextureLoader loader, SolidColorTextureFactory solidColorFactory) {
-        texWeatherRain1 = loader.load(R.drawable.grass_weather_rain_01, false, false);
-        texWeatherRain2 = loader.load(R.drawable.grass_weather_rain_02, false, false);
-        texWeatherRain3 = loader.load(R.drawable.grass_weather_rain_03, false, false);
-        texWeatherSnow1 = loader.load(R.drawable.grass_weather_snow_01, false, false);
-        texWeatherSnow2 = loader.load(R.drawable.grass_weather_snow_02, false, false);
-        texWeatherSnow3 = loader.load(R.drawable.grass_weather_snow_03, false, false);
-        texWeatherSnow4 = loader.load(R.drawable.grass_weather_snow_04, false, false);
-        texWeatherFog1 = loader.load(R.drawable.grass_weather_fog_01, false, false);
-        texWeatherFog2 = loader.load(R.drawable.grass_weather_fog_02, false, false);
-        texWeatherCloud1 = loader.load(R.drawable.grass_weather_cloud_01, false, false);
-        texWeatherCloud2 = loader.load(R.drawable.grass_weather_cloud_02, false, false);
-        texWeatherCloud3 = loader.load(R.drawable.grass_weather_cloud_03, false, false);
-        texWeatherCloud4 = loader.load(R.drawable.grass_weather_cloud_04, false, false);
-        texWeatherLightning1 = loader.load(R.drawable.grass_weather_lightning_01, false, false);
-        texWeatherLightning2 = loader.load(R.drawable.grass_weather_lightning_02, false, false);
-        texWeatherLightning3 = loader.load(R.drawable.grass_weather_lightning_03, false, false);
+        texWeatherRain1 = loader.load("grass/drawable/grass_weather_rain_01.png", false, false);
+        texWeatherRain2 = loader.load("grass/drawable/grass_weather_rain_02.png", false, false);
+        texWeatherRain3 = loader.load("grass/drawable/grass_weather_rain_03.png", false, false);
+        texWeatherSnow1 = loader.load("grass/drawable/grass_weather_snow_01.png", false, false);
+        texWeatherSnow2 = loader.load("grass/drawable/grass_weather_snow_02.png", false, false);
+        texWeatherSnow3 = loader.load("grass/drawable/grass_weather_snow_03.png", false, false);
+        texWeatherSnow4 = loader.load("grass/drawable/grass_weather_snow_04.png", false, false);
+        texWeatherFog1 = loader.load("grass/drawable/grass_weather_fog_01.png", false, false);
+        texWeatherFog2 = loader.load("grass/drawable/grass_weather_fog_02.png", false, false);
+        texWeatherCloud1 = loader.load("grass/drawable/grass_weather_cloud_01.png", false, false);
+        texWeatherCloud2 = loader.load("grass/drawable/grass_weather_cloud_02.png", false, false);
+        texWeatherCloud3 = loader.load("grass/drawable/grass_weather_cloud_03.png", false, false);
+        texWeatherCloud4 = loader.load("grass/drawable/grass_weather_cloud_04.png", false, false);
+        texWeatherLightning1 = loader.load("grass/drawable/grass_weather_lightning_01.png", false, false);
+        texWeatherLightning2 = loader.load("grass/drawable/grass_weather_lightning_02.png", false, false);
+        texWeatherLightning3 = loader.load("grass/drawable/grass_weather_lightning_03.png", false, false);
         texWeatherFlash = solidColorFactory.create((byte) 255, (byte) 255, (byte) 255, (byte) 255);
         texWeatherTone = createWeatherToneTexture();
     }
