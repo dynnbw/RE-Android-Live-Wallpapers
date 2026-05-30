@@ -304,18 +304,17 @@ public class MusicVisWaveScene extends GLESScene implements SharedPreferences.On
             int width = Math.min(mWidth, outlen);
             int skip = (outlen - width) / 2;
 
-            int srcidx = 0;
-            int cnt = 0;
+            // Logarithmic bin-to-bar mapping: more bars for low frequencies
             for (int i = 0; i < width; i++) {
-                float val = mAnalyzer[srcidx] / 8f;
+                double frac = (double) i / width;
+                int binIdx = (int) (Math.pow(frac, 1.5) * (len - 1));
+                if (binIdx < 0) binIdx = 0;
+                if (binIdx >= len) binIdx = len - 1;
+                float val = mAnalyzer[binIdx] / 8f;
                 if (val < 1f && val > -1f) val = 1f;
-                mPointData[(i + skip) * 8 + 1] = val;
-                mPointData[(i + skip) * 8 + 5] = -val;
-                cnt += len;
-                if (cnt > width) {
-                    srcidx++;
-                    cnt -= width;
-                }
+                int idx = (i + skip) * 8;
+                mPointData[idx + 1] = val;
+                mPointData[idx + 5] = -val;
             }
         }
         mWaveCounter++;
