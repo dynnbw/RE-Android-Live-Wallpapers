@@ -75,17 +75,6 @@
 
         <activity
             android:exported="true"
-            android:label="Set Wallpaper"
-            android:name="com.reandroid.wallpaper.SetWallpaperActivity"
-            android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
-            <intent-filter>
-                <action android:name="android.intent.action.SET_WALLPAPER" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
-
-        <activity
-            android:exported="true"
             android:label="@string/wallpaper_grass"
             android:name="com.reandroid.wallpaper.grass.Grass"
             android:theme="@android:style/Theme.NoTitleBar"
