@@ -326,6 +326,8 @@ public class PhaseBeamGL extends GLESScene implements SharedPreferences.OnShared
             GLES20.glDeleteProgram(program);
             return 0;
         }
+        GLES20.glDeleteShader(vertexShader);
+        GLES20.glDeleteShader(fragmentShader);
         return program;
     }
 

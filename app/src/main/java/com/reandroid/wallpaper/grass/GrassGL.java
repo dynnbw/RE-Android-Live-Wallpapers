@@ -515,6 +515,8 @@ public class GrassGL extends GLESScene {
             GLES20.glDeleteProgram(program);
             program = 0;
         }
+        GLES20.glDeleteShader(vs);
+        GLES20.glDeleteShader(fs);
         return program;
     }
 

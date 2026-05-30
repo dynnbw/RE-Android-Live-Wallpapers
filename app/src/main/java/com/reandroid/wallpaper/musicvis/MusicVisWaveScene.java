@@ -513,6 +513,8 @@ public class MusicVisWaveScene extends GLESScene implements SharedPreferences.On
             GLES20.glDeleteProgram(program);
             return 0;
         }
+        GLES20.glDeleteShader(v);
+        GLES20.glDeleteShader(f);
         return program;
     }
 

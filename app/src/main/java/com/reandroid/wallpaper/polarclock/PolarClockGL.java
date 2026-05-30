@@ -380,6 +380,16 @@ public class PolarClockGL extends GLESScene implements SharedPreferences.OnShare
         GLES20.glAttachShader(mProgram, fShader);
         GLES20.glLinkProgram(mProgram);
 
+        int[] linkStatus = new int[1];
+        GLES20.glGetProgramiv(mProgram, GLES20.GL_LINK_STATUS, linkStatus, 0);
+        if (linkStatus[0] == 0) {
+            GLES20.glDeleteProgram(mProgram);
+            mProgram = 0;
+            return;
+        }
+        GLES20.glDeleteShader(vShader);
+        GLES20.glDeleteShader(fShader);
+
         // 获取着色器中变量的句柄
         mPositionHandle = GLES20.glGetAttribLocation(mProgram, "aPosition");
         mMatrixHandle = GLES20.glGetUniformLocation(mProgram, "uMVPMatrix");

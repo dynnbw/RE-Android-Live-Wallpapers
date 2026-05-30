@@ -142,13 +142,23 @@ public class FlsorescenceGL extends GLESScene {
         // 编译着色器
         int vertexShader = loadShader(GLES20.GL_VERTEX_SHADER, vertexShaderCode);
         int fragmentShader = loadShader(GLES20.GL_FRAGMENT_SHADER, fragmentShaderCode);
-        
+
         // 创建程序
         mProgram = GLES20.glCreateProgram();
         GLES20.glAttachShader(mProgram, vertexShader);
         GLES20.glAttachShader(mProgram, fragmentShader);
         GLES20.glLinkProgram(mProgram);
-        
+
+        int[] linkStatus = new int[1];
+        GLES20.glGetProgramiv(mProgram, GLES20.GL_LINK_STATUS, linkStatus, 0);
+        if (linkStatus[0] == 0) {
+            GLES20.glDeleteProgram(mProgram);
+            mProgram = 0;
+            return;
+        }
+        GLES20.glDeleteShader(vertexShader);
+        GLES20.glDeleteShader(fragmentShader);
+
         // 获取属性和uniform位置
         maPositionHandle = GLES20.glGetAttribLocation(mProgram, "aPosition");
         maTexCoordHandle = GLES20.glGetAttribLocation(mProgram, "aTexCoord");

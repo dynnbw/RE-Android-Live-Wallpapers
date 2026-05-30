@@ -385,6 +385,14 @@ public class WildWorldGL extends GLESScene {
         GLES20.glAttachShader(program, v);
         GLES20.glAttachShader(program, f);
         GLES20.glLinkProgram(program);
+        int[] linkStatus = new int[1];
+        GLES20.glGetProgramiv(program, GLES20.GL_LINK_STATUS, linkStatus, 0);
+        if (linkStatus[0] == 0) {
+            GLES20.glDeleteProgram(program);
+            return 0;
+        }
+        GLES20.glDeleteShader(v);
+        GLES20.glDeleteShader(f);
         return program;
     }
 

@@ -161,6 +161,8 @@ public class WalkAroundGL extends GLESScene {
             mProgram = 0;
             return;
         }
+        GLES20.glDeleteShader(v);
+        GLES20.glDeleteShader(f);
 
         mPosLoc = GLES20.glGetAttribLocation(mProgram, "aPosition");
         mTexLoc = GLES20.glGetAttribLocation(mProgram, "aTexCoord");

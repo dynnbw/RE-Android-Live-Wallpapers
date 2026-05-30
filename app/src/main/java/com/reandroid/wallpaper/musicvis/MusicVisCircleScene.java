@@ -278,6 +278,14 @@ public class MusicVisCircleScene extends GLESScene implements SharedPreferences.
         int p = GLES20.glCreateProgram();
         GLES20.glAttachShader(p, v); GLES20.glAttachShader(p, f);
         GLES20.glLinkProgram(p);
+        int[] linkStatus = new int[1];
+        GLES20.glGetProgramiv(p, GLES20.GL_LINK_STATUS, linkStatus, 0);
+        if (linkStatus[0] == 0) {
+            GLES20.glDeleteProgram(p);
+            return 0;
+        }
+        GLES20.glDeleteShader(v);
+        GLES20.glDeleteShader(f);
         return p;
     }
 

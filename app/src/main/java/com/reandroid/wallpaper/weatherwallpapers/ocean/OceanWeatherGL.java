@@ -320,6 +320,14 @@ public class OceanWeatherGL extends GLESScene {
         GLES20.glAttachShader(program, vs);
         GLES20.glAttachShader(program, fs);
         GLES20.glLinkProgram(program);
+        int[] linkStatus = new int[1];
+        GLES20.glGetProgramiv(program, GLES20.GL_LINK_STATUS, linkStatus, 0);
+        if (linkStatus[0] == 0) {
+            GLES20.glDeleteProgram(program);
+            return 0;
+        }
+        GLES20.glDeleteShader(vs);
+        GLES20.glDeleteShader(fs);
         return program;
     }
 }

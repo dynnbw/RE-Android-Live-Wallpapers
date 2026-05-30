@@ -420,6 +420,8 @@ public class WindmillGL extends GLESScene {
             GLES20.glDeleteProgram(program);
             return 0;
         }
+        GLES20.glDeleteShader(vShader);
+        GLES20.glDeleteShader(fShader);
         return program;
     }
 
