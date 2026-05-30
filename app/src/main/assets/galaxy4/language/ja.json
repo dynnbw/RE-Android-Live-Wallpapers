@@ -1,9 +1,4 @@
 {
-  "title": "銀河 4",
-  "author": "Google",
-  "settings_entry": "銀河 4",
-  "pref_bg_star_count": "背景の星の数",
-  "pref_bg_star_count_summary": "銀河内の背景星の数（パフォーマンスに影響）",
-  "pref_space_cloud_count": "宇宙雲の数",
-  "pref_space_cloud_count_summary": "銀河内の雲の数"
+  "galaxy4_bg_star_count": "背景の星の数",
+  "galaxy4_space_cloud_count": "宇宙雲の数"
 }

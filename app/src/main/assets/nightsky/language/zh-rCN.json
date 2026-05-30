@@ -1,15 +1,11 @@
 {
-  "title": "夜空",
-  "author": "念.",
-  "desc": "基于真实星表的夜空壁纸，包含恒星周日运动、传感器方向联动、长按时间加速与星轨渐隐效果。",
-  "settings_entry": "夜空",
-  "pref_preview_hint": "提示：可先在上方应用内实时预览，再点“打开系统预览”应用夜空壁纸。",
-  "pref_camera_focal": "相机焦距",
-  "pref_camera_focal_summary": "调整镜头焦距（mm），数值越大视角越窄",
-  "pref_use_sensor": "使用传感器朝向",
-  "pref_use_sensor_summary": "关闭后改为按桌面滚动控制视角（每页 45°）",
-  "pref_auto_time_accel": "自动时间加速",
-  "pref_auto_time_accel_summary": "持续加速天空时间，并保持显示星轨",
-  "pref_time_accel_speed": "加速档位",
-  "pref_time_accel_speed_summary": "选择自动加速/长按加速的速度档位"
+  "nightsky_camera_focal_mm": "相机焦距",
+  "nightsky_use_sensor": "使用传感器朝向",
+  "nightsky_auto_time_accel": "自动时间加速",
+  "nightsky_time_accel_speed": "加速档位",
+  "nightsky_time_accel_speed_label_180": "180x",
+  "nightsky_time_accel_speed_label_360": "360x",
+  "nightsky_time_accel_speed_label_540": "540x",
+  "nightsky_time_accel_speed_label_720": "720x",
+  "nightsky_time_accel_speed_label_1440": "1440x"
 }

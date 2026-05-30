@@ -1,14 +1,5 @@
 {
-  "title": "Hojas de agua",
-  "author": "Google",
-  "desc": "        Las hojas de otoño caen \n Al estanque ondulado: \n Fondo líquido Zen    ",
-  "settings_entry": "Hojas en la superficie del agua",
-  "pref_leaf_count": "Número de hojas",
-  "pref_leaf_count_summary": "Ajusta el número de hojas que caen (afecta el rendimiento)",
-  "pref_green_leaves": "Hojas verdes",
-  "pref_green_leaves_summary": "Cuando está activado, algunas hojas serán verdes",
-  "pref_max_drops": "Máximo de ondas",
-  "pref_max_drops_summary": "Número máximo de ondas de agua mostradas simultáneamente en pantalla (afecta el rendimiento)",
-  "pref_precise_calc": "Cálculo preciso",
-  "pref_precise_calc_summary": "Usar simulación de ondas basada en física (propagación y amortiguación de ondas)"
+  "pref_fall_leaf_count": "Número de hojas",
+  "pref_fall_max_drops": "Máximo de ondas",
+  "pref_fall_green_leaves": "Hojas verdes"
 }

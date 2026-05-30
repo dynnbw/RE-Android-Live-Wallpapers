@@ -1,4 +1,3 @@
 {
-  "title": "Espectro",
-  "settings_entry": "Espectro"
+  "musicvis_use_triangle_strip": "Usar malla de tiras de triángulos heredada"
 }

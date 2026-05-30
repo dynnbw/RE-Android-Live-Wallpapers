@@ -1,17 +1,8 @@
 {
-  "title": "ফ্লুরোসেন্স",
-  "author": "念.",
-  "desc": "জ্বলজ্বলে বিন্দুগুলো পর্দা জুড়ে মসৃণভাবে চলে, যেন প্রাণবন্ত।",
-  "pref_shape": "বিন্দুর আকৃতি",
-  "pref_shape_summary": "প্রতিটি বিন্দুর আকৃতি পরিবর্তন করুন",
-  "pref_color": "বিন্দুর রঙের স্কিম",
-  "pref_color_summary": "রঙের স্কিম পরিবর্তন করুন",
-  "pref_scale": "বিন্দুর স্কেল",
-  "pref_scale_summary": "প্রতিটি বিন্দুর আকার পরিবর্তন করুন",
-  "pref_speed": "গতির বেগ",
-  "pref_speed_summary": "গতির বেগ পরিবর্তন করুন",
-  "pref_amount": "বিন্দুর সংখ্যা",
-  "pref_amount_summary": "বিন্দুর সংখ্যা পরিবর্তন করুন",
-  "pref_pattern": "গতির প্যাটার্ন",
-  "pref_pattern_summary": "গতির প্যাটার্ন পরিবর্তন করুন"
+  "flsorescence_shape": "বিন্দুর আকৃতি",
+  "flsorescence_color": "বিন্দুর রঙের স্কিম",
+  "flsorescence_scale": "বিন্দুর স্কেল",
+  "flsorescence_speed": "গতির বেগ",
+  "flsorescence_amount": "বিন্দুর সংখ্যা",
+  "flsorescence_pattern": "গতির প্যাটার্ন"
 }

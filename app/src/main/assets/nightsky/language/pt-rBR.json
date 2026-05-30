@@ -1,15 +1,6 @@
 {
-  "title": "Céu Noturno",
-  "author": "念.",
-  "desc": "Céu noturno com estrelas reais, movimento sideral, orientação por sensor, aceleração de tempo por toque longo e rastros de estrelas que desaparecem.",
-  "settings_entry": "Céu Noturno",
-  "pref_preview_hint": "Dica: Use a pré-visualização ao vivo no aplicativo acima e toque em \"Abrir pré-visualização do sistema\" para aplicar o Céu Noturno.",
-  "pref_camera_focal": "Distância focal da câmera",
-  "pref_camera_focal_summary": "Ajustar a distância focal da lente (mm); valores maiores ampliam mais",
-  "pref_use_sensor": "Usar orientação do sensor",
-  "pref_use_sensor_summary": "Quando desativado, usar rolagem de página da tela inicial para girar a visão (45° por página)",
-  "pref_auto_time_accel": "Aceleração automática de tempo",
-  "pref_auto_time_accel_summary": "Acelerar continuamente o tempo do céu e manter os rastros de estrelas visíveis",
-  "pref_time_accel_speed": "Velocidade de aceleração",
-  "pref_time_accel_speed_summary": "Selecionar o nível de velocidade para aceleração automática/pressão longa"
+  "nightsky_camera_focal_mm": "Distância focal da câmera",
+  "nightsky_use_sensor": "Usar orientação do sensor",
+  "nightsky_auto_time_accel": "Aceleração automática de tempo",
+  "nightsky_time_accel_speed": "Velocidade de aceleração"
 }

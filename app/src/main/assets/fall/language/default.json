@@ -1,14 +1,5 @@
 {
-  "title": "Water Leaves",
-  "author": "Google",
-  "desc": "         Autumn leaves tumble \n To the rippling pond below: \n Liquid background Zen    ",
-  "settings_entry": "Water Surface Leaves",
-  "pref_leaf_count": "Leaf count",
-  "pref_leaf_count_summary": "        performance)",
-  "pref_green_leaves": "Green leaves",
-  "pref_green_leaves_summary": "When enabled, some leaves will be green",
-  "pref_max_drops": "Max ripple drops",
-  "pref_max_drops_summary": "        simultaneously on screen (affects performance)",
-  "pref_precise_calc": "Precise calculation",
-  "pref_precise_calc_summary": "Use physics-inspired ripple simulation (wave propagation and decay)"
+  "pref_fall_leaf_count": "Leaf count",
+  "pref_fall_max_drops": "Max ripple drops",
+  "pref_fall_green_leaves": "Green leaves"
 }

@@ -1,4 +1,6 @@
 {
   "fragment": "com.reandroid.settings.Galaxy4SettingsFragment",
-  "label": "@string/wallpaper_galaxy4"
+  "label": "@string/wallpaper_galaxy4",
+  "plugin": "com.reandroid.wallpaper.galaxy4.Galaxy4Plugin",
+  "previewClass": "com.reandroid.wallpaper.galaxy4.Galaxy4GL"
 }

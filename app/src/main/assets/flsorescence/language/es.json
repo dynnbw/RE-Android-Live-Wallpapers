@@ -1,17 +1,8 @@
 {
-  "title": "Fluorescencia",
-  "author": "念.",
-  "desc": "Puntos brillantes se mueven suavemente por la pantalla como si tuvieran vida.",
-  "pref_shape": "Forma del punto",
-  "pref_shape_summary": "Cambia la forma de cada punto",
-  "pref_color": "Esquema de color del punto",
-  "pref_color_summary": "Cambiar el esquema de color",
-  "pref_scale": "Escala del punto",
-  "pref_scale_summary": "Cambia el tamaño de cada punto",
-  "pref_speed": "Velocidad de movimiento",
-  "pref_speed_summary": "Cambia la velocidad del movimiento",
-  "pref_amount": "Cantidad de puntos",
-  "pref_amount_summary": "Cambia la cantidad de puntos",
-  "pref_pattern": "Patrón de movimiento",
-  "pref_pattern_summary": "Cambia el patrón de movimiento"
+  "flsorescence_shape": "Forma del punto",
+  "flsorescence_color": "Esquema de color del punto",
+  "flsorescence_scale": "Escala del punto",
+  "flsorescence_speed": "Velocidad de movimiento",
+  "flsorescence_amount": "Cantidad de puntos",
+  "flsorescence_pattern": "Patrón de movimiento"
 }

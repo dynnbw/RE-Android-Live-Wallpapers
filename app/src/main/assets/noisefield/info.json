@@ -1,4 +1,6 @@
 {
   "fragment": "com.reandroid.settings.NoiseFieldSettingsFragment",
-  "label": "@string/wallpaper_noisefield"
+  "label": "@string/wallpaper_noisefield",
+  "plugin": "com.reandroid.wallpaper.noisefield.NoiseFieldPlugin",
+  "previewClass": "com.reandroid.wallpaper.noisefield.NoiseFieldGL"
 }

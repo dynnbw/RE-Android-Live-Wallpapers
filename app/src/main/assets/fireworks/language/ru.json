@@ -1,10 +1,4 @@
 {
-  "title": "Фейерверки",
-  "author": "MediaTek",
-  "desc": "        Красочные фейерверки расцветают на ночном небе.    ",
-  "settings_entry": "Фейерверки",
-  "pref_custom_background_title": "Пользовательское фоновое изображение",
-  "pref_custom_background_summary": "Нажмите, чтобы выбрать пользовательское фоновое изображение",
-  "pref_reset_background_title": "Сбросить на фон по умолчанию",
-  "pref_reset_background_summary": "Удалить пользовательский фон и использовать стандартный"
+  "pref_custom_background": "",
+  "pref_reset_background": ""
 }

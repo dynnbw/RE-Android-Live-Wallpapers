@@ -1,0 +1,114 @@
+{
+  "prefs": [
+    {
+      "type": "list",
+      "key": "nexus_background_preset",
+      "title": "nexus_background_preset",
+      "default": "pyramid_background",
+      "values": [
+        "pyramid_background",
+        "pyramid_background1",
+        "pyramid_background2",
+        "pyramid_background3",
+        "pyramid_background4"
+      ],
+      "labels": [
+        "@string/nexus_bg_pyramid",
+        "@string/nexus_bg_pyramid_1",
+        "@string/nexus_bg_pyramid_2",
+        "@string/nexus_bg_pyramid_3",
+        "@string/nexus_bg_pyramid_4"
+      ]
+    },
+    {
+      "type": "seekbar",
+      "key": "nexus_max_pulses",
+      "title": "nexus_max_pulses",
+      "default": "20",
+      "min": 1,
+      "max": 100
+    },
+    {
+      "type": "seekbar",
+      "key": "nexus_max_extras",
+      "title": "nexus_max_extras",
+      "default": "40",
+      "min": 1,
+      "max": 200
+    },
+    {
+      "type": "seekbar",
+      "key": "nexus_pulse_size",
+      "title": "nexus_pulse_size",
+      "default": "14",
+      "min": 5,
+      "max": 100
+    },
+    {
+      "type": "seekbar",
+      "key": "nexus_glow_size",
+      "title": "nexus_glow_size",
+      "default": "64",
+      "min": 10,
+      "max": 200
+    },
+    {
+      "type": "seekbar",
+      "key": "nexus_speed",
+      "title": "nexus_speed",
+      "default": "20",
+      "min": 1,
+      "max": 100
+    },
+    {
+      "type": "seekbar",
+      "key": "nexus_speed_delta_min",
+      "title": "nexus_speed_delta_min",
+      "default": "70",
+      "min": 0,
+      "max": 200
+    },
+    {
+      "type": "seekbar",
+      "key": "nexus_speed_delta_max",
+      "title": "nexus_speed_delta_max",
+      "default": "170",
+      "min": 0,
+      "max": 300
+    },
+    {
+      "type": "seekbar",
+      "key": "nexus_trail_size",
+      "title": "nexus_trail_size",
+      "default": "40",
+      "min": 1,
+      "max": 200
+    },
+    {
+      "type": "list",
+      "key": "nexus_mode",
+      "title": "nexus_mode",
+      "default": "0",
+      "values": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7"
+      ],
+      "labels": [
+        "Default",
+        "Red",
+        "Green",
+        "Blue",
+        "White",
+        "Cyan",
+        "Purple",
+        "Pink"
+      ]
+    }
+  ]
+}

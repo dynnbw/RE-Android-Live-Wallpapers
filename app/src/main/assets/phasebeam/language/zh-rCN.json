@@ -1,6 +1,7 @@
 {
-  "title": "镭光",
-  "author": "Google",
-  "desc": "柔和的光束与粒子在背景中掠过。",
-  "settings_entry": "镭光"
+  "theme": "配色主题",
+  "phasebeam_recolor_enabled": "调整光束颜色",
+  "phasebeam_hue": "颜色",
+  "phasebeam_saturation": "饱和度",
+  "phasebeam_brightness": "亮度"
 }

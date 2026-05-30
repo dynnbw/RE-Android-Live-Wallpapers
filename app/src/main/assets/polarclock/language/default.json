@@ -1,6 +1,13 @@
 {
-  "title": "Polar Clock",
-  "author": "Google",
-  "desc": "        Presents the date and time as clockwise arcs: month,        day, hour, minute, and second.    ",
-  "settings_entry": "Polar Clock"
+  "show_seconds": "Show seconds",
+  "variable_line_width": "Vary ring widths",
+  "palette": "Color palette",
+  "palette_label_palette_gray": "@string/palette_gray",
+  "palette_label_palette_white_c": "@string/palette_white_c",
+  "palette_label_palette_black_c": "@string/palette_black_c",
+  "palette_label_palette_matrix": "@string/palette_matrix",
+  "palette_label_palette_halloween": "@string/palette_halloween",
+  "palette_label_palette_violet": "@string/palette_violet",
+  "palette_label_palette_oceanic": "@string/palette_oceanic",
+  "palette_label_palette_zenburn": "@string/palette_zenburn"
 }

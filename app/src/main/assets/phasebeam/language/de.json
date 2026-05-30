@@ -1,6 +1,6 @@
 {
-  "settings_entry": "Phase Beam",
-  "title": "Phase Beam",
-  "author": "Google",
-  "desc": "Weiche Strahlen und Partikel, die über einen lebendigen Hintergrund streichen."
+  "phasebeam_recolor_enabled": "Strahlfarben anpassen",
+  "phasebeam_hue": "Farbe",
+  "phasebeam_saturation": "Sättigung",
+  "phasebeam_brightness": "Helligkeit"
 }

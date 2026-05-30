@@ -1,6 +1,5 @@
 {
-  "title": "极地时钟",
-  "author": "Google",
-  "desc": "        以顺时针圆弧显示日期和时间：月、日、小时、分和秒。    ",
-  "settings_entry": "极地时钟"
+  "show_seconds": "显示秒",
+  "variable_line_width": "让环的宽度各不相同",
+  "palette": "调色板"
 }

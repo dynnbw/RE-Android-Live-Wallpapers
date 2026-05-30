@@ -1,6 +1,9 @@
 {
-  "settings_entry": "Phase Beam",
-  "title": "Phase Beam",
-  "author": "Google",
-  "desc": "        background."
+  "theme": "Color theme",
+  "phasebeam_recolor_enabled": "Adjust beam colors",
+  "phasebeam_hue": "Color",
+  "phasebeam_saturation": "Saturation",
+  "phasebeam_brightness": "Brightness",
+  "theme_label_phasebeam": "@string/phasebeam_theme_phasebeam",
+  "theme_label_sunbeam": "@string/phasebeam_theme_sunbeam"
 }

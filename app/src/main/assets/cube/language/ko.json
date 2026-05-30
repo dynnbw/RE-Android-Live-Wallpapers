@@ -1,6 +1,3 @@
 {
-  "title": "큐브",
-  "author": "Google",
-  "desc": "런처 스크롤 및 터치 효과가 있는 회전하는 3D 큐브 와이어프레임입니다.",
-  "settings_entry": "큐브"
+  "cube_shape": "모양"
 }

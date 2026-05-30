@@ -1,10 +1,4 @@
 {
-  "title": "Fogos de Artifício",
-  "author": "MediaTek",
-  "desc": "        Fogos de artifício coloridos explodem no céu noturno.    ",
-  "settings_entry": "Fogos de Artifício",
-  "pref_custom_background_title": "Imagem de fundo personalizada",
-  "pref_custom_background_summary": "Toque para selecionar uma imagem de fundo personalizada",
-  "pref_reset_background_title": "Restaurar para o fundo padrão",
-  "pref_reset_background_summary": "Remover o fundo personalizado e usar o padrão"
+  "pref_custom_background": "",
+  "pref_reset_background": ""
 }

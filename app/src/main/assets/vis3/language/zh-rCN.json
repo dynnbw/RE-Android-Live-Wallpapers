@@ -1,4 +1,10 @@
 {
-  "title": "频谱",
-  "settings_entry": "频谱"
+  "musicvis_fft_size": "分辨率",
+  "musicvis_use_triangle_strip": "使用原版三角条带网格",
+  "musicvis_recolor": "着色模式",
+  "musicvis_recolor_mode": "着色模式",
+  "musicvis_hue": "色相",
+  "musicvis_saturation": "饱和度",
+  "musicvis_brightness": "亮度",
+  "musicvis_bg_color": "背景颜色"
 }

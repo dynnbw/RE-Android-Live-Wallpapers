@@ -1,0 +1,96 @@
+{
+  "prefs": [
+    {
+      "type": "list",
+      "key": "musicvis_fft_size",
+      "title": "musicvis_fft_size",
+      "default": "512",
+      "values": [
+        "256",
+        "512",
+        "768",
+        "1024"
+      ],
+      "labels": [
+        "256",
+        "512",
+        "768",
+        "1024"
+      ]
+    },
+    {
+      "type": "switch",
+      "key": "musicvis_use_triangle_strip",
+      "title": "musicvis_use_triangle_strip",
+      "default": "true"
+    },
+    {
+      "type": "switch",
+      "key": "musicvis_recolor",
+      "title": "musicvis_recolor",
+      "default": "false"
+    },
+    {
+      "type": "list",
+      "key": "musicvis_recolor_mode",
+      "title": "musicvis_recolor_mode",
+      "default": "static",
+      "values": [
+        "static",
+        "dynamic"
+      ],
+      "labels": [
+        "@string/musicvis_recolor_mode_static",
+        "@string/musicvis_recolor_mode_dynamic"
+      ]
+    },
+    {
+      "type": "seekbar",
+      "key": "musicvis_hue",
+      "title": "musicvis_hue",
+      "default": "0",
+      "min": 0,
+      "max": 255
+    },
+    {
+      "type": "seekbar",
+      "key": "musicvis_saturation",
+      "title": "musicvis_saturation",
+      "default": "255",
+      "min": 0,
+      "max": 255
+    },
+    {
+      "type": "seekbar",
+      "key": "musicvis_brightness",
+      "title": "musicvis_brightness",
+      "default": "255",
+      "min": 0,
+      "max": 255
+    },
+    {
+      "type": "list",
+      "key": "musicvis_bg_color",
+      "title": "musicvis_bg_color",
+      "default": "#000000",
+      "values": [
+        "#000000",
+        "#300303",
+        "#50330",
+        "#2F4F4F",
+        "#FFE4DE",
+        "#F0FFFF",
+        "#EDDEFF"
+      ],
+      "labels": [
+        "@string/musicvis_bg_black",
+        "@string/musicvis_bg_dark_red",
+        "@string/musicvis_bg_dark_blue",
+        "@string/musicvis_bg_dark_green",
+        "@string/musicvis_bg_pink",
+        "@string/musicvis_bg_light_green",
+        "@string/musicvis_bg_light_purple"
+      ]
+    }
+  ]
+}

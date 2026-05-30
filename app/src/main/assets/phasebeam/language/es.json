@@ -1,6 +1,6 @@
 {
-  "settings_entry": "Phase Beam",
-  "title": "Phase Beam",
-  "author": "Google",
-  "desc": "Haces suaves y partículas barriendo un fondo vívido."
+  "phasebeam_recolor_enabled": "Ajustar colores del haz",
+  "phasebeam_hue": "Color",
+  "phasebeam_saturation": "Saturación",
+  "phasebeam_brightness": "Brillo"
 }

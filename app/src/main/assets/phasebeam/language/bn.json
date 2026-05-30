@@ -1,6 +1,6 @@
 {
-  "settings_entry": "ফেজ বিম",
-  "title": "ফেজ বিম",
-  "author": "গুগল",
-  "desc": "একটি প্রাণবন্ত পটভূমি জুড়ে নরম রশ্মি এবং কণা প্রবাহিত হচ্ছে।"
+  "phasebeam_recolor_enabled": "রশ্মির রঙ সামঞ্জস্য করুন",
+  "phasebeam_hue": "রঙ",
+  "phasebeam_saturation": "স্যাচুরেশন",
+  "phasebeam_brightness": "উজ্জ্বলতা"
 }

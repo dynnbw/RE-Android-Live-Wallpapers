@@ -1,6 +1,6 @@
 {
-  "settings_entry": "Faisceau de phase",
-  "title": "Faisceau de phase",
-  "author": "Google",
-  "desc": "Des faisceaux doux et des particules balayant un fond vivant."
+  "phasebeam_recolor_enabled": "Ajuster les couleurs des faisceaux",
+  "phasebeam_hue": "Couleur",
+  "phasebeam_saturation": "Saturation",
+  "phasebeam_brightness": "Luminosité"
 }

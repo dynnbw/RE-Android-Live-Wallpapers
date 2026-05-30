@@ -1,4 +1,6 @@
 {
   "fragment": "com.reandroid.settings.PolarClockSettingsFragment",
-  "label": "@string/wallpaper_clock"
+  "label": "@string/wallpaper_clock",
+  "plugin": "com.reandroid.wallpaper.polarclock.PolarClockPlugin",
+  "previewClass": "com.reandroid.wallpaper.polarclock.PolarClockGL"
 }

@@ -1,0 +1,34 @@
+{
+  "prefs": [
+    {
+      "type": "seekbar",
+      "key": "microbes_lifecycle_speed",
+      "title": "microbes_lifecycle_speed",
+      "default": "100",
+      "min": 50,
+      "max": 200
+    },
+    {
+      "type": "seekbar",
+      "key": "microbes_motion_activity",
+      "title": "microbes_motion_activity",
+      "default": "50",
+      "min": 10,
+      "max": 200
+    },
+    {
+      "type": "list",
+      "key": "microbes_color_mode",
+      "title": "microbes_color_mode",
+      "default": "original",
+      "values": [
+        "original",
+        "modern"
+      ],
+      "labels": [
+        "@string/pref_microbes_color_mode_original",
+        "@string/pref_microbes_color_mode_modern"
+      ]
+    }
+  ]
+}

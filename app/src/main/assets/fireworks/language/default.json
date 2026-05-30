@@ -1,10 +1,4 @@
 {
-  "title": "Fireworks",
-  "author": "MediaTek",
-  "desc": "        Colorful fireworks bloom against the night sky.    ",
-  "settings_entry": "Fireworks",
-  "pref_custom_background_title": "Custom background image",
-  "pref_custom_background_summary": "Tap to select a custom background image",
-  "pref_reset_background_title": "Reset to default background",
-  "pref_reset_background_summary": "Remove the custom background and use the default one"
+  "pref_custom_background": "",
+  "pref_reset_background": ""
 }

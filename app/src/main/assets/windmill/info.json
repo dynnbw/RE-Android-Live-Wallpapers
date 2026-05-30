@@ -1,4 +1,6 @@
 {
   "fragment": "com.reandroid.settings.WindmillSettingsFragment",
-  "label": "@string/wallpaper_windmill"
+  "label": "@string/wallpaper_windmill",
+  "plugin": "com.reandroid.wallpaper.weatherwallpapers.windmill.WindmillPlugin",
+  "previewClass": "com.reandroid.wallpaper.weatherwallpapers.windmill.WindmillGL"
 }

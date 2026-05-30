@@ -1,6 +1,7 @@
 {
-  "title": "गहरा समुद्र",
-  "author": "सैमसंग",
-  "desc": "पारभासी जेलिफ़िश गहरे समुद्र में तैरती हैं।",
-  "settings_entry": "गहरा समुद्र"
+  "unitscale": "जेलिफ़िश का आकार",
+  "unitnumber": "जेलिफ़िश की संख्या",
+  "backgroundbrightness": "पृष्ठभूमि चमक",
+  "backgroundlighting": "पृष्ठभूमि प्रकाश",
+  "particlecolor": "जेलिफ़िश मूल रंग"
 }

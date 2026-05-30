@@ -1,10 +1,4 @@
 {
-  "title": "आतिशबाजी",
-  "author": "मीडियाटेक",
-  "desc": "        रंगीन आतिशबाजी रात के आकाश में खिलती है।    ",
-  "settings_entry": "आतिशबाजी",
-  "pref_custom_background_title": "अनुकूलित पृष्ठभूमि छवि",
-  "pref_custom_background_summary": "अनुकूलित पृष्ठभूमि छवि चुनने के लिए टैप करें",
-  "pref_reset_background_title": "डिफ़ॉल्ट पृष्ठभूमि पर रीसेट करें",
-  "pref_reset_background_summary": "अनुकूलित पृष्ठभूमि हटाएँ और डिफ़ॉल्ट का उपयोग करें"
+  "pref_custom_background": "",
+  "pref_reset_background": ""
 }

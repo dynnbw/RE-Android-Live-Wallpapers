@@ -48,9 +48,11 @@ public class PluginSettingsFragment extends PreferenceFragmentCompat
         PreferenceScreen screen = getPreferenceManager().createPreferenceScreen(ctx);
         setPreferenceScreen(screen);
 
-        String prefsName = "plugin_" + pluginId;
-        getPreferenceManager().setSharedPreferencesName(prefsName);
-        SharedPreferences prefs = ctx.getSharedPreferences(prefsName, Context.MODE_PRIVATE);
+        String prefsName = pluginId.equals("fall") ? "plugin_fall" : null;
+        if (prefsName != null) getPreferenceManager().setSharedPreferencesName(prefsName);
+        SharedPreferences prefs = prefsName != null
+                ? ctx.getSharedPreferences(prefsName, Context.MODE_PRIVATE)
+                : getPreferenceManager().getSharedPreferences();
         prefs.registerOnSharedPreferenceChangeListener(this);
 
         // Read info.json for preview class

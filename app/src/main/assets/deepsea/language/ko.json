@@ -1,6 +1,7 @@
 {
-  "title": "깊은 바다",
-  "author": "Samsung",
-  "desc": "반투명 해파리가 깊은 바다에서 천천히 움직입니다.",
-  "settings_entry": "깊은 바다"
+  "unitscale": "해파리 크기",
+  "unitnumber": "해파리 수",
+  "backgroundbrightness": "배경 밝기",
+  "backgroundlighting": "배경 조명",
+  "particlecolor": "해파리 핵심 색상"
 }

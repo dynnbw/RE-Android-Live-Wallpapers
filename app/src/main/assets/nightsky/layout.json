@@ -1,0 +1,44 @@
+{
+  "prefs": [
+    {
+      "type": "seekbar",
+      "key": "nightsky_camera_focal_mm",
+      "title": "nightsky_camera_focal_mm",
+      "default": "35",
+      "min": 6,
+      "max": 75
+    },
+    {
+      "type": "switch",
+      "key": "nightsky_use_sensor",
+      "title": "nightsky_use_sensor",
+      "default": "true"
+    },
+    {
+      "type": "switch",
+      "key": "nightsky_auto_time_accel",
+      "title": "nightsky_auto_time_accel",
+      "default": "false"
+    },
+    {
+      "type": "list",
+      "key": "nightsky_time_accel_speed",
+      "title": "nightsky_time_accel_speed",
+      "default": "360",
+      "values": [
+        "180",
+        "360",
+        "540",
+        "720",
+        "1440"
+      ],
+      "labels": [
+        "180x",
+        "360x",
+        "540x",
+        "720x",
+        "1440x"
+      ]
+    }
+  ]
+}

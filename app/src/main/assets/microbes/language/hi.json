@@ -1,15 +1,5 @@
 {
-  "title": "सूक्ष्मजीव",
-  "author": "सैमसंग",
-  "desc": "स्पर्श-चालित गति, भोजन व्यवहार और जैविक कण एनीमेशन के साथ माइक्रोस्कोप के नीचे जीवन।",
-  "settings_entry": "सूक्ष्मजीव",
-  "pref_preview_hint": "सुझाव: पूर्वावलोकन में सूक्ष्मजीवों को आकर्षित करने के लिए स्पर्श करें और खींचें, फिर लागू करने के लिए \"सिस्टम पूर्वावलोकन खोलें\" पर टैप करें।",
-  "pref_lifecycle_speed": "जीवनचक्र गति",
-  "pref_lifecycle_speed_summary": "चयापचय, प्रजनन और क्षय गति समायोजित करें (%)",
-  "pref_motion_activity": "गति गतिविधि",
-  "pref_motion_activity_summary": "प्राकृतिक विचरण और तैराकी तीव्रता समायोजित करें (%)",
-  "pref_color_mode": "रंग शैली",
-  "pref_color_mode_summary": "मूल आरजीबी-केवल पैलेट और वर्तमान उन्नत पैलेट के बीच स्विच करें",
-  "pref_color_mode_original": "मूल",
-  "pref_color_mode_modern": "नया"
+  "microbes_lifecycle_speed": "जीवनचक्र गति",
+  "microbes_motion_activity": "गति गतिविधि",
+  "microbes_color_mode": "रंग शैली"
 }

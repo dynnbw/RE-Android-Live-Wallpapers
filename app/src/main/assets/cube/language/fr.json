@@ -1,6 +1,3 @@
 {
-  "settings_entry": "Cube",
-  "title": "Cube",
-  "author": "Google",
-  "desc": "Un cube filaire 3D rotatif avec défilement du lanceur et effets tactiles."
+  "cube_shape": "Forme"
 }

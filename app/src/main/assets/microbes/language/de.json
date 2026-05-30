@@ -1,15 +1,5 @@
 {
-  "title": "Mikroben",
-  "author": "Samsung",
-  "desc": "Leben unter dem Mikroskop mit berührungsgesteuerter Bewegung, Fressverhalten und organischer Partikelanimation.",
-  "settings_entry": "Mikroben",
-  "pref_preview_hint": "Tipp: Berühren und ziehen Sie in der Vorschau, um Mikroben anzuziehen, und tippen Sie dann auf „Systemvorschau öffnen“, um zu übernehmen.",
-  "pref_lifecycle_speed": "Lebenszyklusgeschwindigkeit",
-  "pref_lifecycle_speed_summary": "Stoffwechsel-, Reproduktions- und Verfallsgeschwindigkeit anpassen (%)",
-  "pref_motion_activity": "Bewegungsaktivität",
-  "pref_motion_activity_summary": "Intensität des natürlichen Umherstreifens und Schwimmens anpassen (%)",
-  "pref_color_mode": "Farbstil",
-  "pref_color_mode_summary": "Zwischen der ursprünglichen RGB-Palette und der aktuellen verbesserten Palette wechseln",
-  "pref_color_mode_original": "Original",
-  "pref_color_mode_modern": "Neu"
+  "microbes_lifecycle_speed": "Lebenszyklusgeschwindigkeit",
+  "microbes_motion_activity": "Bewegungsaktivität",
+  "microbes_color_mode": "Farbstil"
 }

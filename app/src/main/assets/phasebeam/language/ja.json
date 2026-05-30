@@ -1,6 +1,7 @@
 {
-  "title": "レーザービーム",
-  "author": "Google",
-  "desc": "柔らかな光線と粒子が背景を横切ります。",
-  "settings_entry": "レーザービーム"
+  "theme": "カラーテーマ",
+  "phasebeam_recolor_enabled": "ビームの色を調整",
+  "phasebeam_hue": "色",
+  "phasebeam_saturation": "彩度",
+  "phasebeam_brightness": "明るさ"
 }

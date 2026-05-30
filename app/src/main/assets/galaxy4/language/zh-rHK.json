@@ -1,9 +1,4 @@
 {
-  "title": "星系4",
-  "author": "Google",
-  "settings_entry": "星系4",
-  "pref_bg_star_count": "粒子數量",
-  "pref_bg_star_count_summary": "星系中的粒子數量（影響性能）",
-  "pref_space_cloud_count": "雲彩數量",
-  "pref_space_cloud_count_summary": "星系中的雲彩數量"
+  "galaxy4_bg_star_count": "粒子數量",
+  "galaxy4_space_cloud_count": "雲彩數量"
 }

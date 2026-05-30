@@ -1,10 +1,4 @@
 {
-  "title": "See Through",
-  "author": "Google",
-  "desc": "        See through your phone and walk around without risking accidents.    ",
-  "settings_entry": "See Through",
-  "pref_use_front": "Use front camera",
-  "pref_use_front_summary": "Switch between front and back camera.",
-  "pref_mirror_front": "Mirror front camera",
-  "pref_mirror_front_summary": "Flip the front camera horizontally."
+  "walkaround_use_front": "Use front camera",
+  "walkaround_mirror_front": "Mirror front camera"
 }

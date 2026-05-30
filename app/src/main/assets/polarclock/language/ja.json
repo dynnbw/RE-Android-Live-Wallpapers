@@ -1,6 +1,5 @@
 {
-  "title": "極地時計",
-  "author": "Google",
-  "desc": "時計回りの円弧で日付と時刻を表示：月、日、時、分、秒。",
-  "settings_entry": "極地時計"
+  "show_seconds": "秒を表示",
+  "variable_line_width": "リングの幅を可変にする",
+  "palette": "カラーパレット"
 }

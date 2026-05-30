@@ -1,10 +1,4 @@
 {
-  "title": "Ver Através",
-  "author": "Google",
-  "desc": "        Veja através do seu telefone e ande por aí sem risco de acidentes.    ",
-  "settings_entry": "Ver Através",
-  "pref_use_front": "Usar câmera frontal",
-  "pref_use_front_summary": "Alternar entre câmera frontal e traseira.",
-  "pref_mirror_front": "Espelhar câmera frontal",
-  "pref_mirror_front_summary": "Inverter a câmera frontal horizontalmente."
+  "walkaround_use_front": "Usar câmera frontal",
+  "walkaround_mirror_front": "Espelhar câmera frontal"
 }

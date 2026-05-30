@@ -1,10 +1,4 @@
 {
-  "title": "불꽃놀이",
-  "author": "MediaTek",
-  "desc": "화려한 불꽃이 밤하늘에 터집니다.",
-  "settings_entry": "불꽃놀이",
-  "pref_custom_background_title": "사용자 정의 배경 이미지",
-  "pref_custom_background_summary": "클릭하여 사용자 정의 배경 이미지 선택",
-  "pref_reset_background_title": "기본 배경 복원",
-  "pref_reset_background_summary": "사용자 정의 배경을 지우고 기본 배경을 사용합니다"
+  "pref_custom_background": "",
+  "pref_reset_background": ""
 }

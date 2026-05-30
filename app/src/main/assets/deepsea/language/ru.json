@@ -1,6 +1,7 @@
 {
-  "title": "Глубокое море",
-  "author": "Samsung",
-  "desc": "Полупрозрачные медузы плывут в глубоком море.",
-  "settings_entry": "Глубокое море"
+  "unitscale": "Размер медуз",
+  "unitnumber": "Количество медуз",
+  "backgroundbrightness": "Яркость фона",
+  "backgroundlighting": "Освещение фона",
+  "particlecolor": "Цвет ядра медузы"
 }

@@ -1,10 +1,4 @@
 {
-  "title": "Vision transparente",
-  "author": "Google",
-  "desc": "        Voyez à travers votre téléphone et promenez-vous sans risque d’accident.    ",
-  "settings_entry": "Vision transparente",
-  "pref_use_front": "Utiliser l’appareil photo avant",
-  "pref_use_front_summary": "Basculer entre l’appareil photo avant et arrière.",
-  "pref_mirror_front": "Mirror l’appareil photo avant",
-  "pref_mirror_front_summary": "Inverser horizontalement l’appareil photo avant."
+  "walkaround_use_front": "Utiliser l’appareil photo avant",
+  "walkaround_mirror_front": "Mirror l’appareil photo avant"
 }

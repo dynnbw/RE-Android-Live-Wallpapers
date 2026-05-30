@@ -1,4 +1,3 @@
 {
-  "title": "Forma de onda",
-  "settings_entry": "Forma de onda"
+  "musicvis_use_triangle_strip": "Usar malla de tiras de triángulos heredada"
 }

@@ -1,6 +1,7 @@
 {
-  "title": "Mar Profundo",
-  "author": "Samsung",
-  "desc": "Águas-vivas translúcidas nadam no mar profundo.",
-  "settings_entry": "Mar Profundo"
+  "unitscale": "Tamanho das águas-vivas",
+  "unitnumber": "Número de águas-vivas",
+  "backgroundbrightness": "Brilho do fundo",
+  "backgroundlighting": "Iluminação do fundo",
+  "particlecolor": "Cor do núcleo da água-viva"
 }

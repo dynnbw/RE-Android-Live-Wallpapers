@@ -1,10 +1,104 @@
 {
   "prefs": [
     {
+      "type": "seekbar",
+      "key": "galaxy_particle_count",
+      "title": "galaxy_particle_count",
+      "default": "12000",
+      "min": 1000,
+      "max": 19000
+    },
+    {
+      "type": "seekbar",
+      "key": "galaxy_particle_alpha",
+      "title": "galaxy_particle_alpha",
+      "default": "100",
+      "min": 10,
+      "max": 100
+    },
+    {
       "type": "switch",
-      "key": "galaxy_recolor",
-      "title": "Recolor particles",
-      "default": false
+      "key": "galaxy_precise_calc",
+      "title": "galaxy_precise_calc",
+      "default": "false"
+    },
+    {
+      "type": "switch",
+      "key": "pref_galaxy_use_light2",
+      "title": "pref_galaxy_use_light2",
+      "default": "false"
+    },
+    {
+      "type": "seekbar",
+      "key": "galaxy_arm_count",
+      "title": "galaxy_arm_count",
+      "default": "2",
+      "min": 1,
+      "max": 6
+    },
+    {
+      "type": "seekbar",
+      "key": "galaxy_arm_offset",
+      "title": "galaxy_arm_offset",
+      "default": "3141",
+      "min": 0,
+      "max": 6283
+    },
+    {
+      "type": "seekbar",
+      "key": "galaxy_pitch_angle_deg",
+      "title": "galaxy_pitch_angle_deg",
+      "default": "67",
+      "min": 0,
+      "max": 300
+    },
+    {
+      "type": "seekbar",
+      "key": "galaxy_inner_scatter",
+      "title": "galaxy_inner_scatter",
+      "default": "135",
+      "min": 0,
+      "max": 500
+    },
+    {
+      "type": "seekbar",
+      "key": "galaxy_outer_scatter",
+      "title": "galaxy_outer_scatter",
+      "default": "75",
+      "min": 0,
+      "max": 500
+    },
+    {
+      "type": "seekbar",
+      "key": "galaxy_turbulence",
+      "title": "galaxy_turbulence",
+      "default": "28",
+      "min": 0,
+      "max": 200
+    },
+    {
+      "type": "seekbar",
+      "key": "galaxy_forbidden_radius",
+      "title": "galaxy_forbidden_radius",
+      "default": "282",
+      "min": 0,
+      "max": 1000
+    },
+    {
+      "type": "seekbar",
+      "key": "galaxy_ellipse_ratio",
+      "title": "galaxy_ellipse_ratio",
+      "default": "892",
+      "min": 500,
+      "max": 1000
+    },
+    {
+      "type": "seekbar",
+      "key": "galaxy_ellipse_twist",
+      "title": "galaxy_ellipse_twist",
+      "default": "123",
+      "min": 0,
+      "max": 200
     }
   ]
 }

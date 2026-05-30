@@ -176,10 +176,15 @@ public class ProxyWallpaperService extends WallpaperService {
                         if (mVisible) {
                             synchronized (mLock) {
                                 if (mEngine != null) {
-                                    mEngine.drawFrame(System.currentTimeMillis());
-                                    if (++frameCount == 60) {
-                                        Log.d(TAG, "Rendered 60 frames OK");
-                                        frameCount = 0;
+                                    try {
+                                        mEngine.drawFrame(System.currentTimeMillis());
+                                        if (++frameCount == 60) {
+                                            Log.d(TAG, "Rendered 60 frames OK");
+                                            frameCount = 0;
+                                        }
+                                    } catch (Exception e) {
+                                        Log.e(TAG, "drawFrame crashed", e);
+                                        mRunning = false;
                                     }
                                 }
                             }

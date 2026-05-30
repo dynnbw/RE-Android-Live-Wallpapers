@@ -1,6 +1,7 @@
 {
-  "title": "গভীর সমুদ্র",
-  "author": "স্যামসাং",
-  "desc": "স্বচ্ছ জেলিফিশ গভীর সমুদ্রে সাঁতার কাটে।",
-  "settings_entry": "গভীর সমুদ্র"
+  "unitscale": "জেলিফিশের আকার",
+  "unitnumber": "জেলিফিশের সংখ্যা",
+  "backgroundbrightness": "পটভূমির উজ্জ্বলতা",
+  "backgroundlighting": "পটভূমির আলোকসজ্জা",
+  "particlecolor": "জেলিফিশের মূল রং"
 }

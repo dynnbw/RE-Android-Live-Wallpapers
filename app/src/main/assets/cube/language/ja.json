@@ -1,6 +1,3 @@
 {
-  "title": "キューブ",
-  "author": "Google",
-  "desc": "ランチャースクロールとタッチエフェクト付きの回転する3D立方体ワイヤーフレーム。",
-  "settings_entry": "キューブ"
+  "cube_shape": "形状"
 }

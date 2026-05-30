@@ -1,15 +1,5 @@
 {
-  "title": "অণুজীব",
-  "author": "স্যামসাং",
-  "desc": "স্পর্শ-চালিত গতি, খাদ্য গ্রহণের আচরণ এবং জৈব কণা অ্যানিমেশন সহ মাইক্রোস্কোপের নিচে জীবন।",
-  "settings_entry": "অণুজীব",
-  "pref_preview_hint": "টিপ: প্রিভিউতে অণুজীব আকর্ষণ করতে স্পর্শ করে টেনে আনুন, তারপর প্রযোজ্য করতে \"সিস্টেম প্রিভিউ খুলুন\" এ ট্যাপ করুন।",
-  "pref_lifecycle_speed": "জীবনচক্রের গতি",
-  "pref_lifecycle_speed_summary": "মেটাবলিজম, প্রজনন এবং ক্ষয় গতি সামঞ্জস্য করুন (%)",
-  "pref_motion_activity": "গতি কার্যকলাপ",
-  "pref_motion_activity_summary": "প্রাকৃতিক বিচরণ এবং সাঁতারের তীব্রতা সামঞ্জস্য করুন (%)",
-  "pref_color_mode": "রঙের শৈলী",
-  "pref_color_mode_summary": "মূল শুধুমাত্র আরজিবি প্যালেট এবং বর্তমান উন্নত প্যালেটের মধ্যে স্যুইচ করুন",
-  "pref_color_mode_original": "মূল",
-  "pref_color_mode_modern": "নতুন"
+  "microbes_lifecycle_speed": "জীবনচক্রের গতি",
+  "microbes_motion_activity": "গতি কার্যকলাপ",
+  "microbes_color_mode": "রঙের শৈলী"
 }

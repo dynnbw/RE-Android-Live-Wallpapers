@@ -1,4 +1,6 @@
 {
   "fragment": "com.reandroid.settings.FlsorescenceSettingsFragment",
-  "label": "@string/wallpaper_flsorescence"
+  "label": "@string/wallpaper_flsorescence",
+  "plugin": "com.reandroid.wallpaper.flsorescence.FlsorescencePlugin",
+  "previewClass": "com.reandroid.wallpaper.flsorescence.FlsorescenceGL"
 }

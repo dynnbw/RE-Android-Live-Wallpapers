@@ -1,6 +1,10 @@
 {
-  "title": "环形频谱",
-  "author": "念.",
-  "desc": "音频驱动同心圆环，随音乐律动变形。",
-  "settings_entry": "环形频谱"
+  "musicvis_recolor": "着色模式",
+  "musicvis_recolor_mode": "着色模式",
+  "musicvis_hue": "色相",
+  "musicvis_saturation": "饱和度",
+  "musicvis_brightness": "亮度",
+  "circle_ring_count": "环形层数",
+  "circle_line_width": "线条宽度",
+  "musicvis_bg_color": "背景颜色"
 }

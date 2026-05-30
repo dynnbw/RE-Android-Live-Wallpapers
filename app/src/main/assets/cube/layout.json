@@ -1,0 +1,30 @@
+{
+  "prefs": [
+    {
+      "type": "list",
+      "key": "cube_shape",
+      "title": "cube_shape",
+      "default": "cube",
+      "values": [
+        "cube",
+        "dodecahedron",
+        "tetrahedron",
+        "octahedron",
+        "icosahedron",
+        "stardodecahedron",
+        "cuboctahedron",
+        "truncatedcube"
+      ],
+      "labels": [
+        "Cube",
+        "Dodecahedron",
+        "Tetrahedron",
+        "Octahedron",
+        "Icosahedron",
+        "Star Dodecahedron",
+        "Cuboctahedron",
+        "Truncated Cube"
+      ]
+    }
+  ]
+}

@@ -1,1 +1,4 @@
-{"fragment": "com.reandroid.settings.MusicVis5SettingsFragment", "label": "@string/wallpaper_vis5"}
+{"fragment": "com.reandroid.settings.MusicVis5SettingsFragment", "label": "@string/wallpaper_vis5",
+  "plugin": "com.reandroid.wallpaper.musicvis.Vis5Plugin",
+  "previewClass": "com.reandroid.wallpaper.musicvis.MusicVisManyScene"
+}

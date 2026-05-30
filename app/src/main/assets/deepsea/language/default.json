@@ -1,6 +1,22 @@
 {
-  "title": "Deep Sea",
-  "author": "Samsung",
-  "desc": "Translucent jellyfish swim through the deep sea.",
-  "settings_entry": "Deep Sea"
+  "unitscale": "Jellyfish size",
+  "unitnumber": "Number of jellyfish",
+  "backgroundbrightness": "Background brightness",
+  "backgroundlighting": "Background lighting",
+  "particlecolor": "Jellyfish core color",
+  "particlecolor_label_0": "1",
+  "particlecolor_label_1": "2",
+  "particlecolor_label_2": "3",
+  "particlecolor_label_3": "4",
+  "particlecolor_label_4": "5",
+  "particlecolor_label_5": "6",
+  "particlecolor_label_6": "7",
+  "particlecolor_label_7": "8",
+  "particlecolor_label_8": "9",
+  "particlecolor_label_9": "10",
+  "particlecolor_label_10": "11",
+  "particlecolor_label_11": "12",
+  "particlecolor_label_12": "13",
+  "particlecolor_label_13": "14",
+  "particlecolor_label_14": "15"
 }

@@ -1,6 +1,7 @@
 {
-  "title": "深海",
-  "author": "Samsung",
-  "desc": "半透明水母在深海中緩緩游動。",
-  "settings_entry": "深海"
+  "unitscale": "水母尺寸",
+  "unitnumber": "水母數目",
+  "backgroundbrightness": "背景亮度",
+  "backgroundlighting": "背景照明",
+  "particlecolor": "水母核心色彩"
 }

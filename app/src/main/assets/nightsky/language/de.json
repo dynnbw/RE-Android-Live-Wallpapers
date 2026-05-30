@@ -1,15 +1,6 @@
 {
-  "title": "Nachthimmel",
-  "author": "念.",
-  "desc": "Echter-Stern-Nachthimmel mit siderischer Bewegung, sensororientierter Ausrichtung, Zeitbeschleunigung per Langdruck und verblassenden Sternspuren.",
-  "settings_entry": "Nachthimmel",
-  "pref_preview_hint": "Tipp: Verwenden Sie die Live-Vorschau in der App oben und tippen Sie dann auf „Systemvorschau öffnen“, um „Nachthimmel“ zu übernehmen.",
-  "pref_camera_focal": "Kamera-Brennweite",
-  "pref_camera_focal_summary": "Brennweite des Objektivs anpassen (mm); größere Werte zoomen stärker",
-  "pref_use_sensor": "Sensorausrichtung verwenden",
-  "pref_use_sensor_summary": "Wenn aus, Startbildschirm-Seitenscrollen zum Drehen der Ansicht verwenden (45° pro Seite)",
-  "pref_auto_time_accel": "Automatische Zeitbeschleunigung",
-  "pref_auto_time_accel_summary": "Himmelszeit kontinuierlich beschleunigen und Sternspuren sichtbar halten",
-  "pref_time_accel_speed": "Beschleunigungsgeschwindigkeit",
-  "pref_time_accel_speed_summary": "Geschwindigkeitsstufe für automatische/Langdruck-Beschleunigung auswählen"
+  "nightsky_camera_focal_mm": "Kamera-Brennweite",
+  "nightsky_use_sensor": "Sensorausrichtung verwenden",
+  "nightsky_auto_time_accel": "Automatische Zeitbeschleunigung",
+  "nightsky_time_accel_speed": "Beschleunigungsgeschwindigkeit"
 }

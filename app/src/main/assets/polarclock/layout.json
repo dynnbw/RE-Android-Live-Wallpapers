@@ -1,0 +1,42 @@
+{
+  "prefs": [
+    {
+      "type": "switch",
+      "key": "show_seconds",
+      "title": "show_seconds",
+      "default": "true"
+    },
+    {
+      "type": "switch",
+      "key": "variable_line_width",
+      "title": "variable_line_width",
+      "default": "true"
+    },
+    {
+      "type": "list",
+      "key": "palette",
+      "title": "palette",
+      "default": "gray",
+      "values": [
+        "palette_gray",
+        "palette_white_c",
+        "palette_black_c",
+        "palette_matrix",
+        "palette_halloween",
+        "palette_violet",
+        "palette_oceanic",
+        "palette_zenburn"
+      ],
+      "labels": [
+        "@string/palette_gray",
+        "@string/palette_white_c",
+        "@string/palette_black_c",
+        "@string/palette_matrix",
+        "@string/palette_halloween",
+        "@string/palette_violet",
+        "@string/palette_oceanic",
+        "@string/palette_zenburn"
+      ]
+    }
+  ]
+}

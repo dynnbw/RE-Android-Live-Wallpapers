@@ -1,9 +1,4 @@
 {
-  "title": "গ্যালাক্সি ৪",
-  "author": "গুগল",
-  "settings_entry": "গ্যালাক্সি ৪",
-  "pref_bg_star_count": "পটভূমি তারার সংখ্যা",
-  "pref_bg_star_count_summary": "গ্যালাক্সিতে পটভূমি তারার সংখ্যা (কর্মক্ষমতা প্রভাবিত করে)",
-  "pref_space_cloud_count": "মহাকাশ মেঘের সংখ্যা",
-  "pref_space_cloud_count_summary": "গ্যালাক্সিতে মেঘের সংখ্যা"
+  "galaxy4_bg_star_count": "পটভূমি তারার সংখ্যা",
+  "galaxy4_space_cloud_count": "মহাকাশ মেঘের সংখ্যা"
 }

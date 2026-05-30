@@ -1,6 +1,3 @@
 {
-  "settings_entry": "Cubo",
-  "title": "Cubo",
-  "author": "Google",
-  "desc": "Un cubo 3D de estructura alámbrica giratorio con efectos de desplazamiento y táctiles."
+  "cube_shape": "Forma"
 }

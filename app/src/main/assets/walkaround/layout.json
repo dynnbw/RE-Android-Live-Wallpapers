@@ -1,0 +1,16 @@
+{
+  "prefs": [
+    {
+      "type": "switch",
+      "key": "walkaround_use_front",
+      "title": "walkaround_use_front",
+      "default": "false"
+    },
+    {
+      "type": "switch",
+      "key": "walkaround_mirror_front",
+      "title": "walkaround_mirror_front",
+      "default": "true"
+    }
+  ]
+}

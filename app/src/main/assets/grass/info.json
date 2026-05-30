@@ -1,4 +1,6 @@
 {
   "fragment": "com.reandroid.settings.GrassSettingsFragment",
-  "label": "@string/wallpaper_grass"
+  "label": "@string/wallpaper_grass",
+  "plugin": "com.reandroid.wallpaper.grass.GrassPlugin",
+  "previewClass": "com.reandroid.wallpaper.grass.GrassGL"
 }

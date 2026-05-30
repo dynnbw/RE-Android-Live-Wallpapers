@@ -1,6 +1,6 @@
 {
-  "settings_entry": "Фазовый луч",
-  "title": "Фазовый луч",
-  "author": "Google",
-  "desc": "Мягкие лучи и частицы, проходящие по яркому фону."
+  "phasebeam_recolor_enabled": "Настроить цвета лучей",
+  "phasebeam_hue": "Цвет",
+  "phasebeam_saturation": "Насыщенность",
+  "phasebeam_brightness": "Яркость"
 }

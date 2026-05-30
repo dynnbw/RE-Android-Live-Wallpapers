@@ -32,22 +32,78 @@ public final class DynamicPreferenceFactory {
         JSONArray items = layout.optJSONArray("prefs");
         if (items == null) return;
 
-        for (int i = 0; i < items.length(); i++) {
+        int count = items.length();
+        Preference[] created = new Preference[count];
+        String[] dependencies = new String[count];
+        String[] disableOnKeys = new String[count];
+        boolean[] depDefaults = new boolean[count];   // default true value for dependency parent
+        boolean[] dkDefaults = new boolean[count];    // default false value for disableOn parent
+
+        // Pass 1: create preferences and add them
+        for (int i = 0; i < count; i++) {
             JSONObject item = items.optJSONObject(i);
             if (item == null) continue;
 
             String type = item.optString("type");
             Preference p = create(context, type, item, prefs, language);
             if (p != null) {
-                // Set correct layout per type
+                dependencies[i] = item.optString("dependency", null);
+                disableOnKeys[i] = item.optString("disableOn", null);
+                // Resolve default values for dependency/disableOn parent keys
+                depDefaults[i] = findDefaultBool(items, dependencies[i], true);
+                dkDefaults[i] = findDefaultBool(items, disableOnKeys[i], false);
                 if ("seekbar".equals(type)) {
                     p.setLayoutResource(com.reandroid.wallpaper.R.layout.preference_modern_seekbar);
                 } else {
                     p.setLayoutResource(com.reandroid.wallpaper.R.layout.preference_modern_item);
                 }
                 addAction.add(p);
+                created[i] = p;
             }
         }
+
+        // Pass 2: set soft-dependency (no setEnabled to avoid SeekBar crash)
+        for (int i = 0; i < count; i++) {
+            Preference p = created[i];
+            if (p == null) continue;
+            String dep = dependencies[i];
+            String dk = disableOnKeys[i];
+            if ((dep != null && !dep.isEmpty()) || (dk != null && !dk.isEmpty())) {
+                boolean depDefTrue = depDefaults[i];
+                boolean dkDefFalse = dkDefaults[i];
+                final String origSummary = p.getSummary() != null ? p.getSummary().toString() : null;
+                // Initial state
+                boolean blocked = false;
+                if (dep != null && !dep.isEmpty()) blocked = !prefs.getBoolean(dep, depDefTrue);
+                if (!blocked && dk != null && !dk.isEmpty()) blocked = prefs.getBoolean(dk, dkDefFalse);
+                if (blocked) p.setSummary("[Disabled] " + (origSummary != null ? origSummary : ""));
+                p.setOnPreferenceChangeListener((pref, newValue) -> {
+                    if (dep != null && !dep.isEmpty() && !prefs.getBoolean(dep, depDefTrue)) return false;
+                    if (dk != null && !dk.isEmpty() && prefs.getBoolean(dk, dkDefFalse)) return false;
+                    return true;
+                });
+                prefs.registerOnSharedPreferenceChangeListener((sp, key) -> {
+                    if (key.equals(dep) || key.equals(dk)) {
+                        boolean nowBlocked = false;
+                        if (dep != null && !dep.isEmpty()) nowBlocked = !sp.getBoolean(dep, depDefTrue);
+                        if (!nowBlocked && dk != null && !dk.isEmpty()) nowBlocked = sp.getBoolean(dk, dkDefFalse);
+                        p.setSummary(nowBlocked ? "[Disabled] " + (origSummary != null ? origSummary : "")
+                                               : origSummary);
+                    }
+                });
+            }
+        }
+    }
+
+    static boolean findDefaultBool(JSONArray items, String key, boolean fallback) {
+        if (key == null) return fallback;
+        for (int i = 0; i < items.length(); i++) {
+            JSONObject item = items.optJSONObject(i);
+            if (item != null && key.equals(item.optString("key"))) {
+                return item.optBoolean("default", fallback);
+            }
+        }
+        return fallback;
     }
 
     private static String resolveLang(JSONObject lang, String key) {
@@ -98,10 +154,11 @@ public final class DynamicPreferenceFactory {
                 JSONArray labels = item.optJSONArray("labels");
                 if (vals != null) {
                     String[] v = new String[vals.length()];
-                    String[] l = labels != null ? new String[labels.length()] : v.clone();
+                    String[] l = new String[vals.length()];
                     for (int i = 0; i < vals.length(); i++) v[i] = vals.optString(i);
-                    for (int i = 0; i < (labels != null ? labels.length() : vals.length()); i++) {
-                        l[i] = labels != null ? labels.optString(i) : v[i];
+                    for (int i = 0; i < vals.length(); i++) {
+                        String raw = labels != null ? labels.optString(i, v[i]) : v[i];
+                        l[i] = resolveStringRef(context, raw);
                     }
                     lp.setEntryValues(v);
                     lp.setEntries(l);
@@ -111,6 +168,15 @@ public final class DynamicPreferenceFactory {
             }
         }
         return null;
+    }
+
+    private static String resolveStringRef(Context ctx, String s) {
+        if (s != null && s.startsWith("@string/")) {
+            int id = ctx.getResources().getIdentifier(
+                    s.substring(8), "string", ctx.getPackageName());
+            if (id != 0) return ctx.getString(id);
+        }
+        return s != null ? s : "";
     }
 
     /** Callback for each created preference. */

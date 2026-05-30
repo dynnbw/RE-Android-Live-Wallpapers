@@ -1,6 +1,3 @@
 {
-  "settings_entry": "Cubo",
-  "title": "Cubo",
-  "author": "Google",
-  "desc": "Um cubo 3D de wireframe giratório com rolagem do launcher e efeitos de toque."
+  "cube_shape": "Forma"
 }

@@ -1,4 +1,3 @@
 {
-  "title": "Spectre",
-  "settings_entry": "Spectre"
+  "musicvis_use_triangle_strip": "Utiliser le maillage hérité en bandes de triangles"
 }

@@ -1,4 +1,6 @@
 {
   "fragment": "com.reandroid.settings.ForestSettingsFragment",
-  "label": "@string/wallpaper_forest"
+  "label": "@string/wallpaper_forest",
+  "plugin": "com.reandroid.wallpaper.forest.ForestPlugin",
+  "previewClass": "com.reandroid.wallpaper.forest.ForestGL"
 }

@@ -1,6 +1,3 @@
 {
-  "settings_entry": "마법의 연기",
-  "title": "마법의 연기",
-  "pref_preset": "시각 테마",
-  "pref_preset_summary": "20가지 연기/구름/플라즈마 효과 중에서 선택하세요"
+  "preset": "시각 테마"
 }

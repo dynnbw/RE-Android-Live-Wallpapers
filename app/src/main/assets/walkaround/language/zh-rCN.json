@@ -1,10 +1,4 @@
 {
-  "title": "透视",
-  "author": "Google",
-  "desc": "        透过手机观察，安心惬意地四处走动。    ",
-  "settings_entry": "透视",
-  "pref_use_front": "使用前置摄像头",
-  "pref_use_front_summary": "在前置与后置摄像头之间切换。",
-  "pref_mirror_front": "镜像前置摄像头",
-  "pref_mirror_front_summary": "对前置画面进行左右镜像。"
+  "walkaround_use_front": "使用前置摄像头",
+  "walkaround_mirror_front": "镜像前置摄像头"
 }

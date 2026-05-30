@@ -1,6 +1,7 @@
 {
-  "title": "Mar profundo",
-  "author": "Samsung",
-  "desc": "Medusas translúcidas nadan en las profundidades del mar.",
-  "settings_entry": "Mar profundo"
+  "unitscale": "Tamaño de la medusa",
+  "unitnumber": "Número de medusas",
+  "backgroundbrightness": "Brillo del fondo",
+  "backgroundlighting": "Iluminación del fondo",
+  "particlecolor": "Color central de la medusa"
 }

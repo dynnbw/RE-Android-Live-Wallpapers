@@ -1,0 +1,190 @@
+{
+  "prefs": [
+    {
+      "type": "switch",
+      "key": "pref_grass_enabled",
+      "title": "pref_grass_enabled",
+      "default": "true"
+    },
+    {
+      "type": "switch",
+      "key": "pref_grass_weather_enabled",
+      "title": "pref_grass_weather_enabled",
+      "default": "true"
+    },
+    {
+      "type": "seekbar",
+      "key": "pref_grass_weather_rain_count",
+      "title": "pref_grass_weather_rain_count",
+      "default": "25",
+      "min": 10,
+      "max": 1000
+    },
+    {
+      "type": "seekbar",
+      "key": "pref_grass_weather_snow_count",
+      "title": "pref_grass_weather_snow_count",
+      "default": "25",
+      "min": 10,
+      "max": 1000
+    },
+    {
+      "type": "seekbar",
+      "key": "pref_grass_count",
+      "title": "pref_grass_count",
+      "default": "200",
+      "min": 50,
+      "max": 1000
+    },
+    {
+      "type": "seekbar",
+      "key": "pref_grass_height",
+      "title": "pref_grass_height",
+      "default": "100",
+      "min": 50,
+      "max": 1000
+    },
+    {
+      "type": "seekbar",
+      "key": "pref_grass_width",
+      "title": "pref_grass_width",
+      "default": "100",
+      "min": 50,
+      "max": 600
+    },
+    {
+      "type": "seekbar",
+      "key": "pref_grass_hardness",
+      "title": "pref_grass_hardness",
+      "default": "100",
+      "min": 30,
+      "max": 300
+    },
+    {
+      "type": "list",
+      "key": "pref_grass_color",
+      "title": "pref_grass_color",
+      "default": "default",
+      "values": [
+        "default",
+        "#00ff0d",
+        "#42A5F5",
+        "#EF5350",
+        "#ffbfca",
+        "#AB47BC",
+        "#ffd900",
+        "#2f2e34",
+        "#ffffff"
+      ],
+      "labels": [
+        "@string/grass_color_default",
+        "@string/grass_color_green",
+        "@string/grass_color_blue",
+        "@string/grass_color_red",
+        "@string/grass_color_pink",
+        "@string/grass_color_purple",
+        "@string/grass_color_yellow",
+        "@string/grass_color_black",
+        "@string/grass_color_white"
+      ]
+    },
+    {
+      "type": "switch",
+      "key": "pref_grass_night_invert",
+      "title": "pref_grass_night_invert",
+      "default": "false"
+    },
+    {
+      "type": "switch",
+      "key": "pref_grass_night_desaturate",
+      "title": "pref_grass_night_desaturate",
+      "default": "false"
+    },
+    {
+      "type": "switch",
+      "key": "pref_grass_accurate_sun",
+      "title": "pref_grass_accurate_sun",
+      "default": "false"
+    },
+    {
+      "type": "switch",
+      "key": "pref_grass_sun",
+      "title": "pref_grass_sun",
+      "default": "true",
+      "dependency": "pref_grass_accurate_sun"
+    },
+    {
+      "type": "switch",
+      "key": "pref_grass_procedural_sun",
+      "title": "pref_grass_procedural_sun",
+      "default": "true",
+      "dependency": "pref_grass_sun"
+    },
+    {
+      "type": "switch",
+      "key": "pref_grass_moon",
+      "title": "pref_grass_moon",
+      "default": "true",
+      "dependency": "pref_grass_accurate_sun"
+    },
+    {
+      "type": "switch",
+      "key": "pref_grass_dandelion",
+      "title": "pref_grass_dandelion",
+      "default": "false",
+      "disableOn": "pref_grass_legacy_particles"
+    },
+    {
+      "type": "seekbar",
+      "key": "pref_grass_dandelion_count",
+      "title": "pref_grass_dandelion_count",
+      "default": "10",
+      "min": 1,
+      "max": 30,
+      "dependency": "pref_grass_dandelion",
+      "disableOn": "pref_grass_legacy_particles"
+    },
+    {
+      "type": "seekbar",
+      "key": "pref_grass_dandelion_speed",
+      "title": "pref_grass_dandelion_speed",
+      "default": "600",
+      "min": 100,
+      "max": 1000,
+      "dependency": "pref_grass_dandelion",
+      "disableOn": "pref_grass_legacy_particles"
+    },
+    {
+      "type": "switch",
+      "key": "pref_grass_firefly",
+      "title": "pref_grass_firefly",
+      "default": "false",
+      "disableOn": "pref_grass_legacy_particles"
+    },
+    {
+      "type": "seekbar",
+      "key": "pref_grass_firefly_count",
+      "title": "pref_grass_firefly_count",
+      "default": "16",
+      "min": 1,
+      "max": 60,
+      "dependency": "pref_grass_firefly",
+      "disableOn": "pref_grass_legacy_particles"
+    },
+    {
+      "type": "seekbar",
+      "key": "pref_grass_star_count",
+      "title": "pref_grass_star_count",
+      "default": "2048",
+      "min": 0,
+      "max": 10000
+    },
+    {
+      "type": "switch",
+      "key": "pref_grass_legacy_particles",
+      "title": "pref_grass_legacy_particles",
+      "default": "false",
+      "disableOn": "pref_grass_dandelion"
+    }
+  ]
+}

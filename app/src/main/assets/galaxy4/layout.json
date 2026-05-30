@@ -1,0 +1,20 @@
+{
+  "prefs": [
+    {
+      "type": "seekbar",
+      "key": "galaxy4_bg_star_count",
+      "title": "galaxy4_bg_star_count",
+      "default": "11000",
+      "min": 1000,
+      "max": 19000
+    },
+    {
+      "type": "seekbar",
+      "key": "galaxy4_space_cloud_count",
+      "title": "galaxy4_space_cloud_count",
+      "default": "25",
+      "min": 5,
+      "max": 95
+    }
+  ]
+}

@@ -1,17 +1,8 @@
 {
-  "title": "형광",
-  "author": "念.",
-  "desc": "빛나는 점들이 화면에서 생명체처럼 부드럽게 움직입니다.",
-  "pref_shape": "점의 모양",
-  "pref_shape_summary": "각 점의 모양을 변경합니다",
-  "pref_color": "점의 색상 구성표",
-  "pref_color_summary": "색상 구성표를 변경합니다",
-  "pref_scale": "점의 크기 조정",
-  "pref_scale_summary": "각 점의 크기를 변경합니다",
-  "pref_speed": "움직임 속도",
-  "pref_speed_summary": "움직임 속도를 변경합니다",
-  "pref_amount": "점의 개수",
-  "pref_amount_summary": "점의 개수를 변경합니다",
-  "pref_pattern": "움직임 패턴",
-  "pref_pattern_summary": "움직임 패턴을 변경합니다"
+  "flsorescence_shape": "점의 모양",
+  "flsorescence_color": "점의 색상 구성표",
+  "flsorescence_scale": "점의 크기 조정",
+  "flsorescence_speed": "움직임 속도",
+  "flsorescence_amount": "점의 개수",
+  "flsorescence_pattern": "움직임 패턴"
 }

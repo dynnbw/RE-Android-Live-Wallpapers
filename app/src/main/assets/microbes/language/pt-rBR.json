@@ -1,15 +1,5 @@
 {
-  "title": "Micróbios",
-  "author": "Samsung",
-  "desc": "Vida sob o microscópio com movimento guiado por toque, comportamento de alimentação e animação de partículas orgânicas.",
-  "settings_entry": "Micróbios",
-  "pref_preview_hint": "Dica: Toque e arraste na pré-visualização para atrair micróbios e toque em \"Abrir pré-visualização do sistema\" para aplicar.",
-  "pref_lifecycle_speed": "Velocidade do ciclo de vida",
-  "pref_lifecycle_speed_summary": "Ajustar a velocidade do metabolismo, reprodução e decadência (%)",
-  "pref_motion_activity": "Atividade de movimento",
-  "pref_motion_activity_summary": "Ajustar a intensidade de vagueamento e natação natural (%)",
-  "pref_color_mode": "Estilo de cor",
-  "pref_color_mode_summary": "Alternar entre a paleta original apenas RGB e a paleta melhorada atual",
-  "pref_color_mode_original": "Original",
-  "pref_color_mode_modern": "Novo"
+  "microbes_lifecycle_speed": "Velocidade do ciclo de vida",
+  "microbes_motion_activity": "Atividade de movimento",
+  "microbes_color_mode": "Estilo de cor"
 }

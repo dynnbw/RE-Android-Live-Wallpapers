@@ -1,6 +1,3 @@
 {
-  "title": "立方體",
-  "author": "Google",
-  "desc": "旋轉的3D線框立方體，支援啟動器滾動和觸摸效果。",
-  "settings_entry": "立方體"
+  "cube_shape": "形狀"
 }

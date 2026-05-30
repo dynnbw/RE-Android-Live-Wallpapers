@@ -1,10 +1,4 @@
 {
-  "title": "Durchblick",
-  "author": "Google",
-  "desc": "        Durch dein Handy sehen und ohne Unfallrisiko herumlaufen.    ",
-  "settings_entry": "Durchblick",
-  "pref_use_front": "Frontkamera verwenden",
-  "pref_use_front_summary": "Zwischen Front- und Rückkamera wechseln.",
-  "pref_mirror_front": "Frontkamera spiegeln",
-  "pref_mirror_front_summary": "Frontkamera horizontal spiegeln."
+  "walkaround_use_front": "Frontkamera verwenden",
+  "walkaround_mirror_front": "Frontkamera spiegeln"
 }

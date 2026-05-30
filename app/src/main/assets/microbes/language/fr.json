@@ -1,15 +1,5 @@
 {
-  "title": "Microbes",
-  "author": "Samsung",
-  "desc": "Vie au microscope avec mouvement tactile, comportement alimentaire et animation organique de particules.",
-  "settings_entry": "Microbes",
-  "pref_preview_hint": "Astuce : touchez et faites glisser dans l’aperçu pour attirer les microbes, puis appuyez sur \"Ouvrir l’aperçu système\" pour appliquer.",
-  "pref_lifecycle_speed": "Vitesse du cycle de vie",
-  "pref_lifecycle_speed_summary": "Ajuster la vitesse du métabolisme, de la reproduction et du déclin (%)",
-  "pref_motion_activity": "Activité de mouvement",
-  "pref_motion_activity_summary": "Ajuster l’intensité de déplacement et de nage naturelle (%)",
-  "pref_color_mode": "Style de couleur",
-  "pref_color_mode_summary": "Basculer entre la palette d’origine (uniquement RVB) et la palette améliorée actuelle",
-  "pref_color_mode_original": "Original",
-  "pref_color_mode_modern": "Nouveau"
+  "microbes_lifecycle_speed": "Vitesse du cycle de vie",
+  "microbes_motion_activity": "Activité de mouvement",
+  "microbes_color_mode": "Style de couleur"
 }

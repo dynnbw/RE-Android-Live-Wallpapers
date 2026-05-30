@@ -1,0 +1,76 @@
+{
+  "prefs": [
+    {
+      "type": "seekbar",
+      "key": "unitscale",
+      "title": "unitscale",
+      "default": "0",
+      "min": -5,
+      "max": 5
+    },
+    {
+      "type": "seekbar",
+      "key": "unitnumber",
+      "title": "unitnumber",
+      "default": "0",
+      "min": -5,
+      "max": 5
+    },
+    {
+      "type": "seekbar",
+      "key": "backgroundbrightness",
+      "title": "backgroundbrightness",
+      "default": "0",
+      "min": -5,
+      "max": 5
+    },
+    {
+      "type": "seekbar",
+      "key": "backgroundlighting",
+      "title": "backgroundlighting",
+      "default": "0",
+      "min": -5,
+      "max": 5
+    },
+    {
+      "type": "list",
+      "key": "particlecolor",
+      "title": "particlecolor",
+      "default": "8",
+      "values": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14"
+      ],
+      "labels": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15"
+      ]
+    }
+  ]
+}

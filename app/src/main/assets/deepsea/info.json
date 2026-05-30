@@ -1,4 +1,6 @@
 {
   "fragment": "com.reandroid.settings.DeepSeaSettingsFragment",
-  "label": "@string/wallpaper_deepsea"
+  "label": "@string/wallpaper_deepsea",
+  "plugin": "com.reandroid.wallpaper.deepsea.DeepSeaPlugin",
+  "previewClass": "com.reandroid.wallpaper.deepsea.DeepSeaGL"
 }

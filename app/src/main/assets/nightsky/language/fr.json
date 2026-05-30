@@ -1,15 +1,6 @@
 {
-  "title": "Ciel nocturne",
-  "author": "念.",
-  "desc": "Ciel nocturne réaliste avec mouvement sidéral, orientation par capteur, accélération temporelle par appui long et traînées d’étoiles qui s’estompent.",
-  "settings_entry": "Ciel nocturne",
-  "pref_preview_hint": "Astuce : utilisez l’aperçu en direct dans l’application ci-dessus, puis appuyez sur \"Ouvrir l’aperçu système\" pour appliquer Ciel nocturne.",
-  "pref_camera_focal": "Focale de l’appareil photo",
-  "pref_camera_focal_summary": "Ajuster la distance focale de l’objectif (mm) ; des valeurs plus grandes zooment davantage",
-  "pref_use_sensor": "Utiliser l’orientation du capteur",
-  "pref_use_sensor_summary": "Lorsque désactivé, utiliser le défilement des pages de l’écran d’accueil pour faire pivoter la vue (45° par page)",
-  "pref_auto_time_accel": "Accélération temporelle automatique",
-  "pref_auto_time_accel_summary": "Accélérer continuellement le temps du ciel et garder les traînées d’étoiles visibles",
-  "pref_time_accel_speed": "Vitesse d’accélération",
-  "pref_time_accel_speed_summary": "Sélectionner le niveau de vitesse pour l’accélération automatique / par appui long"
+  "nightsky_camera_focal_mm": "Focale de l’appareil photo",
+  "nightsky_use_sensor": "Utiliser l’orientation du capteur",
+  "nightsky_auto_time_accel": "Accélération temporelle automatique",
+  "nightsky_time_accel_speed": "Vitesse d’accélération"
 }

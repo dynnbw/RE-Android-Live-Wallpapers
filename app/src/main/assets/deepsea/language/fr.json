@@ -1,6 +1,7 @@
 {
-  "title": "Grand fond",
-  "author": "Samsung",
-  "desc": "Des méduses translucides nagent dans les profondeurs marines.",
-  "settings_entry": "Grand fond"
+  "unitscale": "Taille des méduses",
+  "unitnumber": "Nombre de méduses",
+  "backgroundbrightness": "Luminosité de l’arrière-plan",
+  "backgroundlighting": "Éclairage de l’arrière-plan",
+  "particlecolor": "Couleur centrale des méduses"
 }

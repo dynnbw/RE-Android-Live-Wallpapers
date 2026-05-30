@@ -1,0 +1,47 @@
+{
+  "prefs": [
+    {
+      "type": "list",
+      "key": "theme",
+      "title": "theme",
+      "default": "phasebeam",
+      "values": [
+        "phasebeam",
+        "sunbeam"
+      ],
+      "labels": [
+        "@string/phasebeam_theme_phasebeam",
+        "@string/phasebeam_theme_sunbeam"
+      ]
+    },
+    {
+      "type": "switch",
+      "key": "phasebeam_recolor_enabled",
+      "title": "phasebeam_recolor_enabled"
+    },
+    {
+      "type": "seekbar",
+      "key": "phasebeam_hue",
+      "title": "phasebeam_hue",
+      "default": "0",
+      "min": 0,
+      "max": 1000
+    },
+    {
+      "type": "seekbar",
+      "key": "phasebeam_saturation",
+      "title": "phasebeam_saturation",
+      "default": "1000",
+      "min": 0,
+      "max": 1000
+    },
+    {
+      "type": "seekbar",
+      "key": "phasebeam_brightness",
+      "title": "phasebeam_brightness",
+      "default": "500",
+      "min": 0,
+      "max": 1000
+    }
+  ]
+}

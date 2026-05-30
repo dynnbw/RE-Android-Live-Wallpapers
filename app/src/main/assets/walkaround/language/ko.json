@@ -1,10 +1,4 @@
 {
-  "title": "투시",
-  "author": "Google",
-  "desc": "전화기를 통해 주변을 안전하고 편안하게 둘러볼 수 있습니다.",
-  "settings_entry": "투시",
-  "pref_use_front": "전면 카메라 사용",
-  "pref_use_front_summary": "전면 카메라와 후면 카메라 사이를 전환합니다.",
-  "pref_mirror_front": "전면 카메라 미러링",
-  "pref_mirror_front_summary": "전면 화면을 좌우로 미러링합니다."
+  "walkaround_use_front": "전면 카메라 사용",
+  "walkaround_mirror_front": "전면 카메라 미러링"
 }

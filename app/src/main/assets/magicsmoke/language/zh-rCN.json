@@ -1,6 +1,23 @@
 {
-  "settings_entry": "魔法烟雾",
-  "title": "魔法烟雾",
-  "pref_preset": "视觉主题",
-  "pref_preset_summary": "从20种烟雾/云/等离子效果中选择"
+  "preset": "视觉主题",
+  "preset_label_黑白（经典）": "黑白（经典）",
+  "preset_label_蓝白": "蓝白",
+  "preset_label_绿白": "绿白",
+  "preset_label_绿（预乘）": "绿（预乘）",
+  "preset_label_绿色光晕": "绿色光晕",
+  "preset_label_红色火焰": "红色火焰",
+  "preset_label_黑色直通": "黑色直通",
+  "preset_label_蓝黄渐变": "蓝黄渐变",
+  "preset_label_绿色光晕 2": "绿色光晕 2",
+  "preset_label_红色火焰（预乘）": "红色火焰（预乘）",
+  "preset_label_灰色（预乘）": "灰色（预乘）",
+  "preset_label_蓝色（预乘）": "蓝色（预乘）",
+  "preset_label_蓝黄静态": "蓝黄静态",
+  "preset_label_蓝黄旋转": "蓝黄旋转",
+  "preset_label_蓝黄旋转 2": "蓝黄旋转 2",
+  "preset_label_灰色经典": "灰色经典",
+  "preset_label_黑色交换（默认）": "黑色交换（默认）",
+  "preset_label_深蓝等离子": "深蓝等离子",
+  "preset_label_浅蓝等离子": "浅蓝等离子",
+  "preset_label_白色等离子": "白色等离子"
 }

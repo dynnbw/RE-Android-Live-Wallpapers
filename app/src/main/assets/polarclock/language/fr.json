@@ -1,6 +1,5 @@
 {
-  "title": "Horloge polaire",
-  "author": "Google",
-  "desc": "        Affiche la date et l’heure sous forme d’arcs horaires : mois, jour, heure, minute et seconde.    ",
-  "settings_entry": "Horloge polaire"
+  "show_seconds": "Afficher les secondes",
+  "variable_line_width": "Varier la largeur des anneaux",
+  "palette": "Palette de couleurs"
 }

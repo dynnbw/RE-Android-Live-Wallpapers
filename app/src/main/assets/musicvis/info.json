@@ -1,4 +1,6 @@
 {
   "fragment": "com.reandroid.settings.MusicVis2SettingsFragment",
-  "label": "@string/wallpaper_vis2"
+  "label": "@string/wallpaper_vis2",
+  "plugin": "com.reandroid.wallpaper.musicvis.Vis2Plugin",
+  "previewClass": "com.reandroid.wallpaper.musicvis.MusicVisWaveScene"
 }

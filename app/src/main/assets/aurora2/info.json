@@ -1,4 +1,6 @@
 {
   "fragment": "com.reandroid.settings.Aurora2SettingsFragment",
-  "label": "@string/wallpaper_aurora2"
+  "label": "@string/wallpaper_aurora2",
+  "plugin": "com.reandroid.wallpaper.aurora2.Aurora2Plugin",
+  "previewClass": "com.reandroid.wallpaper.aurora2.Aurora2GL"
 }

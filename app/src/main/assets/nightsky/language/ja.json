@@ -1,15 +1,6 @@
 {
-  "title": "夜空",
-  "author": "念.",
-  "desc": "実際の星表に基づく夜空壁紙。恒星の日周運動、センサー連動、長押し時間加速、星の軌跡フェード効果を含みます。",
-  "settings_entry": "夜空",
-  "pref_preview_hint": "ヒント：上部のアプリ内リアルタイムプレビューを先にご確認いただき、「システムプレビューを開く」を押して夜空壁紙を適用してください。",
-  "pref_camera_focal": "カメラ焦点距離",
-  "pref_camera_focal_summary": "レンズの焦点距離（mm）を調整します。値が大きいほど視野が狭くなります",
-  "pref_use_sensor": "センサーの向きを使用",
-  "pref_use_sensor_summary": "オフにするとホーム画面スクロールで視点を制御します（ページあたり45°）",
-  "pref_auto_time_accel": "自動時間加速",
-  "pref_auto_time_accel_summary": "天空時間を継続的に加速し、星の軌跡を維持します",
-  "pref_time_accel_speed": "加速段階",
-  "pref_time_accel_speed_summary": "自動加速/長押し加速の速度段階を選択します"
+  "nightsky_camera_focal_mm": "カメラ焦点距離",
+  "nightsky_use_sensor": "センサーの向きを使用",
+  "nightsky_auto_time_accel": "自動時間加速",
+  "nightsky_time_accel_speed": "加速段階"
 }

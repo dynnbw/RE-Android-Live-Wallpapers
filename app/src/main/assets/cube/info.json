@@ -1,4 +1,6 @@
 {
   "fragment": "com.reandroid.settings.CubeSettingsFragment",
-  "label": "@string/wallpaper_cube"
+  "label": "@string/wallpaper_cube",
+  "plugin": "com.reandroid.wallpaper.cube.CubePlugin",
+  "previewClass": "com.reandroid.wallpaper.cube.CubeGL"
 }

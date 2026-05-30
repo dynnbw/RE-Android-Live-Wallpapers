@@ -1,6 +1,3 @@
 {
-  "settings_entry": "魔法煙霧",
-  "title": "魔法煙霧",
-  "pref_preset": "視覺主題",
-  "pref_preset_summary": "從20種煙霧/雲/等離子效果中選擇"
+  "preset": "視覺主題"
 }

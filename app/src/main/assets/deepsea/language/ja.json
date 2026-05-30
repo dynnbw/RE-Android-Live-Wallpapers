@@ -1,6 +1,7 @@
 {
-  "title": "深海",
-  "author": "Samsung",
-  "desc": "半透明のクラゲが深い海をゆっくりと漂います。",
-  "settings_entry": "深海"
+  "unitscale": "クラゲのサイズ",
+  "unitnumber": "クラゲの数",
+  "backgroundbrightness": "背景の明るさ",
+  "backgroundlighting": "背景照明",
+  "particlecolor": "クラゲのコアカラー"
 }

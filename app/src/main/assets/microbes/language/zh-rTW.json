@@ -1,15 +1,5 @@
 {
-  "title": "微生物",
-  "author": "Samsung",
-  "desc": "顯微鏡下的生命，支援觸控驅動移動、覓食行為與有機粒子動畫。",
-  "settings_entry": "微生物",
-  "pref_preview_hint": "提示：可在預覽中觸摸拖曳吸引微生物，再點「開啟系統預覽」套用桌布。",
-  "pref_lifecycle_speed": "生命週期速度",
-  "pref_lifecycle_speed_summary": "調整代謝、繁殖與衰減速度（%）",
-  "pref_motion_activity": "游動活躍度",
-  "pref_motion_activity_summary": "調整自然巡遊與擺動強度（%）",
-  "pref_color_mode": "配色風格",
-  "pref_color_mode_summary": "切換經典版紅綠藍三色與新版（目前）增強配色",
-  "pref_color_mode_original": "經典版",
-  "pref_color_mode_modern": "新版"
+  "microbes_lifecycle_speed": "生命週期速度",
+  "microbes_motion_activity": "游動活躍度",
+  "microbes_color_mode": "配色風格"
 }

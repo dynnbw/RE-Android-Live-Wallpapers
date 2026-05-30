@@ -1,10 +1,4 @@
 {
-  "title": "Fuegos artificiales",
-  "author": "MediaTek",
-  "desc": "        Coloridos fuegos artificiales florecen contra el cielo nocturno.    ",
-  "settings_entry": "Fuegos artificiales",
-  "pref_custom_background_title": "Imagen de fondo personalizada",
-  "pref_custom_background_summary": "Toque para seleccionar una imagen de fondo personalizada",
-  "pref_reset_background_title": "Restablecer al fondo predeterminado",
-  "pref_reset_background_summary": "Eliminar el fondo personalizado y usar el predeterminado"
+  "pref_custom_background": "",
+  "pref_reset_background": ""
 }

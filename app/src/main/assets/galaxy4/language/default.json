@@ -1,9 +1,4 @@
 {
-  "title": "Galaxy 4",
-  "author": "Google",
-  "settings_entry": "Galaxy 4",
-  "pref_bg_star_count": "Background star count",
-  "pref_bg_star_count_summary": "        (affects performance)",
-  "pref_space_cloud_count": "Space cloud count",
-  "pref_space_cloud_count_summary": "Number of clouds in the galaxy"
+  "galaxy4_bg_star_count": "Background star count",
+  "galaxy4_space_cloud_count": "Space cloud count"
 }

@@ -1,0 +1,82 @@
+{
+  "prefs": [
+    {
+      "type": "list",
+      "key": "flsorescence_shape",
+      "title": "flsorescence_shape",
+      "default": "0",
+      "values": [
+        "0",
+        "1",
+        "2",
+        "3"
+      ],
+      "labels": [
+        "Dot",
+        "Glow Dot",
+        "Round",
+        "Glow Round"
+      ]
+    },
+    {
+      "type": "list",
+      "key": "flsorescence_color",
+      "title": "flsorescence_color",
+      "default": "0",
+      "values": [
+        "0",
+        "1",
+        "2"
+      ],
+      "labels": [
+        "Blue",
+        "Green",
+        "Orange"
+      ]
+    },
+    {
+      "type": "seekbar",
+      "key": "flsorescence_scale",
+      "title": "flsorescence_scale",
+      "default": "80",
+      "min": 50,
+      "max": 150
+    },
+    {
+      "type": "seekbar",
+      "key": "flsorescence_speed",
+      "title": "flsorescence_speed",
+      "default": "50",
+      "min": 10,
+      "max": 100
+    },
+    {
+      "type": "seekbar",
+      "key": "flsorescence_amount",
+      "title": "flsorescence_amount",
+      "default": "50",
+      "min": 10,
+      "max": 200
+    },
+    {
+      "type": "list",
+      "key": "flsorescence_pattern",
+      "title": "flsorescence_pattern",
+      "default": "0",
+      "values": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4"
+      ],
+      "labels": [
+        "Pattern 1",
+        "Pattern 2",
+        "Pattern 3",
+        "Pattern 4",
+        "Pattern 5"
+      ]
+    }
+  ]
+}

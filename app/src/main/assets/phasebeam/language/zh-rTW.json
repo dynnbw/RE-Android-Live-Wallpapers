@@ -1,6 +1,6 @@
 {
-  "title": "鐳光",
-  "author": "Google",
-  "desc": "柔和的光束與粒子在背景中掠過。",
-  "settings_entry": "鐳光"
+  "phasebeam_recolor_enabled": "調整光束顏色",
+  "phasebeam_hue": "顏色",
+  "phasebeam_saturation": "飽和度",
+  "phasebeam_brightness": "亮度"
 }

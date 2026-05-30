@@ -1,6 +1,6 @@
 {
-  "settings_entry": "फेज़ बीम",
-  "title": "फेज़ बीम",
-  "author": "गूगल",
-  "desc": "जीवंत पृष्ठभूमि पर नरम बीम और कण बह रहे हैं।"
+  "phasebeam_recolor_enabled": "बीम रंग समायोजित करें",
+  "phasebeam_hue": "रंग",
+  "phasebeam_saturation": "संतृप्ति",
+  "phasebeam_brightness": "चमक"
 }

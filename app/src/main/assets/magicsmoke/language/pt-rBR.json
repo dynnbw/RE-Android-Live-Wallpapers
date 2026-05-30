@@ -1,7 +1,3 @@
 {
-  "settings_entry": "Fumaça Mágica",
-  "title": "Fumaça Mágica",
-  "author": "Google",
-  "pref_preset": "Tema Visual",
-  "pref_preset_summary": "Escolha entre 20 efeitos diferentes de fumaça\nuvem/plasma"
+  "preset": "Tema Visual"
 }

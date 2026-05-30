@@ -1,6 +1,6 @@
 {
-  "settings_entry": "Feixe de Fase",
-  "title": "Feixe de Fase",
-  "author": "Google",
-  "desc": "Feixes suaves e partículas percorrendo um fundo vívido."
+  "phasebeam_recolor_enabled": "Ajustar cores do feixe",
+  "phasebeam_hue": "Cor",
+  "phasebeam_saturation": "Saturação",
+  "phasebeam_brightness": "Brilho"
 }

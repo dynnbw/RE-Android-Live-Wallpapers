@@ -1,6 +1,5 @@
 {
-  "title": "극지 시계",
-  "author": "Google",
-  "desc": "시계 방향 원호로 날짜와 시간을 표시합니다: 월, 일, 시, 분, 초.",
-  "settings_entry": "극지 시계"
+  "show_seconds": "초 표시",
+  "variable_line_width": "고리 너비를 다양하게 설정",
+  "palette": "색상 팔레트"
 }

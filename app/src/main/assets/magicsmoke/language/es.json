@@ -1,7 +1,3 @@
 {
-  "settings_entry": "Humo mágico",
-  "title": "Humo mágico",
-  "author": "Google",
-  "pref_preset": "Tema visual",
-  "pref_preset_summary": "Elija entre 20 efectos diferentes de humo\nube/plasma"
+  "preset": "Tema visual"
 }

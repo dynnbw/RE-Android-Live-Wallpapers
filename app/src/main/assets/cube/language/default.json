@@ -1,6 +1,11 @@
 {
-  "settings_entry": "Cube",
-  "title": "Cube",
-  "author": "Google",
-  "desc": "A rotating wireframe 3D cube with launcher scroll and touch effects."
+  "cube_shape": "Shape",
+  "cube_shape_label_cube": "Cube",
+  "cube_shape_label_dodecahedron": "Dodecahedron",
+  "cube_shape_label_tetrahedron": "Tetrahedron",
+  "cube_shape_label_octahedron": "Octahedron",
+  "cube_shape_label_icosahedron": "Icosahedron",
+  "cube_shape_label_stardodecahedron": "Star Dodecahedron",
+  "cube_shape_label_cuboctahedron": "Cuboctahedron",
+  "cube_shape_label_truncatedcube": "Truncated Cube"
 }
