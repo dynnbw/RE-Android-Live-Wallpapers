@@ -36,6 +36,17 @@ public class PreviewPreference extends Preference {
     /**
      * 获取当前的Scene对象（用于实时更新）
      */
+    /**
+     * Release the preview view's EGL and GL resources.
+     * Call this from the hosting Fragment's onDestroyView() or onStop().
+     */
+    public void releasePreview() {
+        if (mPreviewView != null) {
+            mPreviewView.stopRenderer();
+            mPreviewView = null;
+        }
+    }
+
     public GLESScene getScene() {
         return mPreviewView != null ? mPreviewView.getScene() : null;
     }
@@ -92,6 +103,12 @@ public class PreviewPreference extends Preference {
             params.dimensionRatio = ratio;
             container.setLayoutParams(params);
         }
+    }
+
+    @Override
+    public void onDetached() {
+        super.onDetached();
+        releasePreview();
     }
 
     private boolean isValidRatio(String value) {
