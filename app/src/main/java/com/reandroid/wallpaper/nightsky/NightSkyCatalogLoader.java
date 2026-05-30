@@ -2,8 +2,8 @@ package com.reandroid.wallpaper.nightsky;
 
 import android.content.Context;
 
-import com.reandroid.gles.AssetLoader;
-import com.reandroid.wallpaper.MathUtils;
+import com.reandroid.utils.AssetLoader;
+import com.reandroid.utils.MathUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;

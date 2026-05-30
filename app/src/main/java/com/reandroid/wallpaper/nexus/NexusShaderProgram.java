@@ -4,7 +4,7 @@ import android.content.Context;
 import android.opengl.GLES20;
 import android.util.Log;
 
-import com.reandroid.gles.AssetLoader;
+import com.reandroid.utils.AssetLoader;
 
 final class NexusShaderProgram {
     private static final String TAG = "NexusShaderProgram";

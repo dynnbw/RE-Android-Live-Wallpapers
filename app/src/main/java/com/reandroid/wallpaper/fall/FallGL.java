@@ -28,8 +28,8 @@ import android.os.SystemClock;
 import android.util.Log;
 import android.view.MotionEvent;
 
-import com.reandroid.wallpaper.MathUtils;
-import com.reandroid.gles.AssetLoader;
+import com.reandroid.utils.MathUtils;
+import com.reandroid.utils.AssetLoader;
 import com.reandroid.gles.GLESScene;
 import com.reandroid.settings.WallpaperSettings;
 

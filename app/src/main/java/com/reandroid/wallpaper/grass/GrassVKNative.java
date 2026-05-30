@@ -5,7 +5,7 @@ import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.view.Surface;
 
-import com.reandroid.gles.AssetLoader;
+import com.reandroid.utils.AssetLoader;
 
 final class GrassVKNative {
     static {

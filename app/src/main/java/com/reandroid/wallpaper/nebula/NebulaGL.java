@@ -6,7 +6,7 @@ import android.util.Log;
 import com.reandroid.wallpaper.R;
 import com.reandroid.gles.GLESScene;
 import android.content.Context;
-import com.reandroid.gles.AssetLoader;
+import com.reandroid.utils.AssetLoader;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;

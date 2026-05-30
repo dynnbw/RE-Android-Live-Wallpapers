@@ -5,10 +5,10 @@ import android.util.Log;
 
 import android.content.Context;
 
-import com.reandroid.gles.AssetLoader;
+import com.reandroid.utils.AssetLoader;
 import com.reandroid.gles.GLESScene;
 import com.reandroid.gles.GLESWallpaper;
-import com.reandroid.wallpaper.musicvis.GLTextureUtils;
+import com.reandroid.utils.GLTextureUtils;
 import com.reandroid.wallpaper.weatherwallpapers.AnimationController;
 import com.reandroid.wallpaper.weatherwallpapers.CloudRenderer;
 import com.reandroid.wallpaper.weatherwallpapers.FogIceRenderer;

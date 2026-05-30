@@ -1,4 +1,4 @@
-package com.reandroid.wallpaper;
+package com.reandroid.utils;
 
 public final class MathUtils {
 

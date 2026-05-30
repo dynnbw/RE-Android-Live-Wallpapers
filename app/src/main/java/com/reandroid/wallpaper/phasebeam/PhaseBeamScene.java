@@ -5,7 +5,7 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 
 import com.reandroid.wallpaper.R;
-import com.reandroid.gles.AssetLoader;
+import com.reandroid.utils.AssetLoader;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;

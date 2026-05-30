@@ -26,7 +26,7 @@ import android.os.Process;
 import android.os.SystemClock;
 import android.util.Log;
 
-import com.reandroid.gles.AssetLoader;
+import com.reandroid.utils.AssetLoader;
 import com.reandroid.gles.GLESScene;
 import com.reandroid.gles.GLESWallpaper;
 import com.reandroid.settings.WallpaperSettings;
@@ -46,7 +46,7 @@ import static com.reandroid.wallpaper.grass.GrassConstants.LEGACY_MAX_INTERVAL;
 import static com.reandroid.wallpaper.grass.GrassConstants.LEGACY_TYPE_DANDELION;
 import static com.reandroid.wallpaper.grass.GrassConstants.LEGACY_TYPE_FIREFLY;
 import static com.reandroid.wallpaper.grass.GrassConstants.SUN_PHOTOSPHERE_SCALE;
-import com.reandroid.wallpaper.MathUtils;
+import com.reandroid.utils.MathUtils;
 
 /**
  * Grass 壁纸渲染层（OpenGL ES 2.0），所有状态委托 GrassScene 管理。

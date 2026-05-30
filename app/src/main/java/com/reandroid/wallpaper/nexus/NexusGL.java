@@ -9,7 +9,7 @@ import android.opengl.Matrix;
 import android.os.SystemClock;
 import android.util.Log;
 
-import com.reandroid.gles.AssetLoader;
+import com.reandroid.utils.AssetLoader;
 import com.reandroid.gles.GLESScene;
 import com.reandroid.gles.GLESWallpaper;
 

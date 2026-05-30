@@ -1,6 +1,6 @@
 package com.reandroid.wallpaper.nightsky;
 
-import com.reandroid.wallpaper.MathUtils;
+import com.reandroid.utils.MathUtils;
 
 final class NightSkyMath {
     static final double DEG_TO_RAD = Math.PI / 180.0;

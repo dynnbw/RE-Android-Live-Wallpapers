@@ -1,4 +1,4 @@
-package com.reandroid.wallpaper.musicvis;
+package com.reandroid.utils;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -8,7 +8,7 @@ import android.opengl.GLES20;
 import android.opengl.GLUtils;
 import android.util.Log;
 
-import com.reandroid.gles.AssetLoader;
+import com.reandroid.utils.AssetLoader;
 
 public final class GLTextureUtils {
     private static final String TAG = "GLTextureUtils";

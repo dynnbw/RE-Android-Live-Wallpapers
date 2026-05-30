@@ -9,10 +9,10 @@ import android.view.MotionEvent;
 
 import java.nio.FloatBuffer;
 
-import com.reandroid.gles.AssetLoader;
+import com.reandroid.utils.AssetLoader;
 import com.reandroid.gles.GLESScene;
 import com.reandroid.gles.GLESWallpaper;
-import com.reandroid.wallpaper.MathUtils;
+import com.reandroid.utils.MathUtils;
 
 public class NightSkyGL extends GLESScene {
     private static final long TRAIL_LOOKBACK_SCALE = 5L;

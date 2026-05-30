@@ -1,12 +1,13 @@
 package com.reandroid.wallpaper.musicvis;
 
+import com.reandroid.utils.GLTextureUtils;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 
-import com.reandroid.gles.AssetLoader;
+import com.reandroid.utils.AssetLoader;
 import com.reandroid.gles.GLESScene;
 
 import java.nio.ByteBuffer;

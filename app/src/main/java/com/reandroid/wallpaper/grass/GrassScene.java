@@ -34,7 +34,7 @@ import java.util.Random;
 import java.util.TimeZone;
 
 import static com.reandroid.wallpaper.grass.GrassConstants.*;
-import com.reandroid.wallpaper.MathUtils;
+import com.reandroid.utils.MathUtils;
 
 /**
  * Grass 壁纸场景逻辑层（纯 Java，无 GL 调用）。

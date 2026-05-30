@@ -26,7 +26,7 @@ import com.reandroid.gles.GLESWallpaper;
 
 import java.util.Calendar;
 import java.util.TimeZone;
-import com.reandroid.wallpaper.MathUtils;
+import com.reandroid.utils.MathUtils;
 
 final class GrassDayNightSystem {
     private static final float SECONDS_IN_DAY = 86400.0f;

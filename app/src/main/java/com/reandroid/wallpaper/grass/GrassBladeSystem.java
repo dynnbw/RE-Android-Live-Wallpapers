@@ -19,7 +19,7 @@ import java.util.Random;
 
 import static com.reandroid.wallpaper.grass.GrassConstants.MAX_BEND;
 import static com.reandroid.wallpaper.grass.GrassConstants.TESSELATION;
-import com.reandroid.wallpaper.MathUtils;
+import com.reandroid.utils.MathUtils;
 
 final class GrassBladeSystem {
     private static final float ANGLE_DIRTY_EPSILON = 0.00075f;

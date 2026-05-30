@@ -24,7 +24,7 @@ import android.os.Process;
 import android.os.SystemClock;
 import android.util.Log;
 
-import com.reandroid.gles.AssetLoader;
+import com.reandroid.utils.AssetLoader;
 import com.reandroid.gles.GLESScene;
 import com.reandroid.settings.WallpaperSettings;
 

@@ -11,7 +11,7 @@ import android.util.Log;
 
 import androidx.preference.PreferenceManager;
 
-import com.reandroid.gles.AssetLoader;
+import com.reandroid.utils.AssetLoader;
 
 final class NexusBackgroundManager {
     private static final String TAG = "NexusBackgroundManager";

@@ -1,7 +1,7 @@
 package com.reandroid.wallpaper.grass;
 
 import java.util.Calendar;
-import com.reandroid.wallpaper.MathUtils;
+import com.reandroid.utils.MathUtils;
 
 final class GrassAstronomyCalculator {
     private GrassAstronomyCalculator() {

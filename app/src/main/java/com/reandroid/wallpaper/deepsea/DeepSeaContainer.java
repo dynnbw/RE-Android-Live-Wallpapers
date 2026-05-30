@@ -8,7 +8,7 @@ import android.opengl.Matrix;
 import android.os.SystemClock;
 import android.view.Display;
 import android.view.WindowManager;
-import com.reandroid.gles.AssetLoader;
+import com.reandroid.utils.AssetLoader;
 import com.reandroid.wallpaper.deepsea.GLHelper;
 import com.reandroid.wallpaper.deepsea.IntervalManager;
 import com.reandroid.wallpaper.deepsea.IntervalVO;

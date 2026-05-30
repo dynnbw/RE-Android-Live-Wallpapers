@@ -3,7 +3,7 @@ package com.reandroid.wallpaper.grass;
 import com.reandroid.settings.WallpaperSettings;
 
 import java.util.Random;
-import com.reandroid.wallpaper.MathUtils;
+import com.reandroid.utils.MathUtils;
 
 /**
  * Night sky star field for Grass wallpaper.

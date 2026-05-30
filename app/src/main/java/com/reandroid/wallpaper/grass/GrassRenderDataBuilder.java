@@ -10,7 +10,7 @@ import static com.reandroid.wallpaper.grass.GrassConstants.LEGACY_MAX_INTERVAL;
 import static com.reandroid.wallpaper.grass.GrassConstants.LEGACY_MAX_NORMAL;
 import static com.reandroid.wallpaper.grass.GrassConstants.LEGACY_TYPE_DANDELION;
 import static com.reandroid.wallpaper.grass.GrassConstants.LEGACY_TYPE_FIREFLY;
-import com.reandroid.wallpaper.MathUtils;
+import com.reandroid.utils.MathUtils;
 
 final class GrassRenderDataBuilder {
     interface LegacyParticleOps {

@@ -14,7 +14,7 @@ import android.view.WindowManager;
 import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
 
-import com.reandroid.gles.AssetLoader;
+import com.reandroid.utils.AssetLoader;
 import com.reandroid.gles.GLESScene;
 
 import java.io.IOException;

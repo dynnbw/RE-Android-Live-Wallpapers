@@ -8,7 +8,7 @@ import com.reandroid.weather.WeatherCondition;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import com.reandroid.wallpaper.MathUtils;
+import com.reandroid.utils.MathUtils;
 
 final class GrassWeatherRenderer {
     private static final int RAIN_BATCH_GROUP_COUNT = 3;

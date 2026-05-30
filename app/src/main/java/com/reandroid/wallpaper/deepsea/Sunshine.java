@@ -3,7 +3,7 @@ package com.reandroid.wallpaper.deepsea;
 import android.content.Context;
 import android.opengl.GLES20;
 import android.util.Log;
-import com.reandroid.gles.AssetLoader;
+import com.reandroid.utils.AssetLoader;
 import com.reandroid.gles.GLESWallpaper;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;

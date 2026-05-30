@@ -3,7 +3,7 @@ package com.reandroid.wallpaper.nightsky;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 
-import com.reandroid.wallpaper.MathUtils;
+import com.reandroid.utils.MathUtils;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;

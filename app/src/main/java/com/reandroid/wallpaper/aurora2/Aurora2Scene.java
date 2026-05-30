@@ -4,7 +4,7 @@ import android.opengl.Matrix;
 import android.view.MotionEvent;
 
 import java.util.Calendar;
-import com.reandroid.wallpaper.MathUtils;
+import com.reandroid.utils.MathUtils;
 import java.util.Random;
 
 final class Aurora2Scene {

@@ -1,6 +1,6 @@
 package com.reandroid.wallpaper.grass;
 
-import com.reandroid.wallpaper.MathUtils;
+import com.reandroid.utils.MathUtils;
 import com.reandroid.weather.WeatherCondition;
 
 final class Blade {

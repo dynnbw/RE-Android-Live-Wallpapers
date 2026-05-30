@@ -16,7 +16,7 @@
 package com.reandroid.wallpaper.grass;
 
 import java.util.Random;
-import com.reandroid.wallpaper.MathUtils;
+import com.reandroid.utils.MathUtils;
 
 final class GrassWindField {
     private static final int B = 0x100;

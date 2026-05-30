@@ -1,4 +1,4 @@
-package com.reandroid.gles;
+package com.reandroid.utils;
 
 import android.content.Context;
 import android.content.res.AssetManager;

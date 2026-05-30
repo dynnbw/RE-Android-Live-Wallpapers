@@ -8,7 +8,7 @@ import android.view.Surface;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.reandroid.gles.AssetLoader;
+import com.reandroid.utils.AssetLoader;
 import com.reandroid.settings.WallpaperSettings;
 
 final class FallVKNative {
