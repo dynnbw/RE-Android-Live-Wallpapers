@@ -34,12 +34,15 @@ public class SettingsMainFragment extends PreferenceFragmentCompat {
         addDynamicEntries(getPreferenceScreen());
         applyHomeLayouts();
 
-        // Debug: quick test button for ProxyWallpaperService
+        // Debug: toggle between fall and galaxy plugins
         Preference testProxy = findPreference("pref_test_proxy");
         if (testProxy != null) {
             testProxy.setOnPreferenceClickListener(pref -> {
-                com.reandroid.plugin.ProxyWallpaperService.setActivePlugin(requireContext(), "fall");
-                openLiveWallpaperChooser();
+                String current = com.reandroid.plugin.ProxyWallpaperService.getActivePlugin(requireContext());
+                String next = "galaxy".equals(current) ? "fall" : "galaxy";
+                com.reandroid.plugin.ProxyWallpaperService.setActivePlugin(requireContext(), next);
+                android.widget.Toast.makeText(requireContext(),
+                        "Switched to: " + next, android.widget.Toast.LENGTH_SHORT).show();
                 return true;
             });
         }

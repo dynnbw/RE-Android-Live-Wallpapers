@@ -6,8 +6,8 @@
         android:layout="@layout/preference_modern_item" />
     <Preference
         android:key="pref_test_proxy"
-        android:title="[TEST] Set Fall as Proxy Wallpaper"
-        android:summary="Debug: activates Fall through ProxyWallpaperService"
+        android:title="[TEST] Toggle fall/galaxy Proxy"
+        android:summary="Debug: switches between Fall and Galaxy plugins"
         android:layout="@layout/preference_modern_item" />
     <!-- Wallpaper entries are auto-discovered from assets/{wallpaper}/info.json -->
 </PreferenceScreen>
