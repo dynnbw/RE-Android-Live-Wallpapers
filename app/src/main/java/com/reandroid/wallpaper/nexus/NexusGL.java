@@ -63,6 +63,8 @@ public class NexusGL extends GLESScene {
 
     // 当前渲染颜色（RGBA）
     private final float[] mColor = new float[4];
+    // 预分配顶点数组，drawTexturedRect 复用
+    private final float[] mRectVertices = new float[16];
 
     // 背景管理器（含GL纹理操作）
     private final NexusBackgroundManager mBackgroundManager = new NexusBackgroundManager();
@@ -588,17 +590,15 @@ public class NexusGL extends GLESScene {
      */
     private void drawTexturedRect(int textureId, float left, float top, float right, float bottom,
                                   float[] uv, float[] mvp) {
-        // 构建顶点数据（矩形，三角带方式绘制）
-        float[] vertices = {
-                left, top, 0f, 1f,
-                right, top, 0f, 1f,
-                left, bottom, 0f, 1f,
-                right, bottom, 0f, 1f
-        };
+        // 构建顶点数据（矩形，三角带方式绘制），复用预分配数组
+        mRectVertices[0] = left;  mRectVertices[1] = top;    mRectVertices[2] = 0f; mRectVertices[3] = 1f;
+        mRectVertices[4] = right; mRectVertices[5] = top;    mRectVertices[6] = 0f; mRectVertices[7] = 1f;
+        mRectVertices[8] = left;  mRectVertices[9] = bottom; mRectVertices[10] = 0f; mRectVertices[11] = 1f;
+        mRectVertices[12] = right; mRectVertices[13] = bottom; mRectVertices[14] = 0f; mRectVertices[15] = 1f;
 
         // 填充顶点缓冲区
         mVertexBuffer.clear();
-        mVertexBuffer.put(vertices).position(0);
+        mVertexBuffer.put(mRectVertices).position(0);
         // 填充纹理坐标缓冲区
         mTexCoordBuffer.clear();
         mTexCoordBuffer.put(uv).position(0);

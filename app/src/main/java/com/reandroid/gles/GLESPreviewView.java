@@ -115,7 +115,7 @@ public class GLESPreviewView extends SurfaceView implements SurfaceHolder.Callba
         mThread.start();
     }
 
-    private void stopRenderer() {
+    public void stopRenderer() {
         mRunning = false;
         if (mThread != null) {
             try { mThread.join(1000); } catch (InterruptedException ignored) {}

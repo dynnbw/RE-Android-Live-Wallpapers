@@ -52,8 +52,11 @@ final class GrassDayNightSystem {
     private long lastLocationUpdateMs;
 
     void initDefaultLocation() {
-        location.setLatitude(37.7749f);
-        location.setLongitude(-122.4194f);
+        // Approximate longitude from timezone offset (15° per hour), equator for latitude
+        long offsetMillis = timeZone.getRawOffset();
+        float longitude = offsetMillis / 3600000f * 15f;
+        location.setLatitude(0f);
+        location.setLongitude(longitude);
         sunCalculator = new SunCalculator(location, timeZone.getID());
         updateSunTimes(System.currentTimeMillis());
     }
