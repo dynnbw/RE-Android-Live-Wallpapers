@@ -127,7 +127,10 @@ public class ProxyWallpaperService extends WallpaperService {
 
         @Override
         public void onSurfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-            if (mEngine != null) mEngine.onSurfaceChanged(holder, format, width, height);
+            if (mEngine != null) {
+                mEngine.setPreview(isPreview());
+                mEngine.onSurfaceChanged(holder, format, width, height);
+            }
         }
 
         @Override

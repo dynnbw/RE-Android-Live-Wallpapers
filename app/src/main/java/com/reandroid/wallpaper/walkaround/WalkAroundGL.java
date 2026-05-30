@@ -51,6 +51,7 @@ public class WalkAroundGL extends GLESScene {
     private boolean mUseFront = false;
     private boolean mMirrorFront = true;
     private boolean mHasPrefInit = false;
+    private SharedPreferences mPluginPrefs;
 
     public WalkAroundGL(int width, int height, Context context) {
         super(width, height);
@@ -179,8 +180,12 @@ public class WalkAroundGL extends GLESScene {
         }
     }
 
+    public void setPluginPrefs(SharedPreferences p) {
+        mPluginPrefs = p;
+    }
+
     private void updatePrefs() {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
+        SharedPreferences prefs = mPluginPrefs != null ? mPluginPrefs : PreferenceManager.getDefaultSharedPreferences(mContext);
         boolean useFront = prefs.getBoolean("walkaround_use_front", false);
         boolean mirrorFront = prefs.getBoolean("walkaround_mirror_front", true);
         if (!mHasPrefInit || useFront != mUseFront || mirrorFront != mMirrorFront) {

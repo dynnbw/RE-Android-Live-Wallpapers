@@ -1,6 +1,7 @@
 package com.reandroid.plugin;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.opengl.EGL14;
 import android.opengl.EGLConfig;
 import android.opengl.EGLContext;
@@ -19,12 +20,16 @@ import com.reandroid.gles.GLESWallpaper;
 /**
  * Generic WallpaperEngine that manages its own EGL context.
  * Subclasses only need to implement createScene().
+ *
+ * GL init is deferred until the render thread has a current EGL context,
+ * so scene.onCreate() can safely call GL commands.
  */
 public abstract class BasePluginEngine implements WallpaperEngine {
 
     private static final String TAG = "BasePluginEngine";
 
     protected final Context mContext;
+    protected final WallpaperPluginHost mHost;
     protected GLESScene mScene;
 
     private EGLDisplay mDisplay;
@@ -33,10 +38,18 @@ public abstract class BasePluginEngine implements WallpaperEngine {
     private boolean mEglCreated;
     private boolean mEglCurrent;
 
+    // Deferred-init state: stored in onSurfaceChanged, applied in drawFrame after EGL is current
+    private boolean mSceneInitPending;
+    private Surface mPendingSurface;
+    private Resources mPendingResources;
+    private boolean mPendingPreview;
+
     protected int mWidth = 256, mHeight = 256;
+    private boolean mPreview;
 
     public BasePluginEngine(Context context, WallpaperPluginHost host) {
         mContext = context;
+        mHost = host;
         GLESWallpaper.initializeAppContext(context);
     }
 
@@ -55,10 +68,16 @@ public abstract class BasePluginEngine implements WallpaperEngine {
         }
         destroyEgl();
         mCurrentSurface = null;
+        mSceneInitPending = false;
     }
 
     @Override
     public void onVisibilityChanged(boolean visible) {}
+
+    @Override
+    public void setPreview(boolean isPreview) {
+        mPreview = isPreview;
+    }
 
     private Surface mCurrentSurface;
 
@@ -79,9 +98,14 @@ public abstract class BasePluginEngine implements WallpaperEngine {
             mCurrentSurface = surface;
             mEglCreated = initEgl(surface);
             mEglCurrent = false;
+            mSceneInitPending = false;
             if (mEglCreated) {
                 mScene = createScene(mWidth, mHeight, mContext);
-                mScene.init(surface, mContext.getResources(), false);
+                // Defer init() until drawFrame — EGL must be current for GL calls in onCreate()
+                mPendingSurface = surface;
+                mPendingResources = mContext.getResources();
+                mPendingPreview = mPreview;
+                mSceneInitPending = true;
                 tryInjectPrefs(mScene);
             }
         } else if (mScene != null) {
@@ -89,8 +113,19 @@ public abstract class BasePluginEngine implements WallpaperEngine {
         }
     }
 
-    /** Override to inject plugin prefs via reflection. */
-    protected void tryInjectPrefs(GLESScene scene) {}
+    /** Injects plugin SharedPreferences into the scene via reflection. */
+    protected void tryInjectPrefs(GLESScene scene) {
+        if (mHost == null || scene == null) return;
+        try {
+            java.lang.reflect.Method m = scene.getClass()
+                    .getMethod("setPluginPrefs", android.content.SharedPreferences.class);
+            m.invoke(scene, mHost.getSharedPreferences());
+        } catch (NoSuchMethodException ignored) {
+            // Scene doesn't support plugin prefs — it will read from its own source
+        } catch (Exception e) {
+            Log.w(TAG, "Failed to inject prefs into " + scene.getClass().getSimpleName(), e);
+        }
+    }
 
     @Override
     public void onOffsetsChanged(float xOffset, float yOffset, float xStep, float yStep,
@@ -118,12 +153,18 @@ public abstract class BasePluginEngine implements WallpaperEngine {
                 Log.e(TAG, "eglMakeCurrent failed: 0x" + Integer.toHexString(EGL14.eglGetError()));
                 return;
             }
-            // Default GL state that all wallpapers need
+            // Safe GL defaults (no blend-func override — scenes manage their own blend state)
             try {
                 GLES20.glClearColor(0f, 0f, 0f, 1f);
                 GLES20.glEnable(GLES20.GL_BLEND);
-                GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
             } catch (Exception ignored) {}
+
+            // Deferred init: now EGL is current, safe to call scene.onCreate() with GL calls
+            if (mSceneInitPending) {
+                mScene.init(mPendingSurface, mPendingResources, mPendingPreview);
+                mSceneInitPending = false;
+            }
+
             mScene.start();
         }
 

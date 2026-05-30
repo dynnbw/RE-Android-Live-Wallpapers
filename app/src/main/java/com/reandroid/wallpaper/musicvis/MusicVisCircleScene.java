@@ -22,6 +22,7 @@ public class MusicVisCircleScene extends GLESScene implements SharedPreferences.
     private static final float HALF_THICKNESS_SCALE = 0.002f;
 
     private final Context mContext;
+    private SharedPreferences mPluginPrefs;
 
     // GL
     private int mProgram, mPosLoc, mMvpLoc;
@@ -78,6 +79,10 @@ public class MusicVisCircleScene extends GLESScene implements SharedPreferences.
         }
     }
 
+    public void setPluginPrefs(SharedPreferences p) {
+        mPluginPrefs = p;
+    }
+
     @Override
     protected void onCreate() {}
 
@@ -85,14 +90,24 @@ public class MusicVisCircleScene extends GLESScene implements SharedPreferences.
     public void start() {
         if (mAudioCapture == null) mAudioCapture = new AudioCapture(AudioCapture.TYPE_FFT, 512);
         mAudioCapture.start();
-        SharedPreferences p = mContext.getSharedPreferences("musicvis6_prefs", Context.MODE_PRIVATE);
+        SharedPreferences p;
+        if (mPluginPrefs != null) {
+            p = mPluginPrefs;
+        } else {
+            p = mContext.getSharedPreferences("musicvis6_prefs", Context.MODE_PRIVATE);
+        }
         p.registerOnSharedPreferenceChangeListener(this);
         readPrefs(p);
     }
 
     @Override
     public void stop() {
-        SharedPreferences p = mContext.getSharedPreferences("musicvis6_prefs", Context.MODE_PRIVATE);
+        SharedPreferences p;
+        if (mPluginPrefs != null) {
+            p = mPluginPrefs;
+        } else {
+            p = mContext.getSharedPreferences("musicvis6_prefs", Context.MODE_PRIVATE);
+        }
         p.unregisterOnSharedPreferenceChangeListener(this);
     }
 

@@ -45,6 +45,13 @@ class GrassScene {
     private static final float ONE_MINUTE_DAY_FRACTION = 1.0f / 1440.0f;
     private static final long CELESTIAL_CACHE_INTERVAL_MS = 60000L;
 
+    // ---- Plugin prefs ----
+    private SharedPreferences mPluginPrefs;
+
+    void setPluginPrefs(SharedPreferences prefs) {
+        mPluginPrefs = prefs;
+    }
+
     // ---- Instance fields ----
     int mWidth, mHeight;
     private boolean mIsPreview;
@@ -174,7 +181,7 @@ class GrassScene {
 
         Context appCtx = GLESWallpaper.getAppContext();
         if (appCtx != null) {
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(appCtx);
+            SharedPreferences prefs = mPluginPrefs != null ? mPluginPrefs : PreferenceManager.getDefaultSharedPreferences(appCtx);
             prefs.registerOnSharedPreferenceChangeListener((sharedPrefs, key) -> {
                 mPrefsDirty = true;
             });
@@ -574,28 +581,67 @@ class GrassScene {
         if (!mPrefsDirty) return;
         mPrefsDirty = false;
 
-        boolean legacy = WallpaperSettings.getBoolean("pref_grass_legacy_particles", false);
+        // ---- Plugin-aware settings fallback ----
+        SharedPreferences p = mPluginPrefs;
+
+        boolean legacy = p != null
+                ? p.getBoolean("pref_grass_legacy_particles", false)
+                : WallpaperSettings.getBoolean("pref_grass_legacy_particles", false);
         if (legacy != mLegacyParticles) {
             mLegacyParticles = legacy;
             if (mLegacyParticles) initLegacyParticles();
         }
-        WallpaperSettings.GrassTint tint = WallpaperSettings.getGrassTint();
-        int newBladeCount = WallpaperSettings.getGrassBladeCount(DEFAULT_BLADE_COUNT);
-        boolean newEnabled = WallpaperSettings.isGrassEnabled(true);
-        boolean newNightInvert = WallpaperSettings.isNightInvert(false);
-        boolean newNightDesaturate = WallpaperSettings.isGrassNightDesaturateEnabled(false);
-        boolean newAccurateSun = WallpaperSettings.isAccurateSunEnabled(false);
-        boolean newSunEnabled = WallpaperSettings.isSunEnabled(true);
-        boolean newMoonEnabled = WallpaperSettings.isMoonEnabled(true);
-        boolean newProceduralSun = WallpaperSettings.isProceduralSunEnabled(true);
-        float newHeightScale = WallpaperSettings.getGrassHeightScale(1.0f);
-        float newWidthScale = WallpaperSettings.getGrassWidthScale(1.0f);
-        float newHardnessScale = WallpaperSettings.getGrassHardnessScale(1.0f);
-        boolean newDandelionEnabled = WallpaperSettings.isDandelionEnabled(false);
-        boolean newFireflyEnabled = WallpaperSettings.isFireflyEnabled(false);
-        int newDandelionCount = WallpaperSettings.getDandelionCount(DEFAULT_DANDELION_COUNT);
-        int newFireflyCount = WallpaperSettings.getFireflyCount(DEFAULT_FIREFLY_COUNT);
-        float newDandelionSpeedScale = WallpaperSettings.getDandelionSpeedScale(2.0f);
+        WallpaperSettings.GrassTint tint = p != null
+                ? readGrassTint(p)
+                : WallpaperSettings.getGrassTint();
+        int newBladeCount = p != null
+                ? p.getInt(WallpaperSettings.KEY_GRASS_COUNT, DEFAULT_BLADE_COUNT)
+                : WallpaperSettings.getGrassBladeCount(DEFAULT_BLADE_COUNT);
+        boolean newEnabled = p != null
+                ? p.getBoolean(WallpaperSettings.KEY_GRASS_ENABLED, true)
+                : WallpaperSettings.isGrassEnabled(true);
+        boolean newNightInvert = p != null
+                ? p.getBoolean(WallpaperSettings.KEY_GRASS_NIGHT_INVERT, false)
+                : WallpaperSettings.isNightInvert(false);
+        boolean newNightDesaturate = p != null
+                ? p.getBoolean(WallpaperSettings.KEY_GRASS_NIGHT_DESATURATE, false)
+                : WallpaperSettings.isGrassNightDesaturateEnabled(false);
+        boolean newAccurateSun = p != null
+                ? p.getBoolean(WallpaperSettings.KEY_GRASS_ACCURATE_SUN, false)
+                : WallpaperSettings.isAccurateSunEnabled(false);
+        boolean newSunEnabled = p != null
+                ? p.getBoolean(WallpaperSettings.KEY_GRASS_SUN, true)
+                : WallpaperSettings.isSunEnabled(true);
+        boolean newMoonEnabled = p != null
+                ? p.getBoolean(WallpaperSettings.KEY_GRASS_MOON, true)
+                : WallpaperSettings.isMoonEnabled(true);
+        boolean newProceduralSun = p != null
+                ? p.getBoolean(WallpaperSettings.KEY_GRASS_PROCEDURAL_SUN, true)
+                : WallpaperSettings.isProceduralSunEnabled(true);
+        float newHeightScale = p != null
+                ? clamp(p.getInt(WallpaperSettings.KEY_GRASS_HEIGHT, Math.round(1.0f * 100.0f)) / 100.0f, 0.1f, 10.0f)
+                : WallpaperSettings.getGrassHeightScale(1.0f);
+        float newWidthScale = p != null
+                ? clamp(p.getInt(WallpaperSettings.KEY_GRASS_WIDTH, Math.round(1.0f * 100.0f)) / 100.0f, 0.1f, 10.0f)
+                : WallpaperSettings.getGrassWidthScale(1.0f);
+        float newHardnessScale = p != null
+                ? clamp(p.getInt(WallpaperSettings.KEY_GRASS_HARDNESS, Math.round(1.0f * 100.0f)) / 100.0f, 0.3f, 10.0f)
+                : WallpaperSettings.getGrassHardnessScale(1.0f);
+        boolean newDandelionEnabled = p != null
+                ? p.getBoolean(WallpaperSettings.KEY_GRASS_DANDELION, false)
+                : WallpaperSettings.isDandelionEnabled(false);
+        boolean newFireflyEnabled = p != null
+                ? p.getBoolean(WallpaperSettings.KEY_GRASS_FIREFLY, false)
+                : WallpaperSettings.isFireflyEnabled(false);
+        int newDandelionCount = p != null
+                ? Math.max(1, p.getInt(WallpaperSettings.KEY_GRASS_DANDELION_COUNT, DEFAULT_DANDELION_COUNT))
+                : WallpaperSettings.getDandelionCount(DEFAULT_DANDELION_COUNT);
+        int newFireflyCount = p != null
+                ? Math.max(1, p.getInt(WallpaperSettings.KEY_GRASS_FIREFLY_COUNT, DEFAULT_FIREFLY_COUNT))
+                : WallpaperSettings.getFireflyCount(DEFAULT_FIREFLY_COUNT);
+        float newDandelionSpeedScale = p != null
+                ? clamp(p.getInt(WallpaperSettings.KEY_GRASS_DANDELION_SPEED, Math.round(2.0f * 100.0f)) / 100.0f, 1.0f, 10.0f)
+                : WallpaperSettings.getDandelionSpeedScale(2.0f);
 
         int hash = 17;
         hash = 31 * hash + newBladeCount;
@@ -867,5 +913,19 @@ class GrassScene {
 
     float random(float min, float max) {
         return min + mRandom.nextFloat() * (max - min);
+    }
+
+    // ---- Plugin-aware helpers ----
+
+    private static WallpaperSettings.GrassTint readGrassTint(SharedPreferences p) {
+        String value = p.getString(WallpaperSettings.KEY_GRASS_COLOR, "default");
+        if (value == null || "default".equals(value)) {
+            return new WallpaperSettings.GrassTint(false, Color.WHITE);
+        }
+        try {
+            return new WallpaperSettings.GrassTint(true, Color.parseColor(value));
+        } catch (IllegalArgumentException ex) {
+            return new WallpaperSettings.GrassTint(false, Color.WHITE);
+        }
     }
 }

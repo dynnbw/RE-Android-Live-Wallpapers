@@ -29,6 +29,18 @@ import java.util.Random;
 final class GalaxyScene {
     private static final String TAG = "GalaxyScene";
 
+    private SharedPreferences mPluginPrefs;
+
+    public void setPluginPrefs(SharedPreferences prefs) {
+        mPluginPrefs = prefs;
+    }
+
+    private SharedPreferences getPrefs() {
+        if (mPluginPrefs != null) return mPluginPrefs;
+        Context appContext = getAppContext();
+        return PreferenceManager.getDefaultSharedPreferences(appContext);
+    }
+
     private static final int DEFAULT_PARTICLE_COUNT = 12000;
     private static final int MIN_PARTICLE_COUNT = 1000;
     private static final int MAX_PARTICLE_COUNT = 20000;
@@ -415,7 +427,7 @@ final class GalaxyScene {
             return;
         }
         Context appContext = getAppContext();
-        SharedPreferences defaultPrefs = PreferenceManager.getDefaultSharedPreferences(appContext);
+        SharedPreferences defaultPrefs = getPrefs();
         SharedPreferences legacyPrefs = appContext.getSharedPreferences("wallpaper_settings", Context.MODE_PRIVATE);
 
         if (defaultPrefs.contains("galaxy_particle_count")) {
@@ -702,14 +714,14 @@ final class GalaxyScene {
         if (mContext == null) {
             return;
         }
-        PreferenceManager.getDefaultSharedPreferences(getAppContext()).edit().putInt(key, value).apply();
+        getPrefs().edit().putInt(key, value).apply();
     }
 
     private void persistBoolean(String key, boolean value) {
         if (mContext == null) {
             return;
         }
-        PreferenceManager.getDefaultSharedPreferences(getAppContext()).edit().putBoolean(key, value).apply();
+        getPrefs().edit().putBoolean(key, value).apply();
     }
 
     private void persistScaledFloat(String key, float value, float scale) {

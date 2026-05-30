@@ -53,4 +53,7 @@ public interface WallpaperEngine {
 
     /** Release all GPU and engine resources. Called before plugin unload. */
     void release();
+
+    /** Set whether the engine is running in system preview mode. */
+    void setPreview(boolean isPreview);
 }

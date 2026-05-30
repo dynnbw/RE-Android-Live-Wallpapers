@@ -62,7 +62,12 @@ public class Galaxy4GL extends GLESScene {
         mContext = context;
         mScene = new Galaxy4Scene(width, height, context);
     }
-    
+
+    /** Called by BasePluginEngine via reflection to inject plugin-isolated prefs. */
+    public void setPluginPrefs(android.content.SharedPreferences prefs) {
+        mScene.setPluginPrefs(prefs);
+    }
+
     /**
      * 生命周期方法：创建时回调（GL线程）
      * 标记OpenGL初始化待执行

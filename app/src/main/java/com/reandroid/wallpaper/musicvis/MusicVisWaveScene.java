@@ -73,6 +73,7 @@ public class MusicVisWaveScene extends GLESScene implements SharedPreferences.On
 
     private boolean mUseTriangleStrip = true;
     private boolean mHasPrefInit = false;
+    private SharedPreferences mPluginPrefs;
 
     // HSL colorization
     private int mColorProgram, mColorPosLoc, mColorTexLoc, mColorMvpLoc, mColorSamplerLoc, mColorAdjustLoc;
@@ -97,6 +98,15 @@ public class MusicVisWaveScene extends GLESScene implements SharedPreferences.On
         initPointData();
     }
 
+    /** Preview-friendly constructor: uses PCM mode with default fire texture. */
+    public MusicVisWaveScene(int width, int height, Context context) {
+        this(width, height, context, Mode.PCM, "musicvis/drawable/musicvis_fire.png");
+    }
+
+    public void setPluginPrefs(SharedPreferences p) {
+        mPluginPrefs = p;
+    }
+
     @Override
     protected void onCreate() {
         // no-op
@@ -104,8 +114,13 @@ public class MusicVisWaveScene extends GLESScene implements SharedPreferences.On
 
     @Override
     public void start() {
-        String pn = (mMode == Mode.PCM) ? "musicvis2_prefs" : "musicvis3_prefs";
-        SharedPreferences p = mContext.getSharedPreferences(pn, Context.MODE_PRIVATE);
+        SharedPreferences p;
+        if (mPluginPrefs != null) {
+            p = mPluginPrefs;
+        } else {
+            String pn = (mMode == Mode.PCM) ? "musicvis2_prefs" : "musicvis3_prefs";
+            p = mContext.getSharedPreferences(pn, Context.MODE_PRIVATE);
+        }
         readPrefs(p);
         p.registerOnSharedPreferenceChangeListener(this);
 
@@ -125,8 +140,13 @@ public class MusicVisWaveScene extends GLESScene implements SharedPreferences.On
     @Override
     public void stop() {
         if (mAudioCapture != null) {
-            String pn = (mMode == Mode.PCM) ? "musicvis2_prefs" : "musicvis3_prefs";
-            SharedPreferences p = mContext.getSharedPreferences(pn, Context.MODE_PRIVATE);
+            SharedPreferences p;
+            if (mPluginPrefs != null) {
+                p = mPluginPrefs;
+            } else {
+                String pn = (mMode == Mode.PCM) ? "musicvis2_prefs" : "musicvis3_prefs";
+                p = mContext.getSharedPreferences(pn, Context.MODE_PRIVATE);
+            }
             p.unregisterOnSharedPreferenceChangeListener(this);
             mAudioCapture.stop();
         }

@@ -78,6 +78,7 @@ final class MagicSmokeScene {
     // Preferences
     private final Context mContext;
     private SharedPreferences mPrefs;
+    private SharedPreferences mPluginPrefs;
 
     MagicSmokeScene(Context context) {
         mContext = context;
@@ -97,10 +98,21 @@ final class MagicSmokeScene {
     }
 
     /**
+     * Plugin path: use host-provided prefs instead of hardcoded "magicsmoke" name.
+     */
+    void setPluginPrefs(SharedPreferences p) {
+        mPluginPrefs = p;
+    }
+
+    /**
      * 初始化预设（从 SharedPreferences 加载）
      */
     void init() {
-        mPrefs = mContext.getSharedPreferences("magicsmoke", Context.MODE_PRIVATE);
+        if (mPluginPrefs != null) {
+            mPrefs = mPluginPrefs;
+        } else {
+            mPrefs = mContext.getSharedPreferences("magicsmoke", Context.MODE_PRIVATE);
+        }
         mCurrentPreset = parsePreset(mPrefs.getString("preset", String.valueOf(DEFAULT_PRESET)));
     }
 

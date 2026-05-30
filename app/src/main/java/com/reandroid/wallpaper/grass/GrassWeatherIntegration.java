@@ -28,6 +28,7 @@ final class GrassWeatherIntegration {
 
     private WeatherManager weatherManager;
     private SharedPreferences prefs;
+    private SharedPreferences mPluginPrefs;
 
     private final AtomicReference<WeatherState> pendingWeatherState = new AtomicReference<>();
     private final AtomicBoolean clearWeatherStatePending = new AtomicBoolean();
@@ -38,9 +39,13 @@ final class GrassWeatherIntegration {
     private int previewWeatherIndex;
     private long previewWeatherNextMs;
 
+    void setPluginPrefs(SharedPreferences p) {
+        mPluginPrefs = p;
+    }
+
     void onCreate(Context appContext) {
         if (appContext != null && weatherManager == null) {
-            prefs = PreferenceManager.getDefaultSharedPreferences(appContext);
+            prefs = mPluginPrefs != null ? mPluginPrefs : PreferenceManager.getDefaultSharedPreferences(appContext);
             weatherManager = new WeatherManager(appContext, this::onWeatherUpdated);
         }
     }

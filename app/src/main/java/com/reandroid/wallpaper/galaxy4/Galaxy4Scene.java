@@ -30,6 +30,17 @@ import java.util.Random;
 final class Galaxy4Scene {
     private static final String TAG = "Galaxy4Scene";
 
+    private SharedPreferences mPluginPrefs;
+
+    public void setPluginPrefs(SharedPreferences prefs) {
+        mPluginPrefs = prefs;
+    }
+
+    private SharedPreferences getPrefs() {
+        if (mPluginPrefs != null) return mPluginPrefs;
+        return PreferenceManager.getDefaultSharedPreferences(getAppContext());
+    }
+
     private static final int DEFAULT_BG_STAR_COUNT = 11000;
     private static final int MIN_BG_STAR_COUNT = 1000;
     private static final int MAX_BG_STAR_COUNT = 20000;
@@ -134,7 +145,7 @@ final class Galaxy4Scene {
         }
 
         Context appContext = getAppContext();
-        SharedPreferences defaultPrefs = PreferenceManager.getDefaultSharedPreferences(appContext);
+        SharedPreferences defaultPrefs = getPrefs();
         SharedPreferences legacyPrefs = appContext.getSharedPreferences("wallpaper_settings", Context.MODE_PRIVATE);
 
         if (defaultPrefs.contains("galaxy4_bg_star_count")) {
@@ -168,7 +179,7 @@ final class Galaxy4Scene {
         }
         mLastSettingsSyncTime = now;
 
-        SharedPreferences defaultPrefs = PreferenceManager.getDefaultSharedPreferences(getAppContext());
+        SharedPreferences defaultPrefs = getPrefs();
         int prefBgStarCount = MathUtils.clamp(defaultPrefs.getInt("galaxy4_bg_star_count", mBgStarCount),
                 MIN_BG_STAR_COUNT, MAX_BG_STAR_COUNT);
         int prefSpaceCloudCount = MathUtils.clamp(defaultPrefs.getInt("galaxy4_space_cloud_count", mSpaceCloudCount),
@@ -305,7 +316,7 @@ final class Galaxy4Scene {
         if (mContext == null) {
             return;
         }
-        PreferenceManager.getDefaultSharedPreferences(getAppContext()).edit().putInt(key, value).apply();
+        getPrefs().edit().putInt(key, value).apply();
     }
 
     private Context getAppContext() {

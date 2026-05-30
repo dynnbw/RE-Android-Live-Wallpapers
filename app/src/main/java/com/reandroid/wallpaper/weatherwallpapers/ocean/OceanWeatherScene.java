@@ -30,13 +30,18 @@ final class OceanWeatherScene {
 
     WeatherStateManager mWeatherStateManager;
     final WeatherFlagManager mWeatherFlagManager = new WeatherFlagManager();
+    private SharedPreferences mPluginPrefs;
 
     OceanWeatherScene() {
     }
 
+    void setPluginPrefs(SharedPreferences prefs) {
+        mPluginPrefs = prefs;
+    }
+
     void onCreate(Context appContext) {
-        SharedPreferences prefs = appContext != null
-                ? PreferenceManager.getDefaultSharedPreferences(appContext)
+        SharedPreferences prefs = mPluginPrefs != null ? mPluginPrefs
+                : appContext != null ? PreferenceManager.getDefaultSharedPreferences(appContext)
                 : null;
         mWeatherStateManager = new WeatherStateManager(appContext, prefs);
     }

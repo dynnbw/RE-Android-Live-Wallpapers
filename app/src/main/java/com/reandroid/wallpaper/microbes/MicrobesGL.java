@@ -1,6 +1,7 @@
 package com.reandroid.wallpaper.microbes;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.opengl.GLES20;
 import android.view.MotionEvent;
 
@@ -83,6 +84,10 @@ public class MicrobesGL extends GLESScene {
         decorPosBuffer = null;
         deadPosBuffer = null;
         lastFrameMs = -1L;
+    }
+
+    public void setPluginPrefs(SharedPreferences p) {
+        if (mScene != null) mScene.setPluginPrefs(p);
     }
 
     @Override

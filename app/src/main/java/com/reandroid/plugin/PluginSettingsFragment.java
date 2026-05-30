@@ -48,11 +48,10 @@ public class PluginSettingsFragment extends PreferenceFragmentCompat
         PreferenceScreen screen = getPreferenceManager().createPreferenceScreen(ctx);
         setPreferenceScreen(screen);
 
-        String prefsName = pluginId.equals("fall") ? "plugin_fall" : null;
-        if (prefsName != null) getPreferenceManager().setSharedPreferencesName(prefsName);
-        SharedPreferences prefs = prefsName != null
-                ? ctx.getSharedPreferences(prefsName, Context.MODE_PRIVATE)
-                : getPreferenceManager().getSharedPreferences();
+        // Use plugin_{id} prefs — the same file that the engine's host exposes
+        String prefsName = "plugin_" + pluginId;
+        getPreferenceManager().setSharedPreferencesName(prefsName);
+        SharedPreferences prefs = ctx.getSharedPreferences(prefsName, Context.MODE_PRIVATE);
         prefs.registerOnSharedPreferenceChangeListener(this);
 
         // Read info.json for preview class
@@ -117,13 +116,20 @@ public class PluginSettingsFragment extends PreferenceFragmentCompat
     private GLESScene createPreviewScene(String className, int w, int h, Context ctx) {
         try {
             Class<?> clz = Class.forName(className);
-            GLESScene scene;
+            GLESScene scene = null;
+
+            // Try constructor patterns in order: (int,int,Context), (Context,int,int), (int,int)
             try {
                 scene = (GLESScene) clz.getConstructor(int.class, int.class, Context.class)
                         .newInstance(w, h, ctx);
-            } catch (NoSuchMethodException e) {
-                scene = (GLESScene) clz.getConstructor(Context.class, int.class, int.class)
-                        .newInstance(ctx, w, h);
+            } catch (NoSuchMethodException e1) {
+                try {
+                    scene = (GLESScene) clz.getConstructor(Context.class, int.class, int.class)
+                            .newInstance(ctx, w, h);
+                } catch (NoSuchMethodException e2) {
+                    scene = (GLESScene) clz.getConstructor(int.class, int.class)
+                            .newInstance(w, h);
+                }
             }
             // Inject plugin prefs so the preview reads current settings
             String pluginId = getPluginId();

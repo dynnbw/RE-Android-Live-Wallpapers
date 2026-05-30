@@ -69,6 +69,7 @@ public class PolarClockGL extends GLESScene implements SharedPreferences.OnShare
 
     // 共享偏好设置实例，用于读取时钟配置
     private SharedPreferences mPrefs;
+    private SharedPreferences mPluginPrefs;
     // 是否显示秒环
     private boolean mShowSeconds = true;
     // 是否启用可变线宽（不同环使用不同厚度）
@@ -102,6 +103,10 @@ public class PolarClockGL extends GLESScene implements SharedPreferences.OnShare
         mContext = context.getApplicationContext();
     }
 
+    public void setPluginPrefs(SharedPreferences p) {
+        mPluginPrefs = p;
+    }
+
     /**
      * 场景创建时的初始化逻辑
      * 加载调色板、读取偏好设置、初始化日历等
@@ -122,7 +127,11 @@ public class PolarClockGL extends GLESScene implements SharedPreferences.OnShare
         // 获取应用上下文，读取共享偏好设置
         Context ctx = GLESWallpaper.getAppContext();
         if (ctx != null) {
-            mPrefs = ctx.getSharedPreferences(PolarClockWallpaper.SHARED_PREFS_NAME, Context.MODE_PRIVATE);
+            if (mPluginPrefs != null) {
+                mPrefs = mPluginPrefs;
+            } else {
+                mPrefs = ctx.getSharedPreferences(PolarClockWallpaper.SHARED_PREFS_NAME, Context.MODE_PRIVATE);
+            }
             // 初始化偏好设置对应的变量
             onSharedPreferenceChanged(mPrefs, null);
         }

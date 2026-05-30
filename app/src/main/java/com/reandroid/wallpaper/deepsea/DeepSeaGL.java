@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -28,6 +29,11 @@ public class DeepSeaGL extends GLESScene implements SensorEventListener {
     public DeepSeaGL(int width, int height) {
         super(width, height);
         mScene = new DeepSeaScene();
+    }
+
+    /** Plugin path: inject host-provided prefs into the scene. */
+    public void setPluginPrefs(SharedPreferences prefs) {
+        mScene.setPluginPrefs(prefs);
     }
 
     @Override

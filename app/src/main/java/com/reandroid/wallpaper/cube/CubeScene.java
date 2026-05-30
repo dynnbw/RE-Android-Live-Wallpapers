@@ -15,6 +15,7 @@ final class CubeScene {
 
     private final Context mContext;
     private SharedPreferences mPrefs;
+    private SharedPreferences mPluginPrefs;
 
     ThreeDPoint[] mOriginalPoints;
     ThreeDPoint[] mRotatedPoints;
@@ -49,13 +50,18 @@ final class CubeScene {
     }
 
     void ensurePrefs() {
+        if (mPluginPrefs != null) return;
         if (mPrefs == null && mContext != null) {
             mPrefs = mContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         }
     }
 
     SharedPreferences getPrefs() {
-        return mPrefs;
+        return mPluginPrefs != null ? mPluginPrefs : mPrefs;
+    }
+
+    public void setPluginPrefs(SharedPreferences prefs) {
+        mPluginPrefs = prefs;
     }
 
     void loadShape(Resources resources, String shapeName) {

@@ -16,6 +16,8 @@ import java.nio.FloatBuffer;
 
 final class NightSkyScene {
 
+    private SharedPreferences mPluginPrefs;
+
     static final float MILKY_BRIGHTNESS = 0.9f;
     static final String PREF_CAMERA_FOCAL_MM = "nightsky_camera_focal_mm";
     static final String PREF_USE_SENSOR = "nightsky_use_sensor";
@@ -62,6 +64,10 @@ final class NightSkyScene {
         Matrix.setIdentityM(currentViewRot, 0);
     }
 
+    void setPluginPrefs(SharedPreferences p) {
+        mPluginPrefs = p;
+    }
+
     void init(Context context) {
         sensorController.init(context);
         locationController.refresh(context, true);
@@ -93,7 +99,7 @@ final class NightSkyScene {
         try {
             Context context = GLESWallpaper.getAppContext();
             if (context == null) return;
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+            SharedPreferences prefs = mPluginPrefs != null ? mPluginPrefs : PreferenceManager.getDefaultSharedPreferences(context);
             int focalMm = prefs.getInt(PREF_CAMERA_FOCAL_MM, DEFAULT_CAMERA_FOCAL_MM);
             focalMm = Math.max(MIN_CAMERA_FOCAL_MM, Math.min(MAX_CAMERA_FOCAL_MM, focalMm));
             float newFov = focalMmToFovDeg(focalMm);

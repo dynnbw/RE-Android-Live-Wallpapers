@@ -14,6 +14,8 @@ import java.util.Random;
  */
 final class MicrobesScene {
 
+    private SharedPreferences mPluginPrefs;
+
     static final int MICROBE_COUNT = 300;
     static final int FOOD_COUNT = 140;
     static final int DECOR_COUNT = 120;
@@ -115,6 +117,10 @@ final class MicrobesScene {
      * 构造方法
      */
     MicrobesScene() {
+    }
+
+    void setPluginPrefs(SharedPreferences p) {
+        mPluginPrefs = p;
     }
 
     /**
@@ -409,7 +415,7 @@ final class MicrobesScene {
             if (GLESWallpaper.getAppContext() == null) {
                 return;
             }
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(GLESWallpaper.getAppContext());
+            SharedPreferences prefs = mPluginPrefs != null ? mPluginPrefs : PreferenceManager.getDefaultSharedPreferences(GLESWallpaper.getAppContext());
             int speedPercent = prefs.getInt("microbes_lifecycle_speed", 100);
             speedPercent = Math.max(50, Math.min(200, speedPercent));
             lifecycleSpeedScale = speedPercent / 100.0f;

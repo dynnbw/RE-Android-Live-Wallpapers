@@ -101,6 +101,10 @@ public class CubeGL extends GLESScene implements SharedPreferences.OnSharedPrefe
         mScene.onTouchEvent(event);
     }
 
+    public void setPluginPrefs(SharedPreferences prefs) {
+        mScene.setPluginPrefs(prefs);
+    }
+
     @Override
     public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
         if (KEY_SHAPE.equals(key) && mResources != null) {

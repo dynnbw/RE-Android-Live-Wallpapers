@@ -1,6 +1,7 @@
 package com.reandroid.wallpaper.nightsky;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
@@ -126,6 +127,10 @@ public class NightSkyGL extends GLESScene {
     @Override
     public void onTouchEvent(MotionEvent event) {
         mScene.touchTimeController.onTouchEvent(event);
+    }
+
+    public void setPluginPrefs(SharedPreferences p) {
+        if (mScene != null) mScene.setPluginPrefs(p);
     }
 
     @Override

@@ -17,6 +17,7 @@
 package com.reandroid.wallpaper.grass;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -221,6 +222,13 @@ public class GrassGL extends GLESScene {
         mBackgroundRenderer.setViewport(width, height);
         mWeatherRenderer.setViewport(width, height);
         mStarRenderer.setViewport(width, height);
+    }
+
+    // ---- Plugin prefs injection ----
+
+    public void setPluginPrefs(SharedPreferences prefs) {
+        mScene.setPluginPrefs(prefs);
+        mWeatherIntegration.setPluginPrefs(prefs);
     }
 
     // ---- GLESScene lifecycle ----

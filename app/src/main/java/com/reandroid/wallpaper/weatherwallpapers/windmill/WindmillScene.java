@@ -37,8 +37,13 @@ final class WindmillScene {
 
     WeatherStateManager mWeatherStateManager;
     final WeatherFlagManager mWeatherFlagManager = new WeatherFlagManager();
+    private SharedPreferences mPluginPrefs;
 
     WindmillScene() {
+    }
+
+    void setPluginPrefs(SharedPreferences prefs) {
+        mPluginPrefs = prefs;
     }
 
     void initMemory() {
@@ -46,8 +51,8 @@ final class WindmillScene {
     }
 
     void onCreate(Context appContext) {
-        SharedPreferences prefs = appContext != null
-                ? PreferenceManager.getDefaultSharedPreferences(appContext)
+        SharedPreferences prefs = mPluginPrefs != null ? mPluginPrefs
+                : appContext != null ? PreferenceManager.getDefaultSharedPreferences(appContext)
                 : null;
         mWeatherStateManager = new WeatherStateManager(appContext, prefs);
     }

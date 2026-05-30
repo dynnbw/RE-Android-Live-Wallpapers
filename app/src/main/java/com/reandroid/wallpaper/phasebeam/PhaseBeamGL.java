@@ -112,6 +112,10 @@ public class PhaseBeamGL extends GLESScene implements SharedPreferences.OnShared
         mScene.reloadPreferences(mResources);
     }
 
+    public void setPluginPrefs(SharedPreferences prefs) {
+        mScene.setPluginPrefs(prefs);
+    }
+
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         if (PhaseBeamScene.KEY_ENABLED.equals(key) || PhaseBeamScene.KEY_HUE.equals(key)

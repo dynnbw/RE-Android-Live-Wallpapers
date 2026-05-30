@@ -16,7 +16,13 @@ final class DeepSeaScene implements SharedPreferences.OnSharedPreferenceChangeLi
 
     DeepSeaContainer mContainer;
     private SharedPreferences mPrefs;
+    private SharedPreferences mPluginPrefs;
     Bitmap mCachedBackground;
+
+    /** Plugin path: use host-provided prefs instead of hardcoded name. */
+    void setPluginPrefs(SharedPreferences p) {
+        mPluginPrefs = p;
+    }
 
     void onCreate() {
         Context context = GLESWallpaper.getAppContext();
@@ -32,7 +38,11 @@ final class DeepSeaScene implements SharedPreferences.OnSharedPreferenceChangeLi
         }
 
         if (mPrefs == null) {
-            mPrefs = context.getSharedPreferences(DeepSeaGL.PREFS_NAME, Context.MODE_PRIVATE);
+            if (mPluginPrefs != null) {
+                mPrefs = mPluginPrefs;
+            } else {
+                mPrefs = context.getSharedPreferences(DeepSeaGL.PREFS_NAME, Context.MODE_PRIVATE);
+            }
             mPrefs.registerOnSharedPreferenceChangeListener(this);
         }
 

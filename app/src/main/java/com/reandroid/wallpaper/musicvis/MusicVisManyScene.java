@@ -91,6 +91,7 @@ public class MusicVisManyScene extends GLESScene {
 
     private boolean mUseTriangleStrip = true;
     private boolean mHasPrefInit = false;
+    private SharedPreferences mPluginPrefs;
 
     public MusicVisManyScene(int width, int height, Context context) {
         super(width, height);
@@ -120,6 +121,10 @@ public class MusicVisManyScene extends GLESScene {
     @Override
     public void stop() {
         if (mAudioCapture != null) mAudioCapture.stop();
+    }
+
+    public void setPluginPrefs(SharedPreferences p) {
+        mPluginPrefs = p;
     }
 
     @Override
@@ -216,7 +221,7 @@ public class MusicVisManyScene extends GLESScene {
     }
 
     private void updateRenderMode() {
-        SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(mContext);
+        SharedPreferences p = mPluginPrefs != null ? mPluginPrefs : PreferenceManager.getDefaultSharedPreferences(mContext);
         boolean pref = p.getBoolean("musicvis_use_triangle_strip", true);
         if (!mHasPrefInit || pref != mUseTriangleStrip) {
             mUseTriangleStrip = pref;

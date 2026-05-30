@@ -34,6 +34,7 @@ final class PhaseBeamScene {
 
     private final Context mContext;
     private SharedPreferences mPrefs;
+    private SharedPreferences mPluginPrefs;
 
     float mScaleSize = 1.0f;
     float mXOffset = 0.5f;
@@ -117,13 +118,18 @@ final class PhaseBeamScene {
     }
 
     void ensurePrefs() {
+        if (mPluginPrefs != null) return;
         if (mPrefs == null && mContext != null) {
             mPrefs = mContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         }
     }
 
     SharedPreferences getPrefs() {
-        return mPrefs;
+        return mPluginPrefs != null ? mPluginPrefs : mPrefs;
+    }
+
+    public void setPluginPrefs(SharedPreferences prefs) {
+        mPluginPrefs = prefs;
     }
 
     private void readPrefs(Resources resources) {

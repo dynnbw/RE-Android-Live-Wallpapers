@@ -1,6 +1,7 @@
 package com.reandroid.wallpaper.magicsmoke;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
@@ -58,6 +59,11 @@ public class MagicSmokeGL extends GLESScene {
         super(width, height);
         mContext = context;
         mScene = new MagicSmokeScene(context);
+    }
+
+    /** Plugin path: inject host-provided prefs into the scene. */
+    public void setPluginPrefs(SharedPreferences prefs) {
+        mScene.setPluginPrefs(prefs);
     }
 
     @Override
