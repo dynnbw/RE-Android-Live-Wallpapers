@@ -49,9 +49,10 @@ public class MusicVisWaveScene extends GLESScene implements SharedPreferences.On
 
     private AudioCapture mAudioCapture;
     private int[] mVizData;
-    private short[] mAnalyzer;
+    private int[] mAnalyzer;
     private int mFftSize = 512;
     private boolean mFftSizeChanged;
+    private float[] mPcmSmoothed;  // EMA-smoothed PCM data
 
     private int mIdle = 0;
     private int mWaveCounter = 0;
@@ -115,7 +116,8 @@ public class MusicVisWaveScene extends GLESScene implements SharedPreferences.On
             mAudioCapture = new AudioCapture(type, size);
             int capSize = mAudioCapture.getSize();
             mVizData = new int[capSize];
-            mAnalyzer = new short[capSize / 2];
+            mAnalyzer = new int[capSize / 2];
+            mPcmSmoothed = new float[capSize];
         }
         mAudioCapture.start();
     }
@@ -148,7 +150,8 @@ public class MusicVisWaveScene extends GLESScene implements SharedPreferences.On
             }
             mAudioCapture = new AudioCapture(AudioCapture.TYPE_FFT, mFftSize);
             mVizData = new int[mAudioCapture.getSize()];
-            mAnalyzer = new short[mAudioCapture.getSize() / 2];
+            mAnalyzer = new int[mAudioCapture.getSize() / 2];
+            mPcmSmoothed = new float[mAudioCapture.getSize()];
             mAudioCapture.start();
         }
 
@@ -306,10 +309,12 @@ public class MusicVisWaveScene extends GLESScene implements SharedPreferences.On
             int outlen = mPointData.length / 8;
             if (len > outlen) len = outlen;
             if (mIdle != 0) mIdle = 0;
+            float alpha = 0.3f;
             for (int i = 0; i < len; i++) {
-                int amp = mVizData[i];
-                mPointData[i * 8 + 1] = amp;
-                mPointData[i * 8 + 5] = -amp;
+                float smoothed = alpha * mVizData[i] + (1f - alpha) * mPcmSmoothed[i];
+                mPcmSmoothed[i] = smoothed;
+                mPointData[i * 8 + 1] = smoothed;
+                mPointData[i * 8 + 5] = -smoothed;
             }
         } else {
             len = len / 2; // bins are in pairs
@@ -320,10 +325,10 @@ public class MusicVisWaveScene extends GLESScene implements SharedPreferences.On
                 int val1 = mVizData[i * 2];
                 int val2 = mVizData[i * 2 + 1];
                 int val = val1 * val1 + val2 * val2;
-                short newval = (short) (val * (i / 16 + 1));
-                short oldval = mAnalyzer[i];
+                int newval = val * (i / 16 + 1);
+                int oldval = mAnalyzer[i];
                 if (newval < oldval - 800) {
-                    newval = (short) (oldval - 800);
+                    newval = oldval - 800;
                 }
                 mAnalyzer[i] = newval;
             }
