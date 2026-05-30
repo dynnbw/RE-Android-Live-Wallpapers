@@ -167,6 +167,21 @@
             </intent-filter>
         </activity>
 
+        <!-- 代理壁纸服务（插件化入口） -->
+        <service
+            android:name="com.reandroid.plugin.ProxyWallpaperService"
+            android:exported="true"
+            android:label="@string/wallpapers"
+            android:permission="android.permission.BIND_WALLPAPER"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="android.service.wallpaper.WallpaperService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.service.wallpaper"
+                android:resource="@xml/proxy_wallpaper" />
+        </service>
+
         <!-- Magic Smoke壁纸 -->
         <service
             android:name="com.reandroid.wallpaper.magicsmoke.MagicSmokeWallpaper"
