@@ -162,12 +162,17 @@ final class FallScene {
     private boolean mWaterTexCoordsDirty = true;
     private float[] mVkLeafData = new float[0];
     private int mVkLeafFloatCount = 0;
-    private SharedPreferences mPrefs;
+    private volatile SharedPreferences mPrefs;
 
     FallScene(int width, int height) {
         mWidth = width;
         mHeight = height;
         mLastTimeMs = System.currentTimeMillis();
+        // Defer prepareNonGLResources() to first update() so setPluginPrefs() is available
+    }
+
+    /** Called by FallGL.start() or first update() to initialize non-GL resources. */
+    void ensureResources() {
         prepareNonGLResources();
     }
 

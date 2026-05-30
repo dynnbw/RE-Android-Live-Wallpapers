@@ -1,6 +1,7 @@
 package com.reandroid.settings;
 
 import android.app.WallpaperManager;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
@@ -26,7 +27,12 @@ public class FallSettingsFragment extends PreferenceFragmentCompat {
 
         PreviewPreference preview = findPreference("pref_preview");
         if (preview != null) {
-            preview.setSceneFactory((width, height) -> new FallGL(requireContext(), width, height));
+            preview.setSceneFactory((width, height) -> {
+                FallGL gl = new FallGL(requireContext(), width, height);
+                gl.setPluginPrefs(
+                        requireContext().getSharedPreferences("plugin_fall", Context.MODE_PRIVATE));
+                return gl;
+            });
         }
 
         Preference openPicker = findPreference("pref_open_wallpaper_picker");

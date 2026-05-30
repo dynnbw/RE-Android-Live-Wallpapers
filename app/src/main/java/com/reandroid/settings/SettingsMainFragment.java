@@ -15,6 +15,7 @@ import androidx.preference.PreferenceScreen;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.reandroid.plugin.PluginSettingsFragment;
 import com.reandroid.wallpaper.R;
 
 import org.json.JSONObject;
@@ -104,12 +105,14 @@ public class SettingsMainFragment extends PreferenceFragmentCompat {
                 String jsonPath = dir + "/info.json";
                 String fragmentClass = null;
                 String label = null;
+                String pluginClass = null;
                 try (InputStream is = am.open(jsonPath)) {
                     byte[] buf = new byte[is.available()];
                     is.read(buf);
                     JSONObject json = new JSONObject(new String(buf, "UTF-8"));
                     fragmentClass = json.optString("fragment", null);
                     label = json.optString("label", null);
+                    pluginClass = json.optString("plugin", null);
                 } catch (Exception ignored) {
                     continue;
                 }
@@ -126,7 +129,20 @@ public class SettingsMainFragment extends PreferenceFragmentCompat {
                 Preference entry = new Preference(requireContext());
                 entry.setTitle(title);
                 entry.setLayoutResource(R.layout.preference_wallpaper_grid_item);
-                entry.setFragment(fragmentClass);
+                if (pluginClass != null) {
+                    String finalDir = dir;
+                    entry.setOnPreferenceClickListener(pref -> {
+                        PluginSettingsFragment frag = PluginSettingsFragment.newInstance(finalDir);
+                        requireActivity().getSupportFragmentManager()
+                                .beginTransaction()
+                                .replace(com.reandroid.wallpaper.R.id.settings_container, frag)
+                                .addToBackStack(null)
+                                .commit();
+                        return true;
+                    });
+                } else {
+                    entry.setFragment(fragmentClass);
+                }
                 screen.addPreference(entry);
             }
         } catch (Exception ignored) {

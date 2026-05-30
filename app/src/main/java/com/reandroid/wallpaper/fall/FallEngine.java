@@ -74,8 +74,8 @@ public class FallEngine implements WallpaperEngine {
                 mEglCreated = initEgl(surface);
                 if (mEglCreated) {
                     mScene = new FallGL(mContext, mWidth, mHeight);
-                    mScene.init(surface, mContext.getResources(), false);
                     if (mHost != null) mScene.setPluginPrefs(mHost.getSharedPreferences());
+                    mScene.init(surface, mContext.getResources(), false);
                     // start() deferred to render thread (needs EGL context)
                     Log.d(TAG, "EGL initialized, scene created");
                 } else {

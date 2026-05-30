@@ -132,6 +132,7 @@ public class FallGL extends GLESScene {
         }
 
         mGLInitialized = true;
+        mScene.ensureResources();
         GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         GLES20.glEnable(GLES20.GL_BLEND);
         GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
@@ -145,8 +146,7 @@ public class FallGL extends GLESScene {
             Log.e(TAG, "GL线程加载枫叶纹理失败", e);
             mLeafTextures = createPlaceholderLeafTextures();
         }
-        mScene.setLeafTextureCount(mLeafTextures.length);
-
+        // ensureResources() already set mLeafTextureCount from prefs — don't override
         try {
             mRiverbedTexture = loadTexture("fall/drawable/pond.jpg");
         } catch (Exception e) {
@@ -474,8 +474,8 @@ public class FallGL extends GLESScene {
     }
 
     private int[] loadLeafTextures() {
-        boolean greenLeavesEnabled = WallpaperSettings.isGreenLeavesEnabled(false);
-        int leafCount = greenLeavesEnabled ? 20 : 14;
+        // Always load all 20 leaf textures; mLeafTextureCount controls which ones are used
+        int leafCount = 20;
         int[] textures = new int[leafCount];
         for (int i = 0; i < leafCount; i++) {
             textures[i] = loadLeafTexture("fall/drawable/leaves_" + i + ".png");

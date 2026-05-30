@@ -2,17 +2,28 @@
   "prefs": [
     {
       "type": "switch",
-      "key": "legacy_mode",
-      "title": "Use legacy particle rendering",
+      "key": "pref_fall_green_leaves",
+      "title": "pref_green_leaves",
+      "summary": "pref_green_leaves_summary",
       "default": false
     },
     {
       "type": "seekbar",
-      "key": "leaf_count",
-      "title": "Leaf count",
-      "min": 5,
-      "max": 30,
-      "default": 20
+      "key": "pref_fall_leaf_count",
+      "title": "pref_leaf_count",
+      "summary": "pref_leaf_count_summary",
+      "min": 1,
+      "max": 40,
+      "default": 14
+    },
+    {
+      "type": "seekbar",
+      "key": "pref_fall_max_drops",
+      "title": "pref_max_drops",
+      "summary": "pref_max_drops_summary",
+      "min": 1,
+      "max": 80,
+      "default": 10
     }
   ]
 }

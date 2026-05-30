@@ -27,7 +27,8 @@ public final class DynamicPreferenceFactory {
      * @param addAction callback to add each created preference
      */
     public static void buildPreferences(Context context, SharedPreferences prefs,
-                                         JSONObject layout, AddPreferenceAction addAction) {
+                                         JSONObject layout, AddPreferenceAction addAction,
+                                         JSONObject language) {
         JSONArray items = layout.optJSONArray("prefs");
         if (items == null) return;
 
@@ -36,17 +37,32 @@ public final class DynamicPreferenceFactory {
             if (item == null) continue;
 
             String type = item.optString("type");
-            Preference p = create(context, type, item, prefs);
+            Preference p = create(context, type, item, prefs, language);
             if (p != null) {
+                // Set correct layout per type
+                if ("seekbar".equals(type)) {
+                    p.setLayoutResource(com.reandroid.wallpaper.R.layout.preference_modern_seekbar);
+                } else {
+                    p.setLayoutResource(com.reandroid.wallpaper.R.layout.preference_modern_item);
+                }
                 addAction.add(p);
             }
         }
     }
 
+    private static String resolveLang(JSONObject lang, String key) {
+        if (lang != null) {
+            String val = lang.optString(key, null);
+            if (val != null && !val.isEmpty()) return val;
+        }
+        return key; // fallback: use the key as display text
+    }
+
     private static Preference create(Context context, String type, JSONObject item,
-                                      SharedPreferences prefs) {
+                                      SharedPreferences prefs, JSONObject language) {
         String key = item.optString("key");
-        String title = item.optString("title");
+        String title = resolveLang(language, item.optString("title"));
+        String summary = resolveLang(language, item.optString("summary", ""));
         if (key.isEmpty()) return null;
 
         switch (type) {
@@ -54,6 +70,7 @@ public final class DynamicPreferenceFactory {
                 SwitchPreferenceCompat sp = new SwitchPreferenceCompat(context);
                 sp.setKey(key);
                 sp.setTitle(title);
+                if (!summary.isEmpty()) sp.setSummary(summary);
                 sp.setDefaultValue(item.optBoolean("default", false));
                 return sp;
             }
@@ -61,9 +78,16 @@ public final class DynamicPreferenceFactory {
                 SeekBarPreference sp = new SeekBarPreference(context);
                 sp.setKey(key);
                 sp.setTitle(title);
+                if (!summary.isEmpty()) sp.setSummary(summary);
                 sp.setMin(item.optInt("min", 0));
                 sp.setMax(item.optInt("max", 100));
                 sp.setDefaultValue(item.optInt("default", 50));
+                try {
+                    // Show the value label (app:showSeekBarValue="true" equivalent)
+                    java.lang.reflect.Field f = SeekBarPreference.class.getDeclaredField("mShowSeekBarValue");
+                    f.setAccessible(true);
+                    f.setBoolean(sp, true);
+                } catch (Exception ignored) {}
                 return sp;
             }
             case "list": {

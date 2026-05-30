@@ -171,7 +171,7 @@ public final class SettingsResetHelper {
                                     .apply();
                         });
             case TARGET_FALL:
-                return new ResetSpec(R.xml.prefs_fall, null, null);
+                return new ResetSpec(R.xml.prefs_fall, "plugin_fall", null);
             case TARGET_GRASS:
                 return new ResetSpec(R.xml.prefs_grass, null, null);
             case TARGET_WILDWORLD:

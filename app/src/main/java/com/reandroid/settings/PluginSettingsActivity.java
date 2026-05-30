@@ -4,12 +4,13 @@ import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.reandroid.plugin.PluginSettingsFragment;
 import com.reandroid.plugin.ProxyWallpaperService;
 import com.reandroid.wallpaper.R;
 
 /**
  * Settings activity launched from the system wallpaper preview.
- * Reads the active plugin ID and loads its dynamic settings fragment.
+ * Reads the active plugin ID and loads its dynamic settings (layout.json).
  */
 public class PluginSettingsActivity extends AppCompatActivity {
 
@@ -28,32 +29,13 @@ public class PluginSettingsActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
-        if (savedInstanceState == null && pluginId != null) {
-            // Load the legacy Fragment from info.json
-            androidx.fragment.app.Fragment fragment = loadSettingsFragment(pluginId);
-            if (fragment != null) {
-                getSupportFragmentManager()
-                        .beginTransaction()
-                        .replace(R.id.settings_container, fragment)
-                        .commit();
-            }
+        if (savedInstanceState == null) {
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.settings_container,
+                            PluginSettingsFragment.newInstance(pluginId))
+                    .commit();
         }
-    }
-
-    private androidx.fragment.app.Fragment loadSettingsFragment(String pluginId) {
-        try {
-            java.io.InputStream is = getAssets().open(pluginId + "/info.json");
-            byte[] buf = new byte[is.available()];
-            is.read(buf);
-            is.close();
-            org.json.JSONObject json = new org.json.JSONObject(new String(buf, "UTF-8"));
-            String fragClass = json.optString("fragment", null);
-            if (fragClass != null) {
-                Class<?> clazz = Class.forName(fragClass);
-                return (androidx.fragment.app.Fragment) clazz.getDeclaredConstructor().newInstance();
-            }
-        } catch (Exception ignored) {}
-        return null;
     }
 
     @Override

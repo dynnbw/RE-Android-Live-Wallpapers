@@ -44,6 +44,16 @@ public final class PluginResources {
     }
 
     /**
+     * Load language for the current device locale, falling back to "default".
+     */
+    public static JSONObject loadLanguageForLocale(Context context, String pluginId) {
+        String lang = Locale.getDefault().getLanguage();
+        JSONObject json = loadLanguage(context, pluginId, lang);
+        if (json == null) json = loadLanguage(context, pluginId, "default");
+        return json;
+    }
+
+    /**
      * Load the layout definition for a plugin's settings UI.
      */
     public static JSONObject loadLayout(Context context, String pluginId) {

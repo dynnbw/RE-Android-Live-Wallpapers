@@ -1,4 +1,1 @@
-{
-  "title": "Water Leaves",
-  "desc": "Autumn leaves tumble to the rippling pond below"
-}
+{"title":"Water Leaves","desc":"Autumn leaves tumble to the rippling pond below: Liquid background Zen","settings_entry":"Water Surface Leaves","pref_leaf_count":"Leaf count","pref_leaf_count_summary":"Adjust the number of falling leaves","pref_green_leaves":"Green leaves","pref_green_leaves_summary":"When enabled, some leaves will be green","pref_max_drops":"Max ripple drops","pref_max_drops_summary":"Maximum number of water ripples displayed simultaneously","pref_precise_calc":"Precise calculation","pref_precise_calc_summary":"Use physics-inspired ripple simulation (wave propagation and decay)"}

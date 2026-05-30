@@ -55,6 +55,15 @@ public class PreviewPreference extends Preference {
         notifyChanged();
     }
 
+    /** Release the current preview and force a full rebind with updated settings. */
+    public void refreshScene() {
+        if (mPreviewView != null) {
+            mPreviewView.stopRenderer();
+            mPreviewView = null;
+        }
+        notifyChanged();
+    }
+
     @Override
     public void onBindViewHolder(PreferenceViewHolder holder) {
         super.onBindViewHolder(holder);
