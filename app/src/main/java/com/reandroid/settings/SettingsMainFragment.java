@@ -34,6 +34,16 @@ public class SettingsMainFragment extends PreferenceFragmentCompat {
         addDynamicEntries(getPreferenceScreen());
         applyHomeLayouts();
 
+        // Debug: quick test button for ProxyWallpaperService
+        Preference testProxy = findPreference("pref_test_proxy");
+        if (testProxy != null) {
+            testProxy.setOnPreferenceClickListener(pref -> {
+                com.reandroid.plugin.ProxyWallpaperService.setActivePlugin(requireContext(), "fall");
+                openLiveWallpaperChooser();
+                return true;
+            });
+        }
+
         Preference openChooser = findPreference("pref_open_wallpaper_chooser");
         if (openChooser != null) {
             openChooser.setOnPreferenceClickListener(pref -> {

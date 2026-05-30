@@ -58,6 +58,7 @@ public class ProxyWallpaperService extends WallpaperService {
             setTouchEventsEnabled(true);
 
             String pluginId = getActivePlugin(ProxyWallpaperService.this);
+            Log.d(TAG, "onCreate pluginId=" + pluginId);
             if (pluginId == null) {
                 Log.e(TAG, "No plugin configured");
                 return;
@@ -65,14 +66,17 @@ public class ProxyWallpaperService extends WallpaperService {
 
             try {
                 mPlugin = loadPlugin(pluginId);
+                Log.d(TAG, "Plugin loaded: " + (mPlugin != null ? mPlugin.getId() : "null"));
                 if (mPlugin == null) {
                     Log.e(TAG, "Failed to load plugin: " + pluginId);
                     return;
                 }
                 mHost = new PluginHostImpl(ProxyWallpaperService.this, pluginId);
                 mEngine = mPlugin.createEngine(ProxyWallpaperService.this, mHost);
+                Log.d(TAG, "Engine created: " + (mEngine != null ? mEngine.getClass().getSimpleName() : "null"));
                 if (mEngine != null) {
                     mEngine.onCreate(surfaceHolder);
+                    Log.d(TAG, "Engine onCreate completed");
                 }
             } catch (Exception e) {
                 Log.e(TAG, "Plugin init failed", e);
@@ -100,6 +104,7 @@ public class ProxyWallpaperService extends WallpaperService {
 
         @Override
         public void onVisibilityChanged(boolean visible) {
+            Log.d(TAG, "onVisibilityChanged visible=" + visible + " engine=" + (mEngine != null));
             mVisible = visible;
             if (mEngine != null) mEngine.onVisibilityChanged(visible);
             if (visible) ensureRenderThread();
@@ -150,11 +155,17 @@ public class ProxyWallpaperService extends WallpaperService {
                 @Override
                 public void run() {
                     Process.setThreadPriority(Process.THREAD_PRIORITY_DISPLAY);
+                    Log.d(TAG, "Render thread started, engine=" + (mEngine != null));
+                    int frameCount = 0;
                     while (mRunning) {
                         if (mVisible) {
                             synchronized (mLock) {
                                 if (mEngine != null) {
                                     mEngine.drawFrame(System.currentTimeMillis());
+                                    if (++frameCount == 60) {
+                                        Log.d(TAG, "Rendered 60 frames OK");
+                                        frameCount = 0;
+                                    }
                                 }
                             }
                         }

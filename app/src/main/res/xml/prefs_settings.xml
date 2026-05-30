@@ -4,5 +4,10 @@
     <Preference android:key="pref_open_wallpaper_chooser"
         android:title="@string/pref_open_wallpaper_chooser"
         android:layout="@layout/preference_modern_item" />
+    <Preference
+        android:key="pref_test_proxy"
+        android:title="[TEST] Set Fall as Proxy Wallpaper"
+        android:summary="Debug: activates Fall through ProxyWallpaperService"
+        android:layout="@layout/preference_modern_item" />
     <!-- Wallpaper entries are auto-discovered from assets/{wallpaper}/info.json -->
 </PreferenceScreen>
