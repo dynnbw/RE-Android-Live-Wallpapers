@@ -20,7 +20,7 @@ public abstract class VKSurfaceView<T> extends SurfaceView
     protected Thread mThread;
     protected volatile boolean mRunning;
     protected long mRendererHandle;
-    protected T mScene;
+    protected volatile T mScene;
     protected int mWidth, mHeight;
 
     // 共享帧率控制与诊断

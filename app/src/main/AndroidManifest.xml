@@ -34,8 +34,6 @@
     <uses-permission android:name="android.permission.BIND_WALLPAPER" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
-    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
-
     <application
         android:label="@string/wallpapers"
         android:icon="@drawable/ic_launcher_wallpaper">

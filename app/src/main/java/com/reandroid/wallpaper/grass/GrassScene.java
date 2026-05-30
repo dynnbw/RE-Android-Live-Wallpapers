@@ -60,7 +60,7 @@ class GrassScene {
     // Sun state
     private float mXOffset = 0.0f;
     private int mSettingsHash = 0;
-    private boolean mPrefsDirty = true;
+    private volatile boolean mPrefsDirty = true;
 
     // Settings
     private boolean mGrassEnabled = true;

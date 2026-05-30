@@ -8,6 +8,7 @@ import android.opengl.EGLDisplay;
 import android.opengl.EGLSurface;
 import android.opengl.GLES20;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -15,6 +16,7 @@ import android.os.Process;
 import android.view.MotionEvent;
 
 public class GLESPreviewView extends SurfaceView implements SurfaceHolder.Callback, Runnable {
+    private static final String TAG = "GLESPreviewView";
     private static final boolean DEBUG = android.util.Log.isLoggable("GLESPreviewView", android.util.Log.DEBUG);
     public interface SceneFactory {
         GLESScene create(int width, int height);
@@ -160,7 +162,12 @@ public class GLESPreviewView extends SurfaceView implements SurfaceHolder.Callba
             } else {
                 GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
             }
-            EGL14.eglSwapBuffers(mDisplay, mSurface);
+            if (!EGL14.eglSwapBuffers(mDisplay, mSurface)) {
+                int error = EGL14.eglGetError();
+                Log.e(TAG, "eglSwapBuffers failed: 0x" + Integer.toHexString(error));
+                mRunning = false;
+                break;
+            }
             try {
                 Thread.sleep(33);
             } catch (InterruptedException ignored) {
