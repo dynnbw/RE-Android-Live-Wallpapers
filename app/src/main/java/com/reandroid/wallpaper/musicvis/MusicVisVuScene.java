@@ -73,11 +73,7 @@ public class MusicVisVuScene extends GLESScene {
 
     @Override
     public void stop() {
-        if (mAudioCapture != null) {
-            mAudioCapture.stop();
-            mAudioCapture.release();
-            mAudioCapture = null;
-        }
+        if (mAudioCapture != null) mAudioCapture.stop();
     }
 
     @Override
@@ -124,6 +120,9 @@ public class MusicVisVuScene extends GLESScene {
         mSamplerLoc = GLES20.glGetUniformLocation(mProgram, "uTex");
 
         mQuadUvs = AssetLoader.readFloatArray(mContext, "musicvis/data/musicvis_quad_uv.csv");
+
+        mPosBuffer = ByteBuffer.allocateDirect(12 * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
+        mTexBuffer = ByteBuffer.allocateDirect(mQuadUvs.length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
 
         mTexBackground = GLTextureUtils.loadTextureFromAsset(mContext, "musicvis/drawable/musicvis_vu_background.png");
         mTexFrame = GLTextureUtils.loadTextureFromAsset(mContext, "musicvis/drawable/musicvis_vu_frame.png");
@@ -208,8 +207,10 @@ public class MusicVisVuScene extends GLESScene {
                 x2, y2, z2
         };
         float[] uvs = mQuadUvs;
-        mPosBuffer = toFloatBuffer(positions);
-        mTexBuffer = toFloatBuffer(uvs);
+        mPosBuffer.position(0);
+        mPosBuffer.put(positions).position(0);
+        mTexBuffer.position(0);
+        mTexBuffer.put(uvs).position(0);
 
         GLES20.glUseProgram(mProgram);
         GLES20.glUniformMatrix4fv(mMvpLoc, 1, false, mMvp, 0);
@@ -228,15 +229,6 @@ public class MusicVisVuScene extends GLESScene {
 
         GLES20.glDisableVertexAttribArray(mPosLoc);
         GLES20.glDisableVertexAttribArray(mTexLoc);
-    }
-
-    private FloatBuffer toFloatBuffer(float[] data) {
-        ByteBuffer bb = ByteBuffer.allocateDirect(data.length * 4);
-        bb.order(ByteOrder.nativeOrder());
-        FloatBuffer fb = bb.asFloatBuffer();
-        fb.put(data);
-        fb.position(0);
-        return fb;
     }
 
     private int createProgram(String vs, String fs) {

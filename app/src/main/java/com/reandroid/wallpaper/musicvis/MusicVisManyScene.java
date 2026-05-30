@@ -119,11 +119,7 @@ public class MusicVisManyScene extends GLESScene {
 
     @Override
     public void stop() {
-        if (mAudioCapture != null) {
-            mAudioCapture.stop();
-            mAudioCapture.release();
-            mAudioCapture = null;
-        }
+        if (mAudioCapture != null) mAudioCapture.stop();
     }
 
     @Override
@@ -205,6 +201,11 @@ public class MusicVisManyScene extends GLESScene {
         mTexLine = GLTextureUtils.loadTextureFromAsset(mContext, "musicvis/drawable/musicvis_fire.png");
 
         mQuadUvs = AssetLoader.readFloatArray(mContext, "musicvis/data/musicvis_quad_uv.csv");
+
+        mPosBuffer = ByteBuffer.allocateDirect(12 * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
+        mTexBuffer = ByteBuffer.allocateDirect(mQuadUvs.length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
+        mLinePosBuffer = ByteBuffer.allocateDirect(mLinePositions.length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
+        mLineTexBuffer = ByteBuffer.allocateDirect(mLineTexCoords.length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
 
         updateProjection();
     }
@@ -316,8 +317,10 @@ public class MusicVisManyScene extends GLESScene {
                 x2, y2, z2
         };
         float[] uvs = mQuadUvs;
-        mPosBuffer = toFloatBuffer(positions);
-        mTexBuffer = toFloatBuffer(uvs);
+        mPosBuffer.position(0);
+        mPosBuffer.put(positions).position(0);
+        mTexBuffer.position(0);
+        mTexBuffer.put(uvs).position(0);
 
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texId);
@@ -339,8 +342,10 @@ public class MusicVisManyScene extends GLESScene {
                 x2, y, z2
         };
         float[] uvs = mQuadUvs;
-        mPosBuffer = toFloatBuffer(positions);
-        mTexBuffer = toFloatBuffer(uvs);
+        mPosBuffer.position(0);
+        mPosBuffer.put(positions).position(0);
+        mTexBuffer.position(0);
+        mTexBuffer.put(uvs).position(0);
 
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texId);
@@ -515,17 +520,10 @@ public class MusicVisManyScene extends GLESScene {
             mLineTexCoords[out + 2] = mPointData[base + 6];
             mLineTexCoords[out + 3] = mPointData[base + 7];
         }
-        mLinePosBuffer = toFloatBuffer(mLinePositions);
-        mLineTexBuffer = toFloatBuffer(mLineTexCoords);
-    }
-
-    private FloatBuffer toFloatBuffer(float[] data) {
-        ByteBuffer bb = ByteBuffer.allocateDirect(data.length * 4);
-        bb.order(ByteOrder.nativeOrder());
-        FloatBuffer fb = bb.asFloatBuffer();
-        fb.put(data);
-        fb.position(0);
-        return fb;
+        mLinePosBuffer.position(0);
+        mLinePosBuffer.put(mLinePositions).position(0);
+        mLineTexBuffer.position(0);
+        mLineTexBuffer.put(mLineTexCoords).position(0);
     }
 
     private int createProgram(String vs, String fs) {

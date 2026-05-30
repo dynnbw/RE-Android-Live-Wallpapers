@@ -14,7 +14,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
-public class MusicVisCircleScene extends GLESScene {
+public class MusicVisCircleScene extends GLESScene implements SharedPreferences.OnSharedPreferenceChangeListener {
     private static final int RING_SEGMENTS = 128;
     private static final int STRIP_VERTS = (RING_SEGMENTS + 1) * 2;
     private static final float TWO_PI = (float) (Math.PI * 2.0);
@@ -85,11 +85,15 @@ public class MusicVisCircleScene extends GLESScene {
     public void start() {
         if (mAudioCapture == null) mAudioCapture = new AudioCapture(AudioCapture.TYPE_FFT, 512);
         mAudioCapture.start();
+        SharedPreferences p = mContext.getSharedPreferences("musicvis6_prefs", Context.MODE_PRIVATE);
+        p.registerOnSharedPreferenceChangeListener(this);
+        readPrefs(p);
     }
 
     @Override
     public void stop() {
-        if (mAudioCapture != null) { mAudioCapture.stop(); mAudioCapture.release(); mAudioCapture = null; }
+        SharedPreferences p = mContext.getSharedPreferences("musicvis6_prefs", Context.MODE_PRIVATE);
+        p.unregisterOnSharedPreferenceChangeListener(this);
     }
 
     @Override
@@ -102,7 +106,6 @@ public class MusicVisCircleScene extends GLESScene {
         initGLIfNeeded();
         if (mProgram == 0) return;
 
-        updateSettings();
         updateAudio();
         updateRingVertices();
         updateMvp();
@@ -124,7 +127,8 @@ public class MusicVisCircleScene extends GLESScene {
                 for (int j = 0; j < STRIP_VERTS; j++) {
                     mRingAdjust[i][j*3]=hue; mRingAdjust[i][j*3+1]=s; mRingAdjust[i][j*3+2]=v;
                 }
-                mRingAdjustBuffers[i] = toFloatBuffer(mRingAdjust[i]);
+                mRingAdjustBuffers[i].position(0);
+                mRingAdjustBuffers[i].put(mRingAdjust[i]).position(0);
                 GLES20.glVertexAttribPointer(mColorPosLoc, 2, GLES20.GL_FLOAT, false, 0, mRingBuffers[i]);
                 GLES20.glVertexAttribPointer(mColorAdjustLoc, 3, GLES20.GL_FLOAT, false, 0, mRingAdjustBuffers[i]);
                 GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, STRIP_VERTS);
@@ -163,10 +167,15 @@ public class MusicVisCircleScene extends GLESScene {
             mColorSamplerLoc = GLES20.glGetUniformLocation(mColorProgram, "uTex");
         }
         mGreyTextureId = GLTextureUtils.loadTextureFromAsset(mContext, "musicvis/drawable/musicvis_grey.png");
+        for (int i = 0; i < mRingCount; i++) {
+            mRingBuffers[i] = ByteBuffer.allocateDirect(mRingVertices[i].length * 4)
+                .order(ByteOrder.nativeOrder()).asFloatBuffer();
+            mRingAdjustBuffers[i] = ByteBuffer.allocateDirect(mRingAdjust[i].length * 4)
+                .order(ByteOrder.nativeOrder()).asFloatBuffer();
+        }
     }
 
-    private void updateSettings() {
-        SharedPreferences p = mContext.getSharedPreferences("musicvis6_prefs", Context.MODE_PRIVATE);
+    private void readPrefs(SharedPreferences p) {
         mRecolorEnabled = p.getBoolean("musicvis_recolor", false);
         mRecolorDynamic = "dynamic".equals(p.getString("musicvis_recolor_mode", "static"));
         if (!mRecolorDynamic) mHue = safeGetInt(p, "musicvis_hue", 0) / 255f;
@@ -181,8 +190,19 @@ public class MusicVisCircleScene extends GLESScene {
         if (newRingCount != mRingCount) {
             mRingCount = newRingCount;
             allocateRingData();
+            for (int i = 0; i < mRingCount; i++) {
+                mRingBuffers[i] = ByteBuffer.allocateDirect(mRingVertices[i].length * 4)
+                    .order(ByteOrder.nativeOrder()).asFloatBuffer();
+                mRingAdjustBuffers[i] = ByteBuffer.allocateDirect(mRingAdjust[i].length * 4)
+                    .order(ByteOrder.nativeOrder()).asFloatBuffer();
+            }
         }
         mHalfThickness = newHalfThickness;
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences p, String key) {
+        readPrefs(p);
     }
 
     private void updateAudio() {
@@ -230,7 +250,8 @@ public class MusicVisCircleScene extends GLESScene {
                 mRingVertices[i][op]   = cos * or;
                 mRingVertices[i][op+1] = sin * or;
             }
-            mRingBuffers[i] = toFloatBuffer(mRingVertices[i]);
+            mRingBuffers[i].position(0);
+            mRingBuffers[i].put(mRingVertices[i]).position(0);
         }
     }
 
@@ -244,14 +265,6 @@ public class MusicVisCircleScene extends GLESScene {
         float[] tmp = new float[16];
         Matrix.multiplyMM(tmp, 0, mProj, 0, mMvp, 0);
         System.arraycopy(tmp, 0, mMvp, 0, 16);
-    }
-
-    private FloatBuffer toFloatBuffer(float[] data) {
-        ByteBuffer bb = ByteBuffer.allocateDirect(data.length * 4);
-        bb.order(ByteOrder.nativeOrder());
-        FloatBuffer fb = bb.asFloatBuffer();
-        fb.put(data).position(0);
-        return fb;
     }
 
     private static int safeGetInt(SharedPreferences p, String k, int d) {

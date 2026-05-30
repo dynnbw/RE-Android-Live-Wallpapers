@@ -18,7 +18,7 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.util.Arrays;
 
-public class MusicVisWaveScene extends GLESScene {
+public class MusicVisWaveScene extends GLESScene implements SharedPreferences.OnSharedPreferenceChangeListener {
     public enum Mode { PCM, FFT }
 
     private static final String TAG = "MusicVisWaveScene";
@@ -77,6 +77,7 @@ public class MusicVisWaveScene extends GLESScene {
     private FloatBuffer mAdjustBuffer;
     private final float[] mAdjustData = new float[LINE_COUNT * 2 * 3];
     private float mHue, mSaturation = 1f, mBrightness = 1f;
+    private int mPrefHue;
     private boolean mRecolorEnabled;
     private boolean mRecolorDynamic;
     private final float[] mBgColor = new float[3];
@@ -106,14 +107,19 @@ public class MusicVisWaveScene extends GLESScene {
             mAudioCapture = new AudioCapture(type, size);
         }
         mAudioCapture.start();
+        String pn = (mMode == Mode.PCM) ? "musicvis2_prefs" : "musicvis3_prefs";
+        SharedPreferences p = mContext.getSharedPreferences(pn, Context.MODE_PRIVATE);
+        readPrefs(p);
+        p.registerOnSharedPreferenceChangeListener(this);
     }
 
     @Override
     public void stop() {
         if (mAudioCapture != null) {
+            String pn = (mMode == Mode.PCM) ? "musicvis2_prefs" : "musicvis3_prefs";
+            SharedPreferences p = mContext.getSharedPreferences(pn, Context.MODE_PRIVATE);
+            p.unregisterOnSharedPreferenceChangeListener(this);
             mAudioCapture.stop();
-            mAudioCapture.release();
-            mAudioCapture = null;
         }
     }
 
@@ -126,8 +132,6 @@ public class MusicVisWaveScene extends GLESScene {
     public void drawFrame(long timeMs) {
         initGLIfNeeded();
         if (mProgram == 0) return;
-
-        updateSettings();
 
         updateWaveData();
         applyIdleAndFade();
@@ -198,22 +202,29 @@ public class MusicVisWaveScene extends GLESScene {
             mColorSamplerLoc = GLES20.glGetUniformLocation(mColorProgram, "uTex");
         }
         mGreyTextureId = GLTextureUtils.loadTextureFromAsset(mContext, "musicvis/drawable/musicvis_grey.png");
+        mPosBuffer = ByteBuffer.allocateDirect(mPositions.length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
+        mTexBuffer = ByteBuffer.allocateDirect(mTexCoords.length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
+        mAdjustBuffer = ByteBuffer.allocateDirect(mAdjustData.length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
     }
 
-    private void updateSettings() {
-        String pn = (mMode == Mode.PCM) ? "musicvis2_prefs" : "musicvis3_prefs";
-        SharedPreferences p = mContext.getSharedPreferences(pn, Context.MODE_PRIVATE);
+    private void readPrefs(SharedPreferences p) {
         mUseTriangleStrip = p.getBoolean("musicvis_use_triangle_strip", true);
         mRecolorEnabled = p.getBoolean("musicvis_recolor", false);
         mRecolorDynamic = "dynamic".equals(p.getString("musicvis_recolor_mode", "static"));
+        mPrefHue = safeGetInt(p, "musicvis_hue", 0);
         if (!mRecolorDynamic) {
-            mHue = safeGetInt(p, "musicvis_hue", 0) / 255f;
+            mHue = mPrefHue / 255f;
         }
         mSaturation = safeGetInt(p, "musicvis_saturation", 255) / 255f;
         mBrightness = safeGetInt(p, "musicvis_brightness", 255) / 255f;
         String hex = p.getString("musicvis_bg_color", "#000000");
         try { int c = Color.parseColor(hex); mBgColor[0] = Color.red(c)/255f; mBgColor[1] = Color.green(c)/255f; mBgColor[2] = Color.blue(c)/255f; }
         catch (Exception e) { mBgColor[0] = mBgColor[1] = mBgColor[2] = 0f; }
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences p, String key) {
+        readPrefs(p);
     }
 
     private static int safeGetInt(SharedPreferences p, String k, int d) {
@@ -227,7 +238,8 @@ public class MusicVisWaveScene extends GLESScene {
         for (int i = 0; i < LINE_COUNT * 2; i++) {
             int b = i * 3; mAdjustData[b] = h; mAdjustData[b + 1] = s; mAdjustData[b + 2] = v;
         }
-        mAdjustBuffer = toFloatBuffer(mAdjustData);
+        mAdjustBuffer.position(0);
+        mAdjustBuffer.put(mAdjustData).position(0);
     }
 
     private void initPointData() {
@@ -423,8 +435,10 @@ public class MusicVisWaveScene extends GLESScene {
             mTexCoords[out + 2] = mPointData[base + 6];
             mTexCoords[out + 3] = mPointData[base + 7];
         }
-        mPosBuffer = toFloatBuffer(mPositions);
-        mTexBuffer = toFloatBuffer(mTexCoords);
+        mPosBuffer.position(0);
+        mPosBuffer.put(mPositions).position(0);
+        mTexBuffer.position(0);
+        mTexBuffer.put(mTexCoords).position(0);
     }
 
     private void updateMvp() {
@@ -450,15 +464,6 @@ public class MusicVisWaveScene extends GLESScene {
         Matrix.scaleM(mModel, 0, scale, scale, scale);
 
         Matrix.multiplyMM(mMvp, 0, mProj, 0, mModel, 0);
-    }
-
-    private FloatBuffer toFloatBuffer(float[] data) {
-        ByteBuffer bb = ByteBuffer.allocateDirect(data.length * 4);
-        bb.order(ByteOrder.nativeOrder());
-        FloatBuffer fb = bb.asFloatBuffer();
-        fb.put(data);
-        fb.position(0);
-        return fb;
     }
 
     private int createProgram(String vs, String fs) {
