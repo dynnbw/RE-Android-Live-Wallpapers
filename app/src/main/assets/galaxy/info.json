@@ -1,0 +1,4 @@
+{
+  "fragment": "com.reandroid.settings.GalaxySettingsFragment",
+  "label": "@string/wallpaper_galaxy"
+}

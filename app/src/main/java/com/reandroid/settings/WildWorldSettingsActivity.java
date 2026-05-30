@@ -1,33 +1,10 @@
 package com.reandroid.settings;
 
-import android.os.Bundle;
-
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
 
 import com.reandroid.wallpaper.R;
 
-public class WildWorldSettingsActivity extends AppCompatActivity {
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_settings);
-
-        if (savedInstanceState == null) {
-            getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.settings_container, new WildWorldSettingsFragment())
-                    .commit();
-        }
-
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle(R.string.wallpaper_wildworld);
-        }
-    }
-
-    @Override
-    public boolean onSupportNavigateUp() {
-        onBackPressed();
-        return true;
-    }
+public class WildWorldSettingsActivity extends BaseWallpaperSettingsActivity {
+    @Override protected Fragment createFragment() { return new WildWorldSettingsFragment(); }
+    @Override protected int getTitleResId() { return R.string.wallpaper_wildworld; }
 }

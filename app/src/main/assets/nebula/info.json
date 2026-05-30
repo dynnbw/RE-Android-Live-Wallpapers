@@ -1,0 +1,4 @@
+{
+  "fragment": "com.reandroid.settings.NebulaSettingsFragment",
+  "label": "@string/wallpaper_nebula"
+}

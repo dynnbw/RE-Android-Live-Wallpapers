@@ -1,0 +1,4 @@
+{
+  "fragment": "com.reandroid.settings.OceanSettingsFragment",
+  "label": "@string/wallpaper_ocean"
+}

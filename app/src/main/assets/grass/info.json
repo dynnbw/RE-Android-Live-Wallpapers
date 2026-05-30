@@ -1,0 +1,4 @@
+{
+  "fragment": "com.reandroid.settings.GrassSettingsFragment",
+  "label": "@string/wallpaper_grass"
+}

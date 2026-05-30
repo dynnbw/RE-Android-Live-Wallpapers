@@ -1,33 +1,10 @@
 package com.reandroid.settings;
 
-import android.os.Bundle;
-
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
 
 import com.reandroid.wallpaper.R;
 
-public class PhaseBeamSettingsActivity extends AppCompatActivity {
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_settings);
-
-        if (savedInstanceState == null) {
-            getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.settings_container, new PhaseBeamSettingsFragment())
-                    .commit();
-        }
-
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle(R.string.wallpaper_phasebeam);
-        }
-    }
-
-    @Override
-    public boolean onSupportNavigateUp() {
-        onBackPressed();
-        return true;
-    }
+public class PhaseBeamSettingsActivity extends BaseWallpaperSettingsActivity {
+    @Override protected Fragment createFragment() { return new PhaseBeamSettingsFragment(); }
+    @Override protected int getTitleResId() { return R.string.wallpaper_phasebeam; }
 }

@@ -1,0 +1,4 @@
+{
+  "fragment": "com.reandroid.settings.PhaseBeamSettingsFragment",
+  "label": "@string/wallpaper_phasebeam"
+}

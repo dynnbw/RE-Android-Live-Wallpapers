@@ -2,6 +2,7 @@ package com.reandroid.settings;
 
 import android.app.WallpaperManager;
 import android.content.Intent;
+import android.content.res.AssetManager;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.view.View;
@@ -10,10 +11,15 @@ import androidx.annotation.Nullable;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceGroup;
 import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.PreferenceScreen;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.reandroid.wallpaper.R;
+
+import org.json.JSONObject;
+
+import java.io.InputStream;
 
 public class SettingsMainFragment extends PreferenceFragmentCompat {
     private static final int WALLPAPER_GRID_SPAN_COUNT = 2;
@@ -25,6 +31,7 @@ public class SettingsMainFragment extends PreferenceFragmentCompat {
     @Override
     public void onCreatePreferences(@Nullable Bundle savedInstanceState, @Nullable String rootKey) {
         setPreferencesFromResource(R.xml.prefs_settings, rootKey);
+        addDynamicEntries(getPreferenceScreen());
         applyHomeLayouts();
 
         Preference openChooser = findPreference("pref_open_wallpaper_chooser");
@@ -86,6 +93,44 @@ public class SettingsMainFragment extends PreferenceFragmentCompat {
                 outRect.set(left, fullWidthSpacingPx, right, fullWidthSpacingPx);
             }
         });
+    }
+
+    private void addDynamicEntries(PreferenceScreen screen) {
+        AssetManager am = requireContext().getAssets();
+        try {
+            String[] dirs = am.list("");
+            if (dirs == null) return;
+            for (String dir : dirs) {
+                String jsonPath = dir + "/info.json";
+                String fragmentClass = null;
+                String label = null;
+                try (InputStream is = am.open(jsonPath)) {
+                    byte[] buf = new byte[is.available()];
+                    is.read(buf);
+                    JSONObject json = new JSONObject(new String(buf, "UTF-8"));
+                    fragmentClass = json.optString("fragment", null);
+                    label = json.optString("label", null);
+                } catch (Exception ignored) {
+                    continue;
+                }
+                if (fragmentClass == null || label == null) continue;
+
+                // Resolve @string/ references
+                String title = label;
+                if (label.startsWith("@string/")) {
+                    int id = getResources().getIdentifier(
+                            label.substring(8), "string", requireContext().getPackageName());
+                    if (id != 0) title = getString(id);
+                }
+
+                Preference entry = new Preference(requireContext());
+                entry.setTitle(title);
+                entry.setLayoutResource(R.layout.preference_wallpaper_grid_item);
+                entry.setFragment(fragmentClass);
+                screen.addPreference(entry);
+            }
+        } catch (Exception ignored) {
+        }
     }
 
     private void applyHomeLayouts() {

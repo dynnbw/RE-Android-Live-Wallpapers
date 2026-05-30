@@ -1,0 +1,4 @@
+{
+  "fragment": "com.reandroid.settings.NoiseFieldSettingsFragment",
+  "label": "@string/wallpaper_noisefield"
+}

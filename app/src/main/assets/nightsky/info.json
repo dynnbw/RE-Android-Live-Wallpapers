@@ -1,0 +1,4 @@
+{
+  "fragment": "com.reandroid.settings.NightSkySettingsFragment",
+  "label": "@string/wallpaper_nightsky"
+}

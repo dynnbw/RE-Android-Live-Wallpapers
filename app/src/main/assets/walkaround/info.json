@@ -1,0 +1,4 @@
+{
+  "fragment": "com.reandroid.settings.WalkAroundSettingsFragment",
+  "label": "@string/wallpaper_walkaround"
+}

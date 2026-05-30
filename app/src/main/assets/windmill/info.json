@@ -1,0 +1,4 @@
+{
+  "fragment": "com.reandroid.settings.WindmillSettingsFragment",
+  "label": "@string/wallpaper_windmill"
+}
