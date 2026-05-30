@@ -1,0 +1,18 @@
+{
+  "prefs": [
+    {
+      "type": "switch",
+      "key": "legacy_mode",
+      "title": "Use legacy particle rendering",
+      "default": false
+    },
+    {
+      "type": "seekbar",
+      "key": "leaf_count",
+      "title": "Leaf count",
+      "min": 5,
+      "max": 30,
+      "default": 20
+    }
+  ]
+}

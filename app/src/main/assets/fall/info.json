@@ -1,4 +1,5 @@
 {
   "fragment": "com.reandroid.settings.FallSettingsFragment",
-  "label": "@string/wallpaper_fall"
+  "label": "@string/wallpaper_fall",
+  "plugin": "com.reandroid.wallpaper.fall.FallPlugin"
 }
