@@ -83,6 +83,11 @@ public class NexusGL extends GLESScene {
         mScene = new NexusScene(width, height);
     }
 
+    /** Called by BasePluginEngine via reflection to inject plugin-isolated prefs. */
+    public void setPluginPrefs(android.content.SharedPreferences prefs) {
+        mBackgroundManager.setPluginPrefs(prefs);
+    }
+
     /**
      * 场景创建回调（GLESScene生命周期）
      * 延迟初始化OpenGL相关资源

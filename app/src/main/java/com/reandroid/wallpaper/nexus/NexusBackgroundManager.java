@@ -19,6 +19,20 @@ final class NexusBackgroundManager {
     private String lastBackgroundUri;
     private String lastBackgroundPreset;
     private float backgroundAspect = 1.0f;
+    private SharedPreferences mPluginPrefs;
+
+    void setPluginPrefs(SharedPreferences prefs) {
+        mPluginPrefs = prefs;
+    }
+
+    private String getCustomBackgroundUri(Context context) {
+        if (mPluginPrefs != null) {
+            String uri = mPluginPrefs.getString("pref_custom_background_uri", null);
+            if (uri != null && !uri.isEmpty()) return uri;
+        }
+        return context.getSharedPreferences("wallpaper_prefs", 0)
+                .getString("nexus_custom_background_uri", null);
+    }
 
     int loadInitialTexture(Context context) {
         return loadBackgroundTexture(context);
@@ -31,8 +45,7 @@ final class NexusBackgroundManager {
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         String preset = prefs.getString("nexus_background_preset", "pyramid_background");
-        String customUri = context.getSharedPreferences("wallpaper_prefs", 0)
-                .getString("nexus_custom_background_uri", null);
+        String customUri = getCustomBackgroundUri(context);
 
         boolean useCustom = customUri != null;
         boolean changed;
@@ -74,8 +87,7 @@ final class NexusBackgroundManager {
             return 0;
         }
 
-        String customUri = context.getSharedPreferences("wallpaper_prefs", 0)
-                .getString("nexus_custom_background_uri", null);
+        String customUri = getCustomBackgroundUri(context);
         if (customUri != null) {
             int tex = loadCustomBackgroundTexture(context, customUri);
             if (tex != 0) {

@@ -67,10 +67,27 @@ public class FireworksGL extends GLESScene {
      * @param width 渲染宽度
      * @param height 渲染高度
      */
+    private android.content.SharedPreferences mPluginPrefs;
+
     public FireworksGL(int width, int height, Context context) {
         super(width, height);
         mContext = context;
         mScene = new FireworksScene(width, height);
+    }
+
+    /** Called by BasePluginEngine via reflection to inject plugin-isolated prefs. */
+    public void setPluginPrefs(android.content.SharedPreferences prefs) {
+        mPluginPrefs = prefs;
+    }
+
+    /** Returns the custom background URI, checking plugin prefs first. */
+    private String getCustomBackgroundUri() {
+        String key = "fireworks_custom_background_uri";
+        if (mPluginPrefs != null) {
+            String uri = mPluginPrefs.getString("pref_custom_background_uri", null);
+            if (uri != null && !uri.isEmpty()) return uri;
+        }
+        return mContext.getSharedPreferences("wallpaper_prefs", 0).getString(key, null);
     }
 
     /**
@@ -262,8 +279,7 @@ public class FireworksGL extends GLESScene {
             if (mContext == null) return;
 
             // 获取当前保存的自定义背景URI
-            String currentUri = mContext.getSharedPreferences("wallpaper_prefs", 0)
-                .getString("fireworks_custom_background_uri", null);
+            String currentUri = getCustomBackgroundUri();
 
             // 检查URI是否发生变化
             if ((mLastBackgroundUri == null && currentUri != null) ||
@@ -313,8 +329,7 @@ public class FireworksGL extends GLESScene {
             }
 
             // 获取自定义背景URI
-            String uriString = ctx.getSharedPreferences("wallpaper_prefs", 0)
-                .getString("fireworks_custom_background_uri", null);
+            String uriString = getCustomBackgroundUri();
             mLastBackgroundUri = uriString; // 更新缓存
 
             if (uriString == null) {
