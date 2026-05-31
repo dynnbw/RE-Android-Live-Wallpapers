@@ -1,5 +1,6 @@
 {
   "fragment": "com.reandroid.settings.FireworksSettingsFragment",
   "label": "@string/wallpaper_fireworks",
+  "plugin": "com.reandroid.wallpaper.fireworks.FireworksPlugin",
   "previewClass": "com.reandroid.wallpaper.fireworks.FireworksGL"
 }

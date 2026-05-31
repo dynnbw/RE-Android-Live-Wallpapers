@@ -1,9 +1,15 @@
 package com.reandroid.plugin;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
+import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
@@ -16,6 +22,7 @@ import com.reandroid.settings.PreviewPreference;
 import org.json.JSONObject;
 
 import java.io.InputStream;
+import java.util.Map;
 
 /**
  * Generic settings fragment that builds its UI from a plugin's layout.json.
@@ -25,9 +32,11 @@ public class PluginSettingsFragment extends PreferenceFragmentCompat
         implements SharedPreferences.OnSharedPreferenceChangeListener {
 
     private static final String ARG_PLUGIN_ID = "plugin_id";
+    private static final String KEY_CUSTOM_BG_URI = "pref_custom_background_uri";
     private boolean mRebuilding;
     private PreviewPreference mPreview;
     private String mPreviewClass;
+    private ActivityResultLauncher<String> mImagePickerLauncher;
 
     public static PluginSettingsFragment newInstance(String pluginId) {
         PluginSettingsFragment f = new PluginSettingsFragment();
@@ -35,6 +44,14 @@ public class PluginSettingsFragment extends PreferenceFragmentCompat
         args.putString(ARG_PLUGIN_ID, pluginId);
         f.setArguments(args);
         return f;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        mImagePickerLauncher = registerForActivityResult(
+                new ActivityResultContracts.GetContent(),
+                this::onImagePicked);
     }
 
     @Override
@@ -89,6 +106,15 @@ public class PluginSettingsFragment extends PreferenceFragmentCompat
             JSONObject language = PluginResources.loadLanguageForLocale(ctx, pluginId);
             DynamicPreferenceFactory.buildPreferences(ctx, prefs, layout,
                     screen::addPreference, language);
+
+            // Wire up button-type preferences (custom background / reset background)
+            Map<String, String> buttonActions = DynamicPreferenceFactory.collectButtonActions(layout);
+            for (Map.Entry<String, String> entry : buttonActions.entrySet()) {
+                Preference btn = screen.findPreference(entry.getKey());
+                if (btn != null) {
+                    wireButtonAction(btn, entry.getValue(), pluginId, prefs);
+                }
+            }
         }
 
         // Restore defaults button
@@ -150,5 +176,60 @@ public class PluginSettingsFragment extends PreferenceFragmentCompat
 
     private String getPluginId() {
         return getArguments() != null ? getArguments().getString(ARG_PLUGIN_ID) : null;
+    }
+
+    private void wireButtonAction(Preference btn, String action, String pluginId,
+                                   SharedPreferences prefs) {
+        switch (action) {
+            case "pickBackground":
+                btn.setOnPreferenceClickListener(pref -> {
+                    mImagePickerLauncher.launch("image/*");
+                    return true;
+                });
+                updateBackgroundButtonSummary(btn, prefs);
+                break;
+            case "resetBackground":
+                btn.setOnPreferenceClickListener(pref -> {
+                    prefs.edit().remove(KEY_CUSTOM_BG_URI).apply();
+                    Toast.makeText(requireContext(),
+                            com.reandroid.wallpaper.R.string.fireworks_background_reset_toast,
+                            Toast.LENGTH_SHORT).show();
+                    updateBackgroundButtonSummary(btn, prefs);
+                    if (mPreview != null) mPreview.refreshScene();
+                    return true;
+                });
+                updateBackgroundButtonSummary(btn, prefs);
+                break;
+        }
+    }
+
+    private void onImagePicked(Uri uri) {
+        if (uri == null) return;
+        String pluginId = getPluginId();
+        if (pluginId == null) return;
+        Context ctx = requireContext();
+        SharedPreferences prefs = ctx.getSharedPreferences("plugin_" + pluginId, Context.MODE_PRIVATE);
+
+        // Take persistable permission so URI survives reboots
+        try {
+            ctx.getContentResolver().takePersistableUriPermission(uri,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        } catch (Exception ignored) {}
+
+        prefs.edit().putString(KEY_CUSTOM_BG_URI, uri.toString()).apply();
+        Toast.makeText(ctx, com.reandroid.wallpaper.R.string.fireworks_custom_background_set_toast,
+                Toast.LENGTH_SHORT).show();
+
+        // Update button summary and refresh preview
+        Preference btn = findPreference("pref_custom_background");
+        if (btn != null) updateBackgroundButtonSummary(btn, prefs);
+        if (mPreview != null) mPreview.refreshScene();
+    }
+
+    private void updateBackgroundButtonSummary(Preference btn, SharedPreferences prefs) {
+        String uri = prefs.getString(KEY_CUSTOM_BG_URI, null);
+        if (uri != null && !uri.isEmpty()) {
+            btn.setSummary(com.reandroid.wallpaper.R.string.fireworks_custom_background_set_toast);
+        }
     }
 }

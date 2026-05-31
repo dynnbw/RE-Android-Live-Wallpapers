@@ -1,7 +1,9 @@
 package com.reandroid.plugin;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
@@ -10,6 +12,9 @@ import androidx.preference.SwitchPreferenceCompat;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Creates AndroidX Preference objects from a plugin's layout.json definition.
@@ -173,8 +178,35 @@ public final class DynamicPreferenceFactory {
                 lp.setDefaultValue(item.optString("default", ""));
                 return lp;
             }
+            case "button": {
+                Preference bp = new Preference(context);
+                bp.setKey(key);
+                bp.setTitle(title);
+                if (!summary.isEmpty()) bp.setSummary(summary);
+                bp.setPersistent(false); // Button doesn't store a value
+                return bp;
+            }
         }
         return null;
+    }
+
+    /**
+     * Returns a map of button key → action string for all button-type prefs in the layout.
+     * Call after buildPreferences() to wire up click handlers.
+     */
+    public static Map<String, String> collectButtonActions(JSONObject layout) {
+        Map<String, String> actions = new LinkedHashMap<>();
+        JSONArray items = layout != null ? layout.optJSONArray("prefs") : null;
+        if (items == null) return actions;
+        for (int i = 0; i < items.length(); i++) {
+            JSONObject item = items.optJSONObject(i);
+            if (item != null && "button".equals(item.optString("type"))) {
+                String key = item.optString("key");
+                String action = item.optString("action", "");
+                if (!key.isEmpty()) actions.put(key, action);
+            }
+        }
+        return actions;
     }
 
     private static String resolveStringRef(Context ctx, String s) {
