@@ -9,12 +9,12 @@
   "nexus_speed_delta_max": "速度系数最大值",
   "nexus_trail_size": "拖尾长度",
   "nexus_mode": "配色模式",
-  "nexus_mode_label_默认": "默认",
-  "nexus_mode_label_红": "红",
-  "nexus_mode_label_绿": "绿",
-  "nexus_mode_label_蓝": "蓝",
-  "nexus_mode_label_白": "白",
-  "nexus_mode_label_青": "青",
-  "nexus_mode_label_紫": "紫",
-  "nexus_mode_label_粉": "粉"
+  "nexus_mode_label_0": "默认",
+  "nexus_mode_label_1": "红",
+  "nexus_mode_label_2": "绿",
+  "nexus_mode_label_3": "蓝",
+  "nexus_mode_label_4": "白",
+  "nexus_mode_label_5": "青",
+  "nexus_mode_label_6": "紫",
+  "nexus_mode_label_7": "粉"
 }
