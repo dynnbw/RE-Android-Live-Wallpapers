@@ -34,6 +34,7 @@
     <uses-permission android:name="android.permission.BIND_WALLPAPER" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+
     <application
         android:label="@string/wallpapers"
         android:icon="@drawable/ic_launcher_wallpaper">
@@ -48,6 +49,7 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
+        <!-- Main Settings Activity -->
         <activity
             android:exported="true"
             android:label="@string/settings_title"
@@ -71,109 +73,100 @@
             android:name="com.reandroid.settings.OpenWeatherApiGuideActivity"
             android:theme="@style/Theme.WallpaperSettings" />
 
-        <activity
-            android:exported="true"
-            android:label="@string/wallpaper_grass"
-            android:name="com.reandroid.wallpaper.grass.Grass"
-            android:theme="@android:style/Theme.NoTitleBar"
-            android:enabled="@bool/config_enable_grass_wallpaper">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.TEST" />
-            </intent-filter>
-        </activity>
-
-        <activity
-            android:exported="true"
-            android:label="@string/wallpaper_grass_vk"
-            android:name="com.reandroid.wallpaper.grass.GrassVK"
-            android:theme="@android:style/Theme.NoTitleBar"
-            android:enabled="@bool/config_enable_grass_wallpaper">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.TEST" />
-            </intent-filter>
-        </activity>
-
-        <activity
-            android:exported="true"
-            android:label="@string/wallpaper_aurora1"
-            android:name="com.reandroid.wallpaper.aurora1.Aurora1"
-            android:theme="@android:style/Theme.NoTitleBar"
-            android:enabled="@bool/config_enable_aurora1_wallpaper">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.TEST" />
-            </intent-filter>
-        </activity>
-
-        <activity
-            android:exported="true"
-            android:label="@string/wallpaper_aurora2"
-            android:name="com.reandroid.wallpaper.aurora2.Aurora2"
-            android:theme="@android:style/Theme.NoTitleBar"
-            android:enabled="@bool/config_enable_aurora2_wallpaper">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.TEST" />
-            </intent-filter>
-        </activity>
-
-        <activity
-            android:exported="true"
-            android:label="@string/wallpaper_galaxy"
-            android:name="com.reandroid.wallpaper.galaxy.Galaxy"
-            android:theme="@android:style/Theme.NoTitleBar"
-            android:enabled="@bool/config_enable_galaxy_wallpaper">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.TEST" />
-            </intent-filter>
-        </activity>
-
-        <activity
-            android:exported="true"
-            android:label="@string/wallpaper_galaxy_vk"
-            android:name="com.reandroid.wallpaper.galaxy.GalaxyVK"
-            android:theme="@android:style/Theme.NoTitleBar"
-            android:enabled="@bool/config_enable_galaxy_wallpaper">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.TEST" />
-            </intent-filter>
-        </activity>
-
-        <activity
-            android:exported="true"
-            android:label="@string/wallpaper_fall"
-            android:name="com.reandroid.wallpaper.fall.Fall"
-            android:theme="@android:style/Theme.NoTitleBar"
-            android:enabled="@bool/config_enable_fall_wallpaper">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.TEST" />
-            </intent-filter>
-        </activity>
-
-        <activity
-            android:exported="true"
-            android:label="@string/wallpaper_fall_vk"
-            android:name="com.reandroid.wallpaper.fall.FallVK"
-            android:theme="@android:style/Theme.NoTitleBar"
-            android:enabled="@bool/config_enable_fall_wallpaper">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.TEST" />
-            </intent-filter>
-        </activity>
-
-        <!-- 通用插件设置页 -->
+        <!-- Generic plugin settings (used by system wallpaper preview Settings button) -->
         <activity
             android:name="com.reandroid.settings.PluginSettingsActivity"
             android:theme="@style/Theme.WallpaperSettings"
             android:exported="true" />
 
-        <!-- 代理壁纸服务（插件化入口） -->
+        <!-- Per-wallpaper settings activities (used by SettingsMainFragment for legacy wallpapers) -->
+        <activity android:label="@string/wallpaper_vis2" android:name="com.reandroid.settings.MusicVis2SettingsActivity" android:theme="@style/Theme.WallpaperSettings" android:exported="true" android:enabled="@bool/config_enable_vis2_wallpaper" />
+        <activity android:label="@string/wallpaper_vis3" android:name="com.reandroid.settings.MusicVis3SettingsActivity" android:theme="@style/Theme.WallpaperSettings" android:exported="true" android:enabled="@bool/config_enable_vis3_wallpaper" />
+        <activity android:label="@string/wallpaper_vis4" android:name="com.reandroid.settings.MusicVis4SettingsActivity" android:theme="@style/Theme.WallpaperSettings" android:exported="true" android:enabled="@bool/config_enable_vis4_wallpaper" />
+        <activity android:label="@string/wallpaper_vis5" android:name="com.reandroid.settings.MusicVis5SettingsActivity" android:theme="@style/Theme.WallpaperSettings" android:exported="true" android:enabled="@bool/config_enable_vis5_wallpaper" />
+        <activity android:label="@string/wallpaper_vis6" android:name="com.reandroid.settings.MusicVis6SettingsActivity" android:theme="@style/Theme.WallpaperSettings" android:exported="true" android:enabled="@bool/config_enable_vis6_wallpaper" />
+
+        <activity android:label="@string/clock_settings" android:name="com.reandroid.wallpaper.polarclock.PolarClockSettings" android:theme="@style/Theme.WallpaperSettings" android:exported="true" android:enabled="@bool/config_enable_polar_clock_wallpaper">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+            </intent-filter>
+        </activity>
+
+        <activity android:label="@string/wallpaper_fall" android:name="com.reandroid.settings.FallSettingsActivity" android:theme="@style/Theme.WallpaperSettings" android:exported="true" android:enabled="@bool/config_enable_fall_wallpaper" />
+        <activity android:label="@string/wallpaper_grass" android:name="com.reandroid.settings.GrassSettingsActivity" android:theme="@style/Theme.WallpaperSettings" android:exported="true" android:enabled="@bool/config_enable_grass_wallpaper" />
+        <activity android:label="@string/wallpaper_aurora1" android:name="com.reandroid.settings.Aurora1SettingsActivity" android:theme="@style/Theme.WallpaperSettings" android:exported="true" android:enabled="@bool/config_enable_aurora1_wallpaper" />
+        <activity android:label="@string/wallpaper_aurora2" android:name="com.reandroid.settings.Aurora2SettingsActivity" android:theme="@style/Theme.WallpaperSettings" android:exported="true" android:enabled="@bool/config_enable_aurora2_wallpaper" />
+        <activity android:label="@string/wallpaper_forest" android:name="com.reandroid.settings.ForestSettingsActivity" android:theme="@style/Theme.WallpaperSettings" android:exported="true" android:enabled="@bool/config_enable_forest_wallpaper" />
+        <activity android:label="@string/wallpaper_wildworld" android:name="com.reandroid.settings.WildWorldSettingsActivity" android:theme="@style/Theme.WallpaperSettings" android:exported="true" android:enabled="@bool/config_enable_wildworld_wallpaper" />
+        <activity android:label="@string/wallpaper_windmill" android:name="com.reandroid.settings.WindmillSettingsActivity" android:theme="@style/Theme.WallpaperSettings" android:exported="true" android:enabled="@bool/config_enable_windmill_wallpaper" />
+        <activity android:label="@string/wallpaper_ocean" android:name="com.reandroid.settings.OceanSettingsActivity" android:theme="@style/Theme.WallpaperSettings" android:exported="true" android:enabled="@bool/config_enable_ocean_wallpaper" />
+        <activity android:label="@string/wallpaper_fireworks" android:name="com.reandroid.settings.FireworksSettingsActivity" android:theme="@style/Theme.WallpaperSettings" android:exported="true" android:enabled="@bool/config_enable_fireworks_wallpaper" />
+        <activity android:name="com.reandroid.settings.MagicSmokeSettingsActivity" android:enabled="@bool/config_enable_magicsmoke_wallpaper" android:exported="true" android:label="@string/wallpaper_magicsmoke" android:theme="@style/Theme.WallpaperSettings" />
+        <activity android:name="com.reandroid.settings.HoloSpiralSettingsActivity" android:enabled="@bool/config_enable_holospiral_wallpaper" android:exported="true" android:label="@string/wallpaper_holospiral" android:theme="@style/Theme.WallpaperSettings" />
+        <activity android:name="com.reandroid.settings.BlueSeaSettingsActivity" android:enabled="@bool/config_enable_bluesea_wallpaper" android:exported="true" android:label="@string/wallpaper_bluesea" android:theme="@style/Theme.WallpaperSettings" />
+        <activity android:name="com.reandroid.settings.DeepSeaSettingsActivity" android:enabled="@bool/config_enable_deepsea_wallpaper" android:exported="true" android:label="@string/wallpaper_deepsea" android:theme="@style/Theme.WallpaperSettings" />
+        <activity android:label="@string/wallpaper_galaxy4" android:name="com.reandroid.settings.Galaxy4SettingsActivity" android:theme="@style/Theme.WallpaperSettings" android:exported="true" android:enabled="@bool/config_enable_galaxy4_wallpaper" />
+        <activity android:label="@string/wallpaper_galaxy" android:name="com.reandroid.settings.GalaxySettingsActivity" android:theme="@style/Theme.WallpaperSettings" android:exported="true" android:enabled="@bool/config_enable_galaxy_wallpaper" />
+        <activity android:label="@string/wallpaper_nightsky" android:name="com.reandroid.settings.NightSkySettingsActivity" android:theme="@style/Theme.WallpaperSettings" android:exported="true" android:enabled="@bool/config_enable_nightsky_wallpaper" />
+        <activity android:label="@string/wallpaper_microbes" android:name="com.reandroid.settings.MicrobesSettingsActivity" android:theme="@style/Theme.WallpaperSettings" android:exported="true" android:enabled="@bool/config_enable_microbes_wallpaper" />
+        <activity android:label="@string/wallpaper_phasebeam" android:name="com.reandroid.settings.PhaseBeamSettingsActivity" android:theme="@style/Theme.WallpaperSettings" android:exported="true" android:enabled="@bool/config_enable_phasebeam_wallpaper" />
+        <activity android:label="@string/wallpaper_cube" android:name="com.reandroid.settings.CubeSettingsActivity" android:theme="@style/Theme.WallpaperSettings" android:exported="true" android:enabled="@bool/config_enable_cube_wallpaper" />
+        <activity android:label="@string/wallpaper_nebula" android:name="com.reandroid.settings.NebulaSettingsActivity" android:theme="@style/Theme.WallpaperSettings" android:exported="true" android:enabled="@bool/config_enable_nebula_wallpaper" />
+        <activity android:label="@string/wallpaper_nexus" android:name="com.reandroid.settings.NexusSettingsActivity" android:theme="@style/Theme.WallpaperSettings" android:exported="true" android:enabled="@bool/config_enable_nexus_wallpaper" />
+        <activity android:label="@string/wallpaper_noisefield" android:name="com.reandroid.settings.NoiseFieldSettingsActivity" android:theme="@style/Theme.WallpaperSettings" android:exported="true" android:enabled="@bool/config_enable_noisefield_wallpaper" />
+        <activity android:label="@string/wallpaper_walkaround" android:name="com.reandroid.settings.WalkAroundSettingsActivity" android:theme="@style/Theme.WallpaperSettings" android:exported="true" android:enabled="@bool/config_enable_walkaround_wallpaper" />
+
+        <!-- Test activities (launchable via adb for individual wallpaper testing) -->
+        <activity android:exported="true" android:label="@string/wallpaper_grass" android:name="com.reandroid.wallpaper.grass.Grass" android:theme="@android:style/Theme.NoTitleBar" android:enabled="@bool/config_enable_grass_wallpaper">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.TEST" />
+            </intent-filter>
+        </activity>
+        <activity android:exported="true" android:label="@string/wallpaper_grass_vk" android:name="com.reandroid.wallpaper.grass.GrassVK" android:theme="@android:style/Theme.NoTitleBar" android:enabled="@bool/config_enable_grass_wallpaper">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.TEST" />
+            </intent-filter>
+        </activity>
+        <activity android:exported="true" android:label="@string/wallpaper_aurora1" android:name="com.reandroid.wallpaper.aurora1.Aurora1" android:theme="@android:style/Theme.NoTitleBar" android:enabled="@bool/config_enable_aurora1_wallpaper">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.TEST" />
+            </intent-filter>
+        </activity>
+        <activity android:exported="true" android:label="@string/wallpaper_aurora2" android:name="com.reandroid.wallpaper.aurora2.Aurora2" android:theme="@android:style/Theme.NoTitleBar" android:enabled="@bool/config_enable_aurora2_wallpaper">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.TEST" />
+            </intent-filter>
+        </activity>
+        <activity android:exported="true" android:label="@string/wallpaper_galaxy" android:name="com.reandroid.wallpaper.galaxy.Galaxy" android:theme="@android:style/Theme.NoTitleBar" android:enabled="@bool/config_enable_galaxy_wallpaper">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.TEST" />
+            </intent-filter>
+        </activity>
+        <activity android:exported="true" android:label="@string/wallpaper_galaxy_vk" android:name="com.reandroid.wallpaper.galaxy.GalaxyVK" android:theme="@android:style/Theme.NoTitleBar" android:enabled="@bool/config_enable_galaxy_wallpaper">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.TEST" />
+            </intent-filter>
+        </activity>
+        <activity android:exported="true" android:label="@string/wallpaper_fall" android:name="com.reandroid.wallpaper.fall.Fall" android:theme="@android:style/Theme.NoTitleBar" android:enabled="@bool/config_enable_fall_wallpaper">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.TEST" />
+            </intent-filter>
+        </activity>
+        <activity android:exported="true" android:label="@string/wallpaper_fall_vk" android:name="com.reandroid.wallpaper.fall.FallVK" android:theme="@android:style/Theme.NoTitleBar" android:enabled="@bool/config_enable_fall_wallpaper">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.TEST" />
+            </intent-filter>
+        </activity>
+
+        <!-- === Single wallpaper service entry point (plugin architecture) === -->
         <service
             android:name="com.reandroid.plugin.ProxyWallpaperService"
             android:exported="true"
@@ -186,628 +179,6 @@
             <meta-data
                 android:name="android.service.wallpaper"
                 android:resource="@xml/proxy_wallpaper" />
-        </service>
-
-        <!-- Magic Smoke壁纸 -->
-        <service
-            android:name="com.reandroid.wallpaper.magicsmoke.MagicSmokeWallpaper"
-            android:enabled="@bool/config_enable_magicsmoke_wallpaper"
-            android:exported="true"
-            android:label="@string/wallpaper_magicsmoke"
-            android:permission="android.permission.BIND_WALLPAPER">
-            <intent-filter>
-                <action android:name="android.service.wallpaper.WallpaperService" />
-            </intent-filter>
-            <meta-data
-                android:name="android.service.wallpaper"
-                android:resource="@xml/magicsmoke" />
-        </service>
-
-        <!-- Holo Spiral壁纸 -->
-        <service
-            android:name="com.reandroid.wallpaper.holospiral.HoloSpiralWallpaper"
-            android:enabled="@bool/config_enable_holospiral_wallpaper"
-            android:exported="true"
-            android:label="@string/wallpaper_holospiral"
-            android:permission="android.permission.BIND_WALLPAPER">
-            <intent-filter>
-                <action android:name="android.service.wallpaper.WallpaperService" />
-            </intent-filter>
-            <meta-data
-                android:name="android.service.wallpaper"
-                android:resource="@xml/holospiral" />
-        </service>
-
-        <!-- Blue Sea壁纸 -->
-        <service
-            android:name="com.reandroid.wallpaper.bluesea.BlueSeaWallpaper"
-            android:enabled="@bool/config_enable_bluesea_wallpaper"
-            android:exported="true"
-            android:label="@string/wallpaper_bluesea"
-            android:permission="android.permission.BIND_WALLPAPER">
-            <intent-filter>
-                <action android:name="android.service.wallpaper.WallpaperService" />
-            </intent-filter>
-            <meta-data
-                android:name="android.service.wallpaper"
-                android:resource="@xml/bluesea" />
-        </service>
-
-        <service
-            android:exported="true"
-            android:label="@string/wallpaper_nexus"
-            android:name="com.reandroid.wallpaper.nexus.NexusWallpaper"
-            android:permission="android.permission.BIND_WALLPAPER"
-            android:enabled="@bool/config_enable_nexus_wallpaper">
-            <intent-filter>
-                <action android:name="android.service.wallpaper.WallpaperService" />
-            </intent-filter>
-            <meta-data android:name="android.service.wallpaper" android:resource="@xml/nexus" />
-        </service>
-
-        <service
-            android:exported="true"
-            android:label="@string/wallpaper_grass"
-            android:name="com.reandroid.wallpaper.grass.GrassWallpaper"
-            android:permission="android.permission.BIND_WALLPAPER"
-            android:enabled="@bool/config_enable_grass_wallpaper">
-            <intent-filter>
-                <action android:name="android.service.wallpaper.WallpaperService" />
-            </intent-filter>
-            <meta-data android:name="android.service.wallpaper" android:resource="@xml/grass" />
-        </service>
-
-        <service
-            android:exported="true"
-            android:label="@string/wallpaper_grass_vk"
-            android:name="com.reandroid.wallpaper.grass.GrassVKWallpaper"
-            android:permission="android.permission.BIND_WALLPAPER"
-            android:enabled="@bool/config_enable_grass_wallpaper">
-            <intent-filter>
-                <action android:name="android.service.wallpaper.WallpaperService" />
-            </intent-filter>
-            <meta-data android:name="android.service.wallpaper" android:resource="@xml/grass_vk" />
-        </service>
-
-        <service
-            android:exported="true"
-            android:label="@string/wallpaper_aurora1"
-            android:name="com.reandroid.wallpaper.aurora1.Aurora1Wallpaper"
-            android:permission="android.permission.BIND_WALLPAPER"
-            android:enabled="@bool/config_enable_aurora1_wallpaper">
-            <intent-filter>
-                <action android:name="android.service.wallpaper.WallpaperService" />
-            </intent-filter>
-            <meta-data android:name="android.service.wallpaper" android:resource="@xml/aurora1" />
-        </service>
-
-        <service
-            android:exported="true"
-            android:label="@string/wallpaper_aurora2"
-            android:name="com.reandroid.wallpaper.aurora2.Aurora2Wallpaper"
-            android:permission="android.permission.BIND_WALLPAPER"
-            android:enabled="@bool/config_enable_aurora2_wallpaper">
-            <intent-filter>
-                <action android:name="android.service.wallpaper.WallpaperService" />
-            </intent-filter>
-            <meta-data android:name="android.service.wallpaper" android:resource="@xml/aurora2" />
-        </service>
-
-        <service
-            android:exported="true"
-            android:label="@string/wallpaper_forest"
-            android:name="com.reandroid.wallpaper.forest.ForestWallpaper"
-            android:permission="android.permission.BIND_WALLPAPER"
-            android:enabled="@bool/config_enable_forest_wallpaper">
-            <intent-filter>
-                <action android:name="android.service.wallpaper.WallpaperService" />
-            </intent-filter>
-            <meta-data android:name="android.service.wallpaper" android:resource="@xml/forest" />
-        </service>
-
-        <service
-            android:exported="true"
-            android:label="@string/wallpaper_galaxy"
-            android:name="com.reandroid.wallpaper.galaxy.GalaxyWallpaper"
-            android:permission="android.permission.BIND_WALLPAPER"
-            android:enabled="@bool/config_enable_galaxy_wallpaper">
-            <intent-filter>
-                <action android:name="android.service.wallpaper.WallpaperService" />
-            </intent-filter>
-            <meta-data android:name="android.service.wallpaper" android:resource="@xml/galaxy" />
-        </service>
-
-        <service
-            android:exported="true"
-            android:label="@string/wallpaper_nightsky"
-            android:name="com.reandroid.wallpaper.nightsky.NightSkyWallpaper"
-            android:permission="android.permission.BIND_WALLPAPER"
-            android:enabled="@bool/config_enable_nightsky_wallpaper">
-            <intent-filter>
-                <action android:name="android.service.wallpaper.WallpaperService" />
-            </intent-filter>
-            <meta-data android:name="android.service.wallpaper" android:resource="@xml/nightsky" />
-        </service>
-
-        <service
-            android:exported="true"
-            android:label="@string/wallpaper_microbes"
-            android:name="com.reandroid.wallpaper.microbes.MicrobesWallpaper"
-            android:permission="android.permission.BIND_WALLPAPER"
-            android:enabled="@bool/config_enable_microbes_wallpaper">
-            <intent-filter>
-                <action android:name="android.service.wallpaper.WallpaperService" />
-            </intent-filter>
-            <meta-data android:name="android.service.wallpaper" android:resource="@xml/microbes" />
-        </service>
-
-        <service
-            android:exported="true"
-            android:label="@string/wallpaper_galaxy_vk"
-            android:name="com.reandroid.wallpaper.galaxy.GalaxyVKWallpaper"
-            android:permission="android.permission.BIND_WALLPAPER"
-            android:enabled="@bool/config_enable_galaxy_wallpaper">
-            <intent-filter>
-                <action android:name="android.service.wallpaper.WallpaperService" />
-            </intent-filter>
-            <meta-data android:name="android.service.wallpaper" android:resource="@xml/galaxy_vk" />
-        </service>
-
-        <service
-            android:exported="true"
-            android:label="@string/wallpaper_fall"
-            android:name="com.reandroid.wallpaper.fall.FallWallpaper"
-            android:permission="android.permission.BIND_WALLPAPER"
-            android:enabled="@bool/config_enable_fall_wallpaper">
-            <intent-filter>
-                <action android:name="android.service.wallpaper.WallpaperService" />
-            </intent-filter>
-            <meta-data android:name="android.service.wallpaper" android:resource="@xml/fall" />
-        </service>
-
-        <service
-            android:exported="true"
-            android:label="@string/wallpaper_fall_vk"
-            android:name="com.reandroid.wallpaper.fall.FallVKWallpaper"
-            android:permission="android.permission.BIND_WALLPAPER"
-            android:enabled="@bool/config_enable_fall_wallpaper">
-            <intent-filter>
-                <action android:name="android.service.wallpaper.WallpaperService" />
-            </intent-filter>
-            <meta-data android:name="android.service.wallpaper" android:resource="@xml/fall_vk" />
-        </service>
-
-        <service
-            android:exported="true"
-            android:label="@string/wallpaper_wildworld"
-            android:name="com.reandroid.wallpaper.wildworld.WildWorldWallpaper"
-            android:permission="android.permission.BIND_WALLPAPER"
-            android:enabled="@bool/config_enable_wildworld_wallpaper">
-            <intent-filter>
-                <action android:name="android.service.wallpaper.WallpaperService" />
-            </intent-filter>
-            <meta-data android:name="android.service.wallpaper" android:resource="@xml/wildworld" />
-        </service>
-
-        <service
-            android:exported="true"
-            android:label="@string/wallpaper_windmill"
-            android:name="com.reandroid.wallpaper.weatherwallpapers.windmill.WindmillWallpaper"
-            android:permission="android.permission.BIND_WALLPAPER"
-            android:enabled="@bool/config_enable_windmill_wallpaper">
-            <intent-filter>
-                <action android:name="android.service.wallpaper.WallpaperService" />
-            </intent-filter>
-            <meta-data android:name="android.service.wallpaper" android:resource="@xml/windmill" />
-        </service>
-
-        <service
-            android:exported="true"
-            android:label="@string/wallpaper_ocean"
-            android:name="com.reandroid.wallpaper.weatherwallpapers.ocean.OceanWallpaper"
-            android:permission="android.permission.BIND_WALLPAPER"
-            android:enabled="@bool/config_enable_ocean_wallpaper">
-            <intent-filter>
-                <action android:name="android.service.wallpaper.WallpaperService" />
-            </intent-filter>
-            <meta-data android:name="android.service.wallpaper" android:resource="@xml/ocean" />
-        </service>
-
-        <service
-            android:exported="true"
-            android:label="@string/wallpaper_fireworks"
-            android:name="com.reandroid.wallpaper.fireworks.FireworksWallpaper"
-            android:permission="android.permission.BIND_WALLPAPER"
-            android:enabled="@bool/config_enable_fireworks_wallpaper">
-            <intent-filter>
-                <action android:name="android.service.wallpaper.WallpaperService" />
-            </intent-filter>
-            <meta-data android:name="android.service.wallpaper" android:resource="@xml/fireworks" />
-        </service>
-
-        <service
-            android:exported="true"
-            android:label="@string/wallpaper_galaxy4"
-            android:name="com.reandroid.wallpaper.galaxy4.Galaxy4Wallpaper"
-            android:permission="android.permission.BIND_WALLPAPER"
-            android:enabled="@bool/config_enable_galaxy4_wallpaper">
-            <intent-filter>
-                <action android:name="android.service.wallpaper.WallpaperService" />
-            </intent-filter>
-            <meta-data android:name="android.service.wallpaper" android:resource="@xml/galaxy4" />
-        </service>
-
-        <service
-            android:exported="true"
-            android:label="@string/wallpaper_noisefield"
-            android:name="com.reandroid.wallpaper.noisefield.NoiseFieldWallpaper"
-            android:permission="android.permission.BIND_WALLPAPER"
-            android:enabled="@bool/config_enable_noisefield_wallpaper">
-            <intent-filter>
-                <action android:name="android.service.wallpaper.WallpaperService" />
-            </intent-filter>
-            <meta-data android:name="android.service.wallpaper" android:resource="@xml/noisefield" />
-        </service>
-
-        <service
-            android:exported="true"
-            android:label="@string/wallpaper_vis2"
-            android:name="com.reandroid.wallpaper.musicvis.MusicVisWallpaper2"
-            android:permission="android.permission.BIND_WALLPAPER"
-            android:enabled="@bool/config_enable_vis2_wallpaper">
-            <intent-filter>
-                <action android:name="android.service.wallpaper.WallpaperService" />
-            </intent-filter>
-            <meta-data android:name="android.service.wallpaper" android:resource="@xml/vis2" />
-        </service>
-
-        <service
-            android:exported="true"
-            android:label="@string/wallpaper_vis3"
-            android:name="com.reandroid.wallpaper.musicvis.MusicVisWallpaper3"
-            android:permission="android.permission.BIND_WALLPAPER"
-            android:enabled="@bool/config_enable_vis3_wallpaper">
-            <intent-filter>
-                <action android:name="android.service.wallpaper.WallpaperService" />
-            </intent-filter>
-            <meta-data android:name="android.service.wallpaper" android:resource="@xml/vis3" />
-        </service>
-
-        <service
-            android:exported="true"
-            android:label="@string/wallpaper_vis4"
-            android:name="com.reandroid.wallpaper.musicvis.MusicVisWallpaper4"
-            android:permission="android.permission.BIND_WALLPAPER"
-            android:enabled="@bool/config_enable_vis4_wallpaper">
-            <intent-filter>
-                <action android:name="android.service.wallpaper.WallpaperService" />
-            </intent-filter>
-            <meta-data android:name="android.service.wallpaper" android:resource="@xml/vis4" />
-        </service>
-
-        <service
-            android:exported="true"
-            android:label="@string/wallpaper_vis5"
-            android:name="com.reandroid.wallpaper.musicvis.MusicVisWallpaper5"
-            android:permission="android.permission.BIND_WALLPAPER"
-            android:enabled="@bool/config_enable_vis5_wallpaper">
-            <intent-filter>
-                <action android:name="android.service.wallpaper.WallpaperService" />
-            </intent-filter>
-            <meta-data android:name="android.service.wallpaper" android:resource="@xml/vis5" />
-        </service>
-
-        <service
-            android:exported="true"
-            android:label="@string/wallpaper_vis6"
-            android:name="com.reandroid.wallpaper.musicvis.MusicVisWallpaper6"
-            android:permission="android.permission.BIND_WALLPAPER"
-            android:enabled="@bool/config_enable_vis6_wallpaper">
-            <intent-filter>
-                <action android:name="android.service.wallpaper.WallpaperService" />
-            </intent-filter>
-            <meta-data android:name="android.service.wallpaper" android:resource="@xml/vis6" />
-        </service>
-
-        <service
-            android:exported="true"
-            android:label="@string/wallpaper_deepsea"
-            android:name="com.reandroid.wallpaper.deepsea.DeepSeaWallpaper"
-            android:permission="android.permission.BIND_WALLPAPER"
-            android:enabled="@bool/config_enable_deepsea_wallpaper">
-            <intent-filter>
-                <action android:name="android.service.wallpaper.WallpaperService" />
-            </intent-filter>
-            <meta-data android:name="android.service.wallpaper" android:resource="@xml/deepsea" />
-        </service>
-        
-
-
-        <activity
-            android:label="@string/wallpaper_vis2"
-            android:name="com.reandroid.settings.MusicVis2SettingsActivity"
-            android:theme="@style/Theme.WallpaperSettings"
-            android:exported="true"
-            android:enabled="@bool/config_enable_vis2_wallpaper" />
-
-        <activity
-            android:label="@string/wallpaper_vis3"
-            android:name="com.reandroid.settings.MusicVis3SettingsActivity"
-            android:theme="@style/Theme.WallpaperSettings"
-            android:exported="true"
-            android:enabled="@bool/config_enable_vis3_wallpaper" />
-
-        <activity
-            android:label="@string/wallpaper_vis4"
-            android:name="com.reandroid.settings.MusicVis4SettingsActivity"
-            android:theme="@style/Theme.WallpaperSettings"
-            android:exported="true"
-            android:enabled="@bool/config_enable_vis4_wallpaper" />
-
-        <activity
-            android:label="@string/wallpaper_vis5"
-            android:name="com.reandroid.settings.MusicVis5SettingsActivity"
-            android:theme="@style/Theme.WallpaperSettings"
-            android:exported="true"
-            android:enabled="@bool/config_enable_vis5_wallpaper" />
-
-        <activity
-            android:label="@string/wallpaper_vis6"
-            android:name="com.reandroid.settings.MusicVis6SettingsActivity"
-            android:theme="@style/Theme.WallpaperSettings"
-            android:exported="true"
-            android:enabled="@bool/config_enable_vis6_wallpaper" />
-
-
-        <service
-            android:exported="true"
-            android:label="@string/wallpaper_phasebeam"
-            android:name="com.reandroid.wallpaper.phasebeam.PhaseBeamWallpaper"
-            android:permission="android.permission.BIND_WALLPAPER"
-            android:enabled="@bool/config_enable_phasebeam_wallpaper">
-            <intent-filter>
-                <action android:name="android.service.wallpaper.WallpaperService" />
-            </intent-filter>
-            <meta-data android:name="android.service.wallpaper" android:resource="@xml/phasebeam" />
-        </service>
-
-        <service
-            android:exported="true"
-            android:label="@string/wallpaper_cube"
-            android:name="com.reandroid.wallpaper.cube.CubeWallpaper"
-            android:permission="android.permission.BIND_WALLPAPER"
-            android:enabled="@bool/config_enable_cube_wallpaper">
-            <intent-filter>
-                <action android:name="android.service.wallpaper.WallpaperService" />
-            </intent-filter>
-            <meta-data android:name="android.service.wallpaper" android:resource="@xml/cube" />
-        </service>
-
-        <service
-            android:exported="true"
-            android:label="@string/wallpaper_nebula"
-            android:name="com.reandroid.wallpaper.nebula.NebulaWallpaper"
-            android:permission="android.permission.BIND_WALLPAPER"
-            android:enabled="@bool/config_enable_nebula_wallpaper">
-            <intent-filter>
-                <action android:name="android.service.wallpaper.WallpaperService" />
-            </intent-filter>
-            <meta-data android:name="android.service.wallpaper" android:resource="@xml/nebula" />
-        </service>
-
-        <activity
-            android:label="@string/clock_settings"
-            android:name="com.reandroid.wallpaper.polarclock.PolarClockSettings"
-            android:theme="@style/Theme.WallpaperSettings"
-            android:exported="true"
-            android:enabled="@bool/config_enable_polar_clock_wallpaper">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-            </intent-filter>
-        </activity>
-
-        <activity
-            android:label="@string/wallpaper_fall"
-            android:name="com.reandroid.settings.FallSettingsActivity"
-            android:theme="@style/Theme.WallpaperSettings"
-            android:exported="true"
-            android:enabled="@bool/config_enable_fall_wallpaper" />
-
-        <activity
-            android:label="@string/wallpaper_grass"
-            android:name="com.reandroid.settings.GrassSettingsActivity"
-            android:theme="@style/Theme.WallpaperSettings"
-            android:exported="true"
-            android:enabled="@bool/config_enable_grass_wallpaper" />
-
-        <activity
-            android:label="@string/wallpaper_aurora1"
-            android:name="com.reandroid.settings.Aurora1SettingsActivity"
-            android:theme="@style/Theme.WallpaperSettings"
-            android:exported="true"
-            android:enabled="@bool/config_enable_aurora1_wallpaper" />
-
-        <activity
-            android:label="@string/wallpaper_aurora2"
-            android:name="com.reandroid.settings.Aurora2SettingsActivity"
-            android:theme="@style/Theme.WallpaperSettings"
-            android:exported="true"
-            android:enabled="@bool/config_enable_aurora2_wallpaper" />
-
-        <activity
-            android:label="@string/wallpaper_forest"
-            android:name="com.reandroid.settings.ForestSettingsActivity"
-            android:theme="@style/Theme.WallpaperSettings"
-            android:exported="true"
-            android:enabled="@bool/config_enable_forest_wallpaper" />
-
-        <activity
-            android:label="@string/wallpaper_wildworld"
-            android:name="com.reandroid.settings.WildWorldSettingsActivity"
-            android:theme="@style/Theme.WallpaperSettings"
-            android:exported="true"
-            android:enabled="@bool/config_enable_wildworld_wallpaper" />
-
-        <activity
-            android:label="@string/wallpaper_windmill"
-            android:name="com.reandroid.settings.WindmillSettingsActivity"
-            android:theme="@style/Theme.WallpaperSettings"
-            android:exported="true"
-            android:enabled="@bool/config_enable_windmill_wallpaper" />
-
-        <activity
-            android:label="@string/wallpaper_ocean"
-            android:name="com.reandroid.settings.OceanSettingsActivity"
-            android:theme="@style/Theme.WallpaperSettings"
-            android:exported="true"
-            android:enabled="@bool/config_enable_ocean_wallpaper" />
-
-        <activity
-            android:label="@string/wallpaper_fireworks"
-            android:name="com.reandroid.settings.FireworksSettingsActivity"
-            android:theme="@style/Theme.WallpaperSettings"
-            android:exported="true"
-            android:enabled="@bool/config_enable_fireworks_wallpaper" />
-        <!-- Magic Smoke设置 -->
-        <activity
-            android:name="com.reandroid.settings.MagicSmokeSettingsActivity"
-            android:enabled="@bool/config_enable_magicsmoke_wallpaper"
-            android:exported="true"
-            android:label="@string/wallpaper_magicsmoke"
-            android:theme="@style/Theme.WallpaperSettings" />
-
-        <activity
-            android:name="com.reandroid.settings.HoloSpiralSettingsActivity"
-            android:enabled="@bool/config_enable_holospiral_wallpaper"
-            android:exported="true"
-            android:label="@string/wallpaper_holospiral"
-            android:theme="@style/Theme.WallpaperSettings" />
-
-        <activity
-            android:name="com.reandroid.settings.BlueSeaSettingsActivity"
-            android:enabled="@bool/config_enable_bluesea_wallpaper"
-            android:exported="true"
-            android:label="@string/wallpaper_bluesea"
-            android:theme="@style/Theme.WallpaperSettings" />
-
-        <activity
-            android:name="com.reandroid.settings.DeepSeaSettingsActivity"
-            android:enabled="@bool/config_enable_deepsea_wallpaper"
-            android:exported="true"
-            android:label="@string/wallpaper_deepsea"
-            android:theme="@style/Theme.WallpaperSettings" />
-            
-        <activity
-            android:label="@string/wallpaper_galaxy4"
-            android:name="com.reandroid.settings.Galaxy4SettingsActivity"
-            android:theme="@style/Theme.WallpaperSettings"
-            android:exported="true"
-            android:enabled="@bool/config_enable_galaxy4_wallpaper">
-        </activity>
-
-        <activity
-            android:label="@string/wallpaper_galaxy"
-            android:name="com.reandroid.settings.GalaxySettingsActivity"
-            android:theme="@style/Theme.WallpaperSettings"
-            android:exported="true"
-            android:enabled="@bool/config_enable_galaxy_wallpaper">
-        </activity>
-
-        <activity
-            android:label="@string/wallpaper_nightsky"
-            android:name="com.reandroid.settings.NightSkySettingsActivity"
-            android:theme="@style/Theme.WallpaperSettings"
-            android:exported="true"
-            android:enabled="@bool/config_enable_nightsky_wallpaper">
-        </activity>
-
-        <activity
-            android:label="@string/wallpaper_microbes"
-            android:name="com.reandroid.settings.MicrobesSettingsActivity"
-            android:theme="@style/Theme.WallpaperSettings"
-            android:exported="true"
-            android:enabled="@bool/config_enable_microbes_wallpaper">
-        </activity>
-
-        <activity
-            android:label="@string/wallpaper_phasebeam"
-            android:name="com.reandroid.settings.PhaseBeamSettingsActivity"
-            android:theme="@style/Theme.WallpaperSettings"
-            android:exported="true"
-            android:enabled="@bool/config_enable_phasebeam_wallpaper">
-        </activity>
-
-        <activity
-            android:label="@string/wallpaper_cube"
-            android:name="com.reandroid.settings.CubeSettingsActivity"
-            android:theme="@style/Theme.WallpaperSettings"
-            android:exported="true"
-            android:enabled="@bool/config_enable_cube_wallpaper">
-        </activity>
-
-        <activity
-            android:label="@string/wallpaper_nebula"
-            android:name="com.reandroid.settings.NebulaSettingsActivity"
-            android:theme="@style/Theme.WallpaperSettings"
-            android:exported="true"
-            android:enabled="@bool/config_enable_nebula_wallpaper" />
-
-        <activity
-            android:label="@string/wallpaper_nexus"
-            android:name="com.reandroid.settings.NexusSettingsActivity"
-            android:theme="@style/Theme.WallpaperSettings"
-            android:exported="true"
-            android:enabled="@bool/config_enable_nexus_wallpaper">
-        </activity>
-
-        <activity
-            android:label="@string/wallpaper_noisefield"
-            android:name="com.reandroid.settings.NoiseFieldSettingsActivity"
-            android:theme="@style/Theme.WallpaperSettings"
-            android:exported="true"
-            android:enabled="@bool/config_enable_noisefield_wallpaper" />
-
-        <service
-            android:exported="true"
-            android:label="@string/wallpaper_clock"
-            android:name="com.reandroid.wallpaper.polarclock.PolarClockWallpaper"
-            android:permission="android.permission.BIND_WALLPAPER"
-            android:enabled="@bool/config_enable_polar_clock_wallpaper">
-            <intent-filter>
-                <action android:name="android.service.wallpaper.WallpaperService" />
-            </intent-filter>
-            <meta-data android:name="android.service.wallpaper" android:resource="@xml/polar_clock" />
-        </service>
-
-        <service
-            android:exported="true"
-            android:label="@string/wallpaper_walkaround"
-            android:name="com.reandroid.wallpaper.walkaround.WalkAroundWallpaper"
-            android:permission="android.permission.BIND_WALLPAPER"
-            android:enabled="@bool/config_enable_walkaround_wallpaper">
-            <intent-filter>
-                <action android:name="android.service.wallpaper.WallpaperService" />
-            </intent-filter>
-            <meta-data android:name="android.service.wallpaper" android:resource="@xml/walkaround" />
-        </service>
-
-        <activity
-            android:label="@string/wallpaper_walkaround"
-            android:name="com.reandroid.settings.WalkAroundSettingsActivity"
-            android:theme="@style/Theme.WallpaperSettings"
-            android:exported="true"
-            android:enabled="@bool/config_enable_walkaround_wallpaper" />
-
-
-        <service
-            android:exported="true"
-            android:label="@string/wallpaper_flsorescence"
-            android:name="com.reandroid.wallpaper.flsorescence.FlsorescenceWallpaper"
-            android:permission="android.permission.BIND_WALLPAPER">
-            <intent-filter>
-                <action android:name="android.service.wallpaper.WallpaperService" />
-            </intent-filter>
-            <meta-data android:name="android.service.wallpaper" android:resource="@xml/flsorescence" />
         </service>
 
     </application>
