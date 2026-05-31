@@ -48,6 +48,15 @@ final class NexusScene {
     final NexusPulseController mPulseController = new NexusPulseController();
     // 默认设置
     private final NexusSettings mDefaultSettings = NexusSettings.load(null);
+    private android.content.SharedPreferences mPluginPrefs;
+
+    void setPluginPrefs(android.content.SharedPreferences prefs) {
+        mPluginPrefs = prefs;
+    }
+
+    NexusSettings loadSettings(android.content.res.Resources res) {
+        return NexusSettings.load(res, mPluginPrefs);
+    }
 
     /**
      * 构造方法

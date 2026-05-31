@@ -55,10 +55,14 @@ final class NexusSettings {
     }
 
     static NexusSettings load(Resources resources) {
+        return load(resources, null);
+    }
+
+    static NexusSettings load(Resources resources, SharedPreferences pluginPrefs) {
         Context ctx = com.reandroid.gles.GLESWallpaper.getAppContext();
-        SharedPreferences prefs = ctx != null
-                ? PreferenceManager.getDefaultSharedPreferences(ctx)
-                : null;
+        SharedPreferences prefs = pluginPrefs != null
+                ? pluginPrefs
+                : (ctx != null ? PreferenceManager.getDefaultSharedPreferences(ctx) : null);
 
         int maxPulses = getInt(prefs, "nexus_max_pulses", DEFAULT_MAX_PULSES);
         int maxExtras = getInt(prefs, "nexus_max_extras", DEFAULT_MAX_EXTRAS);

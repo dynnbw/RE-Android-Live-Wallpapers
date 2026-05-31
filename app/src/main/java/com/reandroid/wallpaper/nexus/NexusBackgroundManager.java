@@ -43,7 +43,8 @@ final class NexusBackgroundManager {
             return currentTexture;
         }
 
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences prefs = mPluginPrefs != null ? mPluginPrefs
+                : PreferenceManager.getDefaultSharedPreferences(context);
         String preset = prefs.getString("nexus_background_preset", "pyramid_background");
         String customUri = getCustomBackgroundUri(context);
 
@@ -96,8 +97,9 @@ final class NexusBackgroundManager {
             }
         }
 
-        String preset = PreferenceManager.getDefaultSharedPreferences(context)
-                .getString("nexus_background_preset", "pyramid_background");
+        SharedPreferences prefs = mPluginPrefs != null ? mPluginPrefs
+                : PreferenceManager.getDefaultSharedPreferences(context);
+        String preset = prefs.getString("nexus_background_preset", "pyramid_background");
         lastBackgroundPreset = preset;
         return loadBackgroundAssetTexture(context, resolvePresetAssetPath(preset));
     }

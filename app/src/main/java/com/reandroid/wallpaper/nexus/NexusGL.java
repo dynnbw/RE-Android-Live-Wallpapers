@@ -85,6 +85,7 @@ public class NexusGL extends GLESScene {
 
     /** Called by BasePluginEngine via reflection to inject plugin-isolated prefs. */
     public void setPluginPrefs(android.content.SharedPreferences prefs) {
+        mScene.setPluginPrefs(prefs);
         mBackgroundManager.setPluginPrefs(prefs);
     }
 
@@ -166,12 +167,20 @@ public class NexusGL extends GLESScene {
      * 绘制每一帧
      * @param timeMs 当前时间（毫秒）
      */
+    private long mLastSettingsSyncMs;
+
     @Override
     public void drawFrame(long timeMs) {
         // 初始化OpenGL资源
         initGL();
         if (!mGLInitialized) {
             return;
+        }
+
+        // Periodically reload settings from plugin prefs
+        if (timeMs - mLastSettingsSyncMs > 1000L) {
+            mLastSettingsSyncMs = timeMs;
+            mScene.applySettings(mScene.loadSettings(mResources));
         }
 
         // 背景设置变化时重新加载纹理
@@ -210,7 +219,7 @@ public class NexusGL extends GLESScene {
         // 启用混合（实现透明/光晕效果）
         GLES20.glEnable(GLES20.GL_BLEND);
 
-        mScene.applySettings(NexusSettings.load(mResources));
+        mScene.applySettings(mScene.loadSettings(mResources));
 
         NexusShaderProgram.Handles handles = NexusShaderProgram.create(mContext, mResources);
         if (handles == null) {
