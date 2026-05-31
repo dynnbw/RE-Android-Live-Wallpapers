@@ -141,8 +141,8 @@ final class PhaseBeamScene {
         mRecolorEnabled = p.getBoolean(KEY_ENABLED, resources.getBoolean(R.bool.recolor_enabled));
         // SeekBar stores int (0–1000); convert to float. Fall back to legacy float values.
         mHue = readFloatFromIntOrFloat(p, KEY_HUE, 0f, 1f, 0);
-        mSaturation = readFloatFromIntOrFloat(p, KEY_SATURATION, 0f, 1f, 1000);
-        mBrightness = readFloatFromIntOrFloat(p, KEY_BRIGHTNESS, 0.5f, 1.5f, 500);
+        mSaturation = readFloatFromIntOrFloat(p, KEY_SATURATION, 0f, 1f, 255);
+        mBrightness = readFloatFromIntOrFloat(p, KEY_BRIGHTNESS, 0.5f, 1.5f, 128);
         updateAdjust();
     }
 
@@ -152,11 +152,11 @@ final class PhaseBeamScene {
         try {
             if (p.contains(key)) {
                 // Try as int first (SeekBar), then float (legacy)
-                try { return min + (max - min) * p.getInt(key, defaultProgress) / 1000f; }
+                try { return min + (max - min) * p.getInt(key, defaultProgress) / 255f; }
                 catch (ClassCastException e) { return p.getFloat(key, min); }
             }
         } catch (Exception ignored) {}
-        return min + (max - min) * defaultProgress / 1000f;
+        return min + (max - min) * defaultProgress / 255f;
     }
 
     void updateAdjust() {

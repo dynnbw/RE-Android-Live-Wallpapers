@@ -55,6 +55,7 @@ public class GalaxyGL extends GLESScene {
     private FloatBuffer mBgVertexBuffer;
     private FloatBuffer mLightVertexBuffer;
     private final GalaxyScene mScene;
+    private android.content.SharedPreferences mPluginPrefs;
     private int mTargetFps = 30;
     private long mTargetFrameMs = 33L;
     private boolean mAnrDiagEnabled = false;
@@ -77,7 +78,13 @@ public class GalaxyGL extends GLESScene {
 
     /** Called by BasePluginEngine via reflection to inject plugin-isolated prefs. */
     public void setPluginPrefs(android.content.SharedPreferences prefs) {
+        mPluginPrefs = prefs;
         mScene.setPluginPrefs(prefs);
+    }
+
+    private boolean readLight2FromPrefs() {
+        if (mPluginPrefs != null) return mPluginPrefs.getBoolean("pref_galaxy_use_light2", false);
+        return readLight2FromPrefs();
     }
 
     /**
@@ -245,7 +252,7 @@ public class GalaxyGL extends GLESScene {
     private void loadTextures() {
         mTexSpace = loadTexture(AssetLoader.decodeBitmap(mContext, "galaxy/drawable/galaxy_space.jpg"));
         mTexFlares = loadTexture(AssetLoader.decodeBitmap(mContext, "galaxy/drawable/galaxy_flares.png"));
-        mUseLight2 = WallpaperSettings.isGalaxyLight2Enabled(false);
+        mUseLight2 = readLight2FromPrefs();
         mTexLight1 = loadTexture(AssetLoader.decodeBitmap(mContext,
                 mUseLight2 ? "galaxy/drawable/light2.png" : "galaxy/drawable/light1.jpg"));
 
@@ -253,7 +260,7 @@ public class GalaxyGL extends GLESScene {
     }
 
     private void syncLightTexturePreference() {
-        boolean desiredUseLight2 = WallpaperSettings.isGalaxyLight2Enabled(false);
+        boolean desiredUseLight2 = readLight2FromPrefs();
         if (desiredUseLight2 == mUseLight2 || mContext == null) {
             return;
         }

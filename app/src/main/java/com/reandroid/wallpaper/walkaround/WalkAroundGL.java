@@ -349,7 +349,9 @@ public class WalkAroundGL extends GLESScene {
             Matrix.translateM(mirror, 0, 1f, 0f, 0f);
             Matrix.scaleM(mirror, 0, -1f, 1f, 1f);
             float[] temp = new float[16];
-            Matrix.multiplyMM(temp, 0, mirror, 0, out, 0);
+            // Apply mirror BEFORE the SurfaceTexture transform (texMatrix * mirror)
+            // so the horizontal flip stays horizontal after rotation
+            Matrix.multiplyMM(temp, 0, out, 0, mirror, 0);
             System.arraycopy(temp, 0, out, 0, 16);
         }
     }

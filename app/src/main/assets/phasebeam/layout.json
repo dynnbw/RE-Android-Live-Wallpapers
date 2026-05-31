@@ -25,23 +25,23 @@
       "title": "phasebeam_hue",
       "default": "0",
       "min": 0,
-      "max": 1000
+      "max": 255
     },
     {
       "type": "seekbar",
       "key": "phasebeam_saturation",
       "title": "phasebeam_saturation",
-      "default": "1000",
+      "default": "255",
       "min": 0,
-      "max": 1000
+      "max": 255
     },
     {
       "type": "seekbar",
       "key": "phasebeam_brightness",
       "title": "phasebeam_brightness",
-      "default": "500",
+      "default": "128",
       "min": 0,
-      "max": 1000
+      "max": 255
     }
   ]
 }
