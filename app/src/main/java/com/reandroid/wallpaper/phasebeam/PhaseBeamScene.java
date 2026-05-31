@@ -19,10 +19,10 @@ import java.util.Random;
 final class PhaseBeamScene {
 
     static final String PREFS_NAME = "phasebeam";
-    static final String KEY_ENABLED = "enabled";
-    static final String KEY_HUE = "hue";
-    static final String KEY_SATURATION = "saturation";
-    static final String KEY_BRIGHTNESS = "brightness";
+    static final String KEY_ENABLED = "phasebeam_recolor_enabled";
+    static final String KEY_HUE = "phasebeam_hue";
+    static final String KEY_SATURATION = "phasebeam_saturation";
+    static final String KEY_BRIGHTNESS = "phasebeam_brightness";
     static final String KEY_THEME = "theme";
 
     static final int DOT_COUNT = 28;
@@ -133,14 +133,30 @@ final class PhaseBeamScene {
     }
 
     private void readPrefs(Resources resources) {
-        if (resources == null || mPrefs == null) return;
-        mTheme = mPrefs.getString(KEY_THEME, "phasebeam");
+        if (resources == null) return;
+        SharedPreferences p = getPrefs();
+        if (p == null) return;
+        mTheme = p.getString(KEY_THEME, "phasebeam");
         mSpeedMultiplier = "sunbeam".equals(mTheme) ? 3.0f : 1.0f;
-        mRecolorEnabled = mPrefs.getBoolean(KEY_ENABLED, resources.getBoolean(R.bool.recolor_enabled));
-        mHue = mPrefs.getFloat(KEY_HUE, Float.parseFloat(resources.getString(R.string.hue)));
-        mSaturation = mPrefs.getFloat(KEY_SATURATION, Float.parseFloat(resources.getString(R.string.saturation)));
-        mBrightness = mPrefs.getFloat(KEY_BRIGHTNESS, Float.parseFloat(resources.getString(R.string.brightness)));
+        mRecolorEnabled = p.getBoolean(KEY_ENABLED, resources.getBoolean(R.bool.recolor_enabled));
+        // SeekBar stores int (0–1000); convert to float. Fall back to legacy float values.
+        mHue = readFloatFromIntOrFloat(p, KEY_HUE, 0f, 1f, 0);
+        mSaturation = readFloatFromIntOrFloat(p, KEY_SATURATION, 0f, 1f, 1000);
+        mBrightness = readFloatFromIntOrFloat(p, KEY_BRIGHTNESS, 0.5f, 1.5f, 500);
         updateAdjust();
+    }
+
+    /** Reads a float from int (SeekBar) or legacy float value, converting int to range. */
+    private static float readFloatFromIntOrFloat(SharedPreferences p, String key,
+                                                  float min, float max, int defaultProgress) {
+        try {
+            if (p.contains(key)) {
+                // Try as int first (SeekBar), then float (legacy)
+                try { return min + (max - min) * p.getInt(key, defaultProgress) / 1000f; }
+                catch (ClassCastException e) { return p.getFloat(key, min); }
+            }
+        } catch (Exception ignored) {}
+        return min + (max - min) * defaultProgress / 1000f;
     }
 
     void updateAdjust() {

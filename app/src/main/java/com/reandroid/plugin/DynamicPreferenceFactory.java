@@ -158,7 +158,14 @@ public final class DynamicPreferenceFactory {
                     for (int i = 0; i < vals.length(); i++) v[i] = vals.optString(i);
                     for (int i = 0; i < vals.length(); i++) {
                         String raw = labels != null ? labels.optString(i, v[i]) : v[i];
-                        l[i] = resolveStringRef(context, raw);
+                        // Try language JSON: {key}_label_{value}
+                        String langKey = key + "_label_" + v[i];
+                        String langVal = resolveLang(language, langKey);
+                        if (!langVal.equals(langKey)) {
+                            l[i] = langVal;
+                        } else {
+                            l[i] = resolveStringRef(context, raw);
+                        }
                     }
                     lp.setEntryValues(v);
                     lp.setEntries(l);

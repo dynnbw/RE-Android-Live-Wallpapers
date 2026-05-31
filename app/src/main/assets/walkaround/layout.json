@@ -10,7 +10,8 @@
       "type": "switch",
       "key": "walkaround_mirror_front",
       "title": "walkaround_mirror_front",
-      "default": "true"
+      "default": "true",
+      "dependency": "walkaround_use_front"
     }
   ]
 }

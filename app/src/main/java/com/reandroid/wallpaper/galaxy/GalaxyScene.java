@@ -545,7 +545,7 @@ final class GalaxyScene {
         }
         mLastSettingsSyncTime = now;
 
-        SharedPreferences defaultPrefs = PreferenceManager.getDefaultSharedPreferences(getAppContext());
+        SharedPreferences defaultPrefs = getPrefs();
         int prefParticleCount = MathUtils.clamp(defaultPrefs.getInt("galaxy_particle_count", mParticleCount),
                 MIN_PARTICLE_COUNT, MAX_PARTICLE_COUNT);
         int prefParticleAlpha = MathUtils.clamp(defaultPrefs.getInt("galaxy_particle_alpha", mParticleAlphaPercent),
