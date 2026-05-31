@@ -124,6 +124,9 @@ public final class DynamicPreferenceFactory {
         String key = item.optString("key");
         String title = resolveLang(language, item.optString("title"));
         String summary = resolveLang(language, item.optString("summary", ""));
+        // Resolve @string/ references (language JSON has priority, @string/ as fallback)
+        title = resolveStringRef(context, title);
+        if (!summary.isEmpty()) summary = resolveStringRef(context, summary);
         if (key.isEmpty()) return null;
 
         switch (type) {
@@ -181,8 +184,8 @@ public final class DynamicPreferenceFactory {
             case "button": {
                 Preference bp = new Preference(context);
                 bp.setKey(key);
-                bp.setTitle(resolveStringRef(context, title));
-                if (!summary.isEmpty()) bp.setSummary(resolveStringRef(context, summary));
+                bp.setTitle(title);
+                if (!summary.isEmpty()) bp.setSummary(summary);
                 bp.setPersistent(false); // Button doesn't store a value
                 return bp;
             }
