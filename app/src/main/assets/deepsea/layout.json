@@ -75,15 +75,15 @@
     {
       "type": "button",
       "key": "pref_deepsea_custom_background",
-      "title": "pref_deepsea_custom_background",
-      "summary": "pref_deepsea_custom_background_summary",
+      "title": "@string/deepsea_custom_background_title",
+      "summary": "@string/deepsea_custom_background_summary",
       "action": "pickBackground"
     },
     {
       "type": "button",
       "key": "pref_deepsea_reset_background",
-      "title": "pref_deepsea_reset_background",
-      "summary": "pref_deepsea_reset_background_summary",
+      "title": "@string/deepsea_reset_background_title",
+      "summary": "@string/deepsea_reset_background_summary",
       "action": "resetBackground"
     }
   ]

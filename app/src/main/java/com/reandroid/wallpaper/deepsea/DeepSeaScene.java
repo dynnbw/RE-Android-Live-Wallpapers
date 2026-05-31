@@ -3,10 +3,14 @@ package com.reandroid.wallpaper.deepsea;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 
 import androidx.annotation.Nullable;
 
 import com.reandroid.gles.GLESWallpaper;
+
+import java.io.InputStream;
 
 /**
  * DeepSea 壁纸场景逻辑层（纯逻辑，不接触 Android 系统服务）。
@@ -86,7 +90,8 @@ final class DeepSeaScene implements SharedPreferences.OnSharedPreferenceChangeLi
 
         if (key == null
                 || DeepSeaGL.KEY_BACKGROUND_IMAGE_TYPE.equals(key)
-                || DeepSeaGL.KEY_BACKGROUND_UPDATED.equals(key)) {
+                || DeepSeaGL.KEY_BACKGROUND_UPDATED.equals(key)
+                || "pref_custom_background_uri".equals(key)) {
             applyCachedBackground(sharedPreferences);
         }
 
@@ -170,6 +175,18 @@ final class DeepSeaScene implements SharedPreferences.OnSharedPreferenceChangeLi
             return;
         }
 
+        // Check plugin prefs for custom background URI (new plugin-based picker)
+        String customUri = null;
+        if (mPluginPrefs != null) {
+            customUri = mPluginPrefs.getString("pref_custom_background_uri", null);
+        }
+        if (customUri != null && !customUri.isEmpty()) {
+            recycleCachedBackground();
+            mCachedBackground = loadBitmapFromUri(context, customUri);
+            mContainer.setCheckBitmap(mCachedBackground);
+            return;
+        }
+
         String type = prefs.getString(DeepSeaGL.KEY_BACKGROUND_IMAGE_TYPE, "0");
         if ("0".equals(type)) {
             recycleCachedBackground();
@@ -180,6 +197,21 @@ final class DeepSeaScene implements SharedPreferences.OnSharedPreferenceChangeLi
         recycleCachedBackground();
         mCachedBackground = DeepSeaSettings.loadBitmap(getCachePath(context));
         mContainer.setCheckBitmap(mCachedBackground);
+    }
+
+    private static Bitmap loadBitmapFromUri(Context ctx, String uriString) {
+        try {
+            Uri uri = Uri.parse(uriString);
+            InputStream stream = ctx.getContentResolver().openInputStream(uri);
+            if (stream == null) return null;
+            BitmapFactory.Options opts = new BitmapFactory.Options();
+            opts.inScaled = false;
+            Bitmap bmp = BitmapFactory.decodeStream(stream, null, opts);
+            stream.close();
+            return bmp;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     void recycleCachedBackground() {

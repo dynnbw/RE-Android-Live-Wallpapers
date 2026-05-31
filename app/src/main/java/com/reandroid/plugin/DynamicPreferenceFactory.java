@@ -181,8 +181,8 @@ public final class DynamicPreferenceFactory {
             case "button": {
                 Preference bp = new Preference(context);
                 bp.setKey(key);
-                bp.setTitle(title);
-                if (!summary.isEmpty()) bp.setSummary(summary);
+                bp.setTitle(resolveStringRef(context, title));
+                if (!summary.isEmpty()) bp.setSummary(resolveStringRef(context, summary));
                 bp.setPersistent(false); // Button doesn't store a value
                 return bp;
             }

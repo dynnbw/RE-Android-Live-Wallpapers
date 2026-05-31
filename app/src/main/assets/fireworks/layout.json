@@ -3,15 +3,15 @@
     {
       "type": "button",
       "key": "pref_custom_background",
-      "title": "pref_custom_background",
-      "summary": "pref_custom_background_summary",
+      "title": "@string/pref_fireworks_custom_background_title",
+      "summary": "@string/pref_fireworks_custom_background_summary",
       "action": "pickBackground"
     },
     {
       "type": "button",
       "key": "pref_reset_background",
-      "title": "pref_reset_background",
-      "summary": "pref_reset_background_summary",
+      "title": "@string/pref_fireworks_reset_background_title",
+      "summary": "@string/pref_fireworks_reset_background_summary",
       "action": "resetBackground"
     }
   ]

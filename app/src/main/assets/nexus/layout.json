@@ -113,15 +113,15 @@
     {
       "type": "button",
       "key": "pref_nexus_custom_background",
-      "title": "pref_nexus_custom_background",
-      "summary": "pref_nexus_custom_background_summary",
+      "title": "@string/pref_nexus_custom_background_title",
+      "summary": "@string/pref_nexus_custom_background_summary",
       "action": "pickBackground"
     },
     {
       "type": "button",
       "key": "pref_nexus_reset_background",
-      "title": "pref_nexus_reset_background",
-      "summary": "pref_nexus_reset_background_summary",
+      "title": "@string/pref_nexus_reset_background_title",
+      "summary": "@string/pref_nexus_reset_background_summary",
       "action": "resetBackground"
     }
   ]
