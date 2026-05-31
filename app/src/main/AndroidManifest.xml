@@ -1,22 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-/*
-**
-** Copyright 2008, The Android Open Source Project
-**
-** Licensed under the Apache License, Version 2.0 (the "License");
-** you may not use this file except in compliance with the License.
-** You may obtain a copy of the License at
-**
-**     http://www.apache.org/licenses/LICENSE-2.0
-**
-** Unless required by applicable law or agreed to in writing, software
-** distributed under the License is distributed on an "AS IS" BASIS,
-** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-** See the License for the specific language governing permissions and
-** limitations under the License.
-*/
--->
 <manifest
     xmlns:android="http://schemas.android.com/apk/res/android">
 
@@ -49,7 +31,7 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
-        <!-- Main Settings Activity -->
+        <!-- Main Settings -->
         <activity
             android:exported="true"
             android:label="@string/settings_title"
@@ -73,100 +55,51 @@
             android:name="com.reandroid.settings.OpenWeatherApiGuideActivity"
             android:theme="@style/Theme.WallpaperSettings" />
 
-        <!-- Generic plugin settings (used by system wallpaper preview Settings button) -->
+        <!-- Generic plugin settings (system wallpaper preview Settings button) -->
         <activity
             android:name="com.reandroid.settings.PluginSettingsActivity"
             android:theme="@style/Theme.WallpaperSettings"
             android:exported="true" />
 
-        <!-- Per-wallpaper settings activities (used by SettingsMainFragment for legacy wallpapers) -->
-        <activity android:label="@string/wallpaper_vis2" android:name="com.reandroid.settings.MusicVis2SettingsActivity" android:theme="@style/Theme.WallpaperSettings" android:exported="true" android:enabled="@bool/config_enable_vis2_wallpaper" />
-        <activity android:label="@string/wallpaper_vis3" android:name="com.reandroid.settings.MusicVis3SettingsActivity" android:theme="@style/Theme.WallpaperSettings" android:exported="true" android:enabled="@bool/config_enable_vis3_wallpaper" />
-        <activity android:label="@string/wallpaper_vis4" android:name="com.reandroid.settings.MusicVis4SettingsActivity" android:theme="@style/Theme.WallpaperSettings" android:exported="true" android:enabled="@bool/config_enable_vis4_wallpaper" />
-        <activity android:label="@string/wallpaper_vis5" android:name="com.reandroid.settings.MusicVis5SettingsActivity" android:theme="@style/Theme.WallpaperSettings" android:exported="true" android:enabled="@bool/config_enable_vis5_wallpaper" />
-        <activity android:label="@string/wallpaper_vis6" android:name="com.reandroid.settings.MusicVis6SettingsActivity" android:theme="@style/Theme.WallpaperSettings" android:exported="true" android:enabled="@bool/config_enable_vis6_wallpaper" />
-
-        <activity android:label="@string/clock_settings" android:name="com.reandroid.wallpaper.polarclock.PolarClockSettings" android:theme="@style/Theme.WallpaperSettings" android:exported="true" android:enabled="@bool/config_enable_polar_clock_wallpaper">
+        <!-- Standalone Polar Clock settings -->
+        <activity
+            android:label="@string/clock_settings"
+            android:name="com.reandroid.wallpaper.polarclock.PolarClockSettings"
+            android:theme="@style/Theme.WallpaperSettings"
+            android:exported="true"
+            android:enabled="@bool/config_enable_polar_clock_wallpaper">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
             </intent-filter>
         </activity>
 
-        <activity android:label="@string/wallpaper_fall" android:name="com.reandroid.settings.FallSettingsActivity" android:theme="@style/Theme.WallpaperSettings" android:exported="true" android:enabled="@bool/config_enable_fall_wallpaper" />
-        <activity android:label="@string/wallpaper_grass" android:name="com.reandroid.settings.GrassSettingsActivity" android:theme="@style/Theme.WallpaperSettings" android:exported="true" android:enabled="@bool/config_enable_grass_wallpaper" />
-        <activity android:label="@string/wallpaper_aurora1" android:name="com.reandroid.settings.Aurora1SettingsActivity" android:theme="@style/Theme.WallpaperSettings" android:exported="true" android:enabled="@bool/config_enable_aurora1_wallpaper" />
-        <activity android:label="@string/wallpaper_aurora2" android:name="com.reandroid.settings.Aurora2SettingsActivity" android:theme="@style/Theme.WallpaperSettings" android:exported="true" android:enabled="@bool/config_enable_aurora2_wallpaper" />
-        <activity android:label="@string/wallpaper_forest" android:name="com.reandroid.settings.ForestSettingsActivity" android:theme="@style/Theme.WallpaperSettings" android:exported="true" android:enabled="@bool/config_enable_forest_wallpaper" />
-        <activity android:label="@string/wallpaper_wildworld" android:name="com.reandroid.settings.WildWorldSettingsActivity" android:theme="@style/Theme.WallpaperSettings" android:exported="true" android:enabled="@bool/config_enable_wildworld_wallpaper" />
-        <activity android:label="@string/wallpaper_windmill" android:name="com.reandroid.settings.WindmillSettingsActivity" android:theme="@style/Theme.WallpaperSettings" android:exported="true" android:enabled="@bool/config_enable_windmill_wallpaper" />
-        <activity android:label="@string/wallpaper_ocean" android:name="com.reandroid.settings.OceanSettingsActivity" android:theme="@style/Theme.WallpaperSettings" android:exported="true" android:enabled="@bool/config_enable_ocean_wallpaper" />
-        <activity android:label="@string/wallpaper_fireworks" android:name="com.reandroid.settings.FireworksSettingsActivity" android:theme="@style/Theme.WallpaperSettings" android:exported="true" android:enabled="@bool/config_enable_fireworks_wallpaper" />
-        <activity android:name="com.reandroid.settings.MagicSmokeSettingsActivity" android:enabled="@bool/config_enable_magicsmoke_wallpaper" android:exported="true" android:label="@string/wallpaper_magicsmoke" android:theme="@style/Theme.WallpaperSettings" />
-        <activity android:name="com.reandroid.settings.HoloSpiralSettingsActivity" android:enabled="@bool/config_enable_holospiral_wallpaper" android:exported="true" android:label="@string/wallpaper_holospiral" android:theme="@style/Theme.WallpaperSettings" />
-        <activity android:name="com.reandroid.settings.BlueSeaSettingsActivity" android:enabled="@bool/config_enable_bluesea_wallpaper" android:exported="true" android:label="@string/wallpaper_bluesea" android:theme="@style/Theme.WallpaperSettings" />
-        <activity android:name="com.reandroid.settings.DeepSeaSettingsActivity" android:enabled="@bool/config_enable_deepsea_wallpaper" android:exported="true" android:label="@string/wallpaper_deepsea" android:theme="@style/Theme.WallpaperSettings" />
-        <activity android:label="@string/wallpaper_galaxy4" android:name="com.reandroid.settings.Galaxy4SettingsActivity" android:theme="@style/Theme.WallpaperSettings" android:exported="true" android:enabled="@bool/config_enable_galaxy4_wallpaper" />
-        <activity android:label="@string/wallpaper_galaxy" android:name="com.reandroid.settings.GalaxySettingsActivity" android:theme="@style/Theme.WallpaperSettings" android:exported="true" android:enabled="@bool/config_enable_galaxy_wallpaper" />
-        <activity android:label="@string/wallpaper_nightsky" android:name="com.reandroid.settings.NightSkySettingsActivity" android:theme="@style/Theme.WallpaperSettings" android:exported="true" android:enabled="@bool/config_enable_nightsky_wallpaper" />
-        <activity android:label="@string/wallpaper_microbes" android:name="com.reandroid.settings.MicrobesSettingsActivity" android:theme="@style/Theme.WallpaperSettings" android:exported="true" android:enabled="@bool/config_enable_microbes_wallpaper" />
-        <activity android:label="@string/wallpaper_phasebeam" android:name="com.reandroid.settings.PhaseBeamSettingsActivity" android:theme="@style/Theme.WallpaperSettings" android:exported="true" android:enabled="@bool/config_enable_phasebeam_wallpaper" />
-        <activity android:label="@string/wallpaper_cube" android:name="com.reandroid.settings.CubeSettingsActivity" android:theme="@style/Theme.WallpaperSettings" android:exported="true" android:enabled="@bool/config_enable_cube_wallpaper" />
-        <activity android:label="@string/wallpaper_nebula" android:name="com.reandroid.settings.NebulaSettingsActivity" android:theme="@style/Theme.WallpaperSettings" android:exported="true" android:enabled="@bool/config_enable_nebula_wallpaper" />
-        <activity android:label="@string/wallpaper_nexus" android:name="com.reandroid.settings.NexusSettingsActivity" android:theme="@style/Theme.WallpaperSettings" android:exported="true" android:enabled="@bool/config_enable_nexus_wallpaper" />
-        <activity android:label="@string/wallpaper_noisefield" android:name="com.reandroid.settings.NoiseFieldSettingsActivity" android:theme="@style/Theme.WallpaperSettings" android:exported="true" android:enabled="@bool/config_enable_noisefield_wallpaper" />
-        <activity android:label="@string/wallpaper_walkaround" android:name="com.reandroid.settings.WalkAroundSettingsActivity" android:theme="@style/Theme.WallpaperSettings" android:exported="true" android:enabled="@bool/config_enable_walkaround_wallpaper" />
-
-        <!-- Test activities (launchable via adb for individual wallpaper testing) -->
+        <!-- Test activities (launchable via adb) -->
         <activity android:exported="true" android:label="@string/wallpaper_grass" android:name="com.reandroid.wallpaper.grass.Grass" android:theme="@android:style/Theme.NoTitleBar" android:enabled="@bool/config_enable_grass_wallpaper">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.TEST" />
-            </intent-filter>
+            <intent-filter><action android:name="android.intent.action.MAIN" /><category android:name="android.intent.category.TEST" /></intent-filter>
         </activity>
         <activity android:exported="true" android:label="@string/wallpaper_grass_vk" android:name="com.reandroid.wallpaper.grass.GrassVK" android:theme="@android:style/Theme.NoTitleBar" android:enabled="@bool/config_enable_grass_wallpaper">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.TEST" />
-            </intent-filter>
+            <intent-filter><action android:name="android.intent.action.MAIN" /><category android:name="android.intent.category.TEST" /></intent-filter>
         </activity>
         <activity android:exported="true" android:label="@string/wallpaper_aurora1" android:name="com.reandroid.wallpaper.aurora1.Aurora1" android:theme="@android:style/Theme.NoTitleBar" android:enabled="@bool/config_enable_aurora1_wallpaper">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.TEST" />
-            </intent-filter>
+            <intent-filter><action android:name="android.intent.action.MAIN" /><category android:name="android.intent.category.TEST" /></intent-filter>
         </activity>
         <activity android:exported="true" android:label="@string/wallpaper_aurora2" android:name="com.reandroid.wallpaper.aurora2.Aurora2" android:theme="@android:style/Theme.NoTitleBar" android:enabled="@bool/config_enable_aurora2_wallpaper">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.TEST" />
-            </intent-filter>
+            <intent-filter><action android:name="android.intent.action.MAIN" /><category android:name="android.intent.category.TEST" /></intent-filter>
         </activity>
         <activity android:exported="true" android:label="@string/wallpaper_galaxy" android:name="com.reandroid.wallpaper.galaxy.Galaxy" android:theme="@android:style/Theme.NoTitleBar" android:enabled="@bool/config_enable_galaxy_wallpaper">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.TEST" />
-            </intent-filter>
+            <intent-filter><action android:name="android.intent.action.MAIN" /><category android:name="android.intent.category.TEST" /></intent-filter>
         </activity>
         <activity android:exported="true" android:label="@string/wallpaper_galaxy_vk" android:name="com.reandroid.wallpaper.galaxy.GalaxyVK" android:theme="@android:style/Theme.NoTitleBar" android:enabled="@bool/config_enable_galaxy_wallpaper">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.TEST" />
-            </intent-filter>
+            <intent-filter><action android:name="android.intent.action.MAIN" /><category android:name="android.intent.category.TEST" /></intent-filter>
         </activity>
         <activity android:exported="true" android:label="@string/wallpaper_fall" android:name="com.reandroid.wallpaper.fall.Fall" android:theme="@android:style/Theme.NoTitleBar" android:enabled="@bool/config_enable_fall_wallpaper">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.TEST" />
-            </intent-filter>
+            <intent-filter><action android:name="android.intent.action.MAIN" /><category android:name="android.intent.category.TEST" /></intent-filter>
         </activity>
         <activity android:exported="true" android:label="@string/wallpaper_fall_vk" android:name="com.reandroid.wallpaper.fall.FallVK" android:theme="@android:style/Theme.NoTitleBar" android:enabled="@bool/config_enable_fall_wallpaper">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.TEST" />
-            </intent-filter>
+            <intent-filter><action android:name="android.intent.action.MAIN" /><category android:name="android.intent.category.TEST" /></intent-filter>
         </activity>
 
-        <!-- === Single wallpaper service entry point (plugin architecture) === -->
+        <!-- === Single wallpaper service (plugin architecture) === -->
         <service
             android:name="com.reandroid.plugin.ProxyWallpaperService"
             android:exported="true"

@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-
-<wallpaper xmlns:android="http://schemas.android.com/apk/res/android"
-    android:author="@string/wallpaper_windmill_author"
-    android:description="@string/wallpaper_windmill_desc"
-    android:thumbnail="@drawable/icon_windmill"
-    android:showMetadataInPreview="true"
-    android:settingsActivity="com.reandroid.settings.WindmillSettingsActivity" />

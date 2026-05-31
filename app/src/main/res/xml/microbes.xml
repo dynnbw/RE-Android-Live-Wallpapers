@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<wallpaper
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:author="@string/wallpaper_microbes_author"
-    android:description="@string/wallpaper_microbes_desc"
-    android:settingsActivity="com.reandroid.settings.MicrobesSettingsActivity"
-    android:showMetadataInPreview="true"
-    android:thumbnail="@drawable/microbes_thumb" />

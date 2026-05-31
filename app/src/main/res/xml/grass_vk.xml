@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<wallpaper xmlns:android="http://schemas.android.com/apk/res/android"
-    android:author="@string/wallpaper_grass_author"
-    android:description="@string/wallpaper_grass_vk_desc"
-    android:thumbnail="@drawable/grass_thumb"
-    android:showMetadataInPreview="true"
-    android:settingsActivity="com.reandroid.settings.GrassSettingsActivity" />

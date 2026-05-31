@@ -151,7 +151,7 @@ public class SettingsActivity extends AppCompatActivity
             return true;
         }
         if (item.getItemId() == R.id.action_reset_all) {
-            SettingsResetHelper.showResetAllDialog(this);
+            showResetAllDialog();
             return true;
         }
         if (item.getItemId() == R.id.action_about) {
@@ -519,5 +519,32 @@ public class SettingsActivity extends AppCompatActivity
                 ((PreviewPreference) previewPref).refreshPreviewRatioNow();
             }
         }
+    }
+
+    private void showResetAllDialog() {
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle(R.string.reset_all_settings_title)
+                .setMessage(R.string.reset_all_settings_message)
+                .setPositiveButton(R.string.reset_action_confirm, (dialog, which) -> {
+                    String defName = getPackageName() + "_preferences";
+                    getSharedPreferences(defName, MODE_PRIVATE).edit().clear().apply();
+                    java.io.File prefsDir = new java.io.File(getApplicationInfo().dataDir, "shared_prefs");
+                    if (prefsDir.isDirectory()) {
+                        String[] files = prefsDir.list();
+                        if (files != null) {
+                            for (String f : files) {
+                                if (f.startsWith("plugin_") && f.endsWith(".xml")) {
+                                    String name = f.substring(0, f.length() - 4);
+                                    getSharedPreferences(name, MODE_PRIVATE).edit().clear().apply();
+                                }
+                            }
+                        }
+                    }
+                    android.widget.Toast.makeText(this, R.string.reset_all_settings_done,
+                            android.widget.Toast.LENGTH_SHORT).show();
+                    recreate();
+                })
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
     }
 }
