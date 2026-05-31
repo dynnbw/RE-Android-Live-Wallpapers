@@ -1,6 +1,5 @@
 {
   "fragment": "com.reandroid.settings.NexusSettingsFragment",
   "label": "@string/wallpaper_nexus",
-  "plugin": "com.reandroid.wallpaper.nexus.NexusPlugin",
   "previewClass": "com.reandroid.wallpaper.nexus.NexusGL"
 }

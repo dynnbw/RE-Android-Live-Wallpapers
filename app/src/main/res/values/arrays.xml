@@ -52,14 +52,14 @@
     </string-array>
     <string-array name="grass_color_values" translatable="false">
         <item>default</item>
-        <item> #00ff0d</item>
-        <item> #42A5F5</item>
-        <item> #EF5350</item>
-        <item> #ffbfca</item>
-        <item> #AB47BC</item>
-        <item> #ffd900</item>
-        <item> #2f2e34</item>
-        <item> #ffffff</item>
+        <item>#00ff0d</item>
+        <item>#42A5F5</item>
+        <item>#EF5350</item>
+        <item>#ffbfca</item>
+        <item>#AB47BC</item>
+        <item>#ffd900</item>
+        <item>#2f2e34</item>
+        <item>#ffffff</item>
     </string-array>
 
     <!-- 全局帧数选项 -->

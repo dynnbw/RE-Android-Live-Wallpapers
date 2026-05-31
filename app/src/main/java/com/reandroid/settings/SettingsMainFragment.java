@@ -106,6 +106,7 @@ public class SettingsMainFragment extends PreferenceFragmentCompat {
                 String fragmentClass = null;
                 String label = null;
                 String pluginClass = null;
+                boolean useLegacySettings = false;
                 try (InputStream is = am.open(jsonPath)) {
                     byte[] buf = new byte[is.available()];
                     is.read(buf);
@@ -113,6 +114,7 @@ public class SettingsMainFragment extends PreferenceFragmentCompat {
                     fragmentClass = json.optString("fragment", null);
                     label = json.optString("label", null);
                     pluginClass = json.optString("plugin", null);
+                    useLegacySettings = json.optBoolean("useLegacySettings", false);
                 } catch (Exception ignored) {
                     continue;
                 }
@@ -129,7 +131,7 @@ public class SettingsMainFragment extends PreferenceFragmentCompat {
                 Preference entry = new Preference(requireContext());
                 entry.setTitle(title);
                 entry.setLayoutResource(R.layout.preference_wallpaper_grid_item);
-                if (pluginClass != null) {
+                if (pluginClass != null && !useLegacySettings) {
                     String finalDir = dir;
                     entry.setOnPreferenceClickListener(pref -> {
                         PluginSettingsFragment frag = PluginSettingsFragment.newInstance(finalDir);
