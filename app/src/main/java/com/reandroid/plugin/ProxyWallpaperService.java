@@ -202,13 +202,23 @@ public class ProxyWallpaperService extends WallpaperService {
         private WallpaperPlugin loadPlugin(String pluginId) throws Exception {
             // Read info.json for plugin class name
             String className = null;
+            String pluginVk = null;
             try (InputStream is = getAssets().open(pluginId + "/info.json")) {
                 byte[] buf = new byte[is.available()];
                 is.read(buf);
                 JSONObject json = new JSONObject(new String(buf, "UTF-8"));
                 className = json.optString("plugin", null);
+                pluginVk = json.optString("pluginVk", null);
             } catch (Exception e) {
                 Log.w(TAG, "No info.json for " + pluginId + ", trying convention");
+            }
+
+            // Check for Vulkan renderer preference
+            if (pluginVk != null) {
+                SharedPreferences prefs = getSharedPreferences("plugin_" + pluginId, Context.MODE_PRIVATE);
+                if (prefs.getBoolean("use_vulkan", false)) {
+                    className = pluginVk;
+                }
             }
 
             if (className == null) {

@@ -14,6 +14,7 @@ import androidx.annotation.Nullable;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceScreen;
+import androidx.preference.SwitchPreferenceCompat;
 
 import com.reandroid.gles.GLESScene;
 
@@ -71,13 +72,15 @@ public class PluginSettingsFragment extends PreferenceFragmentCompat
         SharedPreferences prefs = ctx.getSharedPreferences(prefsName, Context.MODE_PRIVATE);
         prefs.registerOnSharedPreferenceChangeListener(this);
 
-        // Read info.json for preview class
+        // Read info.json for preview class and optional VK plugin
         String previewClass = null;
+        String pluginVk = null;
         try (InputStream is = ctx.getAssets().open(pluginId + "/info.json")) {
             byte[] buf = new byte[is.available()];
             is.read(buf);
             JSONObject info = new JSONObject(new String(buf, "UTF-8"));
             previewClass = info.optString("previewClass", null);
+            pluginVk = info.optString("pluginVk", null);
         } catch (Exception ignored) {}
         mPreviewClass = previewClass;
 
@@ -99,6 +102,17 @@ public class PluginSettingsFragment extends PreferenceFragmentCompat
             return true;
         });
         screen.addPreference(applyPref);
+
+        // Vulkan renderer toggle (if a VK plugin is available)
+        if (pluginVk != null) {
+            SwitchPreferenceCompat vkSwitch = new SwitchPreferenceCompat(ctx);
+            vkSwitch.setKey("use_vulkan");
+            vkSwitch.setTitle("Vulkan Renderer");
+            vkSwitch.setSummary("Use Vulkan for better performance (reapply wallpaper to take effect)");
+            vkSwitch.setDefaultValue(false);
+            vkSwitch.setLayoutResource(com.reandroid.wallpaper.R.layout.preference_modern_item);
+            screen.addPreference(vkSwitch);
+        }
 
         // Dynamic preferences from layout.json
         JSONObject layout = PluginResources.loadLayout(ctx, pluginId);

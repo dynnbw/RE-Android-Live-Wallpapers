@@ -71,12 +71,12 @@ inline void vkArgbToRgba(int32_t* pixels, size_t count) {
     for (size_t i = 0; i < count; ++i) {
         uint8_t* p = reinterpret_cast<uint8_t*>(&pixels[i]);
         uint8_t a = p[3], r = p[2], g = p[1], b = p[0];
-        // (a << 24) | (b << 16) | (g << 8) | r → (a << 24) | (r << 16) | (g << 8) | b
+        // Android ARGB (0xAARRGGBB) → Vulkan RGBA (bytes: [R,G,B,A], little-endian 0xAABBGGRR)
         pixels[i] = static_cast<int32_t>(
             (static_cast<uint32_t>(a) << 24) |
-            (static_cast<uint32_t>(r) << 16) |
+            (static_cast<uint32_t>(b) << 16) |
             (static_cast<uint32_t>(g) << 8) |
-            static_cast<uint32_t>(b));
+            static_cast<uint32_t>(r));
     }
 }
 
@@ -249,12 +249,13 @@ public:
         std::vector<VkSurfaceFormatKHR> formats(fmtCount);
         vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice_, surface_, &fmtCount, formats.data());
 
-        swapchainFormat_ = formats[0].format;
+        VkSurfaceFormatKHR selectedFormat = formats[0];
         for (const auto& f : formats) {
-            if (f.format == VK_FORMAT_R8G8B8A8_SRGB && f.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
-                swapchainFormat_ = f.format; break;
+            if (f.format == VK_FORMAT_B8G8R8A8_UNORM || f.format == VK_FORMAT_R8G8B8A8_UNORM) {
+                selectedFormat = f; break;
             }
         }
+        swapchainFormat_ = selectedFormat.format;
 
         VkExtent2D extent = caps.currentExtent;
         if (extent.width == 0 || extent.height == 0) { LOGE("zero surface extent"); return false; }
@@ -564,7 +565,7 @@ public:
         VkImageCreateInfo ii{};
         ii.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
         ii.imageType = VK_IMAGE_TYPE_2D;
-        ii.format = VK_FORMAT_R8G8B8A8_SRGB;
+        ii.format = VK_FORMAT_R8G8B8A8_UNORM;
         ii.extent = {w, h, 1};
         ii.mipLevels = 1;
         ii.arrayLayers = 1;
@@ -609,7 +610,7 @@ public:
         vi.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
         vi.image = image;
         vi.viewType = VK_IMAGE_VIEW_TYPE_2D;
-        vi.format = VK_FORMAT_R8G8B8A8_SRGB;
+        vi.format = VK_FORMAT_R8G8B8A8_UNORM;
         vi.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         vi.subresourceRange.levelCount = 1;
         vi.subresourceRange.layerCount = 1;
@@ -665,7 +666,7 @@ protected:
     VkCommandPool commandPool_ = VK_NULL_HANDLE;
     VkSurfaceKHR surface_ = VK_NULL_HANDLE;
     VkSwapchainKHR swapchain_ = VK_NULL_HANDLE;
-    VkFormat swapchainFormat_ = VK_FORMAT_R8G8B8A8_SRGB;
+    VkFormat swapchainFormat_ = VK_FORMAT_R8G8B8A8_UNORM;
     VkExtent2D swapchainExtent_{};
     VkRenderPass renderPass_ = VK_NULL_HANDLE;
     VkSemaphore imageAvailableSemaphore_ = VK_NULL_HANDLE;

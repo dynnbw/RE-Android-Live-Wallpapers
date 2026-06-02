@@ -1,5 +1,6 @@
 {
   "label": "@string/wallpaper_fall",
   "plugin": "com.reandroid.wallpaper.fall.FallPlugin",
+  "pluginVk": "com.reandroid.wallpaper.fall.FallVKPlugin",
   "previewClass": "com.reandroid.wallpaper.fall.FallGL"
 }
