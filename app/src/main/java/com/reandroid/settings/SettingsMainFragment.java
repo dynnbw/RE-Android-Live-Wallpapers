@@ -118,7 +118,7 @@ public class SettingsMainFragment extends PreferenceFragmentCompat {
                 } catch (Exception ignored) {
                     continue;
                 }
-                if (fragmentClass == null || label == null) continue;
+                if (label == null) continue;
 
                 // Resolve @string/ references
                 String title = label;

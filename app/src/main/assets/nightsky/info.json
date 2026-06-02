@@ -1,5 +1,4 @@
 {
-  "fragment": "com.reandroid.settings.NightSkySettingsFragment",
   "label": "@string/wallpaper_nightsky",
   "plugin": "com.reandroid.wallpaper.nightsky.NightSkyPlugin",
   "previewClass": "com.reandroid.wallpaper.nightsky.NightSkyGL"

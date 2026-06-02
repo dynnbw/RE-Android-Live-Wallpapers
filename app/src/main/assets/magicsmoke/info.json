@@ -1,5 +1,4 @@
 {
-  "fragment": "com.reandroid.settings.MagicSmokeSettingsFragment",
   "label": "@string/wallpaper_magicsmoke",
   "plugin": "com.reandroid.wallpaper.magicsmoke.MagicSmokePlugin",
   "previewClass": "com.reandroid.wallpaper.magicsmoke.MagicSmokeGL"

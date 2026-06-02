@@ -1,5 +1,4 @@
 {
-  "fragment": "com.reandroid.settings.WalkAroundSettingsFragment",
   "label": "@string/wallpaper_walkaround",
   "plugin": "com.reandroid.wallpaper.walkaround.WalkAroundPlugin",
   "previewClass": "com.reandroid.wallpaper.walkaround.WalkAroundGL"

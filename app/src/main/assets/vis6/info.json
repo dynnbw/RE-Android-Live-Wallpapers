@@ -1,4 +1,4 @@
-{"fragment": "com.reandroid.settings.MusicVis6SettingsFragment", "label": "@string/wallpaper_vis6",
+{"label": "@string/wallpaper_vis6",
   "plugin": "com.reandroid.wallpaper.musicvis.Vis6Plugin",
   "previewClass": "com.reandroid.wallpaper.musicvis.MusicVisCircleScene"
 }

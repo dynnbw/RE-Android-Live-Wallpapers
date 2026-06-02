@@ -9,3 +9,9 @@
 
 # Keep preference fragments used through fragment class names in preference XML.
 -keep public class * extends androidx.preference.PreferenceFragmentCompat
+
+# Keep setPluginPrefs(SharedPreferences) — called via reflection from
+# BasePluginEngine.tryInjectPrefs() and PluginSettingsFragment.createPreviewScene().
+-keepclassmembers class * extends com.reandroid.gles.GLESScene {
+    public void setPluginPrefs(android.content.SharedPreferences);
+}

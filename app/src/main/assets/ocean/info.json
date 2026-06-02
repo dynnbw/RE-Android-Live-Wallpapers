@@ -1,5 +1,4 @@
 {
-  "fragment": "com.reandroid.settings.OceanSettingsFragment",
   "label": "@string/wallpaper_ocean",
   "plugin": "com.reandroid.wallpaper.weatherwallpapers.ocean.OceanPlugin",
   "previewClass": "com.reandroid.wallpaper.weatherwallpapers.ocean.OceanWeatherGL"

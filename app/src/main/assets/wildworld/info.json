@@ -1,5 +1,4 @@
 {
-  "fragment": "com.reandroid.settings.WildWorldSettingsFragment",
   "label": "@string/wallpaper_wildworld",
   "plugin": "com.reandroid.wallpaper.wildworld.WildWorldPlugin",
   "previewClass": "com.reandroid.wallpaper.wildworld.WildWorldGL"

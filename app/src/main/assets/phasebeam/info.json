@@ -1,5 +1,4 @@
 {
-  "fragment": "com.reandroid.settings.PhaseBeamSettingsFragment",
   "label": "@string/wallpaper_phasebeam",
   "plugin": "com.reandroid.wallpaper.phasebeam.PhaseBeamPlugin",
   "previewClass": "com.reandroid.wallpaper.phasebeam.PhaseBeamGL"

@@ -9,6 +9,13 @@ import androidx.preference.PreferenceManager;
 import com.reandroid.gles.GLESWallpaper;
 
 public class WallpaperSettings {
+    private static volatile android.content.SharedPreferences sInjectedPrefs;
+
+    /** Called by VK/plugin engines to inject plugin-isolated prefs. */
+    public static void setSharedPreferences(android.content.SharedPreferences prefs) {
+        sInjectedPrefs = prefs;
+    }
+
     public static final String KEY_GLOBAL_FRAME_RATE = "global_frame_rate";
     public static final String KEY_VK_ANR_DIAGNOSTICS = "pref_vk_anr_diag";
 
@@ -43,6 +50,7 @@ public class WallpaperSettings {
     }
 
     private static SharedPreferences prefs() {
+        if (sInjectedPrefs != null) return sInjectedPrefs;
         Context ctx = getContext();
         if (ctx == null) return null;
         return PreferenceManager.getDefaultSharedPreferences(ctx);

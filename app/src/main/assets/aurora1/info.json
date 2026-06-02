@@ -1,5 +1,4 @@
 {
-  "fragment": "com.reandroid.settings.Aurora1SettingsFragment",
   "label": "@string/wallpaper_aurora1",
   "plugin": "com.reandroid.wallpaper.aurora1.Aurora1Plugin",
   "previewClass": "com.reandroid.wallpaper.aurora1.Aurora1GL"
