@@ -1,28 +1,5 @@
-#define VK_USE_PLATFORM_ANDROID_KHR
-
-#include <jni.h>
-
-#include <android/asset_manager.h>
-#include <android/asset_manager_jni.h>
-#include <android/log.h>
-#include <android/native_window.h>
-#include <android/native_window_jni.h>
-
-#include <vulkan/vulkan.h>
-
-#include <algorithm>
-#include <array>
-#include <cstddef>
-#include <cstdint>
-#include <cstring>
-#include <limits>
-#include <mutex>
-#include <string>
-#include <vector>
-
 #define LOG_TAG "GrassVK"
-#define LOGI(...) __android_log_print(ANDROID_LOG_INFO,  LOG_TAG, __VA_ARGS__)
-#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
+#include "vk_common.h"
 
 namespace {
 
@@ -93,10 +70,102 @@ struct GpuTexture {
 };
 
 // ---- main renderer class ----
-class GrassVkRenderer {
+class GrassVkRenderer : public VkRendererBase<GrassVkRenderer> {
 public:
     explicit GrassVkRenderer(AAssetManager* am) : assetManager_(am) {}
     ~GrassVkRenderer() { destroy(); }
+
+    // ── CRTP hooks ──
+
+    AAssetManager* getAssetManager() { return assetManager_; }
+
+    bool isSceneReadyLocked() const {
+        return skyPipeline_ != VK_NULL_HANDLE && grassPipeline_ != VK_NULL_HANDLE
+            && spritePipeline_ != VK_NULL_HANDLE && moonPipeline_ != VK_NULL_HANDLE
+            && skyDescriptorSet_ != VK_NULL_HANDLE
+            && grassDescriptorSet_ != VK_NULL_HANDLE
+            && spriteDescriptorSets_[0] != VK_NULL_HANDLE
+            && moonDescriptorSet_ != VK_NULL_HANDLE
+            && !swapchainCommandBuffers_.empty();
+    }
+
+    bool onDeviceCreated() {
+        if (!createGrassGeometryBuffersLocked()) return false;
+        if (!createSpriteGeometryBuffersLocked()) return false;
+        if (!createSkyDescriptorResourcesLocked()) return false;
+        if (!createGrassDescriptorResourcesLocked()) return false;
+        if (!createSpriteDescriptorResourcesLocked()) return false;
+        if (!createMoonDescriptorResourcesLocked()) return false;
+        // Upload any pending textures
+        for (uint32_t s = 0; s < kSkyTextureCount; ++s) {
+            ensureSkyTextureLocked(s);
+        }
+        ensureAATextureLocked();
+        for (uint32_t s = 0; s < kSpriteTextureCount; ++s) {
+            ensureSpriteTextureLocked(s);
+        }
+        updateMoonDescriptorLocked();
+        return true;
+    }
+
+    bool onSwapchainCreated() {
+        return true;
+    }
+
+    void destroyTexturesLocked() {
+        for (auto& st : skyTextures_) destroyGpuTextureLocked(st);
+        destroyGpuTextureLocked(aaTexture_);
+        for (auto& st : spriteTextures_) destroyGpuTextureLocked(st);
+
+        if (skyDescriptorPool_ != VK_NULL_HANDLE) {
+            vkDestroyDescriptorPool(device_, skyDescriptorPool_, nullptr);
+            skyDescriptorPool_ = VK_NULL_HANDLE;
+            skyDescriptorSet_ = VK_NULL_HANDLE;
+        }
+        if (skyDescriptorSetLayout_ != VK_NULL_HANDLE) {
+            vkDestroyDescriptorSetLayout(device_, skyDescriptorSetLayout_, nullptr);
+            skyDescriptorSetLayout_ = VK_NULL_HANDLE;
+        }
+        if (grassDescriptorPool_ != VK_NULL_HANDLE) {
+            vkDestroyDescriptorPool(device_, grassDescriptorPool_, nullptr);
+            grassDescriptorPool_ = VK_NULL_HANDLE;
+            grassDescriptorSet_ = VK_NULL_HANDLE;
+        }
+        if (grassDescriptorSetLayout_ != VK_NULL_HANDLE) {
+            vkDestroyDescriptorSetLayout(device_, grassDescriptorSetLayout_, nullptr);
+            grassDescriptorSetLayout_ = VK_NULL_HANDLE;
+        }
+        if (spriteDescriptorPool_ != VK_NULL_HANDLE) {
+            vkDestroyDescriptorPool(device_, spriteDescriptorPool_, nullptr);
+            spriteDescriptorPool_ = VK_NULL_HANDLE;
+            for (uint32_t i = 0; i < kSpriteTextureCount; ++i) {
+                spriteDescriptorSets_[i] = VK_NULL_HANDLE;
+            }
+        }
+        if (spriteDescriptorSetLayout_ != VK_NULL_HANDLE) {
+            vkDestroyDescriptorSetLayout(device_, spriteDescriptorSetLayout_, nullptr);
+            spriteDescriptorSetLayout_ = VK_NULL_HANDLE;
+        }
+        if (moonDescriptorPool_ != VK_NULL_HANDLE) {
+            vkDestroyDescriptorPool(device_, moonDescriptorPool_, nullptr);
+            moonDescriptorPool_ = VK_NULL_HANDLE;
+            moonDescriptorSet_ = VK_NULL_HANDLE;
+        }
+        if (moonDescriptorSetLayout_ != VK_NULL_HANDLE) {
+            vkDestroyDescriptorSetLayout(device_, moonDescriptorSetLayout_, nullptr);
+            moonDescriptorSetLayout_ = VK_NULL_HANDLE;
+        }
+    }
+
+    void recordCommandBuffersLocked(int /*w*/, int /*h*/) {
+        // Command buffers are recorded per-frame in render()
+    }
+
+    bool recoverRenderStateLocked() {
+        if (device_ == VK_NULL_HANDLE || window_ == nullptr) return false;
+        VkRendererBase::recoverRenderStateLocked(width_, height_);
+        return isReadyLocked();
+    }
 
     // ---- public interface ----
 
@@ -105,25 +174,19 @@ public:
         width_  = width;
         height_ = height;
 
-        if (!createInstanceLocked()) return false;
+        if (!createInstanceLocked("GrassVK")) return false;
 
-        destroySurfaceLocked();
+        ANativeWindow* newWindow = ANativeWindow_fromSurface(env, surface);
+        if (!newWindow) { LOGE("ANativeWindow_fromSurface failed"); return false; }
 
-        window_ = ANativeWindow_fromSurface(env, surface);
-        if (!window_) { LOGE("ANativeWindow_fromSurface failed"); return false; }
+        if (window_ != nullptr) {
+            ANativeWindow_release(window_);
+        }
+        window_ = newWindow;
 
-        VkAndroidSurfaceCreateInfoKHR sci{};
-        sci.sType  = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR;
-        sci.window = window_;
-        if (vkCreateAndroidSurfaceKHR(instance_, &sci, nullptr, &surface_) != VK_SUCCESS) {
-            LOGE("vkCreateAndroidSurfaceKHR failed");
+        if (!createOrUpdateSurfaceLocked(window_, width_, height_)) {
             ANativeWindow_release(window_);
             window_ = nullptr;
-            return false;
-        }
-
-        if (!createDeviceLocked() || !createSwapchainResourcesLocked()) {
-            destroySurfaceLocked();
             return false;
         }
         return true;
@@ -132,6 +195,10 @@ public:
     void destroySurface() {
         std::lock_guard<std::mutex> lock(mutex_);
         destroySurfaceLocked();
+        if (window_ != nullptr) {
+            ANativeWindow_release(window_);
+            window_ = nullptr;
+        }
     }
 
     void render(JNIEnv* env,
@@ -233,11 +300,11 @@ public:
         uint32_t imageIndex = 0;
         VkResult acquire = vkAcquireNextImageKHR(device_, swapchain_, UINT64_MAX,
                 imageAvailableSemaphore_, VK_NULL_HANDLE, &imageIndex);
-        if (acquire == VK_ERROR_SURFACE_LOST_KHR)  { recreateSurfaceAndSwapchainLocked(); return; }
+        if (acquire == VK_ERROR_SURFACE_LOST_KHR)  { createOrUpdateSurfaceLocked(window_, width_, height_); return; }
         if (acquire == VK_ERROR_OUT_OF_DATE_KHR || acquire == VK_SUBOPTIMAL_KHR) { recreateSwapchainLocked(); return; }
         if (acquire != VK_SUCCESS) { LOGE("vkAcquireNextImageKHR failed: %d", acquire); return; }
 
-        VkCommandBuffer cb = commandBuffers_[imageIndex];
+        VkCommandBuffer cb = swapchainCommandBuffers_[imageIndex];
         vkResetCommandBuffer(cb, 0);
         if (!recordCommandBufferLocked(cb, imageIndex,
             vertexCount, indexCount,
@@ -272,12 +339,12 @@ public:
         pi.pImageIndices      = &imageIndex;
 
         VkResult present = vkQueuePresentKHR(graphicsQueue_, &pi);
-        if (present == VK_ERROR_SURFACE_LOST_KHR) { recreateSurfaceAndSwapchainLocked(); return; }
+        if (present == VK_ERROR_SURFACE_LOST_KHR) { createOrUpdateSurfaceLocked(window_, width_, height_); return; }
         if (present == VK_ERROR_OUT_OF_DATE_KHR || present == VK_SUBOPTIMAL_KHR) { recreateSwapchainLocked(); return; }
         if (present != VK_SUCCESS) { LOGE("vkQueuePresentKHR failed: %d", present); }
     }
 
-    // slot: 0=night 1=sunrise 2=sunset 3=sky
+    // slot: 0=night 1=sunrise 2=sunset 3=sky 4=solar eclipse
     void setSkyTexture(JNIEnv* env, jint slot, jintArray argbPixels, jint width, jint height) {
         if (slot < 0 || slot >= static_cast<jint>(kSkyTextureCount)) return;
         if (!argbPixels || width <= 0 || height <= 0) return;
@@ -367,144 +434,14 @@ public:
 
     void destroy() {
         std::lock_guard<std::mutex> lock(mutex_);
-        destroySurfaceLocked();
-        destroyDeviceLocked();
-        if (instance_ != VK_NULL_HANDLE) {
-            vkDestroyInstance(instance_, nullptr);
-            instance_ = VK_NULL_HANDLE;
+        if (window_ != nullptr) {
+            ANativeWindow_release(window_);
+            window_ = nullptr;
         }
-    }
-
-    static bool isVulkanSupported() {
-        uint32_t extCount = 0;
-        return vkEnumerateInstanceExtensionProperties(nullptr, &extCount, nullptr) == VK_SUCCESS
-                && extCount > 0;
+        destroyDeviceLocked();
     }
 
 private:
-    // ===== instance / device =====
-
-    bool createInstanceLocked() {
-        if (instance_ != VK_NULL_HANDLE) return true;
-
-        VkApplicationInfo ai{};
-        ai.sType              = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-        ai.pApplicationName   = "GrassVK";
-        ai.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-        ai.pEngineName        = "GrassVK";
-        ai.engineVersion      = VK_MAKE_VERSION(1, 0, 0);
-        ai.apiVersion         = VK_API_VERSION_1_0;
-
-        std::array<const char*, 2> exts = {
-                VK_KHR_SURFACE_EXTENSION_NAME,
-                VK_KHR_ANDROID_SURFACE_EXTENSION_NAME};
-
-        VkInstanceCreateInfo ci{};
-        ci.sType                   = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-        ci.pApplicationInfo        = &ai;
-        ci.enabledExtensionCount   = static_cast<uint32_t>(exts.size());
-        ci.ppEnabledExtensionNames = exts.data();
-
-        if (vkCreateInstance(&ci, nullptr, &instance_) != VK_SUCCESS) {
-            LOGE("vkCreateInstance failed");
-            instance_ = VK_NULL_HANDLE;
-            return false;
-        }
-        return true;
-    }
-
-    bool createDeviceLocked() {
-        if (device_ != VK_NULL_HANDLE) return true;
-
-        uint32_t devCount = 0;
-        vkEnumeratePhysicalDevices(instance_, &devCount, nullptr);
-        if (devCount == 0) { LOGE("No Vulkan physical devices"); return false; }
-        std::vector<VkPhysicalDevice> devs(devCount);
-        vkEnumeratePhysicalDevices(instance_, &devCount, devs.data());
-
-        for (VkPhysicalDevice candidate : devs) {
-            uint32_t qfCount = 0;
-            vkGetPhysicalDeviceQueueFamilyProperties(candidate, &qfCount, nullptr);
-            std::vector<VkQueueFamilyProperties> qfProps(qfCount);
-            vkGetPhysicalDeviceQueueFamilyProperties(candidate, &qfCount, qfProps.data());
-            for (uint32_t i = 0; i < qfCount; ++i) {
-                VkBool32 present = VK_FALSE;
-                vkGetPhysicalDeviceSurfaceSupportKHR(candidate, i, surface_, &present);
-                if ((qfProps[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) && present) {
-                    physicalDevice_   = candidate;
-                    queueFamilyIndex_ = i;
-                    break;
-                }
-            }
-            if (physicalDevice_ != VK_NULL_HANDLE) break;
-        }
-        if (physicalDevice_ == VK_NULL_HANDLE) { LOGE("No suitable queue family"); return false; }
-
-        float prio = 1.0f;
-        VkDeviceQueueCreateInfo qci{};
-        qci.sType            = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-        qci.queueFamilyIndex = queueFamilyIndex_;
-        qci.queueCount       = 1;
-        qci.pQueuePriorities = &prio;
-
-        VkPhysicalDeviceFeatures features{};
-        const char* devExts[] = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
-
-        VkDeviceCreateInfo dci{};
-        dci.sType                   = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-        dci.queueCreateInfoCount    = 1;
-        dci.pQueueCreateInfos       = &qci;
-        dci.pEnabledFeatures        = &features;
-        dci.enabledExtensionCount   = 1;
-        dci.ppEnabledExtensionNames = devExts;
-
-        if (vkCreateDevice(physicalDevice_, &dci, nullptr, &device_) != VK_SUCCESS) {
-            LOGE("vkCreateDevice failed");
-            device_ = VK_NULL_HANDLE;
-            return false;
-        }
-        vkGetDeviceQueue(device_, queueFamilyIndex_, 0, &graphicsQueue_);
-
-        // command pool
-        VkCommandPoolCreateInfo cpi{};
-        cpi.sType            = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-        cpi.queueFamilyIndex = queueFamilyIndex_;
-        cpi.flags            = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-        if (vkCreateCommandPool(device_, &cpi, nullptr, &commandPool_) != VK_SUCCESS) {
-            LOGE("vkCreateCommandPool failed");
-            return false;
-        }
-
-        // semaphores + fence
-        VkSemaphoreCreateInfo semi{};
-        semi.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-        vkCreateSemaphore(device_, &semi, nullptr, &imageAvailableSemaphore_);
-        vkCreateSemaphore(device_, &semi, nullptr, &renderFinishedSemaphore_);
-
-        VkFenceCreateInfo fi{};
-        fi.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-        fi.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-        vkCreateFence(device_, &fi, nullptr, &inFlightFence_);
-
-        if (!createGrassGeometryBuffersLocked()) return false;
-        if (!createSpriteGeometryBuffersLocked()) return false;
-        if (!createSkyDescriptorResourcesLocked()) return false;
-        if (!createGrassDescriptorResourcesLocked()) return false;
-        if (!createSpriteDescriptorResourcesLocked()) return false;
-        if (!createMoonDescriptorResourcesLocked()) return false;
-
-        // Upload any pending textures
-        for (uint32_t s = 0; s < kSkyTextureCount; ++s) {
-            ensureSkyTextureLocked(s);
-        }
-        ensureAATextureLocked();
-        for (uint32_t s = 0; s < kSpriteTextureCount; ++s) {
-            ensureSpriteTextureLocked(s);
-        }
-        updateMoonDescriptorLocked();
-        return true;
-    }
-
     // ===== grass geometry buffers =====
 
     bool createGrassGeometryBuffersLocked() {
@@ -570,7 +507,7 @@ private:
         VkMemoryAllocateInfo ai{};
         ai.sType           = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
         ai.allocationSize  = req.size;
-        ai.memoryTypeIndex = findMemoryTypeLocked(req.memoryTypeBits,
+        ai.memoryTypeIndex = vkFindMemoryType(physicalDevice_, req.memoryTypeBits,
                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
         if (vkAllocateMemory(device_, &ai, nullptr, &outMem) != VK_SUCCESS) {
             LOGE("vkAllocateMemory failed");
@@ -622,251 +559,6 @@ private:
         env->ReleaseFloatArrayElements(vertsArr, verts, JNI_ABORT);
     }
 
-    // ===== swapchain =====
-
-    bool createSwapchainResourcesLocked() {
-        VkSurfaceCapabilitiesKHR caps{};
-        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice_, surface_, &caps);
-
-        uint32_t fmtCount = 0;
-        vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice_, surface_, &fmtCount, nullptr);
-        if (fmtCount == 0) { LOGE("No surface formats"); return false; }
-        std::vector<VkSurfaceFormatKHR> fmts(fmtCount);
-        vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice_, surface_, &fmtCount, fmts.data());
-
-        VkSurfaceFormatKHR selFmt = fmts[0];
-        for (const auto& f : fmts) {
-            if (f.format == VK_FORMAT_B8G8R8A8_UNORM || f.format == VK_FORMAT_R8G8B8A8_UNORM) {
-                selFmt = f; break;
-            }
-        }
-
-        VkExtent2D extent{};
-        if (caps.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
-            extent = caps.currentExtent;
-        } else {
-            extent.width  = std::max(caps.minImageExtent.width,
-                    std::min(caps.maxImageExtent.width,  static_cast<uint32_t>(std::max(width_,  1))));
-            extent.height = std::max(caps.minImageExtent.height,
-                    std::min(caps.maxImageExtent.height, static_cast<uint32_t>(std::max(height_, 1))));
-        }
-
-        uint32_t imgCount = caps.minImageCount + 1;
-        if (caps.maxImageCount > 0 && imgCount > caps.maxImageCount) imgCount = caps.maxImageCount;
-
-        VkSwapchainCreateInfoKHR sci{};
-        sci.sType            = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-        sci.surface          = surface_;
-        sci.minImageCount    = imgCount;
-        sci.imageFormat      = selFmt.format;
-        sci.imageColorSpace  = selFmt.colorSpace;
-        sci.imageExtent      = extent;
-        sci.imageArrayLayers = 1;
-        sci.imageUsage       = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-        sci.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        sci.preTransform     = caps.currentTransform;
-        sci.compositeAlpha   = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-        sci.presentMode      = VK_PRESENT_MODE_FIFO_KHR;
-        sci.clipped          = VK_TRUE;
-        sci.oldSwapchain     = VK_NULL_HANDLE;
-
-        if (vkCreateSwapchainKHR(device_, &sci, nullptr, &swapchain_) != VK_SUCCESS) {
-            LOGE("vkCreateSwapchainKHR failed"); return false;
-        }
-
-        uint32_t imgCnt = 0;
-        vkGetSwapchainImagesKHR(device_, swapchain_, &imgCnt, nullptr);
-        swapchainImages_.resize(imgCnt);
-        vkGetSwapchainImagesKHR(device_, swapchain_, &imgCnt, swapchainImages_.data());
-        swapchainFormat_ = selFmt.format;
-        swapchainExtent_ = extent;
-
-        swapchainImageViews_.resize(imgCnt);
-        for (size_t i = 0; i < imgCnt; ++i) {
-            VkImageViewCreateInfo vci{};
-            vci.sType                           = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-            vci.image                           = swapchainImages_[i];
-            vci.viewType                        = VK_IMAGE_VIEW_TYPE_2D;
-            vci.format                          = swapchainFormat_;
-            vci.subresourceRange.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;
-            vci.subresourceRange.baseMipLevel   = 0;
-            vci.subresourceRange.levelCount     = 1;
-            vci.subresourceRange.baseArrayLayer = 0;
-            vci.subresourceRange.layerCount     = 1;
-            if (vkCreateImageView(device_, &vci, nullptr, &swapchainImageViews_[i]) != VK_SUCCESS) {
-                LOGE("vkCreateImageView failed"); return false;
-            }
-        }
-
-        if (!createRenderPassLocked()) return false;
-        if (!createPipelinesLocked())  return false;
-
-        framebuffers_.resize(imgCnt);
-        for (size_t i = 0; i < imgCnt; ++i) {
-            VkImageView att[] = {swapchainImageViews_[i]};
-            VkFramebufferCreateInfo fci{};
-            fci.sType           = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-            fci.renderPass      = renderPass_;
-            fci.attachmentCount = 1;
-            fci.pAttachments    = att;
-            fci.width           = swapchainExtent_.width;
-            fci.height          = swapchainExtent_.height;
-            fci.layers          = 1;
-            if (vkCreateFramebuffer(device_, &fci, nullptr, &framebuffers_[i]) != VK_SUCCESS) {
-                LOGE("vkCreateFramebuffer failed"); return false;
-            }
-        }
-
-        commandBuffers_.resize(imgCnt);
-        VkCommandBufferAllocateInfo cbai{};
-        cbai.sType              = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-        cbai.commandPool        = commandPool_;
-        cbai.level              = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        cbai.commandBufferCount = static_cast<uint32_t>(imgCnt);
-        if (vkAllocateCommandBuffers(device_, &cbai, commandBuffers_.data()) != VK_SUCCESS) {
-            LOGE("vkAllocateCommandBuffers failed"); return false;
-        }
-        return true;
-    }
-
-    void destroySwapchainResourcesLocked() {
-        if (device_ != VK_NULL_HANDLE) vkDeviceWaitIdle(device_);
-
-        if (!commandBuffers_.empty()) {
-            vkFreeCommandBuffers(device_, commandPool_,
-                    static_cast<uint32_t>(commandBuffers_.size()), commandBuffers_.data());
-            commandBuffers_.clear();
-        }
-        for (VkFramebuffer fb : framebuffers_) vkDestroyFramebuffer(device_, fb, nullptr);
-        framebuffers_.clear();
-
-        if (skyPipeline_   != VK_NULL_HANDLE) { vkDestroyPipeline(device_, skyPipeline_,   nullptr); skyPipeline_   = VK_NULL_HANDLE; }
-        if (grassPipeline_ != VK_NULL_HANDLE) { vkDestroyPipeline(device_, grassPipeline_, nullptr); grassPipeline_ = VK_NULL_HANDLE; }
-        if (spritePipeline_ != VK_NULL_HANDLE) { vkDestroyPipeline(device_, spritePipeline_, nullptr); spritePipeline_ = VK_NULL_HANDLE; }
-        if (moonPipeline_ != VK_NULL_HANDLE) { vkDestroyPipeline(device_, moonPipeline_, nullptr); moonPipeline_ = VK_NULL_HANDLE; }
-        if (skyPipelineLayout_   != VK_NULL_HANDLE) { vkDestroyPipelineLayout(device_, skyPipelineLayout_,   nullptr); skyPipelineLayout_   = VK_NULL_HANDLE; }
-        if (grassPipelineLayout_ != VK_NULL_HANDLE) { vkDestroyPipelineLayout(device_, grassPipelineLayout_, nullptr); grassPipelineLayout_ = VK_NULL_HANDLE; }
-        if (spritePipelineLayout_ != VK_NULL_HANDLE) { vkDestroyPipelineLayout(device_, spritePipelineLayout_, nullptr); spritePipelineLayout_ = VK_NULL_HANDLE; }
-        if (moonPipelineLayout_ != VK_NULL_HANDLE) { vkDestroyPipelineLayout(device_, moonPipelineLayout_, nullptr); moonPipelineLayout_ = VK_NULL_HANDLE; }
-        if (renderPass_ != VK_NULL_HANDLE) { vkDestroyRenderPass(device_, renderPass_, nullptr); renderPass_ = VK_NULL_HANDLE; }
-
-        for (VkImageView iv : swapchainImageViews_) vkDestroyImageView(device_, iv, nullptr);
-        swapchainImageViews_.clear();
-        swapchainImages_.clear();
-
-        if (swapchain_ != VK_NULL_HANDLE) { vkDestroySwapchainKHR(device_, swapchain_, nullptr); swapchain_ = VK_NULL_HANDLE; }
-    }
-
-    bool recreateSwapchainLocked() {
-        if (device_ == VK_NULL_HANDLE || surface_ == VK_NULL_HANDLE) return false;
-        destroySwapchainResourcesLocked();
-        return createSwapchainResourcesLocked();
-    }
-
-    bool recreateSurfaceAndSwapchainLocked() {
-        if (instance_ == VK_NULL_HANDLE || window_ == nullptr) return false;
-        destroySwapchainResourcesLocked();
-        if (surface_ != VK_NULL_HANDLE) { vkDestroySurfaceKHR(instance_, surface_, nullptr); surface_ = VK_NULL_HANDLE; }
-
-        VkAndroidSurfaceCreateInfoKHR sci{};
-        sci.sType  = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR;
-        sci.window = window_;
-        if (vkCreateAndroidSurfaceKHR(instance_, &sci, nullptr, &surface_) != VK_SUCCESS) {
-            LOGE("vkCreateAndroidSurfaceKHR (recreate) failed");
-            surface_ = VK_NULL_HANDLE;
-            return false;
-        }
-        return createSwapchainResourcesLocked();
-    }
-
-    void recreateInFlightFenceLocked() {
-        if (device_ == VK_NULL_HANDLE) return;
-        if (inFlightFence_ != VK_NULL_HANDLE) { vkDestroyFence(device_, inFlightFence_, nullptr); inFlightFence_ = VK_NULL_HANDLE; }
-        VkFenceCreateInfo fi{};
-        fi.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-        fi.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-        vkCreateFence(device_, &fi, nullptr, &inFlightFence_);
-    }
-
-    bool recoverRenderStateLocked() {
-        if (device_ == VK_NULL_HANDLE || window_ == nullptr) return false;
-
-        if (surface_ == VK_NULL_HANDLE) {
-            if (!recreateSurfaceAndSwapchainLocked()) return false;
-        }
-        if (swapchain_ == VK_NULL_HANDLE || renderPass_ == VK_NULL_HANDLE
-                || skyPipeline_ == VK_NULL_HANDLE || grassPipeline_ == VK_NULL_HANDLE
-                || commandBuffers_.empty()) {
-            if (!recreateSwapchainLocked()) return false;
-        }
-        if (skyDescriptorSet_ == VK_NULL_HANDLE) {
-            if (!createSkyDescriptorResourcesLocked()) return false;
-        }
-        if (grassDescriptorSet_ == VK_NULL_HANDLE) {
-            if (!createGrassDescriptorResourcesLocked()) return false;
-        }
-        if (spriteDescriptorSetLayout_ == VK_NULL_HANDLE || spritePipelineLayout_ == VK_NULL_HANDLE) {
-            if (!createSpriteDescriptorResourcesLocked()) return false;
-        }
-        if (moonDescriptorSetLayout_ == VK_NULL_HANDLE || moonPipelineLayout_ == VK_NULL_HANDLE) {
-            if (!createMoonDescriptorResourcesLocked()) return false;
-        }
-        for (uint32_t s = 0; s < kSkyTextureCount; ++s) {
-            if (!skyTextures_[s].isValid()) ensureSkyTextureLocked(s);
-        }
-        if (!aaTexture_.isValid()) ensureAATextureLocked();
-        for (uint32_t s = 0; s < kSpriteTextureCount; ++s) {
-            if (!spriteTextures_[s].isValid()) ensureSpriteTextureLocked(s);
-        }
-        updateMoonDescriptorLocked();
-        return true;
-    }
-
-    // ===== render pass =====
-
-    bool createRenderPassLocked() {
-        VkAttachmentDescription att{};
-        att.format         = swapchainFormat_;
-        att.samples        = VK_SAMPLE_COUNT_1_BIT;
-        att.loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        att.storeOp        = VK_ATTACHMENT_STORE_OP_STORE;
-        att.stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-        att.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        att.initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED;
-        att.finalLayout    = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-
-        VkAttachmentReference ref{};
-        ref.attachment = 0;
-        ref.layout     = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-        VkSubpassDescription sub{};
-        sub.pipelineBindPoint    = VK_PIPELINE_BIND_POINT_GRAPHICS;
-        sub.colorAttachmentCount = 1;
-        sub.pColorAttachments    = &ref;
-
-        VkSubpassDependency dep{};
-        dep.srcSubpass    = VK_SUBPASS_EXTERNAL;
-        dep.dstSubpass    = 0;
-        dep.srcStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        dep.dstStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        dep.srcAccessMask = 0;
-        dep.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-
-        VkRenderPassCreateInfo rpci{};
-        rpci.sType           = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-        rpci.attachmentCount = 1;
-        rpci.pAttachments    = &att;
-        rpci.subpassCount    = 1;
-        rpci.pSubpasses      = &sub;
-        rpci.dependencyCount = 1;
-        rpci.pDependencies   = &dep;
-
-        if (vkCreateRenderPass(device_, &rpci, nullptr, &renderPass_) != VK_SUCCESS) {
-            LOGE("vkCreateRenderPass failed"); return false;
-        }
-        return true;
-    }
-
     // ===== pipelines =====
 
     bool createPipelinesLocked() {
@@ -907,6 +599,17 @@ private:
         return skyPipeline_ != VK_NULL_HANDLE && grassPipeline_ != VK_NULL_HANDLE
             && spritePipeline_ != VK_NULL_HANDLE
             && moonPipeline_ != VK_NULL_HANDLE;
+    }
+
+    void destroyPipelinesLocked() {
+        if (skyPipeline_   != VK_NULL_HANDLE) { vkDestroyPipeline(device_, skyPipeline_,   nullptr); skyPipeline_   = VK_NULL_HANDLE; }
+        if (grassPipeline_ != VK_NULL_HANDLE) { vkDestroyPipeline(device_, grassPipeline_, nullptr); grassPipeline_ = VK_NULL_HANDLE; }
+        if (spritePipeline_ != VK_NULL_HANDLE) { vkDestroyPipeline(device_, spritePipeline_, nullptr); spritePipeline_ = VK_NULL_HANDLE; }
+        if (moonPipeline_ != VK_NULL_HANDLE) { vkDestroyPipeline(device_, moonPipeline_, nullptr); moonPipeline_ = VK_NULL_HANDLE; }
+        if (skyPipelineLayout_   != VK_NULL_HANDLE) { vkDestroyPipelineLayout(device_, skyPipelineLayout_,   nullptr); skyPipelineLayout_   = VK_NULL_HANDLE; }
+        if (grassPipelineLayout_ != VK_NULL_HANDLE) { vkDestroyPipelineLayout(device_, grassPipelineLayout_, nullptr); grassPipelineLayout_ = VK_NULL_HANDLE; }
+        if (spritePipelineLayout_ != VK_NULL_HANDLE) { vkDestroyPipelineLayout(device_, spritePipelineLayout_, nullptr); spritePipelineLayout_ = VK_NULL_HANDLE; }
+        if (moonPipelineLayout_ != VK_NULL_HANDLE) { vkDestroyPipelineLayout(device_, moonPipelineLayout_, nullptr); moonPipelineLayout_ = VK_NULL_HANDLE; }
     }
 
     VkPipelineLayout createPipelineLayoutLocked(PipelineType type) {
@@ -968,15 +671,12 @@ private:
             binding.stride    = sizeof(GrassVertex);
             binding.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
-            // location 0: vec2 position
             attrs[0].binding  = 0; attrs[0].location = 0;
             attrs[0].format   = VK_FORMAT_R32G32_SFLOAT;
             attrs[0].offset   = offsetof(GrassVertex, x);
-            // location 1: vec4 color
             attrs[1].binding  = 0; attrs[1].location = 1;
             attrs[1].format   = VK_FORMAT_R32G32B32A32_SFLOAT;
             attrs[1].offset   = offsetof(GrassVertex, r);
-            // location 2: vec2 texcoord
             attrs[2].binding  = 0; attrs[2].location = 2;
             attrs[2].format   = VK_FORMAT_R32G32_SFLOAT;
             attrs[2].offset   = offsetof(GrassVertex, s);
@@ -1013,9 +713,7 @@ private:
 
         VkPipelineInputAssemblyStateCreateInfo ias{};
         ias.sType    = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-        ias.topology = (type == PIPELINE_SKY)
-                ? VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST
-                : VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+        ias.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 
         VkPipelineViewportStateCreateInfo vps{};
         vps.sType         = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -1088,7 +786,6 @@ private:
                 && skyDescriptorPool_ != VK_NULL_HANDLE
                 && skyDescriptorSet_  != VK_NULL_HANDLE) return true;
 
-        // 4 bindings, one per sky texture
         VkDescriptorSetLayoutBinding bindings[kSkyTextureCount]{};
         for (uint32_t i = 0; i < kSkyTextureCount; ++i) {
             bindings[i].binding         = i;
@@ -1363,7 +1060,6 @@ private:
             }
             return;
         }
-        // Fallback: 1x1 opaque black
         const uint8_t fallback[4] = {0,0,0,255};
         if (uploadTextureLocked(fallback, 1, 1,
                 VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
@@ -1384,7 +1080,6 @@ private:
             }
             return;
         }
-        // Fallback: 1x1 white
         const uint8_t fallback[4] = {255,255,255,255};
         if (uploadTextureLocked(fallback, 1, 1,
                 VK_FILTER_NEAREST, VK_SAMPLER_ADDRESS_MODE_REPEAT,
@@ -1440,7 +1135,7 @@ private:
             VkMemoryAllocateInfo ai{};
             ai.sType           = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
             ai.allocationSize  = req.size;
-            ai.memoryTypeIndex = findMemoryTypeLocked(req.memoryTypeBits,
+            ai.memoryTypeIndex = vkFindMemoryType(physicalDevice_, req.memoryTypeBits,
                     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
             if (vkAllocateMemory(device_, &ai, nullptr, &stageMem) != VK_SUCCESS) {
                 LOGE("vkAllocateMemory (staging) failed");
@@ -1449,8 +1144,13 @@ private:
             }
             vkBindBufferMemory(device_, stageBuf, stageMem, 0);
             void* mapped = nullptr;
-            vkMapMemory(device_, stageMem, 0, imageSize, 0, &mapped);
-            if (mapped) std::memcpy(mapped, rgbaPixels, static_cast<size_t>(imageSize));
+            if (vkMapMemory(device_, stageMem, 0, imageSize, 0, &mapped) != VK_SUCCESS || mapped == nullptr) {
+                LOGE("vkMapMemory (staging) failed");
+                vkFreeMemory(device_, stageMem, nullptr);
+                vkDestroyBuffer(device_, stageBuf, nullptr);
+                return false;
+            }
+            if (rgbaPixels) std::memcpy(mapped, rgbaPixels, static_cast<size_t>(imageSize));
             vkUnmapMemory(device_, stageMem);
         }
 
@@ -1479,7 +1179,7 @@ private:
         VkMemoryAllocateInfo imgAI{};
         imgAI.sType           = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
         imgAI.allocationSize  = imgReq.size;
-        imgAI.memoryTypeIndex = findMemoryTypeLocked(imgReq.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+        imgAI.memoryTypeIndex = vkFindMemoryType(physicalDevice_, imgReq.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
         if (vkAllocateMemory(device_, &imgAI, nullptr, &tex.memory) != VK_SUCCESS) {
             LOGE("vkAllocateMemory (image) failed");
             vkDestroyImage(device_, tex.image, nullptr); tex.image = VK_NULL_HANDLE;
@@ -1504,7 +1204,11 @@ private:
         region.imageExtent = {width, height, 1};
         vkCmdCopyBufferToImage(cb, stageBuf, tex.image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
         transitionImageLayoutLocked(cb, tex.image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-        endOneTimeCommandsLocked(cb);
+        if (!endOneTimeCommandsLocked(cb)) {
+            vkFreeMemory(device_, stageMem, nullptr);
+            vkDestroyBuffer(device_, stageBuf, nullptr);
+            return false;
+        }
 
         vkFreeMemory(device_, stageMem, nullptr);
         vkDestroyBuffer(device_, stageBuf, nullptr);
@@ -1569,7 +1273,7 @@ private:
         VkRenderPassBeginInfo rpbi{};
         rpbi.sType             = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
         rpbi.renderPass        = renderPass_;
-        rpbi.framebuffer       = framebuffers_[imageIndex];
+        rpbi.framebuffer       = swapchainFramebuffers_[imageIndex];
         rpbi.renderArea.offset = {0, 0};
         rpbi.renderArea.extent = swapchainExtent_;
         rpbi.clearValueCount   = 1;
@@ -1661,229 +1365,14 @@ private:
         return true;
     }
 
-    // ===== one-time commands =====
-
-    VkCommandBuffer beginOneTimeCommandsLocked() {
-        VkCommandBufferAllocateInfo ai{};
-        ai.sType              = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-        ai.level              = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        ai.commandPool        = commandPool_;
-        ai.commandBufferCount = 1;
-        VkCommandBuffer cb = VK_NULL_HANDLE;
-        if (vkAllocateCommandBuffers(device_, &ai, &cb) != VK_SUCCESS) return VK_NULL_HANDLE;
-
-        VkCommandBufferBeginInfo bi{};
-        bi.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-        bi.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-        if (vkBeginCommandBuffer(cb, &bi) != VK_SUCCESS) {
-            vkFreeCommandBuffers(device_, commandPool_, 1, &cb);
-            return VK_NULL_HANDLE;
-        }
-        return cb;
-    }
-
-    void endOneTimeCommandsLocked(VkCommandBuffer cb) {
-        vkEndCommandBuffer(cb);
-        VkSubmitInfo si{};
-        si.sType              = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-        si.commandBufferCount = 1;
-        si.pCommandBuffers    = &cb;
-        vkQueueSubmit(graphicsQueue_, 1, &si, VK_NULL_HANDLE);
-        vkQueueWaitIdle(graphicsQueue_);
-        vkFreeCommandBuffers(device_, commandPool_, 1, &cb);
-    }
-
-    void transitionImageLayoutLocked(VkCommandBuffer cb, VkImage image,
-            VkImageLayout oldLayout, VkImageLayout newLayout) {
-        VkImageMemoryBarrier barrier{};
-        barrier.sType                           = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-        barrier.oldLayout                       = oldLayout;
-        barrier.newLayout                       = newLayout;
-        barrier.srcQueueFamilyIndex             = VK_QUEUE_FAMILY_IGNORED;
-        barrier.dstQueueFamilyIndex             = VK_QUEUE_FAMILY_IGNORED;
-        barrier.image                           = image;
-        barrier.subresourceRange.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;
-        barrier.subresourceRange.baseMipLevel   = 0;
-        barrier.subresourceRange.levelCount     = 1;
-        barrier.subresourceRange.baseArrayLayer = 0;
-        barrier.subresourceRange.layerCount     = 1;
-
-        VkPipelineStageFlags src, dst;
-        if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
-            barrier.srcAccessMask = 0;
-            barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-            src = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-            dst = VK_PIPELINE_STAGE_TRANSFER_BIT;
-        } else {
-            barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-            barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-            src = VK_PIPELINE_STAGE_TRANSFER_BIT;
-            dst = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-        }
-        vkCmdPipelineBarrier(cb, src, dst, 0, 0, nullptr, 0, nullptr, 1, &barrier);
-    }
-
-    // ===== shader loading =====
-
-    VkShaderModule createShaderModuleLocked(std::initializer_list<const char*> candidates) {
-        std::vector<uint8_t> bytes;
-        for (const char* path : candidates) {
-            bytes = readAssetLocked(path);
-            if (!bytes.empty()) break;
-        }
-        if (bytes.empty()) { LOGE("Failed to load shader"); return VK_NULL_HANDLE; }
-
-        VkShaderModuleCreateInfo ci{};
-        ci.sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-        ci.codeSize = bytes.size();
-        ci.pCode    = reinterpret_cast<const uint32_t*>(bytes.data());
-        VkShaderModule sm = VK_NULL_HANDLE;
-        if (vkCreateShaderModule(device_, &ci, nullptr, &sm) != VK_SUCCESS) {
-            LOGE("vkCreateShaderModule failed"); return VK_NULL_HANDLE;
-        }
-        return sm;
-    }
-
-    std::vector<uint8_t> readAssetLocked(const char* path) const {
-        if (!assetManager_) return {};
-        AAsset* asset = AAssetManager_open(assetManager_, path, AASSET_MODE_BUFFER);
-        if (!asset) return {};
-        off_t len = AAsset_getLength(asset);
-        std::vector<uint8_t> data(static_cast<size_t>(len));
-        AAsset_read(asset, data.data(), len);
-        AAsset_close(asset);
-        return data;
-    }
-
-    // ===== helpers =====
-
-    uint32_t findMemoryTypeLocked(uint32_t typeFilter, VkMemoryPropertyFlags props) const {
-        VkPhysicalDeviceMemoryProperties mp{};
-        vkGetPhysicalDeviceMemoryProperties(physicalDevice_, &mp);
-        for (uint32_t i = 0; i < mp.memoryTypeCount; ++i) {
-            if ((typeFilter & (1u << i)) && (mp.memoryTypes[i].propertyFlags & props) == props)
-                return i;
-        }
-        return 0;
-    }
-
-    bool isReadyLocked() const {
-        return instance_ != VK_NULL_HANDLE && device_ != VK_NULL_HANDLE
-                && surface_ != VK_NULL_HANDLE && swapchain_ != VK_NULL_HANDLE
-                && renderPass_  != VK_NULL_HANDLE
-            && skyPipeline_ != VK_NULL_HANDLE && grassPipeline_ != VK_NULL_HANDLE
-            && spritePipeline_ != VK_NULL_HANDLE
-                && moonPipeline_ != VK_NULL_HANDLE
-                && skyDescriptorSet_  != VK_NULL_HANDLE
-                && grassDescriptorSet_ != VK_NULL_HANDLE
-            && spriteDescriptorSets_[0] != VK_NULL_HANDLE
-                && moonDescriptorSet_ != VK_NULL_HANDLE
-                && !commandBuffers_.empty();
-    }
-
-    // ===== cleanup =====
-
-    void destroySurfaceLocked() {
-        destroySwapchainResourcesLocked();
-        if (surface_ != VK_NULL_HANDLE) { vkDestroySurfaceKHR(instance_, surface_, nullptr); surface_ = VK_NULL_HANDLE; }
-        if (window_  != nullptr)        { ANativeWindow_release(window_);                      window_  = nullptr; }
-    }
-
-    void destroyDeviceLocked() {
-        if (device_ == VK_NULL_HANDLE) return;
-        vkDeviceWaitIdle(device_);
-
-        // sky textures
-        for (auto& st : skyTextures_) destroyGpuTextureLocked(st);
-        destroyGpuTextureLocked(aaTexture_);
-        for (auto& st : spriteTextures_) destroyGpuTextureLocked(st);
-
-        // grass geometry buffers
-        if (grassVertexMapped_) { vkUnmapMemory(device_, grassVertexMemory_); grassVertexMapped_ = nullptr; }
-        if (grassIndexMapped_)  { vkUnmapMemory(device_, grassIndexMemory_);  grassIndexMapped_  = nullptr; }
-        if (grassVertexBuffer_ != VK_NULL_HANDLE) { vkDestroyBuffer(device_, grassVertexBuffer_, nullptr); grassVertexBuffer_ = VK_NULL_HANDLE; }
-        if (grassVertexMemory_ != VK_NULL_HANDLE) { vkFreeMemory(device_,    grassVertexMemory_, nullptr); grassVertexMemory_ = VK_NULL_HANDLE; }
-        if (grassIndexBuffer_  != VK_NULL_HANDLE) { vkDestroyBuffer(device_, grassIndexBuffer_,  nullptr); grassIndexBuffer_  = VK_NULL_HANDLE; }
-        if (grassIndexMemory_  != VK_NULL_HANDLE) { vkFreeMemory(device_,    grassIndexMemory_,  nullptr); grassIndexMemory_  = VK_NULL_HANDLE; }
-
-        if (sunVertexMapped_) { vkUnmapMemory(device_, sunVertexMemory_); sunVertexMapped_ = nullptr; }
-        if (dandelionVertexMapped_) { vkUnmapMemory(device_, dandelionVertexMemory_); dandelionVertexMapped_ = nullptr; }
-        if (fireflyVertexMapped_) { vkUnmapMemory(device_, fireflyVertexMemory_); fireflyVertexMapped_ = nullptr; }
-        if (fireflyFlareVertexMapped_) { vkUnmapMemory(device_, fireflyFlareVertexMemory_); fireflyFlareVertexMapped_ = nullptr; }
-        if (moonVertexMapped_) { vkUnmapMemory(device_, moonVertexMemory_); moonVertexMapped_ = nullptr; }
-        if (sunVertexBuffer_ != VK_NULL_HANDLE) { vkDestroyBuffer(device_, sunVertexBuffer_, nullptr); sunVertexBuffer_ = VK_NULL_HANDLE; }
-        if (sunVertexMemory_ != VK_NULL_HANDLE) { vkFreeMemory(device_, sunVertexMemory_, nullptr); sunVertexMemory_ = VK_NULL_HANDLE; }
-        if (dandelionVertexBuffer_ != VK_NULL_HANDLE) { vkDestroyBuffer(device_, dandelionVertexBuffer_, nullptr); dandelionVertexBuffer_ = VK_NULL_HANDLE; }
-        if (dandelionVertexMemory_ != VK_NULL_HANDLE) { vkFreeMemory(device_, dandelionVertexMemory_, nullptr); dandelionVertexMemory_ = VK_NULL_HANDLE; }
-        if (fireflyVertexBuffer_ != VK_NULL_HANDLE) { vkDestroyBuffer(device_, fireflyVertexBuffer_, nullptr); fireflyVertexBuffer_ = VK_NULL_HANDLE; }
-        if (fireflyVertexMemory_ != VK_NULL_HANDLE) { vkFreeMemory(device_, fireflyVertexMemory_, nullptr); fireflyVertexMemory_ = VK_NULL_HANDLE; }
-        if (fireflyFlareVertexBuffer_ != VK_NULL_HANDLE) { vkDestroyBuffer(device_, fireflyFlareVertexBuffer_, nullptr); fireflyFlareVertexBuffer_ = VK_NULL_HANDLE; }
-        if (fireflyFlareVertexMemory_ != VK_NULL_HANDLE) { vkFreeMemory(device_, fireflyFlareVertexMemory_, nullptr); fireflyFlareVertexMemory_ = VK_NULL_HANDLE; }
-        if (moonVertexBuffer_ != VK_NULL_HANDLE) { vkDestroyBuffer(device_, moonVertexBuffer_, nullptr); moonVertexBuffer_ = VK_NULL_HANDLE; }
-        if (moonVertexMemory_ != VK_NULL_HANDLE) { vkFreeMemory(device_, moonVertexMemory_, nullptr); moonVertexMemory_ = VK_NULL_HANDLE; }
-
-        if (imageAvailableSemaphore_ != VK_NULL_HANDLE) { vkDestroySemaphore(device_, imageAvailableSemaphore_, nullptr); imageAvailableSemaphore_ = VK_NULL_HANDLE; }
-        if (renderFinishedSemaphore_ != VK_NULL_HANDLE) { vkDestroySemaphore(device_, renderFinishedSemaphore_, nullptr); renderFinishedSemaphore_ = VK_NULL_HANDLE; }
-        if (inFlightFence_           != VK_NULL_HANDLE) { vkDestroyFence(device_,     inFlightFence_,           nullptr); inFlightFence_           = VK_NULL_HANDLE; }
-        if (commandPool_             != VK_NULL_HANDLE) { vkDestroyCommandPool(device_, commandPool_,           nullptr); commandPool_             = VK_NULL_HANDLE; }
-
-        if (skyDescriptorPool_   != VK_NULL_HANDLE) { vkDestroyDescriptorPool(device_, skyDescriptorPool_,   nullptr); skyDescriptorPool_   = VK_NULL_HANDLE; skyDescriptorSet_   = VK_NULL_HANDLE; }
-        if (skyDescriptorSetLayout_   != VK_NULL_HANDLE) { vkDestroyDescriptorSetLayout(device_, skyDescriptorSetLayout_,   nullptr); skyDescriptorSetLayout_   = VK_NULL_HANDLE; }
-        if (grassDescriptorPool_ != VK_NULL_HANDLE) { vkDestroyDescriptorPool(device_, grassDescriptorPool_, nullptr); grassDescriptorPool_ = VK_NULL_HANDLE; grassDescriptorSet_ = VK_NULL_HANDLE; }
-        if (grassDescriptorSetLayout_ != VK_NULL_HANDLE) { vkDestroyDescriptorSetLayout(device_, grassDescriptorSetLayout_, nullptr); grassDescriptorSetLayout_ = VK_NULL_HANDLE; }
-        if (spriteDescriptorPool_ != VK_NULL_HANDLE) {
-            vkDestroyDescriptorPool(device_, spriteDescriptorPool_, nullptr);
-            spriteDescriptorPool_ = VK_NULL_HANDLE;
-            for (uint32_t i = 0; i < kSpriteTextureCount; ++i) {
-                spriteDescriptorSets_[i] = VK_NULL_HANDLE;
-            }
-        }
-        if (spriteDescriptorSetLayout_ != VK_NULL_HANDLE) {
-            vkDestroyDescriptorSetLayout(device_, spriteDescriptorSetLayout_, nullptr);
-            spriteDescriptorSetLayout_ = VK_NULL_HANDLE;
-        }
-        if (moonDescriptorPool_ != VK_NULL_HANDLE) {
-            vkDestroyDescriptorPool(device_, moonDescriptorPool_, nullptr);
-            moonDescriptorPool_ = VK_NULL_HANDLE;
-            moonDescriptorSet_ = VK_NULL_HANDLE;
-        }
-        if (moonDescriptorSetLayout_ != VK_NULL_HANDLE) {
-            vkDestroyDescriptorSetLayout(device_, moonDescriptorSetLayout_, nullptr);
-            moonDescriptorSetLayout_ = VK_NULL_HANDLE;
-        }
-
-        vkDestroyDevice(device_, nullptr);
-        device_ = VK_NULL_HANDLE;
-        physicalDevice_ = VK_NULL_HANDLE;
-        graphicsQueue_  = VK_NULL_HANDLE;
-        queueFamilyIndex_ = 0;
-    }
-
-    // ===== member variables =====
+    // ===== members =====
 
     AAssetManager*  assetManager_ = nullptr;
     std::mutex      mutex_;
-
     int width_  = 0;
     int height_ = 0;
-
     ANativeWindow*  window_   = nullptr;
-    VkInstance      instance_ = VK_NULL_HANDLE;
-    VkPhysicalDevice physicalDevice_ = VK_NULL_HANDLE;
-    VkDevice        device_   = VK_NULL_HANDLE;
-    VkQueue         graphicsQueue_   = VK_NULL_HANDLE;
-    uint32_t        queueFamilyIndex_ = 0;
 
-    VkSurfaceKHR        surface_   = VK_NULL_HANDLE;
-    VkSwapchainKHR      swapchain_ = VK_NULL_HANDLE;
-    VkFormat            swapchainFormat_ = VK_FORMAT_UNDEFINED;
-    VkExtent2D          swapchainExtent_{};
-    std::vector<VkImage>        swapchainImages_;
-    std::vector<VkImageView>    swapchainImageViews_;
-    std::vector<VkFramebuffer>  framebuffers_;
-    std::vector<VkCommandBuffer> commandBuffers_;
-
-    VkRenderPass     renderPass_          = VK_NULL_HANDLE;
     VkPipelineLayout skyPipelineLayout_   = VK_NULL_HANDLE;
     VkPipelineLayout grassPipelineLayout_ = VK_NULL_HANDLE;
     VkPipelineLayout spritePipelineLayout_ = VK_NULL_HANDLE;
@@ -1892,9 +1381,8 @@ private:
     VkPipeline       grassPipeline_       = VK_NULL_HANDLE;
     VkPipeline       spritePipeline_      = VK_NULL_HANDLE;
     VkPipeline       moonPipeline_        = VK_NULL_HANDLE;
-    VkCommandPool    commandPool_         = VK_NULL_HANDLE;
 
-    // Sky descriptor set (4 textures)
+    // Sky descriptor set (5 textures)
     VkDescriptorSetLayout skyDescriptorSetLayout_ = VK_NULL_HANDLE;
     VkDescriptorPool      skyDescriptorPool_      = VK_NULL_HANDLE;
     VkDescriptorSet       skyDescriptorSet_       = VK_NULL_HANDLE;
@@ -1913,7 +1401,7 @@ private:
     VkDescriptorPool      moonDescriptorPool_      = VK_NULL_HANDLE;
     VkDescriptorSet       moonDescriptorSet_       = VK_NULL_HANDLE;
 
-    // Sky textures (night, sunrise, sunset, sky)
+    // Sky textures (night, sunrise, sunset, sky, solar eclipse)
     GpuTexture skyTextures_[kSkyTextureCount];
     std::vector<uint8_t> pendingSkyPixels_[kSkyTextureCount];
     uint32_t pendingSkyWidth_[kSkyTextureCount]  = {};
@@ -1955,10 +1443,6 @@ private:
     VkBuffer        moonVertexBuffer_ = VK_NULL_HANDLE;
     VkDeviceMemory  moonVertexMemory_ = VK_NULL_HANDLE;
     void*           moonVertexMapped_ = nullptr;
-
-    VkSemaphore imageAvailableSemaphore_ = VK_NULL_HANDLE;
-    VkSemaphore renderFinishedSemaphore_ = VK_NULL_HANDLE;
-    VkFence     inFlightFence_           = VK_NULL_HANDLE;
 };
 
 template <typename T>
@@ -2052,5 +1536,5 @@ Java_com_reandroid_wallpaper_grass_GrassVKNative_nSetSpriteTexture(
 extern "C" JNIEXPORT jboolean JNICALL
 Java_com_reandroid_wallpaper_grass_GrassVKNative_nIsVulkanSupported(
         JNIEnv*, jclass) {
-    return GrassVkRenderer::isVulkanSupported();
+    return vkIsVulkanSupported();
 }

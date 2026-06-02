@@ -1,28 +1,5 @@
-#define VK_USE_PLATFORM_ANDROID_KHR
-
-#include <jni.h>
-
-#include <android/asset_manager.h>
-#include <android/asset_manager_jni.h>
-#include <android/log.h>
-#include <android/native_window.h>
-#include <android/native_window_jni.h>
-
-#include <vulkan/vulkan.h>
-
-#include <algorithm>
-#include <array>
-#include <cstddef>
-#include <cstdint>
-#include <cstring>
-#include <limits>
-#include <mutex>
-#include <string>
-#include <vector>
-
 #define LOG_TAG "GalaxyVK"
-#define LOGI(...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
-#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
+#include "vk_common.h"
 
 namespace {
 
@@ -50,7 +27,7 @@ enum PipelineType {
     PIPELINE_LIGHT = 2,
 };
 
-class GalaxyVkRenderer {
+class GalaxyVkRenderer : public VkRendererBase<GalaxyVkRenderer> {
 public:
     explicit GalaxyVkRenderer(AAssetManager* assetManager)
         : assetManager_(assetManager) {
@@ -60,40 +37,90 @@ public:
         destroy();
     }
 
+    // ── CRTP hooks ──
+
+    AAssetManager* getAssetManager() { return assetManager_; }
+
+    bool isSceneReadyLocked() const {
+        return bgPipeline_ != VK_NULL_HANDLE
+            && particlePipeline_ != VK_NULL_HANDLE
+            && lightPipeline_ != VK_NULL_HANDLE
+            && bgDescriptorSet_ != VK_NULL_HANDLE
+            && bgTextureImageView_ != VK_NULL_HANDLE
+            && bgTextureSampler_ != VK_NULL_HANDLE
+            && lightDescriptorSet_ != VK_NULL_HANDLE
+            && lightTextureImageView_ != VK_NULL_HANDLE
+            && lightTextureSampler_ != VK_NULL_HANDLE;
+    }
+
+    bool onDeviceCreated() {
+        if (!createParticleBufferLocked()) return false;
+        if (!createBackgroundDescriptorResourcesLocked()) return false;
+        if (!createLightDescriptorResourcesLocked()) return false;
+        if (!ensureBackgroundTextureLocked()) return false;
+        return ensureLightTextureLocked();
+    }
+
+    bool onSwapchainCreated() {
+        return true;
+    }
+
+    void destroyTexturesLocked() {
+        destroyBackgroundTextureLocked();
+        destroyLightTextureLocked();
+        if (bgDescriptorPool_ != VK_NULL_HANDLE) {
+            vkDestroyDescriptorPool(device_, bgDescriptorPool_, nullptr);
+            bgDescriptorPool_ = VK_NULL_HANDLE;
+            bgDescriptorSet_ = VK_NULL_HANDLE;
+        }
+        if (bgDescriptorSetLayout_ != VK_NULL_HANDLE) {
+            vkDestroyDescriptorSetLayout(device_, bgDescriptorSetLayout_, nullptr);
+            bgDescriptorSetLayout_ = VK_NULL_HANDLE;
+        }
+        if (lightDescriptorPool_ != VK_NULL_HANDLE) {
+            vkDestroyDescriptorPool(device_, lightDescriptorPool_, nullptr);
+            lightDescriptorPool_ = VK_NULL_HANDLE;
+            lightDescriptorSet_ = VK_NULL_HANDLE;
+        }
+        if (lightDescriptorSetLayout_ != VK_NULL_HANDLE) {
+            vkDestroyDescriptorSetLayout(device_, lightDescriptorSetLayout_, nullptr);
+            lightDescriptorSetLayout_ = VK_NULL_HANDLE;
+        }
+    }
+
+    void recordCommandBuffersLocked(int /*w*/, int /*h*/) {
+        // Command buffers are recorded per-frame in render()
+    }
+
+    bool recoverRenderStateLocked() {
+        if (device_ == VK_NULL_HANDLE || window_ == nullptr) return false;
+        VkRendererBase::recoverRenderStateLocked(width_, height_);
+        return isReadyLocked();
+    }
+
+    // ── Public interface ──
+
     bool createOrUpdateSurface(JNIEnv* env, jobject surface, int width, int height) {
         std::lock_guard<std::mutex> lock(mutex_);
         width_ = width;
         height_ = height;
 
-        if (!createInstanceLocked()) {
-            return false;
-        }
+        if (!createInstanceLocked("GalaxyVK")) return false;
 
-        destroySurfaceLocked();
-
-        window_ = ANativeWindow_fromSurface(env, surface);
-        if (window_ == nullptr) {
+        ANativeWindow* newWindow = ANativeWindow_fromSurface(env, surface);
+        if (newWindow == nullptr) {
             LOGE("ANativeWindow_fromSurface failed");
             return false;
         }
 
-        VkAndroidSurfaceCreateInfoKHR surfaceInfo{};
-        surfaceInfo.sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR;
-        surfaceInfo.window = window_;
-        VkResult result = vkCreateAndroidSurfaceKHR(instance_, &surfaceInfo, nullptr, &surface_);
-        if (result != VK_SUCCESS) {
-            LOGE("vkCreateAndroidSurfaceKHR failed: %d", result);
+        if (window_ != nullptr) {
+            ANativeWindow_release(window_);
+        }
+        window_ = newWindow;
+
+        if (!createOrUpdateSurfaceLocked(window_, width_, height_)) {
             ANativeWindow_release(window_);
             window_ = nullptr;
-            return false;
-        }
-
-        if (!createDeviceLocked()) {
-            destroySurfaceLocked();
-            return false;
-        }
-        if (!createSwapchainResourcesLocked()) {
-            destroySurfaceLocked();
             return false;
         }
         return true;
@@ -102,6 +129,10 @@ public:
     void destroySurface() {
         std::lock_guard<std::mutex> lock(mutex_);
         destroySurfaceLocked();
+        if (window_ != nullptr) {
+            ANativeWindow_release(window_);
+            window_ = nullptr;
+        }
     }
 
     void render(JNIEnv* env, jfloatArray mvpMatrixArray, jfloatArray positionsArray,
@@ -130,7 +161,7 @@ public:
         VkResult acquire = vkAcquireNextImageKHR(device_, swapchain_, UINT64_MAX,
                 imageAvailableSemaphore_, VK_NULL_HANDLE, &imageIndex);
         if (acquire == VK_ERROR_SURFACE_LOST_KHR) {
-            recreateSurfaceAndSwapchainLocked();
+            createOrUpdateSurfaceLocked(window_, width_, height_);
             return;
         }
         if (acquire == VK_ERROR_OUT_OF_DATE_KHR || acquire == VK_SUBOPTIMAL_KHR) {
@@ -142,7 +173,7 @@ public:
             return;
         }
 
-        VkCommandBuffer commandBuffer = commandBuffers_[imageIndex];
+        VkCommandBuffer commandBuffer = swapchainCommandBuffers_[imageIndex];
         vkResetCommandBuffer(commandBuffer, 0);
         if (!recordCommandBufferLocked(commandBuffer, imageIndex, drawCount, pushConstants)) {
             return;
@@ -177,7 +208,7 @@ public:
 
         VkResult present = vkQueuePresentKHR(graphicsQueue_, &presentInfo);
         if (present == VK_ERROR_SURFACE_LOST_KHR) {
-            recreateSurfaceAndSwapchainLocked();
+            createOrUpdateSurfaceLocked(window_, width_, height_);
             return;
         }
         if (present == VK_ERROR_OUT_OF_DATE_KHR || present == VK_SUBOPTIMAL_KHR) {
@@ -259,518 +290,15 @@ public:
 
     void destroy() {
         std::lock_guard<std::mutex> lock(mutex_);
-        destroySurfaceLocked();
-        destroyDeviceLocked();
-        if (instance_ != VK_NULL_HANDLE) {
-            vkDestroyInstance(instance_, nullptr);
-            instance_ = VK_NULL_HANDLE;
+        if (window_ != nullptr) {
+            ANativeWindow_release(window_);
+            window_ = nullptr;
         }
-    }
-
-    static bool isVulkanSupported() {
-        uint32_t extensionCount = 0;
-        return vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr) == VK_SUCCESS
-                && extensionCount > 0;
+        destroyDeviceLocked();
     }
 
 private:
-    bool createInstanceLocked() {
-        if (instance_ != VK_NULL_HANDLE) {
-            return true;
-        }
-
-        VkApplicationInfo appInfo{};
-        appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-        appInfo.pApplicationName = "GalaxyVK";
-        appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-        appInfo.pEngineName = "GalaxyVK";
-        appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-        appInfo.apiVersion = VK_API_VERSION_1_0;
-
-        std::array<const char*, 2> extensions = {
-                VK_KHR_SURFACE_EXTENSION_NAME,
-                VK_KHR_ANDROID_SURFACE_EXTENSION_NAME};
-
-        VkInstanceCreateInfo createInfo{};
-        createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-        createInfo.pApplicationInfo = &appInfo;
-        createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
-        createInfo.ppEnabledExtensionNames = extensions.data();
-
-        VkResult result = vkCreateInstance(&createInfo, nullptr, &instance_);
-        if (result != VK_SUCCESS) {
-            LOGE("vkCreateInstance failed: %d", result);
-            instance_ = VK_NULL_HANDLE;
-            return false;
-        }
-        return true;
-    }
-
-    bool createDeviceLocked() {
-        if (device_ != VK_NULL_HANDLE) {
-            return true;
-        }
-
-        uint32_t deviceCount = 0;
-        vkEnumeratePhysicalDevices(instance_, &deviceCount, nullptr);
-        if (deviceCount == 0) {
-            LOGE("No Vulkan physical devices found");
-            return false;
-        }
-
-        std::vector<VkPhysicalDevice> devices(deviceCount);
-        vkEnumeratePhysicalDevices(instance_, &deviceCount, devices.data());
-        for (VkPhysicalDevice candidate : devices) {
-            uint32_t queueFamilyCount = 0;
-            vkGetPhysicalDeviceQueueFamilyProperties(candidate, &queueFamilyCount, nullptr);
-            std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
-            vkGetPhysicalDeviceQueueFamilyProperties(candidate, &queueFamilyCount, queueFamilies.data());
-            for (uint32_t i = 0; i < queueFamilyCount; ++i) {
-                VkBool32 presentSupported = VK_FALSE;
-                vkGetPhysicalDeviceSurfaceSupportKHR(candidate, i, surface_, &presentSupported);
-                if ((queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) != 0 && presentSupported) {
-                    physicalDevice_ = candidate;
-                    queueFamilyIndex_ = i;
-                    break;
-                }
-            }
-            if (physicalDevice_ != VK_NULL_HANDLE) {
-                break;
-            }
-        }
-
-        if (physicalDevice_ == VK_NULL_HANDLE) {
-            LOGE("No suitable Vulkan queue family found");
-            return false;
-        }
-
-        float queuePriority = 1.0f;
-        VkDeviceQueueCreateInfo queueCreateInfo{};
-        queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-        queueCreateInfo.queueFamilyIndex = queueFamilyIndex_;
-        queueCreateInfo.queueCount = 1;
-        queueCreateInfo.pQueuePriorities = &queuePriority;
-
-        VkPhysicalDeviceFeatures deviceFeatures{};
-
-        const char* deviceExtensions[] = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
-
-        VkDeviceCreateInfo createInfo{};
-        createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-        createInfo.queueCreateInfoCount = 1;
-        createInfo.pQueueCreateInfos = &queueCreateInfo;
-        createInfo.pEnabledFeatures = &deviceFeatures;
-        createInfo.enabledExtensionCount = 1;
-        createInfo.ppEnabledExtensionNames = deviceExtensions;
-
-        VkResult result = vkCreateDevice(physicalDevice_, &createInfo, nullptr, &device_);
-        if (result != VK_SUCCESS) {
-            LOGE("vkCreateDevice failed: %d", result);
-            device_ = VK_NULL_HANDLE;
-            return false;
-        }
-
-        vkGetDeviceQueue(device_, queueFamilyIndex_, 0, &graphicsQueue_);
-
-        VkCommandPoolCreateInfo poolInfo{};
-        poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-        poolInfo.queueFamilyIndex = queueFamilyIndex_;
-        poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-        result = vkCreateCommandPool(device_, &poolInfo, nullptr, &commandPool_);
-        if (result != VK_SUCCESS) {
-            LOGE("vkCreateCommandPool failed: %d", result);
-            return false;
-        }
-
-        VkSemaphoreCreateInfo semaphoreInfo{};
-        semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-        vkCreateSemaphore(device_, &semaphoreInfo, nullptr, &imageAvailableSemaphore_);
-        vkCreateSemaphore(device_, &semaphoreInfo, nullptr, &renderFinishedSemaphore_);
-
-        VkFenceCreateInfo fenceInfo{};
-        fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-        fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-        vkCreateFence(device_, &fenceInfo, nullptr, &inFlightFence_);
-
-        if (!createParticleBufferLocked()) {
-            return false;
-        }
-        if (!createBackgroundDescriptorResourcesLocked()) {
-            return false;
-        }
-        if (!createLightDescriptorResourcesLocked()) {
-            return false;
-        }
-        if (!ensureBackgroundTextureLocked()) {
-            return false;
-        }
-        return ensureLightTextureLocked();
-    }
-
-    bool createParticleBufferLocked() {
-        if (particleBuffer_ != VK_NULL_HANDLE) {
-            return true;
-        }
-
-        VkDeviceSize bufferSize = sizeof(ParticleVertex) * kMaxParticleCount;
-
-        VkBufferCreateInfo bufferInfo{};
-        bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-        bufferInfo.size = bufferSize;
-        bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-        bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-        VkResult result = vkCreateBuffer(device_, &bufferInfo, nullptr, &particleBuffer_);
-        if (result != VK_SUCCESS) {
-            LOGE("vkCreateBuffer failed: %d", result);
-            return false;
-        }
-
-        VkMemoryRequirements memRequirements{};
-        vkGetBufferMemoryRequirements(device_, particleBuffer_, &memRequirements);
-
-        VkMemoryAllocateInfo allocInfo{};
-        allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-        allocInfo.allocationSize = memRequirements.size;
-        allocInfo.memoryTypeIndex = findMemoryTypeLocked(memRequirements.memoryTypeBits,
-                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
-        result = vkAllocateMemory(device_, &allocInfo, nullptr, &particleMemory_);
-        if (result != VK_SUCCESS) {
-            LOGE("vkAllocateMemory failed: %d", result);
-            return false;
-        }
-
-        vkBindBufferMemory(device_, particleBuffer_, particleMemory_, 0);
-        result = vkMapMemory(device_, particleMemory_, 0, bufferSize, 0, &particleMappedMemory_);
-        if (result != VK_SUCCESS) {
-            LOGE("vkMapMemory failed: %d", result);
-            particleMappedMemory_ = nullptr;
-            return false;
-        }
-
-        particleCapacity_ = kMaxParticleCount;
-        return true;
-    }
-
-    bool createSwapchainResourcesLocked() {
-        VkSurfaceCapabilitiesKHR capabilities{};
-        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice_, surface_, &capabilities);
-
-        uint32_t formatCount = 0;
-        vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice_, surface_, &formatCount, nullptr);
-        if (formatCount == 0) {
-            LOGE("No surface formats available");
-            return false;
-        }
-        std::vector<VkSurfaceFormatKHR> formats(formatCount);
-        vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice_, surface_, &formatCount, formats.data());
-
-        VkSurfaceFormatKHR selectedFormat = formats[0];
-        for (const auto& format : formats) {
-            if (format.format == VK_FORMAT_B8G8R8A8_UNORM || format.format == VK_FORMAT_R8G8B8A8_UNORM) {
-                selectedFormat = format;
-                break;
-            }
-        }
-
-        uint32_t presentModeCount = 0;
-        vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice_, surface_, &presentModeCount, nullptr);
-        std::vector<VkPresentModeKHR> presentModes(presentModeCount);
-        vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice_, surface_, &presentModeCount, presentModes.data());
-        VkPresentModeKHR presentMode = VK_PRESENT_MODE_FIFO_KHR;
-
-        VkExtent2D extent = {};
-        if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
-            extent = capabilities.currentExtent;
-        } else {
-            extent.width = static_cast<uint32_t>(std::max(width_, 1));
-            extent.height = static_cast<uint32_t>(std::max(height_, 1));
-            extent.width = std::max(capabilities.minImageExtent.width,
-                    std::min(capabilities.maxImageExtent.width, extent.width));
-            extent.height = std::max(capabilities.minImageExtent.height,
-                    std::min(capabilities.maxImageExtent.height, extent.height));
-        }
-
-        uint32_t imageCount = capabilities.minImageCount + 1;
-        if (capabilities.maxImageCount > 0 && imageCount > capabilities.maxImageCount) {
-            imageCount = capabilities.maxImageCount;
-        }
-
-        VkSwapchainCreateInfoKHR createInfo{};
-        createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-        createInfo.surface = surface_;
-        createInfo.minImageCount = imageCount;
-        createInfo.imageFormat = selectedFormat.format;
-        createInfo.imageColorSpace = selectedFormat.colorSpace;
-        createInfo.imageExtent = extent;
-        createInfo.imageArrayLayers = 1;
-        createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-        createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        createInfo.preTransform = capabilities.currentTransform;
-        createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-        createInfo.presentMode = presentMode;
-        createInfo.clipped = VK_TRUE;
-        createInfo.oldSwapchain = VK_NULL_HANDLE;
-
-        VkResult result = vkCreateSwapchainKHR(device_, &createInfo, nullptr, &swapchain_);
-        if (result != VK_SUCCESS) {
-            LOGE("vkCreateSwapchainKHR failed: %d", result);
-            return false;
-        }
-
-        uint32_t swapchainImageCount = 0;
-        vkGetSwapchainImagesKHR(device_, swapchain_, &swapchainImageCount, nullptr);
-        swapchainImages_.resize(swapchainImageCount);
-        vkGetSwapchainImagesKHR(device_, swapchain_, &swapchainImageCount, swapchainImages_.data());
-        swapchainFormat_ = selectedFormat.format;
-        swapchainExtent_ = extent;
-
-        swapchainImageViews_.resize(swapchainImages_.size());
-        for (size_t i = 0; i < swapchainImages_.size(); ++i) {
-            VkImageViewCreateInfo viewInfo{};
-            viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-            viewInfo.image = swapchainImages_[i];
-            viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-            viewInfo.format = swapchainFormat_;
-            viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-            viewInfo.subresourceRange.baseMipLevel = 0;
-            viewInfo.subresourceRange.levelCount = 1;
-            viewInfo.subresourceRange.baseArrayLayer = 0;
-            viewInfo.subresourceRange.layerCount = 1;
-            result = vkCreateImageView(device_, &viewInfo, nullptr, &swapchainImageViews_[i]);
-            if (result != VK_SUCCESS) {
-                LOGE("vkCreateImageView failed: %d", result);
-                return false;
-            }
-        }
-
-        if (!createRenderPassLocked()) {
-            return false;
-        }
-        if (!createPipelinesLocked()) {
-            return false;
-        }
-
-        framebuffers_.resize(swapchainImageViews_.size());
-        for (size_t i = 0; i < swapchainImageViews_.size(); ++i) {
-            VkImageView attachments[] = {swapchainImageViews_[i]};
-            VkFramebufferCreateInfo framebufferInfo{};
-            framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-            framebufferInfo.renderPass = renderPass_;
-            framebufferInfo.attachmentCount = 1;
-            framebufferInfo.pAttachments = attachments;
-            framebufferInfo.width = swapchainExtent_.width;
-            framebufferInfo.height = swapchainExtent_.height;
-            framebufferInfo.layers = 1;
-            result = vkCreateFramebuffer(device_, &framebufferInfo, nullptr, &framebuffers_[i]);
-            if (result != VK_SUCCESS) {
-                LOGE("vkCreateFramebuffer failed: %d", result);
-                return false;
-            }
-        }
-
-        commandBuffers_.resize(framebuffers_.size());
-        VkCommandBufferAllocateInfo allocInfo{};
-        allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-        allocInfo.commandPool = commandPool_;
-        allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        allocInfo.commandBufferCount = static_cast<uint32_t>(commandBuffers_.size());
-        result = vkAllocateCommandBuffers(device_, &allocInfo, commandBuffers_.data());
-        if (result != VK_SUCCESS) {
-            LOGE("vkAllocateCommandBuffers failed: %d", result);
-            return false;
-        }
-
-        return true;
-    }
-
-    void destroySwapchainResourcesLocked() {
-        if (device_ != VK_NULL_HANDLE) {
-            vkDeviceWaitIdle(device_);
-        }
-
-        if (!commandBuffers_.empty()) {
-            vkFreeCommandBuffers(device_, commandPool_, static_cast<uint32_t>(commandBuffers_.size()),
-                    commandBuffers_.data());
-            commandBuffers_.clear();
-        }
-
-        for (VkFramebuffer framebuffer : framebuffers_) {
-            vkDestroyFramebuffer(device_, framebuffer, nullptr);
-        }
-        framebuffers_.clear();
-
-        if (bgPipeline_ != VK_NULL_HANDLE) {
-            vkDestroyPipeline(device_, bgPipeline_, nullptr);
-            bgPipeline_ = VK_NULL_HANDLE;
-        }
-        if (particlePipeline_ != VK_NULL_HANDLE) {
-            vkDestroyPipeline(device_, particlePipeline_, nullptr);
-            particlePipeline_ = VK_NULL_HANDLE;
-        }
-        if (lightPipeline_ != VK_NULL_HANDLE) {
-            vkDestroyPipeline(device_, lightPipeline_, nullptr);
-            lightPipeline_ = VK_NULL_HANDLE;
-        }
-
-        if (bgPipelineLayout_ != VK_NULL_HANDLE) {
-            vkDestroyPipelineLayout(device_, bgPipelineLayout_, nullptr);
-            bgPipelineLayout_ = VK_NULL_HANDLE;
-        }
-        if (particlePipelineLayout_ != VK_NULL_HANDLE) {
-            vkDestroyPipelineLayout(device_, particlePipelineLayout_, nullptr);
-            particlePipelineLayout_ = VK_NULL_HANDLE;
-        }
-        if (lightPipelineLayout_ != VK_NULL_HANDLE) {
-            vkDestroyPipelineLayout(device_, lightPipelineLayout_, nullptr);
-            lightPipelineLayout_ = VK_NULL_HANDLE;
-        }
-
-        if (renderPass_ != VK_NULL_HANDLE) {
-            vkDestroyRenderPass(device_, renderPass_, nullptr);
-            renderPass_ = VK_NULL_HANDLE;
-        }
-
-        for (VkImageView imageView : swapchainImageViews_) {
-            vkDestroyImageView(device_, imageView, nullptr);
-        }
-        swapchainImageViews_.clear();
-        swapchainImages_.clear();
-
-        if (swapchain_ != VK_NULL_HANDLE) {
-            vkDestroySwapchainKHR(device_, swapchain_, nullptr);
-            swapchain_ = VK_NULL_HANDLE;
-        }
-    }
-
-    bool recreateSwapchainLocked() {
-        if (device_ == VK_NULL_HANDLE || surface_ == VK_NULL_HANDLE || window_ == nullptr) {
-            return false;
-        }
-        destroySwapchainResourcesLocked();
-        return createSwapchainResourcesLocked();
-    }
-
-    bool recreateSurfaceAndSwapchainLocked() {
-        if (instance_ == VK_NULL_HANDLE || window_ == nullptr) {
-            return false;
-        }
-
-        destroySwapchainResourcesLocked();
-
-        if (surface_ != VK_NULL_HANDLE) {
-            vkDestroySurfaceKHR(instance_, surface_, nullptr);
-            surface_ = VK_NULL_HANDLE;
-        }
-
-        VkAndroidSurfaceCreateInfoKHR surfaceInfo{};
-        surfaceInfo.sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR;
-        surfaceInfo.window = window_;
-        VkResult result = vkCreateAndroidSurfaceKHR(instance_, &surfaceInfo, nullptr, &surface_);
-        if (result != VK_SUCCESS) {
-            LOGE("vkCreateAndroidSurfaceKHR(recreate) failed: %d", result);
-            surface_ = VK_NULL_HANDLE;
-            return false;
-        }
-
-        return createSwapchainResourcesLocked();
-    }
-
-    bool recoverRenderStateLocked() {
-        if (device_ == VK_NULL_HANDLE || window_ == nullptr) {
-            return false;
-        }
-
-        if (surface_ == VK_NULL_HANDLE) {
-            if (!recreateSurfaceAndSwapchainLocked()) {
-                return false;
-            }
-        }
-
-        if (swapchain_ == VK_NULL_HANDLE || renderPass_ == VK_NULL_HANDLE
-                || bgPipeline_ == VK_NULL_HANDLE || particlePipeline_ == VK_NULL_HANDLE
-                || lightPipeline_ == VK_NULL_HANDLE || commandBuffers_.empty()) {
-            if (!recreateSwapchainLocked()) {
-                return false;
-            }
-        }
-
-        if (bgDescriptorSet_ == VK_NULL_HANDLE || bgTextureImageView_ == VK_NULL_HANDLE
-                || bgTextureSampler_ == VK_NULL_HANDLE) {
-            if (!createBackgroundDescriptorResourcesLocked() || !ensureBackgroundTextureLocked()) {
-                return false;
-            }
-        }
-
-        if (lightDescriptorSet_ == VK_NULL_HANDLE || lightTextureImageView_ == VK_NULL_HANDLE
-                || lightTextureSampler_ == VK_NULL_HANDLE) {
-            if (!createLightDescriptorResourcesLocked() || !ensureLightTextureLocked()) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    void recreateInFlightFenceLocked() {
-        if (device_ == VK_NULL_HANDLE) {
-            return;
-        }
-        if (inFlightFence_ != VK_NULL_HANDLE) {
-            vkDestroyFence(device_, inFlightFence_, nullptr);
-            inFlightFence_ = VK_NULL_HANDLE;
-        }
-        VkFenceCreateInfo fenceInfo{};
-        fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-        fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-        vkCreateFence(device_, &fenceInfo, nullptr, &inFlightFence_);
-    }
-
-    bool createRenderPassLocked() {
-        VkAttachmentDescription colorAttachment{};
-        colorAttachment.format = swapchainFormat_;
-        colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-        colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-        colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-        colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-
-        VkAttachmentReference colorAttachmentRef{};
-        colorAttachmentRef.attachment = 0;
-        colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-        VkSubpassDescription subpass{};
-        subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-        subpass.colorAttachmentCount = 1;
-        subpass.pColorAttachments = &colorAttachmentRef;
-
-        VkSubpassDependency dependency{};
-        dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-        dependency.dstSubpass = 0;
-        dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        dependency.srcAccessMask = 0;
-        dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-
-        VkRenderPassCreateInfo renderPassInfo{};
-        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-        renderPassInfo.attachmentCount = 1;
-        renderPassInfo.pAttachments = &colorAttachment;
-        renderPassInfo.subpassCount = 1;
-        renderPassInfo.pSubpasses = &subpass;
-        renderPassInfo.dependencyCount = 1;
-        renderPassInfo.pDependencies = &dependency;
-
-        VkResult result = vkCreateRenderPass(device_, &renderPassInfo, nullptr, &renderPass_);
-        if (result != VK_SUCCESS) {
-            LOGE("vkCreateRenderPass failed: %d", result);
-            return false;
-        }
-        return true;
-    }
+    // ── Pipeline management ──
 
     bool createPipelinesLocked() {
         VkShaderModule bgVert = createShaderModuleLocked({
@@ -826,6 +354,15 @@ private:
         return bgPipeline_ != VK_NULL_HANDLE
             && particlePipeline_ != VK_NULL_HANDLE
             && lightPipeline_ != VK_NULL_HANDLE;
+    }
+
+    void destroyPipelinesLocked() {
+        if (bgPipeline_ != VK_NULL_HANDLE) { vkDestroyPipeline(device_, bgPipeline_, nullptr); bgPipeline_ = VK_NULL_HANDLE; }
+        if (particlePipeline_ != VK_NULL_HANDLE) { vkDestroyPipeline(device_, particlePipeline_, nullptr); particlePipeline_ = VK_NULL_HANDLE; }
+        if (lightPipeline_ != VK_NULL_HANDLE) { vkDestroyPipeline(device_, lightPipeline_, nullptr); lightPipeline_ = VK_NULL_HANDLE; }
+        if (bgPipelineLayout_ != VK_NULL_HANDLE) { vkDestroyPipelineLayout(device_, bgPipelineLayout_, nullptr); bgPipelineLayout_ = VK_NULL_HANDLE; }
+        if (particlePipelineLayout_ != VK_NULL_HANDLE) { vkDestroyPipelineLayout(device_, particlePipelineLayout_, nullptr); particlePipelineLayout_ = VK_NULL_HANDLE; }
+        if (lightPipelineLayout_ != VK_NULL_HANDLE) { vkDestroyPipelineLayout(device_, lightPipelineLayout_, nullptr); lightPipelineLayout_ = VK_NULL_HANDLE; }
     }
 
     VkPipelineLayout createPipelineLayoutLocked(bool withPushConstants,
@@ -981,71 +518,51 @@ private:
         return pipeline;
     }
 
-    bool recordCommandBufferLocked(VkCommandBuffer commandBuffer, uint32_t imageIndex,
-            uint32_t particleCount, const PushConstants& pushConstants) {
-        VkCommandBufferBeginInfo beginInfo{};
-        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-        VkResult result = vkBeginCommandBuffer(commandBuffer, &beginInfo);
+    // ── Particle buffer ──
+
+    bool createParticleBufferLocked() {
+        if (particleBuffer_ != VK_NULL_HANDLE) {
+            return true;
+        }
+
+        VkDeviceSize bufferSize = sizeof(ParticleVertex) * kMaxParticleCount;
+
+        VkBufferCreateInfo bufferInfo{};
+        bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        bufferInfo.size = bufferSize;
+        bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+        bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+        VkResult result = vkCreateBuffer(device_, &bufferInfo, nullptr, &particleBuffer_);
         if (result != VK_SUCCESS) {
-            LOGE("vkBeginCommandBuffer failed: %d", result);
+            LOGE("vkCreateBuffer failed: %d", result);
             return false;
         }
 
-        VkClearValue clearValue{};
-        clearValue.color = {{0.0f, 0.0f, 0.0f, 1.0f}};
+        VkMemoryRequirements memRequirements{};
+        vkGetBufferMemoryRequirements(device_, particleBuffer_, &memRequirements);
 
-        VkRenderPassBeginInfo renderPassInfo{};
-        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        renderPassInfo.renderPass = renderPass_;
-        renderPassInfo.framebuffer = framebuffers_[imageIndex];
-        renderPassInfo.renderArea.offset = {0, 0};
-        renderPassInfo.renderArea.extent = swapchainExtent_;
-        renderPassInfo.clearValueCount = 1;
-        renderPassInfo.pClearValues = &clearValue;
+        VkMemoryAllocateInfo allocInfo{};
+        allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+        allocInfo.allocationSize = memRequirements.size;
+        allocInfo.memoryTypeIndex = vkFindMemoryType(physicalDevice_, memRequirements.memoryTypeBits,
+                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
-        vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-        VkViewport viewport{};
-        viewport.x = 0.0f;
-        viewport.y = 0.0f;
-        viewport.width = static_cast<float>(swapchainExtent_.width);
-        viewport.height = static_cast<float>(swapchainExtent_.height);
-        viewport.minDepth = 0.0f;
-        viewport.maxDepth = 1.0f;
-        vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
-
-        VkRect2D scissor{};
-        scissor.offset = {0, 0};
-        scissor.extent = swapchainExtent_;
-        vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
-
-        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, bgPipeline_);
-        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-            bgPipelineLayout_, 0, 1, &bgDescriptorSet_, 0, nullptr);
-        vkCmdDraw(commandBuffer, 3, 1, 0, 0);
-
-        if (particleCount > 0) {
-            VkDeviceSize offsets[] = {0};
-            vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, particlePipeline_);
-            vkCmdPushConstants(commandBuffer, particlePipelineLayout_, VK_SHADER_STAGE_VERTEX_BIT,
-                    0, sizeof(PushConstants), &pushConstants);
-            vkCmdBindVertexBuffers(commandBuffer, 0, 1, &particleBuffer_, offsets);
-            vkCmdDraw(commandBuffer, particleCount, 1, 0, 0);
-        }
-
-        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, lightPipeline_);
-        vkCmdPushConstants(commandBuffer, lightPipelineLayout_, VK_SHADER_STAGE_VERTEX_BIT,
-            0, sizeof(PushConstants), &pushConstants);
-        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-            lightPipelineLayout_, 0, 1, &lightDescriptorSet_, 0, nullptr);
-        vkCmdDraw(commandBuffer, 4, 1, 0, 0);
-
-        vkCmdEndRenderPass(commandBuffer);
-        result = vkEndCommandBuffer(commandBuffer);
+        result = vkAllocateMemory(device_, &allocInfo, nullptr, &particleMemory_);
         if (result != VK_SUCCESS) {
-            LOGE("vkEndCommandBuffer failed: %d", result);
+            LOGE("vkAllocateMemory failed: %d", result);
             return false;
         }
+
+        vkBindBufferMemory(device_, particleBuffer_, particleMemory_, 0);
+        result = vkMapMemory(device_, particleMemory_, 0, bufferSize, 0, &particleMappedMemory_);
+        if (result != VK_SUCCESS) {
+            LOGE("vkMapMemory failed: %d", result);
+            particleMappedMemory_ = nullptr;
+            return false;
+        }
+
+        particleCapacity_ = kMaxParticleCount;
         return true;
     }
 
@@ -1090,65 +607,7 @@ private:
         }
     }
 
-    uint32_t findMemoryTypeLocked(uint32_t typeFilter, VkMemoryPropertyFlags properties) const {
-        VkPhysicalDeviceMemoryProperties memProperties{};
-        vkGetPhysicalDeviceMemoryProperties(physicalDevice_, &memProperties);
-        for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
-            if ((typeFilter & (1u << i)) != 0 && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
-                return i;
-            }
-        }
-        return 0;
-    }
-
-    bool createLightDescriptorResourcesLocked() {
-        if (lightDescriptorSetLayout_ != VK_NULL_HANDLE && lightDescriptorPool_ != VK_NULL_HANDLE
-                && lightDescriptorSet_ != VK_NULL_HANDLE) {
-            return true;
-        }
-
-        VkDescriptorSetLayoutBinding binding{};
-        binding.binding = 0;
-        binding.descriptorCount = 1;
-        binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        binding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-
-        VkDescriptorSetLayoutCreateInfo layoutInfo{};
-        layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-        layoutInfo.bindingCount = 1;
-        layoutInfo.pBindings = &binding;
-        VkResult result = vkCreateDescriptorSetLayout(device_, &layoutInfo, nullptr, &lightDescriptorSetLayout_);
-        if (result != VK_SUCCESS) {
-            LOGE("vkCreateDescriptorSetLayout failed: %d", result);
-            return false;
-        }
-
-        VkDescriptorPoolSize poolSize{};
-        poolSize.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        poolSize.descriptorCount = 1;
-        VkDescriptorPoolCreateInfo poolInfo{};
-        poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-        poolInfo.poolSizeCount = 1;
-        poolInfo.pPoolSizes = &poolSize;
-        poolInfo.maxSets = 1;
-        result = vkCreateDescriptorPool(device_, &poolInfo, nullptr, &lightDescriptorPool_);
-        if (result != VK_SUCCESS) {
-            LOGE("vkCreateDescriptorPool failed: %d", result);
-            return false;
-        }
-
-        VkDescriptorSetAllocateInfo allocInfo{};
-        allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-        allocInfo.descriptorPool = lightDescriptorPool_;
-        allocInfo.descriptorSetCount = 1;
-        allocInfo.pSetLayouts = &lightDescriptorSetLayout_;
-        result = vkAllocateDescriptorSets(device_, &allocInfo, &lightDescriptorSet_);
-        if (result != VK_SUCCESS) {
-            LOGE("vkAllocateDescriptorSets failed: %d", result);
-            return false;
-        }
-        return true;
-    }
+    // ── Background descriptor / texture ──
 
     bool createBackgroundDescriptorResourcesLocked() {
         if (bgDescriptorSetLayout_ != VK_NULL_HANDLE && bgDescriptorPool_ != VK_NULL_HANDLE
@@ -1241,7 +700,7 @@ private:
         VkMemoryAllocateInfo stagingAlloc{};
         stagingAlloc.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
         stagingAlloc.allocationSize = stagingReq.size;
-        stagingAlloc.memoryTypeIndex = findMemoryTypeLocked(stagingReq.memoryTypeBits,
+        stagingAlloc.memoryTypeIndex = vkFindMemoryType(physicalDevice_, stagingReq.memoryTypeBits,
                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
         result = vkAllocateMemory(device_, &stagingAlloc, nullptr, &stagingMemory);
         if (result != VK_SUCCESS) {
@@ -1290,7 +749,7 @@ private:
         VkMemoryAllocateInfo imageAlloc{};
         imageAlloc.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
         imageAlloc.allocationSize = imageReq.size;
-        imageAlloc.memoryTypeIndex = findMemoryTypeLocked(imageReq.memoryTypeBits,
+        imageAlloc.memoryTypeIndex = vkFindMemoryType(physicalDevice_, imageReq.memoryTypeBits,
                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
         result = vkAllocateMemory(device_, &imageAlloc, nullptr, &bgTextureMemory_);
         if (result != VK_SUCCESS) {
@@ -1405,6 +864,57 @@ private:
         bgTextureHeight_ = 0;
     }
 
+    // ── Light descriptor / texture ──
+
+    bool createLightDescriptorResourcesLocked() {
+        if (lightDescriptorSetLayout_ != VK_NULL_HANDLE && lightDescriptorPool_ != VK_NULL_HANDLE
+                && lightDescriptorSet_ != VK_NULL_HANDLE) {
+            return true;
+        }
+
+        VkDescriptorSetLayoutBinding binding{};
+        binding.binding = 0;
+        binding.descriptorCount = 1;
+        binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        binding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+        VkDescriptorSetLayoutCreateInfo layoutInfo{};
+        layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+        layoutInfo.bindingCount = 1;
+        layoutInfo.pBindings = &binding;
+        VkResult result = vkCreateDescriptorSetLayout(device_, &layoutInfo, nullptr, &lightDescriptorSetLayout_);
+        if (result != VK_SUCCESS) {
+            LOGE("vkCreateDescriptorSetLayout failed: %d", result);
+            return false;
+        }
+
+        VkDescriptorPoolSize poolSize{};
+        poolSize.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        poolSize.descriptorCount = 1;
+        VkDescriptorPoolCreateInfo poolInfo{};
+        poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+        poolInfo.poolSizeCount = 1;
+        poolInfo.pPoolSizes = &poolSize;
+        poolInfo.maxSets = 1;
+        result = vkCreateDescriptorPool(device_, &poolInfo, nullptr, &lightDescriptorPool_);
+        if (result != VK_SUCCESS) {
+            LOGE("vkCreateDescriptorPool failed: %d", result);
+            return false;
+        }
+
+        VkDescriptorSetAllocateInfo allocInfo{};
+        allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+        allocInfo.descriptorPool = lightDescriptorPool_;
+        allocInfo.descriptorSetCount = 1;
+        allocInfo.pSetLayouts = &lightDescriptorSetLayout_;
+        result = vkAllocateDescriptorSets(device_, &allocInfo, &lightDescriptorSet_);
+        if (result != VK_SUCCESS) {
+            LOGE("vkAllocateDescriptorSets failed: %d", result);
+            return false;
+        }
+        return true;
+    }
+
     bool ensureLightTextureLocked() {
         if (lightTextureImage_ != VK_NULL_HANDLE && lightTextureImageView_ != VK_NULL_HANDLE
                 && lightTextureSampler_ != VK_NULL_HANDLE) {
@@ -1447,7 +957,7 @@ private:
         VkMemoryAllocateInfo stagingAlloc{};
         stagingAlloc.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
         stagingAlloc.allocationSize = stagingReq.size;
-        stagingAlloc.memoryTypeIndex = findMemoryTypeLocked(stagingReq.memoryTypeBits,
+        stagingAlloc.memoryTypeIndex = vkFindMemoryType(physicalDevice_, stagingReq.memoryTypeBits,
                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
         result = vkAllocateMemory(device_, &stagingAlloc, nullptr, &stagingMemory);
         if (result != VK_SUCCESS) {
@@ -1496,7 +1006,7 @@ private:
         VkMemoryAllocateInfo imageAlloc{};
         imageAlloc.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
         imageAlloc.allocationSize = imageReq.size;
-        imageAlloc.memoryTypeIndex = findMemoryTypeLocked(imageReq.memoryTypeBits,
+        imageAlloc.memoryTypeIndex = vkFindMemoryType(physicalDevice_, imageReq.memoryTypeBits,
                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
         result = vkAllocateMemory(device_, &imageAlloc, nullptr, &lightTextureMemory_);
         if (result != VK_SUCCESS) {
@@ -1611,259 +1121,90 @@ private:
         lightTextureHeight_ = 0;
     }
 
-    VkCommandBuffer beginOneTimeCommandsLocked() {
-        VkCommandBufferAllocateInfo allocInfo{};
-        allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-        allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        allocInfo.commandPool = commandPool_;
-        allocInfo.commandBufferCount = 1;
+    // ── Command recording ──
 
-        VkCommandBuffer commandBuffer = VK_NULL_HANDLE;
-        VkResult result = vkAllocateCommandBuffers(device_, &allocInfo, &commandBuffer);
-        if (result != VK_SUCCESS) {
-            LOGE("vkAllocateCommandBuffers(one-time) failed: %d", result);
-            return VK_NULL_HANDLE;
-        }
-
+    bool recordCommandBufferLocked(VkCommandBuffer commandBuffer, uint32_t imageIndex,
+            uint32_t particleCount, const PushConstants& pushConstants) {
         VkCommandBufferBeginInfo beginInfo{};
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-        beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-        result = vkBeginCommandBuffer(commandBuffer, &beginInfo);
+        VkResult result = vkBeginCommandBuffer(commandBuffer, &beginInfo);
         if (result != VK_SUCCESS) {
-            LOGE("vkBeginCommandBuffer(one-time) failed: %d", result);
-            vkFreeCommandBuffers(device_, commandPool_, 1, &commandBuffer);
-            return VK_NULL_HANDLE;
-        }
-        return commandBuffer;
-    }
-
-    bool endOneTimeCommandsLocked(VkCommandBuffer commandBuffer) {
-        VkResult result = vkEndCommandBuffer(commandBuffer);
-        if (result != VK_SUCCESS) {
-            LOGE("vkEndCommandBuffer(one-time) failed: %d", result);
-            vkFreeCommandBuffers(device_, commandPool_, 1, &commandBuffer);
+            LOGE("vkBeginCommandBuffer failed: %d", result);
             return false;
         }
 
-        VkSubmitInfo submitInfo{};
-        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-        submitInfo.commandBufferCount = 1;
-        submitInfo.pCommandBuffers = &commandBuffer;
-        result = vkQueueSubmit(graphicsQueue_, 1, &submitInfo, VK_NULL_HANDLE);
+        VkClearValue clearValue{};
+        clearValue.color = {{0.0f, 0.0f, 0.0f, 1.0f}};
+
+        VkRenderPassBeginInfo renderPassInfo{};
+        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        renderPassInfo.renderPass = renderPass_;
+        renderPassInfo.framebuffer = swapchainFramebuffers_[imageIndex];
+        renderPassInfo.renderArea.offset = {0, 0};
+        renderPassInfo.renderArea.extent = swapchainExtent_;
+        renderPassInfo.clearValueCount = 1;
+        renderPassInfo.pClearValues = &clearValue;
+
+        vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+        VkViewport viewport{};
+        viewport.x = 0.0f;
+        viewport.y = 0.0f;
+        viewport.width = static_cast<float>(swapchainExtent_.width);
+        viewport.height = static_cast<float>(swapchainExtent_.height);
+        viewport.minDepth = 0.0f;
+        viewport.maxDepth = 1.0f;
+        vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+
+        VkRect2D scissor{};
+        scissor.offset = {0, 0};
+        scissor.extent = swapchainExtent_;
+        vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+
+        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, bgPipeline_);
+        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+            bgPipelineLayout_, 0, 1, &bgDescriptorSet_, 0, nullptr);
+        vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+
+        if (particleCount > 0) {
+            VkDeviceSize offsets[] = {0};
+            vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, particlePipeline_);
+            vkCmdPushConstants(commandBuffer, particlePipelineLayout_, VK_SHADER_STAGE_VERTEX_BIT,
+                    0, sizeof(PushConstants), &pushConstants);
+            vkCmdBindVertexBuffers(commandBuffer, 0, 1, &particleBuffer_, offsets);
+            vkCmdDraw(commandBuffer, particleCount, 1, 0, 0);
+        }
+
+        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, lightPipeline_);
+        vkCmdPushConstants(commandBuffer, lightPipelineLayout_, VK_SHADER_STAGE_VERTEX_BIT,
+            0, sizeof(PushConstants), &pushConstants);
+        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+            lightPipelineLayout_, 0, 1, &lightDescriptorSet_, 0, nullptr);
+        vkCmdDraw(commandBuffer, 4, 1, 0, 0);
+
+        vkCmdEndRenderPass(commandBuffer);
+        result = vkEndCommandBuffer(commandBuffer);
         if (result != VK_SUCCESS) {
-            LOGE("vkQueueSubmit(one-time) failed: %d", result);
-            vkFreeCommandBuffers(device_, commandPool_, 1, &commandBuffer);
+            LOGE("vkEndCommandBuffer failed: %d", result);
             return false;
         }
-        vkQueueWaitIdle(graphicsQueue_);
-        vkFreeCommandBuffers(device_, commandPool_, 1, &commandBuffer);
         return true;
     }
 
-    void transitionImageLayoutLocked(VkCommandBuffer commandBuffer, VkImage image,
-            VkImageLayout oldLayout, VkImageLayout newLayout) {
-        VkImageMemoryBarrier barrier{};
-        barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-        barrier.oldLayout = oldLayout;
-        barrier.newLayout = newLayout;
-        barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barrier.image = image;
-        barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        barrier.subresourceRange.baseMipLevel = 0;
-        barrier.subresourceRange.levelCount = 1;
-        barrier.subresourceRange.baseArrayLayer = 0;
-        barrier.subresourceRange.layerCount = 1;
-
-        VkPipelineStageFlags srcStage;
-        VkPipelineStageFlags dstStage;
-        if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
-            barrier.srcAccessMask = 0;
-            barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-            srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-            dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-        } else {
-            barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-            barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-            srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-            dstStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-        }
-
-        vkCmdPipelineBarrier(commandBuffer,
-                srcStage, dstStage,
-                0,
-                0, nullptr,
-                0, nullptr,
-                1, &barrier);
-    }
-
-    VkShaderModule createShaderModuleLocked(std::initializer_list<const char*> candidates) {
-        std::vector<uint8_t> bytes;
-        for (const char* path : candidates) {
-            bytes = readAssetLocked(path);
-            if (!bytes.empty()) {
-                break;
-            }
-        }
-
-        if (bytes.empty()) {
-            LOGE("Failed to load shader asset");
-            return VK_NULL_HANDLE;
-        }
-
-        VkShaderModuleCreateInfo createInfo{};
-        createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-        createInfo.codeSize = bytes.size();
-        createInfo.pCode = reinterpret_cast<const uint32_t*>(bytes.data());
-
-        VkShaderModule shaderModule = VK_NULL_HANDLE;
-        VkResult result = vkCreateShaderModule(device_, &createInfo, nullptr, &shaderModule);
-        if (result != VK_SUCCESS) {
-            LOGE("vkCreateShaderModule failed: %d", result);
-            return VK_NULL_HANDLE;
-        }
-        return shaderModule;
-    }
-
-    std::vector<uint8_t> readAssetLocked(const char* path) const {
-        if (assetManager_ == nullptr) {
-            return {};
-        }
-        AAsset* asset = AAssetManager_open(assetManager_, path, AASSET_MODE_BUFFER);
-        if (asset == nullptr) {
-            return {};
-        }
-        const off_t length = AAsset_getLength(asset);
-        std::vector<uint8_t> data(static_cast<size_t>(length));
-        const int64_t read = AAsset_read(asset, data.data(), length);
-        AAsset_close(asset);
-        if (read != length) {
-            return {};
-        }
-        return data;
-    }
-
-    bool isReadyLocked() const {
-        return instance_ != VK_NULL_HANDLE && device_ != VK_NULL_HANDLE && surface_ != VK_NULL_HANDLE
-                && swapchain_ != VK_NULL_HANDLE && renderPass_ != VK_NULL_HANDLE
-                && bgPipeline_ != VK_NULL_HANDLE
-                && bgDescriptorSet_ != VK_NULL_HANDLE
-                && bgTextureImageView_ != VK_NULL_HANDLE
-                && bgTextureSampler_ != VK_NULL_HANDLE
-                && particlePipeline_ != VK_NULL_HANDLE
-                && lightPipeline_ != VK_NULL_HANDLE
-                && lightDescriptorSet_ != VK_NULL_HANDLE
-                && lightTextureImageView_ != VK_NULL_HANDLE
-                && lightTextureSampler_ != VK_NULL_HANDLE;
-    }
-
-    void destroySurfaceLocked() {
-        destroySwapchainResourcesLocked();
-
-        if (surface_ != VK_NULL_HANDLE) {
-            vkDestroySurfaceKHR(instance_, surface_, nullptr);
-            surface_ = VK_NULL_HANDLE;
-        }
-
-        if (window_ != nullptr) {
-            ANativeWindow_release(window_);
-            window_ = nullptr;
-        }
-    }
-
-    void destroyDeviceLocked() {
-        if (device_ == VK_NULL_HANDLE) {
-            return;
-        }
-        vkDeviceWaitIdle(device_);
-
-        if (particleMappedMemory_ != nullptr) {
-            vkUnmapMemory(device_, particleMemory_);
-            particleMappedMemory_ = nullptr;
-        }
-        destroyBackgroundTextureLocked();
-        destroyLightTextureLocked();
-        if (particleBuffer_ != VK_NULL_HANDLE) {
-            vkDestroyBuffer(device_, particleBuffer_, nullptr);
-            particleBuffer_ = VK_NULL_HANDLE;
-        }
-        if (particleMemory_ != VK_NULL_HANDLE) {
-            vkFreeMemory(device_, particleMemory_, nullptr);
-            particleMemory_ = VK_NULL_HANDLE;
-        }
-        if (imageAvailableSemaphore_ != VK_NULL_HANDLE) {
-            vkDestroySemaphore(device_, imageAvailableSemaphore_, nullptr);
-            imageAvailableSemaphore_ = VK_NULL_HANDLE;
-        }
-        if (renderFinishedSemaphore_ != VK_NULL_HANDLE) {
-            vkDestroySemaphore(device_, renderFinishedSemaphore_, nullptr);
-            renderFinishedSemaphore_ = VK_NULL_HANDLE;
-        }
-        if (inFlightFence_ != VK_NULL_HANDLE) {
-            vkDestroyFence(device_, inFlightFence_, nullptr);
-            inFlightFence_ = VK_NULL_HANDLE;
-        }
-        if (commandPool_ != VK_NULL_HANDLE) {
-            vkDestroyCommandPool(device_, commandPool_, nullptr);
-            commandPool_ = VK_NULL_HANDLE;
-        }
-        if (bgDescriptorPool_ != VK_NULL_HANDLE) {
-            vkDestroyDescriptorPool(device_, bgDescriptorPool_, nullptr);
-            bgDescriptorPool_ = VK_NULL_HANDLE;
-            bgDescriptorSet_ = VK_NULL_HANDLE;
-        }
-        if (bgDescriptorSetLayout_ != VK_NULL_HANDLE) {
-            vkDestroyDescriptorSetLayout(device_, bgDescriptorSetLayout_, nullptr);
-            bgDescriptorSetLayout_ = VK_NULL_HANDLE;
-        }
-        if (lightDescriptorPool_ != VK_NULL_HANDLE) {
-            vkDestroyDescriptorPool(device_, lightDescriptorPool_, nullptr);
-            lightDescriptorPool_ = VK_NULL_HANDLE;
-            lightDescriptorSet_ = VK_NULL_HANDLE;
-        }
-        if (lightDescriptorSetLayout_ != VK_NULL_HANDLE) {
-            vkDestroyDescriptorSetLayout(device_, lightDescriptorSetLayout_, nullptr);
-            lightDescriptorSetLayout_ = VK_NULL_HANDLE;
-        }
-        vkDestroyDevice(device_, nullptr);
-        device_ = VK_NULL_HANDLE;
-        physicalDevice_ = VK_NULL_HANDLE;
-        graphicsQueue_ = VK_NULL_HANDLE;
-        queueFamilyIndex_ = 0;
-    }
+    // ── Members ──
 
     AAssetManager* assetManager_ = nullptr;
     std::mutex mutex_;
-
     int width_ = 0;
     int height_ = 0;
-
     ANativeWindow* window_ = nullptr;
 
-    VkInstance instance_ = VK_NULL_HANDLE;
-    VkPhysicalDevice physicalDevice_ = VK_NULL_HANDLE;
-    VkDevice device_ = VK_NULL_HANDLE;
-    VkQueue graphicsQueue_ = VK_NULL_HANDLE;
-    uint32_t queueFamilyIndex_ = 0;
-
-    VkSurfaceKHR surface_ = VK_NULL_HANDLE;
-    VkSwapchainKHR swapchain_ = VK_NULL_HANDLE;
-    VkFormat swapchainFormat_ = VK_FORMAT_UNDEFINED;
-    VkExtent2D swapchainExtent_{};
-
-    std::vector<VkImage> swapchainImages_;
-    std::vector<VkImageView> swapchainImageViews_;
-    std::vector<VkFramebuffer> framebuffers_;
-    std::vector<VkCommandBuffer> commandBuffers_;
-
-    VkRenderPass renderPass_ = VK_NULL_HANDLE;
     VkPipelineLayout bgPipelineLayout_ = VK_NULL_HANDLE;
     VkPipelineLayout particlePipelineLayout_ = VK_NULL_HANDLE;
     VkPipelineLayout lightPipelineLayout_ = VK_NULL_HANDLE;
     VkPipeline bgPipeline_ = VK_NULL_HANDLE;
     VkPipeline particlePipeline_ = VK_NULL_HANDLE;
     VkPipeline lightPipeline_ = VK_NULL_HANDLE;
-    VkCommandPool commandPool_ = VK_NULL_HANDLE;
 
     VkDescriptorSetLayout bgDescriptorSetLayout_ = VK_NULL_HANDLE;
     VkDescriptorPool bgDescriptorPool_ = VK_NULL_HANDLE;
@@ -1892,10 +1233,6 @@ private:
     std::vector<uint8_t> pendingLightPixels_;
     uint32_t pendingLightWidth_ = 0;
     uint32_t pendingLightHeight_ = 0;
-
-    VkSemaphore imageAvailableSemaphore_ = VK_NULL_HANDLE;
-    VkSemaphore renderFinishedSemaphore_ = VK_NULL_HANDLE;
-    VkFence inFlightFence_ = VK_NULL_HANDLE;
 
     VkBuffer particleBuffer_ = VK_NULL_HANDLE;
     VkDeviceMemory particleMemory_ = VK_NULL_HANDLE;
@@ -1962,7 +1299,7 @@ Java_com_reandroid_wallpaper_galaxy_GalaxyVKNative_nRenderFrame(
 extern "C" JNIEXPORT jboolean JNICALL
 Java_com_reandroid_wallpaper_galaxy_GalaxyVKNative_nIsVulkanSupported(
         JNIEnv*, jclass) {
-    return GalaxyVkRenderer::isVulkanSupported();
+    return vkIsVulkanSupported();
 }
 
 extern "C" JNIEXPORT void JNICALL
