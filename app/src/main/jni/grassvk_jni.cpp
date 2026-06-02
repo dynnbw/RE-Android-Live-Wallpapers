@@ -441,7 +441,7 @@ public:
         destroyDeviceLocked();
     }
 
-private:
+// CRTP hooks called by VkRendererBase (public access required)
     // ===== grass geometry buffers =====
 
     bool createGrassGeometryBuffersLocked() {

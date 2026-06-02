@@ -32,7 +32,7 @@
 // ─── shared free functions ───
 
 inline uint32_t vkFindMemoryType(VkPhysicalDevice physicalDevice, uint32_t typeFilter,
-                                  VkPhysicalDeviceMemoryPropertyFlags properties) {
+                                  VkMemoryPropertyFlags properties) {
     VkPhysicalDeviceMemoryProperties memProperties{};
     vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
     for (uint32_t i = 0; i < memProperties.memoryTypeCount; ++i) {

@@ -274,7 +274,7 @@ public:
         destroyDeviceLocked();
     }
 
-private:
+// CRTP hooks called by VkRendererBase (public access required)
     // ── Pipeline management ──
 
     bool createPipelinesLocked() {
