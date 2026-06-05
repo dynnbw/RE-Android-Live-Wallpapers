@@ -1,5 +1,0 @@
-{
-  "label": "@string/wallpaper_nebula",
-  "plugin": "com.reandroid.wallpaper.nebula.NebulaPlugin",
-  "previewClass": "com.reandroid.wallpaper.nebula.NebulaGL"
-}
