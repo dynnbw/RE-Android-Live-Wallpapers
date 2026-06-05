@@ -57,7 +57,7 @@ public class CubeGL extends GLESScene implements SharedPreferences.OnSharedPrefe
         if (prefs != null) {
             prefs.registerOnSharedPreferenceChangeListener(this);
             String shape = prefs.getString(KEY_SHAPE, "cube");
-            mScene.loadShape(mResources, shape);
+            mScene.loadShape(shape);
         }
     }
 
@@ -109,7 +109,7 @@ public class CubeGL extends GLESScene implements SharedPreferences.OnSharedPrefe
     public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
         if (KEY_SHAPE.equals(key) && mResources != null) {
             String shape = prefs.getString(KEY_SHAPE, "cube");
-            mScene.loadShape(mResources, shape);
+            mScene.loadShape(shape);
         }
     }
 
@@ -130,7 +130,7 @@ public class CubeGL extends GLESScene implements SharedPreferences.OnSharedPrefe
         if (mScene.mOriginalPoints == null) {
             String shape = mScene.getPrefs() != null
                     ? mScene.getPrefs().getString(KEY_SHAPE, "cube") : "cube";
-            mScene.loadShape(mResources, shape);
+            mScene.loadShape(shape);
         }
 
         GLES20.glClearColor(0f, 0f, 0f, 1f);

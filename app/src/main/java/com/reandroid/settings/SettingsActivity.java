@@ -260,7 +260,7 @@ public class SettingsActivity extends AppCompatActivity
     }
 
     private void showWeatherDebugDialog() {
-        String[] debugOptions = getResources().getStringArray(R.array.weather_debug_options);
+        String[] debugOptions = {"正常天气逻辑", "晴朗", "多云", "阴沉", "雾", "阵雨", "雷暴", "飘雪/雪", "冰冷", "冻雨"};
         new AlertDialog.Builder(this)
                 .setTitle(R.string.pref_weather_debug_title)
                 .setItems(debugOptions, (dialog, which) -> {
@@ -312,8 +312,8 @@ public class SettingsActivity extends AppCompatActivity
 
     private void showGlobalFrameRateDialog() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        String[] entries = getResources().getStringArray(R.array.frame_rate_entries);
-        String[] values = getResources().getStringArray(R.array.frame_rate_values);
+        String[] entries = {"test", "24 FPS", "30 FPS", "45 FPS", "60 FPS", "90 FPS", "120 FPS", "180 FPS"};
+        String[] values = {"1", "24", "30", "45", "60", "90", "120", "180"};
         String currentValue = prefs.getString(KEY_GLOBAL_FRAME_RATE, "60");
         int checkedIndex = 0;
         for (int i = 0; i < values.length; i++) {
@@ -359,8 +359,8 @@ public class SettingsActivity extends AppCompatActivity
 
     private void showWeatherUpdateIntervalDialog() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        String[] entries = getResources().getStringArray(R.array.weather_update_entries);
-        String[] values = getResources().getStringArray(R.array.weather_update_values);
+        String[] entries = {"15 分钟", "30 分钟", "1 小时", "3 小时"};
+        String[] values = {"15", "30", "60", "180"};
         String currentValue = prefs.getString("weather_update_minutes", "30");
         int checkedIndex = 0;
         for (int i = 0; i < values.length; i++) {

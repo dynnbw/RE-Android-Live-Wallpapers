@@ -2,7 +2,7 @@ package com.reandroid.wallpaper.cube;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
+
 import android.view.MotionEvent;
 
 /**
@@ -64,17 +64,16 @@ final class CubeScene {
         mPluginPrefs = prefs;
     }
 
-    void loadShape(Resources resources, String shapeName) {
+    void loadShape(String shapeName) {
         if (shapeName == null || shapeName.equals(mShapeName)) return;
         mShapeName = shapeName;
 
-        int pid = resources.getIdentifier(shapeName + "points", "array", mContext.getPackageName());
-        int lid = resources.getIdentifier(shapeName + "lines", "array", mContext.getPackageName());
+        String[] p = com.reandroid.utils.AssetLoader.readText(mContext,
+                "cube/data/cube_" + shapeName + "_points.csv").trim().split("\\s+");
+        String[] l = com.reandroid.utils.AssetLoader.readText(mContext,
+                "cube/data/cube_" + shapeName + "_lines.csv").trim().split("\\s+");
 
-        String[] p = resources.getStringArray(pid);
-        String[] l = resources.getStringArray(lid);
-
-        int numPoints = p.length;
+        int numPoints = p.length / 3;
         mOriginalPoints = new ThreeDPoint[numPoints];
         mRotatedPoints = new ThreeDPoint[numPoints];
         mProjectedX = new float[numPoints];
@@ -83,19 +82,17 @@ final class CubeScene {
         for (int i = 0; i < numPoints; i++) {
             mOriginalPoints[i] = new ThreeDPoint();
             mRotatedPoints[i] = new ThreeDPoint();
-            String[] split = p[i].split(" ");
-            mOriginalPoints[i].x = Float.parseFloat(split[0]);
-            mOriginalPoints[i].y = Float.parseFloat(split[1]);
-            mOriginalPoints[i].z = Float.parseFloat(split[2]);
+            mOriginalPoints[i].x = Float.parseFloat(p[i * 3]);
+            mOriginalPoints[i].y = Float.parseFloat(p[i * 3 + 1]);
+            mOriginalPoints[i].z = Float.parseFloat(p[i * 3 + 2]);
         }
 
-        int numLines = l.length;
+        int numLines = l.length / 2;
         mLines = new ThreeDLine[numLines];
         for (int i = 0; i < numLines; i++) {
             mLines[i] = new ThreeDLine();
-            String[] split = l[i].split(" ");
-            mLines[i].startPoint = Integer.parseInt(split[0]);
-            mLines[i].endPoint = Integer.parseInt(split[1]);
+            mLines[i].startPoint = Integer.parseInt(l[i * 2]);
+            mLines[i].endPoint = Integer.parseInt(l[i * 2 + 1]);
         }
     }
 
