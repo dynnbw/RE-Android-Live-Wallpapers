@@ -145,7 +145,8 @@ public abstract class BasePluginEngine implements WallpaperEngine {
 
     @Override
     public void drawFrame(long timeMs) {
-        if (!mEglCreated || mScene == null) return;
+        if (!mEglCreated) { Log.w(TAG, "drawFrame skipped: EGL not created"); return; }
+        if (mScene == null) { Log.w(TAG, "drawFrame skipped: scene is null"); return; }
 
         if (!mEglCurrent) {
             mEglCurrent = EGL14.eglMakeCurrent(mDisplay, mEglSurface, mEglSurface, mEglContext);
@@ -153,19 +154,21 @@ public abstract class BasePluginEngine implements WallpaperEngine {
                 Log.e(TAG, "eglMakeCurrent failed: 0x" + Integer.toHexString(EGL14.eglGetError()));
                 return;
             }
-            // Safe GL defaults (no blend-func override — scenes manage their own blend state)
+            Log.d(TAG, "EGL current, scene pending init=" + mSceneInitPending);
             try {
                 GLES20.glClearColor(0f, 0f, 0f, 1f);
                 GLES20.glEnable(GLES20.GL_BLEND);
             } catch (Exception ignored) {}
 
-            // Deferred init: now EGL is current, safe to call scene.onCreate() with GL calls
             if (mSceneInitPending) {
+                Log.d(TAG, "Deferred scene.init() for " + mScene.getClass().getSimpleName());
                 mScene.init(mPendingSurface, mPendingResources, mPendingPreview);
                 mSceneInitPending = false;
             }
 
+            mScene.resize(mWidth, mHeight);
             mScene.start();
+            Log.d(TAG, "Scene started: " + mScene.getClass().getSimpleName());
         }
 
         mScene.drawFrame(timeMs);
