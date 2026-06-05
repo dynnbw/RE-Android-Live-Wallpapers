@@ -16,5 +16,10 @@
   "nexus_mode_label_4": "白",
   "nexus_mode_label_5": "青",
   "nexus_mode_label_6": "紫",
-  "nexus_mode_label_7": "粉"
+  "nexus_mode_label_7": "粉",
+  "nexus_background_preset_label_pyramid_background": "金字塔",
+  "nexus_background_preset_label_pyramid_background1": "金字塔 1",
+  "nexus_background_preset_label_pyramid_background2": "金字塔 2",
+  "nexus_background_preset_label_pyramid_background3": "金字塔 3",
+  "nexus_background_preset_label_pyramid_background4": "金字塔 4"
 }

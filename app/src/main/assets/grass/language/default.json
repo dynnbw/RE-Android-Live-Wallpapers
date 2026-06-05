@@ -21,13 +21,13 @@
   "pref_grass_firefly_count": "Firefly count",
   "pref_grass_star_count": "Star count",
   "pref_grass_legacy_particles": "Classic dandelion and fireflies",
-  "pref_grass_color_label_default": "@string/grass_color_default",
-  "pref_grass_color_label_#00ff0d": "@string/grass_color_green",
-  "pref_grass_color_label_#42A5F5": "@string/grass_color_blue",
-  "pref_grass_color_label_#EF5350": "@string/grass_color_red",
-  "pref_grass_color_label_#ffbfca": "@string/grass_color_pink",
-  "pref_grass_color_label_#AB47BC": "@string/grass_color_purple",
-  "pref_grass_color_label_#ffd900": "@string/grass_color_yellow",
-  "pref_grass_color_label_#2f2e34": "@string/grass_color_black",
-  "pref_grass_color_label_#ffffff": "@string/grass_color_white"
+  "pref_grass_color_label_default": "Default",
+  "pref_grass_color_label_#00ff0d": "Green",
+  "pref_grass_color_label_#42A5F5": "Blue",
+  "pref_grass_color_label_#EF5350": "Red",
+  "pref_grass_color_label_#ffbfca": "Pink",
+  "pref_grass_color_label_#AB47BC": "Purple",
+  "pref_grass_color_label_#ffd900": "Yellow",
+  "pref_grass_color_label_#2f2e34": "Black",
+  "pref_grass_color_label_#ffffff": "White"
 }

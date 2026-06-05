@@ -19,5 +19,15 @@
   "pref_grass_firefly": "Glühwürmchen anzeigen (Nacht)",
   "pref_grass_firefly_count": "Anzahl Glühwürmchen",
   "pref_grass_star_count": "Anzahl Sterne",
-  "pref_grass_legacy_particles": "Klassischer Löwenzahn und Glühwürmchen"
+  "pref_grass_legacy_particles": "Klassischer Löwenzahn und Glühwürmchen",
+  "pref_grass_procedural_sun": "Procedural sun",
+  "pref_grass_color_label_default": "Standard",
+  "pref_grass_color_label_#00ff0d": "Grün",
+  "pref_grass_color_label_#42A5F5": "Blau",
+  "pref_grass_color_label_#EF5350": "Rot",
+  "pref_grass_color_label_#ffbfca": "Rosa",
+  "pref_grass_color_label_#AB47BC": "Violett",
+  "pref_grass_color_label_#ffd900": "Gelb",
+  "pref_grass_color_label_#2f2e34": "Schwarz",
+  "pref_grass_color_label_#ffffff": "Weiß"
 }

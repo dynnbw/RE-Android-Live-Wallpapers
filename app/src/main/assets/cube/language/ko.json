@@ -1,3 +1,11 @@
 {
-  "cube_shape": "모양"
+  "cube_shape": "모양",
+  "cube_shape_label_cube": "정육면체",
+  "cube_shape_label_dodecahedron": "정십이면체",
+  "cube_shape_label_tetrahedron": "정사면체",
+  "cube_shape_label_octahedron": "정팔면체",
+  "cube_shape_label_icosahedron": "정이십면체",
+  "cube_shape_label_stardodecahedron": "별 정십이면체",
+  "cube_shape_label_cuboctahedron": "육팔면체",
+  "cube_shape_label_truncatedcube": "깎은 정육면체"
 }

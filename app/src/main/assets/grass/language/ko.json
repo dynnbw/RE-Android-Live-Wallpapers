@@ -19,5 +19,15 @@
   "pref_grass_firefly": "반딧불이 표시",
   "pref_grass_firefly_count": "반딧불이 수 (성능에 영향)",
   "pref_grass_star_count": "별 수 (성능에 영향)",
-  "pref_grass_legacy_particles": "클래식 버전 민들레, 반딧불이"
+  "pref_grass_legacy_particles": "클래식 버전 민들레, 반딧불이",
+  "pref_grass_procedural_sun": "Procedural sun",
+  "pref_grass_color_label_default": "기본",
+  "pref_grass_color_label_#00ff0d": "녹색",
+  "pref_grass_color_label_#42A5F5": "파랑",
+  "pref_grass_color_label_#EF5350": "빨강",
+  "pref_grass_color_label_#ffbfca": "분홍",
+  "pref_grass_color_label_#AB47BC": "보라",
+  "pref_grass_color_label_#ffd900": "노랑",
+  "pref_grass_color_label_#2f2e34": "검정",
+  "pref_grass_color_label_#ffffff": "하양"
 }

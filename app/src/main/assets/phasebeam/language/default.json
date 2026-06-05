@@ -4,6 +4,6 @@
   "phasebeam_hue": "Color",
   "phasebeam_saturation": "Saturation",
   "phasebeam_brightness": "Brightness",
-  "theme_label_phasebeam": "@string/phasebeam_theme_phasebeam",
-  "theme_label_sunbeam": "@string/phasebeam_theme_sunbeam"
+  "theme_label_phasebeam": "Phase Beam (blue)",
+  "theme_label_sunbeam": "Sunbeam (warm)"
 }

@@ -2,5 +2,8 @@
   "phasebeam_recolor_enabled": "調整光束顏色",
   "phasebeam_hue": "顏色",
   "phasebeam_saturation": "飽和度",
-  "phasebeam_brightness": "亮度"
+  "phasebeam_brightness": "亮度",
+  "theme": "Color theme",
+  "theme_label_phasebeam": "相位束 (藍色)",
+  "theme_label_sunbeam": "日光束 (暖色)"
 }

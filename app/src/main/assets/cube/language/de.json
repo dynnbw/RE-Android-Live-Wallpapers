@@ -1,3 +1,11 @@
 {
-  "cube_shape": "Form"
+  "cube_shape": "Form",
+  "cube_shape_label_cube": "Würfel",
+  "cube_shape_label_dodecahedron": "Dodekaeder",
+  "cube_shape_label_tetrahedron": "Tetraeder",
+  "cube_shape_label_octahedron": "Oktaeder",
+  "cube_shape_label_icosahedron": "Ikosaeder",
+  "cube_shape_label_stardodecahedron": "Sterndodekaeder",
+  "cube_shape_label_cuboctahedron": "Kuboktaeder",
+  "cube_shape_label_truncatedcube": "Abgestumpfter Würfel"
 }

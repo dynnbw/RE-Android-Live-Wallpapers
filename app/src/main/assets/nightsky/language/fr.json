@@ -2,5 +2,10 @@
   "nightsky_camera_focal_mm": "Focale de l’appareil photo",
   "nightsky_use_sensor": "Utiliser l’orientation du capteur",
   "nightsky_auto_time_accel": "Accélération temporelle automatique",
-  "nightsky_time_accel_speed": "Vitesse d’accélération"
+  "nightsky_time_accel_speed": "Vitesse d’accélération",
+  "nightsky_time_accel_speed_label_180": "180x",
+  "nightsky_time_accel_speed_label_360": "360x",
+  "nightsky_time_accel_speed_label_540": "540x",
+  "nightsky_time_accel_speed_label_720": "720x",
+  "nightsky_time_accel_speed_label_1440": "1440x"
 }

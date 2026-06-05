@@ -1,5 +1,13 @@
 {
   "show_seconds": "초 표시",
   "variable_line_width": "고리 너비를 다양하게 설정",
-  "palette": "색상 팔레트"
+  "palette": "색상 팔레트",
+  "palette_label_palette_gray": "아이언",
+  "palette_label_palette_white_c": "북극곰 (동적)",
+  "palette_label_palette_black_c": "블랙홀 (동적)",
+  "palette_label_palette_matrix": "그린 스크린",
+  "palette_label_palette_halloween": "호박 파이",
+  "palette_label_palette_violet": "미드나잇",
+  "palette_label_palette_oceanic": "블루 레이저",
+  "palette_label_palette_zenburn": "외계인 과일 샐러드"
 }

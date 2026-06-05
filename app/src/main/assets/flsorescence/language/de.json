@@ -4,5 +4,17 @@
   "flsorescence_scale": "Punktgröße",
   "flsorescence_speed": "Bewegungsgeschwindigkeit",
   "flsorescence_amount": "Anzahl der Punkte",
-  "flsorescence_pattern": "Bewegungsmuster"
+  "flsorescence_pattern": "Bewegungsmuster",
+  "flsorescence_shape_label_0": "Punkt",
+  "flsorescence_shape_label_1": "Leuchtpunkt",
+  "flsorescence_shape_label_2": "Rund",
+  "flsorescence_shape_label_3": "Leuchtrund",
+  "flsorescence_color_label_0": "Blau",
+  "flsorescence_color_label_1": "Grün",
+  "flsorescence_color_label_2": "Orange",
+  "flsorescence_pattern_label_0": "Muster 1",
+  "flsorescence_pattern_label_1": "Muster 2",
+  "flsorescence_pattern_label_2": "Muster 3",
+  "flsorescence_pattern_label_3": "Muster 4",
+  "flsorescence_pattern_label_4": "Muster 5"
 }

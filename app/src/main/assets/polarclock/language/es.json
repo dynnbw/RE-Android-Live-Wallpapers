@@ -1,5 +1,13 @@
 {
   "show_seconds": "Mostrar segundos",
   "variable_line_width": "Variar anchos de anillo",
-  "palette": "Paleta de colores"
+  "palette": "Paleta de colores",
+  "palette_label_palette_gray": "Hierro",
+  "palette_label_palette_white_c": "Oso polar (dinámico)",
+  "palette_label_palette_black_c": "Agujero negro (dinámico)",
+  "palette_label_palette_matrix": "Pantalla verde",
+  "palette_label_palette_halloween": "Pastel de calabaza",
+  "palette_label_palette_violet": "Medianoche",
+  "palette_label_palette_oceanic": "Láser azul",
+  "palette_label_palette_zenburn": "Ensalada de frutas alienígena"
 }

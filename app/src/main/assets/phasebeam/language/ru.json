@@ -2,5 +2,8 @@
   "phasebeam_recolor_enabled": "Настроить цвета лучей",
   "phasebeam_hue": "Цвет",
   "phasebeam_saturation": "Насыщенность",
-  "phasebeam_brightness": "Яркость"
+  "phasebeam_brightness": "Яркость",
+  "theme": "Color theme",
+  "theme_label_phasebeam": "Фазовый луч (синий)",
+  "theme_label_sunbeam": "Солнечный луч (тёплый)"
 }

@@ -2,5 +2,8 @@
   "phasebeam_recolor_enabled": "Ajuster les couleurs des faisceaux",
   "phasebeam_hue": "Couleur",
   "phasebeam_saturation": "Saturation",
-  "phasebeam_brightness": "Luminosité"
+  "phasebeam_brightness": "Luminosité",
+  "theme": "Color theme",
+  "theme_label_phasebeam": "Faisceau de phase (bleu)",
+  "theme_label_sunbeam": "Rayon de soleil (chaud)"
 }

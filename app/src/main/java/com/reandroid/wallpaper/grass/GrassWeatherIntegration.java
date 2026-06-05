@@ -51,7 +51,7 @@ final class GrassWeatherIntegration {
     }
 
     void start(boolean isPreview) {
-        weatherEnabled = WallpaperSettings.isGrassWeatherEnabled(true);
+        weatherEnabled = prefs != null ? prefs.getBoolean("pref_grass_weather_enabled", false) : false;
         if (!isPreview && weatherManager != null && weatherEnabled) {
             weatherManager.start();
             weatherRunning = true;
@@ -94,7 +94,7 @@ final class GrassWeatherIntegration {
 
         // Atomically consume the pending weather state (get + clear in one operation)
         WeatherState weatherState = pendingWeatherState.getAndSet(null);
-        boolean enabledNow = WallpaperSettings.isGrassWeatherEnabled(true);
+        boolean enabledNow = prefs != null ? prefs.getBoolean("pref_grass_weather_enabled", false) : false;
         if (enabledNow != weatherEnabled) {
             weatherEnabled = enabledNow;
             if (weatherManager != null && !isPreview) {

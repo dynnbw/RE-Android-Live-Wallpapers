@@ -3,5 +3,7 @@
   "phasebeam_recolor_enabled": "광선 색상 조정",
   "phasebeam_hue": "색상",
   "phasebeam_saturation": "채도",
-  "phasebeam_brightness": "밝기"
+  "phasebeam_brightness": "밝기",
+  "theme_label_phasebeam": "위상 빔 (파랑)",
+  "theme_label_sunbeam": "햇살 (따뜻함)"
 }

@@ -1,3 +1,23 @@
 {
-  "preset": "Tema Visual"
+  "preset": "Tema Visual",
+  "preset_label_0": "Black & White (Classic)",
+  "preset_label_1": "Blue & White",
+  "preset_label_2": "Green & White",
+  "preset_label_3": "Green Pre-multiplied",
+  "preset_label_4": "Green Glow",
+  "preset_label_5": "Red Fire",
+  "preset_label_6": "Black Passthrough",
+  "preset_label_7": "Blue-Yellow Gradient",
+  "preset_label_8": "Green Glow 2",
+  "preset_label_9": "Red Fire Pre-multiplied",
+  "preset_label_10": "Gray Pre-multiplied",
+  "preset_label_11": "Blue Pre-multiplied",
+  "preset_label_12": "Blue-Yellow Static",
+  "preset_label_13": "Blue-Yellow Rotate",
+  "preset_label_14": "Blue-Yellow Rotate 2",
+  "preset_label_15": "Gray Classic",
+  "preset_label_16": "Black Swap (Default)",
+  "preset_label_17": "Dark Blue Plasma",
+  "preset_label_18": "Light Blue Plasma",
+  "preset_label_19": "White Plasma"
 }

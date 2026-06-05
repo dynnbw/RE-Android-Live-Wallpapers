@@ -4,5 +4,17 @@
   "flsorescence_scale": "बिंदु पैमाना",
   "flsorescence_speed": "गति की रफ्तार",
   "flsorescence_amount": "बिंदुओं की मात्रा",
-  "flsorescence_pattern": "गति पैटर्न"
+  "flsorescence_pattern": "गति पैटर्न",
+  "flsorescence_shape_label_0": "बिंदु",
+  "flsorescence_shape_label_1": "ग्लो डॉट",
+  "flsorescence_shape_label_2": "गोल",
+  "flsorescence_shape_label_3": "ग्लो राउंड",
+  "flsorescence_color_label_0": "नीला",
+  "flsorescence_color_label_1": "हरा",
+  "flsorescence_color_label_2": "नारंगी",
+  "flsorescence_pattern_label_0": "पैटर्न १",
+  "flsorescence_pattern_label_1": "पैटर्न २",
+  "flsorescence_pattern_label_2": "पैटर्न ३",
+  "flsorescence_pattern_label_3": "पैटर्न ४",
+  "flsorescence_pattern_label_4": "पैटर्न ५"
 }

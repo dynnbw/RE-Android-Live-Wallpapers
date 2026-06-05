@@ -2,5 +2,10 @@
   "nightsky_camera_focal_mm": "ক্যামেরা ফোকাল দৈর্ঘ্য",
   "nightsky_use_sensor": "সেন্সর ওরিয়েন্টেশন ব্যবহার করুন",
   "nightsky_auto_time_accel": "স্বয়ংক্রিয় সময় ত্বরণ",
-  "nightsky_time_accel_speed": "ত্বরণ গতি"
+  "nightsky_time_accel_speed": "ত্বরণ গতি",
+  "nightsky_time_accel_speed_label_180": "180x",
+  "nightsky_time_accel_speed_label_360": "360x",
+  "nightsky_time_accel_speed_label_540": "540x",
+  "nightsky_time_accel_speed_label_720": "720x",
+  "nightsky_time_accel_speed_label_1440": "1440x"
 }

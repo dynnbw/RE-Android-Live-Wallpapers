@@ -16,5 +16,18 @@
   "nexus_mode_label_白": "白",
   "nexus_mode_label_青": "青",
   "nexus_mode_label_紫": "紫",
-  "nexus_mode_label_粉": "粉"
+  "nexus_mode_label_粉": "粉",
+  "nexus_background_preset_label_pyramid_background": "金字塔",
+  "nexus_background_preset_label_pyramid_background1": "金字塔 1",
+  "nexus_background_preset_label_pyramid_background2": "金字塔 2",
+  "nexus_background_preset_label_pyramid_background3": "金字塔 3",
+  "nexus_background_preset_label_pyramid_background4": "金字塔 4",
+  "nexus_mode_label_0": "預設",
+  "nexus_mode_label_1": "紅色",
+  "nexus_mode_label_2": "綠色",
+  "nexus_mode_label_3": "藍色",
+  "nexus_mode_label_4": "白色",
+  "nexus_mode_label_5": "青色",
+  "nexus_mode_label_6": "紫色",
+  "nexus_mode_label_7": "粉色"
 }

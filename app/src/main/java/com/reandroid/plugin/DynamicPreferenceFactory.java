@@ -170,7 +170,7 @@ public final class DynamicPreferenceFactory {
                         String langKey = key + "_label_" + v[i];
                         String langVal = resolveLang(language, langKey);
                         if (!langVal.equals(langKey)) {
-                            l[i] = langVal;
+                            l[i] = resolveStringRef(context, langVal);
                         } else {
                             l[i] = resolveStringRef(context, raw);
                         }

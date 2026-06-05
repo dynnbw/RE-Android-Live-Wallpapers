@@ -3,5 +3,7 @@
   "phasebeam_recolor_enabled": "ビームの色を調整",
   "phasebeam_hue": "色",
   "phasebeam_saturation": "彩度",
-  "phasebeam_brightness": "明るさ"
+  "phasebeam_brightness": "明るさ",
+  "theme_label_phasebeam": "フェーズビーム (青)",
+  "theme_label_sunbeam": "サンビーム (暖色)"
 }

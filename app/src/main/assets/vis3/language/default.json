@@ -11,13 +11,13 @@
   "musicvis_fft_size_label_512": "512",
   "musicvis_fft_size_label_768": "768",
   "musicvis_fft_size_label_1024": "1024",
-  "musicvis_recolor_mode_label_static": "@string/musicvis_recolor_mode_static",
-  "musicvis_recolor_mode_label_dynamic": "@string/musicvis_recolor_mode_dynamic",
-  "musicvis_bg_color_label_#000000": "@string/musicvis_bg_black",
-  "musicvis_bg_color_label_#300303": "@string/musicvis_bg_dark_red",
-  "musicvis_bg_color_label_#50330": "@string/musicvis_bg_dark_blue",
-  "musicvis_bg_color_label_#2F4F4F": "@string/musicvis_bg_dark_green",
-  "musicvis_bg_color_label_#FFE4DE": "@string/musicvis_bg_pink",
-  "musicvis_bg_color_label_#F0FFFF": "@string/musicvis_bg_light_green",
-  "musicvis_bg_color_label_#EDDEFF": "@string/musicvis_bg_light_purple"
+  "musicvis_recolor_mode_label_static": "Static",
+  "musicvis_recolor_mode_label_dynamic": "Audio-driven",
+  "musicvis_bg_color_label_#000000": "Black",
+  "musicvis_bg_color_label_#300303": "Dark red",
+  "musicvis_bg_color_label_#50330": "Dark blue",
+  "musicvis_bg_color_label_#2F4F4F": "Dark green",
+  "musicvis_bg_color_label_#FFE4DE": "Pink",
+  "musicvis_bg_color_label_#F0FFFF": "Light green",
+  "musicvis_bg_color_label_#EDDEFF": "Light purple"
 }

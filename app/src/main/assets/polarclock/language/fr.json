@@ -1,5 +1,13 @@
 {
   "show_seconds": "Afficher les secondes",
   "variable_line_width": "Varier la largeur des anneaux",
-  "palette": "Palette de couleurs"
+  "palette": "Palette de couleurs",
+  "palette_label_palette_gray": "Fer",
+  "palette_label_palette_white_c": "Ours polaire (dynamique)",
+  "palette_label_palette_black_c": "Trou noir (dynamique)",
+  "palette_label_palette_matrix": "Écran vert",
+  "palette_label_palette_halloween": "Tarte à la citrouille",
+  "palette_label_palette_violet": "Minuit",
+  "palette_label_palette_oceanic": "Laser bleu",
+  "palette_label_palette_zenburn": "Salade de fruits extraterrestre"
 }

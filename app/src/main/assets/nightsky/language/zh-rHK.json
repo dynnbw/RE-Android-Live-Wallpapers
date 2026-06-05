@@ -2,5 +2,10 @@
   "nightsky_camera_focal_mm": "相機焦距",
   "nightsky_use_sensor": "使用傳感器朝向",
   "nightsky_auto_time_accel": "自動時間加速",
-  "nightsky_time_accel_speed": "加速檔位"
+  "nightsky_time_accel_speed": "加速檔位",
+  "nightsky_time_accel_speed_label_180": "180x",
+  "nightsky_time_accel_speed_label_360": "360x",
+  "nightsky_time_accel_speed_label_540": "540x",
+  "nightsky_time_accel_speed_label_720": "720x",
+  "nightsky_time_accel_speed_label_1440": "1440x"
 }

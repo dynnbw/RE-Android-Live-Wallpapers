@@ -1,5 +1,13 @@
 {
   "show_seconds": "Mostrar segundos",
   "variable_line_width": "Variar larguras dos anéis",
-  "palette": "Paleta de Cores"
+  "palette": "Paleta de Cores",
+  "palette_label_palette_gray": "Ferro",
+  "palette_label_palette_white_c": "Urso polar (dinâmico)",
+  "palette_label_palette_black_c": "Buraco negro (dinâmico)",
+  "palette_label_palette_matrix": "Tela verde",
+  "palette_label_palette_halloween": "Torta de abóbora",
+  "palette_label_palette_violet": "Meia-noite",
+  "palette_label_palette_oceanic": "Laser azul",
+  "palette_label_palette_zenburn": "Salada de frutas alienígena"
 }

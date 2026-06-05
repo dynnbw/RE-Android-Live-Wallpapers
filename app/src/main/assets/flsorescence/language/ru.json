@@ -4,5 +4,17 @@
   "flsorescence_scale": "Масштаб точек",
   "flsorescence_speed": "Скорость движения",
   "flsorescence_amount": "Количество точек",
-  "flsorescence_pattern": "Шаблон движения"
+  "flsorescence_pattern": "Шаблон движения",
+  "flsorescence_shape_label_0": "Точка",
+  "flsorescence_shape_label_1": "Светящаяся точка",
+  "flsorescence_shape_label_2": "Круглый",
+  "flsorescence_shape_label_3": "Светящийся круглый",
+  "flsorescence_color_label_0": "Синий",
+  "flsorescence_color_label_1": "Зелёный",
+  "flsorescence_color_label_2": "Оранжевый",
+  "flsorescence_pattern_label_0": "Узор 1",
+  "flsorescence_pattern_label_1": "Узор 2",
+  "flsorescence_pattern_label_2": "Узор 3",
+  "flsorescence_pattern_label_3": "Узор 4",
+  "flsorescence_pattern_label_4": "Узор 5"
 }

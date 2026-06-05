@@ -2,5 +2,8 @@
   "phasebeam_recolor_enabled": "बीम रंग समायोजित करें",
   "phasebeam_hue": "रंग",
   "phasebeam_saturation": "संतृप्ति",
-  "phasebeam_brightness": "चमक"
+  "phasebeam_brightness": "चमक",
+  "theme": "Color theme",
+  "theme_label_phasebeam": "फेज बीम (नीला)",
+  "theme_label_sunbeam": "सनबीम (गर्म)"
 }

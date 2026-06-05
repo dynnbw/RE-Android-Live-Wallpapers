@@ -2,12 +2,12 @@
   "show_seconds": "Show seconds",
   "variable_line_width": "Vary ring widths",
   "palette": "Color palette",
-  "palette_label_palette_gray": "@string/palette_gray",
-  "palette_label_palette_white_c": "@string/palette_white_c",
-  "palette_label_palette_black_c": "@string/palette_black_c",
-  "palette_label_palette_matrix": "@string/palette_matrix",
-  "palette_label_palette_halloween": "@string/palette_halloween",
-  "palette_label_palette_violet": "@string/palette_violet",
-  "palette_label_palette_oceanic": "@string/palette_oceanic",
-  "palette_label_palette_zenburn": "@string/palette_zenburn"
+  "palette_label_palette_gray": "Iron",
+  "palette_label_palette_white_c": "Polar Bear (dynamic)",
+  "palette_label_palette_black_c": "Black Hole (dynamic)",
+  "palette_label_palette_matrix": "Green Screen",
+  "palette_label_palette_halloween": "Pumpkin Pie",
+  "palette_label_palette_violet": "Midnight",
+  "palette_label_palette_oceanic": "Blue Laser",
+  "palette_label_palette_zenburn": "Alien Fruit Salad"
 }

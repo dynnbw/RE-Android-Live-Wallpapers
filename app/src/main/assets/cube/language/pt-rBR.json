@@ -1,3 +1,11 @@
 {
-  "cube_shape": "Forma"
+  "cube_shape": "Forma",
+  "cube_shape_label_cube": "Cubo",
+  "cube_shape_label_dodecahedron": "Dodecaedro",
+  "cube_shape_label_tetrahedron": "Tetraedro",
+  "cube_shape_label_octahedron": "Octaedro",
+  "cube_shape_label_icosahedron": "Icosaedro",
+  "cube_shape_label_stardodecahedron": "Dodecaedro estrelado",
+  "cube_shape_label_cuboctahedron": "Cuboctaedro",
+  "cube_shape_label_truncatedcube": "Cubo truncado"
 }

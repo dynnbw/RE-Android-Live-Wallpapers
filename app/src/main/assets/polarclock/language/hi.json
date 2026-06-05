@@ -1,5 +1,13 @@
 {
   "show_seconds": "सेकंड दिखाएँ",
   "variable_line_width": "रिंग चौड़ाई बदलें",
-  "palette": "रंग पैलेट"
+  "palette": "रंग पैलेट",
+  "palette_label_palette_gray": "आयरन",
+  "palette_label_palette_white_c": "ध्रुवीय भालू (डायनामिक)",
+  "palette_label_palette_black_c": "ब्लैक होल (डायनामिक)",
+  "palette_label_palette_matrix": "ग्रीन स्क्रीन",
+  "palette_label_palette_halloween": "पम्पकिन पाई",
+  "palette_label_palette_violet": "मिडनाइट",
+  "palette_label_palette_oceanic": "ब्लू लेज़र",
+  "palette_label_palette_zenburn": "एलियन फ्रूट सलाद"
 }

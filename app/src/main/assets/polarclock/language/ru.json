@@ -1,5 +1,13 @@
 {
   "show_seconds": "Показывать секунды",
   "variable_line_width": "Изменять ширину колец",
-  "palette": "Цветовая палитра"
+  "palette": "Цветовая палитра",
+  "palette_label_palette_gray": "Железо",
+  "palette_label_palette_white_c": "Белый медведь (динамический)",
+  "palette_label_palette_black_c": "Чёрная дыра (динамическая)",
+  "palette_label_palette_matrix": "Зелёный экран",
+  "palette_label_palette_halloween": "Тыквенный пирог",
+  "palette_label_palette_violet": "Полночь",
+  "palette_label_palette_oceanic": "Синий лазер",
+  "palette_label_palette_zenburn": "Инопланетный фруктовый салат"
 }

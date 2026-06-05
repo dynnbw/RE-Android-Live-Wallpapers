@@ -2,5 +2,8 @@
   "phasebeam_recolor_enabled": "Strahlfarben anpassen",
   "phasebeam_hue": "Farbe",
   "phasebeam_saturation": "Sättigung",
-  "phasebeam_brightness": "Helligkeit"
+  "phasebeam_brightness": "Helligkeit",
+  "theme": "Color theme",
+  "theme_label_phasebeam": "Phasenstrahl (blau)",
+  "theme_label_sunbeam": "Sonnenstrahl (warm)"
 }

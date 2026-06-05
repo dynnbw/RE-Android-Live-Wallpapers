@@ -1,5 +1,13 @@
 {
   "show_seconds": "显示秒",
   "variable_line_width": "让环的宽度各不相同",
-  "palette": "调色板"
+  "palette": "调色板",
+  "palette_label_palette_gray": "铁灰",
+  "palette_label_palette_white_c": "北极熊 (动态)",
+  "palette_label_palette_black_c": "黑洞 (动态)",
+  "palette_label_palette_matrix": "绿屏",
+  "palette_label_palette_halloween": "南瓜派",
+  "palette_label_palette_violet": "午夜",
+  "palette_label_palette_oceanic": "蓝色激光",
+  "palette_label_palette_zenburn": "外星水果沙拉"
 }

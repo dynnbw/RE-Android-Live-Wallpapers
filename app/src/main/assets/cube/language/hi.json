@@ -1,3 +1,11 @@
 {
-  "cube_shape": "आकार"
+  "cube_shape": "आकार",
+  "cube_shape_label_cube": "क्यूब",
+  "cube_shape_label_dodecahedron": "डोडेकाहेड्रॉन",
+  "cube_shape_label_tetrahedron": "टेट्राहेड्रॉन",
+  "cube_shape_label_octahedron": "ऑक्टाहेड्रॉन",
+  "cube_shape_label_icosahedron": "आइकोसाहेड्रॉन",
+  "cube_shape_label_stardodecahedron": "स्टार डोडेकाहेड्रॉन",
+  "cube_shape_label_cuboctahedron": "क्यूबोक्टाहेड्रॉन",
+  "cube_shape_label_truncatedcube": "ट्रंकेटेड क्यूब"
 }

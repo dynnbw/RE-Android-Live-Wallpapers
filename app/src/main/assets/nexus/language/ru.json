@@ -8,5 +8,18 @@
   "nexus_speed_delta_min": "Мин. дельта скорости",
   "nexus_speed_delta_max": "Макс. дельта скорости",
   "nexus_trail_size": "Размер хвоста",
-  "nexus_mode": "Цветовой режим"
+  "nexus_mode": "Цветовой режим",
+  "nexus_background_preset_label_pyramid_background": "Пирамида",
+  "nexus_background_preset_label_pyramid_background1": "Пирамида 1",
+  "nexus_background_preset_label_pyramid_background2": "Пирамида 2",
+  "nexus_background_preset_label_pyramid_background3": "Пирамида 3",
+  "nexus_background_preset_label_pyramid_background4": "Пирамида 4",
+  "nexus_mode_label_0": "По умолчанию",
+  "nexus_mode_label_1": "Красный",
+  "nexus_mode_label_2": "Зелёный",
+  "nexus_mode_label_3": "Синий",
+  "nexus_mode_label_4": "Белый",
+  "nexus_mode_label_5": "Голубой",
+  "nexus_mode_label_6": "Фиолетовый",
+  "nexus_mode_label_7": "Розовый"
 }

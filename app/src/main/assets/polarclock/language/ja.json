@@ -1,5 +1,13 @@
 {
   "show_seconds": "秒を表示",
   "variable_line_width": "リングの幅を可変にする",
-  "palette": "カラーパレット"
+  "palette": "カラーパレット",
+  "palette_label_palette_gray": "アイアン",
+  "palette_label_palette_white_c": "ホッキョクグマ (動的)",
+  "palette_label_palette_black_c": "ブラックホール (動的)",
+  "palette_label_palette_matrix": "グリーンスクリーン",
+  "palette_label_palette_halloween": "パンプキンパイ",
+  "palette_label_palette_violet": "ミッドナイト",
+  "palette_label_palette_oceanic": "ブルーレーザー",
+  "palette_label_palette_zenburn": "エイリアンフルーツサラダ"
 }

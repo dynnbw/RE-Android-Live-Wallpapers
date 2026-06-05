@@ -1,5 +1,7 @@
 {
   "microbes_lifecycle_speed": "Velocidad del ciclo de vida",
   "microbes_motion_activity": "Actividad de movimiento",
-  "microbes_color_mode": "Estilo de color"
+  "microbes_color_mode": "Estilo de color",
+  "microbes_color_mode_label_original": "Original",
+  "microbes_color_mode_label_modern": "Nuevo"
 }

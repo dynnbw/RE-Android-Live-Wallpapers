@@ -8,5 +8,18 @@
   "nexus_speed_delta_min": "Min. Geschwindigkeitsdelta",
   "nexus_speed_delta_max": "Max. Geschwindigkeitsdelta",
   "nexus_trail_size": "Spur Größe",
-  "nexus_mode": "Farbmodus"
+  "nexus_mode": "Farbmodus",
+  "nexus_background_preset_label_pyramid_background": "Pyramide",
+  "nexus_background_preset_label_pyramid_background1": "Pyramide 1",
+  "nexus_background_preset_label_pyramid_background2": "Pyramide 2",
+  "nexus_background_preset_label_pyramid_background3": "Pyramide 3",
+  "nexus_background_preset_label_pyramid_background4": "Pyramide 4",
+  "nexus_mode_label_0": "Standard",
+  "nexus_mode_label_1": "Rot",
+  "nexus_mode_label_2": "Grün",
+  "nexus_mode_label_3": "Blau",
+  "nexus_mode_label_4": "Weiß",
+  "nexus_mode_label_5": "Cyan",
+  "nexus_mode_label_6": "Violett",
+  "nexus_mode_label_7": "Rosa"
 }

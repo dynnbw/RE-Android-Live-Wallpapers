@@ -4,5 +4,17 @@
   "flsorescence_scale": "Escala dos pontos",
   "flsorescence_speed": "Velocidade do movimento",
   "flsorescence_amount": "Quantidade de pontos",
-  "flsorescence_pattern": "Padrão de movimento"
+  "flsorescence_pattern": "Padrão de movimento",
+  "flsorescence_shape_label_0": "Ponto",
+  "flsorescence_shape_label_1": "Ponto brilhante",
+  "flsorescence_shape_label_2": "Redondo",
+  "flsorescence_shape_label_3": "Redondo brilhante",
+  "flsorescence_color_label_0": "Azul",
+  "flsorescence_color_label_1": "Verde",
+  "flsorescence_color_label_2": "Laranja",
+  "flsorescence_pattern_label_0": "Padrão 1",
+  "flsorescence_pattern_label_1": "Padrão 2",
+  "flsorescence_pattern_label_2": "Padrão 3",
+  "flsorescence_pattern_label_3": "Padrão 4",
+  "flsorescence_pattern_label_4": "Padrão 5"
 }

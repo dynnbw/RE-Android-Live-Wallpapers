@@ -1,5 +1,7 @@
 {
   "microbes_lifecycle_speed": "ライフサイクル速度",
   "microbes_motion_activity": "遊泳活発度",
-  "microbes_color_mode": "配色スタイル"
+  "microbes_color_mode": "配色スタイル",
+  "microbes_color_mode_label_original": "オリジナル",
+  "microbes_color_mode_label_modern": "新"
 }

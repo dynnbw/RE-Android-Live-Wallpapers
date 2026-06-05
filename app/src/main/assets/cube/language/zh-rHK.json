@@ -1,3 +1,11 @@
 {
-  "cube_shape": "形狀"
+  "cube_shape": "形狀",
+  "cube_shape_label_cube": "立方體",
+  "cube_shape_label_dodecahedron": "十二面體",
+  "cube_shape_label_tetrahedron": "四面體",
+  "cube_shape_label_octahedron": "八面體",
+  "cube_shape_label_icosahedron": "二十面體",
+  "cube_shape_label_stardodecahedron": "星形十二面體",
+  "cube_shape_label_cuboctahedron": "立方八面體",
+  "cube_shape_label_truncatedcube": "截斷立方體"
 }

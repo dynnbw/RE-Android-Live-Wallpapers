@@ -5,5 +5,14 @@
   "musicvis_hue": "色相",
   "musicvis_saturation": "饱和度",
   "musicvis_brightness": "亮度",
-  "musicvis_bg_color": "背景颜色"
+  "musicvis_bg_color": "背景颜色",
+  "musicvis_recolor_mode_label_static": "静态",
+  "musicvis_recolor_mode_label_dynamic": "音频驱动",
+  "musicvis_bg_color_label_#000000": "黑色",
+  "musicvis_bg_color_label_#300303": "暗红",
+  "musicvis_bg_color_label_#50330": "暗蓝",
+  "musicvis_bg_color_label_#2F4F4F": "暗绿",
+  "musicvis_bg_color_label_#FFE4DE": "粉色",
+  "musicvis_bg_color_label_#F0FFFF": "浅绿",
+  "musicvis_bg_color_label_#EDDEFF": "浅紫"
 }

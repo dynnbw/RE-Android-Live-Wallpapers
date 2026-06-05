@@ -8,5 +8,18 @@
   "nexus_speed_delta_min": "速度係數最小值",
   "nexus_speed_delta_max": "速度係數最大值",
   "nexus_trail_size": "拖尾長度",
-  "nexus_mode": "配色模式"
+  "nexus_mode": "配色模式",
+  "nexus_background_preset_label_pyramid_background": "金字塔",
+  "nexus_background_preset_label_pyramid_background1": "金字塔 1",
+  "nexus_background_preset_label_pyramid_background2": "金字塔 2",
+  "nexus_background_preset_label_pyramid_background3": "金字塔 3",
+  "nexus_background_preset_label_pyramid_background4": "金字塔 4",
+  "nexus_mode_label_0": "預設",
+  "nexus_mode_label_1": "紅色",
+  "nexus_mode_label_2": "綠色",
+  "nexus_mode_label_3": "藍色",
+  "nexus_mode_label_4": "白色",
+  "nexus_mode_label_5": "青色",
+  "nexus_mode_label_6": "紫色",
+  "nexus_mode_label_7": "粉色"
 }

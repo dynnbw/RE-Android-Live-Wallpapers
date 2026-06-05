@@ -19,5 +19,15 @@
   "pref_grass_firefly": "জোনাকি দেখান (রাত)",
   "pref_grass_firefly_count": "জোনাকির সংখ্যা",
   "pref_grass_star_count": "তারার সংখ্যা",
-  "pref_grass_legacy_particles": "ক্লাসিক ড্যান্ডেলিয়ন এবং জোনাকি"
+  "pref_grass_legacy_particles": "ক্লাসিক ড্যান্ডেলিয়ন এবং জোনাকি",
+  "pref_grass_procedural_sun": "Procedural sun",
+  "pref_grass_color_label_default": "ডিফল্ট",
+  "pref_grass_color_label_#00ff0d": "সবুজ",
+  "pref_grass_color_label_#42A5F5": "নীল",
+  "pref_grass_color_label_#EF5350": "লাল",
+  "pref_grass_color_label_#ffbfca": "গোলাপি",
+  "pref_grass_color_label_#AB47BC": "বেগুনি",
+  "pref_grass_color_label_#ffd900": "হলুদ",
+  "pref_grass_color_label_#2f2e34": "কালো",
+  "pref_grass_color_label_#ffffff": "সাদা"
 }

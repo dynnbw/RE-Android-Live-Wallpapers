@@ -19,5 +19,15 @@
   "pref_grass_firefly": "Mostrar vagalumes (noite)",
   "pref_grass_firefly_count": "Quantidade de vagalumes",
   "pref_grass_star_count": "Quantidade de estrelas",
-  "pref_grass_legacy_particles": "Dente-de-leão e vagalumes clássicos"
+  "pref_grass_legacy_particles": "Dente-de-leão e vagalumes clássicos",
+  "pref_grass_procedural_sun": "Procedural sun",
+  "pref_grass_color_label_default": "Padrão",
+  "pref_grass_color_label_#00ff0d": "Verde",
+  "pref_grass_color_label_#42A5F5": "Azul",
+  "pref_grass_color_label_#EF5350": "Vermelho",
+  "pref_grass_color_label_#ffbfca": "Rosa",
+  "pref_grass_color_label_#AB47BC": "Roxo",
+  "pref_grass_color_label_#ffd900": "Amarelo",
+  "pref_grass_color_label_#2f2e34": "Preto",
+  "pref_grass_color_label_#ffffff": "Branco"
 }

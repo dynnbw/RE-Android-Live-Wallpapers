@@ -19,5 +19,15 @@
   "pref_grass_firefly": "ホタルを表示",
   "pref_grass_firefly_count": "ホタルの数（パフォーマンスに影響）",
   "pref_grass_star_count": "星の数（パフォーマンスに影響）",
-  "pref_grass_legacy_particles": "クラシック版 タンポポ・ホタル"
+  "pref_grass_legacy_particles": "クラシック版 タンポポ・ホタル",
+  "pref_grass_procedural_sun": "Procedural sun",
+  "pref_grass_color_label_default": "デフォルト",
+  "pref_grass_color_label_#00ff0d": "緑",
+  "pref_grass_color_label_#42A5F5": "青",
+  "pref_grass_color_label_#EF5350": "赤",
+  "pref_grass_color_label_#ffbfca": "ピンク",
+  "pref_grass_color_label_#AB47BC": "紫",
+  "pref_grass_color_label_#ffd900": "黄色",
+  "pref_grass_color_label_#2f2e34": "黒",
+  "pref_grass_color_label_#ffffff": "白"
 }

@@ -1,5 +1,13 @@
 {
   "show_seconds": "সেকেন্ড দেখান",
   "variable_line_width": "রিংয়ের প্রস্থ পরিবর্তন করুন",
-  "palette": "রঙের প্যালেট"
+  "palette": "রঙের প্যালেট",
+  "palette_label_palette_gray": "আয়রন",
+  "palette_label_palette_white_c": "পোলার বিয়ার (ডাইনামিক)",
+  "palette_label_palette_black_c": "ব্ল্যাক হোল (ডাইনামিক)",
+  "palette_label_palette_matrix": "গ্রিন স্ক্রিন",
+  "palette_label_palette_halloween": "পাম্পকিন পাই",
+  "palette_label_palette_violet": "মিডনাইট",
+  "palette_label_palette_oceanic": "ব্লু লেজার",
+  "palette_label_palette_zenburn": "এলিয়েন ফ্রুট সালাদ"
 }

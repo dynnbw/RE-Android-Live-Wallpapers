@@ -1,3 +1,11 @@
 {
-  "cube_shape": "Фигура"
+  "cube_shape": "Фигура",
+  "cube_shape_label_cube": "Куб",
+  "cube_shape_label_dodecahedron": "Додекаэдр",
+  "cube_shape_label_tetrahedron": "Тетраэдр",
+  "cube_shape_label_octahedron": "Октаэдр",
+  "cube_shape_label_icosahedron": "Икосаэдр",
+  "cube_shape_label_stardodecahedron": "Звёздчатый додекаэдр",
+  "cube_shape_label_cuboctahedron": "Кубооктаэдр",
+  "cube_shape_label_truncatedcube": "Усечённый куб"
 }

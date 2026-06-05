@@ -35,9 +35,9 @@ luminousdots_full_log.txt
 # Large local-only resources / notes
 RESOURCE/
 DebugTools/
-win32_wallpaper_engine/
 strings.txt
 cank.txt
+web_version/
 
 # Local git identity switching config
 git-identity.config.ps1

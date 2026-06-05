@@ -4,5 +4,17 @@
   "flsorescence_scale": "Échelle des points",
   "flsorescence_speed": "Vitesse de déplacement",
   "flsorescence_amount": "Quantité de points",
-  "flsorescence_pattern": "Motif de déplacement"
+  "flsorescence_pattern": "Motif de déplacement",
+  "flsorescence_shape_label_0": "Point",
+  "flsorescence_shape_label_1": "Point lumineux",
+  "flsorescence_shape_label_2": "Rond",
+  "flsorescence_shape_label_3": "Rond lumineux",
+  "flsorescence_color_label_0": "Bleu",
+  "flsorescence_color_label_1": "Vert",
+  "flsorescence_color_label_2": "Orange",
+  "flsorescence_pattern_label_0": "Motif 1",
+  "flsorescence_pattern_label_1": "Motif 2",
+  "flsorescence_pattern_label_2": "Motif 3",
+  "flsorescence_pattern_label_3": "Motif 4",
+  "flsorescence_pattern_label_4": "Motif 5"
 }

@@ -4,5 +4,17 @@
   "flsorescence_scale": "বিন্দুর স্কেল",
   "flsorescence_speed": "গতির বেগ",
   "flsorescence_amount": "বিন্দুর সংখ্যা",
-  "flsorescence_pattern": "গতির প্যাটার্ন"
+  "flsorescence_pattern": "গতির প্যাটার্ন",
+  "flsorescence_shape_label_0": "বিন্দু",
+  "flsorescence_shape_label_1": "গ্লো ডট",
+  "flsorescence_shape_label_2": "গোলাকার",
+  "flsorescence_shape_label_3": "গ্লো রাউন্ড",
+  "flsorescence_color_label_0": "নীল",
+  "flsorescence_color_label_1": "সবুজ",
+  "flsorescence_color_label_2": "কমলা",
+  "flsorescence_pattern_label_0": "প্যাটার্ন ১",
+  "flsorescence_pattern_label_1": "প্যাটার্ন ২",
+  "flsorescence_pattern_label_2": "প্যাটার্ন ৩",
+  "flsorescence_pattern_label_3": "প্যাটার্ন ৪",
+  "flsorescence_pattern_label_4": "প্যাটার্ন ৫"
 }

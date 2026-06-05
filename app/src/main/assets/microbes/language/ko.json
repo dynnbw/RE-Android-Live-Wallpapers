@@ -1,5 +1,7 @@
 {
   "microbes_lifecycle_speed": "생명 주기 속도",
   "microbes_motion_activity": "움직임 활발도",
-  "microbes_color_mode": "색상 스타일"
+  "microbes_color_mode": "색상 스타일",
+  "microbes_color_mode_label_original": "원본",
+  "microbes_color_mode_label_modern": "새"
 }
