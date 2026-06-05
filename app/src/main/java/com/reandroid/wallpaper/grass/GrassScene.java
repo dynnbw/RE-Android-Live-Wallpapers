@@ -40,7 +40,7 @@ import com.reandroid.utils.MathUtils;
  * Grass 壁纸场景逻辑层（纯 Java，无 GL 调用）。
  * 负责所有状态管理、天文计算、粒子/草叶动画逻辑，并通过 SceneData 向 GrassGL 暴露数据。
  */
-class GrassScene {
+final class GrassScene {
 
     private static final float ONE_MINUTE_DAY_FRACTION = 1.0f / 1440.0f;
     private static final long CELESTIAL_CACHE_INTERVAL_MS = 60000L;
