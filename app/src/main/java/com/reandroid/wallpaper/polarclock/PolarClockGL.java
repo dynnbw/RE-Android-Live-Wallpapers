@@ -45,6 +45,11 @@ import static org.xmlpull.v1.XmlPullParser.START_TAG;
  * 负责时钟的GL初始化、绘制逻辑、偏好设置监听、调色板加载等
  */
 public class PolarClockGL extends GLESScene implements SharedPreferences.OnSharedPreferenceChangeListener {
+    static final String SHARED_PREFS_NAME = "polar_clock_settings";
+    static final String PREF_SHOW_SECONDS = "show_seconds";
+    static final String PREF_VARIABLE_LINE_WIDTH = "variable_line_width";
+    static final String PREF_PALETTE = "palette";
+
     private static final String TAG = "PolarClockGL";
 
     private final Context mContext;
@@ -63,9 +68,9 @@ public class PolarClockGL extends GLESScene implements SharedPreferences.OnShare
     private static final int CAP_SEGMENTS = 16;
 
     // 存储所有加载的调色板（key：调色板ID，value：调色板实例）
-    private final HashMap<String, PolarClockWallpaper.ClockPalette> mPalettes = new HashMap<>();
+    private final HashMap<String, ClockPalette> mPalettes = new HashMap<>();
     // 当前使用的调色板
-    private PolarClockWallpaper.ClockPalette mPalette;
+    private ClockPalette mPalette;
 
     // 共享偏好设置实例，用于读取时钟配置
     private SharedPreferences mPrefs;
@@ -121,7 +126,7 @@ public class PolarClockGL extends GLESScene implements SharedPreferences.OnShare
         loadPalettes();
         // 如果调色板加载失败，使用默认回退调色板
         if (mPalette == null) {
-            mPalette = PolarClockWallpaper.CyclingClockPalette.getFallback();
+            mPalette = CyclingClockPalette.getFallback();
         }
 
         // 获取应用上下文，读取共享偏好设置
@@ -130,7 +135,7 @@ public class PolarClockGL extends GLESScene implements SharedPreferences.OnShare
             if (mPluginPrefs != null) {
                 mPrefs = mPluginPrefs;
             } else {
-                mPrefs = ctx.getSharedPreferences(PolarClockWallpaper.SHARED_PREFS_NAME, Context.MODE_PRIVATE);
+                mPrefs = ctx.getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE);
             }
             // 初始化偏好设置对应的变量
             onSharedPreferenceChanged(mPrefs, null);
@@ -321,22 +326,22 @@ public class PolarClockGL extends GLESScene implements SharedPreferences.OnShare
             loadPalettes();
         }
         // 更新“显示秒环”设置
-        if (key == null || PolarClockWallpaper.PREF_SHOW_SECONDS.equals(key)) {
-            mShowSeconds = sharedPreferences.getBoolean(PolarClockWallpaper.PREF_SHOW_SECONDS, true);
+        if (key == null || PREF_SHOW_SECONDS.equals(key)) {
+            mShowSeconds = sharedPreferences.getBoolean(PREF_SHOW_SECONDS, true);
         }
         // 更新“可变线宽”设置
-        if (key == null || PolarClockWallpaper.PREF_VARIABLE_LINE_WIDTH.equals(key)) {
-            mVariableLineWidth = sharedPreferences.getBoolean(PolarClockWallpaper.PREF_VARIABLE_LINE_WIDTH, true);
+        if (key == null || PREF_VARIABLE_LINE_WIDTH.equals(key)) {
+            mVariableLineWidth = sharedPreferences.getBoolean(PREF_VARIABLE_LINE_WIDTH, true);
         }
         // 更新“调色板”设置
-        if (key == null || PolarClockWallpaper.PREF_PALETTE.equals(key)) {
-            String paletteId = sharedPreferences.getString(PolarClockWallpaper.PREF_PALETTE, "");
-            PolarClockWallpaper.ClockPalette pal = mPalettes.get(paletteId);
+        if (key == null || PREF_PALETTE.equals(key)) {
+            String paletteId = sharedPreferences.getString(PREF_PALETTE, "");
+            ClockPalette pal = mPalettes.get(paletteId);
             if (pal != null) {
                 mPalette = pal;
             } else if (mPalette == null) {
                 // 加载失败时使用回退调色板
-                mPalette = PolarClockWallpaper.CyclingClockPalette.getFallback();
+                mPalette = CyclingClockPalette.getFallback();
             }
         }
     }
@@ -354,7 +359,7 @@ public class PolarClockGL extends GLESScene implements SharedPreferences.OnShare
             while (what != END_DOCUMENT) {
                 // 处理palette起始标签
                 if (what == START_TAG && "palette".equals(xrp.getName())) {
-                    PolarClockWallpaper.ClockPalette pal = PolarClockWallpaper.ClockPalette.parseXmlPaletteTag(xrp);
+                    ClockPalette pal = ClockPalette.parseXmlPaletteTag(xrp);
                     // 有效调色板加入缓存
                     if (pal != null && pal.getId() != null) {
                         mPalettes.put(pal.getId(), pal);
