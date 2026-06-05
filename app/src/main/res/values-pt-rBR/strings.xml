@@ -2,8 +2,6 @@
 
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
 
-<string name="pref_grass_legacy_particles">Dente-de-leão e vagalumes clássicos</string>
-<string name="pref_grass_legacy_particles_summary">Alternar para o efeito visual clássico da MTK de dentes-de-leão e vagalumes</string>
     <!-- Nome do aplicativo -->
     <string name="wallpapers">REAndroid Papéis de Parede Vivos</string>
     <string name="app_name">REAndroid Papéis de Parede Vivos</string>
@@ -11,150 +9,69 @@
 
     <!-- Papel de parede Flsorescence (荧光) -->
     <string name="wallpaper_flsorescence">Fluorescência</string>
-    <string name="wallpaper_flsorescence_author">念.</string>
-    <string name="wallpaper_flsorescence_desc">Pontos brilhantes movem-se suavemente pela tela como se estivessem vivos.</string>
-    <string name="pref_flsorescence_shape">Forma do ponto</string>
-    <string name="pref_flsorescence_shape_summary">Alterar a forma de cada ponto</string>
-    <string name="pref_flsorescence_color">Esquema de cor dos pontos</string>
-    <string name="pref_flsorescence_color_summary">Alterar o esquema de cores</string>
-    <string name="pref_flsorescence_scale">Escala dos pontos</string>
-    <string name="pref_flsorescence_scale_summary">Alterar o tamanho de cada ponto</string>
-    <string name="pref_flsorescence_speed">Velocidade do movimento</string>
-    <string name="pref_flsorescence_speed_summary">Alterar a velocidade do movimento</string>
-    <string name="pref_flsorescence_amount">Quantidade de pontos</string>
-    <string name="pref_flsorescence_amount_summary">Alterar a quantidade de pontos</string>
-    <string name="pref_flsorescence_pattern">Padrão de movimento</string>
-    <string name="pref_flsorescence_pattern_summary">Alterar o padrão de movimento</string>
 
     <!-- Papéis de parede: -->
     
 
     <!-- Papel de parede mostrando a visualização da câmera -->
     <string name="wallpaper_walkaround">Ver Através</string>
-    <string name="wallpaper_walkaround_author">Google</string>
-    <string name="wallpaper_walkaround_desc">
-        Veja através do seu telefone e ande por aí sem risco de acidentes.
-    </string>
 
     <!-- Papel de parede mostrando grama e céu -->
     <string name="wallpaper_grass">Grama</string>
     <string name="wallpaper_grass_vk">Grama Vulkan</string>
-    <string name="wallpaper_grass_author">Google</string>
-    <string name="wallpaper_grass_desc">
-        Folhas de grama ondulam suavemente contra o céu diurno ou noturno.
-    </string>
-    <string name="wallpaper_grass_vk_desc">Entrada do papel de parede de grama reservada para o renderizador Vulkan.</string>
 
     <string name="wallpaper_aurora1">Aurora</string>
-    <string name="wallpaper_aurora1_author">TAT</string>
-    <string name="wallpaper_aurora1_desc">Auroras boreais em camadas flutuam sobre um céu estrelado e reagem ao toque.</string>
     <string name="wallpaper_aurora2">Aurora 2</string>
-    <string name="wallpaper_aurora2_author">HU1</string>
-    <string name="wallpaper_aurora2_desc">Cortinas de aurora animadas flutuam sobre paisagens noturnas temáticas com estrelas cintilantes e estrelas cadentes.</string>
 
     <!-- Papel de parede mostrando uma galáxia -->
     <string name="wallpaper_galaxy">Galáxia</string>
     <string name="wallpaper_nightsky">Céu Noturno</string>
     <string name="wallpaper_microbes">Micróbios</string>
     <string name="wallpaper_galaxy_vk">Galáxia Vulkan</string>
-    <string name="wallpaper_galaxy_author">Google</string>
-    <string name="wallpaper_nightsky_author">念.</string>
-    <string name="wallpaper_microbes_author">Samsung</string>
-    <string name="wallpaper_galaxy_desc">
-        Uma galáxia feita de estrelas que giram lentamente.
-    </string>
-    <string name="wallpaper_nightsky_desc">Céu noturno com estrelas reais, movimento sideral, orientação por sensor, aceleração de tempo por toque longo e rastros de estrelas que desaparecem.</string>
-    <string name="wallpaper_microbes_desc">Vida sob o microscópio com movimento guiado por toque, comportamento de alimentação e animação de partículas orgânicas.</string>
-    <string name="wallpaper_galaxy_vk_desc">
-        Entrada do papel de parede de galáxia reservada para o renderizador Vulkan.
-    </string>
 
     <!-- Papel de parede mostrando Galáxia 4 -->
     <string name="wallpaper_galaxy4">Galáxia 4</string>
-    <string name="wallpaper_galaxy4_author">Google</string>
-    <string name="wallpaper_description_galaxy4">
-        Uma bela galáxia com nuvens rodopiantes e estrelas cintilantes.
-    </string>
 
     <!-- Papel de parede mostrando folhas flutuando na água -->
     <string name="wallpaper_fall">Folhas na Água</string>
     <string name="wallpaper_fall_vk">Folhas na Água Vulkan</string>
-    <string name="wallpaper_fall_author">Google</string>
-    <string name="wallpaper_fall_desc">
-         Folhas de outono caem \n No lago ondulado: \n Fundo líquido Zen
-    </string>
-    <string name="wallpaper_fall_vk_desc">Entrada do papel de parede Folhas na Água reservada para o renderizador Vulkan.</string>
 
     <!-- Papel de parede mostrando mundo selvagem -->
     <string name="wallpaper_wildworld">Mundo Selvagem</string>
-    <string name="wallpaper_wildworld_author">MediaTek</string>
-    <string name="wallpaper_wildworld_desc">
-        Uma paisagem pré-histórica com movimento em camadas e criaturas brincalhonas.
-    </string>
 
     <!-- Papel de parede mostrando fogos de artifício -->
     <string name="wallpaper_fireworks">Fogos de Artifício</string>
-    <string name="wallpaper_fireworks_author">MediaTek</string>
-    <string name="wallpaper_fireworks_desc">
-        Fogos de artifício coloridos explodem no céu noturno.
-    </string>
 
     <!-- Papel de parede mostrando moinhos de vento -->
     <string name="wallpaper_windmill">Moinhos de Vento</string>
-    <string name="wallpaper_windmill_author">MediaTek</string>
-    <string name="wallpaper_windmill_desc">Colinas onduladas com moinhos de vento animados sob clima dinâmico.</string>
 
     <!-- Papel de parede mostrando clima oceânico -->
     <string name="wallpaper_ocean">Clima Oceânico</string>
-    <string name="wallpaper_ocean_author">MediaTek</string>
-    <string name="wallpaper_ocean_desc">Ondas e céu que mudam com as condições do mundo real.</string>
 
     <!-- Papel de parede mostrando mar profundo -->
     <string name="wallpaper_deepsea">Mar Profundo</string>
-    <string name="wallpaper_deepsea_author">Samsung</string>
-    <string name="wallpaper_deepsea_desc">Águas-vivas translúcidas nadam no mar profundo.</string>
 
     <!-- Papel de parede mostrando um relógio -->
     <string name="wallpaper_clock">Relógio Polar</string>
-    <string name="wallpaper_clock_author">Google</string>
-    <string name="wallpaper_clock_desc">
-        Apresenta a data e a hora como arcos no sentido horário: mês, dia, hora, minuto e segundo.
-    </string>
 
     <!-- Papel de parede mostrando nexus -->
     <string name="wallpaper_nexus">Nexus</string>
-    <string name="wallpaper_nexus_author">Google</string>
-    <string name="wallpaper_nexus_desc">
-        Um vislumbre dentro da rede neural.
-    </string>
 
     <!-- Papel de parede mostrando campo de ruído -->
     <string name="wallpaper_noisefield">Campo de Ruído</string>
-    <string name="wallpaper_noisefield_author">Google</string>
-    <string name="wallpaper_noisefield_desc">Um campo fluente de bolhas luminosas flutuando sobre um gradiente suave.</string>
     <string name="wallpaper_nebula">Nebulosa</string>
-    <string name="wallpaper_nebula_author">念.</string>
-    <string name="wallpaper_nebula_desc">Uma nebulosa de Órion inspirada fisicamente e renderizada volumetricamente a partir de fórmulas.</string>
 
     <!-- Papéis de parede de visualização de música -->
-    <string name="musicvis_author">Google</string>
     <string name="wallpaper_vis2">Forma de Onda</string>
     <string name="wallpaper_vis3">Espectro</string>
     <string name="wallpaper_vis4">Medidor VU</string>
     <string name="wallpaper_vis5">Múltiplos</string>
-    <string name="vis2_desc">Desenha a onda sonora de qualquer faixa de música em reprodução.</string>
-    <string name="vis3_desc">Mostra o espectro de frequência de qualquer faixa de música em reprodução.</string>
-    <string name="vis4_desc">Simula um medidor de som analógico.</string>
-    <string name="vis5_desc">Todas as visualizações de música juntas, girando lentamente em 3D.</string>
 
     <!-- Relógio polar: título da atividade de configurações -->
     <string name="clock_settings">Configurações do Relógio Polar</string>
     <!-- Relógio polar: rótulo para preferência "mostrar segundos" -->
-    <string name="show_seconds">Mostrar segundos</string>
     <!-- Relógio polar: rótulo para preferência "larguras variáveis" -->
-    <string name="variable_line_width">Variar larguras dos anéis</string>
     <!-- Relógio polar: rótulo para preferência "paleta" -->
-    <string name="palette">Paleta de Cores</string>
 
     <!-- Relógio polar: nomes das paletas -->
     <string name="palette_gray">Ferro</string>
@@ -168,104 +85,16 @@
 
     <!-- Interface de configurações -->
     <string name="settings_title">Configurações de Papel de Parede Vivo</string>
-    <string name="settings_entry_config">Configuração</string>
-    <string name="settings_entry_fall">Folhas na Superfície da Água</string>
-    <string name="settings_entry_grass">Céu e Grama</string>
-    <string name="settings_entry_aurora1">Aurora</string>
-    <string name="settings_entry_aurora2">Aurora 2</string>
-    <string name="settings_entry_wildworld">Mundo Selvagem</string>
-    <string name="settings_entry_fireworks">Fogos de Artifício</string>
-    <string name="settings_entry_windmill">Moinho de Vento</string>
-    <string name="settings_entry_ocean">Clima Oceânico</string>
-    <string name="settings_entry_galaxy4">Galáxia 4</string>
-    <string name="settings_entry_galaxy">Galáxia</string>
-    <string name="settings_entry_nightsky">Céu Noturno</string>
-    <string name="settings_entry_microbes">Micróbios</string>
-    <string name="settings_entry_walkaround">Ver Através</string>
-    <string name="settings_entry_phasebeam">Feixe de Fase</string>
-    <string name="settings_entry_nebula">Nebulosa</string>
-    <string name="settings_entry_clock">Relógio Polar</string>
-    <string name="settings_entry_noisefield">Campo de Ruído</string>
-    <string name="settings_entry_vis2">Forma de Onda</string>
-    <string name="settings_entry_vis3">Espectro</string>
-    <string name="settings_entry_vis4">Medidor VU</string>
-    <string name="settings_entry_vis5">Múltiplos</string>
-    <string name="settings_entry_magicsmoke">Fumaça Mágica</string>
-    <string name="settings_entry_holospiral">Espiral Holo</string>
-    <string name="settings_entry_bluesea">Mar Azul</string>
-    <string name="settings_entry_deepsea">Mar Profundo</string>
-    <string name="settings_entry_cube">Cubo</string>
 
-    <string name="pref_fall_leaf_count">Quantidade de folhas</string>
-    <string name="pref_fall_leaf_count_summary">Ajustar o número de folhas caindo (afeta o desempenho)</string>
-    <string name="pref_fall_green_leaves">Folhas verdes</string>
-    <string name="pref_fall_green_leaves_summary">Quando ativado, algumas folhas serão verdes</string>
-    <string name="pref_fall_max_drops">Máx. de ondulações</string>
-    <string name="pref_fall_max_drops_summary">Número máximo de ondulações da água exibidas simultaneamente na tela (afeta o desempenho)</string>
-    <string name="pref_fall_precise_calc">Cálculo preciso</string>
-    <string name="pref_fall_precise_calc_summary">Usar simulação de ondulações inspirada na física (propagação e decaimento de ondas)</string>
 
-    <string name="pref_grass_enabled">Mostrar grama</string>
-    <string name="pref_grass_enabled_summary">Mostrar ou ocultar o efeito da grama</string>
-    <string name="pref_grass_weather_enabled">Ativar efeitos climáticos</string>
-    <string name="pref_grass_weather_enabled_summary">Aplicar mudanças de iluminação, vento e partículas baseadas no clima</string>
-    <string name="pref_grass_weather_rain_count">Quantidade de partículas de chuva</string>
-    <string name="pref_grass_weather_rain_count_summary">Ajustar a quantidade de partículas de chuva (10 a 1000)</string>
-    <string name="pref_grass_weather_snow_count">Quantidade de partículas de neve</string>
-    <string name="pref_grass_weather_snow_count_summary">Ajustar a quantidade de partículas de neve (10 a 1000)</string>
-    <string name="pref_grass_count">Quantidade de grama</string>
-    <string name="pref_grass_count_summary">Ajustar o número de folhas de grama (afeta o desempenho)</string>
-    <string name="pref_grass_height">Altura da grama</string>
-    <string name="pref_grass_height_summary">Ajustar a altura da grama</string>
-    <string name="pref_grass_width">Largura da grama</string>
-    <string name="pref_grass_width_summary">Ajustar a largura da grama</string>
-    <string name="pref_grass_color">Cor da grama</string>
-    <string name="pref_grass_color_summary">Ajustar a cor da grama para diferentes efeitos visuais</string>
-    <string name="pref_grass_hardness">Suavidade da grama</string>
-    <string name="pref_grass_hardness_summary">Ajustar a suavidade das folhas (valores mais altos curvam mais)</string>
-    <string name="pref_grass_night_invert">Inverter céu noturno</string>
-    <string name="pref_grass_night_desaturate">Dessaturar a grama à noite</string>
-    <string name="pref_grass_accurate_sun">Cálculo preciso (afeta o desempenho)</string>
-    <string name="pref_grass_accurate_sun_summary">Calcular as posições do sol e da lua com base no horário real e localização geográfica (afeta o desempenho)</string>
-    <string name="pref_grass_sun">Mostrar sol</string>
-    <string name="pref_grass_sun_summary">Mostrar ou ocultar o sol</string>
-    <string name="pref_grass_moon">Mostrar lua (requer nascer/pôr do sol precisos)</string>
-    <string name="pref_grass_moon_summary">Mostrar ou ocultar a lua com fases lunares realistas</string>
-    <string name="pref_grass_dandelion">Mostrar dente-de-leão (dia)</string>
-    <string name="pref_grass_dandelion_summary">Exibir dentes-de-leão flutuantes durante o dia</string>
-    <string name="pref_grass_firefly">Mostrar vagalumes (noite)</string>
-    <string name="pref_grass_firefly_summary">Exibir vagalumes voando durante a noite</string>
-    <string name="pref_grass_dandelion_count">Quantidade de dentes-de-leão</string>
-    <string name="pref_grass_firefly_count">Quantidade de vagalumes</string>
-    <string name="pref_grass_star_count">Quantidade de estrelas</string>
-    <string name="pref_grass_star_count_summary">Ajustar o número de estrelas (0 a 10000)</string>
-    <string name="pref_grass_dandelion_speed">Velocidade do dente-de-leão</string>
     <string name="pref_open_wallpaper_picker">Abrir pré-visualização do sistema</string>
     <string name="pref_open_wallpaper_picker_failed">Pré-visualização do papel de parede não suportada</string>
     <string name="pref_open_wallpaper_chooser">Abrir seletor de papel de parede</string>
     <string name="pref_live_preview">Pré-visualização ao vivo</string>
-    <string name="pref_nightsky_preview_hint">Dica: Use a pré-visualização ao vivo no aplicativo acima e toque em "Abrir pré-visualização do sistema" para aplicar o Céu Noturno.</string>
-    <string name="pref_nightsky_camera_focal">Distância focal da câmera</string>
-    <string name="pref_nightsky_camera_focal_summary">Ajustar a distância focal da lente (mm); valores maiores ampliam mais</string>
-    <string name="pref_nightsky_use_sensor">Usar orientação do sensor</string>
-    <string name="pref_nightsky_use_sensor_summary">Quando desativado, usar rolagem de página da tela inicial para girar a visão (45° por página)</string>
-    <string name="pref_nightsky_auto_time_accel">Aceleração automática de tempo</string>
-    <string name="pref_nightsky_auto_time_accel_summary">Acelerar continuamente o tempo do céu e manter os rastros de estrelas visíveis</string>
-    <string name="pref_nightsky_time_accel_speed">Velocidade de aceleração</string>
-    <string name="pref_nightsky_time_accel_speed_summary">Selecionar o nível de velocidade para aceleração automática/pressão longa</string>
-    <string name="pref_microbes_preview_hint">Dica: Toque e arraste na pré-visualização para atrair micróbios e toque em "Abrir pré-visualização do sistema" para aplicar.</string>
-    <string name="pref_microbes_lifecycle_speed">Velocidade do ciclo de vida</string>
-    <string name="pref_microbes_lifecycle_speed_summary">Ajustar a velocidade do metabolismo, reprodução e decadência (%)</string>
-    <string name="pref_microbes_motion_activity">Atividade de movimento</string>
-    <string name="pref_microbes_motion_activity_summary">Ajustar a intensidade de vagueamento e natação natural (%)</string>
-    <string name="pref_microbes_color_mode">Estilo de cor</string>
-    <string name="pref_microbes_color_mode_summary">Alternar entre a paleta original apenas RGB e a paleta melhorada atual</string>
     <string name="pref_microbes_color_mode_original">Original</string>
     <string name="pref_microbes_color_mode_modern">Novo</string>
-    <string name="pref_nexus_background_title">Fundo</string>
     <string name="pref_nexus_custom_background_title">Fundo personalizado</string>
     <string name="pref_nexus_custom_background_summary">Selecionar uma imagem de fundo</string>
-    <string name="pref_nexus_custom_background_set_summary">Fundo personalizado definido</string>
     <string name="pref_nexus_reset_background_title">Restaurar fundo</string>
     <string name="pref_nexus_reset_background_summary">Limpar fundo personalizado e usar o integrado</string>
     <string name="nexus_bg_pyramid">Pirâmide</string>
@@ -273,78 +102,20 @@
     <string name="nexus_bg_pyramid_2">Pirâmide 2</string>
     <string name="nexus_bg_pyramid_3">Pirâmide 3</string>
     <string name="nexus_bg_pyramid_4">Pirâmide 4</string>
-    <string name="nexus_custom_background_set_toast">Fundo personalizado definido. Reaplique o papel de parede para que tenha efeito.</string>
-    <string name="nexus_background_changed_title">Fundo atualizado</string>
-    <string name="nexus_background_changed_message">Fundo salvo. Aplicar alterações agora?</string>
-    <string name="nexus_background_reset_toast">Fundo personalizado limpo</string>
-    <string name="nexus_background_reset_title">Fundo restaurado</string>
-    <string name="nexus_background_reset_message">Fundo personalizado limpo. Aplicar alterações agora?</string>
-    <string name="action_apply_now">Aplicar agora</string>
-    <string name="action_later">Mais tarde</string>
 
     <!-- Configurações do Mar Profundo -->
-    <string name="title_unit_scale">Tamanho das águas-vivas</string>
-    <string name="summary_unit_scale">Alterar o tamanho das águas-vivas</string>
-    <string name="title_unit_number">Número de águas-vivas</string>
-    <string name="summary_unit_number">Alterar o número de águas-vivas</string>
-    <string name="title_background_image_type">Fundo</string>
-    <string name="summary_background_image_type">Alterar o fundo</string>
-    <string name="title_background_brightness">Brilho do fundo</string>
-    <string name="summary_background_brightness">Alterar o brilho do fundo</string>
-    <string name="title_background_lighting">Iluminação do fundo</string>
-    <string name="summary_background_lighting">Alterar a iluminação do fundo</string>
-    <string name="title_particle_color">Cor do núcleo da água-viva</string>
-    <string name="summary_particle_color">Alterar a cor do núcleo</string>
     <string name="deepsea_custom_background_title">Fundo personalizado</string>
     <string name="deepsea_custom_background_summary">Selecionar uma imagem de fundo</string>
-    <string name="deepsea_custom_background_set_summary">Fundo personalizado definido</string>
     <string name="deepsea_reset_background_title">Restaurar fundo</string>
     <string name="deepsea_reset_background_summary">Limpar fundo personalizado e usar o integrado</string>
-    <string name="deepsea_background_changed_title">Fundo atualizado</string>
-    <string name="deepsea_background_changed_message">Fundo salvo. Aplicar alterações agora?</string>
-    <string name="deepsea_background_reset_title">Fundo restaurado</string>
-    <string name="deepsea_background_reset_message">Fundo personalizado limpo. Aplicar alterações agora?</string>
-    <string name="deepsea_apply_now">Aplicar agora</string>
-    <string name="deepsea_apply_later">Mais tarde</string>
-    <string name="deepsea_custom_background_failed">Não foi possível salvar a imagem de fundo</string>
 
     <!-- Configurações avançadas do Nexus -->
-    <string name="pref_nexus_advanced_title">Configurações Avançadas</string>
-    <string name="pref_nexus_max_pulses">Máx. de pulsos</string>
-    <string name="pref_nexus_max_pulses_summary">Número máximo de pulsos regulares exibidos simultaneamente na tela (Padrão: 20)</string>
-    <string name="pref_nexus_max_extras">Máx. de pulsos extras</string>
-    <string name="pref_nexus_max_extras_summary">Número de pulsos extras acionados por toque (Padrão: 40)</string>
-    <string name="pref_nexus_pulse_size">Tamanho do pulso</string>
-    <string name="pref_nexus_pulse_size_summary">Tamanho em pixels da textura do pulso (Padrão: 14)</string>
-    <string name="pref_nexus_glow_size">Tamanho do brilho</string>
-    <string name="pref_nexus_glow_size_summary">Tamanho em pixels da textura do brilho (Padrão: 64)</string>
-    <string name="pref_nexus_speed">Velocidade</string>
-    <string name="pref_nexus_speed_summary">Velocidade base de movimento dos pulsos (Padrão: 20 = 0,2)</string>
-    <string name="pref_nexus_speed_delta_min">Delta mínimo de velocidade</string>
-    <string name="pref_nexus_speed_delta_min_summary">Multiplicador mínimo para variação aleatória de velocidade (Padrão: 70 = 0,7)</string>
-    <string name="pref_nexus_speed_delta_max">Delta máximo de velocidade</string>
-    <string name="pref_nexus_speed_delta_max_summary">Multiplicador máximo para variação aleatória de velocidade (Padrão: 170 = 1,7)</string>
-    <string name="pref_nexus_trail_size">Tamanho do rastro</string>
-    <string name="pref_nexus_trail_size_summary">Comprimento do efeito de rastro do pulso (Padrão: 40)</string>
-    <string name="pref_nexus_mode">Modo de cor</string>
-    <string name="pref_nexus_mode_summary">Selecionar esquema de cor dos pulsos</string>
 
-    <string name="pref_walkaround_use_front">Usar câmera frontal</string>
-    <string name="pref_walkaround_use_front_summary">Alternar entre câmera frontal e traseira.</string>
-    <string name="pref_walkaround_mirror_front">Espelhar câmera frontal</string>
-    <string name="pref_walkaround_mirror_front_summary">Inverter a câmera frontal horizontalmente.</string>
-    <string name="walkaround_permission_granted">Permissão de câmera concedida</string>
-    <string name="walkaround_permission_denied">Permissão de câmera negada. A visualização ao vivo da câmera não funcionará.</string>
     <string name="pref_weather_update_interval">Intervalo de atualização do clima</string>
     <string name="pref_weather_refresh_now">Atualizar clima agora</string>
-    <string name="pref_weather_refresh_now_summary">Buscar dados climáticos mais recentes imediatamente</string>
     <string name="pref_weather_refresh_now_success">Atualização do clima concluída</string>
     <string name="pref_weather_refresh_now_failed">Falha na atualização do clima</string>
     <string name="pref_openweather_api_key_title">Chave de API OpenWeather</string>
-    <string name="pref_openweather_api_key_dialog">Insira sua chave de API OpenWeather</string>
-    <string name="pref_openweather_api_key_summary_set">Chave de API configurada</string>
-    <string name="pref_openweather_api_key_summary_unset">Chave de API não configurada</string>
-    <string name="pref_weather_api_notice">Ative as alterações climáticas configurando uma chave de API nas configurações.</string>
     <string name="pref_apply_api_title">Solicitar API</string>
     <string name="pref_weather_api_guide_intro">Guia de configuração da chave de API OpenWeather.</string>
     <string name="pref_weather_api_guide_prepare">Passo 1: Preparação\n- Um endereço de e-mail que possa receber mensagens de verificação\n- Um ambiente de rede que possa acessar o site OpenWeather</string>
@@ -371,87 +142,28 @@
     <string name="pref_weather_debug_restore">Retornou à lógica climática normal</string>
     <string name="pref_weather_debug_override">Substituição climática aplicada: %1$s</string>
     <string name="weather_toolbar_title">Configurações do clima</string>
-    <string name="pref_musicvis_mesh_mode_title">Usar malha de tiras de triângulos legada</string>
-    <string name="pref_musicvis_mesh_mode_summary">Ativado: malha/primitiva RS original (tira de triângulos). Desativado: malha de linhas atual.</string>
 
-    <string name="musicvis_permission_granted">Permissão de áudio concedida</string>
-    <string name="musicvis_permission_denied">Permissão de áudio negada. A visualização de música não funcionará.</string>
-    <string name="wallpaper_preview_not_supported">Pré-visualização de papel de parede não suportada</string>
     <string name="miui_permission_title">Permissão necessária</string>
     <string name="miui_permission_message">O MIUI exige ativar manualmente a permissão "Serviço de papel de parede vivo" para abrir a pré-visualização.\n\nToque em OK e ative-a no gerenciamento de permissões.</string>
     <string name="miui_permission_go_settings">Ir para configurações</string>
     <string name="miui_permission_continue">Continuar</string>
     <string name="miui_permission_open_failed">Não foi possível abrir as configurações</string>
-    <string name="phasebeam_ssion_message">O MIUI exige ativar manualmente a permissão "Serviço de papel de parede vivo" para abrir a pré-visualização.\n\nToque em OK e ative-a no gerenciamento de permissões.</string>
-    <string name="no_live_wallpaper_support">Papel de parede vivo não é suportado neste dispositivo</string>
     <string name="about_title">Sobre</string>
-    <string name="about_body">Autor: 念.\nE-mail: 3471348199@qq.com,\n
-        xujiekai508@gmail.com\nAutor do projeto original: The Android Open Source Project
-        (AOSP)\n\nVisão geral do projeto:\nEste projeto migra e mantém papéis de parede vivos clássicos do Android. O objetivo é preservar totalmente os visuais originais enquanto moderniza a pilha de renderização para compatibilidade, desempenho e estabilidade nas versões atuais do Android.\n\nObjetivos principais:\n1) Fidelidade visual: reproduzir com precisão o movimento das folhas, ondulações da água, cores e tempo.\n2) Desempenho e estabilidade: reduzir a carga de CPU/GPU e melhorar a suavidade em altas taxas de atualização.\n3) Compatibilidade de longo prazo: funcionar no Android 10+ e manter um caminho de migração futuro.\n\nPor que migrar do RenderScript para o OpenGL ES 2.0?\n- O RenderScript está obsoleto e foi removido das cadeias de ferramentas SDK/NDK recentes.\n- É frágil entre dispositivos e ROMs, com falhas frequentes de renderização.\n- O OpenGL ES 2.0 é amplamente suportado e permite a otimização baseada em GPU.</string>
 
     <!-- Preferências do papel de parede Galáxia -->
-    <string name="pref_galaxy_particle_count">Quantidade de partículas</string>
-    <string name="pref_galaxy_particle_count_summary">Número de partículas na galáxia (afeta o desempenho)</string>
-    <string name="pref_galaxy_particle_alpha">Opacidade das partículas</string>
-    <string name="pref_galaxy_particle_alpha_summary">Ajustar a transparência das partículas (aplica-se a ambos os modos de cálculo)</string>
-    <string name="pref_galaxy_precise_calc">Cálculo espiral preciso</string>
-    <string name="pref_galaxy_precise_calc_summary">Usar inicialização espiral logarítmica inspirada no M31 em vez do modelo antigo de ângulo aleatório</string>
-    <string name="pref_galaxy_use_light2">Usar textura light2</string>
-    <string name="pref_galaxy_use_light2_summary">Ativar para usar light2; desativar para usar light1</string>
-    <string name="pref_galaxy_arm_count">Número de braços</string>
-    <string name="pref_galaxy_arm_count_summary">Número de braços espirais (eficaz apenas no modo preciso)</string>
-    <string name="pref_galaxy_arm_offset">Deslocamento do braço (rad ×1000)</string>
-    <string name="pref_galaxy_arm_offset_summary">Espaçamento angular entre os braços em radianos (0 ~ 2π, apenas modo preciso)</string>
-    <string name="pref_galaxy_pitch_angle">Ângulo de inclinação (graus ×10)</string>
-    <string name="pref_galaxy_pitch_angle_summary">Ângulo de inclinação espiral em graus (0 ~ 30, apenas modo preciso)</string>
-    <string name="pref_galaxy_inner_scatter">Dispersão interna (×100)</string>
-    <string name="pref_galaxy_inner_scatter_summary">Intensidade de dispersão dos braços perto do núcleo (apenas modo preciso)</string>
-    <string name="pref_galaxy_outer_scatter">Dispersão externa (×100)</string>
-    <string name="pref_galaxy_outer_scatter_summary">Intensidade de dispersão dos braços nas regiões externas (apenas modo preciso)</string>
-    <string name="pref_galaxy_turbulence">Turbulência (×100)</string>
-    <string name="pref_galaxy_turbulence_summary">Intensidade de turbulência aleatória para deformação precisa dos braços</string>
-    <string name="pref_galaxy_forbidden_radius">Raio proibido do núcleo (kpc ×100)</string>
-    <string name="pref_galaxy_forbidden_radius_summary">Raio interno excluído do ajuste logarítmico dos braços (apenas modo preciso)</string>
-    <string name="pref_galaxy_ellipse_ratio">Proporção da elipse (×1000)</string>
-    <string name="pref_galaxy_ellipse_ratio_summary">Eliticidade da morfologia dos braços (0,5 ~ 1,0, apenas modo preciso)</string>
-    <string name="pref_galaxy_ellipse_twist">Torção da elipse (×1000)</string>
-    <string name="pref_galaxy_ellipse_twist_summary">Deslocamento de torção para a eliticidade dos braços (-0,1 ~ 0,1, apenas modo preciso)</string>
-    <string name="pref_galaxenable_recolor_summary">Quando ativado, você pode personalizar as cores do feixe</string>
 
     <!-- Preferências do papel de parede Galáxia 4 -->
-    <string name="pref_galaxy4_bg_star_count">Quantidade de estrelas de fundo</string>
-    <string name="pref_galaxy4_bg_star_count_summary">Número de estrelas de fundo na galáxia (afeta o desempenho)</string>
-    <string name="phasebeam_y4_bg_star_count">Quantidade de estrelas de fundo</string>
-    <string name="pref_galaxy4_space_cloud_count">Quantidade de nuvens espaciais</string>
-    <string name="pref_galaxy4_space_cloud_count_summary">Número de nuvens na galáxia</string>
 
     <!-- Papel de parede Phase Beam -->
     <string name="wallpaper_phasebeam">Feixe de Fase</string>
-    <string name="wallpaper_enable_recolor_summary">Quando ativado, você pode personalizar as cores do feixe</string>
-    <string name="phasebeam_phasebeam">Feixe de Fase</string>
-    <string name="wallpaper_phasebeam_author">Google</string>
-    <string name="wallpaper_phasebeam_desc">Feixes suaves e partículas percorrendo um fundo vívido.</string>
 
     <!-- Cube wallpaper -->
     <string name="wallpaper_cube">Cubo</string>
-    <string name="wallpaper_cube_author">Google</string>
-    <string name="wallpaper_cube_desc">Um cubo 3D de wireframe giratório com rolagem do launcher e efeitos de toque.</string>
-    <string name="cube_shape_title">Forma</string>
-    <string name="cube_shape_summary">Escolha entre estrutura de arame de cubo ou dodecaedro</string>
 
-    <string name="phasebeam_enable_recolor">Ajustar cores do feixe</string>
-    <string name="phasebeam_enable_recolor_summary">Quando ativado, você pode personalizar as cores do feixe</string>
-    <string name="miui_permienable_recolor_summary">Quando ativado, você pode personalizar as cores do feixe</string>
-    <string name="phasebeam_color_label">Cor</string>
-    <string name="phasebeam_saturation_label">Saturação</string>
-    <string name="phasebeam_brightness_label">Brilho</string>
 
     <!-- Configurações globais de taxa de quadros -->
     <string name="pref_global_frame_rate">Taxa de Quadros Global</string>
-    <string name="pref_global_frame_rate_summary">Definir a taxa de quadros para todos os papéis de parede (valores mais altos usam mais bateria)</string>
     <string name="pref_preview_ratio">Proporção da pré-visualização ao vivo</string>
-    <string name="pref_preview_ratio_dialog">Proporção da pré-visualização ao vivo</string>
-    <string name="pref_preview_ratio_summary">Formato: L:A, ex: 9:16</string>
     <string name="pref_preview_ratio_invalid">Proporção inválida. Use L:A, ex: 9:16</string>
 
     <string name="grass_color_default">Padrão</string>
@@ -466,9 +178,6 @@
 
     <!-- Papel de parede Fumaça Mágica -->
     <string name="wallpaper_magicsmoke">Fumaça Mágica</string>
-    <string name="wallpaper_magicsmoke_author">Google</string>
-    <string name="pref_magicsmoke_preset">Tema Visual</string>
-    <string name="pref_magicsmoke_preset_summary">Escolha entre 20 efeitos diferentes de fumaça\nuvem/plasma</string>
     <string name="pref_fireworks_custom_background_title">Imagem de fundo personalizada</string>
     <string name="pref_fireworks_custom_background_summary">Toque para selecionar uma imagem de fundo personalizada</string>
     <string name="pref_fireworks_reset_background_title">Restaurar para o fundo padrão</string>
@@ -476,13 +185,9 @@
 
     <!-- Papel de parede Espiral Holo -->
     <string name="wallpaper_holospiral">Espiral Holo</string>
-    <string name="wallpaper_holospiral_author">Google</string>
-    <string name="wallpaper_holospiral_desc">Papel de parede espiral com tema Holo.</string>
 
     <!-- Papel de parede Mar Azul -->
     <string name="wallpaper_bluesea">Mar Azul</string>
-    <string name="wallpaper_bluesea_author">TAT</string>
-    <string name="wallpaper_bluesea_desc">Criaturas marinhas translúcidas flutuando no mar azul brilhante.</string>
 
     <string name="openweather_api_key">YOUR_OPENWEATHER_API_KEY</string>
 
@@ -516,43 +221,24 @@
     <string name="about_disclaimer_title">Apenas para aprendizado e comunicação</string>
     <string name="about_disclaimer_detail">Este projeto é apenas para uso educacional e não comercial. Todos os direitos pertencem aos detentores originais dos direitos autorais.</string>
     <string name="app_version_summary">Versão: %1$s</string>
-    <string name="copied_to_clipboard">Copiado para a área de transferência</string>
     <string name="no_browser_found">Nenhum navegador encontrado</string>
     <string name="no_email_found">Nenhum aplicativo de e-mail encontrado</string>
     <!-- 版本更新 -->
     <string name="check_for_updates">Verificar atualizações</string>
-    <string name="checking_for_updates">Verificando…</string>
     <string name="up_to_date_message">Você está atualizado (v%1$s)</string>
     <string name="update_available_title">Nova versão v%1$s</string>
     <string name="update_button">Baixar</string>
     <string name="update_later_button">Depois</string>
     <string name="update_check_failed">Falha ao verificar atualizações: %1$s</string>
     <string name="update_downloading_title">Baixando atualização…</string>
-    <string name="galaxy_enable_precise_calc_first">Ative primeiro o cálculo espiral preciso</string>
-    <string name="grass_disable_dandelion_firefly_first">Desative primeiro o dente-de-leão e os vagalumes</string>
-    <string name="grass_disable_legacy_particles_first">Desative primeiro o movimento de partículas legado (MTK)</string>
-    <string name="grass_enable_dandelion_first">Ative primeiro o dente-de-leão</string>
-    <string name="grass_enable_firefly_first">Ative primeiro os vagalumes</string>
-    <string name="phasebeam_enable_recolor_first">Ative primeiro o ajuste de cores do feixe</string>
     <string name="config_open_browser_failed">Não foi possível abrir o navegador</string>
     <string name="fireworks_custom_background_set_toast">Fundo personalizado definido. Reaplique o papel de parede para que tenha efeito.</string>
-    <string name="fireworks_background_changed_title">Fundo atualizado</string>
-    <string name="fireworks_background_changed_message">Fundo salvo. Aplicar alterações agora?</string>
     <string name="fireworks_background_reset_toast">Fundo padrão restaurado</string>
-    <string name="fireworks_background_reset_title">Fundo restaurado</string>
-    <string name="fireworks_background_reset_message">Fundo padrão restaurado. Aplicar alterações agora?</string>
-    <string name="fireworks_custom_background_set_summary">Fundo personalizado definido</string>
-    <string name="fireworks_custom_background_click_summary">Toque para escolher uma imagem de fundo personalizada</string>
     <string name="reset_all_settings_title">Restaurar todos os padrões</string>
     <string name="reset_all_settings_message">Restaurar todas as configurações de papéis de parede e globais para seus valores padrão?</string>
     <string name="reset_all_settings_done">Todas as configurações restauradas para os padrões</string>
     <string name="reset_current_settings_title">Restaurar configurações padrão</string>
     <string name="reset_current_settings_summary">Restaurar as configurações deste papel de parede para os padrões</string>
-    <string name="reset_current_settings_message">Restaurar as configurações deste papel de parede para seus valores padrão?</string>
-    <string name="reset_current_settings_done">Configurações do papel de parede restauradas para os padrões</string>
     <string name="reset_action_confirm">Restaurar</string>
     <string name="wallpaper_forest">Floresta</string>
-    <string name="wallpaper_forest_author">HU1</string>
-    <string name="wallpaper_forest_desc">A luz do sol filtra através das árvores balançando com partículas.</string>
-    <string name="settings_entry_forest">Floresta</string>
 </resources>

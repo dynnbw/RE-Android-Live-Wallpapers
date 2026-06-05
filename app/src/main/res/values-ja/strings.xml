@@ -6,107 +6,54 @@
 
     <!-- Wallpapers -->
     <string name="wallpaper_walkaround">透視</string>
-    <string name="wallpaper_walkaround_author">Google</string>
-    <string name="wallpaper_walkaround_desc">スマートフォンを通して周囲を見渡し、安心して歩き回れます。</string>
 
     <string name="wallpaper_flsorescence">蛍光</string>
-    <string name="wallpaper_flsorescence_author">念.</string>
-    <string name="wallpaper_flsorescence_desc">光る点が画面を滑らかに動き、まるで生きているかのようです。</string>
 
     <string name="wallpaper_grass">空と草原</string>
     <string name="wallpaper_grass_vk">空と草原 Vulkan</string>
-    <string name="wallpaper_grass_author">Google</string>
-    <string name="wallpaper_grass_desc">草の葉が昼や夜の空の下でゆったりと揺れます。</string>
-    <string name="wallpaper_grass_vk_desc">空と草原壁紙の Vulkan レンダリングエントリポイントです。</string>
 
     <string name="wallpaper_galaxy">銀河</string>
     <string name="wallpaper_nightsky">夜空</string>
     <string name="wallpaper_microbes">微生物</string>
-    <string name="wallpaper_nightsky_author">念.</string>
-    <string name="wallpaper_microbes_author">Samsung</string>
-    <string name="wallpaper_nightsky_desc">実際の星表に基づく夜空壁紙。恒星の日周運動、センサー連動、長押し時間加速、星の軌跡フェード効果を含みます。</string>
-    <string name="wallpaper_microbes_desc">顕微鏡下の生命体。タッチで移動、採餌行動、有機的なパーティクルアニメーションをサポートします。</string>
-    <string name="wallpaper_galaxy_author">Google</string>
-    <string name="wallpaper_galaxy_desc">ゆっくりと回転する星々で構成された銀河です。</string>
 
     <string name="wallpaper_galaxy4">銀河 4</string>
-    <string name="wallpaper_galaxy4_author">Google</string>
-    <string name="wallpaper_description_galaxy4">渦巻く雲ときらめく星を持つ美しい銀河。</string>
 
     <string name="wallpaper_phasebeam">レーザービーム</string>
-    <string name="wallpaper_phasebeam_author">Google</string>
-    <string name="wallpaper_phasebeam_desc">柔らかな光線と粒子が背景を横切ります。</string>
 
     <!-- Cube wallpaper -->
     <string name="wallpaper_cube">キューブ</string>
-    <string name="wallpaper_cube_author">Google</string>
-    <string name="wallpaper_cube_desc">ランチャースクロールとタッチエフェクト付きの回転する3D立方体ワイヤーフレーム。</string>
-    <string name="cube_shape_title">形状</string>
-    <string name="cube_shape_summary">表示する3Dワイヤーフレーム形状を選択</string>
 
     <string name="wallpaper_fall">水面の落ち葉</string>
-    <string name="wallpaper_fall_author">Google</string>
-    <string name="wallpaper_fall_desc">秋の落ち葉が静かな池に舞い落ちます：\n流れる背景スタイル</string>
 
     <string name="wallpaper_wildworld">野生の世界</string>
-    <string name="wallpaper_wildworld_author">MediaTek</string>
-    <string name="wallpaper_wildworld_desc">重なり合う動きと愛らしい生き物たちが暮らす、先史時代の景観。</string>
 
     <string name="wallpaper_fireworks">花火</string>
-    <string name="wallpaper_fireworks_author">MediaTek</string>
-    <string name="wallpaper_fireworks_desc">華やかな花火が夜空に咲き誇ります。</string>
 
     <string name="wallpaper_windmill">回る風車</string>
-    <string name="wallpaper_windmill_author">MediaTek</string>
-    <string name="wallpaper_windmill_desc">変化する天候のもと、うねる丘と回る風車。</string>
 
     <string name="wallpaper_ocean">海洋天気</string>
-    <string name="wallpaper_ocean_author">MediaTek</string>
-    <string name="wallpaper_ocean_desc">実際の天気に合わせて波と空が変化します。</string>
 
     <string name="wallpaper_deepsea">深海</string>
-    <string name="wallpaper_deepsea_author">Samsung</string>
-    <string name="wallpaper_deepsea_desc">半透明のクラゲが深い海をゆっくりと漂います。</string>
 
     <string name="wallpaper_clock">極地時計</string>
-    <string name="wallpaper_clock_author">Google</string>
-    <string name="wallpaper_clock_desc">時計回りの円弧で日付と時刻を表示：月、日、時、分、秒。</string>
 
     <string name="wallpaper_aurora1">オーロラ</string>
-    <string name="wallpaper_aurora1_author">TAT</string>
-    <string name="wallpaper_aurora1_desc">層状に流れるオーロラが星空を覆い、タッチパーティクルのインタラクションに対応。</string>
     <string name="wallpaper_aurora2">オーロラ 2</string>
-    <string name="wallpaper_aurora2_author">HU1</string>
-    <string name="wallpaper_aurora2_desc">夜景の上でオーロラのカーテンがうねり、きらめく星や流星のアニメーションが流れます。</string>
 
     <string name="wallpaper_nexus">交差する光の幕</string>
-    <string name="wallpaper_nexus_author">Google</string>
-    <string name="wallpaper_nexus_desc">ニューラルネットワークの一端。</string>
 
     <string name="wallpaper_noisefield">泡</string>
-    <string name="wallpaper_noisefield_author">Google</string>
-    <string name="wallpaper_noisefield_desc">柔らかなグラデーションの背景に、光る泡が流れます。</string>
 
     <string name="wallpaper_nebula">星雲</string>
-    <string name="wallpaper_nebula_author">念.</string>
-    <string name="wallpaper_nebula_desc">数式ベースのリアルタイムボリュームレンダリングによるオリオン大星雲のビジュアル。</string>
 
     <!-- Music visualization wallpapers -->
-    <string name="musicvis_author">Google</string>
     <string name="wallpaper_vis2">波形</string>
     <string name="wallpaper_vis3">スペクトル</string>
     <string name="wallpaper_vis4">音量計</string>
     <string name="wallpaper_vis5">マルチビジュアライズ</string>
-    <string name="vis2_desc">現在再生中の楽曲の波形を描画します。</string>
-    <string name="vis3_desc">現在再生中の楽曲の周波数スペクトルを表示します。</string>
-    <string name="vis4_desc">アナログサウンドメーターを模倣します。</string>
-    <string name="vis5_desc">すべての音楽ビジュアライズ効果を集め、3D効果でゆっくり回転させます。</string>
 
     <!-- Polar clock -->
     <string name="clock_settings">極地時計の設定</string>
-    <string name="show_seconds">秒を表示</string>
-    <string name="variable_line_width">リングの幅を可変にする</string>
-    <string name="palette">カラーパレット</string>
     <string name="palette_gray">アイアングレー</string>
     <string name="palette_violet">ミッドナイト</string>
     <string name="palette_matrix">パルスビーム</string>
@@ -118,213 +65,57 @@
 
     <!-- Settings UI -->
     <string name="settings_title">壁紙設定</string>
-    <string name="settings_entry_config">基本設定</string>
-    <string name="settings_entry_fall">水面の落ち葉</string>
-    <string name="settings_entry_grass">空と草原</string>
-    <string name="settings_entry_aurora1">オーロラ</string>
-    <string name="settings_entry_aurora2">オーロラ 2</string>
-    <string name="settings_entry_wildworld">野生の世界</string>
-    <string name="settings_entry_vis5">マルチビジュアライズ</string>
-    <string name="settings_entry_magicsmoke">魔法の煙</string>
-    <string name="settings_entry_holospiral">光輪スパイラル</string>
-    <string name="settings_entry_windmill">回る風車</string>
-    <string name="settings_entry_ocean">海洋天気</string>
-    <string name="settings_entry_clock">極地時計</string>
-    <string name="settings_entry_fireworks">花火</string>
-    <string name="settings_entry_galaxy4">銀河 4</string>
-    <string name="settings_entry_galaxy">銀河</string>
-    <string name="settings_entry_nightsky">夜空</string>
-    <string name="settings_entry_microbes">微生物</string>
-    <string name="settings_entry_walkaround">透視</string>
-    <string name="settings_entry_phasebeam">レーザービーム</string>
-    <string name="settings_entry_nebula">星雲</string>
-    <string name="settings_entry_noisefield">泡</string>
-    <string name="settings_entry_vis2">波形</string>
-    <string name="settings_entry_vis3">スペクトル</string>
-    <string name="settings_entry_vis4">音量計</string>
-    <string name="settings_entry_bluesea">ブルーシー</string>
-    <string name="settings_entry_deepsea">深海</string>
-    <string name="settings_entry_cube">キューブ</string>
 
     <!-- Fall leaves preferences -->
-    <string name="pref_fall_leaf_count">落ち葉の数</string>
-    <string name="pref_fall_leaf_count_summary">落ち葉の数を変更します（パフォーマンスに影響）</string>
-    <string name="pref_fall_green_leaves">緑の葉</string>
-    <string name="pref_fall_green_leaves_summary">有効にすると一部の落ち葉が緑色になります</string>
-    <string name="pref_fall_max_drops">最大波紋数</string>
-    <string name="pref_fall_max_drops_summary">画面に同時に表示される最大の水波紋の数（パフォーマンスに影響）</string>
-    <string name="pref_fall_precise_calc">精密計算</string>
-    <string name="pref_fall_precise_calc_summary">波の伝播と減衰に基づく物理波紋シミュレーションを有効にします</string>
 
     <!-- Grass preferences -->
-    <string name="pref_grass_legacy_particles">クラシック版 タンポポ・ホタル</string>
-    <string name="pref_grass_legacy_particles_summary">MTKクラシック版のタンポポとホタルのビジュアル効果に切り替えます</string>
-    <string name="pref_grass_enabled">草原を表示</string>
-    <string name="pref_grass_enabled_summary">草原効果の表示/非表示を切り替えます</string>
-    <string name="pref_grass_weather_enabled">天気効果を有効にする</string>
-    <string name="pref_grass_weather_enabled_summary">天気の変化に応じて明るさ、風の強さ、パーティクル効果を調整します</string>
-    <string name="pref_grass_weather_rain_count">雨粒の数（パフォーマンスに影響）</string>
-    <string name="pref_grass_weather_rain_count_summary">雨粒の数を調整します（10 ～ 1000）</string>
-    <string name="pref_grass_weather_snow_count">雪の結晶の数（パフォーマンスに影響）</string>
-    <string name="pref_grass_weather_snow_count_summary">雪の結晶の数を調整します（10 ～ 1000）</string>
-    <string name="pref_grass_count">草の本数</string>
-    <string name="pref_grass_count_summary">草の本数を変更します（パフォーマンスに影響）</string>
-    <string name="pref_grass_height">草の高さ</string>
-    <string name="pref_grass_height_summary">草の高さを変更します</string>
-    <string name="pref_grass_width">草の幅</string>
-    <string name="pref_grass_width_summary">草の幅を変更します</string>
-    <string name="pref_grass_hardness">草の柔らかさ</string>
-    <string name="pref_grass_hardness_summary">草の葉の柔らかさを変更します（高いほど曲がりやすい）</string>
-    <string name="pref_grass_color">草の色</string>
-    <string name="pref_grass_color_summary">草の色を変更して異なる効果を表現します</string>
-    <string name="pref_grass_night_invert">夜空を反転</string>
-    <string name="pref_grass_night_desaturate">夜間の草の色を落とす</string>
-    <string name="pref_grass_accurate_sun">精密計算（パフォーマンスに影響）</string>
-    <string name="pref_grass_accurate_sun_summary">実際の時刻と地理的位置に基づいて太陽と月の位置を計算します</string>
-    <string name="pref_grass_sun">太陽を表示（精密計算が必要）</string>
-    <string name="pref_grass_sun_summary">太陽の表示/非表示を切り替えます</string>
-    <string name="pref_grass_moon">月を表示（精密計算が必要）</string>
-    <string name="pref_grass_moon_summary">月の表示/非表示と実際の月相を表現します</string>
-    <string name="pref_grass_dandelion">タンポポを表示</string>
-    <string name="pref_grass_dandelion_summary">昼間に漂うタンポポを表示します</string>
-    <string name="pref_grass_firefly">ホタルを表示</string>
-    <string name="pref_grass_firefly_summary">夜間に飛ぶホタルを表示します</string>
-    <string name="pref_grass_dandelion_count">タンポポの数（パフォーマンスに影響）</string>
-    <string name="pref_grass_firefly_count">ホタルの数（パフォーマンスに影響）</string>
-    <string name="pref_grass_star_count">星の数（パフォーマンスに影響）</string>
-    <string name="pref_grass_star_count_summary">星の数を調整します（0 ～ 10000）</string>
-    <string name="pref_grass_dandelion_speed">タンポポの速度</string>
 
     <!-- Phase beam preferences -->
-    <string name="phasebeam_theme_title">カラーテーマ</string>
-    <string name="phasebeam_theme_summary">クラシックブルーと暖色サンビームを切り替え</string>
     <string name="phasebeam_theme_phasebeam">Phase Beam（ブルー）</string>
     <string name="phasebeam_theme_sunbeam">Sunbeam（暖色）</string>
-    <string name="phasebeam_enable_recolor">ビームの色を調整</string>
-    <string name="phasebeam_enable_recolor_summary">有効にするとビームの色を調整できます</string>
-    <string name="pref_galaxenable_recolor_summary">有効にするとビームの色をカスタマイズできます</string>
-    <string name="phasebeam_color_label">色</string>
-    <string name="phasebeam_saturation_label">彩度</string>
-    <string name="phasebeam_brightness_label">明るさ</string>
-    <string name="miui_permienable_recolor_summary">有効にするとビームの色を調整できます</string>
 
     <!-- Galaxy preferences -->
-    <string name="pref_galaxy_particle_count">パーティクル数</string>
-    <string name="pref_galaxy_particle_count_summary">銀河内のパーティクル数（パフォーマンスに影響）</string>
-    <string name="pref_galaxy_particle_alpha">パーティクルの透明度</string>
-    <string name="pref_galaxy_particle_alpha_summary">パーティクルの透明度を調整します（両方の計算モードで有効）</string>
-    <string name="pref_galaxy_precise_calc">精密対数螺旋計算</string>
-    <string name="pref_galaxy_precise_calc_summary">有効にするとM31パラメータに基づく対数螺旋で初期化し、無効にすると現在のランダム角度ロジックを使用します</string>
-    <string name="pref_galaxy_use_light2">light2グローテクスチャを使用</string>
-    <string name="pref_galaxy_use_light2_summary">オンでlight2、オフでlight1を使用します</string>
-    <string name="pref_galaxy_arm_count">旋腕の数</string>
-    <string name="pref_galaxy_arm_count_summary">対数螺旋の腕の数（精密計算モードのみ有効）</string>
-    <string name="pref_galaxy_arm_offset">腕のオフセット（ラジアン×1000）</string>
-    <string name="pref_galaxy_arm_offset_summary">腕の間の角度間隔（0～2π、精密計算のみ有効）</string>
-    <string name="pref_galaxy_pitch_angle">ピッチ角（度×10）</string>
-    <string name="pref_galaxy_pitch_angle_summary">旋腕のピッチ角（0～30°、精密計算のみ有効）</string>
-    <string name="pref_galaxy_inner_scatter">内部散乱（×100）</string>
-    <string name="pref_galaxy_inner_scatter_summary">中心核付近の腕の散乱強度（精密計算のみ有効）</string>
-    <string name="pref_galaxy_outer_scatter">外部散乱（×100）</string>
-    <string name="pref_galaxy_outer_scatter_summary">外周の腕の散乱強度（精密計算のみ有効）</string>
-    <string name="pref_galaxy_turbulence">乱流強度（×100）</string>
-    <string name="pref_galaxy_turbulence_summary">精密螺旋腕の変形におけるランダムな乱流強度</string>
-    <string name="pref_galaxy_forbidden_radius">中心禁止半径（kpc×100）</string>
-    <string name="pref_galaxy_forbidden_radius_summary">対数螺旋フィッティングから除外される中心核半径（精密計算のみ有効）</string>
-    <string name="pref_galaxy_ellipse_ratio">楕円比率（×1000）</string>
-    <string name="pref_galaxy_ellipse_ratio_summary">旋腕の楕円形状の比率（0.5～1.0、精密計算のみ有効）</string>
-    <string name="pref_galaxy_ellipse_twist">楕円のねじれ（×1000）</string>
-    <string name="pref_galaxy_ellipse_twist_summary">楕円形状のねじれオフセット（-0.1～0.1、精密計算のみ有効）</string>
 
     <!-- Galaxy 4 preferences -->
-    <string name="pref_galaxy4_bg_star_count">背景の星の数</string>
-    <string name="pref_galaxy4_bg_star_count_summary">銀河内の背景星の数（パフォーマンスに影響）</string>
-    <string name="phasebeam_y4_bg_star_count">背景の星の数</string>
-    <string name="pref_galaxy4_space_cloud_count">宇宙雲の数</string>
-    <string name="pref_galaxy4_space_cloud_count_summary">銀河内の雲の数</string>
 
     <!-- Global settings -->
     <string name="pref_global_frame_rate">全体フレームレート</string>
-    <string name="pref_global_frame_rate_summary">すべての壁紙のフレームレートを設定します（パフォーマンスに影響）</string>
     <string name="pref_preview_ratio">リアルタイムプレビュー比率</string>
-    <string name="pref_preview_ratio_dialog">リアルタイムプレビュー比率</string>
-    <string name="pref_preview_ratio_summary">形式：幅:高さ（例：9:16）</string>
     <string name="pref_preview_ratio_invalid">比率が無効です。幅:高さの形式で入力してください（例：9:16）</string>
 
     <!-- Weather settings -->
-    <string name="pref_weather_api_notice">天気変化を有効にするには基本設定でAPIキーを設定してください</string>
     <string name="pref_weather_refresh_now">今すぐ天気を更新</string>
-    <string name="pref_weather_refresh_now_summary">最新の天気データを即座に取得します</string>
     <string name="pref_weather_refresh_now_success">天気の更新が完了しました</string>
     <string name="pref_weather_refresh_now_failed">天気の更新に失敗しました</string>
     <string name="pref_apply_api_title">API申請</string>
     <string name="pref_weather_update_interval">天気更新間隔</string>
     <string name="pref_openweather_api_key_title">OpenWeather APIキー</string>
-    <string name="pref_openweather_api_key_dialog">OpenWeather APIキーを入力してください</string>
-    <string name="pref_openweather_api_key_summary_set">APIキーが設定されています</string>
-    <string name="pref_openweather_api_key_summary_unset">APIキーが設定されていません</string>
     <string name="weather_toolbar_title">天気設定</string>
     <string name="pref_weather_last_refresh">最終更新時間：%1$s</string>
     <string name="pref_weather_last_refresh_unknown">最終更新時間：不明</string>
 
     <!-- Flsorescence preferences -->
-    <string name="pref_flsorescence_shape">点の形状</string>
-    <string name="pref_flsorescence_shape_summary">各点の形状を変更します</string>
-    <string name="pref_flsorescence_color">点の配色</string>
-    <string name="pref_flsorescence_color_summary">配色を変更します</string>
-    <string name="pref_flsorescence_scale">点の拡大縮小</string>
-    <string name="pref_flsorescence_scale_summary">各点のサイズを変更します</string>
-    <string name="pref_flsorescence_speed">移動速度</string>
-    <string name="pref_flsorescence_speed_summary">移動速度を変更します</string>
-    <string name="pref_flsorescence_amount">点の数</string>
-    <string name="pref_flsorescence_amount_summary">点の数を変更します</string>
-    <string name="pref_flsorescence_pattern">動作パターン</string>
-    <string name="pref_flsorescence_pattern_summary">動作パターンを変更します</string>
 
     <!-- Magic smoke wallpaper -->
     <string name="wallpaper_magicsmoke">魔法の煙</string>
-    <string name="pref_magicsmoke_preset">ビジュアルテーマ</string>
-    <string name="pref_magicsmoke_preset_summary">20種類の煙/雲/プラズマ効果から選択します</string>
 
     <!-- Holo spiral wallpaper -->
     <string name="wallpaper_holospiral">光輪スパイラル</string>
-    <string name="wallpaper_holospiral_author">Google</string>
-    <string name="wallpaper_holospiral_desc">光輪をテーマにした螺旋壁紙</string>
 
     <!-- Blue sea wallpaper -->
     <string name="wallpaper_bluesea">ブルーシー</string>
-    <string name="wallpaper_bluesea_author">TAT</string>
-    <string name="wallpaper_bluesea_desc">半透明の海洋生物が海面に浮かんでいます。</string>
 
     <!-- General preferences -->
     <string name="pref_open_wallpaper_picker">システムプレビューを開く</string>
     <string name="pref_open_wallpaper_picker_failed">壁紙プレビューに対応していません</string>
-    <string name="pref_nightsky_preview_hint">ヒント：上部のアプリ内リアルタイムプレビューを先にご確認いただき、「システムプレビューを開く」を押して夜空壁紙を適用してください。</string>
-    <string name="pref_nightsky_camera_focal">カメラ焦点距離</string>
-    <string name="pref_nightsky_camera_focal_summary">レンズの焦点距離（mm）を調整します。値が大きいほど視野が狭くなります</string>
-    <string name="pref_nightsky_use_sensor">センサーの向きを使用</string>
-    <string name="pref_nightsky_use_sensor_summary">オフにするとホーム画面スクロールで視点を制御します（ページあたり45°）</string>
-    <string name="pref_nightsky_auto_time_accel">自動時間加速</string>
-    <string name="pref_nightsky_auto_time_accel_summary">天空時間を継続的に加速し、星の軌跡を維持します</string>
-    <string name="pref_nightsky_time_accel_speed">加速段階</string>
-    <string name="pref_nightsky_time_accel_speed_summary">自動加速/長押し加速の速度段階を選択します</string>
-    <string name="pref_microbes_preview_hint">ヒント：プレビュー内でタッチしてドラッグすると微生物を引き寄せられます。その後「システムプレビューを開く」を押して壁紙を適用してください。</string>
-    <string name="pref_microbes_lifecycle_speed">ライフサイクル速度</string>
-    <string name="pref_microbes_lifecycle_speed_summary">代謝、繁殖、減衰の速度を調整します（％）</string>
-    <string name="pref_microbes_motion_activity">遊泳活発度</string>
-    <string name="pref_microbes_motion_activity_summary">自然な徘徊と揺れの強さを調整します（％）</string>
-    <string name="pref_microbes_color_mode">配色スタイル</string>
-    <string name="pref_microbes_color_mode_summary">クラシック版（赤・緑・青）と新バージョン（強化）のカラーを切り替えます</string>
     <string name="pref_microbes_color_mode_original">クラシック版</string>
     <string name="pref_microbes_color_mode_modern">新バージョン</string>
     <string name="pref_open_wallpaper_chooser">壁紙選択を開く</string>
     <string name="pref_live_preview">リアルタイムプレビュー</string>
 
     <!-- Nexus preferences -->
-    <string name="pref_nexus_background_title">背景</string>
     <string name="pref_nexus_custom_background_title">カスタム背景</string>
     <string name="pref_nexus_custom_background_summary">背景画像を選択</string>
-    <string name="pref_nexus_custom_background_set_summary">カスタム背景が設定されています</string>
     <string name="pref_nexus_reset_background_title">デフォルト背景に戻す</string>
     <string name="pref_nexus_reset_background_summary">カスタム背景をクリアし、内蔵背景を使用します</string>
     <string name="nexus_bg_pyramid">デフォルト</string>
@@ -332,51 +123,16 @@
     <string name="nexus_bg_pyramid_2">クラシック版 2</string>
     <string name="nexus_bg_pyramid_3">クラシック版 3</string>
     <string name="nexus_bg_pyramid_4">ミニマル</string>
-    <string name="nexus_custom_background_set_toast">カスタム背景が設定されました。適用するには壁紙を再設定してください</string>
-    <string name="nexus_background_changed_title">背景が変更されました</string>
-    <string name="nexus_background_changed_message">新しい背景が保存されました。今すぐ壁紙を再設定して適用しますか？</string>
-    <string name="nexus_background_reset_toast">カスタム背景をクリアしました</string>
-    <string name="nexus_background_reset_title">背景がリセットされました</string>
-    <string name="nexus_background_reset_message">デフォルトの背景に戻りました。今すぐ壁紙を再設定して適用しますか？</string>
-    <string name="action_apply_now">今すぐ設定</string>
-    <string name="action_later">後で</string>
 
     <!-- Nexus advanced preferences -->
-    <string name="pref_nexus_max_pulses">最大通常パルス数</string>
-    <string name="pref_nexus_max_pulses_summary">画面に同時に表示される通常パルスの数（デフォルト：20）</string>
-    <string name="pref_nexus_max_extras">最大追加パルス数</string>
-    <string name="pref_nexus_max_extras_summary">タッチで発生する追加パルスの数（デフォルト：40）</string>
-    <string name="pref_nexus_pulse_size">パルスサイズ</string>
-    <string name="pref_nexus_pulse_size_summary">パルステクスチャのピクセルサイズ（デフォルト：14）</string>
-    <string name="pref_nexus_glow_size">グローサイズ</string>
-    <string name="pref_nexus_glow_size_summary">グローテクスチャのピクセルサイズ（デフォルト：64）</string>
-    <string name="pref_nexus_speed">移動速度</string>
-    <string name="pref_nexus_speed_summary">パルスの基本移動速度（デフォルト：20 = 0.2）</string>
-    <string name="pref_nexus_speed_delta_min">速度係数の最小値</string>
-    <string name="pref_nexus_speed_delta_min_summary">速度ランダム変動の最小倍数（デフォルト：70 = 0.7）</string>
-    <string name="pref_nexus_speed_delta_max">速度係数の最大値</string>
-    <string name="pref_nexus_speed_delta_max_summary">速度ランダム変動の最大倍数（デフォルト：170 = 1.7）</string>
-    <string name="pref_nexus_trail_size">軌跡の長さ</string>
-    <string name="pref_nexus_trail_size_summary">パルスの軌跡エフェクトの長さ（デフォルト：40）</string>
-    <string name="pref_nexus_mode">配色モード</string>
-    <string name="pref_nexus_mode_summary">パルスのカラースキームを選択します</string>
 
     <!-- Walkaround preferences -->
-    <string name="pref_walkaround_use_front">フロントカメラを使用</string>
-    <string name="pref_walkaround_use_front_summary">フロントカメラとバックカメラを切り替えます。</string>
-    <string name="pref_walkaround_mirror_front">フロントカメラをミラー</string>
-    <string name="pref_walkaround_mirror_front_summary">フロント画面を左右反転します。</string>
-    <string name="walkaround_permission_granted">カメラ権限が付与されました</string>
-    <string name="walkaround_permission_denied">カメラ権限がないため、透視画面を表示できません</string>
 
     <!-- Music visualization preferences -->
-    <string name="pref_musicvis_mesh_mode_title">クラシック版三角形ストリップメッシュを使用</string>
-    <string name="pref_musicvis_mesh_mode_summary">オン：クラシック版メッシュ/プリミティブを復元。オフ：現在の線分メッシュ。</string>
 
     <!-- MIUI permission -->
     <string name="miui_permission_title">権限が必要です</string>
     <string name="miui_permission_message">MIUIシステムでは壁紙プレビューを開くために「ライブ壁紙サービス」権限を手動で付与する必要があります。\n\nOKをタップした後、権限管理ページで「ライブ壁紙サービス」を見つけて有効にしてください。</string>
-    <string name="phasebeam_ssion_message">MIUIシステムでは壁紙プレビューを開くために「ライブ壁紙サービス」権限を手動で付与する必要があります。\n\nOKをタップした後、権限管理ページで「ライブ壁紙サービス」を見つけて有効にしてください。</string>
     <string name="miui_permission_go_settings">設定へ移動</string>
     <string name="miui_permission_continue">続行</string>
     <string name="miui_permission_open_failed">設定画面を開けませんでした</string>
@@ -411,12 +167,10 @@
     <string name="about_disclaimer_title">学習・交流目的のみ</string>
     <string name="about_disclaimer_detail">本プロジェクトは非商用・学習交流目的のみ提供されます。すべての権利は原作者に帰属します。</string>
     <string name="app_version_summary">バージョン：%1$s</string>
-    <string name="copied_to_clipboard">クリップボードにコピーされました</string>
     <string name="no_browser_found">ブラウザが見つかりません</string>
     <string name="no_email_found">メールアプリが見つかりません</string>
     <!-- 版本更新 -->
     <string name="check_for_updates">アップデートを確認</string>
-    <string name="checking_for_updates">確認中…</string>
     <string name="up_to_date_message">最新です (v%1$s)</string>
     <string name="update_available_title">新しいバージョン v%1$s</string>
     <string name="update_button">ダウンロード</string>
@@ -425,23 +179,11 @@
     <string name="update_downloading_title">アップデートをダウンロード中…</string>
 
     <!-- Warning messages -->
-    <string name="galaxy_enable_precise_calc_first">まず精密螺旋計算を有効にしてください</string>
-    <string name="grass_disable_dandelion_firefly_first">まずタンポポとホタルを無効にしてください</string>
-    <string name="grass_disable_legacy_particles_first">まず従来（MTK）のパーティクル運動方式を無効にしてください</string>
-    <string name="grass_enable_dandelion_first">まずタンポポを有効にしてください</string>
-    <string name="grass_enable_firefly_first">まずホタルを有効にしてください</string>
-    <string name="phasebeam_enable_recolor_first">まずビームの色調整を有効にしてください</string>
     <string name="config_open_browser_failed">ブラウザを開けませんでした</string>
 
     <!-- Fireworks preferences -->
     <string name="fireworks_custom_background_set_toast">カスタム背景が設定されました。適用するには壁紙を再設定してください</string>
-    <string name="fireworks_background_changed_title">背景が変更されました</string>
-    <string name="fireworks_background_changed_message">新しい背景が保存されました。今すぐ壁紙を再設定して適用しますか？</string>
     <string name="fireworks_background_reset_toast">デフォルト背景に戻りました</string>
-    <string name="fireworks_background_reset_title">背景がリセットされました</string>
-    <string name="fireworks_background_reset_message">デフォルトの背景に戻りました。今すぐ壁紙を再設定して適用しますか？</string>
-    <string name="fireworks_custom_background_set_summary">カスタム背景が設定されています</string>
-    <string name="fireworks_custom_background_click_summary">クリックしてカスタム背景画像を選択</string>
     <string name="pref_fireworks_custom_background_title">カスタム背景画像</string>
     <string name="pref_fireworks_custom_background_summary">クリックしてカスタム背景画像を選択</string>
     <string name="pref_fireworks_reset_background_title">デフォルト背景に戻す</string>
@@ -453,35 +195,13 @@
     <string name="reset_all_settings_done">すべてのデフォルト設定に戻しました</string>
     <string name="reset_current_settings_title">現在の壁紙の設定をデフォルトに戻す</string>
     <string name="reset_current_settings_summary">現在の壁紙の設定をデフォルトに戻します</string>
-    <string name="reset_current_settings_message">現在の壁紙設定をデフォルト値にリセットしますか？</string>
-    <string name="reset_current_settings_done">現在の壁紙のデフォルト設定に戻しました</string>
     <string name="reset_action_confirm">リセット</string>
 
     <!-- Deep sea preferences -->
-    <string name="title_unit_scale">クラゲのサイズ</string>
-    <string name="summary_unit_scale">クラゲのサイズを変更します</string>
-    <string name="title_unit_number">クラゲの数</string>
-    <string name="summary_unit_number">クラゲの数を変更します</string>
-    <string name="title_background_image_type">背景</string>
-    <string name="summary_background_image_type">背景を変更します</string>
-    <string name="title_background_brightness">背景の明るさ</string>
-    <string name="summary_background_brightness">背景の明るさを変更します</string>
-    <string name="title_background_lighting">背景照明</string>
-    <string name="summary_background_lighting">背景照明を変更します</string>
-    <string name="title_particle_color">クラゲのコアカラー</string>
-    <string name="summary_particle_color">コアカラーを変更します</string>
     <string name="deepsea_custom_background_title">カスタム背景</string>
     <string name="deepsea_custom_background_summary">背景画像を選択</string>
-    <string name="deepsea_custom_background_set_summary">カスタム背景が設定されています</string>
     <string name="deepsea_reset_background_title">デフォルト背景に戻す</string>
     <string name="deepsea_reset_background_summary">カスタム背景をクリアし、内蔵背景を使用します</string>
-    <string name="deepsea_background_changed_title">背景が変更されました</string>
-    <string name="deepsea_background_changed_message">新しい背景が保存されました。今すぐ壁紙を再設定して適用しますか？</string>
-    <string name="deepsea_background_reset_title">背景がリセットされました</string>
-    <string name="deepsea_background_reset_message">デフォルトの背景に戻りました。今すぐ壁紙を再設定して適用しますか？</string>
-    <string name="deepsea_apply_now">今すぐ設定</string>
-    <string name="deepsea_apply_later">後で</string>
-    <string name="deepsea_custom_background_failed">背景の保存に失敗しました</string>
 
     <!-- Weather API guide -->
     <string name="pref_weather_api_guide_intro">OpenWeather APIキーの取得と設定の完全チュートリアルです。</string>
@@ -505,9 +225,6 @@
     <string name="pref_weather_api_guide_open_web_button">OpenWeather公式サイトを開く</string>
 
     <string name="wallpaper_forest">森</string>
-    <string name="wallpaper_forest_author">HU1</string>
-    <string name="wallpaper_forest_desc">揺れる木々の間から陽光が差し込み、粒子が漂う。</string>
-    <string name="settings_entry_forest">森</string>
     <string-array name="cube_shapenames">
         <item>立方体</item>
         <item>十二面体</item>
