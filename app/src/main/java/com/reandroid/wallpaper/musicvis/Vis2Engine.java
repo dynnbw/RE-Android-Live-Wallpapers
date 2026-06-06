@@ -6,6 +6,6 @@ import com.reandroid.plugin.WallpaperPluginHost;
 public class Vis2Engine extends BasePluginEngine {
     public Vis2Engine(Context c, WallpaperPluginHost h) { super(c, h); }
     @Override protected GLESScene createScene(int w, int h, Context c) {
-        return new MusicVisWaveScene(w, h, c, MusicVisWaveScene.Mode.PCM, "musicvis/drawable/musicvis_fire.png");
+        return new MusicVisWaveGL(w, h, c, WaveScene.Mode.PCM, "musicvis/drawable/musicvis_fire.png");
     }
 }

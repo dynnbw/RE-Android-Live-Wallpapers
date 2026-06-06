@@ -1,4 +1,4 @@
 {"label": "@string/wallpaper_vis6",
   "plugin": "com.reandroid.wallpaper.musicvis.Vis6Plugin",
-  "previewClass": "com.reandroid.wallpaper.musicvis.MusicVisCircleScene"
+  "previewClass": "com.reandroid.wallpaper.musicvis.MusicVisCircleGL"
 }

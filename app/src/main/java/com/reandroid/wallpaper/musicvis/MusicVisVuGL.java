@@ -12,8 +12,14 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
-public class MusicVisVuScene extends GLESScene {
+/**
+ * GL renderer for VU meter wallpaper (vis4).
+ * Delegates all scene logic to VuScene.
+ */
+public class MusicVisVuGL extends GLESScene {
+
     private final Context mContext;
+    private final VuScene mScene;
 
     private int mProgram;
     private int mPosLoc;
@@ -32,48 +38,32 @@ public class MusicVisVuScene extends GLESScene {
     private FloatBuffer mTexBuffer;
     private float[] mQuadUvs;
 
-    private final float[] mProj = new float[16];
-    private final float[] mModel = new float[16];
     private final float[] mMvp = new float[16];
+    private final float[] mModel = new float[16];
 
-    private AudioCapture mAudioCapture;
-    private int[] mVizData = new int[1024];
-
-    private int mNeedlePos = 0;
-    private int mNeedleSpeed = 0;
-    private int mNeedleMass = 10;
-    private int mSpringForceAtOrigin = 200;
-
-    private float mAngle = 0f;
-    private int mPeak = 0;
-
-    public MusicVisVuScene(int width, int height, Context context) {
+    public MusicVisVuGL(int width, int height, Context context) {
         super(width, height);
         mContext = context;
+        mScene = new VuScene(width, height, context);
     }
 
     @Override
-    protected void onCreate() {
-        // no-op
-    }
+    protected void onCreate() {}
 
     @Override
     public void resize(int width, int height) {
         super.resize(width, height);
-        updateProjection();
+        mScene.updateProjection();
     }
 
     @Override
     public void start() {
-        if (mAudioCapture == null) {
-            mAudioCapture = new AudioCapture(AudioCapture.TYPE_PCM, 1024);
-        }
-        mAudioCapture.start();
+        mScene.start();
     }
 
     @Override
     public void stop() {
-        if (mAudioCapture != null) mAudioCapture.stop();
+        mScene.stop();
     }
 
     @Override
@@ -81,7 +71,7 @@ public class MusicVisVuScene extends GLESScene {
         initGLIfNeeded();
         if (mProgram == 0) return;
 
-        updateNeedle();
+        mScene.updateNeedle();
 
         GLES20.glClearColor(0f, 0f, 0f, 1f);
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
@@ -93,11 +83,11 @@ public class MusicVisVuScene extends GLESScene {
         drawQuad(mTexBackground, -208f, -33f, 0f, 208f, 200f, 0f);
 
         // peak
-        int peakTex = mPeak > 0 ? mTexPeakOn : mTexPeakOff;
+        int peakTex = mScene.mPeak > 0 ? mTexPeakOn : mTexPeakOff;
         drawQuad(peakTex, 140f, 70f, -1f, 196f, 128f, -1f);
 
         // needle (rotation around 44,217 from top-left)
-        setModelMatrix(0f, -147f * 0.0041f, 0f, mAngle - 90f, 0f, 0f, 1f, 0.0041f, 0.0041f, 0.0041f);
+        setModelMatrix(0f, -147f * 0.0041f, 0f, mScene.mAngle - 90f, 0f, 0f, 1f, 0.0041f, 0.0041f, 0.0041f);
         drawQuad(mTexNeedle, -44f, -102f + 57f, 0f, 44f, 160f + 57f, 0f);
 
         // restore
@@ -131,53 +121,7 @@ public class MusicVisVuScene extends GLESScene {
         mTexPeakOff = GLTextureUtils.loadTextureFromAsset(mContext, "musicvis/drawable/musicvis_vu_peak_off.png");
         mTexBlack = GLTextureUtils.loadTextureFromAsset(mContext, "musicvis/drawable/musicvis_black.png");
 
-        updateProjection();
-    }
-
-    private void updateNeedle() {
-        int len = 0;
-        if (mAudioCapture != null) {
-            mVizData = mAudioCapture.getFormattedData(512, 1);
-            len = mVizData.length;
-        }
-
-        int volt = 0;
-        if (len > 0) {
-            for (int i = 0; i < len; i++) {
-                int val = mVizData[i];
-                if (val < 0) val = -val;
-                volt += val;
-            }
-            volt = volt / len;
-        }
-
-        int netforce = volt - mNeedleSpeed * 3 - (mNeedlePos + mSpringForceAtOrigin);
-        int acceleration = netforce / mNeedleMass;
-        mNeedleSpeed += acceleration;
-        mNeedlePos += mNeedleSpeed;
-        if (mNeedlePos < 0) {
-            mNeedlePos = 0;
-            mNeedleSpeed = 0;
-        } else if (mNeedlePos > 32767) {
-            if (mNeedlePos > 33333) {
-                mPeak = 10;
-            }
-            mNeedlePos = 32767;
-            mNeedleSpeed = 0;
-        }
-        if (mPeak > 0) mPeak--;
-
-        mAngle = 131f - (mNeedlePos / 410f);
-    }
-
-    private void updateProjection() {
-        if (mWidth > mHeight) {
-            float aspect = (float) mWidth / (float) mHeight;
-            Matrix.orthoM(mProj, 0, -aspect, aspect, -1f, 1f, -1f, 1f);
-        } else {
-            float aspect = (float) mHeight / (float) mWidth;
-            Matrix.orthoM(mProj, 0, -1f, 1f, -aspect, aspect, -1f, 1f);
-        }
+        mScene.updateProjection();
     }
 
     private void setModelMatrix(float tx, float ty, float tz, float angle, float rx, float ry, float rz,
@@ -188,7 +132,7 @@ public class MusicVisVuScene extends GLESScene {
             Matrix.rotateM(mModel, 0, angle, rx, ry, rz);
         }
         Matrix.scaleM(mModel, 0, sx, sy, sz);
-        Matrix.multiplyMM(mMvp, 0, mProj, 0, mModel, 0);
+        Matrix.multiplyMM(mMvp, 0, mScene.mProj, 0, mModel, 0);
     }
 
     private void drawQuad(int texId, float x1, float y1, float z1, float x2, float y2, float z2) {
