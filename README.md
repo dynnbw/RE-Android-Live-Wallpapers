@@ -1,281 +1,284 @@
 # Reborn Android Live Wallpapers
 
-[English](#english) | [简体中文](#简体中文) | [繁體中文](#繁體中文) | [日本語](#日本語) | [한국어](#한국어)
+[English](README-en.md)
+
+Android 动态壁纸合集，将 AOSP / MediaTek 经典壁纸从 RenderScript 移植到 OpenGL ES 2.0 和 Vulkan，在新时代 Android 上继续运行。
+
+>  **快速导航**：[用户使用](#用户指南) · [天气配置](#天气配置) · [音乐可视化](#音乐可视化) · [权限说明](#权限说明) · [性能参考](#性能参考) · [常见问题](#常见问题)　|　[开发者文档](#开发文档)
 
 ---
 
-## English
+# 用户指南
 
-# Reborn Android Live Wallpapers
+## 安装使用
 
-An Android live wallpaper collection that ports classic AOSP / MediaTek wallpapers from RenderScript to OpenGL ES 2.0 and Vulkan, allowing them to run on modern Android versions.
+**下载安装**
+1. 从 [GitHub Releases](../../releases) [ApkPure](https://apkpure.com/p/com.reandroid.wallpaper)下载 APK
+2. 允许浏览器/文件管理器的"安装未知应用"权限后安装
+3. 支持 Android 4.4（API 19）及以上系统，推荐在AndroidX及以上系统安装
 
-## Wallpaper List
+**设置为壁纸**
 
-| Wallpaper | Type | Render Path | Description |
-| --- | --- | --- | --- |
-| Galaxy | Particle / Starfield | GLES2 + VK | Rotating star field with color gradients |
-| Galaxy4 | Particle / Starfield | GLES2 | Rotating star field with color gradients |
-| NightSky | Particle / Starfield | GLES2 | 9,000 real stars from Hipparcos catalog, gyroscope tracking, long press to accelerate star trails |
-| Microbes | Particle / Starfield | GLES2 | Microbial swarm AI, touch feeding, reproduction / death cycle |
-| Grass | Nature / Environment | GLES2 + VK | Wind-blown grass, solar/lunar eclipse + weather integration |
-| WildWorld | Nature / Environment | GLES2 | Prehistoric world with volcanoes, dinosaurs, pterosaurs, fireballs |
-| WalkAround | Nature / Environment | GLES2 | Perspective view |
-| DeepSea | Nature / Environment | GLES2 | Deep-sea jellyfish swarm, gyroscope tracking |
-| BlueSea | Nature / Environment | GLES2 | Floating jellyfish, rising particles, touch to light up |
-| Fall | Nature / Environment | GLES2 + VK | Falling autumn leaves, water ripples |
-| Ocean | Weather | GLES2 | Ocean weather wallpaper: waves, clouds, precipitation |
-| Windmill | Weather | GLES2 | Windmill weather wallpaper |
-| Nexus | Procedural Effects | GLES2 | Pulsed halo |
-| PhaseBeam | Procedural Effects | GLES2 | Phase beam, HSL color tuning |
-| NoiseField | Procedural Effects | GLES2 | Perlin noise particles, touch perturbation |
-| HoloSpiral | Procedural Effects | GLES2 | Holographic spiral, 3D perspective rotation |
-| MagicSmoke | Procedural Effects | GLES2 | Multi-layer smoke blending |
-| Aurora1 | Aurora | GLES2 | Northern lights, 99-frame glow animation |
-| Aurora2 | Aurora | GLES2 | Northern lights v2, more brilliant |
-| Fireworks | Effects | GLES2 | Firework particles, touch to launch |
-| PolarClock | Clock | GLES2 | Polar clock |
-| MusicVis 2–5 | Music Visualization | GLES2 | 4 audio spectrum visualization styles |
-| Galaxy VK | Particle / Starfield | Vulkan | Vulkan variant of Galaxy |
-| Grass VK | Nature / Environment | Vulkan | Vulkan variant of Grass |
-| Fall VK | Nature / Environment | Vulkan | Vulkan variant of Fall |
+方法一（推荐）：打开应用 → 选择壁纸 → 进入设置页 → 点击"打开系统预览"
 
-**Total 30 wallpaper services: 27 GLES2 + 3 Vulkan**
+方法二：打开应用 → 打开壁纸选择器 → 找到"REAndroid 动态壁纸"（中国手机系统由于深度定制无法使用此方法）
 
-## Core Architecture
+方法三：系统桌面长按 → 背景 → 找到"REAndroid 动态壁纸"（中国手机系统由于深度定制无法使用此方法）
 
-### Package Structure
+> 方法一会跳过系统壁纸选择器，直接预览。MIUI 用户首次设置时会弹出权限引导。
 
-```
-com.reandroid
-├── gles/           GLESWallpaper / GLESScene / GLESPreviewView
-├── vulkan/         VKWallpaperEngine / VKSurfaceView       ← Shared Vulkan base
-├── settings/       Unified settings UI (51 files, per-wallpaper Fragment)
-├── weather/        OpenWeather API data layer
-└── wallpaper/      All wallpaper implementations (grouped by subpackage)
-    ├── weatherwallpapers/  Ocean / Windmill (weather-integrated)
-    ├── musicvis/           Music visualization (4 services sharing 3 Scenes)
-    └── ......
-```
-
-### Render Paths
-
-```mermaid
-graph TD
-    WS[WallpaperService]
-
-    WS -->|27 wallpapers| GLW[GLESWallpaper]
-    WS -->|3 wallpapers| VKW[WallpaperService<br/>+ VKWallpaperEngine]
-
-    GLW -->|holds| GLS[GLESScene]
-    GLS -->|16| SPLIT[Scene/GL separation<br/>Scene pure logic + GL pure render]
-    GLS -->|7| MONO[GL monolithic<br/>Small or shader-heavy wallpapers]
-    GLS -->|3| MV[MusicVis Scene<br/>Scene = GL, shared by 4 services]
-
-    VKW -->|type param| REUSE[Reuse Scene class from<br/>same-name GL wallpaper]
-    VKW -->|JNI| NATIVE[VKNative<br/>NDK C++ Vulkan render]
-```
-
-### Scene/GL Separation Pattern
-
-16 wallpapers adopt Scene (pure logic) + GL (pure rendering) separation:
-
-- **Scene class**: `package-private final class`, handles physics, animation state, entity management – no GL resources.
-- **GL class**: `public class extends GLESScene`, handles shader compilation, texture loading, drawing calls – no business logic.
-
-```mermaid
-flowchart LR
-    subgraph SCENE[Scene pure logic layer]
-        PHYSICS[Particle physics / Entity motion]
-        STATE[Animation state updates]
-        TOUCH[Touch event handling]
-    end
-    subgraph GL[GL pure render layer]
-        SHADER[Shader compile & link]
-        TEX[Texture load & bind]
-        VBO[Vertex buffer management]
-        DRAW[glDrawArrays calls]
-    end
-    SCENE -- getSceneData<br/>immutable snapshot --> GL
-```
-
-16 separated wallpapers: Aurora1, Aurora2, DeepSea, Fall, Fireworks, Galaxy, Galaxy4, Grass, MagicSmoke, Microbes, Nexus, NightSky, Ocean, PhaseBeam, WildWorld, Windmill.
-
-7 monolithic GL wallpapers (BlueSea, HoloSpiral, NoiseField, PolarClock, WalkAround, …) are small or heavily shader-driven.
-
-### Render Loop
-
-```mermaid
-sequenceDiagram
-    participant Engine as GLESWallpaper<br/>or VKWallpaperEngine
-    participant Scene as Scene subclass
-    participant GPU as OpenGL / Vulkan
-
-    loop Every frame
-        Engine->>Scene: update(dt)
-        Scene->>Scene: Particle motion / Entity AI / Animation advance
-        Engine->>Scene: getSceneData()
-        Scene-->>Engine: Immutable snapshot
-        Engine->>GPU: Submit draw commands
-        GPU-->>Engine: eglSwapBuffers / vkQueuePresent
-        Engine->>Engine: Framerate control (sleep)
-    end
-```
-
-### Vulkan Path
-
-3 wallpapers (Fall, Galaxy, Grass) provide Vulkan backends, sharing `VKWallpaperEngine<T>` and `VKSurfaceView<T>` generic base classes:
-
-```mermaid
-graph TD
-    subgraph BASE[com.reandroid.vulkan shared base]
-        ENG[VKWallpaperEngine&lt;T&gt;]
-        VIEW[VKSurfaceView&lt;T&gt;]
-    end
-    subgraph FALL[FallVK]
-        FALL_E[FallVKEngine]
-        FALL_V[FallVKSurfaceView]
-        FALL_J[FallVKNative]
-    end
-    subgraph GALAXY[GalaxyVK]
-        GAL_E[GalaxyVKEngine]
-        GAL_V[GalaxyVKSurfaceView]
-        GAL_J[GalaxyVKNative]
-    end
-    subgraph GRASS[GrassVK]
-        GRA_E[GrassVKEngine]
-        GRA_V[GrassVKSurfaceView]
-        GRA_J[GrassVKNative]
-    end
-
-    ENG --> FALL_E
-    ENG --> GAL_E
-    ENG --> GRA_E
-    VIEW --> FALL_V
-    VIEW --> GAL_V
-    VIEW --> GRA_V
-
-    FALL_E -->|reuses| FallScene
-    GAL_E -->|reuses| GalaxyScene
-    GRA_E -->|reuses| GrassScene
-
-    FALL_J -->|NDK| FALL_SO[libfallvulkan.so]
-    GAL_J -->|NDK| GAL_SO[libgalaxyvulkan.so]
-    GRA_J -->|NDK| GRA_SO[libgrassvulkan.so]
-```
-
-- Base classes encapsulate threading, Surface lifecycle, frame‑rate diagnostics (ANR threshold 200ms).
-- Subclasses only implement 8 template methods (`ensureScene`, `ensureRenderer`, `renderFrame`, …).
-- Reuse the same Scene logic classes from the GL wallpapers – no need to rewrite simulation code.
-
-### Weather Integration
-
-`WeatherManager` asynchronously fetches OpenWeatherMap data, used by Grass, Windmill, Ocean to dynamically change sky, grass color, clouds, precipitation, fog. Users must provide their own API key.
-
-### Settings System
-
-`SettingsActivity` unified entry → wallpaper grid list → individual `PreferenceFragment`. Supports real‑time preview, brightness/speed/particle count adjustments, one‑click restore defaults (`SettingsResetHelper`). Global framerate setting applies to all wallpapers.
-
-## Build Configuration
-
-### Requirements
-
-- Android Studio (latest stable)
-- JDK 17
-- Android SDK Platform 33
-- Android NDK 25.2.9519653 (fixed)
-- minSdk 19 / targetSdk 33
-
-### Build
-
-```bash
-# Debug
-./gradlew assembleDebug
-
-# Release (auto‑increment version code)
-./gradlew assembleRelease
-```
-
-Vulkan wallpapers require `arm64-v8a`, `armeabi-v7a`, `x86_64`, `x86`. NDK compilation runs automatically during `preBuild`.
-
-### Project Structure
-
-```
-app/src/main/
-├── java/com/reandroid/
-│   ├── gles/              GLES framework base
-│   ├── vulkan/            Vulkan framework base
-│   ├── settings/          Settings UI (Activity + Fragment + utilities)
-│   ├── weather/           Weather data layer
-│   └── wallpaper/         All wallpapers (grouped by subpackage)
-├── res/
-│   ├── drawable/          524 texture assets
-│   ├── raw/               GLSL shaders + CSV mesh data
-│   ├── xml/               Wallpaper service declarations + preference pages (~55 each)
-│   ├── values/            Strings (12 languages), themes, config
-│   └── layout/            Settings layouts
-├── jni/                   Vulkan NDK C++ source (fallvk / galaxyvk / grassvk)
-├── jniLibs/               Vulkan .so outputs
-└── shaders/               Vulkan SPIR-V shaders (20 files)
-```
-
-## License
-
-[LICENSE](LICENSE) · [NOTICE](NOTICE.md)
-
----
-
-## 简体中文
-[English](#english) | [简体中文](#简体中文) | [繁體中文](#繁體中文) | [日本語](#日本語) | [한국어](#한국어)
-# Reborn Android Live Wallpapers
-
-Android 动态壁纸合集，将 AOSP / MediaTek 经典壁纸从 RenderScript 移植到 OpenGL ES 2.0 和 Vulkan，在新时代 Android 上继续运行
+**每个壁纸有独立的设置选项** — 粒子数量、颜色、动画速度等都可调整。设置实时预览在页面顶部。
 
 ## 壁纸清单
 
-| 壁纸 | 类型 | 渲染路径 | 说明 |
-| --- | --- | --- | --- |
-| Galaxy | 粒子/星空 | GLES2 + VK | 旋转星场，色彩渐变 |
-| Galaxy4 | 粒子/星空 | GLES2 | 旋转星场，色彩渐变 |
-| NightSky | 粒子/星空 | GLES2 | 依巴谷星表 9000 真实恒星，陀螺仪追踪，长按加速星轨 |
-| Microbes | 粒子/星空 | GLES2 | 微生物群体 AI，触摸投喂，繁殖/死亡循环 |
-| Grass | 自然/环境 | GLES2 + VK | 风吹草动，日食/月相/天气联动 |
-| WildWorld | 自然/环境 | GLES2 | 远古世界，火山/恐龙/翼龙/火球 |
-| WalkAround | 自然/环境 | GLES2 | 透视 |
-| DeepSea | 自然/环境 | GLES2 | 深海水母群，陀螺仪追踪 |
-| BlueSea | 自然/环境 | GLES2 | 水母漂浮，粒子上升，触摸点亮 |
-| Fall | 自然/环境 | GLES2 + VK | 秋叶飘落，水面涟漪 |
-| Ocean | 天气 | GLES2 | 海洋天气壁纸，波浪/云层/降水 |
-| Windmill | 天气 | GLES2 | 风车天气壁纸 |
-| Nexus | 程序化特效 | GLES2 | 脉冲光晕 |
-| PhaseBeam | 程序化特效 | GLES2 | 相位光束，HSL 调色 |
-| NoiseField | 程序化特效 | GLES2 | Perlin 噪声粒子，触摸扰动 |
-| HoloSpiral | 程序化特效 | GLES2 | 全息螺旋，3D 透视旋转 |
-| MagicSmoke | 程序化特效 | GLES2 | 多层烟雾叠加 |
-| Aurora1 | 极光 | GLES2 | 北极光，99 帧光晕动画 |
-| Aurora2 | 极光 | GLES2 | 北极光第二版，更加绚烂 |
-| Fireworks | 特效 | GLES2 | 烟花粒子，触摸发射 |
-| PolarClock | 时钟 | GLES2 | 极地时钟 |
-| MusicVis 2–5 | 音乐可视化 | GLES2 | 4 种音频频谱可视化风格 |
-| Galaxy VK | 粒子/星空 | Vulkan | Galaxy 的 Vulkan 变体 |
-| Grass VK | 自然/环境 | Vulkan | Grass 的 Vulkan 变体 |
-| Fall VK | 自然/环境 | Vulkan | Fall 的 Vulkan 变体 |
+共 **28 个**壁纸，**3 个**（Galaxy、Grass、Fall）额外提供 Vulkan 后端
 
-**共 30 个壁纸服务：27 个 GLES2 + 3 个 Vulkan**
+| 壁纸 | 类型 | VK | 说明 |
+| --- | --- | --- | --- |
+| Galaxy | 星空 | ✓ | 旋转星场，色彩渐变 |
+| Galaxy4 | 星空 | | 旋转星场，色彩渐变 |
+| NightSky | 星空 | | 依巴谷星表 9000 真实恒星，陀螺仪追踪，长按加速星轨 |
+| Microbes | 粒子 | | 微生物群体 AI，触摸投喂食物，繁殖/死亡循环 |
+| Grass | 自然 | ✓ | 风吹草动，日食/月相，支持天气联动 |
+| WildWorld | 自然 | | 远古世界，火山/恐龙/翼龙/火球 |
+| WalkAround | 自然 | | 相机透视，所见即所得 |
+| Cube | 3D | | 8 种线框形状，3D 旋转，触摸拖拽 |
+| Forest | 自然 | | 森林视差滚动 |
+| DeepSea | 自然 | | 深海水母群，陀螺仪追踪视角 |
+| BlueSea | 自然 | | 水母漂浮，粒子上升，触摸点亮 |
+| Fall | 自然 | ✓ | 秋叶飘落，水面涟漪 |
+| Ocean | 天气 | | 海洋天气壁纸，波浪/云层/降水联动 |
+| Windmill | 天气 | | 风车天气壁纸，根据天气改变风车转速和天空 |
+| Nexus | 特效 | | 脉冲光晕 |
+| PhaseBeam | 特效 | | 相位光束，HSL 调色 |
+| NoiseField | 特效 | | Perlin 噪声粒子，触摸产生扰动 |
+| HoloSpiral | 特效 | | 全息螺旋，3D 透视旋转 |
+| MagicSmoke | 特效 | | 多层烟雾叠加，迷幻效果 |
+| Aurora1 | 极光 | | 北极光，99 帧光晕动画 |
+| Aurora2 | 极光 | | 北极光第二版，色彩更加绚烂 |
+| Fireworks | 特效 | | 烟花粒子，触摸发射烟花 |
+| PolarClock | 时钟 | | 极地时钟，三种调色板风格 |
+| vis2 | 音乐 | | 音频频谱可视化 — FFT 波形 |
+| vis3 | 音乐 | | 音频频谱可视化 — PCM 波形 |
+| vis4 | 音乐 | | 音频可视化 — VU 表头风格 |
+| vis5 | 音乐 | | 音频可视化 — 波形 + VU 组合 |
+| vis6 | 音乐 | | 音频可视化 — 圆形频谱 |
+
+## 功能亮点
+
+与 AOSP/MediaTek 原版壁纸相比：
+- **兼容新系统**：原版依赖 RenderScript（Android 12+ 已废弃），这里全部用 GLES/Vulkan 重写
+- **独立设置**：每个壁纸有独立的设置页面，调整粒子数、颜色、动画速度等
+- **天气联动**：Grass、Ocean、Windmill 可根据真实天气改变画面（需配置 API Key）
+- **音乐可视化**：5 种音频频谱风格，播放音乐时壁纸随节奏变化
+- **Vulkan 后端**：Galaxy、Grass、Fall 可选 Vulkan 渲染
+
+## 天气配置
+
+Grass（动态草地）、Ocean（海洋天气）、Windmill（风车）三个壁纸支持根据真实天气改变画面效果：晴天阳光明媚、阴天云层加厚、下雨/下雪有粒子效果。
+
+**配置步骤：**
+
+1. 打开 [OpenWeatherMap 注册页](https://home.openweathermap.org/users/sign_up)，注册免费账号
+2. 登录后进入 [API Keys](https://home.openweathermap.org/api_keys)，复制默认 Key
+3. 打开应用 → 点击工具栏的天气图标 → "OpenWeather API Key" → 粘贴 Key → 确定
+4. 回到主页面，天气图标应显示当前天气状况
+
+> 免费额度为每天 1000 次调用，默认每 30 分钟更新一次（可在 "更新间隔" 中改为 15/30/60/180 分钟）。如果不想注册，天气壁纸仍然可以正常使用，只是不会随真实天气变化。
+
+**调试**：长按天气图标可手动覆盖天气状态（晴朗/多云/雨/雪等 10 种），方便测试壁纸在不同天气下的表现。
+
+## 音乐可视化
+
+vis2–vis6 是 5 种音频频谱可视化壁纸，播放音乐时壁纸会随音频节奏动态变化。
+
+**使用方法：**
+1. 选择 vis2–vis6 任意一个设为壁纸
+2. 授予"录制音频"权限（仅用于读取音频频谱，不保存任何音频数据）
+3. 播放手机上的音乐或视频
+4. 壁纸会自动随音频变化
+
+| 插件 | 风格 | 模式 | 特点 |
+| --- | --- | --- | --- |
+| vis2 | 彩色波形 | FFT 频谱 | 多段频谱柱状图，HSL 渐变 |
+| vis3 | 彩色波形 | PCM 波形 | 连续波形曲线，更平滑 |
+| vis4 | VU 表头 | PCM | 经典音频电平表，指针摆动 |
+| vis5 | 组合视图 | FFT | 3D旋转 |
+| vis6 | 环形频谱 | FFT | 360° 环绕频谱 |
+
+> Android 系统限制音频捕获采样率。 AndroidX以上需要额外授权才能捕获系统音频。
+
+## 权限说明
+
+应用申请的权限及其原因：
+
+| 权限 | 使用者 | 原因 | 可选 |
+| --- | --- | --- | --- |
+| 存储读取 | Fireworks（自定义背景） | 选择本地图片作为烟花背景 | ✓ |
+| 定位（精确/粗略） | Grass、NightSky | 根据地理位置计算精确的日出日落时间等等 | ✓ |
+| 相机 | WalkAround | 将相机画面作为壁纸背景（透视效果） | ✓ |
+| 录音 | vis2–vis6 | 捕获系统音频输出用于频谱可视化 | ✓ |
+| 网络 | 天气、更新检查 | 获取天气数据、检查版本更新 | ✓ |
+| 动态壁纸服务 | 系统 | Android 动态壁纸必需权限 | × |
+
+> ✓ = 可选，拒绝不影响壁纸基本功能　× = 某些系统必需
+
+## 性能参考
+
+不同壁纸的硬件消耗差异较大，供参考：
+
+| 级别 | 壁纸 | 说明 |
+| --- | --- | --- |
+| 低功耗 | PolarClock, HoloSpiral, Forest | 静态为主，仅少量动画更新 |
+| 中等 | Ocean, Windmill, Aurora1/2, Cube, DeepSea, BlueSea, Nexus, PhaseBeam, NoiseField, MagicSmoke, WalkAround, WildWorld | 有持续动画或粒子，但负载可控 |
+| 高功耗 | Galaxy, Galaxy4, NightSky, Microbes, Grass, Fall, Fireworks, vis2–6 | 大量粒子/实体 AI/音频实时处理 |
+
+**省电：**
+- 通过壁纸设置页降低粒子数量、减少草叶数等
+- 全局帧率设置为 30 FPS（设置页右上角菜单 → 全局帧率）
+- Galaxy/Grass/Fall 可尝试开启 Vulkan 渲染
+- 天气联动功能可以关闭（Grass 设置页 → 关闭"启用天气效果"）
+
+## 常见问题
+
+**Q: 无法打开壁纸预览界面**
+MIUI/HyperOS 用户需要在系统设置中授予"动态壁纸服务"权限。应用首次检测到 MIUI 会自动弹出引导。
+
+**Q: 天气不显示 / 显示不正确？**
+检查：① OpenWeather API Key 是否正确填入 ② 是否给予位置权限 ③ 网络是否正常，部分地区、运营商无法访问OpenWeather ④ 免费额度是否用完（1000 次/天）长按天气图标可查看上次刷新时间
+
+**Q: Vulkan 开关为什么看不到？**
+只有 Galaxy、Grass、Fall 三个壁纸有 Vulkan 后端。如果你的设备不支持 Vulkan，开关虽然可见但切换后可能无效果或崩溃。
+
+**Q: 音乐可视化没有反应？**
+确认：① 已授予录音权限 ② 正在播放音频（媒体音量不为零）
+
+**Q: 全局帧率设置多少合适？**
+默认 60 FPS 适合大多数设备。低端机建议 24 FPS。高刷新率屏幕可选 90/120 FPS。注意：帧率越高越耗电。
+
+---
+
+# 开发文档
 
 ## 核心架构
+
+### 插件三层接口
+
+每个壁纸实现三个接口，由 ProxyWallpaperService 驱动生命周期：
+
+```
+WallpaperPlugin          → 插件工厂：getId() / createEngine() / release()
+WallpaperEngine          → 渲染引擎：onCreate() / drawFrame() / onSurfaceChanged() / onTouchEvent() ...
+WallpaperPluginHost      → 宿主机服务：getSharedPreferences() / getContext() / requestRender()
+```
+
+- **WallpaperPlugin** — 无参构造函数，由 ProxyWallpaperService 通过 `Class.forName()` 反射实例化
+- **WallpaperEngine** — 管理自己的 EGL/Vulkan 上下文，接收所有 Surface 生命周期回调
+- **WallpaperPluginHost** — 提供 `plugin_{id}` 隔离 SharedPreferences 和 ApplicationContext
+
+### ProxyWallpaperService 调度逻辑
+
+```
+用户选择壁纸 → setActivePlugin(ctx, pluginId) → 写入 proxy_wallpaper prefs
+系统创建壁纸 → ProxyWallpaperService.onCreateEngine()
+  → 读取 pluginId
+  → 打开 assets/{pluginId}/info.json → 读取 plugin 类名
+  → 检查 plugin_{pluginId} prefs 中 use_vulkan 开关
+  → 如果 VK=true 且 info.json 有 pluginVk 字段 → 使用 VK 类名
+  → Class.forName() 实例化 WallpaperPlugin
+  → plugin.createEngine(context, host) 创建 WallpaperEngine
+  → ProxyEngine 转发所有 Surface 回调到 WallpaperEngine
+```
+
+### 语言资源解析链
+
+设置页面的控件标签翻译来源是 `assets/{pluginId}/language/{locale}.json`，解析优先级：
+
+1. 全 locale tag（如 `zh-rCN`）→ `PluginResources.loadLanguage(ctx, pluginId, "zh-rCN")`
+2. 仅语言代码（如 `zh`）→ `loadLanguage(ctx, pluginId, "zh")`
+3. 默认英文 → `loadLanguage(ctx, pluginId, "default")`
+
+`layout.json` 中的 `title` / `summary` 字段存储的是 **language JSON 的 lookup key**（如 `"pref_grass_enabled"`），不是显示文本，也不是 `@string/` 引用。`DynamicPreferenceFactory` 先调 `resolveLang()` 查 language JSON，再调 `resolveStringRef()` 兜底处理残留的 `@string/` 引用。
+
+### info.json Schema
+
+每个 `assets/{pluginId}/info.json`：
+
+```json
+{
+  "label": "@string/wallpaper_xxx",
+  "plugin": "com.reandroid.wallpaper.xxx.XxxPlugin",
+  "pluginVk": "com.reandroid.wallpaper.xxx.XxxVKPlugin",
+  "previewClass": "com.reandroid.wallpaper.xxx.XxxGL",
+  "permissions": ["ACCESS_FINE_LOCATION", "CAMERA"],
+  "useLegacySettings": false
+}
+```
+
+| 字段 | 必需 | 说明 |
+| --- | --- | --- |
+| `label` | ✔ | 壁纸显示名称（可 `@string/` 引用） |
+| `plugin` | ✔ | GLES 插件类全限定名 |
+| `pluginVk` | | Vulkan 插件类全限定名（有此字段时设置页显示 VK 开关） |
+| `previewClass` | | 设置页实时预览的 GL 类（建议填写，提升体验） |
+| `permissions` | | 运行时权限列表，API 常量名 |
+| `useLegacySettings` | | `true` 时使用独立设置 Activity（仅 PolarClock） |
+
+### layout.json Schema
+
+每个 `assets/{pluginId}/layout.json`：
+
+```json
+{
+  "prefs": [
+    {
+      "type": "switch",
+      "key": "pref_xxx_enabled",
+      "title": "pref_xxx_enabled",
+      "summary": "pref_xxx_desc",
+      "default": true,
+      "min": 0, "max": 100,
+      "values": ["a", "b"],
+      "labels": ["A", "B"],
+      "dependency": "parent_key",
+      "disableOn": "parent_key",
+      "action": "pickBackground"
+    }
+  ]
+}
+```
+
+| 字段 | 适用类型 | 说明 |
+| --- | --- | --- |
+| `type` | 全部 | `switch` / `seekbar` / `list` / `button` |
+| `key` | 全部 | SharedPreferences 键名 |
+| `title` | 全部 | language JSON lookup key |
+| `summary` | 全部 | language JSON lookup key（可选） |
+| `default` | 全部 | 默认值（switch: bool, seekbar/list: 数字或字符串） |
+| `min`, `max` | seekbar | 取值范围 |
+| `values` | list | 存储值数组 |
+| `labels` | list | 显示标签数组（可 `@string/` 引用，也支持 `{key}_label_{value}` 模式） |
+| `dependency` | 全部 | 父开关为 true 时才可用 |
+| `disableOn` | 全部 | 父开关为 true 时禁用（与 dependency 相反） |
+| `action` | button | `pickBackground`（图片选择）或 `resetBackground`（恢复默认） |
 
 ### 包结构
 
 ```
 com.reandroid
 ├── gles/           GLESWallpaper / GLESScene / GLESPreviewView
-├── vulkan/         VKWallpaperEngine / VKSurfaceView       ← 共享 Vulkan 基类
-├── settings/       统一设置 UI（51 个文件，每壁纸独立 Fragment）
-├── weather/        OpenWeather API 数据层
-└── wallpaper/      所有壁纸实现（按子包划分）
-    ├── weatherwallpapers/  Ocean / Windmill（天气联动壁纸）
-    ├── musicvis/           音乐可视化（4 个 WallpaperService 共享 3 个 Scene）
+├── plugin/         ProxyWallpaperService / BasePluginEngine / BaseVKPluginEngine
+│                   WallpaperPlugin / WallpaperEngine / WallpaperPluginHost
+│                   PluginSettingsFragment / PluginResources / DynamicPreferenceFactory
+├── vulkan/         VKWallpaperEngine / VKSurfaceView / FrameRateManager
+├── utils/          AssetLoader / GLTextureUtils / MathUtils / RawResourceLoader
+├── settings/       SettingsActivity / SettingsMainFragment / PluginSettingsActivity
+│                   PreviewPreference / WallpaperSettings / MiuiPermissionHelper
+├── weather/        WeatherManager / WeatherCondition / WeatherState
+├── update/         UpdateHelper / UpdateChecker / UpdateDownloader / VersionInfo
+└── wallpaper/      31 Plugin + 31 Engine + 24 Scene + 27 GL（按子包划分）
+    ├── weatherwallpapers/  Ocean / Windmill
+    ├── musicvis/           5 个音乐可视化插件，共享 Scene/GL/资产
     └── ......
 ```
 
@@ -283,26 +286,28 @@ com.reandroid
 
 ```mermaid
 graph TD
-    WS[WallpaperService]
+    WS[ProxyWallpaperService<br/>单一入口 28 壁纸]
 
-    WS -->|27 个壁纸| GLW[GLESWallpaper]
-    WS -->|3 个壁纸| VKW[WallpaperService<br/>+ VKWallpaperEngine]
+    WS -->|25 个纯 GLES| GLW[BasePluginEngine<br/>+ GLESScene]
+    WS -->|3 个 toggle VK| VKW[BaseVKPluginEngine<br/>+ VK Native]
 
-    GLW -->|持有| GLS[GLESScene]
-    GLS -->|16 个| SPLIT[Scene/GL 分离<br/>Scene 纯逻辑 + GL 纯渲染]
-    GLS -->|7 个| MONO[GL 单体<br/>小型或全 shader 壁纸]
-    GLS -->|3 个| MV[MusicVis Scene<br/>Scene 即 GL，4 服务共享]
+    GLW -->|创建| GLS[GLESScene]
+    GLS -->|20 个| SPLIT[Scene/GL 分离<br/>Scene 纯逻辑 + GL 纯渲染]
+    GLS -->|3 个| MONO[GL 单体<br/>HoloSpiral, PolarClock, WalkAround]
+    GLS -->|4 个 Scene| MV[MusicVis Scene<br/>Wave, Vu, Many, Circle]
+    GLS -->|5 个 GL| MVGL[MusicVis GL<br/>WaveGL, VuGL, ManyGL, CircleGL]
 
-    VKW -->|泛型参数| REUSE[复用同名 GL 壁纸的 Scene 类]
-    VKW -->|JNI| NATIVE[VKNative<br/>NDK C++ Vulkan 渲染]
+    VKW -->|复用| REUSE[同名 GL 壁纸的 Scene 类]
+    VKW -->|JNI| NATIVE[NDK C++ Vulkan 渲染]
 ```
 
 ### Scene/GL 分离模式
 
-16 个壁纸采用 Scene（纯逻辑）+ GL（纯渲染）分离：
+20 个壁纸采用 Scene（纯逻辑）+ GL（纯渲染）分离：
 
-- **Scene 类**：`package-private final class`，负责物理模拟、动画状态、实体管理，不持有 GL 资源
+- **Scene 类**：`package-private final class`，负责物理模拟、动画状态、实体管理，零 Android/GL 导入
 - **GL 类**：`public class extends GLESScene`，负责 shader 编译、纹理加载、绘制调用，不包含业务逻辑
+- **Mat4**：纯 Java 矩阵运算（`orthoM`、`frustumM`、`translateM`、`rotateM`、`multiplyMM`），替代 `android.opengl.Matrix`，使 Scene 类保持零 Android 依赖
 
 ```mermaid
 flowchart LR
@@ -320,82 +325,175 @@ flowchart LR
     SCENE -- getSceneData<br/>不可变数据快照 --> GL
 ```
 
-已分离的 16 个壁纸：Aurora1、Aurora2、DeepSea、Fall、Fireworks、Galaxy、Galaxy4、Grass、MagicSmoke、Microbes、Nexus、NightSky、Ocean、PhaseBeam、WildWorld、Windmill
+20 个 Scene/GL 分离壁纸：Aurora1、Aurora2、BlueSea、Cube、DeepSea、Fall、Fireworks、Forest、Galaxy、Galaxy4、Grass、MagicSmoke、Microbes、Nexus、NightSky、NoiseField、Ocean、PhaseBeam、WildWorld、Windmill
 
-7 个 GL 单体壁纸（BlueSea、HoloSpiral、NoiseField、PolarClock、WalkAround.......）本身代码量较小或有大量 shader 驱动渲染
+4 个 MusicVis Scene 类供 5 个插件共享：WaveScene（vis2 FFT + vis3 PCM）、VuScene（vis4）、ManyScene（vis5 → WaveScene + VuScene 组合）、CircleScene（vis6）
 
-### 渲染循环
+3 个 GL 单体壁纸：HoloSpiral（螺旋数学）、PolarClock（调色板系统）、WalkAround（相机直通 — 无可提取逻辑）
 
-```mermaid
-sequenceDiagram
-    participant Engine as GLESWallpaper<br/>或 VKWallpaperEngine
-    participant Scene as Scene 子类
-    participant GPU as OpenGL / Vulkan
+### 预置注入
 
-    loop 每帧
-        Engine->>Scene: update(dt)
-        Scene->>Scene: 粒子运动 / 实体 AI / 动画推进
-        Engine->>Scene: getSceneData()
-        Scene-->>Engine: 不可变数据快照
-        Engine->>GPU: 提交绘制命令
-        GPU-->>Engine: eglSwapBuffers / vkQueuePresent
-        Engine->>Engine: 帧率控制 (sleep)
-    end
+插件引擎通过反射将 `plugin_{id}` 隔离 SharedPreferences 注入 Scene 对象：
+
+1. `BasePluginEngine.tryInjectPrefs()` / `BaseVKPluginEngine` 构造函数调用
+2. 通过反射调用 `scene.setPluginPrefs(SharedPreferences)`
+3. Scene 内的 `WallpaperSettings.getXxx()` 优先读取注入的 prefs
+4. ProGuard 规则保留 `setPluginPrefs` 方法不被混淆
+
+### GLES 渲染引擎
+
+BasePluginEngine 封装 EGL 上下文管理和**延迟初始化**：
+
 ```
+onSurfaceChanged (main thread)
+  → 仅存储 surface / resources / preview 到待处理字段
+  → mSceneInitPending = true
+
+首次 drawFrame (render thread, EGL 已 current)
+  → if mSceneInitPending:
+      → mScene.init(surface, resources, preview)  // GL 命令可安全执行
+      → mScene.resize(width, height)
+      → mScene.start()
+      → mSceneInitPending = false
+```
+
+这解决了 `onSurfaceChanged` 在主线程调用但 GL 操作必须在 render thread 执行的问题。
 
 ### Vulkan 路径
 
-3 个壁纸（Fall、Galaxy、Grass）提供 Vulkan 后端变体，共享`VKWallpaperEngine<T>`和`VKSurfaceView<T>`泛型基类：
+3 个壁纸（Fall、Galaxy、Grass）提供 Vulkan 后端，通过 `BaseVKPluginEngine` 实现 `WallpaperEngine` + `Runnable`，自管渲染线程。复用同名 GL 壁纸的 Scene 纯逻辑类。
 
 ```mermaid
 graph TD
-    subgraph BASE[com.reandroid.vulkan 共享基类]
-        ENG[VKWallpaperEngine&lt;T&gt;]
-        VIEW[VKSurfaceView&lt;T&gt;]
+    subgraph PLUGIN[com.reandroid.plugin]
+        VKP[BaseVKPluginEngine]
     end
-    subgraph FALL[FallVK]
-        FALL_E[FallVKEngine]
-        FALL_V[FallVKSurfaceView]
-        FALL_J[FallVKNative]
+    subgraph VULKAN[com.reandroid.vulkan]
+        FRAME[FrameRateManager]
     end
-    subgraph GALAXY[GalaxyVK]
-        GAL_E[GalaxyVKEngine]
-        GAL_V[GalaxyVKSurfaceView]
-        GAL_J[GalaxyVKNative]
+    subgraph FALL[Fall VK]
+        FALL_E[FallVKPluginEngine]
     end
-    subgraph GRASS[GrassVK]
-        GRA_E[GrassVKEngine]
-        GRA_V[GrassVKSurfaceView]
-        GRA_J[GrassVKNative]
+    subgraph GALAXY[Galaxy VK]
+        GAL_E[GalaxyVKPluginEngine]
+    end
+    subgraph GRASS[Grass VK]
+        GRA_E[GrassVKPluginEngine]
     end
 
-    ENG --> FALL_E
-    ENG --> GAL_E
-    ENG --> GRA_E
-    VIEW --> FALL_V
-    VIEW --> GAL_V
-    VIEW --> GRA_V
+    VKP --> FALL_E
+    VKP --> GAL_E
+    VKP --> GRA_E
 
     FALL_E -->|复用| FallScene
     GAL_E -->|复用| GalaxyScene
     GRA_E -->|复用| GrassScene
 
-    FALL_J -->|NDK| FALL_SO[libfallvulkan.so]
-    GAL_J -->|NDK| GAL_SO[libgalaxyvulkan.so]
-    GRA_J -->|NDK| GRA_SO[libgrassvulkan.so]
+    FALL_E -->|JNI| FALL_JNI[fallvk_jni.cpp]
+    GAL_E -->|JNI| GAL_JNI[galaxyvk_jni.cpp]
+    GRA_E -->|JNI| GRA_JNI[grassvk_jni.cpp]
+
+    FALL_JNI -->|NDK| FALL_SO[libfallvulkan.so]
+    GAL_JNI -->|NDK| GAL_SO[libgalaxyvulkan.so]
+    GRA_JNI -->|NDK| GRA_SO[libgrassvulkan.so]
 ```
 
-- 基类封装线程管理、Surface 生命周期、帧率诊断（ANR 阈值 200ms）
-- 子类仅实现 8 个模板方法（`ensureScene`、`ensureRenderer`、`renderFrame` 等）
-- 复用同名 GL 壁纸的 Scene 纯逻辑类，无需重写仿真代码
+- `BaseVKPluginEngine`（`com.reandroid.plugin`）封装线程管理、Surface 生命周期、帧率诊断
+- 子类实现模板方法：`createRenderer()`、`destroyRenderer()`、`onSurfaceCreatedNative()`、`renderFrame()`、`uploadTextures()`
+- Native 代码通过 [vk_common.h](app/src/main/jni/vk_common.h) CRTP 模板共享基础设施：679 + 1176 + 1321 + 1540 = **4716** 行
+- `FrameRateManager` 提供共享 FPS 控制与 ANR 诊断（阈值 200ms，每 120 帧统计一次）
+- `vkArgbToRgba()` 转换 Android ARGB → Vulkan RGBA 字节序
+- Swapchain 格式使用 UNORM（非 SRGB）避免双重伽马校正
 
-### 天气集成
+### MusicVis 架构
 
-`WeatherManager`异步获取 OpenWeatherMap 数据，供 Grass、Windmill、Ocean 动态改变天空、草色、云层、降水、雾效需用户自行配置 API Key
+5 个音乐可视化插件共享 4 个 Scene 类和 4 个 GL 类：
+
+| 插件 | Scene | GL | 音频模式 |
+| --- | --- | --- | --- |
+| vis2 | WaveScene | MusicVisWaveGL | FFT |
+| vis3 | WaveScene | MusicVisWaveGL | PCM |
+| vis4 | VuScene | MusicVisVuGL | PCM |
+| vis5 | ManyScene（WaveScene + VuScene 组合） | MusicVisManyGL | FFT |
+| vis6 | CircleScene | MusicVisCircleGL | FFT |
+
+- **AudioVisBase** — 抽象基类，管理 AudioCapture 生命周期、HSL 重着色、预置
+- **AudioCapture** — 双缓冲 Visualizer 捕获：`mRawBufferA/B` + `mReadyRawBuffer`，捕获线程写、渲染线程读，无锁交换；3 秒空闲超时自动停止
+- **ManyScene** — WaveScene + VuScene 实例组合，非继承
+
+### 共享资产
+
+两个跨壁纸的共享资产目录（不归单个壁纸所有）：
+
+- [assets/musicvis/](app/src/main/assets/musicvis/) — 10 个 GLSL shader、10 张纹理（VU 表头/帧/指针/峰值）、1 个 quad UV CSV，供 5 个 MusicVis 插件共享
+- [assets/weatherwallpapers/common/drawable/](app/src/main/assets/weatherwallpapers/common/drawable/) — 85 张天气纹理（云/雨/雪/闪电/雾/太阳/水滴动画帧序列），供 Ocean + Windmill 共享
 
 ### 设置系统
 
-`SettingsActivity`统一入口 → 壁纸网格列表 → 各自`PreferenceFragment`，支持实时预览、亮度/速度/粒子数量等参数调节、一键恢复默认（`SettingsResetHelper`）全局帧率设置对所有壁纸生效
+`SettingsActivity` 统一入口 → 2 列网格壁纸列表（自动从 `assets/*/info.json` 发现）→ 通用 `PluginSettingsFragment`（`layout.json` 驱动）。
+
+- 实时预览 / Vulkan 开关 / 自定义背景 / 依赖互斥 / 恢复默认
+- 全局帧率（overflow menu → 8 档可选）/ 预览比例 / Reset All
+- 天气按钮（单击 PopupMenu / 长按调试弹窗）
+- 自动权限请求 / MIUI 适配 / ThemeOverlay 主题弹窗
+- 24h 缓存更新检查（中英文 changelog）
+
+### 测试活动
+
+Manifest 声明 8 个 `CATEGORY_TEST` 活动，可用于 adb 单独启动壁纸调试：
+
+```
+Grass / GrassVK / Aurora1 / Aurora2 / Galaxy / GalaxyVK / Fall / FallVK
+```
+
+每个通过 `res/values/config.xml` 中的 `config_enable_*_wallpaper` bool 控制启用。
+
+### ProGuard 反射规则
+
+```proguard
+-keepclasseswithmembernames class * { native <methods>; }
+-keep public class * extends android.service.wallpaper.WallpaperService
+-keep public class * extends android.app.Activity
+-keep public class * extends androidx.preference.PreferenceFragmentCompat
+-keepclassmembers class * extends com.reandroid.gles.GLESScene {
+    public void setPluginPrefs(android.content.SharedPreferences);
+}
+```
+
+## 项目结构
+
+```
+app/src/main/
+├── java/com/reandroid/
+│   ├── gles/              GLES 框架基类
+│   ├── plugin/            插件架构核心
+│   ├── vulkan/            Vulkan 工具类
+│   ├── utils/             工具类
+│   ├── settings/          设置 UI
+│   ├── weather/           天气数据层
+│   ├── update/            更新系统
+│   └── wallpaper/         所有壁纸（31 Plugin + 31 Engine + 24 Scene + 27 GL）
+├── assets/
+│   ├── {wallpaper}/        每个壁纸独立资产（28 个）
+│   │   ├── drawable/        纹理图片
+│   │   ├── shaders/GLES/    GLSL 着色器
+│   │   ├── data/            CSV 网格/顶点数据
+│   │   ├── language/        每壁纸多语言 JSON（13 种语言）
+│   │   ├── info.json        插件元数据
+│   │   └── layout.json      动态偏好界面定义
+│   ├── musicvis/            MusicVis 5 插件共享资产
+│   └── weatherwallpapers/   Ocean + Windmill 共享天气纹理（85 张）
+├── res/
+│   ├── xml/               5 个 XML 配置
+│   ├── values/            字符串（13 种语言）/ 主题 / config.xml
+│   ├── values-night/      暗色主题
+│   ├── layout/            设置页布局（8 个）
+│   ├── drawable/          天气图标 / 启动图标
+│   └── menu/              2 个菜单
+├── jni/                   Vulkan NDK C++ 源码（4 个文件 + Android.mk）
+├── jniLibs/               Vulkan 预编译 .so（4 架构 × 3 = 12 个）
+└── shaders/               Vulkan GLSL 着色器源码（构建时编译为 SPIR-V）
+```
 
 ## 构建配置
 
@@ -417,692 +515,8 @@ graph TD
 ./gradlew assembleRelease
 ```
 
-Vulkan 壁纸需要 `arm64-v8a`、`armeabi-v7a`、`x86_64`、`x86`运行NDK 编译在`preBuild`阶段自动触发
-
-### 项目结构
-
-```
-app/src/main/
-├── java/com/reandroid/
-│   ├── gles/              GLES 框架基类
-│   ├── vulkan/            Vulkan 框架基类
-│   ├── settings/          设置 UI（Activity + Fragment + 工具类）
-│   ├── weather/           天气数据层
-│   └── wallpaper/         所有壁纸（按子包划分）
-├── res/
-│   ├── drawable/          524 张纹理资源
-│   ├── raw/               GLSL shader + CSV 网格数据
-│   ├── xml/               壁纸服务声明 + 偏好页面（各 ~55 个）
-│   ├── values/            字符串（12 种语言）、主题、配置
-│   └── layout/            设置页布局
-├── jni/                   Vulkan NDK C++ 源码（fallvk / galaxyvk / grassvk）
-├── jniLibs/               Vulkan .so 产物
-└── shaders/               Vulkan SPIR-V shader（20 个）
-```
+Vulkan 壁纸需要 `arm64-v8a`、`armeabi-v7a`、`x86_64`、`x86`。Native 编译使用 [Android.mk](app/src/main/jni/Android.mk)（ndk-build），在 `preBuild` 阶段自动触发。预编译 `.so` 输出到 [app/src/main/jniLibs/](app/src/main/jniLibs/)。
 
 ## 许可证
-
-[LICENSE](LICENSE) · [NOTICE](NOTICE.md)
-
----
-
-## 繁體中文
-[English](#english) | [简体中文](#简体中文) | [繁體中文](#繁體中文) | [日本語](#日本語) | [한국어](#한국어)
-# Reborn Android Live Wallpapers
-
-Android 動態桌布合集，將 AOSP / MediaTek 經典桌布從 RenderScript 移植到 OpenGL ES 2.0 和 Vulkan，在新時代 Android 上繼續運行
-
-## 桌布清單
-
-| 桌布 | 類型 | 渲染路徑 | 說明 |
-| --- | --- | --- | --- |
-| Galaxy | 粒子/星空 | GLES2 + VK | 旋轉星場，色彩漸變 |
-| Galaxy4 | 粒子/星空 | GLES2 | 旋轉星場，色彩漸變 |
-| NightSky | 粒子/星空 | GLES2 | 依巴谷星表 9000 顆真實恆星，陀螺儀追蹤，長按加速星軌 |
-| Microbes | 粒子/星空 | GLES2 | 微生物群體 AI，觸摸餵食，繁殖/死亡循環 |
-| Grass | 自然/環境 | GLES2 + VK | 風吹草動，日食/月相/天氣聯動 |
-| WildWorld | 自然/環境 | GLES2 | 遠古世界，火山/恐龍/翼龍/火球 |
-| WalkAround | 自然/環境 | GLES2 | 透視 |
-| DeepSea | 自然/環境 | GLES2 | 深海海母群，陀螺儀追蹤 |
-| BlueSea | 自然/環境 | GLES2 | 海母漂浮，粒子上升，觸摸點亮 |
-| Fall | 自然/環境 | GLES2 + VK | 秋葉飄落，水面漣漪 |
-| Ocean | 天氣 | GLES2 | 海洋天氣桌布，波浪/雲層/降水 |
-| Windmill | 天氣 | GLES2 | 風車天氣桌布 |
-| Nexus | 程式化特效 | GLES2 | 脈衝光暈 |
-| PhaseBeam | 程式化特效 | GLES2 | 相位光束，HSL 調色 |
-| NoiseField | 程式化特效 | GLES2 | Perlin 噪聲粒子，觸摸擾動 |
-| HoloSpiral | 程式化特效 | GLES2 | 全息螺旋，3D 透視旋轉 |
-| MagicSmoke | 程式化特效 | GLES2 | 多層煙霧疊加 |
-| Aurora1 | 極光 | GLES2 | 北極光，99 幀光暈動畫 |
-| Aurora2 | 極光 | GLES2 | 北極光第二版，更加絢爛 |
-| Fireworks | 特效 | GLES2 | 煙火粒子，觸摸發射 |
-| PolarClock | 時鐘 | GLES2 | 極地時鐘 |
-| MusicVis 2–5 | 音樂可視化 | GLES2 | 4 種音訊頻譜可視化風格 |
-| Galaxy VK | 粒子/星空 | Vulkan | Galaxy 的 Vulkan 變體 |
-| Grass VK | 自然/環境 | Vulkan | Grass 的 Vulkan 變體 |
-| Fall VK | 自然/環境 | Vulkan | Fall 的 Vulkan 變體 |
-
-**共 30 個桌布服務：27 個 GLES2 + 3 個 Vulkan**
-
-## 核心架構
-
-### 套件結構
-
-```
-com.reandroid
-├── gles/           GLESWallpaper / GLESScene / GLESPreviewView
-├── vulkan/         VKWallpaperEngine / VKSurfaceView       ← 共享 Vulkan 基底類別
-├── settings/       統一設定 UI（51 個檔案，每桌布獨立 Fragment）
-├── weather/        OpenWeather API 資料層
-└── wallpaper/      所有桌布實現（按子套件劃分）
-    ├── weatherwallpapers/  Ocean / Windmill（天氣聯動桌布）
-    ├── musicvis/           音樂可視化（4 個 WallpaperService 共享 3 個 Scene）
-    └── ......
-```
-
-### 渲染路徑
-
-```mermaid
-graph TD
-    WS[WallpaperService]
-
-    WS -->|27 個桌布| GLW[GLESWallpaper]
-    WS -->|3 個桌布| VKW[WallpaperService<br/>+ VKWallpaperEngine]
-
-    GLW -->|持有| GLS[GLESScene]
-    GLS -->|16 個| SPLIT[Scene/GL 分離<br/>Scene 純邏輯 + GL 純渲染]
-    GLS -->|7 個| MONO[GL 單體<br/>小型或全 shader 桌布]
-    GLS -->|3 個| MV[MusicVis Scene<br/>Scene 即 GL，4 服務共享]
-
-    VKW -->|泛型參數| REUSE[復用同名 GL 桌布的 Scene 類別]
-    VKW -->|JNI| NATIVE[VKNative<br/>NDK C++ Vulkan 渲染]
-```
-
-### Scene/GL 分離模式
-
-16 個桌布採用 Scene（純邏輯）+ GL（純渲染）分離：
-
-- **Scene 類別**：`package-private final class`，負責物理模擬、動畫狀態、實體管理，不持有 GL 資源
-- **GL 類別**：`public class extends GLESScene`，負責 shader 編譯、紋理載入、繪製呼叫，不包含業務邏輯
-
-```mermaid
-flowchart LR
-    subgraph SCENE[Scene 純邏輯層]
-        PHYSICS[粒子物理 / 實體運動]
-        STATE[動畫狀態更新]
-        TOUCH[觸控事件處理]
-    end
-    subgraph GL[GL 純渲染層]
-        SHADER[Shader 編譯連結]
-        TEX[紋理載入綁定]
-        VBO[Vertex buffer 管理]
-        DRAW[glDrawArrays 呼叫]
-    end
-    SCENE -- getSceneData<br/>不可變資料快照 --> GL
-```
-
-已分離的 16 個桌布：Aurora1、Aurora2、DeepSea、Fall、Fireworks、Galaxy、Galaxy4、Grass、MagicSmoke、Microbes、Nexus、NightSky、Ocean、PhaseBeam、WildWorld、Windmill
-
-7 個 GL 單體桌布（BlueSea、HoloSpiral、NoiseField、PolarClock、WalkAround.......）本身程式碼量較小或有大量 shader 驅動渲染
-
-### 渲染迴圈
-
-```mermaid
-sequenceDiagram
-    participant Engine as GLESWallpaper<br/>或 VKWallpaperEngine
-    participant Scene as Scene 子類別
-    participant GPU as OpenGL / Vulkan
-
-    loop 每幀
-        Engine->>Scene: update(dt)
-        Scene->>Scene: 粒子運動 / 實體 AI / 動畫推進
-        Engine->>Scene: getSceneData()
-        Scene-->>Engine: 不可變資料快照
-        Engine->>GPU: 提交繪製命令
-        GPU-->>Engine: eglSwapBuffers / vkQueuePresent
-        Engine->>Engine: 幀率控制 (sleep)
-    end
-```
-
-### Vulkan 路徑
-
-3 個桌布（Fall、Galaxy、Grass）提供 Vulkan 後端變體，共享`VKWallpaperEngine<T>`和`VKSurfaceView<T>`泛型基底類別：
-
-```mermaid
-graph TD
-    subgraph BASE[com.reandroid.vulkan 共享基底類別]
-        ENG[VKWallpaperEngine&lt;T&gt;]
-        VIEW[VKSurfaceView&lt;T&gt;]
-    end
-    subgraph FALL[FallVK]
-        FALL_E[FallVKEngine]
-        FALL_V[FallVKSurfaceView]
-        FALL_J[FallVKNative]
-    end
-    subgraph GALAXY[GalaxyVK]
-        GAL_E[GalaxyVKEngine]
-        GAL_V[GalaxyVKSurfaceView]
-        GAL_J[GalaxyVKNative]
-    end
-    subgraph GRASS[GrassVK]
-        GRA_E[GrassVKEngine]
-        GRA_V[GrassVKSurfaceView]
-        GRA_J[GrassVKNative]
-    end
-
-    ENG --> FALL_E
-    ENG --> GAL_E
-    ENG --> GRA_E
-    VIEW --> FALL_V
-    VIEW --> GAL_V
-    VIEW --> GRA_V
-
-    FALL_E -->|復用| FallScene
-    GAL_E -->|復用| GalaxyScene
-    GRA_E -->|復用| GrassScene
-
-    FALL_J -->|NDK| FALL_SO[libfallvulkan.so]
-    GAL_J -->|NDK| GAL_SO[libgalaxyvulkan.so]
-    GRA_J -->|NDK| GRA_SO[libgrassvulkan.so]
-```
-
-- 基底類別封裝執行緒管理、Surface 生命週期、幀率診斷（ANR 臨界值 200ms）
-- 子類別僅需實現 8 個模板方法（`ensureScene`、`ensureRenderer`、`renderFrame` 等）
-- 復用同名 GL 桌布的 Scene 純邏輯類別，無需重寫模擬程式碼
-
-### 天氣整合
-
-`WeatherManager`非同步獲取 OpenWeatherMap 資料，供 Grass、Windmill、Ocean 動態改變天空、草色、雲層、降水、霧效。使用者需自行設定 API Key。
-
-### 設定系統
-
-`SettingsActivity`統一入口 → 桌布網格列表 → 各自`PreferenceFragment`，支援即時預覽、亮度/速度/粒子數量等參數調節、一鍵恢復預設（`SettingsResetHelper`）。全域幀率設定對所有桌布生效。
-
-## 建置配置
-
-### 環境要求
-
-- Android Studio（最新穩定版）
-- JDK 17
-- Android SDK Platform 33
-- Android NDK 25.2.9519653（專案固定版本）
-- minSdk 19 / targetSdk 33
-
-### 建置
-
-```bash
-# Debug
-./gradlew assembleDebug
-
-# Release（自動遞增版本號）
-./gradlew assembleRelease
-```
-
-Vulkan 桌布需要 `arm64-v8a`、`armeabi-v7a`、`x86_64`、`x86`。NDK 編譯在 `preBuild` 階段自動觸發。
-
-### 專案結構
-
-```
-app/src/main/
-├── java/com/reandroid/
-│   ├── gles/              GLES 框架基底類別
-│   ├── vulkan/            Vulkan 框架基底類別
-│   ├── settings/          設定 UI（Activity + Fragment + 工具類別）
-│   ├── weather/           天氣資料層
-│   └── wallpaper/         所有桌布（按子套件劃分）
-├── res/
-│   ├── drawable/          524 張紋理資源
-│   ├── raw/               GLSL shader + CSV 網格資料
-│   ├── xml/               桌布服務宣告 + 偏好頁面（各約 55 個）
-│   ├── values/            字串（12 種語言）、主題、配置
-│   └── layout/            設定頁佈局
-├── jni/                   Vulkan NDK C++ 原始碼（fallvk / galaxyvk / grassvk）
-├── jniLibs/               Vulkan .so 產物
-└── shaders/               Vulkan SPIR-V shader（20 個）
-```
-
-## 許可證
-
-[LICENSE](LICENSE) · [NOTICE](NOTICE.md)
-
----
-
-## 日本語
-[English](#english) | [简体中文](#简体中文) | [繁體中文](#繁體中文) | [日本語](#日本語) | [한국어](#한국어)
-# Reborn Android Live Wallpapers
-
-Android ライブ壁紙コレクション。AOSP / MediaTek のクラシック壁紙を RenderScript から OpenGL ES 2.0 および Vulkan に移植し、新しい Android バージョンでも動作させます。
-
-## 壁紙一覧
-
-| 壁紙 | タイプ | レンダリングパス | 説明 |
-| --- | --- | --- | --- |
-| Galaxy | パーティクル / 星空 | GLES2 + VK | 回転する星野、カラーグラデーション |
-| Galaxy4 | パーティクル / 星空 | GLES2 | 回転する星野、カラーグラデーション |
-| NightSky | パーティクル / 星空 | GLES2 | ヒッパルコス星表の9000個の実恒星、ジャイロトラッキング、長押しで星跡加速 |
-| Microbes | パーティクル / 星空 | GLES2 | 微生物群集 AI、タッチで餌やり、繁殖／死のサイクル |
-| Grass | 自然 / 環境 | GLES2 + VK | 風に揺れる草、日食／月相／天気連動 |
-| WildWorld | 自然 / 環境 | GLES2 | 古代世界、火山／恐竜／翼竜／火の玉 |
-| WalkAround | 自然 / 環境 | GLES2 | パース表示 |
-| DeepSea | 自然 / 環境 | GLES2 | 深海のクラゲ群、ジャイロトラッキング |
-| BlueSea | 自然 / 環境 | GLES2 | 浮遊するクラゲ、上昇する粒子、タッチで発光 |
-| Fall | 自然 / 環境 | GLES2 + VK | 秋の落葉、水面のさざ波 |
-| Ocean | 天気 | GLES2 | 海洋天気壁紙、波／雲／降水 |
-| Windmill | 天気 | GLES2 | 風車天気壁紙 |
-| Nexus | プログラムエフェクト | GLES2 | パルス状のハロ |
-| PhaseBeam | プログラムエフェクト | GLES2 | フェーズビーム、HSLカラー調整 |
-| NoiseField | プログラムエフェクト | GLES2 | Perlin ノイズ粒子、タッチで擾乱 |
-| HoloSpiral | プログラムエフェクト | GLES2 | ホログラフィックスパイラル、3D パース回転 |
-| MagicSmoke | プログラムエフェクト | GLES2 | 多層スモークブレンド |
-| Aurora1 | オーロラ | GLES2 | 北極光、99フレームのグローアニメーション |
-| Aurora2 | オーロラ | GLES2 | 北極光 第二版、より鮮やか |
-| Fireworks | エフェクト | GLES2 | 花火パーティクル、タッチで打ち上げ |
-| PolarClock | 時計 | GLES2 | ポーラークロック |
-| MusicVis 2–5 | 音楽ビジュアライゼーション | GLES2 | 4種類のオーディオスペクトラム可視化スタイル |
-| Galaxy VK | パーティクル / 星空 | Vulkan | Galaxy の Vulkan バリアント |
-| Grass VK | 自然 / 環境 | Vulkan | Grass の Vulkan バリアント |
-| Fall VK | 自然 / 環境 | Vulkan | Fall の Vulkan バリアント |
-
-**合計30の壁紙サービス：27 GLES2 ＋ 3 Vulkan**
-
-## コアアーキテクチャ
-
-### パッケージ構造
-
-```
-com.reandroid
-├── gles/           GLESWallpaper / GLESScene / GLESPreviewView
-├── vulkan/         VKWallpaperEngine / VKSurfaceView       ← 共有 Vulkan 基底クラス
-├── settings/       統一設定 UI（51ファイル、壁紙ごとに独立した Fragment）
-├── weather/        OpenWeather API データ層
-└── wallpaper/      すべての壁紙実装（サブパッケージで分類）
-    ├── weatherwallpapers/  Ocean / Windmill（天気連動壁紙）
-    ├── musicvis/           音楽ビジュアライゼーション（4つのサービスで3つの Scene を共有）
-    └── ......
-```
-
-### レンダリングパス
-
-```mermaid
-graph TD
-    WS[WallpaperService]
-
-    WS -->|27壁紙| GLW[GLESWallpaper]
-    WS -->|3壁紙| VKW[WallpaperService<br/>+ VKWallpaperEngine]
-
-    GLW -->|保持| GLS[GLESScene]
-    GLS -->|16| SPLIT[Scene/GL 分離<br/>Scene 純粋ロジック + GL 純粋レンダリング]
-    GLS -->|7| MONO[GL モノリシック<br/>小規模またはシェーダ主体の壁紙]
-    GLS -->|3| MV[MusicVis Scene<br/>Scene ＝ GL、4サービスで共有]
-
-    VKW -->|ジェネリックパラメータ| REUSE[同名 GL 壁紙の Scene クラスを再利用]
-    VKW -->|JNI| NATIVE[VKNative<br/>NDK C++ Vulkan レンダリング]
-```
-
-### Scene/GL 分離パターン
-
-16の壁紙が Scene（純粋ロジック）＋ GL（純粋レンダリング）の分離を採用：
-
-- **Scene クラス**：`package-private final class`、物理シミュレーション、アニメーション状態、エンティティ管理を担当。GLリソースを保持しない。
-- **GL クラス**：`public class extends GLESScene`、シェーダコンパイル、テクスチャロード、描画呼び出しを担当。ビジネスロジックを含まない。
-
-```mermaid
-flowchart LR
-    subgraph SCENE[Scene 純粋ロジック層]
-        PHYSICS[粒子物理 / エンティティ運動]
-        STATE[アニメーション状態更新]
-        TOUCH[タッチイベント処理]
-    end
-    subgraph GL[GL 純粋レンダリング層]
-        SHADER[シェーダ コンパイル/リンク]
-        TEX[テクスチャ ロード/バインド]
-        VBO[頂点バッファ管理]
-        DRAW[glDrawArrays 呼び出し]
-    end
-    SCENE -- getSceneData<br/>不変データスナップショット --> GL
-```
-
-分離済みの16壁紙：Aurora1、Aurora2、DeepSea、Fall、Fireworks、Galaxy、Galaxy4、Grass、MagicSmoke、Microbes、Nexus、NightSky、Ocean、PhaseBeam、WildWorld、Windmill
-
-7つのGLモノリシック壁紙（BlueSea、HoloSpiral、NoiseField、PolarClock、WalkAround...）はコード量が小さいか、シェーダ主体のレンダリングに依存。
-
-### レンダリングループ
-
-```mermaid
-sequenceDiagram
-    participant Engine as GLESWallpaper<br/>または VKWallpaperEngine
-    participant Scene as Scene サブクラス
-    participant GPU as OpenGL / Vulkan
-
-    loop 毎フレーム
-        Engine->>Scene: update(dt)
-        Scene->>Scene: 粒子運動 / エンティティAI / アニメーション進行
-        Engine->>Scene: getSceneData()
-        Scene-->>Engine: 不変データスナップショット
-        Engine->>GPU: 描画コマンドを送信
-        GPU-->>Engine: eglSwapBuffers / vkQueuePresent
-        Engine->>Engine: フレームレート制御 (sleep)
-    end
-```
-
-### Vulkan パス
-
-3つの壁紙（Fall、Galaxy、Grass）がVulkanバックエンドのバリアントを提供。`VKWallpaperEngine<T>` と `VKSurfaceView<T>` ジェネリック基底クラスを共有：
-
-```mermaid
-graph TD
-    subgraph BASE[com.reandroid.vulkan 共有基底]
-        ENG[VKWallpaperEngine&lt;T&gt;]
-        VIEW[VKSurfaceView&lt;T&gt;]
-    end
-    subgraph FALL[FallVK]
-        FALL_E[FallVKEngine]
-        FALL_V[FallVKSurfaceView]
-        FALL_J[FallVKNative]
-    end
-    subgraph GALAXY[GalaxyVK]
-        GAL_E[GalaxyVKEngine]
-        GAL_V[GalaxyVKSurfaceView]
-        GAL_J[GalaxyVKNative]
-    end
-    subgraph GRASS[GrassVK]
-        GRA_E[GrassVKEngine]
-        GRA_V[GrassVKSurfaceView]
-        GRA_J[GrassVKNative]
-    end
-
-    ENG --> FALL_E
-    ENG --> GAL_E
-    ENG --> GRA_E
-    VIEW --> FALL_V
-    VIEW --> GAL_V
-    VIEW --> GRA_V
-
-    FALL_E -->|再利用| FallScene
-    GAL_E -->|再利用| GalaxyScene
-    GRA_E -->|再利用| GrassScene
-
-    FALL_J -->|NDK| FALL_SO[libfallvulkan.so]
-    GAL_J -->|NDK| GAL_SO[libgalaxyvulkan.so]
-    GRA_J -->|NDK| GRA_SO[libgrassvulkan.so]
-```
-
-- 基底クラスはスレッド管理、Surfaceライフサイクル、フレームレート診断（ANRしきい値200ms）をカプセル化。
-- サブクラスは8つのテンプレートメソッド（`ensureScene`、`ensureRenderer`、`renderFrame` など）のみを実装。
-- 同名のGL壁紙のScene純粋ロジッククラスを再利用するため、シミュレーションコードを書き直す必要はない。
-
-### 天気連携
-
-`WeatherManager` が非同期で OpenWeatherMap データを取得。Grass、Windmill、Ocean で空、草の色、雲、降水、フォグを動的に変更するために使用。ユーザー自身でAPIキーの設定が必要。
-
-### 設定システム
-
-`SettingsActivity` 統一エントリ → 壁紙グリッド一覧 → 各 `PreferenceFragment`。リアルタイムプレビュー、明るさ/速度/粒子数などのパラメータ調整、ワンクリックでデフォルトに復元（`SettingsResetHelper`）に対応。グローバルフレームレート設定はすべての壁紙に有効。
-
-## ビルド構成
-
-### 環境要件
-
-- Android Studio（最新安定版）
-- JDK 17
-- Android SDK Platform 33
-- Android NDK 25.2.9519653（プロジェクト固定バージョン）
-- minSdk 19 / targetSdk 33
-
-### ビルド
-
-```bash
-# Debug
-./gradlew assembleDebug
-
-# Release（自動でバージョンコードを増分）
-./gradlew assembleRelease
-```
-
-Vulkan壁紙には `arm64-v8a`、`armeabi-v7a`、`x86_64`、`x86` が必要。NDKコンパイルは `preBuild` フェーズで自動実行される。
-
-### プロジェクト構造
-
-```
-app/src/main/
-├── java/com/reandroid/
-│   ├── gles/              GLES フレームワーク基底
-│   ├── vulkan/            Vulkan フレームワーク基底
-│   ├── settings/          設定 UI（Activity + Fragment + ユーティリティ）
-│   ├── weather/           天気データ層
-│   └── wallpaper/         すべての壁紙（サブパッケージで分類）
-├── res/
-│   ├── drawable/          524個のテクスチャアセット
-│   ├── raw/               GLSLシェーダ + CSVメッシュデータ
-│   ├── xml/               壁紙サービス宣言 + 設定ページ（各約55個）
-│   ├── values/            文字列（12言語）、テーマ、設定
-│   └── layout/            設定ページのレイアウト
-├── jni/                   Vulkan NDK C++ ソース（fallvk / galaxyvk / grassvk）
-├── jniLibs/               Vulkan .so 出力
-└── shaders/               Vulkan SPIR-V シェーダ（20個）
-```
-
-## ライセンス
-
-[LICENSE](LICENSE) · [NOTICE](NOTICE.md)
-
----
-
-## 한국어
-[English](#english) | [简体中文](#简体中文) | [繁體中文](#繁體中文) | [日本語](#日本語) | [한국어](#한국어)
-# Reborn Android Live Wallpapers
-
-AOSP / MediaTek의 클래식 라이브 배경화면을 RenderScript에서 OpenGL ES 2.0 및 Vulkan으로 포팅하여 새로운 Android 버전에서도 실행할 수 있게 한 Android 라이브 배경화면 모음집입니다.
-
-## 배경화면 목록
-
-| 배경화면 | 유형 | 렌더링 경로 | 설명 |
-| --- | --- | --- | --- |
-| Galaxy | 입자/별밭 | GLES2 + VK | 회전하는 별밭, 색상 그라데이션 |
-| Galaxy4 | 입자/별밭 | GLES2 | 회전하는 별밭, 색상 그라데이션 |
-| NightSky | 입자/별밭 | GLES2 | 히파르코스 성표 9000개의 실제 별, 자이로스코프 추적, 길게 누르면 별궤적 가속 |
-| Microbes | 입자/별밭 | GLES2 | 미생물 군집 AI, 터치로 먹이 주기, 번식/죽음 순환 |
-| Grass | 자연/환경 | GLES2 + VK | 바람에 흔들리는 풀, 일식/월령/날씨 연동 |
-| WildWorld | 자연/환경 | GLES2 | 고대 세계, 화산/공룡/익룡/화염구 |
-| WalkAround | 자연/환경 | GLES2 | 원근감 |
-| DeepSea | 자연/환경 | GLES2 | 심해 해파리 떼, 자이로스코프 추적 |
-| BlueSea | 자연/환경 | GLES2 | 떠다니는 해파리, 상승 입자, 터치로 점등 |
-| Fall | 자연/환경 | GLES2 + VK | 낙엽, 물결 잔물결 |
-| Ocean | 날씨 | GLES2 | 해양 날씨 배경화면, 파도/구름/강수 |
-| Windmill | 날씨 | GLES2 | 풍차 날씨 배경화면 |
-| Nexus | 프로그래밍 효과 | GLES2 | 펄스 후광 |
-| PhaseBeam | 프로그래밍 효과 | GLES2 | 위상 빔, HSL 색상 조정 |
-| NoiseField | 프로그래밍 효과 | GLES2 | 펄린 노이즈 입자, 터치로 교란 |
-| HoloSpiral | 프로그래밍 효과 | GLES2 | 홀로그램 나선, 3D 원근 회전 |
-| MagicSmoke | 프로그래밍 효과 | GLES2 | 다중 레이어 연기 블렌딩 |
-| Aurora1 | 오로라 | GLES2 | 북극광, 99프레임 글로우 애니메이션 |
-| Aurora2 | 오로라 | GLES2 | 북극광 두 번째 버전, 더 화려함 |
-| Fireworks | 효과 | GLES2 | 불꽃놀이 입자, 터치로 발사 |
-| PolarClock | 시계 | GLES2 | 극좌표 시계 |
-| MusicVis 2–5 | 음악 시각화 | GLES2 | 4가지 오디오 스펙트럼 시각화 스타일 |
-| Galaxy VK | 입자/별밭 | Vulkan | Galaxy의 Vulkan 변형 |
-| Grass VK | 자연/환경 | Vulkan | Grass의 Vulkan 변형 |
-| Fall VK | 자연/환경 | Vulkan | Fall의 Vulkan 변형 |
-
-**총 30개 배경화면 서비스: 27개 GLES2 + 3개 Vulkan**
-
-## 핵심 아키텍처
-
-### 패키지 구조
-
-```
-com.reandroid
-├── gles/           GLESWallpaper / GLESScene / GLESPreviewView
-├── vulkan/         VKWallpaperEngine / VKSurfaceView       ← 공유 Vulkan 기반 클래스
-├── settings/       통합 설정 UI (51개 파일, 배경화면별 독립 Fragment)
-├── weather/        OpenWeather API 데이터 계층
-└── wallpaper/      모든 배경화면 구현 (하위 패키지별 분류)
-    ├── weatherwallpapers/  Ocean / Windmill (날씨 연동 배경화면)
-    ├── musicvis/           음악 시각화 (4개 WallpaperService가 3개 Scene 공유)
-    └── ......
-```
-
-### 렌더링 경로
-
-```mermaid
-graph TD
-    WS[WallpaperService]
-
-    WS -->|27개 배경화면| GLW[GLESWallpaper]
-    WS -->|3개 배경화면| VKW[WallpaperService<br/>+ VKWallpaperEngine]
-
-    GLW -->|보유| GLS[GLESScene]
-    GLS -->|16개| SPLIT[Scene/GL 분리<br/>Scene 순수 로직 + GL 순수 렌더링]
-    GLS -->|7개| MONO[GL 단일체<br/>소형 또는 전적 셰이더 배경화면]
-    GLS -->|3개| MV[MusicVis Scene<br/>Scene = GL, 4개 서비스 공유]
-
-    VKW -->|제네릭 파라미터| REUSE[동명 GL 배경화면의 Scene 클래스 재사용]
-    VKW -->|JNI| NATIVE[VKNative<br/>NDK C++ Vulkan 렌더링]
-```
-
-### Scene/GL 분리 패턴
-
-16개 배경화면이 Scene(순수 로직) + GL(순수 렌더링) 분리를 채택:
-
-- **Scene 클래스**: `package-private final class`, 물리 시뮬레이션, 애니메이션 상태, 엔티티 관리를 담당. GL 리소스를 보유하지 않음.
-- **GL 클래스**: `public class extends GLESScene`, 셰이더 컴파일, 텍스처 로딩, 드로우 콜을 담당. 비즈니스 로직을 포함하지 않음.
-
-```mermaid
-flowchart LR
-    subgraph SCENE[Scene 순수 로직 계층]
-        PHYSICS[입자 물리 / 엔티티 운동]
-        STATE[애니메이션 상태 갱신]
-        TOUCH[터치 이벤트 처리]
-    end
-    subgraph GL[GL 순수 렌더링 계층]
-        SHADER[셰이더 컴파일/링크]
-        TEX[텍스처 로드/바인드]
-        VBO[정점 버퍼 관리]
-        DRAW[glDrawArrays 호출]
-    end
-    SCENE -- getSceneData<br/>불변 데이터 스냅샷 --> GL
-```
-
-분리된 16개 배경화면: Aurora1, Aurora2, DeepSea, Fall, Fireworks, Galaxy, Galaxy4, Grass, MagicSmoke, Microbes, Nexus, NightSky, Ocean, PhaseBeam, WildWorld, Windmill
-
-7개 GL 단일체 배경화면(BlueSea, HoloSpiral, NoiseField, PolarClock, WalkAround ...)은 코드량이 작거나 셰이더 위주 렌더링에 의존.
-
-### 렌더링 루프
-
-```mermaid
-sequenceDiagram
-    participant Engine as GLESWallpaper<br/>또는 VKWallpaperEngine
-    participant Scene as Scene 하위 클래스
-    participant GPU as OpenGL / Vulkan
-
-    loop 매 프레임
-        Engine->>Scene: update(dt)
-        Scene->>Scene: 입자 운동 / 엔티티 AI / 애니메이션 진행
-        Engine->>Scene: getSceneData()
-        Scene-->>Engine: 불변 데이터 스냅샷
-        Engine->>GPU: 드로우 명령 제출
-        GPU-->>Engine: eglSwapBuffers / vkQueuePresent
-        Engine->>Engine: 프레임률 제어 (sleep)
-    end
-```
-
-### Vulkan 경로
-
-3개 배경화면(Fall, Galaxy, Grass)이 Vulkan 백엔드 변형을 제공. `VKWallpaperEngine<T>`와 `VKSurfaceView<T>` 제네릭 기반 클래스를 공유:
-
-```mermaid
-graph TD
-    subgraph BASE[com.reandroid.vulkan 공유 기반 클래스]
-        ENG[VKWallpaperEngine&lt;T&gt;]
-        VIEW[VKSurfaceView&lt;T&gt;]
-    end
-    subgraph FALL[FallVK]
-        FALL_E[FallVKEngine]
-        FALL_V[FallVKSurfaceView]
-        FALL_J[FallVKNative]
-    end
-    subgraph GALAXY[GalaxyVK]
-        GAL_E[GalaxyVKEngine]
-        GAL_V[GalaxyVKSurfaceView]
-        GAL_J[GalaxyVKNative]
-    end
-    subgraph GRASS[GrassVK]
-        GRA_E[GrassVKEngine]
-        GRA_V[GrassVKSurfaceView]
-        GRA_J[GrassVKNative]
-    end
-
-    ENG --> FALL_E
-    ENG --> GAL_E
-    ENG --> GRA_E
-    VIEW --> FALL_V
-    VIEW --> GAL_V
-    VIEW --> GRA_V
-
-    FALL_E -->|재사용| FallScene
-    GAL_E -->|재사용| GalaxyScene
-    GRA_E -->|재사용| GrassScene
-
-    FALL_J -->|NDK| FALL_SO[libfallvulkan.so]
-    GAL_J -->|NDK| GAL_SO[libgalaxyvulkan.so]
-    GRA_J -->|NDK| GRA_SO[libgrassvulkan.so]
-```
-
-- 기반 클래스는 스레드 관리, Surface 생명주기, 프레임률 진단(ANR 임계값 200ms)을 캡슐화.
-- 하위 클래스는 8개 템플릿 메서드(`ensureScene`, `ensureRenderer`, `renderFrame` 등)만 구현.
-- 동명의 GL 배경화면이 가진 Scene 순수 로직 클래스를 재사용하므로 시뮬레이션 코드를 다시 작성할 필요 없음.
-
-### 날씨 통합
-
-`WeatherManager`가 비동기적으로 OpenWeatherMap 데이터를 가져옴. Grass, Windmill, Ocean이 하늘, 풀 색상, 구름, 강수, 안개를 동적으로 변경하는 데 사용. 사용자는 직접 API 키를 설정해야 함.
-
-### 설정 시스템
-
-`SettingsActivity` 통합 진입점 → 배경화면 그리드 목록 → 각 `PreferenceFragment`. 실시간 미리보기, 밝기/속도/입자 수 등의 매개변수 조정, 원클릭 기본값 복원(`SettingsResetHelper`) 지원. 전역 프레임률 설정은 모든 배경화면에 적용됨.
-
-## 빌드 구성
-
-### 환경 요구 사항
-
-- Android Studio (최신 안정 버전)
-- JDK 17
-- Android SDK Platform 33
-- Android NDK 25.2.9519653 (프로젝트 고정 버전)
-- minSdk 19 / targetSdk 33
-
-### 빌드
-
-```bash
-# Debug
-./gradlew assembleDebug
-
-# Release (자동 버전 코드 증가)
-./gradlew assembleRelease
-```
-
-Vulkan 배경화면은 `arm64-v8a`, `armeabi-v7a`, `x86_64`, `x86` 아키텍처가 필요함. NDK 컴파일은 `preBuild` 단계에서 자동 실행됨.
-
-### 프로젝트 구조
-
-```
-app/src/main/
-├── java/com/reandroid/
-│   ├── gles/              GLES 프레임워크 기반
-│   ├── vulkan/            Vulkan 프레임워크 기반
-│   ├── settings/          설정 UI (Activity + Fragment + 유틸리티)
-│   ├── weather/           날씨 데이터 계층
-│   └── wallpaper/         모든 배경화면 (하위 패키지별 분류)
-├── res/
-│   ├── drawable/          524개 텍스처 자산
-│   ├── raw/               GLSL 셰이더 + CSV 메시 데이터
-│   ├── xml/               배경화면 서비스 선언 + 환경설정 페이지 (각 ~55개)
-│   ├── values/            문자열 (12개 언어), 테마, 설정
-│   └── layout/            설정 페이지 레이아웃
-├── jni/                   Vulkan NDK C++ 소스 (fallvk / galaxyvk / grassvk)
-├── jniLibs/               Vulkan .so 산출물
-└── shaders/               Vulkan SPIR-V 셰이더 (20개)
-```
-
-## 라이선스
 
 [LICENSE](LICENSE) · [NOTICE](NOTICE.md)
