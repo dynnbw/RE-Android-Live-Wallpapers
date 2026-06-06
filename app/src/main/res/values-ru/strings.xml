@@ -236,4 +236,8 @@
     <string name="reset_current_settings_summary">Восстановить настройки текущих обоев до значений по умолчанию</string>
     <string name="reset_action_confirm">Восстановить</string>
     <string name="wallpaper_forest">Лес</string>
+
+    <string name="pref_use_vulkan_title">Vulkan рендерер</string>
+    <string name="pref_use_vulkan_summary">Использовать Vulkan для лучшей производительности (переприменить обои)</string>
+    <string name="pref_disabled_prefix">[Отключено]</string>
 </resources>

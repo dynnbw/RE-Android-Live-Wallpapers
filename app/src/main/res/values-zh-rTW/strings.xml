@@ -258,4 +258,8 @@
     <string name="pref_weather_api_guide_link_text">https://openweathermap.org/</string>
     <string name="pref_weather_api_guide_open_web_button">開啟 OpenWeather 官網</string>
     <string name="wallpaper_forest">森林</string>
+
+    <string name="pref_use_vulkan_title">Vulkan 渲染器</string>
+    <string name="pref_use_vulkan_summary">使用 Vulkan 獲得更好效能（重新套用桌布生效）</string>
+    <string name="pref_disabled_prefix">[已禁用]</string>
 </resources>

@@ -282,4 +282,8 @@
         <item>立方八面体</item>
         <item>截角立方体</item>
     </string-array>
+
+    <string name="pref_use_vulkan_title">Vulkan 渲染器</string>
+    <string name="pref_use_vulkan_summary">使用 Vulkan 获得更好性能（重新应用壁纸生效）</string>
+    <string name="pref_disabled_prefix">[已禁用]</string>
 </resources>

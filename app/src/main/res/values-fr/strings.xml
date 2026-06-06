@@ -236,4 +236,8 @@
     <string name="reset_current_settings_summary">Restaurer les paramètres de ce fond d’écran aux valeurs par défaut</string>
     <string name="reset_action_confirm">Restaurer</string>
     <string name="wallpaper_forest">Forêt</string>
+
+    <string name="pref_use_vulkan_title">Moteur de rendu Vulkan</string>
+    <string name="pref_use_vulkan_summary">Utiliser Vulkan pour de meilleures performances (réappliquer le fond d écran)</string>
+    <string name="pref_disabled_prefix">[Désactivé]</string>
 </resources>

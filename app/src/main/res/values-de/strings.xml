@@ -251,4 +251,8 @@
     <string name="reset_current_settings_summary">Die Einstellungen dieses Hintergrunds auf Standard zurücksetzen</string>
     <string name="reset_action_confirm">Wiederherstellen</string>
     <string name="wallpaper_forest">Wald</string>
+
+    <string name="pref_use_vulkan_title">Vulkan-Renderer</string>
+    <string name="pref_use_vulkan_summary">Vulkan für bessere Leistung verwenden (Tapete neu anwenden)</string>
+    <string name="pref_disabled_prefix">[Deaktiviert]</string>
 </resources>

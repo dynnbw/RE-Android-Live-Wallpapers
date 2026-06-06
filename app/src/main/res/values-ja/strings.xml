@@ -235,4 +235,8 @@
         <item>立方八面体</item>
         <item>切頂立方体</item>
     </string-array>
+
+    <string name="pref_use_vulkan_title">Vulkan レンダラー</string>
+    <string name="pref_use_vulkan_summary">Vulkan を使用してパフォーマンスを向上（壁紙を再適用）</string>
+    <string name="pref_disabled_prefix">[無効]</string>
 </resources>

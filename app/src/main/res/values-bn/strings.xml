@@ -236,4 +236,8 @@
     <string name="reset_current_settings_summary">এই ওয়ালপেপারের সেটিংস ডিফল্টে পুনরুদ্ধার করুন</string>
     <string name="reset_action_confirm">পুনরুদ্ধার করুন</string>
     <string name="wallpaper_forest">বন</string>
+
+    <string name="pref_use_vulkan_title">Vulkan রেন্ডারার</string>
+    <string name="pref_use_vulkan_summary">ভালো পারফরম্যান্সের জন্য Vulkan ব্যবহার করুন (ওয়ালপেপার পুনরায় প্রয়োগ করুন)</string>
+    <string name="pref_disabled_prefix">[নিষ্ক্রিয়]</string>
 </resources>

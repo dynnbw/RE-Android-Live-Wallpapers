@@ -247,4 +247,8 @@
     <string name="reset_current_settings_summary">Restaurar la configuración de este fondo de pantalla a los valores predeterminados</string>
     <string name="reset_action_confirm">Restaurar</string>
     <string name="wallpaper_forest">Bosque</string>
+
+    <string name="pref_use_vulkan_title">Renderizador Vulkan</string>
+    <string name="pref_use_vulkan_summary">Usar Vulkan para mejor rendimiento (re aplicar el fondo)</string>
+    <string name="pref_disabled_prefix">[Desactivado]</string>
 </resources>

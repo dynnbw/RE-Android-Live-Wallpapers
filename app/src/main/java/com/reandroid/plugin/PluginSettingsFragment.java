@@ -116,8 +116,8 @@ public class PluginSettingsFragment extends PreferenceFragmentCompat
         if (pluginVk != null) {
             SwitchPreferenceCompat vkSwitch = new SwitchPreferenceCompat(ctx);
             vkSwitch.setKey("use_vulkan");
-            vkSwitch.setTitle("Vulkan Renderer");
-            vkSwitch.setSummary("Use Vulkan for better performance (reapply wallpaper to take effect)");
+            vkSwitch.setTitle(com.reandroid.wallpaper.R.string.pref_use_vulkan_title);
+            vkSwitch.setSummary(com.reandroid.wallpaper.R.string.pref_use_vulkan_summary);
             vkSwitch.setDefaultValue(false);
             vkSwitch.setLayoutResource(com.reandroid.wallpaper.R.layout.preference_modern_item);
             screen.addPreference(vkSwitch);

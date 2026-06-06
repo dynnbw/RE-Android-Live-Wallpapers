@@ -239,4 +239,8 @@
     <string name="reset_current_settings_summary">इस वॉलपेपर की सेटिंग्स को डिफ़ॉल्ट पर पुनर्स्थापित करें</string>
     <string name="reset_action_confirm">पुनर्स्थापित करें</string>
     <string name="wallpaper_forest">वन</string>
+
+    <string name="pref_use_vulkan_title">Vulkan रेंडरर</string>
+    <string name="pref_use_vulkan_summary">बेहतर प्रदर्शन के लिए Vulkan का उपयोग करें (वॉलपेपर फिर से लागू करें)</string>
+    <string name="pref_disabled_prefix">[अक्षम]</string>
 </resources>

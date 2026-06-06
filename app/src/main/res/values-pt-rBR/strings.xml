@@ -241,4 +241,8 @@
     <string name="reset_current_settings_summary">Restaurar as configurações deste papel de parede para os padrões</string>
     <string name="reset_action_confirm">Restaurar</string>
     <string name="wallpaper_forest">Floresta</string>
+
+    <string name="pref_use_vulkan_title">Renderizador Vulkan</string>
+    <string name="pref_use_vulkan_summary">Usar Vulkan para melhor desempenho (reaplicar papel de parede)</string>
+    <string name="pref_disabled_prefix">[Desativado]</string>
 </resources>

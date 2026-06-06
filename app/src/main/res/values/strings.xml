@@ -286,4 +286,8 @@
     <string name="musicvis_recolor_mode_static">Static</string>
     <string name="musicvis_recolor_mode_dynamic">Audio-driven</string>
     <string name="wallpaper_vis6">Circular Spectrum</string>
+
+    <string name="pref_use_vulkan_title">Vulkan Renderer</string>
+    <string name="pref_use_vulkan_summary">Use Vulkan for better performance (reapply wallpaper to take effect)</string>
+    <string name="pref_disabled_prefix">[Disabled]</string>
 </resources>
