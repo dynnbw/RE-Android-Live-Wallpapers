@@ -1,9 +1,11 @@
 package com.reandroid.plugin;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.widget.Toast;
@@ -11,6 +13,7 @@ import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceScreen;
@@ -72,17 +75,21 @@ public class PluginSettingsFragment extends PreferenceFragmentCompat
         SharedPreferences prefs = ctx.getSharedPreferences(prefsName, Context.MODE_PRIVATE);
         prefs.registerOnSharedPreferenceChangeListener(this);
 
-        // Read info.json for preview class and optional VK plugin
+        // Read info.json for preview class, VK plugin, and required permissions
         String previewClass = null;
         String pluginVk = null;
+        JSONObject info = null;
         try (InputStream is = ctx.getAssets().open(pluginId + "/info.json")) {
             byte[] buf = new byte[is.available()];
             is.read(buf);
-            JSONObject info = new JSONObject(new String(buf, "UTF-8"));
+            info = new JSONObject(new String(buf, "UTF-8"));
             previewClass = info.optString("previewClass", null);
             pluginVk = info.optString("pluginVk", null);
         } catch (Exception ignored) {}
         mPreviewClass = previewClass;
+
+        // Request required permissions from info.json
+        requestPermissionsIfNeeded(info);
 
         // Live preview
         if (previewClass != null) {
@@ -98,7 +105,9 @@ public class PluginSettingsFragment extends PreferenceFragmentCompat
         applyPref.setTitle(com.reandroid.wallpaper.R.string.pref_open_wallpaper_picker);
         applyPref.setLayoutResource(com.reandroid.wallpaper.R.layout.preference_modern_item);
         applyPref.setOnPreferenceClickListener(pref -> {
-            ProxyWallpaperService.applyPluginAndOpenPreview(ctx, pluginId);
+            ProxyWallpaperService.setActivePlugin(ctx, pluginId);
+            com.reandroid.settings.MiuiPermissionHelper.launchLivePreview(
+                    PluginSettingsFragment.this, ProxyWallpaperService.class);
             return true;
         });
         screen.addPreference(applyPref);
@@ -244,6 +253,35 @@ public class PluginSettingsFragment extends PreferenceFragmentCompat
         String uri = prefs.getString(KEY_CUSTOM_BG_URI, null);
         if (uri != null && !uri.isEmpty()) {
             btn.setSummary(com.reandroid.wallpaper.R.string.fireworks_custom_background_set_toast);
+        }
+    }
+
+    private void requestPermissionsIfNeeded(JSONObject info) {
+        if (info == null) return;
+        org.json.JSONArray perms = info.optJSONArray("permissions");
+        if (perms == null || perms.length() == 0) return;
+
+        java.util.ArrayList<String> needed = new java.util.ArrayList<>();
+        for (int i = 0; i < perms.length(); i++) {
+            String perm = perms.optString(i);
+            String androidPerm = mapPermission(perm);
+            if (androidPerm != null && ContextCompat.checkSelfPermission(requireContext(), androidPerm)
+                    != PackageManager.PERMISSION_GRANTED) {
+                needed.add(androidPerm);
+            }
+        }
+        if (!needed.isEmpty()) {
+            requestPermissions(needed.toArray(new String[0]), 0);
+        }
+    }
+
+    private static String mapPermission(String name) {
+        switch (name) {
+            case "RECORD_AUDIO": return Manifest.permission.RECORD_AUDIO;
+            case "CAMERA": return Manifest.permission.CAMERA;
+            case "ACCESS_FINE_LOCATION": return Manifest.permission.ACCESS_FINE_LOCATION;
+            case "ACCESS_COARSE_LOCATION": return Manifest.permission.ACCESS_COARSE_LOCATION;
+            default: return null;
         }
     }
 }

@@ -261,7 +261,7 @@ public class SettingsActivity extends AppCompatActivity
 
     private void showWeatherDebugDialog() {
         String[] debugOptions = {"正常天气逻辑", "晴朗", "多云", "阴沉", "雾", "阵雨", "雷暴", "飘雪/雪", "冰冷", "冻雨"};
-        new AlertDialog.Builder(this)
+        new AlertDialog.Builder(this, R.style.ThemeOverlay_WallpaperSettings_AppCompatDialog)
                 .setTitle(R.string.pref_weather_debug_title)
                 .setItems(debugOptions, (dialog, which) -> {
                     if (which == 0) {
@@ -323,7 +323,7 @@ public class SettingsActivity extends AppCompatActivity
             }
         }
 
-        new AlertDialog.Builder(this)
+        new AlertDialog.Builder(this, R.style.ThemeOverlay_WallpaperSettings_AppCompatDialog)
                 .setTitle(R.string.pref_global_frame_rate)
                 .setSingleChoiceItems(entries, checkedIndex, (dialog, which) -> {
                     prefs.edit().putString(KEY_GLOBAL_FRAME_RATE, values[which]).apply();
@@ -341,7 +341,7 @@ public class SettingsActivity extends AppCompatActivity
         input.setText(prefs.getString(KEY_PREVIEW_RATIO, DEFAULT_PREVIEW_RATIO));
         input.setSelection(input.getText().length());
 
-        new AlertDialog.Builder(this)
+        new AlertDialog.Builder(this, R.style.ThemeOverlay_WallpaperSettings_AppCompatDialog)
                 .setTitle(R.string.pref_preview_ratio)
                 .setView(input)
                 .setPositiveButton(android.R.string.ok, (dialog, which) -> {
@@ -370,7 +370,7 @@ public class SettingsActivity extends AppCompatActivity
             }
         }
 
-        new AlertDialog.Builder(this)
+        new AlertDialog.Builder(this, R.style.ThemeOverlay_WallpaperSettings_AppCompatDialog)
                 .setTitle(R.string.pref_weather_update_interval)
                 .setSingleChoiceItems(entries, checkedIndex, (dialog, which) -> {
                     prefs.edit().putString("weather_update_minutes", values[which]).apply();
@@ -389,7 +389,7 @@ public class SettingsActivity extends AppCompatActivity
         input.setText(prefs.getString("openweather_api_key", ""));
         input.setSelection(input.getText().length());
 
-        new AlertDialog.Builder(this)
+        new AlertDialog.Builder(this, R.style.ThemeOverlay_WallpaperSettings_AppCompatDialog)
                 .setTitle(R.string.pref_openweather_api_key_title)
                 .setView(input)
                 .setPositiveButton(android.R.string.ok, (dialog, which) -> {

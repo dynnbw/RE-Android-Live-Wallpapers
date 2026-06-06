@@ -60,7 +60,7 @@ public final class MiuiPermissionHelper {
 
     private static void showPermissionDialog(Fragment fragment, Class<?> wallpaperClass) {
         Context ctx = fragment.requireContext();
-        new AlertDialog.Builder(ctx)
+        new AlertDialog.Builder(ctx, R.style.ThemeOverlay_WallpaperSettings_AppCompatDialog)
                 .setTitle(R.string.miui_permission_title)
                 .setMessage(R.string.miui_permission_message)
                 .setPositiveButton(R.string.miui_permission_go_settings, (d, w) -> {
@@ -71,10 +71,6 @@ public final class MiuiPermissionHelper {
                     } catch (Exception e) {
                         Toast.makeText(ctx, R.string.miui_permission_open_failed, Toast.LENGTH_SHORT).show();
                     }
-                })
-                .setNeutralButton(R.string.miui_permission_continue, (d, w) -> {
-                    markDialogShown(ctx);
-                    launchLivePreview(fragment, wallpaperClass);
                 })
                 .setNegativeButton(android.R.string.cancel, null)
                 .show();
