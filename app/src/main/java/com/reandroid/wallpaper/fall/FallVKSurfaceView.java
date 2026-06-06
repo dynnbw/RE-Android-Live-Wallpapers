@@ -87,17 +87,20 @@ class FallVKSurfaceView extends VKSurfaceView<FallScene> {
         float[] leafData = mScene.buildLeafDataForVK();
         int leafCount = mScene.getVKLeafCount();
         boolean meshRebuild = mScene.consumeMeshBufferRebuildRequested();
-        boolean texDirty = meshRebuild || mScene.consumeWaterTexCoordsDirty();
         float[] waterVertices = meshRebuild ? data.getWaterMeshVertices() : null;
-        float[] waterTexCoords = texDirty ? data.getWaterMeshTexCoords() : null;
+        float[] waterTexCoords = meshRebuild ? data.getWaterMeshTexCoords() : null;
         short[] waterIndices = meshRebuild ? data.getWaterMeshIndices() : null;
-        int waterVertexCount = texDirty ? data.getWaterMeshVertexCount() : 0;
+        int waterVertexCount = meshRebuild ? data.getWaterMeshVertexCount() : 0;
         int waterIndexCount = meshRebuild ? data.getWaterMeshIndexCount() : 0;
         FallVKNative.nRenderFrame(mRendererHandle,
                 data.getProjectionMatrix(), data.getViewMatrix(),
                 leafData, leafCount, data.getXOffset(),
                 waterVertices, waterTexCoords, waterIndices,
-                waterVertexCount, waterIndexCount);
+                waterVertexCount, waterIndexCount,
+                data.getDropData(), data.getActiveDropCount(),
+                data.getGlHeight(), data.getBgScale(),
+                data.getMeshScaleX(), data.getMeshScaleY(),
+                data.getDxMul(), data.getRotate());
     }
 
     @Override

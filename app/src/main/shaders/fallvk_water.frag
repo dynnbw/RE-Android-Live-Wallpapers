@@ -7,6 +7,15 @@ layout(push_constant) uniform PushConstants {
     float uAlpha;
     float uLeafFrameIndex;
     float uLeafFrameInvCount;
+    float u_glHeight;
+    float u_bgScale;
+    float u_meshScaleX;
+    float u_meshScaleY;
+    float u_dxMul;
+    float u_xOffset;
+    int u_rotate;
+    int u_dropCount;
+    vec4 u_drop[8];
 } pc;
 
 layout(location = 0) in vec2 vUv;

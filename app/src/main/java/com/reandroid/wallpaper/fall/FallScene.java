@@ -34,6 +34,7 @@ final class FallScene {
     static final float LEAF_SIZE = 0.55f;
     private static final int MESH_RESOLUTION = 48;
     private static final int DEFAULT_WATER_MESH_DROPS = 10;
+    // Drop array sized dynamically — no hard limit
 
     static final class Leaf {
         float x;
@@ -101,41 +102,33 @@ final class FallScene {
         private int waterMeshIndexCount;
         private float xOffset = 0.5f;
 
-        float[] getProjectionMatrix() {
-            return projectionMatrix;
-        }
+        // GPU-computed ripple: per-drop (x, y, ampE, spread), dynamically sized
+        private float[] dropData = new float[0];
+        private int activeDropCount;
+        private float glHeight;
+        private float bgScale;
+        private float meshScaleX;
+        private float meshScaleY;
+        private float dxMul;
+        private int rotate;
 
-        float[] getViewMatrix() {
-            return viewMatrix;
-        }
-
-        Leaf[] getLeaves() {
-            return leaves;
-        }
-
-        float[] getWaterMeshVertices() {
-            return waterMeshVertices;
-        }
-
-        float[] getWaterMeshTexCoords() {
-            return waterMeshTexCoords;
-        }
-
-        short[] getWaterMeshIndices() {
-            return waterMeshIndices;
-        }
-
-        int getWaterMeshVertexCount() {
-            return waterMeshVertexCount;
-        }
-
-        int getWaterMeshIndexCount() {
-            return waterMeshIndexCount;
-        }
-
-        float getXOffset() {
-            return xOffset;
-        }
+        float[] getProjectionMatrix() { return projectionMatrix; }
+        float[] getViewMatrix() { return viewMatrix; }
+        Leaf[] getLeaves() { return leaves; }
+        float[] getWaterMeshVertices() { return waterMeshVertices; }
+        float[] getWaterMeshTexCoords() { return waterMeshTexCoords; }
+        short[] getWaterMeshIndices() { return waterMeshIndices; }
+        int getWaterMeshVertexCount() { return waterMeshVertexCount; }
+        int getWaterMeshIndexCount() { return waterMeshIndexCount; }
+        float getXOffset() { return xOffset; }
+        float[] getDropData() { return dropData; }
+        int getActiveDropCount() { return activeDropCount; }
+        float getGlHeight() { return glHeight; }
+        float getBgScale() { return bgScale; }
+        float getMeshScaleX() { return meshScaleX; }
+        float getMeshScaleY() { return meshScaleY; }
+        float getDxMul() { return dxMul; }
+        int getRotate() { return rotate; }
     }
 
     private final Random mRandom = new Random();
@@ -218,8 +211,21 @@ final class FallScene {
     }
 
     void addDrop(int x, int y) {
+        // Lazy-init water drops on first touch (before first frame renders)
         if (mWaterDrops == null || mWaterDropCount <= 0) {
-            return;
+            mWaterDropCount = Math.max(1, getMaxDrops());
+            mWaterDrops = new Drop[mWaterDropCount];
+            for (int i = 0; i < mWaterDropCount; i++) {
+                mWaterDrops[i] = new Drop();
+                mWaterDrops[i].init();
+            }
+            if (mMeshWidth <= 1 || mMeshHeight <= 1) {
+                mRotate = mWidth > mHeight ? 1 : 0;
+                float w = mWidth > mHeight ? mHeight : mWidth;
+                float h = mWidth > mHeight ? mWidth : mHeight;
+                mGlHeight = 2.0f * h / w;
+                createWaterMesh();
+            }
         }
 
         int minIndex = 0;
@@ -400,12 +406,19 @@ final class FallScene {
             return;
         }
 
+        // Preserve active drops when resizing the array
+        Drop[] oldDrops = mWaterDrops;
+        int oldCount = mWaterDropCount;
         mWaterDropCount = desired;
         mLastWaterDropCount = desired;
         mWaterDrops = new Drop[mWaterDropCount];
         for (int i = 0; i < mWaterDropCount; i++) {
-            mWaterDrops[i] = new Drop();
-            mWaterDrops[i].init();
+            if (i < oldCount && oldDrops != null) {
+                mWaterDrops[i] = oldDrops[i];
+            } else {
+                mWaterDrops[i] = new Drop();
+                mWaterDrops[i].init();
+            }
         }
         mWaterTexCoordsDirty = true;
     }
@@ -491,77 +504,41 @@ final class FallScene {
     }
 
     private void updateWaterMesh(long nowMs) {
-        if (mSceneData.waterMeshVertices == null || mWaterDrops == null || mWaterDropCount <= 0) {
+        if (mWaterDrops == null || mWaterDropCount <= 0) {
+            mSceneData.activeDropCount = 0;
             return;
         }
 
+        // Update drop state (spread/ampE decay)
         for (Drop drop : mWaterDrops) {
             drop.spread += 30.0f * mDeltaTime;
             drop.ampE = drop.ampS / drop.spread;
         }
 
-        float height = mGlHeight;
-        int wResolution = MESH_RESOLUTION + 2;
-        int hResolution = (int) (MESH_RESOLUTION * height / 2.0f) + 2;
-        float[] deformedTex = mSceneData.waterMeshTexCoords;
-        if (deformedTex == null || deformedTex.length < (wResolution * hResolution * 2)) {
-            deformedTex = new float[Math.max(0, wResolution * hResolution * 2)];
+        // Pack all active drops for GPU: (x, y, ampE, spread) per drop, no artificial limit
+        mSceneData.activeDropCount = mWaterDropCount;
+        float[] d = mSceneData.dropData;
+        int needed = mWaterDropCount * 4;
+        if (d.length < needed) {
+            mSceneData.dropData = d = new float[needed];
+        }
+        for (int i = 0; i < mWaterDropCount; i++) {
+            int off = i * 4;
+            Drop drop = mWaterDrops[i];
+            d[off]     = drop.x;
+            d[off + 1] = drop.y;
+            d[off + 2] = drop.ampE;
+            d[off + 3] = drop.spread;
         }
 
-        for (int y = 0; y < hResolution; y++) {
-            for (int x = 0; x < wResolution; x++) {
-                int vertexIndex = (y * wResolution + x) * 3;
-                float xPos = mSceneData.waterMeshVertices[vertexIndex];
-                float yPos = mSceneData.waterMeshVertices[vertexIndex + 1];
+        // Precompute shader parameters
+        mSceneData.glHeight = mGlHeight;
+        mSceneData.bgScale = mBackgroundScale;
+        mSceneData.meshScaleX = (mMeshWidth - 1) * 0.5f;
+        mSceneData.meshScaleY = (mMeshHeight - 1) * 0.5f;
+        mSceneData.dxMul = (mRotate < 1) ? 1.0f : 2.5f;
+        mSceneData.rotate = mRotate;
 
-                float posX = xPos;
-                float posY = yPos;
-                float varU = posX + 1.0f;
-                float varV = posY + (mGlHeight * 0.5f);
-                float dxMul = 1.0f;
-
-                if (mRotate < 1) {
-                    varU *= 0.25f;
-                    float vScale = 0.33f * (3.333f / mGlHeight);
-                    varV *= vScale;
-                    varU += mSceneData.xOffset * 0.5f;
-                    posX += mSceneData.xOffset * 2.0f;
-                } else {
-                    varU *= 0.5f;
-                    float vScale = 0.3125f * (3.333f / mGlHeight);
-                    varV *= vScale;
-                    dxMul = 2.5f;
-                }
-
-                varU = 0.5f + (varU - 0.5f) * mBackgroundScale;
-                varV = 0.5f + (varV - 0.5f) * mBackgroundScale;
-
-                float scaleX = (mMeshWidth - 1) * 0.5f;
-                float scaleY = (mMeshHeight - 1) * 0.5f;
-                float posScaledX = (posX + 1.0f) * scaleX;
-                float posScaledY = ((posY / (mGlHeight * 0.5f)) + 1.0f) * scaleY;
-
-                for (Drop drop : mWaterDrops) {
-                    float dx = drop.x - posScaledX;
-                    float dy = drop.y - posScaledY;
-                    dx *= dxMul;
-                    float dist = (float) Math.sqrt(dx * dx + dy * dy);
-                    if (dist < drop.spread) {
-                        float amp = drop.ampE * 0.12f * dist;
-                        amp /= (drop.spread * drop.spread);
-                        amp *= (float) Math.sin(drop.spread - dist);
-                        varU += dx * amp;
-                        varV += dy * amp;
-                    }
-                    }
-
-                int texIndex = (y * wResolution + x) * 2;
-                deformedTex[texIndex] = varU;
-                deformedTex[texIndex + 1] = varV;
-            }
-        }
-
-        mSceneData.waterMeshTexCoords = deformedTex;
         mWaterTexCoordsDirty = true;
     }
 

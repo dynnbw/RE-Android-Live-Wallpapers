@@ -44,13 +44,30 @@ public class FallGL extends GLESScene {
     private static final long PERF_SYNC_INTERVAL_MS = 1000L;
     private static final long ANR_FRAME_THRESHOLD_MS = 200L;
 
-    private int mProgram;
+    private int mProgram;       // leaf shader
+    private int mWaterProgram;  // water shader (GPU ripple)
     private int mPositionHandle;
     private int mTexCoordHandle;
     private int mMatrixHandle;
     private int mAlphaHandle;
     private int mSamplerHandle;
     private int mColorHandle;
+    // Water shader uniforms
+    private int mWMatrixHandle;
+    private int mWAlphaHandle;
+    private int mWSamplerHandle;
+    private int mWColorHandle;
+    private int mWPositionHandle;
+    private int mWTexCoordHandle;
+    private int mWGlHeightHandle;
+    private int mWBgScaleHandle;
+    private int mWMeshScaleXHandle;
+    private int mWMeshScaleYHandle;
+    private int mWDxMulHandle;
+    private int mWXOffsetHandle;
+    private int mWRotateHandle;
+    private int mWDropHandle;
+    private int mWDropCountHandle;
     private int[] mLeafTextures;
     private int mRiverbedTexture;
     private FloatBuffer mWaterMeshVertexBuffer;
@@ -109,6 +126,10 @@ public class FallGL extends GLESScene {
             GLES20.glDeleteProgram(mProgram);
             mProgram = 0;
         }
+        if (mWaterProgram != 0) {
+            GLES20.glDeleteProgram(mWaterProgram);
+            mWaterProgram = 0;
+        }
 
         mWaterMeshVertexBuffer = null;
         mWaterMeshTexCoordBuffer = null;
@@ -139,6 +160,7 @@ public class FallGL extends GLESScene {
         GLES20.glViewport(0, 0, mWidth, mHeight);
 
         createProgram();
+        createWaterProgram();
 
         try {
             mLeafTextures = loadLeafTextures();
@@ -238,9 +260,10 @@ public class FallGL extends GLESScene {
         syncWaterMeshBuffers(sceneData);
 
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
-        GLES20.glUseProgram(mProgram);
 
-        drawWaterQuad(sceneData);
+        drawWaterQuad(sceneData);  // uses mWaterProgram internally
+        if (mProgram == 0) return;
+        GLES20.glUseProgram(mProgram);
         for (FallScene.Leaf leaf : sceneData.getLeaves()) {
             drawLeaf(leaf, sceneData);
         }
@@ -264,35 +287,43 @@ public class FallGL extends GLESScene {
         if (rebuildBuffers) {
             mWaterMeshVertexBuffer = createFloatBuffer(sceneData.getWaterMeshVertices());
             mWaterMeshTexCoordBuffer = createFloatBuffer(sceneData.getWaterMeshTexCoords());
-            return;
         }
-
-        if (mScene.consumeWaterTexCoordsDirty()) {
-            mWaterMeshTexCoordBuffer.position(0);
-            mWaterMeshTexCoordBuffer.put(sceneData.getWaterMeshTexCoords());
-            mWaterMeshTexCoordBuffer.position(0);
-        }
+        // Texcoords static — ripple displacement computed in vertex shader
     }
 
     private void drawWaterQuad(FallScene.SceneData sceneData) {
+        if (mWaterProgram == 0) return;
+        GLES20.glUseProgram(mWaterProgram);
+
         Matrix.setIdentityM(mModelMatrix, 0);
         Matrix.multiplyMM(mViewMatrix, 0, sceneData.getViewMatrix(), 0, mModelMatrix, 0);
         Matrix.multiplyMM(mMVPMatrix, 0, sceneData.getProjectionMatrix(), 0, mViewMatrix, 0);
-        GLES20.glUniformMatrix4fv(mMatrixHandle, 1, false, mMVPMatrix, 0);
-        GLES20.glUniform1f(mAlphaHandle, 1.0f);
-        GLES20.glUniform4f(mColorHandle, 1.0f, 1.0f, 1.0f, 1.0f);
+        GLES20.glUniformMatrix4fv(mWMatrixHandle, 1, false, mMVPMatrix, 0);
+        GLES20.glUniform1f(mWAlphaHandle, 1.0f);
+        GLES20.glUniform4f(mWColorHandle, 1.0f, 1.0f, 1.0f, 1.0f);
 
-        GLES20.glEnableVertexAttribArray(mPositionHandle);
+        // Scene parameters for GPU ripple
+        GLES20.glUniform1f(mWGlHeightHandle, sceneData.getGlHeight());
+        GLES20.glUniform1f(mWBgScaleHandle, sceneData.getBgScale());
+        GLES20.glUniform1f(mWMeshScaleXHandle, sceneData.getMeshScaleX());
+        GLES20.glUniform1f(mWMeshScaleYHandle, sceneData.getMeshScaleY());
+        GLES20.glUniform1f(mWDxMulHandle, sceneData.getDxMul());
+        GLES20.glUniform1f(mWXOffsetHandle, sceneData.getXOffset());
+        GLES20.glUniform1f(mWRotateHandle, (float) sceneData.getRotate());
+        GLES20.glUniform1f(mWDropCountHandle, (float) sceneData.getActiveDropCount());
+        GLES20.glUniform4fv(mWDropHandle, Math.max(1, sceneData.getActiveDropCount()), sceneData.getDropData(), 0);
+
+        GLES20.glEnableVertexAttribArray(mWPositionHandle);
         mWaterMeshVertexBuffer.position(0);
-        GLES20.glVertexAttribPointer(mPositionHandle, 3, GLES20.GL_FLOAT, false, 12, mWaterMeshVertexBuffer);
+        GLES20.glVertexAttribPointer(mWPositionHandle, 3, GLES20.GL_FLOAT, false, 12, mWaterMeshVertexBuffer);
 
-        GLES20.glEnableVertexAttribArray(mTexCoordHandle);
+        GLES20.glEnableVertexAttribArray(mWTexCoordHandle);
         mWaterMeshTexCoordBuffer.position(0);
-        GLES20.glVertexAttribPointer(mTexCoordHandle, 2, GLES20.GL_FLOAT, false, 8, mWaterMeshTexCoordBuffer);
+        GLES20.glVertexAttribPointer(mWTexCoordHandle, 2, GLES20.GL_FLOAT, false, 8, mWaterMeshTexCoordBuffer);
 
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mRiverbedTexture);
-        GLES20.glUniform1i(mSamplerHandle, 0);
+        GLES20.glUniform1i(mWSamplerHandle, 0);
 
         int indexCount = sceneData.getWaterMeshIndexCount();
         if (indexCount > 0) {
@@ -304,8 +335,8 @@ public class FallGL extends GLESScene {
             GLES20.glDrawElements(GLES20.GL_TRIANGLES, indexCount, GLES20.GL_UNSIGNED_SHORT, mWaterIndexBuffer);
         }
 
-        GLES20.glDisableVertexAttribArray(mPositionHandle);
-        GLES20.glDisableVertexAttribArray(mTexCoordHandle);
+        GLES20.glDisableVertexAttribArray(mWPositionHandle);
+        GLES20.glDisableVertexAttribArray(mWTexCoordHandle);
     }
 
     private void drawLeaf(FallScene.Leaf leaf, FallScene.SceneData sceneData) {
@@ -422,6 +453,52 @@ public class FallGL extends GLESScene {
         mAlphaHandle = GLES20.glGetUniformLocation(mProgram, "uAlpha");
         mSamplerHandle = GLES20.glGetUniformLocation(mProgram, "uSampler");
         mColorHandle = GLES20.glGetUniformLocation(mProgram, "uColor");
+
+        GLES20.glDeleteShader(vs);
+        GLES20.glDeleteShader(fs);
+    }
+
+    private void createWaterProgram() {
+        // Generate vertex shader with dynamic drop array size (no hard limit)
+        int maxDrops = WallpaperSettings.getFallMaxDrops(80);
+        String template = AssetLoader.readText(mContext, "fall/shaders/GLES/fall_water_vs.glsl");
+        String vertexShader = template.replace("$DROP_SIZE", String.valueOf(maxDrops));
+        String fragmentShader = AssetLoader.readText(mContext, "fall/shaders/GLES/fall_fs.glsl");
+        int vs = compileShader(GLES20.GL_VERTEX_SHADER, vertexShader);
+        int fs = compileShader(GLES20.GL_FRAGMENT_SHADER, fragmentShader);
+        if (vs == 0 || fs == 0) {
+            Log.e(TAG, "Water着色器编译失败!");
+            if (vs != 0) GLES20.glDeleteShader(vs);
+            if (fs != 0) GLES20.glDeleteShader(fs);
+            return;
+        }
+
+        mWaterProgram = GLES20.glCreateProgram();
+        GLES20.glAttachShader(mWaterProgram, vs);
+        GLES20.glAttachShader(mWaterProgram, fs);
+        GLES20.glLinkProgram(mWaterProgram);
+
+        int[] linkStatus = new int[1];
+        GLES20.glGetProgramiv(mWaterProgram, GLES20.GL_LINK_STATUS, linkStatus, 0);
+        if (linkStatus[0] != GLES20.GL_TRUE) {
+            Log.e(TAG, "Water程序链接失败: " + GLES20.glGetProgramInfoLog(mWaterProgram));
+        }
+
+        mWPositionHandle     = GLES20.glGetAttribLocation(mWaterProgram, "aPosition");
+        mWTexCoordHandle     = GLES20.glGetAttribLocation(mWaterProgram, "aTexCoord");
+        mWMatrixHandle       = GLES20.glGetUniformLocation(mWaterProgram, "uMVPMatrix");
+        mWAlphaHandle        = GLES20.glGetUniformLocation(mWaterProgram, "uAlpha");
+        mWSamplerHandle      = GLES20.glGetUniformLocation(mWaterProgram, "uSampler");
+        mWColorHandle        = GLES20.glGetUniformLocation(mWaterProgram, "uColor");
+        mWGlHeightHandle     = GLES20.glGetUniformLocation(mWaterProgram, "u_glHeight");
+        mWBgScaleHandle      = GLES20.glGetUniformLocation(mWaterProgram, "u_bgScale");
+        mWMeshScaleXHandle   = GLES20.glGetUniformLocation(mWaterProgram, "u_meshScaleX");
+        mWMeshScaleYHandle   = GLES20.glGetUniformLocation(mWaterProgram, "u_meshScaleY");
+        mWDxMulHandle        = GLES20.glGetUniformLocation(mWaterProgram, "u_dxMul");
+        mWXOffsetHandle      = GLES20.glGetUniformLocation(mWaterProgram, "u_xOffset");
+        mWRotateHandle       = GLES20.glGetUniformLocation(mWaterProgram, "u_rotate");
+        mWDropHandle         = GLES20.glGetUniformLocation(mWaterProgram, "u_drop");
+        mWDropCountHandle    = GLES20.glGetUniformLocation(mWaterProgram, "u_dropCount");
 
         GLES20.glDeleteShader(vs);
         GLES20.glDeleteShader(fs);

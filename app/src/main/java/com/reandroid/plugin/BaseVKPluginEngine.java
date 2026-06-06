@@ -59,7 +59,7 @@ public abstract class BaseVKPluginEngine implements WallpaperEngine, Runnable {
         onSceneOffset(xo);
     }
     @Override public void onTouchEvent(MotionEvent e) {
-        if (e.getAction() == MotionEvent.ACTION_DOWN) onSceneTouch(e.getX(), e.getY());
+        if (e.getActionMasked() == MotionEvent.ACTION_DOWN) onSceneTouch(e.getX(), e.getY());
     }
     @Override public void onCommand(String action, int x, int y, int z, Bundle extras) {}
     @Override public void drawFrame(long timeMs) {} // no-op: VK renders on its own thread

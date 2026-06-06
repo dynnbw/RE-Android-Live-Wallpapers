@@ -6,11 +6,21 @@
 namespace {
 
 struct PushConstants {
-    float mvp[16];
-    float alpha;
-    float leafFrameIndex;
-    float leafFrameInvCount;
-    float padding;
+    float mvp[16];           // offset 0
+    float alpha;             // offset 64
+    float leafFrameIndex;    // offset 68
+    float leafFrameInvCount; // offset 72
+    // Ripple params
+    float glHeight;          // offset 76
+    float bgScale;           // offset 80
+    float meshScaleX;        // offset 84
+    float meshScaleY;        // offset 88
+    float dxMul;             // offset 92
+    float xOffset;           // offset 96
+    int rotate;              // offset 100
+    int dropCount;           // offset 104
+    float _pad;              // offset 108 — explicit pad to 16-byte align vec4[8] at 112
+    float dropData[8 * 4];   // offset 112 — matches GLSL vec4 u_drop[8] alignment
 };
 
 struct TextureResource {
@@ -168,9 +178,13 @@ public:
     void render(JNIEnv* env, jfloatArray projectionArray, jfloatArray viewArray,
             jfloatArray leavesArray, jint leafCount, jfloat xOffset,
             jfloatArray waterVertices, jfloatArray waterTexCoords, jshortArray waterIndices,
-            jint waterVertexCount, jint waterIndexCount) {
+            jint waterVertexCount, jint waterIndexCount,
+            jfloatArray dropDataArray, jint dropCount,
+            jfloat glHeight, jfloat bgScale, jfloat meshScaleX, jfloat meshScaleY,
+            jfloat dxMul, jint rotate) {
         std::lock_guard<std::mutex> lock(mutex_);
 
+        // Full mesh upload only on rebuild (waterVertexCount > 0 signals rebuild)
         if (waterVertexCount > 0) {
             if (!uploadWaterMeshLocked(env, waterVertices, waterTexCoords, waterIndices,
                     waterVertexCount, waterIndexCount)) {
@@ -199,6 +213,21 @@ public:
         env->GetFloatArrayRegion(projectionArray, 0, 16, projection);
         env->GetFloatArrayRegion(viewArray, 0, 16, view);
 
+        // Pack drop data into PushConstants (matches GLSL vec4 alignment)
+        PushConstants dropPC{};
+        int maxDrops = std::min(dropCount, 8);
+        dropPC.dropCount = maxDrops;
+        dropPC.glHeight = glHeight;
+        dropPC.bgScale = bgScale;
+        dropPC.meshScaleX = meshScaleX;
+        dropPC.meshScaleY = meshScaleY;
+        dropPC.dxMul = dxMul;
+        dropPC.xOffset = xOffset;
+        dropPC.rotate = rotate;
+        if (dropDataArray != nullptr && maxDrops > 0) {
+            env->GetFloatArrayRegion(dropDataArray, 0, maxDrops * 4, dropPC.dropData);
+        }
+
         vkWaitForFences(device_, 1, &inFlightFence_, VK_TRUE, UINT64_MAX);
 
         uint32_t imageIndex = 0;
@@ -220,7 +249,7 @@ public:
         VkCommandBuffer commandBuffer = swapchainCommandBuffers_[imageIndex];
         vkResetCommandBuffer(commandBuffer, 0);
         if (!recordCommandBufferLocked(commandBuffer, imageIndex, projection, view, leaves, xOffset,
-            waterIndexCount_)) {
+            waterIndexCount_, dropPC)) {
             return;
         }
 
@@ -704,62 +733,50 @@ public:
 
     bool uploadWaterMeshLocked(JNIEnv* env, jfloatArray waterVertices, jfloatArray waterTexCoords,
             jshortArray waterIndices, jint waterVertexCount, jint waterIndexCount) {
-        if (waterTexCoords == nullptr || waterVertexCount <= 0) {
+        // Full mesh upload only (positions + static texcoords + indices).
+        // Per-frame texcoord upload removed — ripple computed in vertex shader.
+        if (waterVertices == nullptr || waterTexCoords == nullptr || waterIndices == nullptr
+                || waterVertexCount <= 0 || waterIndexCount <= 0) {
             return false;
         }
 
+        const jsize verticesLen = env->GetArrayLength(waterVertices);
         const jsize texLen = env->GetArrayLength(waterTexCoords);
-        if (texLen < waterVertexCount * 2) {
+        const jsize idxLen = env->GetArrayLength(waterIndices);
+        if (verticesLen < waterVertexCount * 3 || texLen < waterVertexCount * 2
+                || idxLen < waterIndexCount) {
             return false;
         }
 
-        const bool fullUpload = (waterVertices != nullptr && waterIndices != nullptr && waterIndexCount > 0);
-
-        if (fullUpload) {
-            const jsize verticesLen = env->GetArrayLength(waterVertices);
-            const jsize idxLen = env->GetArrayLength(waterIndices);
-            if (verticesLen < waterVertexCount * 3 || idxLen < waterIndexCount) {
-                return false;
-            }
-            if (!ensureWaterBuffersLocked(static_cast<size_t>(waterVertexCount), static_cast<size_t>(waterIndexCount))) {
-                return false;
-            }
-        } else {
-            if (waterVertexBuffer_ == VK_NULL_HANDLE || waterIndexBuffer_ == VK_NULL_HANDLE || waterVertexCount > waterVertexCapacity_) {
-                return false;
-            }
+        if (!ensureWaterBuffersLocked(static_cast<size_t>(waterVertexCount),
+                static_cast<size_t>(waterIndexCount))) {
+            return false;
         }
 
+        tempWaterPositions_.resize(static_cast<size_t>(waterVertexCount) * 3);
         tempWaterTexcoords_.resize(static_cast<size_t>(waterVertexCount) * 2);
-        env->GetFloatArrayRegion(waterTexCoords, 0, static_cast<jsize>(tempWaterTexcoords_.size()), tempWaterTexcoords_.data());
+        tempWaterIndices_.resize(static_cast<size_t>(waterIndexCount));
+        env->GetFloatArrayRegion(waterVertices, 0, static_cast<jsize>(tempWaterPositions_.size()),
+                tempWaterPositions_.data());
+        env->GetFloatArrayRegion(waterTexCoords, 0, static_cast<jsize>(tempWaterTexcoords_.size()),
+                tempWaterTexcoords_.data());
+        env->GetShortArrayRegion(waterIndices, 0, static_cast<jsize>(tempWaterIndices_.size()),
+                reinterpret_cast<jshort*>(tempWaterIndices_.data()));
 
         auto* mappedVertices = reinterpret_cast<WaterVertex*>(waterVertexMapped_);
-        if (fullUpload) {
-            tempWaterPositions_.resize(static_cast<size_t>(waterVertexCount) * 3);
-            tempWaterIndices_.resize(static_cast<size_t>(waterIndexCount));
-            env->GetFloatArrayRegion(waterVertices, 0, static_cast<jsize>(tempWaterPositions_.size()), tempWaterPositions_.data());
-            env->GetShortArrayRegion(waterIndices, 0, static_cast<jsize>(tempWaterIndices_.size()),
-                    reinterpret_cast<jshort*>(tempWaterIndices_.data()));
-
-            for (int i = 0; i < waterVertexCount; ++i) {
-                const int p = i * 3;
-                const int t = i * 2;
-                mappedVertices[i].x = tempWaterPositions_[p];
-                mappedVertices[i].y = tempWaterPositions_[p + 1];
-                mappedVertices[i].z = tempWaterPositions_[p + 2];
-                mappedVertices[i].u = tempWaterTexcoords_[t];
-                mappedVertices[i].v = tempWaterTexcoords_[t + 1];
-            }
-
-            std::memcpy(waterIndexMapped_, tempWaterIndices_.data(), static_cast<size_t>(waterIndexCount) * sizeof(uint16_t));
-            waterIndexCount_ = waterIndexCount;
-        } else {
-            for (int i = 0; i < waterVertexCount; ++i) {
-                const int t = i * 2;
-                mappedVertices[i].u = tempWaterTexcoords_[t];
-                mappedVertices[i].v = tempWaterTexcoords_[t + 1];
-            }
+        for (int i = 0; i < waterVertexCount; ++i) {
+            const int p = i * 3;
+            const int t = i * 2;
+            mappedVertices[i].x = tempWaterPositions_[p];
+            mappedVertices[i].y = tempWaterPositions_[p + 1];
+            mappedVertices[i].z = tempWaterPositions_[p + 2];
+            mappedVertices[i].u = tempWaterTexcoords_[t];
+            mappedVertices[i].v = tempWaterTexcoords_[t + 1];
         }
+
+        std::memcpy(waterIndexMapped_, tempWaterIndices_.data(),
+                static_cast<size_t>(waterIndexCount) * sizeof(uint16_t));
+        waterIndexCount_ = waterIndexCount;
         return true;
     }
 
@@ -955,7 +972,7 @@ public:
 
     bool recordCommandBufferLocked(VkCommandBuffer commandBuffer, uint32_t imageIndex,
             const float projection[16], const float view[16], const std::vector<LeafDraw>& leaves,
-            float xOffset, int waterIndexCount) {
+            float xOffset, int waterIndexCount, const PushConstants& dropPC) {
         VkCommandBufferBeginInfo beginInfo{};
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
         if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS) {
@@ -1006,6 +1023,16 @@ public:
         waterPush.alpha = 1.0f;
         waterPush.leafFrameIndex = 0.0f;
         waterPush.leafFrameInvCount = 1.0f;
+        // Copy GPU ripple data from scene
+        waterPush.glHeight = dropPC.glHeight;
+        waterPush.bgScale = dropPC.bgScale;
+        waterPush.meshScaleX = dropPC.meshScaleX;
+        waterPush.meshScaleY = dropPC.meshScaleY;
+        waterPush.dxMul = dropPC.dxMul;
+        waterPush.xOffset = dropPC.xOffset;
+        waterPush.rotate = dropPC.rotate;
+        waterPush.dropCount = dropPC.dropCount;
+        std::memcpy(waterPush.dropData, dropPC.dropData, sizeof(waterPush.dropData));
         vkCmdPushConstants(commandBuffer, bgPipelineLayout_,
             VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
             0, sizeof(PushConstants), &waterPush);
@@ -1134,11 +1161,16 @@ Java_com_reandroid_wallpaper_fall_FallVKNative_nRenderFrame(
         JNIEnv* env, jclass, jlong handle, jfloatArray projectionMatrix, jfloatArray viewMatrix,
         jfloatArray leavesData, jint leafCount, jfloat xOffset,
         jfloatArray waterVertices, jfloatArray waterTexCoords, jshortArray waterIndices,
-        jint waterVertexCount, jint waterIndexCount) {
+        jint waterVertexCount, jint waterIndexCount,
+        jfloatArray dropData, jint dropCount,
+        jfloat glHeight, jfloat bgScale, jfloat meshScaleX, jfloat meshScaleY,
+        jfloat dxMul, jint rotate) {
     auto* renderer = asRenderer(handle);
     if (renderer != nullptr) {
         renderer->render(env, projectionMatrix, viewMatrix, leavesData, leafCount, xOffset,
-                waterVertices, waterTexCoords, waterIndices, waterVertexCount, waterIndexCount);
+                waterVertices, waterTexCoords, waterIndices, waterVertexCount, waterIndexCount,
+                dropData, dropCount,
+                glHeight, bgScale, meshScaleX, meshScaleY, dxMul, rotate);
     }
 }
 

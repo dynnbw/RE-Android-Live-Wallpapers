@@ -105,15 +105,18 @@ public class FallVKWallpaper extends WallpaperService {
             float[] leafData = mScene.buildLeafDataForVK();
             int leafCount = mScene.getVKLeafCount();
             boolean meshRebuild = mScene.consumeMeshBufferRebuildRequested();
-            boolean texDirty = meshRebuild || mScene.consumeWaterTexCoordsDirty();
             FallVKNative.nRenderFrame(mRendererHandle,
                     data.getProjectionMatrix(), data.getViewMatrix(),
                     leafData, leafCount, data.getXOffset(),
                     meshRebuild ? data.getWaterMeshVertices() : null,
-                    texDirty ? data.getWaterMeshTexCoords() : null,
+                    meshRebuild ? data.getWaterMeshTexCoords() : null,
                     meshRebuild ? data.getWaterMeshIndices() : null,
-                    texDirty ? data.getWaterMeshVertexCount() : 0,
-                    meshRebuild ? data.getWaterMeshIndexCount() : 0);
+                    meshRebuild ? data.getWaterMeshVertexCount() : 0,
+                    meshRebuild ? data.getWaterMeshIndexCount() : 0,
+                    data.getDropData(), data.getActiveDropCount(),
+                    data.getGlHeight(), data.getBgScale(),
+                    data.getMeshScaleX(), data.getMeshScaleY(),
+                    data.getDxMul(), data.getRotate());
         }
 
         @Override

@@ -32,7 +32,10 @@ final class FallVKNative {
     static native void nRenderFrame(long handle, float[] projectionMatrix, float[] viewMatrix,
             float[] leavesData, int leafCount, float xOffset,
             float[] waterVertices, float[] waterTexCoords, short[] waterIndices,
-            int waterVertexCount, int waterIndexCount);
+            int waterVertexCount, int waterIndexCount,
+            float[] dropData, int dropCount,
+            float glHeight, float bgScale, float meshScaleX, float meshScaleY,
+            float dxMul, int rotate);
 
     static native void nSetBackgroundTexture(long handle, int[] argbPixels, int width, int height);
 
