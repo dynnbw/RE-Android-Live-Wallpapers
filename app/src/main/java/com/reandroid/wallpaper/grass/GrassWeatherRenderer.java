@@ -580,10 +580,10 @@ final class GrassWeatherRenderer {
             float v = y / (float) (texHeight - 1);
             float t = MathUtils.clamp(v / gradientEnd, 0.0f, 1.0f);
             int color = Color.argb(
-                    Math.round(lerp(Color.alpha(topColor), Color.alpha(bottomColor), t)),
-                    Math.round(lerp(Color.red(topColor), Color.red(bottomColor), t)),
-                    Math.round(lerp(Color.green(topColor), Color.green(bottomColor), t)),
-                    Math.round(lerp(Color.blue(topColor), Color.blue(bottomColor), t)));
+                    Math.round(MathUtils.lerp(Color.alpha(topColor), Color.alpha(bottomColor), t)),
+                    Math.round(MathUtils.lerp(Color.red(topColor), Color.red(bottomColor), t)),
+                    Math.round(MathUtils.lerp(Color.green(topColor), Color.green(bottomColor), t)),
+                    Math.round(MathUtils.lerp(Color.blue(topColor), Color.blue(bottomColor), t)));
             int idx = y * 4;
             rgba[idx] = (byte) Color.red(color);
             rgba[idx + 1] = (byte) Color.green(color);
@@ -607,7 +607,4 @@ final class GrassWeatherRenderer {
         return masked / 2147483647.0f;
     }
 
-    private static float lerp(float a, float b, float t) {
-        return a * (1.0f - t) + b * t;
-    }
 }

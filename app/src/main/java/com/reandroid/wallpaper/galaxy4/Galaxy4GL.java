@@ -502,20 +502,4 @@ public class Galaxy4GL extends GLESScene {
         GLES20.glDisableVertexAttribArray(posHandle);
         GLES20.glDisableVertexAttribArray(sizeHandle);
     }
-    
-    /**
-     * 创建FloatBuffer（原生内存）
-     * 用于传递顶点数据到OpenGL（避免JVM内存拷贝）
-     * @param data 浮点数组数据
-     * @return 初始化后的FloatBuffer
-     */
-    private FloatBuffer createFloatBuffer(float[] data) {
-        // 分配原生内存（每个浮点数4字节）
-        ByteBuffer bb = ByteBuffer.allocateDirect(data.length * 4);
-        bb.order(ByteOrder.nativeOrder()); // 匹配CPU字节序
-        FloatBuffer fb = bb.asFloatBuffer();
-        fb.put(data);                      // 写入数据
-        fb.position(0);                    // 重置位置到起始
-        return fb;
-    }
 }

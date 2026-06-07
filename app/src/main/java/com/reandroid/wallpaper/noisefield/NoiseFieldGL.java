@@ -197,8 +197,8 @@ public class NoiseFieldGL extends GLESScene {
             mBgColors[c + 2] = mesh[src + 4];
             mBgColors[c + 3] = 1.0f;
         }
-        mBgPosBuffer = toFloatBuffer(mBgPositions);
-        mBgColorBuffer = toFloatBuffer(mBgColors);
+        mBgPosBuffer = createFloatBuffer(mBgPositions);
+        mBgColorBuffer = createFloatBuffer(mBgColors);
     }
 
     private void drawBackground() {
@@ -272,7 +272,7 @@ public class NoiseFieldGL extends GLESScene {
 
     private FloatBuffer updateFloatBuffer(FloatBuffer buf, float[] data) {
         if (buf == null || buf.capacity() < data.length) {
-            return toFloatBuffer(data);
+            return createFloatBuffer(data);
         }
         buf.position(0);
         buf.put(data);
@@ -299,14 +299,6 @@ public class NoiseFieldGL extends GLESScene {
         return textureId;
     }
 
-    private FloatBuffer toFloatBuffer(float[] data) {
-        ByteBuffer bb = ByteBuffer.allocateDirect(data.length * 4);
-        bb.order(ByteOrder.nativeOrder());
-        FloatBuffer fb = bb.asFloatBuffer();
-        fb.put(data);
-        fb.position(0);
-        return fb;
-    }
 
     private int createProgram(String vertexSource, String fragmentSource) {
         int vertexShader = loadShader(GLES20.GL_VERTEX_SHADER, vertexSource);

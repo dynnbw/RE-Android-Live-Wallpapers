@@ -336,15 +336,15 @@ public class GrassGL extends GLESScene {
             mBackgroundRenderer.drawAccurateBackground(sd);
             drawWeatherBackground(sd);
             if (sd.sunEnabled && sd.hasSunData) drawSun(sd);
-            eclipseImpact = clamp(sd.solarEclipseWeight, 0.0f, 1.0f);
+            eclipseImpact = MathUtils.clamp(sd.solarEclipseWeight, 0.0f, 1.0f);
             grassBrightness = sd.newB;
             nightDesat = 0.0f;
             if (sd.nightDesaturateGrass) {
-                grassBrightness = mix(1.0f, 0.72f, eclipseImpact);
+                grassBrightness = MathUtils.mix(1.0f, 0.72f, eclipseImpact);
                 float baseNightDesat = sd.accurateWeights[0];
-                nightDesat = clamp(baseNightDesat + eclipseImpact * 0.85f, 0.0f, 1.0f);
+                nightDesat = MathUtils.clamp(baseNightDesat + eclipseImpact * 0.85f, 0.0f, 1.0f);
             } else {
-                grassBrightness *= mix(1.0f, 0.62f, eclipseImpact);
+                grassBrightness *= MathUtils.mix(1.0f, 0.62f, eclipseImpact);
             }
         } else {
             useProgram(mBackgroundProgram);
@@ -357,7 +357,7 @@ public class GrassGL extends GLESScene {
             nightDesat = 0.0f;
             if (sd.nightDesaturateGrass) {
                 grassBrightness = 1.0f;
-                nightDesat = clamp(1.0f - sd.newB, 0.0f, 1.0f);
+                nightDesat = MathUtils.clamp(1.0f - sd.newB, 0.0f, 1.0f);
             }
         }
 
@@ -548,20 +548,20 @@ public class GrassGL extends GLESScene {
         mDensity = mResources.getDisplayMetrics().density;
         mWeatherRenderer.setDensity(mDensity);
         ensureSkyFieldsLoaded();
-        mTexNight = createSkyFieldTexture(mSkyFieldNight, true);
-        mTexSunrise = createSkyFieldTexture(mSkyFieldSunrise, true);
-        mTexSunset = createSkyFieldTexture(mSkyFieldSunset, true);
-        mTexSky = createSkyFieldTexture(mSkyFieldDay, true);
+        mTexNight = GrassTextureUtils.createSkyFieldTexture(mSkyFieldNight, true);
+        mTexSunrise = GrassTextureUtils.createSkyFieldTexture(mSkyFieldSunrise, true);
+        mTexSunset = GrassTextureUtils.createSkyFieldTexture(mSkyFieldSunset, true);
+        mTexSky = GrassTextureUtils.createSkyFieldTexture(mSkyFieldDay, true);
         mTexSolarEclipse = loadTexture("grass/drawable/solar_eclipse.jpg", false, false);
         mBackgroundRenderer.setSkyTextures(mTexNight, mTexSunrise, mTexSunset, mTexSky, mTexSolarEclipse);
         mTexSun = loadTexture("grass/drawable/sun.png", false, false);
-        mTexAA = createAlphaTexture();
+        mTexAA = GrassTextureUtils.createAlphaTexture();
         mTexDandelion = loadTexture("grass/drawable/dandelion.png", false, false);
         mTexFirefly = loadTexture("grass/drawable/firefly.png", false, false);
         mTexFirefly1 = loadTexture("grass/drawable/firefly1.png", false, false);
         mTexFirefly2 = loadTexture("grass/drawable/firefly2.png", false, false);
-        mWeatherRenderer.loadTextures(this::loadTexture, this::createSolidColorTexture);
-        mStarRenderer.loadTextures(this::createSolidColorTexture);
+        mWeatherRenderer.loadTextures(this::loadTexture, GrassTextureUtils::createSolidColorTexture);
+        mStarRenderer.loadTextures(GrassTextureUtils::createSolidColorTexture);
     }
 
     private void ensureSkyFieldsLoaded() {
@@ -617,111 +617,15 @@ public class GrassGL extends GLESScene {
         return cols.toArray(new int[0][]);
     }
 
-    private int createSkyFieldTexture(int[][] fieldColors, boolean repeatS) {
-        if (fieldColors == null || fieldColors.length == 0 || fieldColors[0].length == 0) {
-            return 0;
-        }
-
-        final int cols = fieldColors.length;
-        final int rows = fieldColors[0].length;
-        final int targetW = 24;
-        final int targetH = 64;
-        byte[] rgba = new byte[targetW * targetH * 4];
-
-        for (int y = 0; y < targetH; y++) {
-            float v = y / (float) (targetH - 1);
-            float srcY = v * (rows - 1);
-            int y0 = Math.max(0, Math.min(rows - 1, (int) Math.floor(srcY)));
-            int y1 = Math.min(rows - 1, y0 + 1);
-            float ty = srcY - y0;
-            for (int x = 0; x < targetW; x++) {
-                float u = x / (float) (targetW - 1);
-                float srcX = u * (cols - 1);
-                int x0 = Math.max(0, Math.min(cols - 1, (int) Math.floor(srcX)));
-                int x1 = Math.min(cols - 1, x0 + 1);
-                float tx = srcX - x0;
-
-                int c00 = fieldColors[x0][y0];
-                int c10 = fieldColors[x1][y0];
-                int c01 = fieldColors[x0][y1];
-                int c11 = fieldColors[x1][y1];
-
-                int r = Math.round(lerp(
-                        lerp(Color.red(c00), Color.red(c10), tx),
-                        lerp(Color.red(c01), Color.red(c11), tx), ty));
-                int g = Math.round(lerp(
-                        lerp(Color.green(c00), Color.green(c10), tx),
-                        lerp(Color.green(c01), Color.green(c11), tx), ty));
-                int b = Math.round(lerp(
-                        lerp(Color.blue(c00), Color.blue(c10), tx),
-                        lerp(Color.blue(c01), Color.blue(c11), tx), ty));
-                int a = Math.round(lerp(
-                        lerp(Color.alpha(c00), Color.alpha(c10), tx),
-                        lerp(Color.alpha(c01), Color.alpha(c11), tx), ty));
-
-                int idx = (y * targetW + x) * 4;
-                rgba[idx] = (byte) r;
-                rgba[idx + 1] = (byte) g;
-                rgba[idx + 2] = (byte) b;
-                rgba[idx + 3] = (byte) a;
-            }
-        }
-
-        int[] tex = new int[1];
-        GLES20.glGenTextures(1, tex, 0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, tex[0]);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S,
-                repeatS ? GLES20.GL_REPEAT : GLES20.GL_CLAMP_TO_EDGE);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
-        ByteBuffer buf = ByteBuffer.allocateDirect(rgba.length).order(ByteOrder.nativeOrder());
-        buf.put(rgba).position(0);
-        GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_RGBA, targetW, targetH, 0,
-                GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, buf);
-        return tex[0];
-    }
-
-    private static float lerp(float a, float b, float t) {
-        return a * (1.0f - t) + b * t;
-    }
-
     private void loadMoonTextures() {
         mTexMoonBase = loadTexture("grass/drawable/grass_moon.png", false, false);
-        mTexMoonMask = createMoonMaskTexture(512);
+        mTexMoonMask = GrassTextureUtils.createMoonMaskTexture(512);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTexMoonBase);
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTexMoonMask);
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-    }
-
-    private int createMoonMaskTexture(int size) {
-        int[] tex = new int[1];
-        GLES20.glGenTextures(1, tex, 0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, tex[0]);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
-        byte[] alpha = new byte[size * size];
-        float cx = (size - 1) * 0.5f, cy = (size - 1) * 0.5f;
-        float radius = size * 0.5f - 1.0f;
-        float edge = radius * 0.08f;
-        for (int y = 0; y < size; y++) {
-            for (int x = 0; x < size; x++) {
-                float dx = x - cx, dy = y - cy;
-                float dist = (float) Math.sqrt(dx * dx + dy * dy);
-                float a = 1.0f - clamp((dist - radius + edge) / edge, 0.0f, 1.0f);
-                alpha[y * size + x] = (byte) Math.round(a * 255.0f);
-            }
-        }
-        ByteBuffer buf = ByteBuffer.allocateDirect(alpha.length).order(ByteOrder.nativeOrder());
-        buf.put(alpha).position(0);
-        GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_ALPHA, size, size,
-                0, GLES20.GL_ALPHA, GLES20.GL_UNSIGNED_BYTE, buf);
-        return tex[0];
     }
 
     private int loadTexture(int resId, boolean repeat, boolean mipmap) {
@@ -763,49 +667,6 @@ public class GrassGL extends GLESScene {
         GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
         if (mipmap) GLES20.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
         bitmap.recycle();
-        return tex[0];
-    }
-
-    private int createAlphaTexture() {
-        int[] tex = new int[1];
-        GLES20.glGenTextures(1, tex, 0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, tex[0]);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER,
-                GLES20.GL_LINEAR_MIPMAP_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_REPEAT);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_REPEAT);
-        byte[] mip0 = new byte[]{0, (byte) 255, (byte) 255, 0};
-        byte[] mip1 = new byte[]{64, 64};
-        byte[] mip2 = new byte[]{0};
-        ByteBuffer b0 = ByteBuffer.allocateDirect(mip0.length).order(ByteOrder.nativeOrder());
-        b0.put(mip0).position(0);
-        GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_ALPHA, 4, 1, 0,
-                GLES20.GL_ALPHA, GLES20.GL_UNSIGNED_BYTE, b0);
-        ByteBuffer b1 = ByteBuffer.allocateDirect(mip1.length).order(ByteOrder.nativeOrder());
-        b1.put(mip1).position(0);
-        GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 1, GLES20.GL_ALPHA, 2, 1, 0,
-                GLES20.GL_ALPHA, GLES20.GL_UNSIGNED_BYTE, b1);
-        ByteBuffer b2 = ByteBuffer.allocateDirect(mip2.length).order(ByteOrder.nativeOrder());
-        b2.put(mip2).position(0);
-        GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 2, GLES20.GL_ALPHA, 1, 1, 0,
-                GLES20.GL_ALPHA, GLES20.GL_UNSIGNED_BYTE, b2);
-        return tex[0];
-    }
-
-    private int createSolidColorTexture(byte r, byte g, byte b, byte a) {
-        int[] tex = new int[1];
-        GLES20.glGenTextures(1, tex, 0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, tex[0]);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
-        byte[] rgba = new byte[]{r, g, b, a};
-        ByteBuffer buf = ByteBuffer.allocateDirect(rgba.length).order(ByteOrder.nativeOrder());
-        buf.put(rgba).position(0);
-        GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_RGBA, 1, 1, 0,
-            GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, buf);
         return tex[0];
     }
 
@@ -908,8 +769,8 @@ public class GrassGL extends GLESScene {
         float distance = (float) Math.sqrt(dx * dx + dy * dy);
         if (distance >= (sunRadius + moonRadius)) return;
 
-        float overlapFactor = 1.0f - clamp(distance / (sunRadius + moonRadius), 0.0f, 1.0f);
-        float maskAlpha = clamp(sunAlpha * (0.45f + 0.55f * eclipse.fraction) * overlapFactor, 0.0f, 1.0f);
+        float overlapFactor = 1.0f - MathUtils.clamp(distance / (sunRadius + moonRadius), 0.0f, 1.0f);
+        float maskAlpha = MathUtils.clamp(sunAlpha * (0.45f + 0.55f * eclipse.fraction) * overlapFactor, 0.0f, 1.0f);
         if (maskAlpha <= 0.001f) return;
 
         useProgram(mMoonProgram);
@@ -1304,36 +1165,4 @@ public class GrassGL extends GLESScene {
         }
     }
 
-    // ---- Math utilities (local copies for GL rendering code) ----
-
-    private static float clamp(float val, float min, float max) {
-        return Math.max(min, Math.min(max, val));
     }
-
-    private static float mix(float a, float b, float t) {
-        return a * (1 - t) + b * t;
-    }
-
-    private static float normf(float start, float stop, float value) {
-        return (value - start) / (stop - start);
-    }
-
-    private static int hsbToRgb(float h, float s, float b) {
-        float red = 0.0f, green = 0.0f, blue = 0.0f;
-        float hf = (h - (int) h) * 6.0f;
-        int ihf = (int) hf;
-        float f = hf - ihf;
-        float pv = b * (1.0f - s);
-        float qv = b * (1.0f - s * f);
-        float tv = b * (1.0f - s * (1.0f - f));
-        switch (ihf) {
-            case 0: red = b; green = tv; blue = pv; break;
-            case 1: red = qv; green = b; blue = pv; break;
-            case 2: red = pv; green = b; blue = tv; break;
-            case 3: red = pv; green = qv; blue = b; break;
-            case 4: red = tv; green = pv; blue = b; break;
-            case 5: red = b; green = pv; blue = qv; break;
-        }
-        return Color.argb(255, (int) (red * 255), (int) (green * 255), (int) (blue * 255));
-    }
-}

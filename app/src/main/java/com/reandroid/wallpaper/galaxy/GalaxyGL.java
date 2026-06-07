@@ -495,12 +495,4 @@ public class GalaxyGL extends GLESScene {
         }
     }
 
-    private FloatBuffer createFloatBuffer(float[] data) {
-        ByteBuffer bb = ByteBuffer.allocateDirect(data.length * 4);
-        bb.order(ByteOrder.nativeOrder());
-        FloatBuffer fb = bb.asFloatBuffer();
-        fb.put(data);
-        fb.position(0);
-        return fb;
-    }
 }

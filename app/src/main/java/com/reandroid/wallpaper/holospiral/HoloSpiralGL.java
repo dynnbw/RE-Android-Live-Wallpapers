@@ -384,14 +384,6 @@ public class HoloSpiralGL extends GLESScene {
         return createFloatBuffer(data);
     }
 
-    private FloatBuffer createFloatBuffer(float[] data) {
-        ByteBuffer bb = ByteBuffer.allocateDirect(data.length * 4);
-        bb.order(ByteOrder.nativeOrder());
-        FloatBuffer buffer = bb.asFloatBuffer();
-        buffer.put(data);
-        buffer.position(0);
-        return buffer;
-    }
 
     private float[] convertColor(int argb) {
         float a = ((argb >> 24) & 0xff) / 255.0f;

@@ -58,8 +58,8 @@ public class WalkAroundGL extends GLESScene {
         mContext = context.getApplicationContext();
         float[] quadPos = AssetLoader.readFloatArray(mContext, "walkaround/data/walkaround_quad_pos.csv");
         float[] quadTex = AssetLoader.readFloatArray(mContext, "walkaround/data/walkaround_quad_tex.csv");
-        mPosBuffer = toFloatBuffer(quadPos);
-        mTexBuffer = toFloatBuffer(quadTex);
+        mPosBuffer = createFloatBuffer(quadPos);
+        mTexBuffer = createFloatBuffer(quadTex);
         Matrix.setIdentityM(mMvp, 0);
         Matrix.setIdentityM(mTexMatrix, 0);
     }
@@ -380,12 +380,4 @@ public class WalkAroundGL extends GLESScene {
         return shader;
     }
 
-    private FloatBuffer toFloatBuffer(float[] data) {
-        ByteBuffer bb = ByteBuffer.allocateDirect(data.length * 4);
-        bb.order(ByteOrder.nativeOrder());
-        FloatBuffer fb = bb.asFloatBuffer();
-        fb.put(data);
-        fb.position(0);
-        return fb;
-    }
 }

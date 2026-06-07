@@ -4,7 +4,21 @@ import android.content.res.Resources;
 import android.view.MotionEvent;
 import android.view.Surface;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
+
 public abstract class GLESScene {
+
+    /** Allocate a direct FloatBuffer and fill it with data (shared by all subclasses). */
+    protected FloatBuffer createFloatBuffer(float[] data) {
+        ByteBuffer bb = ByteBuffer.allocateDirect(data.length * 4);
+        bb.order(ByteOrder.nativeOrder());
+        FloatBuffer fb = bb.asFloatBuffer();
+        fb.put(data);
+        fb.position(0);
+        return fb;
+    }
     protected int mWidth;
     protected int mHeight;
     protected boolean mPreview;

@@ -180,7 +180,7 @@ public class CubeGL extends GLESScene implements SharedPreferences.OnSharedPrefe
         }
 
         if (mLineBuf == null || mLineBuf.capacity() < needed) {
-            mLineBuf = toFloatBuffer(mLineVerts);
+            mLineBuf = createFloatBuffer(mLineVerts);
         } else {
             mLineBuf.position(0);
             mLineBuf.put(mLineVerts, 0, needed);
@@ -211,7 +211,7 @@ public class CubeGL extends GLESScene implements SharedPreferences.OnSharedPrefe
         }
 
         if (mRingBuf == null) {
-            mRingBuf = toFloatBuffer(mRingVerts);
+            mRingBuf = createFloatBuffer(mRingVerts);
         } else {
             mRingBuf.position(0);
             mRingBuf.put(mRingVerts);
@@ -264,12 +264,4 @@ public class CubeGL extends GLESScene implements SharedPreferences.OnSharedPrefe
         return shader;
     }
 
-    private static FloatBuffer toFloatBuffer(float[] data) {
-        ByteBuffer bb = ByteBuffer.allocateDirect(data.length * 4);
-        bb.order(ByteOrder.nativeOrder());
-        FloatBuffer fb = bb.asFloatBuffer();
-        fb.put(data);
-        fb.position(0);
-        return fb;
-    }
 }

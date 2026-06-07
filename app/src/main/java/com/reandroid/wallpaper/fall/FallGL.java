@@ -596,15 +596,6 @@ public class FallGL extends GLESScene {
         return textures;
     }
 
-    private FloatBuffer createFloatBuffer(float[] data) {
-        ByteBuffer bb = ByteBuffer.allocateDirect(data.length * 4);
-        bb.order(ByteOrder.nativeOrder());
-        FloatBuffer fb = bb.asFloatBuffer();
-        fb.put(data);
-        fb.position(0);
-        return fb;
-    }
-
     private void syncPerfSettingsIfNeeded(long nowMs) {
         if (nowMs - mLastPerfSyncMs < PERF_SYNC_INTERVAL_MS) {
             return;

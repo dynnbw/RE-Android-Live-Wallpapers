@@ -20,8 +20,6 @@ import android.content.Context;
 import android.view.View;
 import android.view.MotionEvent;
 
-import com.reandroid.wallpaper.fall.FallGL;
-
 /**
  * 落叶壁纸的自定义View
  * 处理触摸事件，并转发给FallGL渲染器实现交互

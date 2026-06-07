@@ -242,10 +242,10 @@ final class PhaseBeamScene {
             adjusts[i * 3 + 2] = mAdjust[2];
         }
 
-        mBgPositionBuffer = toFloatBuffer(positions);
-        mBgOffsetBuffer = toFloatBuffer(offsets);
-        mBgRealColorBuffer = toFloatBuffer(realColors);
-        mBgAdjustBuffer = toFloatBuffer(adjusts);
+        mBgPositionBuffer = createFloatBuffer(positions);
+        mBgOffsetBuffer = createFloatBuffer(offsets);
+        mBgRealColorBuffer = createFloatBuffer(realColors);
+        mBgAdjustBuffer = createFloatBuffer(adjusts);
     }
 
     /**
@@ -306,13 +306,13 @@ final class PhaseBeamScene {
      * 从当前数据数组创建 NIO 缓冲区
      */
     void updateParticleBuffers() {
-        mDotPositionBuffer = toFloatBuffer(mDotPositions);
-        mDotOffsetBuffer = toFloatBuffer(mDotOffsets);
-        mDotAdjustBuffer = toFloatBuffer(mDotAdjusts);
+        mDotPositionBuffer = createFloatBuffer(mDotPositions);
+        mDotOffsetBuffer = createFloatBuffer(mDotOffsets);
+        mDotAdjustBuffer = createFloatBuffer(mDotAdjusts);
 
-        mBeamPositionBuffer = toFloatBuffer(mBeamPositions);
-        mBeamOffsetBuffer = toFloatBuffer(mBeamOffsets);
-        mBeamAdjustBuffer = toFloatBuffer(mBeamAdjusts);
+        mBeamPositionBuffer = createFloatBuffer(mBeamPositions);
+        mBeamOffsetBuffer = createFloatBuffer(mBeamOffsets);
+        mBeamAdjustBuffer = createFloatBuffer(mBeamAdjusts);
     }
 
     /**
@@ -369,10 +369,10 @@ final class PhaseBeamScene {
             mDotOffsets[i] = newOffset;
         }
 
-        mBeamPositionBuffer = toFloatBuffer(mBeamPositions);
-        mBeamOffsetBuffer = toFloatBuffer(mBeamOffsets);
-        mDotPositionBuffer = toFloatBuffer(mDotPositions);
-        mDotOffsetBuffer = toFloatBuffer(mDotOffsets);
+        mBeamPositionBuffer = createFloatBuffer(mBeamPositions);
+        mBeamOffsetBuffer = createFloatBuffer(mBeamOffsets);
+        mDotPositionBuffer = createFloatBuffer(mDotPositions);
+        mDotOffsetBuffer = createFloatBuffer(mDotOffsets);
     }
 
     // ---- Utility methods ----
@@ -388,7 +388,7 @@ final class PhaseBeamScene {
         target[base + 2] = adjust[2];
     }
 
-    static FloatBuffer toFloatBuffer(float[] data) {
+    static FloatBuffer createFloatBuffer(float[] data) {
         ByteBuffer bb = ByteBuffer.allocateDirect(data.length * 4);
         bb.order(ByteOrder.nativeOrder());
         FloatBuffer fb = bb.asFloatBuffer();
