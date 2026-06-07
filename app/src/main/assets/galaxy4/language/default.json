@@ -1,4 +1,6 @@
 {
   "galaxy4_bg_star_count": "Background star count",
-  "galaxy4_space_cloud_count": "Space cloud count"
+  "galaxy4_space_cloud_count": "Space cloud count",
+  "galaxy4_particle_size": "Particle size",
+  "galaxy4_particle_opacity": "Particle opacity"
 }

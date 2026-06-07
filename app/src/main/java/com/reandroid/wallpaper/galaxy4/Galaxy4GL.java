@@ -228,7 +228,7 @@ public class Galaxy4GL extends GLESScene {
      */
     private void loadTextures() {
         // 加载各纹理
-        mTexBg = loadTexture("galaxy4/drawable/galaxy4_bg.png");
+        mTexBg = loadTexture("galaxy4/drawable/galaxy4_bg.jpg");
         mTexCloud = loadTexture("galaxy4/drawable/galaxy4_cloud.png");
         mTexStaticStar = loadTexture("galaxy4/drawable/galaxy4_staticstar.png");
         mTexStaticStar2 = loadTexture("galaxy4/drawable/galaxy4_staticstar2.png");
@@ -238,7 +238,7 @@ public class Galaxy4GL extends GLESScene {
     
     /**
      * 从assets路径加载OpenGL纹理
-     * @param assetPath 纹理在assets中的路径（如"galaxy4/drawable/galaxy4_bg.png"）
+     * @param assetPath 纹理在assets中的路径（如"galaxy4/drawable/galaxy4_bg.jpg"）
      * @return 加载成功的纹理句柄
      */
     private int loadTexture(String assetPath) {
@@ -331,16 +331,23 @@ public class Galaxy4GL extends GLESScene {
     private void drawBackground() {
         // 使用背景着色器程序
         GLES20.glUseProgram(mBgProgram);
-        
-        // 全屏四边形顶点缓冲区（首次创建后复用）
-        if (mBgQuadBuffer == null) {
-            float[] vertices = {
-                -1, -1, 0, 1,  // 左下
-                 1, -1, 1, 1,  // 右下
-                -1,  1, 0, 0,  // 左上
-                 1,  1, 1, 0   // 右上
-            };
+
+        // Background fills a square area (max dimension), centered — matches original RS
+        float maxDim = Math.max(mWidth, mHeight);
+        float scaleX = maxDim / (float) mWidth;
+        float scaleY = maxDim / (float) mHeight;
+        float[] vertices = {
+            -scaleX, -scaleY, 0, 1,
+             scaleX, -scaleY, 1, 1,
+            -scaleX,  scaleY, 0, 0,
+             scaleX,  scaleY, 1, 0,
+        };
+        if (mBgQuadBuffer == null || mBgQuadBuffer.capacity() < vertices.length) {
             mBgQuadBuffer = createFloatBuffer(vertices);
+        } else {
+            mBgQuadBuffer.position(0);
+            mBgQuadBuffer.put(vertices);
+            mBgQuadBuffer.position(0);
         }
         
         // 获取着色器属性/统一变量句柄
@@ -416,10 +423,14 @@ public class Galaxy4GL extends GLESScene {
         // 获取着色器句柄
         int posHandle = GLES20.glGetAttribLocation(mBgStarProgram, "aPosition");// 粒子位置属性
         int mvpHandle = GLES20.glGetUniformLocation(mBgStarProgram, "uMVPMatrix");// MVP矩阵统一变量
-        
+
         // 设置MVP矩阵
         GLES20.glUniformMatrix4fv(mvpHandle, 1, false, sceneData.getMvpMatrix(), 0);
-        
+        int sizeHandle = GLES20.glGetUniformLocation(mBgStarProgram, "uParticleSize");
+        int opacityHandle = GLES20.glGetUniformLocation(mBgStarProgram, "uParticleOpacity");
+        GLES20.glUniform1f(sizeHandle, sceneData.getParticleSize());
+        GLES20.glUniform1f(opacityHandle, sceneData.getParticleOpacity());
+
         // 启用位置属性数组
         GLES20.glEnableVertexAttribArray(posHandle);
         

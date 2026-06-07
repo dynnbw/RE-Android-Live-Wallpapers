@@ -193,6 +193,9 @@ final class Galaxy4Scene {
             mSpaceCloudCount = prefSpaceCloudCount;
             requestParticleRebuild();
         }
+
+        mSceneData.particleSize = defaultPrefs.getInt("galaxy4_particle_size", 100) / 100.0f;
+        mSceneData.particleOpacity = defaultPrefs.getInt("galaxy4_particle_opacity", 100) / 100.0f;
     }
 
     private void requestParticleRebuild() {
@@ -332,6 +335,8 @@ final class Galaxy4Scene {
         private int bgStarCount;
         private int spaceCloudCount;
         private float timeSeconds;
+        private float particleSize = 1.0f;
+        private float particleOpacity = 1.0f;
 
         float[] getSpaceClouds() {
             return spaceClouds;
@@ -361,8 +366,8 @@ final class Galaxy4Scene {
             return timeSeconds;
         }
 
-        int getStaticStarCount() {
-            return STATIC_STAR_COUNT;
-        }
+        int getStaticStarCount() { return STATIC_STAR_COUNT; }
+        float getParticleSize() { return particleSize; }
+        float getParticleOpacity() { return particleOpacity; }
     }
 }

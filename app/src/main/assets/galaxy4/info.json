@@ -1,5 +1,6 @@
 {
   "label": "@string/wallpaper_galaxy4",
   "plugin": "com.reandroid.wallpaper.galaxy4.Galaxy4Plugin",
+  "pluginVk": "com.reandroid.wallpaper.galaxy4.Galaxy4VKPlugin",
   "previewClass": "com.reandroid.wallpaper.galaxy4.Galaxy4GL"
 }
