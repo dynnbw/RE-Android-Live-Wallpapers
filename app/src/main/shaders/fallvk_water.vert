@@ -1,5 +1,10 @@
 #version 450
 
+layout(set = 0, binding = 1) uniform DropBlock {
+    vec4 u_drop[80];
+    int u_dropCount;
+} dropBlock;
+
 layout(push_constant) uniform PushConstants {
     mat4 uMvpMatrix;
     float uAlpha;
@@ -12,8 +17,6 @@ layout(push_constant) uniform PushConstants {
     float u_dxMul;
     float u_xOffset;
     int u_rotate;
-    int u_dropCount;
-    vec4 u_drop[8];
 } pc;
 
 layout(location = 0) in vec3 aPosition;
@@ -57,14 +60,11 @@ void main() {
     vec2 texOffset = vec2(0.0);
     float dxMul = pc.u_dxMul;
 
-    if (pc.u_dropCount > 0) texOffset += addDrop(pc.u_drop[0], ripplePos, dxMul);
-    if (pc.u_dropCount > 1) texOffset += addDrop(pc.u_drop[1], ripplePos, dxMul);
-    if (pc.u_dropCount > 2) texOffset += addDrop(pc.u_drop[2], ripplePos, dxMul);
-    if (pc.u_dropCount > 3) texOffset += addDrop(pc.u_drop[3], ripplePos, dxMul);
-    if (pc.u_dropCount > 4) texOffset += addDrop(pc.u_drop[4], ripplePos, dxMul);
-    if (pc.u_dropCount > 5) texOffset += addDrop(pc.u_drop[5], ripplePos, dxMul);
-    if (pc.u_dropCount > 6) texOffset += addDrop(pc.u_drop[6], ripplePos, dxMul);
-    if (pc.u_dropCount > 7) texOffset += addDrop(pc.u_drop[7], ripplePos, dxMul);
+    for (int i = 0; i < 80; i++) {
+        if (i < dropBlock.u_dropCount) {
+            texOffset += addDrop(dropBlock.u_drop[i], ripplePos, dxMul);
+        }
+    }
 
     varU += texOffset.x;
     varV += texOffset.y;

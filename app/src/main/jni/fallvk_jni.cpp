@@ -10,7 +10,6 @@ struct PushConstants {
     float alpha;             // offset 64
     float leafFrameIndex;    // offset 68
     float leafFrameInvCount; // offset 72
-    // Ripple params
     float glHeight;          // offset 76
     float bgScale;           // offset 80
     float meshScaleX;        // offset 84
@@ -18,9 +17,13 @@ struct PushConstants {
     float dxMul;             // offset 92
     float xOffset;           // offset 96
     int rotate;              // offset 100
-    int dropCount;           // offset 104
-    float _pad;              // offset 108 — explicit pad to 16-byte align vec4[8] at 112
-    float dropData[8 * 4];   // offset 112 — matches GLSL vec4 u_drop[8] alignment
+};
+// Drops moved to UBO (binding 1) — no hard limit
+
+struct DropUbo {
+    float drops[80 * 4];  // 80 drops × 4 floats, offset 0
+    int dropCount;         // offset 1280
+    int _pad[3];          // align to 16-byte boundary (1296 total)
 };
 
 struct TextureResource {
@@ -86,6 +89,7 @@ public:
         destroyTextureLocked(bgTexture_);
         destroyTextureLocked(leafTexture_);
         destroyWaterBuffersLocked();
+        destroyDropUboLocked();
         if (bgDescriptorPool_ != VK_NULL_HANDLE) {
             vkDestroyDescriptorPool(device_, bgDescriptorPool_, nullptr);
             bgDescriptorPool_ = VK_NULL_HANDLE;
@@ -213,20 +217,28 @@ public:
         env->GetFloatArrayRegion(projectionArray, 0, 16, projection);
         env->GetFloatArrayRegion(viewArray, 0, 16, view);
 
-        // Pack drop data into PushConstants (matches GLSL vec4 alignment)
-        PushConstants dropPC{};
-        int maxDrops = std::min(dropCount, 8);
-        dropPC.dropCount = maxDrops;
-        dropPC.glHeight = glHeight;
-        dropPC.bgScale = bgScale;
-        dropPC.meshScaleX = meshScaleX;
-        dropPC.meshScaleY = meshScaleY;
-        dropPC.dxMul = dxMul;
-        dropPC.xOffset = xOffset;
-        dropPC.rotate = rotate;
-        if (dropDataArray != nullptr && maxDrops > 0) {
-            env->GetFloatArrayRegion(dropDataArray, 0, maxDrops * 4, dropPC.dropData);
+        // Write drop data to UBO (no hard limit — matches GLES behavior)
+        if (!ensureDropUboLocked()) {
+            return;
         }
+        int maxDrops = std::min(dropCount, 80);
+        if (dropUboMapped_ != nullptr) {
+            auto* ubo = static_cast<DropUbo*>(dropUboMapped_);
+            if (dropDataArray != nullptr && maxDrops > 0) {
+                env->GetFloatArrayRegion(dropDataArray, 0, maxDrops * 4, ubo->drops);
+            }
+            ubo->dropCount = maxDrops;
+        }
+
+        // Build slim push constants (drops now in UBO)
+        PushConstants pc{};
+        pc.glHeight = glHeight;
+        pc.bgScale = bgScale;
+        pc.meshScaleX = meshScaleX;
+        pc.meshScaleY = meshScaleY;
+        pc.dxMul = dxMul;
+        pc.xOffset = xOffset;
+        pc.rotate = rotate;
 
         vkWaitForFences(device_, 1, &inFlightFence_, VK_TRUE, UINT64_MAX);
 
@@ -249,7 +261,7 @@ public:
         VkCommandBuffer commandBuffer = swapchainCommandBuffers_[imageIndex];
         vkResetCommandBuffer(commandBuffer, 0);
         if (!recordCommandBufferLocked(commandBuffer, imageIndex, projection, view, leaves, xOffset,
-            waterIndexCount_, dropPC)) {
+            waterIndexCount_, pc)) {
             return;
         }
 
@@ -475,14 +487,13 @@ public:
     // ── Descriptor / texture management ──
 
     bool createDescriptorResourcesLocked() {
-        if (!createOneDescriptorLocked(bgDescriptorSetLayout_, bgDescriptorPool_, bgDescriptorSet_)) {
-            return false;
-        }
-        return createOneDescriptorLocked(leafDescriptorSetLayout_, leafDescriptorPool_, leafDescriptorSet_);
+        if (!createBgDescriptorLocked()) return false;
+        return createLeafDescriptorLocked();
     }
 
-    bool createOneDescriptorLocked(VkDescriptorSetLayout& setLayout, VkDescriptorPool& pool, VkDescriptorSet& set) {
-        if (setLayout != VK_NULL_HANDLE && pool != VK_NULL_HANDLE && set != VK_NULL_HANDLE) {
+    bool createLeafDescriptorLocked() {
+        if (leafDescriptorSetLayout_ != VK_NULL_HANDLE && leafDescriptorPool_ != VK_NULL_HANDLE
+                && leafDescriptorSet_ != VK_NULL_HANDLE) {
             return true;
         }
 
@@ -496,7 +507,7 @@ public:
         layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
         layoutInfo.bindingCount = 1;
         layoutInfo.pBindings = &binding;
-        if (vkCreateDescriptorSetLayout(device_, &layoutInfo, nullptr, &setLayout) != VK_SUCCESS) {
+        if (vkCreateDescriptorSetLayout(device_, &layoutInfo, nullptr, &leafDescriptorSetLayout_) != VK_SUCCESS) {
             return false;
         }
 
@@ -508,16 +519,65 @@ public:
         poolInfo.poolSizeCount = 1;
         poolInfo.pPoolSizes = &poolSize;
         poolInfo.maxSets = 1;
-        if (vkCreateDescriptorPool(device_, &poolInfo, nullptr, &pool) != VK_SUCCESS) {
+        if (vkCreateDescriptorPool(device_, &poolInfo, nullptr, &leafDescriptorPool_) != VK_SUCCESS) {
             return false;
         }
 
         VkDescriptorSetAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-        allocInfo.descriptorPool = pool;
+        allocInfo.descriptorPool = leafDescriptorPool_;
         allocInfo.descriptorSetCount = 1;
-        allocInfo.pSetLayouts = &setLayout;
-        return vkAllocateDescriptorSets(device_, &allocInfo, &set) == VK_SUCCESS;
+        allocInfo.pSetLayouts = &leafDescriptorSetLayout_;
+        return vkAllocateDescriptorSets(device_, &allocInfo, &leafDescriptorSet_) == VK_SUCCESS;
+    }
+
+    bool createBgDescriptorLocked() {
+        if (bgDescriptorSetLayout_ != VK_NULL_HANDLE && bgDescriptorPool_ != VK_NULL_HANDLE
+                && bgDescriptorSet_ != VK_NULL_HANDLE) {
+            return true;
+        }
+
+        // Binding 0: background texture sampler
+        // Binding 1: drop uniform buffer
+        VkDescriptorSetLayoutBinding bindings[2]{};
+        bindings[0].binding = 0;
+        bindings[0].descriptorCount = 1;
+        bindings[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        bindings[0].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+        bindings[1].binding = 1;
+        bindings[1].descriptorCount = 1;
+        bindings[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        bindings[1].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+        VkDescriptorSetLayoutCreateInfo layoutInfo{};
+        layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+        layoutInfo.bindingCount = 2;
+        layoutInfo.pBindings = bindings;
+        if (vkCreateDescriptorSetLayout(device_, &layoutInfo, nullptr, &bgDescriptorSetLayout_) != VK_SUCCESS) {
+            return false;
+        }
+
+        VkDescriptorPoolSize poolSizes[2]{};
+        poolSizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        poolSizes[0].descriptorCount = 1;
+        poolSizes[1].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        poolSizes[1].descriptorCount = 1;
+        VkDescriptorPoolCreateInfo poolInfo{};
+        poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+        poolInfo.poolSizeCount = 2;
+        poolInfo.pPoolSizes = poolSizes;
+        poolInfo.maxSets = 1;
+        if (vkCreateDescriptorPool(device_, &poolInfo, nullptr, &bgDescriptorPool_) != VK_SUCCESS) {
+            return false;
+        }
+
+        VkDescriptorSetAllocateInfo allocInfo{};
+        allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+        allocInfo.descriptorPool = bgDescriptorPool_;
+        allocInfo.descriptorSetCount = 1;
+        allocInfo.pSetLayouts = &bgDescriptorSetLayout_;
+        return vkAllocateDescriptorSets(device_, &allocInfo, &bgDescriptorSet_) == VK_SUCCESS;
     }
 
     bool ensureTextureLocked(TextureResource& texture, VkDescriptorSet descriptorSet) {
@@ -879,6 +939,71 @@ public:
         waterIndexCount_ = 0;
     }
 
+    // ── Drop UBO (no hard limit, replaces push constants for ripple data) ──
+
+    bool ensureDropUboLocked() {
+        if (dropUbo_ != VK_NULL_HANDLE) return true;
+
+        const VkDeviceSize uboSize = sizeof(DropUbo);
+        VkBufferCreateInfo bufferInfo{};
+        bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        bufferInfo.size = uboSize;
+        bufferInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+        bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        if (vkCreateBuffer(device_, &bufferInfo, nullptr, &dropUbo_) != VK_SUCCESS) {
+            return false;
+        }
+
+        VkMemoryRequirements memReq{};
+        vkGetBufferMemoryRequirements(device_, dropUbo_, &memReq);
+        VkMemoryAllocateInfo allocInfo{};
+        allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+        allocInfo.allocationSize = memReq.size;
+        allocInfo.memoryTypeIndex = vkFindMemoryType(physicalDevice_, memReq.memoryTypeBits,
+                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+        if (vkAllocateMemory(device_, &allocInfo, nullptr, &dropUboMemory_) != VK_SUCCESS) {
+            vkDestroyBuffer(device_, dropUbo_, nullptr);
+            dropUbo_ = VK_NULL_HANDLE;
+            return false;
+        }
+        vkBindBufferMemory(device_, dropUbo_, dropUboMemory_, 0);
+        if (vkMapMemory(device_, dropUboMemory_, 0, uboSize, 0, &dropUboMapped_) != VK_SUCCESS) {
+            dropUboMapped_ = nullptr;
+        }
+
+        // Write descriptor set for binding 1
+        VkDescriptorBufferInfo descInfo{};
+        descInfo.buffer = dropUbo_;
+        descInfo.offset = 0;
+        descInfo.range = uboSize;
+
+        VkWriteDescriptorSet write{};
+        write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        write.dstSet = bgDescriptorSet_;
+        write.dstBinding = 1;
+        write.descriptorCount = 1;
+        write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        write.pBufferInfo = &descInfo;
+        vkUpdateDescriptorSets(device_, 1, &write, 0, nullptr);
+
+        return dropUboMapped_ != nullptr;
+    }
+
+    void destroyDropUboLocked() {
+        if (dropUboMapped_ != nullptr && dropUboMemory_ != VK_NULL_HANDLE) {
+            vkUnmapMemory(device_, dropUboMemory_);
+            dropUboMapped_ = nullptr;
+        }
+        if (dropUbo_ != VK_NULL_HANDLE) {
+            vkDestroyBuffer(device_, dropUbo_, nullptr);
+            dropUbo_ = VK_NULL_HANDLE;
+        }
+        if (dropUboMemory_ != VK_NULL_HANDLE) {
+            vkFreeMemory(device_, dropUboMemory_, nullptr);
+            dropUboMemory_ = VK_NULL_HANDLE;
+        }
+    }
+
     // ── Leaf helpers ──
 
     std::vector<LeafDraw> readLeavesLocked(JNIEnv* env, jfloatArray leavesArray, jint leafCount) {
@@ -972,7 +1097,7 @@ public:
 
     bool recordCommandBufferLocked(VkCommandBuffer commandBuffer, uint32_t imageIndex,
             const float projection[16], const float view[16], const std::vector<LeafDraw>& leaves,
-            float xOffset, int waterIndexCount, const PushConstants& dropPC) {
+            float xOffset, int waterIndexCount, const PushConstants& pc) {
         VkCommandBufferBeginInfo beginInfo{};
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
         if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS) {
@@ -1023,16 +1148,14 @@ public:
         waterPush.alpha = 1.0f;
         waterPush.leafFrameIndex = 0.0f;
         waterPush.leafFrameInvCount = 1.0f;
-        // Copy GPU ripple data from scene
-        waterPush.glHeight = dropPC.glHeight;
-        waterPush.bgScale = dropPC.bgScale;
-        waterPush.meshScaleX = dropPC.meshScaleX;
-        waterPush.meshScaleY = dropPC.meshScaleY;
-        waterPush.dxMul = dropPC.dxMul;
-        waterPush.xOffset = dropPC.xOffset;
-        waterPush.rotate = dropPC.rotate;
-        waterPush.dropCount = dropPC.dropCount;
-        std::memcpy(waterPush.dropData, dropPC.dropData, sizeof(waterPush.dropData));
+        // Copy ripple scene params from scene (drops come from UBO binding 1)
+        waterPush.glHeight = pc.glHeight;
+        waterPush.bgScale = pc.bgScale;
+        waterPush.meshScaleX = pc.meshScaleX;
+        waterPush.meshScaleY = pc.meshScaleY;
+        waterPush.dxMul = pc.dxMul;
+        waterPush.xOffset = pc.xOffset;
+        waterPush.rotate = pc.rotate;
         vkCmdPushConstants(commandBuffer, bgPipelineLayout_,
             VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
             0, sizeof(PushConstants), &waterPush);
@@ -1102,6 +1225,11 @@ public:
     void* waterIndexMapped_ = nullptr;
     size_t waterIndexCapacity_ = 0;
     int waterIndexCount_ = 0;
+
+    // Drop UBO (no hard limit — replaces push constants for ripple data)
+    VkBuffer dropUbo_ = VK_NULL_HANDLE;
+    VkDeviceMemory dropUboMemory_ = VK_NULL_HANDLE;
+    void* dropUboMapped_ = nullptr;
 
     int leafAtlasFrameCount_ = 1;
 
