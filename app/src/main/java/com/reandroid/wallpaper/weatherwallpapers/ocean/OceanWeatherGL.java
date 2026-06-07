@@ -318,21 +318,4 @@ public class OceanWeatherGL extends GLESScene {
         return shader;
     }
 
-    private int createProgram(String vertexSource, String fragmentSource) {
-        int vs = createShader(GLES20.GL_VERTEX_SHADER, vertexSource);
-        int fs = createShader(GLES20.GL_FRAGMENT_SHADER, fragmentSource);
-        int program = GLES20.glCreateProgram();
-        GLES20.glAttachShader(program, vs);
-        GLES20.glAttachShader(program, fs);
-        GLES20.glLinkProgram(program);
-        int[] linkStatus = new int[1];
-        GLES20.glGetProgramiv(program, GLES20.GL_LINK_STATUS, linkStatus, 0);
-        if (linkStatus[0] == 0) {
-            GLES20.glDeleteProgram(program);
-            return 0;
-        }
-        GLES20.glDeleteShader(vs);
-        GLES20.glDeleteShader(fs);
-        return program;
-    }
 }

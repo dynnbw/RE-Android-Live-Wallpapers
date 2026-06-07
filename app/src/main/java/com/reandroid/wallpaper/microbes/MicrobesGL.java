@@ -344,41 +344,7 @@ public class MicrobesGL extends GLESScene {
                 .asFloatBuffer();
     }
 
-    private int createProgram(String vertexSource, String fragmentSource) {
-        int vs = compileShader(GLES20.GL_VERTEX_SHADER, vertexSource);
-        int fs = compileShader(GLES20.GL_FRAGMENT_SHADER, fragmentSource);
-        if (vs == 0 || fs == 0) {
-            return 0;
-        }
 
-        int program = GLES20.glCreateProgram();
-        GLES20.glAttachShader(program, vs);
-        GLES20.glAttachShader(program, fs);
-        GLES20.glLinkProgram(program);
-
-        int[] ok = new int[1];
-        GLES20.glGetProgramiv(program, GLES20.GL_LINK_STATUS, ok, 0);
-        GLES20.glDeleteShader(vs);
-        GLES20.glDeleteShader(fs);
-        if (ok[0] == 0) {
-            GLES20.glDeleteProgram(program);
-            return 0;
-        }
-        return program;
-    }
-
-    private int compileShader(int type, String source) {
-        int shader = GLES20.glCreateShader(type);
-        GLES20.glShaderSource(shader, source);
-        GLES20.glCompileShader(shader);
-        int[] ok = new int[1];
-        GLES20.glGetShaderiv(shader, GLES20.GL_COMPILE_STATUS, ok, 0);
-        if (ok[0] == 0) {
-            GLES20.glDeleteShader(shader);
-            return 0;
-        }
-        return shader;
-    }
 
     private void deleteProgram(int program) {
         if (program != 0) {

@@ -298,42 +298,7 @@ public class BlueSeaGL extends GLESScene {
         }
     }
 
-    private int createProgram(String vs, String fs) {
-        int vertexShader = compileShader(GLES20.GL_VERTEX_SHADER, vs);
-        int fragmentShader = compileShader(GLES20.GL_FRAGMENT_SHADER, fs);
-        if (vertexShader == 0 || fragmentShader == 0) {
-            return 0;
-        }
-        int program = GLES20.glCreateProgram();
-        GLES20.glAttachShader(program, vertexShader);
-        GLES20.glAttachShader(program, fragmentShader);
-        GLES20.glLinkProgram(program);
-        int[] linkStatus = new int[1];
-        GLES20.glGetProgramiv(program, GLES20.GL_LINK_STATUS, linkStatus, 0);
-        if (linkStatus[0] == 0) {
-            Log.e(TAG, "Program link failed: " + GLES20.glGetProgramInfoLog(program));
-            GLES20.glDeleteProgram(program);
-            program = 0;
-        }
-        GLES20.glDeleteShader(vertexShader);
-        GLES20.glDeleteShader(fragmentShader);
-        return program;
-    }
 
-    private int compileShader(int type, String source) {
-        int shader = GLES20.glCreateShader(type);
-        GLES20.glShaderSource(shader, source);
-        GLES20.glCompileShader(shader);
-        int[] compiled = new int[1];
-        GLES20.glGetShaderiv(shader, GLES20.GL_COMPILE_STATUS, compiled, 0);
-        if (compiled[0] == 0) {
-            Log.e(TAG, "Shader compile failed: " + GLES20.glGetShaderInfoLog(shader));
-            Log.e(TAG, "Shader source:\n" + source);
-            GLES20.glDeleteShader(shader);
-            return 0;
-        }
-        return shader;
-    }
 
     private static FloatBuffer createBuffer(float[] data) {
         ByteBuffer bb = ByteBuffer.allocateDirect(data.length * 4);

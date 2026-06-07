@@ -504,18 +504,6 @@ public class FallGL extends GLESScene {
         GLES20.glDeleteShader(fs);
     }
 
-    private int compileShader(int shaderType, String source) {
-        int shader = GLES20.glCreateShader(shaderType);
-        GLES20.glShaderSource(shader, source);
-        GLES20.glCompileShader(shader);
-        int[] compileStatus = new int[1];
-        GLES20.glGetShaderiv(shader, GLES20.GL_COMPILE_STATUS, compileStatus, 0);
-        if (compileStatus[0] != GLES20.GL_TRUE) {
-            GLES20.glDeleteShader(shader);
-            return 0;
-        }
-        return shader;
-    }
 
     private int loadTexture(String assetPath) {
         Bitmap bitmap = AssetLoader.decodeBitmap(mContext, assetPath);

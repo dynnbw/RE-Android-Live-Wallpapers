@@ -147,8 +147,8 @@ public class WalkAroundGL extends GLESScene {
 
         String vs = AssetLoader.readText(mContext, "walkaround/shaders/GLES/walkaround_vs.glsl");
         String fs = AssetLoader.readText(mContext, "walkaround/shaders/GLES/walkaround_fs.glsl");
-        int v = loadShader(GLES20.GL_VERTEX_SHADER, vs);
-        int f = loadShader(GLES20.GL_FRAGMENT_SHADER, fs);
+        int v = compileShader(GLES20.GL_VERTEX_SHADER, vs);
+        int f = compileShader(GLES20.GL_FRAGMENT_SHADER, fs);
         if (v == 0 || f == 0) return;
 
         mProgram = GLES20.glCreateProgram();
@@ -367,17 +367,5 @@ public class WalkAroundGL extends GLESScene {
         return id;
     }
 
-    private int loadShader(int type, String source) {
-        int shader = GLES20.glCreateShader(type);
-        GLES20.glShaderSource(shader, source);
-        GLES20.glCompileShader(shader);
-        int[] compiled = new int[1];
-        GLES20.glGetShaderiv(shader, GLES20.GL_COMPILE_STATUS, compiled, 0);
-        if (compiled[0] == 0) {
-            GLES20.glDeleteShader(shader);
-            return 0;
-        }
-        return shader;
-    }
 
 }

@@ -309,22 +309,5 @@ public class ForestGL extends GLESScene {
         Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mModelMatrix, 0);
     }
 
-    private int createProgram(String vs, String fs) {
-        int v = loadShader(GLES20.GL_VERTEX_SHADER, vs);
-        int f = loadShader(GLES20.GL_FRAGMENT_SHADER, fs);
-        int p = GLES20.glCreateProgram();
-        GLES20.glAttachShader(p, v);
-        GLES20.glAttachShader(p, f);
-        GLES20.glLinkProgram(p);
-        GLES20.glDeleteShader(v);
-        GLES20.glDeleteShader(f);
-        return p;
-    }
 
-    private int loadShader(int type, String source) {
-        int s = GLES20.glCreateShader(type);
-        GLES20.glShaderSource(s, source);
-        GLES20.glCompileShader(s);
-        return s;
-    }
 }

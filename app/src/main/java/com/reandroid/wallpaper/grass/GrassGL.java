@@ -508,39 +508,7 @@ public class GrassGL extends GLESScene {
         mSunSunPosHandle = GLES20.glGetUniformLocation(mSunProgram, "uSunPos");
     }
 
-    private int createProgram(String vertexSource, String fragmentSource) {
-        int vs = loadShader(GLES20.GL_VERTEX_SHADER, vertexSource);
-        int fs = loadShader(GLES20.GL_FRAGMENT_SHADER, fragmentSource);
-        if (vs == 0 || fs == 0) return 0;
-        int program = GLES20.glCreateProgram();
-        GLES20.glAttachShader(program, vs);
-        GLES20.glAttachShader(program, fs);
-        GLES20.glLinkProgram(program);
-        int[] link = new int[1];
-        GLES20.glGetProgramiv(program, GLES20.GL_LINK_STATUS, link, 0);
-        if (link[0] != GLES20.GL_TRUE) {
-            Log.e(TAG, "Program link failed: " + GLES20.glGetProgramInfoLog(program));
-            GLES20.glDeleteProgram(program);
-            program = 0;
-        }
-        GLES20.glDeleteShader(vs);
-        GLES20.glDeleteShader(fs);
-        return program;
-    }
 
-    private int loadShader(int type, String source) {
-        int shader = GLES20.glCreateShader(type);
-        GLES20.glShaderSource(shader, source);
-        GLES20.glCompileShader(shader);
-        int[] compiled = new int[1];
-        GLES20.glGetShaderiv(shader, GLES20.GL_COMPILE_STATUS, compiled, 0);
-        if (compiled[0] == 0) {
-            Log.e(TAG, "Could not compile shader: " + GLES20.glGetShaderInfoLog(shader));
-            GLES20.glDeleteShader(shader);
-            return 0;
-        }
-        return shader;
-    }
 
     // ---- Texture loading ----
 

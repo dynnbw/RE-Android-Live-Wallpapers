@@ -221,25 +221,6 @@ public class Galaxy4GL extends GLESScene {
      * @param source 着色器源码
      * @return 编译成功的着色器句柄（失败返回0）
      */
-    private int compileShader(int type, String source) {
-        // 创建着色器对象
-        int shader = GLES20.glCreateShader(type);
-        // 设置着色器源码
-        GLES20.glShaderSource(shader, source);
-        // 编译着色器
-        GLES20.glCompileShader(shader);
-        
-        // 检查编译状态
-        int[] compiled = new int[1];
-        GLES20.glGetShaderiv(shader, GLES20.GL_COMPILE_STATUS, compiled, 0);
-        if (compiled[0] == 0) {
-            Log.e(TAG, "着色器编译错误: " + GLES20.glGetShaderInfoLog(shader));
-            GLES20.glDeleteShader(shader);
-            return 0;
-        }
-        
-        return shader;
-    }
     
     /**
      * 加载壁纸所需的所有纹理资源

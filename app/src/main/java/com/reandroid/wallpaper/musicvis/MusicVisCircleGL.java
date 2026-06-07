@@ -183,23 +183,6 @@ public class MusicVisCircleGL extends GLESScene implements SharedPreferences.OnS
         }
     }
 
-    private int createProgram(String vs, String fs) {
-        int v = loadShader(GLES20.GL_VERTEX_SHADER, vs);
-        int f = loadShader(GLES20.GL_FRAGMENT_SHADER, fs);
-        if (v == 0 || f == 0) return 0;
-        int p = GLES20.glCreateProgram();
-        GLES20.glAttachShader(p, v); GLES20.glAttachShader(p, f);
-        GLES20.glLinkProgram(p);
-        int[] linkStatus = new int[1];
-        GLES20.glGetProgramiv(p, GLES20.GL_LINK_STATUS, linkStatus, 0);
-        if (linkStatus[0] == 0) {
-            GLES20.glDeleteProgram(p);
-            return 0;
-        }
-        GLES20.glDeleteShader(v);
-        GLES20.glDeleteShader(f);
-        return p;
-    }
 
     private int loadShader(int t, String s) {
         int sh = GLES20.glCreateShader(t);

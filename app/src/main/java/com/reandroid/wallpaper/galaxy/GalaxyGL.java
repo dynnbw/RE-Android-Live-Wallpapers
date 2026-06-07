@@ -193,17 +193,17 @@ public class GalaxyGL extends GLESScene {
     }
 
     private void createPrograms() {
-        mBgProgram = createShaderProgram(
+        mBgProgram = createProgram(
             AssetLoader.readText(mContext, "galaxy/shaders/GLES/galaxy_bg_vs.glsl"),
             AssetLoader.readText(mContext, "galaxy/shaders/GLES/galaxy_bg_fs.glsl")
         );
 
-        mParticleProgram = createShaderProgram(
+        mParticleProgram = createProgram(
             AssetLoader.readText(mContext, "galaxy/shaders/GLES/galaxy_particle_vs.glsl"),
             AssetLoader.readText(mContext, "galaxy/shaders/GLES/galaxy_particle_fs.glsl")
         );
 
-        mLightProgram = createShaderProgram(
+        mLightProgram = createProgram(
             AssetLoader.readText(mContext, "galaxy/shaders/GLES/galaxy_light_vs.glsl"),
             AssetLoader.readText(mContext, "galaxy/shaders/GLES/galaxy_light_fs.glsl")
         );
@@ -211,44 +211,7 @@ public class GalaxyGL extends GLESScene {
         Log.d(TAG, "着色器程序创建完成");
     }
 
-    private int createShaderProgram(String vertexSource, String fragmentSource) {
-        int vertexShader = compileShader(GLES20.GL_VERTEX_SHADER, vertexSource);
-        int fragmentShader = compileShader(GLES20.GL_FRAGMENT_SHADER, fragmentSource);
 
-        int program = GLES20.glCreateProgram();
-        GLES20.glAttachShader(program, vertexShader);
-        GLES20.glAttachShader(program, fragmentShader);
-        GLES20.glLinkProgram(program);
-
-        int[] linkStatus = new int[1];
-        GLES20.glGetProgramiv(program, GLES20.GL_LINK_STATUS, linkStatus, 0);
-        if (linkStatus[0] == 0) {
-            Log.e(TAG, "程序链接失败: " + GLES20.glGetProgramInfoLog(program));
-            GLES20.glDeleteProgram(program);
-            return 0;
-        }
-
-        GLES20.glDeleteShader(vertexShader);
-        GLES20.glDeleteShader(fragmentShader);
-
-        return program;
-    }
-
-    private int compileShader(int type, String source) {
-        int shader = GLES20.glCreateShader(type);
-        GLES20.glShaderSource(shader, source);
-        GLES20.glCompileShader(shader);
-
-        int[] compiled = new int[1];
-        GLES20.glGetShaderiv(shader, GLES20.GL_COMPILE_STATUS, compiled, 0);
-        if (compiled[0] == 0) {
-            Log.e(TAG, "着色器编译失败: " + GLES20.glGetShaderInfoLog(shader));
-            GLES20.glDeleteShader(shader);
-            return 0;
-        }
-        
-        return shader;
-    }
 
     private void loadTextures() {
         mTexSpace = loadTexture(AssetLoader.decodeBitmap(mContext, "galaxy/drawable/galaxy_space.jpg"));

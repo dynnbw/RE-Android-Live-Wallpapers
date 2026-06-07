@@ -314,35 +314,5 @@ public class MusicVisManyGL extends GLESScene {
 
     // ---- shader helpers ----
 
-    private int createProgram(String vs, String fs) {
-        int v = loadShader(GLES20.GL_VERTEX_SHADER, vs);
-        int f = loadShader(GLES20.GL_FRAGMENT_SHADER, fs);
-        if (v == 0 || f == 0) return 0;
-        int program = GLES20.glCreateProgram();
-        GLES20.glAttachShader(program, v);
-        GLES20.glAttachShader(program, f);
-        GLES20.glLinkProgram(program);
-        int[] linkStatus = new int[1];
-        GLES20.glGetProgramiv(program, GLES20.GL_LINK_STATUS, linkStatus, 0);
-        if (linkStatus[0] == 0) {
-            GLES20.glDeleteProgram(program);
-            return 0;
-        }
-        GLES20.glDeleteShader(v);
-        GLES20.glDeleteShader(f);
-        return program;
-    }
 
-    private int loadShader(int type, String source) {
-        int shader = GLES20.glCreateShader(type);
-        GLES20.glShaderSource(shader, source);
-        GLES20.glCompileShader(shader);
-        int[] compiled = new int[1];
-        GLES20.glGetShaderiv(shader, GLES20.GL_COMPILE_STATUS, compiled, 0);
-        if (compiled[0] == 0) {
-            GLES20.glDeleteShader(shader);
-            return 0;
-        }
-        return shader;
-    }
 }

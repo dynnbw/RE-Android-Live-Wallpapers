@@ -411,36 +411,5 @@ public class WindmillGL extends GLESScene {
                 mSkyFlash,mLightning1,mLightning2,mLightning3, thunderOn, ThunderRenderer.Config.WINDMILL);
     }
 
-    private static int createProgram(String vertex, String fragment) {
-        int vShader = loadShader(GLES20.GL_VERTEX_SHADER, vertex);
-        int fShader = loadShader(GLES20.GL_FRAGMENT_SHADER, fragment);
-        int program = GLES20.glCreateProgram();
-        GLES20.glAttachShader(program, vShader);
-        GLES20.glAttachShader(program, fShader);
-        GLES20.glLinkProgram(program);
-        int[] linkStatus = new int[1];
-        GLES20.glGetProgramiv(program, GLES20.GL_LINK_STATUS, linkStatus, 0);
-        if (linkStatus[0] == 0) {
-            Log.e(TAG, "Program link failed: " + GLES20.glGetProgramInfoLog(program));
-            GLES20.glDeleteProgram(program);
-            return 0;
-        }
-        GLES20.glDeleteShader(vShader);
-        GLES20.glDeleteShader(fShader);
-        return program;
+    
     }
-
-    private static int loadShader(int type, String source) {
-        int shader = GLES20.glCreateShader(type);
-        GLES20.glShaderSource(shader, source);
-        GLES20.glCompileShader(shader);
-        int[] compiled = new int[1];
-        GLES20.glGetShaderiv(shader, GLES20.GL_COMPILE_STATUS, compiled, 0);
-        if (compiled[0] == 0) {
-            Log.e(TAG, "Shader compile failed: " + GLES20.glGetShaderInfoLog(shader));
-            GLES20.glDeleteShader(shader);
-            return 0;
-        }
-        return shader;
-    }
-}

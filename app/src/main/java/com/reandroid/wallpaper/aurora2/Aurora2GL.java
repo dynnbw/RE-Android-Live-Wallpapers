@@ -321,37 +321,5 @@ public class Aurora2GL extends GLESScene {
         mAuroraVertexBuffer.position(0);
     }
 
-    private int createProgram(String vertexSource, String fragmentSource) {
-        int vertexShader = compileShader(GLES20.GL_VERTEX_SHADER, vertexSource);
-        int fragmentShader = compileShader(GLES20.GL_FRAGMENT_SHADER, fragmentSource);
-        int program = GLES20.glCreateProgram();
-        GLES20.glAttachShader(program, vertexShader);
-        GLES20.glAttachShader(program, fragmentShader);
-        GLES20.glLinkProgram(program);
 
-        int[] linkStatus = new int[1];
-        GLES20.glGetProgramiv(program, GLES20.GL_LINK_STATUS, linkStatus, 0);
-        if (linkStatus[0] == 0) {
-            String info = GLES20.glGetProgramInfoLog(program);
-            GLES20.glDeleteProgram(program);
-            throw new IllegalStateException("Aurora2 program link failed: " + info);
-        }
-        GLES20.glDeleteShader(vertexShader);
-        GLES20.glDeleteShader(fragmentShader);
-        return program;
-    }
-
-    private int compileShader(int type, String source) {
-        int shader = GLES20.glCreateShader(type);
-        GLES20.glShaderSource(shader, source);
-        GLES20.glCompileShader(shader);
-        int[] compiled = new int[1];
-        GLES20.glGetShaderiv(shader, GLES20.GL_COMPILE_STATUS, compiled, 0);
-        if (compiled[0] == 0) {
-            String info = GLES20.glGetShaderInfoLog(shader);
-            GLES20.glDeleteShader(shader);
-            throw new IllegalStateException("Aurora2 shader compile failed: " + info);
-        }
-        return shader;
-    }
 }

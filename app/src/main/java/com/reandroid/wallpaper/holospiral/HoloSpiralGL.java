@@ -174,42 +174,7 @@ public class HoloSpiralGL extends GLESScene {
         mProgramGeometry = createProgram(geoVs, geoFs);
     }
 
-    private int createProgram(String vs, String fs) {
-        int v = compileShader(GLES20.GL_VERTEX_SHADER, vs);
-        int f = compileShader(GLES20.GL_FRAGMENT_SHADER, fs);
-        if (v == 0 || f == 0) {
-            return 0;
-        }
-        int program = GLES20.glCreateProgram();
-        GLES20.glAttachShader(program, v);
-        GLES20.glAttachShader(program, f);
-        GLES20.glLinkProgram(program);
-        int[] linkStatus = new int[1];
-        GLES20.glGetProgramiv(program, GLES20.GL_LINK_STATUS, linkStatus, 0);
-        if (linkStatus[0] == 0) {
-            Log.e(TAG, "Program link failed: " + GLES20.glGetProgramInfoLog(program));
-            GLES20.glDeleteProgram(program);
-            program = 0;
-        }
-        GLES20.glDeleteShader(v);
-        GLES20.glDeleteShader(f);
-        return program;
-    }
 
-    private int compileShader(int type, String source) {
-        int shader = GLES20.glCreateShader(type);
-        GLES20.glShaderSource(shader, source);
-        GLES20.glCompileShader(shader);
-        int[] compiled = new int[1];
-        GLES20.glGetShaderiv(shader, GLES20.GL_COMPILE_STATUS, compiled, 0);
-        if (compiled[0] == 0) {
-            Log.e(TAG, "Shader compile failed: " + GLES20.glGetShaderInfoLog(shader));
-            Log.e(TAG, "Shader source:\n" + source);
-            GLES20.glDeleteShader(shader);
-            return 0;
-        }
-        return shader;
-    }
 
     private void getHandles() {
         mBgPositionHandle = GLES20.glGetAttribLocation(mProgramBackground, "aPosition");

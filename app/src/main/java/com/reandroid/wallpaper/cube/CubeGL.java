@@ -228,40 +228,6 @@ public class CubeGL extends GLESScene implements SharedPreferences.OnSharedPrefe
         GLES20.glDisableVertexAttribArray(mLinePositionLoc);
     }
 
-    private int createProgram(String vs, String fs) {
-        int vShader = loadShader(GLES20.GL_VERTEX_SHADER, vs);
-        int fShader = loadShader(GLES20.GL_FRAGMENT_SHADER, fs);
-        if (vShader == 0 || fShader == 0) return 0;
 
-        int program = GLES20.glCreateProgram();
-        GLES20.glAttachShader(program, vShader);
-        GLES20.glAttachShader(program, fShader);
-        GLES20.glLinkProgram(program);
-
-        int[] status = new int[1];
-        GLES20.glGetProgramiv(program, GLES20.GL_LINK_STATUS, status, 0);
-        if (status[0] == 0) {
-            Log.e(TAG, "Link failed: " + GLES20.glGetProgramInfoLog(program));
-            GLES20.glDeleteProgram(program);
-            return 0;
-        }
-        GLES20.glDeleteShader(vShader);
-        GLES20.glDeleteShader(fShader);
-        return program;
-    }
-
-    private int loadShader(int type, String source) {
-        int shader = GLES20.glCreateShader(type);
-        GLES20.glShaderSource(shader, source);
-        GLES20.glCompileShader(shader);
-        int[] compiled = new int[1];
-        GLES20.glGetShaderiv(shader, GLES20.GL_COMPILE_STATUS, compiled, 0);
-        if (compiled[0] == 0) {
-            Log.e(TAG, "Compile failed: " + GLES20.glGetShaderInfoLog(shader));
-            GLES20.glDeleteShader(shader);
-            return 0;
-        }
-        return shader;
-    }
 
 }

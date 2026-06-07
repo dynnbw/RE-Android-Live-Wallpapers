@@ -1,6 +1,8 @@
 package com.reandroid.gles;
 
 import android.content.res.Resources;
+import android.opengl.GLES20;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.Surface;
 
@@ -18,6 +20,42 @@ public abstract class GLESScene {
         fb.put(data);
         fb.position(0);
         return fb;
+    }
+
+    /** Compile a GL shader. Returns 0 on failure. */
+    protected int compileShader(int type, String source) {
+        int shader = GLES20.glCreateShader(type);
+        GLES20.glShaderSource(shader, source);
+        GLES20.glCompileShader(shader);
+        int[] compiled = new int[1];
+        GLES20.glGetShaderiv(shader, GLES20.GL_COMPILE_STATUS, compiled, 0);
+        if (compiled[0] == 0) {
+            Log.e(getClass().getSimpleName(), "Shader compile failed: " + GLES20.glGetShaderInfoLog(shader));
+            GLES20.glDeleteShader(shader);
+            return 0;
+        }
+        return shader;
+    }
+
+    /** Link a GL program from vertex + fragment source. Returns 0 on failure. */
+    protected int createProgram(String vertexSource, String fragmentSource) {
+        int vs = compileShader(GLES20.GL_VERTEX_SHADER, vertexSource);
+        int fs = compileShader(GLES20.GL_FRAGMENT_SHADER, fragmentSource);
+        if (vs == 0 || fs == 0) return 0;
+        int program = GLES20.glCreateProgram();
+        GLES20.glAttachShader(program, vs);
+        GLES20.glAttachShader(program, fs);
+        GLES20.glLinkProgram(program);
+        int[] link = new int[1];
+        GLES20.glGetProgramiv(program, GLES20.GL_LINK_STATUS, link, 0);
+        if (link[0] == 0) {
+            Log.e(getClass().getSimpleName(), "Program link failed: " + GLES20.glGetProgramInfoLog(program));
+            GLES20.glDeleteProgram(program);
+            return 0;
+        }
+        GLES20.glDeleteShader(vs);
+        GLES20.glDeleteShader(fs);
+        return program;
     }
     protected int mWidth;
     protected int mHeight;

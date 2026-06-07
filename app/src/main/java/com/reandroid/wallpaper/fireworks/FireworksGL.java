@@ -597,28 +597,6 @@ public class FireworksGL extends GLESScene {
      * @param fs 片段着色器代码
      * @return 程序句柄
      */
-    private int createProgram(String vs, String fs) {
-        // 加载并编译着色器
-        int v = loadShader(GLES20.GL_VERTEX_SHADER, vs);
-        int f = loadShader(GLES20.GL_FRAGMENT_SHADER, fs);
-
-        // 创建程序并附加着色器
-        int program = GLES20.glCreateProgram();
-        GLES20.glAttachShader(program, v);
-        GLES20.glAttachShader(program, f);
-        // 链接程序
-        GLES20.glLinkProgram(program);
-
-        int[] linkStatus = new int[1];
-        GLES20.glGetProgramiv(program, GLES20.GL_LINK_STATUS, linkStatus, 0);
-        if (linkStatus[0] == 0) {
-            GLES20.glDeleteProgram(program);
-            return 0;
-        }
-        GLES20.glDeleteShader(v);
-        GLES20.glDeleteShader(f);
-        return program;
-    }
 
     /**
      * 加载并编译着色器
@@ -626,14 +604,4 @@ public class FireworksGL extends GLESScene {
      * @param source 着色器代码
      * @return 着色器句柄
      */
-    private int loadShader(int type, String source) {
-        // 创建着色器
-        int shader = GLES20.glCreateShader(type);
-        // 设置着色器代码
-        GLES20.glShaderSource(shader, source);
-        // 编译着色器
-        GLES20.glCompileShader(shader);
-
-        return shader;
-    }
 }
