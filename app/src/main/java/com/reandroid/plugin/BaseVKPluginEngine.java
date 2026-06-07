@@ -110,7 +110,7 @@ public abstract class BaseVKPluginEngine implements WallpaperEngine, Runnable {
 
     // --- Native lifecycle ---
     protected void ensureRenderer() {
-        if (mRendererHandle == 0L && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        if (mRendererHandle == 0L) {
             ensureScene();
             mRendererHandle = createRenderer();
         }

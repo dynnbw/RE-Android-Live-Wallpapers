@@ -56,7 +56,7 @@ public class FallVKWallpaper extends WallpaperService {
 
         @Override
         protected void ensureRenderer() {
-            if (mRendererHandle == 0L && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            if (mRendererHandle == 0L) {
                 mRendererHandle = FallVKNative.nCreateRenderer(getAssets());
                 mLeafTextureCount = Math.max(1, FallVKNative.uploadTextures(FallVKWallpaper.this, mRendererHandle));
                 mGreenLeavesEnabled = WallpaperSettings.isGreenLeavesEnabled(false);
@@ -86,7 +86,7 @@ public class FallVKWallpaper extends WallpaperService {
 
         @Override
         protected void syncTexturesIfNeeded() {
-            if (mRendererHandle == 0L || Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return;
+            if (mRendererHandle == 0L) return;
             long now = SystemClock.uptimeMillis();
             if (now - mLastAtlasSyncCheckMs < SETTINGS_SYNC_INTERVAL_MS) return;
             mLastAtlasSyncCheckMs = now;

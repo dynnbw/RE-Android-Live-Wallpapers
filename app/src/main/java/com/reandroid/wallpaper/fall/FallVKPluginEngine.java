@@ -79,7 +79,7 @@ public class FallVKPluginEngine extends BaseVKPluginEngine {
 
     @Override
     protected void syncTexturesIfNeeded() {
-        if (mRendererHandle == 0L || Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return;
+        if (mRendererHandle == 0L) return;
         long now = SystemClock.uptimeMillis();
         if (now - mLastAtlasSyncCheckMs < SETTINGS_SYNC_INTERVAL_MS) return;
         mLastAtlasSyncCheckMs = now;

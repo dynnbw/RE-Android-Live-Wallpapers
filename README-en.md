@@ -16,7 +16,7 @@ An Android live wallpaper collection that ports classic AOSP / MediaTek wallpape
 **Download & Install**
 1. Download the APK from [GitHub Releases](../../releases) or [ApkPure](https://apkpure.com/p/com.reandroid.wallpaper)
 2. Allow "Install unknown apps" permission for your browser/file manager, then install
-3. Supports Android 4.4 (API 19) and above; AndroidX+ devices recommended
+3. Supports Android 7.0 (API 24) and above
 
 **Setting as Wallpaper**
 
@@ -507,10 +507,11 @@ app/src/main/
 ### Requirements
 
 - Android Studio (latest stable)
-- JDK 17
-- Android SDK Platform 33
+- JDK 21
+- Android Gradle Plugin 8.7.3 / Gradle 8.10
+- Android SDK Platform 35
 - Android NDK 25.2.9519653 (project-fixed version)
-- minSdk 19 / targetSdk 33
+- compileSdk 35 / minSdk 24 / targetSdk 35
 
 ### Build
 

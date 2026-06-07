@@ -36,7 +36,7 @@ class GrassVKSurfaceView extends VKSurfaceView<GrassScene> {
 
     @Override
     protected void ensureRenderer() {
-        if (mRendererHandle == 0L && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        if (mRendererHandle == 0L) {
             mRendererHandle = GrassVKNative.nCreateRenderer(getContext().getAssets());
             GrassVKNative.uploadSkyTextures(getContext(), mRendererHandle);
             GrassVKNative.uploadAATexture(mRendererHandle);
@@ -66,8 +66,6 @@ class GrassVKSurfaceView extends VKSurfaceView<GrassScene> {
 
     @Override
     protected void renderFrame() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return;
-
         long now = SystemClock.uptimeMillis();
         mScene.update(now);
         SceneData sd = mScene.getSceneData();

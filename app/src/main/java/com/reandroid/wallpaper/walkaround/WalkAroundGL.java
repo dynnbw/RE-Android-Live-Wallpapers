@@ -174,9 +174,7 @@ public class WalkAroundGL extends GLESScene {
         mOesTexId = createOesTexture();
         if (mOesTexId != 0) {
             mSurfaceTexture = new SurfaceTexture(mOesTexId);
-            if (Build.VERSION.SDK_INT >= 16) {
-                mSurfaceTexture.setDefaultBufferSize(mWidth, mHeight);
-            }
+            mSurfaceTexture.setDefaultBufferSize(mWidth, mHeight);
         }
     }
 

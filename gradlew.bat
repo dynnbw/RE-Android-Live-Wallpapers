@@ -13,21 +13,7 @@
 @rem See the License for the specific language governing permissions and
 @rem limitations under the License.
 @rem
-@echo off
-setlocal
-set DIR=%~dp0
-set DIST_URL=https://services.gradle.org/distributions/gradle-8.4-bin.zip
-set GRADLE_BASE=%USERPROFILE%\.gradle\wrapper\dists\gradle-8.4-bin
-set GRADLE_DIR=%GRADLE_BASE%\gradle-8.4
-if exist "%GRADLE_DIR%\bin\gradle.bat" goto run
-echo Downloading Gradle 7.5 distribution...
-powershell -NoProfile -Command "Try { New-Item -ItemType Directory -Force -Path '%GRADLE_BASE%' | Out-Null; $out=Join-Path $env:TEMP 'gradle-7.5-bin.zip'; Invoke-WebRequest -UseBasicParsing -Uri '%DIST_URL%' -OutFile $out; Expand-Archive -LiteralPath $out -DestinationPath '%GRADLE_BASE%' -Force; Remove-Item $out -Force } Catch { Write-Error $_; exit 1 }"
-if not exist "%GRADLE_DIR%\bin\gradle.bat" (
-	echo Failed to download or extract Gradle distribution.
-	exit /b 1
-)
-:run
-"%GRADLE_DIR%\bin\gradle.bat" %*
+
 @if "%DEBUG%"=="" @echo off
 @rem ##########################################################################
 @rem
@@ -72,7 +58,7 @@ set JAVA_EXE=%JAVA_HOME%/bin/java.exe
 if exist "%JAVA_EXE%" goto execute
 
 echo.
-echo ERROR: JAVA_HOME is set to an invalid directory: %JAVA_EXE%
+echo ERROR: JAVA_HOME is set to an invalid directory: %JAVA_HOME%
 echo.
 echo Please set the JAVA_HOME variable in your environment to match the
 echo location of your Java installation.

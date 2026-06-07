@@ -74,8 +74,6 @@ public class GrassVKPluginEngine extends BaseVKPluginEngine {
 
     @Override
     protected void renderFrame() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return;
-
         long now = SystemClock.uptimeMillis();
         mScene.update(now);
         SceneData sd = mScene.getSceneData();

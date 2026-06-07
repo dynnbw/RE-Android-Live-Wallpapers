@@ -48,6 +48,6 @@ public class GrassVK extends Activity {
     }
 
     private boolean supportsVulkan() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && GrassVKNative.nIsVulkanSupported();
+        return GrassVKNative.nIsVulkanSupported();
     }
 }

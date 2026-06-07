@@ -47,7 +47,7 @@ def bumpAppVersion = {
 }
 
 android {
-	compileSdk 33
+	compileSdk 35
 	namespace "com.reandroid.wallpaper"
 
     ndkVersion "25.2.9519653"
@@ -65,8 +65,8 @@ android {
 
     defaultConfig {
         applicationId "com.reandroid.wallpaper"
-        minSdk 19
-        targetSdk 33
+        minSdk 24
+        targetSdk 35
         versionCode appVersionCode
         versionName resolvedAppVersionName
 

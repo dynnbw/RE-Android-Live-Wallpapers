@@ -48,6 +48,6 @@ public class FallVK extends Activity {
     }
 
     private boolean supportsVulkan() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && FallVKNative.nIsVulkanSupported();
+        return FallVKNative.nIsVulkanSupported();
     }
 }

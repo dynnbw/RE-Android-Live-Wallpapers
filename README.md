@@ -15,7 +15,7 @@ Android 动态壁纸合集，将 AOSP / MediaTek 经典壁纸从 RenderScript �
 **下载安装**
 1. 从 [GitHub Releases](../../releases) [ApkPure](https://apkpure.com/p/com.reandroid.wallpaper)下载 APK
 2. 允许浏览器/文件管理器的"安装未知应用"权限后安装
-3. 支持 Android 4.4（API 19）及以上系统，推荐在AndroidX及以上系统安装
+3. 支持 Android 7.0（API 24）及以上系统
 
 **设置为壁纸**
 
@@ -500,10 +500,11 @@ app/src/main/
 ### 环境要求
 
 - Android Studio（最新稳定版）
-- JDK 17
-- Android SDK Platform 33
+- JDK 21
+- Android Gradle Plugin 8.7.3 / Gradle 8.10
+- Android SDK Platform 35
 - Android NDK 25.2.9519653（项目固定版本）
-- minSdk 19 / targetSdk 33
+- compileSdk 35 / minSdk 24 / targetSdk 35
 
 ### 构建
 

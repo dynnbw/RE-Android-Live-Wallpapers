@@ -47,7 +47,7 @@ public class GalaxyVKWallpaper extends WallpaperService {
 
         @Override
         protected void ensureRenderer() {
-            if (mRendererHandle == 0L && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            if (mRendererHandle == 0L) {
                 mRendererHandle = GalaxyVKNative.nCreateRenderer(getAssets());
                 GalaxyVKNative.uploadBackgroundTexture(GalaxyVKWallpaper.this, mRendererHandle);
                 GalaxyVKNative.uploadLightTexture(GalaxyVKWallpaper.this, mRendererHandle);
@@ -77,7 +77,7 @@ public class GalaxyVKWallpaper extends WallpaperService {
 
         @Override
         protected void syncTexturesIfNeeded() {
-            if (mRendererHandle == 0L || Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return;
+            if (mRendererHandle == 0L) return;
             long now = SystemClock.uptimeMillis();
             if (now - mLastLightSyncCheckMs < SETTINGS_SYNC_INTERVAL_MS) return;
             mLastLightSyncCheckMs = now;
