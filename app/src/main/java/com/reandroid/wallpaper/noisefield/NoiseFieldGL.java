@@ -265,9 +265,19 @@ public class NoiseFieldGL extends GLESScene {
     }
 
     private void updateParticleBuffers() {
-        mDotPosBuffer = toFloatBuffer(mScene.getDotPositions());
-        mDotSpeedBuffer = toFloatBuffer(mScene.getDotSpeeds());
-        mDotAlphaBuffer = toFloatBuffer(mScene.getDotAlpha());
+        mDotPosBuffer = updateFloatBuffer(mDotPosBuffer, mScene.getDotPositions());
+        mDotSpeedBuffer = updateFloatBuffer(mDotSpeedBuffer, mScene.getDotSpeeds());
+        mDotAlphaBuffer = updateFloatBuffer(mDotAlphaBuffer, mScene.getDotAlpha());
+    }
+
+    private FloatBuffer updateFloatBuffer(FloatBuffer buf, float[] data) {
+        if (buf == null || buf.capacity() < data.length) {
+            return toFloatBuffer(data);
+        }
+        buf.position(0);
+        buf.put(data);
+        buf.position(0);
+        return buf;
     }
 
     private int loadTexture(String assetPath) {

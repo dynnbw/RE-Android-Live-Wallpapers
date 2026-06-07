@@ -53,7 +53,8 @@ public class GalaxyGL extends GLESScene {
     private FloatBuffer mParticlePositionBuffer;
     private FloatBuffer mParticleColorBuffer;
     private FloatBuffer mBgVertexBuffer;
-    private FloatBuffer mLightVertexBuffer;
+    private FloatBuffer mLightQuadBuffer;
+    private final float[] mLightQuadVerts = new float[20];
     private final GalaxyScene mScene;
     private android.content.SharedPreferences mPluginPrefs;
     private int mTargetFps = 30;
@@ -429,24 +430,28 @@ public class GalaxyGL extends GLESScene {
         float sx = (512.0f / mWidth) * 1.1f;
         float sy = (512.0f / mWidth) * 1.2f;
 
-        float[] vertices = {
-            -sx, -sy, 0.0f, 0, 0,
-             sx, -sy, 0.0f, 1, 0,
-            -sx,  sy, 0.0f, 0, 1,
-             sx,  sy, 0.0f, 1, 1
-        };
+        mLightQuadVerts[0]  = -sx; mLightQuadVerts[1]  = -sy; mLightQuadVerts[2] = 0; mLightQuadVerts[3] = 0; mLightQuadVerts[4] = 0;
+        mLightQuadVerts[5]  =  sx; mLightQuadVerts[6]  = -sy; mLightQuadVerts[7] = 0; mLightQuadVerts[8] = 1; mLightQuadVerts[9] = 0;
+        mLightQuadVerts[10] = -sx; mLightQuadVerts[11] =  sy; mLightQuadVerts[12]= 0; mLightQuadVerts[13]= 0; mLightQuadVerts[14]= 1;
+        mLightQuadVerts[15] =  sx; mLightQuadVerts[16] =  sy; mLightQuadVerts[17]= 0; mLightQuadVerts[18]= 1; mLightQuadVerts[19]= 1;
 
-        FloatBuffer vertexBuffer = createFloatBuffer(vertices);
+        if (mLightQuadBuffer == null) {
+            mLightQuadBuffer = createFloatBuffer(mLightQuadVerts);
+        } else {
+            mLightQuadBuffer.position(0);
+            mLightQuadBuffer.put(mLightQuadVerts);
+            mLightQuadBuffer.position(0);
+        }
 
         GLES20.glEnableVertexAttribArray(posHandle);
         GLES20.glEnableVertexAttribArray(texHandle);
 
         GLES20.glUniformMatrix4fv(mvpHandle, 1, false, sceneData.getMvpMatrix(), 0);
 
-        vertexBuffer.position(0);
-        GLES20.glVertexAttribPointer(posHandle, 3, GLES20.GL_FLOAT, false, 20, vertexBuffer);
-        vertexBuffer.position(3);
-        GLES20.glVertexAttribPointer(texHandle, 2, GLES20.GL_FLOAT, false, 20, vertexBuffer);
+        mLightQuadBuffer.position(0);
+        GLES20.glVertexAttribPointer(posHandle, 3, GLES20.GL_FLOAT, false, 20, mLightQuadBuffer);
+        mLightQuadBuffer.position(3);
+        GLES20.glVertexAttribPointer(texHandle, 2, GLES20.GL_FLOAT, false, 20, mLightQuadBuffer);
 
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTexLight1);

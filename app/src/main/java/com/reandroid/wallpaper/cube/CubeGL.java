@@ -29,6 +29,10 @@ public class CubeGL extends GLESScene implements SharedPreferences.OnSharedPrefe
     private boolean mInitialized;
     private float mHalfWidth;
     private float mHalfHeight;
+    private float[] mLineVerts = new float[0];
+    private FloatBuffer mLineBuf;
+    private float[] mRingVerts = new float[CIRCLE_SEGMENTS * 2];
+    private FloatBuffer mRingBuf;
 
     private static final String LINE_VS =
             "attribute vec2 aPosition;\n" +
@@ -158,7 +162,8 @@ public class CubeGL extends GLESScene implements SharedPreferences.OnSharedPrefe
 
         int lineCount = mScene.mLines.length;
         int vertCount = lineCount * 2;
-        float[] lineVerts = new float[vertCount * 2];
+        int needed = vertCount * 2;
+        if (mLineVerts.length < needed) mLineVerts = new float[needed];
 
         for (int i = 0; i < lineCount; i++) {
             CubeScene.ThreeDLine line = mScene.mLines[i];
@@ -168,19 +173,25 @@ public class CubeGL extends GLESScene implements SharedPreferences.OnSharedPrefe
             float y2 = mScene.mProjectedY[line.endPoint];
 
             int base = i * 4;
-            lineVerts[base] = x1 / mHalfWidth;
-            lineVerts[base + 1] = -y1 / mHalfHeight;
-            lineVerts[base + 2] = x2 / mHalfWidth;
-            lineVerts[base + 3] = -y2 / mHalfHeight;
+            mLineVerts[base] = x1 / mHalfWidth;
+            mLineVerts[base + 1] = -y1 / mHalfHeight;
+            mLineVerts[base + 2] = x2 / mHalfWidth;
+            mLineVerts[base + 3] = -y2 / mHalfHeight;
         }
 
-        FloatBuffer buf = toFloatBuffer(lineVerts);
+        if (mLineBuf == null || mLineBuf.capacity() < needed) {
+            mLineBuf = toFloatBuffer(mLineVerts);
+        } else {
+            mLineBuf.position(0);
+            mLineBuf.put(mLineVerts, 0, needed);
+            mLineBuf.position(0);
+        }
 
         GLES20.glUseProgram(mLineProgram);
         GLES20.glUniform4f(mLineColorLoc, 1f, 1f, 1f, 1f);
 
         GLES20.glEnableVertexAttribArray(mLinePositionLoc);
-        GLES20.glVertexAttribPointer(mLinePositionLoc, 2, GLES20.GL_FLOAT, false, 0, buf);
+        GLES20.glVertexAttribPointer(mLinePositionLoc, 2, GLES20.GL_FLOAT, false, 0, mLineBuf);
         GLES20.glLineWidth(2f);
         GLES20.glDrawArrays(GLES20.GL_LINES, 0, vertCount);
         GLES20.glDisableVertexAttribArray(mLinePositionLoc);
@@ -193,20 +204,25 @@ public class CubeGL extends GLESScene implements SharedPreferences.OnSharedPrefe
         float ndcY = -((mScene.mTouchY / mScene.mScreenHeight) * 2f - 1f);
 
         float ringRX = TOUCH_CIRCLE_RADIUS * mHalfHeight / mHalfWidth;
-        float[] ring = new float[CIRCLE_SEGMENTS * 2];
         for (int i = 0; i < CIRCLE_SEGMENTS; i++) {
             double angle = i * 2.0 * Math.PI / CIRCLE_SEGMENTS;
-            ring[i * 2] = ndcX + (float) Math.cos(angle) * ringRX;
-            ring[i * 2 + 1] = ndcY + (float) Math.sin(angle) * TOUCH_CIRCLE_RADIUS;
+            mRingVerts[i * 2] = ndcX + (float) Math.cos(angle) * ringRX;
+            mRingVerts[i * 2 + 1] = ndcY + (float) Math.sin(angle) * TOUCH_CIRCLE_RADIUS;
         }
 
-        FloatBuffer ringBuf = toFloatBuffer(ring);
+        if (mRingBuf == null) {
+            mRingBuf = toFloatBuffer(mRingVerts);
+        } else {
+            mRingBuf.position(0);
+            mRingBuf.put(mRingVerts);
+            mRingBuf.position(0);
+        }
 
         GLES20.glUseProgram(mLineProgram);
         GLES20.glUniform4f(mLineColorLoc, 1f, 1f, 1f, 0.6f);
 
         GLES20.glEnableVertexAttribArray(mLinePositionLoc);
-        GLES20.glVertexAttribPointer(mLinePositionLoc, 2, GLES20.GL_FLOAT, false, 0, ringBuf);
+        GLES20.glVertexAttribPointer(mLinePositionLoc, 2, GLES20.GL_FLOAT, false, 0, mRingBuf);
         GLES20.glLineWidth(2f);
         GLES20.glDrawArrays(GLES20.GL_LINE_LOOP, 0, CIRCLE_SEGMENTS);
         GLES20.glDisableVertexAttribArray(mLinePositionLoc);

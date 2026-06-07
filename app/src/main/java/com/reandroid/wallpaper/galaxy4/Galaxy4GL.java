@@ -48,6 +48,8 @@ public class Galaxy4GL extends GLESScene {
     private FloatBuffer mSpaceCloudBuffer;
     private FloatBuffer mBgStarBuffer;
     private FloatBuffer mStaticStarBuffer;
+    private FloatBuffer mBgQuadBuffer;
+    private final float[] mIdentityMatrix = new float[16];
     private final Context mContext;
     private final Galaxy4Scene mScene;
     
@@ -349,16 +351,16 @@ public class Galaxy4GL extends GLESScene {
         // 使用背景着色器程序
         GLES20.glUseProgram(mBgProgram);
         
-        // 全屏四边形顶点数据：(x,y) 位置 + (u,v) 纹理坐标
-        float[] vertices = {
-            -1, -1, 0, 1,  // 左下
-             1, -1, 1, 1,  // 右下
-            -1,  1, 0, 0,  // 左上
-             1,  1, 1, 0   // 右上
-        };
-        
-        // 创建顶点缓冲区
-        FloatBuffer vertexBuffer = createFloatBuffer(vertices);
+        // 全屏四边形顶点缓冲区（首次创建后复用）
+        if (mBgQuadBuffer == null) {
+            float[] vertices = {
+                -1, -1, 0, 1,  // 左下
+                 1, -1, 1, 1,  // 右下
+                -1,  1, 0, 0,  // 左上
+                 1,  1, 1, 0   // 右上
+            };
+            mBgQuadBuffer = createFloatBuffer(vertices);
+        }
         
         // 获取着色器属性/统一变量句柄
         int posHandle = GLES20.glGetAttribLocation(mBgProgram, "aPosition");    // 位置属性
@@ -370,11 +372,11 @@ public class Galaxy4GL extends GLESScene {
         GLES20.glEnableVertexAttribArray(texHandle);
         
         // 设置位置属性指针（每4个浮点数为一组，步长16字节）
-        vertexBuffer.position(0);
-        GLES20.glVertexAttribPointer(posHandle, 2, GLES20.GL_FLOAT, false, 16, vertexBuffer);
+        mBgQuadBuffer.position(0);
+        GLES20.glVertexAttribPointer(posHandle, 2, GLES20.GL_FLOAT, false, 16, mBgQuadBuffer);
         // 设置纹理坐标属性指针
-        vertexBuffer.position(2);
-        GLES20.glVertexAttribPointer(texHandle, 2, GLES20.GL_FLOAT, false, 16, vertexBuffer);
+        mBgQuadBuffer.position(2);
+        GLES20.glVertexAttribPointer(texHandle, 2, GLES20.GL_FLOAT, false, 16, mBgQuadBuffer);
         
         // 绑定背景纹理到纹理单元0
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
@@ -468,9 +470,8 @@ public class Galaxy4GL extends GLESScene {
         int timeHandle = GLES20.glGetUniformLocation(mStaticStarProgram, "uTime");    // 时间统一变量
         
         // 静态星星使用单位矩阵（屏幕空间绘制）
-        float[] identity = new float[16];
-        android.opengl.Matrix.setIdentityM(identity, 0);
-        GLES20.glUniformMatrix4fv(mvpHandle, 1, false, identity, 0);
+        if (mIdentityMatrix[0] != 1f) android.opengl.Matrix.setIdentityM(mIdentityMatrix, 0);
+        GLES20.glUniformMatrix4fv(mvpHandle, 1, false, mIdentityMatrix, 0);
         GLES20.glUniform1f(timeHandle, sceneData.getTimeSeconds());
         
         // 启用属性数组
