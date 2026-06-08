@@ -3,57 +3,266 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Reborn Android Live Wallpapers — WebGL Demos</title>
+<title>Reborn Android Live Wallpapers — WebGL Previews</title>
 <style>
+  :root {
+    --bg: #f8fafc;
+    --surface: #ffffff;
+    --surface-hover: #f1f5f9;
+    --border: #e2e8f0;
+    --text: #0f172a;
+    --muted: #64748b;
+    --accent: #047857;
+    --accent-glow: rgba(4,120,87,.12);
+    --green: #059669;
+    --green-glow: rgba(5,150,105,.12);
+    --radius: 16px;
+  }
+
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-         background: #0d1117; color: #c9d1d9; min-height: 100vh; }
-  .hero { text-align: center; padding: 60px 20px 40px; }
-  .hero h1 { font-size: 2em; color: #58a6ff; margin-bottom: 10px; }
-  .hero p { color: #8b949e; font-size: 1.1em; }
-  .demos { display: flex; flex-wrap: wrap; gap: 24px; max-width: 800px;
-           margin: 0 auto; padding: 20px; justify-content: center; }
-  .card { background: #161b22; border: 1px solid #30363d; border-radius: 12px;
-          overflow: hidden; width: 340px; transition: border-color .2s; }
-  .card:hover { border-color: #58a6ff; }
-  .card img { width: 100%; height: 200px; object-fit: cover; background: #0d1117; }
-  .card-body { padding: 16px; }
-  .card-body h2 { font-size: 1.2em; color: #58a6ff; margin-bottom: 6px; }
-  .card-body p { color: #8b949e; font-size: .9em; margin-bottom: 12px; }
-  .card-body a { display: inline-block; background: #238636; color: #fff;
-                 padding: 8px 20px; border-radius: 6px; text-decoration: none;
-                 font-size: .9em; transition: background .2s; }
-  .card-body a:hover { background: #2ea043; }
-  .footer { text-align: center; padding: 40px 20px; color: #484f58; font-size: .85em; }
-  .footer a { color: #58a6ff; text-decoration: none; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Ambient background glow */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(4,120,87,.08), transparent),
+                radial-gradient(ellipse 60% 40% at 80% 80%, rgba(5,150,105,.06), transparent);
+    pointer-events: none; z-index: 0;
+  }
+
+  .container { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+  /* ── Nav ── */
+  nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  nav .logo { font-size: 1.1em; font-weight: 700; letter-spacing: -.02em; }
+  nav .logo span { color: var(--accent); }
+  nav .links { display: flex; gap: 20px; }
+  nav a { color: var(--muted); text-decoration: none; font-size: .9em; transition: color .2s; }
+  nav a:hover { color: var(--text); }
+  nav .gh {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--surface); border: 1px solid var(--border);
+    padding: 6px 14px; border-radius: 8px; font-size: .85em; color: var(--text);
+  }
+  nav .gh:hover { background: var(--surface-hover); }
+
+  /* ── Hero ── */
+  .hero { text-align: center; padding: 80px 0 60px; }
+  .hero .badge {
+    display: inline-block; font-size: .8em; color: var(--accent);
+    background: var(--accent-glow); border: 1px solid rgba(4,120,87,.25);
+    padding: 4px 14px; border-radius: 20px; margin-bottom: 20px; letter-spacing: .04em;
+  }
+  .hero h1 {
+    font-size: clamp(2.2em, 5vw, 3.4em); font-weight: 800;
+    letter-spacing: -.03em; line-height: 1.1; margin-bottom: 16px;
+    background: linear-gradient(135deg, #047857 30%, #059669);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .hero p { font-size: 1.15em; color: var(--muted); max-width: 500px; margin: 0 auto 32px; line-height: 1.6; }
+  .hero .cta {
+    display: inline-flex; gap: 12px;
+  }
+  .hero .cta a {
+    padding: 12px 28px; border-radius: 10px; font-weight: 600;
+    text-decoration: none; font-size: .95em; transition: all .25s;
+  }
+  .cta-primary { background: var(--accent); color: #fff; box-shadow: 0 0 30px var(--accent-glow); }
+  .cta-primary:hover { background: #065f46; transform: translateY(-1px); }
+  .cta-secondary { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
+  .cta-secondary:hover { background: var(--surface-hover); }
+
+  /* ── Stats ── */
+  .stats {
+    display: flex; justify-content: center; gap: 48px;
+    padding: 40px 0 20px; border-top: 1px solid var(--border);
+    margin-bottom: 40px;
+  }
+  .stat { text-align: center; }
+  .stat .num { font-size: 1.8em; font-weight: 800; letter-spacing: -.02em; }
+  .stat .num.blue { color: var(--accent); }
+  .stat .label { font-size: .85em; color: var(--muted); margin-top: 4px; }
+
+  /* ── Demos ── */
+  .section-title {
+    font-size: 1.5em; font-weight: 700; margin-bottom: 8px; letter-spacing: -.02em;
+  }
+  .section-sub { color: var(--muted); margin-bottom: 32px; font-size: .95em; }
+
+  .demos {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 20px; margin-bottom: 60px;
+  }
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); overflow: hidden;
+    transition: all .3s; position: relative;
+  }
+  .card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(0,0,0,.08), 0 0 60px var(--accent-glow);
+  }
+  .card-media {
+    position: relative; height: 220px; overflow: hidden;
+    background: linear-gradient(135deg, #18181b, #27272a);
+  }
+  .card-media img {
+    width: 100%; height: 100%; object-fit: cover;
+    transition: transform .4s;
+  }
+  .card:hover .card-media img { transform: scale(1.04); }
+  .card-media .overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(9,9,11,.6), transparent 50%);
+  }
+  .card-media .live-badge {
+    position: absolute; top: 12px; right: 12px;
+    background: rgba(34,197,94,.15); color: var(--green);
+    font-size: .75em; font-weight: 600; padding: 3px 10px;
+    border-radius: 6px; border: 1px solid rgba(34,197,94,.25);
+    display: flex; align-items: center; gap: 5px;
+  }
+  .live-badge::before {
+    content: ''; width: 6px; height: 6px; border-radius: 50%;
+    background: var(--green); animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity: 1; } 50% { opacity: .3; }
+  }
+
+  .card-body { padding: 20px; }
+  .card-body .tags { display: flex; gap: 6px; margin-bottom: 10px; }
+  .tag {
+    font-size: .72em; font-weight: 500; padding: 2px 8px;
+    border-radius: 5px; background: var(--surface-hover); color: var(--muted);
+  }
+  .tag.gl { background: rgba(59,130,246,.1); color: var(--accent); border: 1px solid rgba(59,130,246,.2); }
+  .tag.vk { background: rgba(168,85,247,.1); color: #a855f7; border: 1px solid rgba(168,85,247,.2); }
+
+  .card-body h2 { font-size: 1.15em; font-weight: 700; margin-bottom: 6px; letter-spacing: -.01em; }
+  .card-body p { color: var(--muted); font-size: .88em; line-height: 1.55; margin-bottom: 16px; }
+  .card-body .actions { display: flex; gap: 10px; }
+  .card-body .btn {
+    flex: 1; text-align: center; padding: 10px 0; border-radius: 8px;
+    font-size: .88em; font-weight: 600; text-decoration: none;
+    transition: all .2s;
+  }
+  .btn-demo { background: var(--accent); color: #fff; }
+  .btn-demo:hover { background: #065f46; }
+  .btn-source { background: var(--surface-hover); color: var(--text); border: 1px solid var(--border); }
+  .btn-source:hover { background: #e2e8f0; }
+
+  /* ── Footer ── */
+  footer {
+    text-align: center; padding: 60px 0 40px;
+    border-top: 1px solid var(--border); color: var(--muted); font-size: .85em;
+  }
+  footer a { color: var(--accent); text-decoration: none; }
+  footer .divider { margin: 0 8px; color: #cbd5e1; }
+
+  @media (max-width: 600px) {
+    .hero { padding: 60px 0 40px; }
+    .stats { gap: 32px; }
+    .demos { grid-template-columns: 1fr; }
+    nav .links { display: none; }
+  }
 </style>
 </head>
 <body>
-<div class="hero">
-  <h1>Reborn Android Live Wallpapers</h1>
-  <p>WebGL live previews &mdash; open in a browser, set as wallpaper on Android</p>
-</div>
-<div class="demos">
-  <div class="card">
-    <img src="fall/pond.jpg" alt="Fall">
-    <div class="card-body">
-      <h2>Fall &mdash; Autumn Leaves</h2>
-      <p>Wind-blown leaves with water ripple effects. Click or touch to create ripples.</p>
-      <a href="fall/">View Demo</a>
+<div class="container">
+
+  <nav>
+    <div class="logo">RE<span>Android</span> Wallpapers</div>
+    <div class="links">
+      <a href="https://github.com/dynnbw/RE-Android-Live-Wallpapers/releases">Downloads</a>
+      <a href="https://github.com/dynnbw/RE-Android-Live-Wallpapers">Source</a>
     </div>
-  </div>
-  <div class="card">
-    <img src="grass/sky.jpg" alt="Grass">
-    <div class="card-body">
-      <h2>Grass &mdash; Dynamic Meadow</h2>
-      <p>Real-time grass simulation with day/night sky transitions.</p>
-      <a href="grass/">View Demo</a>
+    <a class="gh" href="https://github.com/dynnbw/RE-Android-Live-Wallpapers">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+      GitHub
+    </a>
+  </nav>
+
+  <section class="hero">
+    <div class="badge">31 LIVE WALLPAPERS</div>
+    <h1>Classic wallpapers,<br>reborn for modern Android</h1>
+    <p>OpenGL ES &amp; Vulkan ports of AOSP and MediaTek live wallpapers — from RenderScript to the GPU.</p>
+    <div class="cta">
+      <a class="cta-primary" href="https://github.com/dynnbw/RE-Android-Live-Wallpapers/releases">Download APK</a>
+      <a class="cta-secondary" href="#demos">Live Previews</a>
     </div>
+  </section>
+
+  <div class="stats">
+    <div class="stat"><div class="num blue">31</div><div class="label">Wallpapers</div></div>
+    <div class="stat"><div class="num">28</div><div class="label">OpenGL ES</div></div>
+    <div class="stat"><div class="num">3</div><div class="label">Vulkan</div></div>
+    <div class="stat"><div class="num">API 24+</div><div class="label">Android</div></div>
   </div>
-</div>
-<div class="footer">
-  <a href="https://github.com/dynnbw/RE-Android-Live-Wallpapers">GitHub</a> &middot;
-  <a href="https://github.com/dynnbw/RE-Android-Live-Wallpapers/releases">Download APK</a>
+
+  <section id="demos">
+    <div class="section-title">WebGL Previews</div>
+    <div class="section-sub">Try the wallpapers live in your browser before installing.</div>
+    <div class="demos">
+      <div class="card">
+        <div class="card-media">
+          <img src="fall/pond.jpg" alt="Fall wallpaper preview">
+          <div class="overlay"></div>
+          <div class="live-badge">WebGL</div>
+        </div>
+        <div class="card-body">
+          <div class="tags"><span class="tag gl">OpenGL ES</span><span class="tag vk">Vulkan</span></div>
+          <h2>Fall &mdash; Autumn Leaves</h2>
+          <p>Wind-blown leaves drift across a pond. Touch the water to create ripples.</p>
+          <div class="actions">
+            <a class="btn btn-demo" href="fall/">Run Demo</a>
+            <a class="btn btn-source" href="https://github.com/dynnbw/RE-Android-Live-Wallpapers">Source</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-media">
+          <img src="grass/sky.jpg" alt="Grass wallpaper preview">
+          <div class="overlay"></div>
+          <div class="live-badge">WebGL</div>
+        </div>
+        <div class="card-body">
+          <div class="tags"><span class="tag gl">OpenGL ES</span><span class="tag vk">Vulkan</span></div>
+          <h2>Grass &mdash; Dynamic Meadow</h2>
+          <p>Real-time wind simulation with day/night cycles, weather effects, and fireflies.</p>
+          <div class="actions">
+            <a class="btn btn-demo" href="grass/">Run Demo</a>
+            <a class="btn btn-source" href="https://github.com/dynnbw/RE-Android-Live-Wallpapers">Source</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <a href="https://github.com/dynnbw/RE-Android-Live-Wallpapers">GitHub</a>
+    <span class="divider">&middot;</span>
+    <a href="https://github.com/dynnbw/RE-Android-Live-Wallpapers/releases">Releases</a>
+    <span class="divider">&middot;</span>
+    <a href="https://github.com/dynnbw/RE-Android-Live-Wallpapers/blob/main/LICENSE">Apache 2.0</a>
+    <br><br>
+    Built with WebGL &middot; Ported from AOSP RenderScript
+  </footer>
+
 </div>
 </body>
 </html>
