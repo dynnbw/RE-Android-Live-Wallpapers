@@ -28,7 +28,7 @@ import java.util.Calendar;
 import java.util.TimeZone;
 import com.reandroid.utils.MathUtils;
 
-final class GrassDayNightSystem {
+final public class GrassDayNightSystem {
     private static final float SECONDS_IN_DAY = 86400.0f;
 
     private final Location location = new Location("grass_wallpaper");
@@ -270,6 +270,16 @@ final class GrassDayNightSystem {
     void updateLocationFromSystem(long nowMs) {
         if (lastLocationUpdateMs != 0L && (nowMs - lastLocationUpdateMs) < 300000L) return;
 
+        // Debug override: use manually configured lat/lng instead of GPS
+        float[] debugLoc = getDebugLocation();
+        if (debugLoc != null) {
+            location.setLatitude(debugLoc[0]);
+            location.setLongitude(debugLoc[1]);
+            sunCalculator = new SunCalculator(location, timeZone.getID());
+            lastLocationUpdateMs = nowMs;
+            return;
+        }
+
         Context ctx = GLESWallpaper.getAppContext();
         if (ctx == null) return;
 
@@ -299,6 +309,18 @@ final class GrassDayNightSystem {
             lastLocationUpdateMs = nowMs;
         }
     }
+
+    // ---- Debug location override ----
+
+    private static float[] sDebugLatLng = null;
+
+    /** Set a manual lat/lng override for testing (null to clear). */
+    public static void setDebugLocation(float lat, float lng) {
+        if (lat == 0 && lng == 0) sDebugLatLng = null;
+        else sDebugLatLng = new float[]{lat, lng};
+    }
+
+    public static float[] getDebugLocation() { return sDebugLatLng; }
 
     private static Location pickBestLocation(Location a, Location b) {
         if (a == null) return b;

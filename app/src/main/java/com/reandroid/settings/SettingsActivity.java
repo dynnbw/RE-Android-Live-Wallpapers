@@ -42,6 +42,7 @@ public class SettingsActivity extends AppCompatActivity
     private static final String KEY_PREVIEW = "pref_preview";
 
     private boolean mUpdateChecked;
+    private Toolbar mToolbar;
     private ImageButton weatherButton;
     private WeatherManager weatherManager;
     private WeatherState lastWeatherState;
@@ -53,6 +54,7 @@ public class SettingsActivity extends AppCompatActivity
         setContentView(R.layout.activity_settings);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
+        mToolbar = toolbar;
         setSupportActionBar(toolbar);
         weatherButton = findViewById(R.id.toolbar_weather_button);
         if (weatherButton != null) {
@@ -62,6 +64,7 @@ public class SettingsActivity extends AppCompatActivity
                 return true;
             });
         }
+
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -73,6 +76,14 @@ public class SettingsActivity extends AppCompatActivity
                     .replace(R.id.settings_container, new SettingsMainFragment())
                     .commit();
             setTitle(R.string.settings_title);
+        }
+
+        // Restore debug location override
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        float savedLat = prefs.getFloat("debug_lat", Float.NaN);
+        if (!Float.isNaN(savedLat)) {
+            float savedLng = prefs.getFloat("debug_lng", 0);
+            com.reandroid.wallpaper.grass.GrassDayNightSystem.setDebugLocation(savedLat, savedLng);
         }
 
         weatherManager = new WeatherManager(getApplicationContext(), state -> {
@@ -134,9 +145,15 @@ public class SettingsActivity extends AppCompatActivity
         return true;
     }
 
+    private boolean mOverflowHooked;
+
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         updateWeatherMenuIcon();
+        if (!mOverflowHooked) {
+            mOverflowHooked = true;
+            mToolbar.post(() -> setOverflowLongPress(mToolbar));
+        }
         return super.onPrepareOptionsMenu(menu);
     }
 
@@ -519,6 +536,86 @@ public class SettingsActivity extends AppCompatActivity
                 ((PreviewPreference) previewPref).refreshPreviewRatioNow();
             }
         }
+    }
+
+    private void setOverflowLongPress(android.view.ViewGroup parent) {
+        for (int i = 0; i < parent.getChildCount(); i++) {
+            android.view.View child = parent.getChildAt(i);
+            if (child.getClass().getName().contains("ActionMenuView")) {
+                setOverflowButtonLongPress((android.view.ViewGroup) child);
+                return;
+            }
+            if (child instanceof android.view.ViewGroup) {
+                setOverflowLongPress((android.view.ViewGroup) child);
+            }
+        }
+    }
+
+    private void setOverflowButtonLongPress(android.view.ViewGroup parent) {
+        for (int i = 0; i < parent.getChildCount(); i++) {
+            android.view.View child = parent.getChildAt(i);
+            if (child instanceof android.widget.ImageButton
+                    || child instanceof android.widget.ImageView) {
+                child.setOnLongClickListener(v -> {
+                    showLocationDebugDialog();
+                    return true;
+                });
+                return;
+            }
+            if (child instanceof android.view.ViewGroup) {
+                setOverflowButtonLongPress((android.view.ViewGroup) child);
+            }
+        }
+    }
+
+    private void showLocationDebugDialog() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        float savedLat = prefs.getFloat("debug_lat", Float.NaN);
+        float savedLng = prefs.getFloat("debug_lng", Float.NaN);
+        String current = Float.isNaN(savedLat) ? "" : (savedLat + ", " + savedLng);
+
+        EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+        input.setSingleLine(true);
+        input.setHint("lat, lng (e.g. 51.5074, -0.1278)");
+        if (!current.isEmpty()) input.setText(current);
+        input.setSelection(input.getText().length());
+
+        new AlertDialog.Builder(this, R.style.ThemeOverlay_WallpaperSettings_AppCompatDialog)
+                .setTitle("Debug Location Override")
+                .setMessage("Override GPS lat/lng for sun/moon calculation.\nLeave empty to use real GPS.")
+                .setView(input)
+                .setPositiveButton(android.R.string.ok, (dialog, which) -> {
+                    String text = input.getText() == null ? "" : input.getText().toString().trim();
+                    if (text.isEmpty()) {
+                        prefs.edit().remove("debug_lat").remove("debug_lng").apply();
+                        com.reandroid.wallpaper.grass.GrassDayNightSystem.setDebugLocation(0, 0);
+                        Toast.makeText(this, "Debug location cleared", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    String[] parts = text.split(",");
+                    if (parts.length != 2) {
+                        Toast.makeText(this, "Format: lat, lng", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    try {
+                        float lat = Float.parseFloat(parts[0].trim());
+                        float lng = Float.parseFloat(parts[1].trim());
+                        prefs.edit().putFloat("debug_lat", lat).putFloat("debug_lng", lng).apply();
+                        com.reandroid.wallpaper.grass.GrassDayNightSystem.setDebugLocation(lat, lng);
+                        Toast.makeText(this, "Debug location set: " + lat + ", " + lng,
+                                Toast.LENGTH_SHORT).show();
+                    } catch (NumberFormatException e) {
+                        Toast.makeText(this, "Invalid numbers", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .setNeutralButton("Clear", (d, w) -> {
+                    prefs.edit().remove("debug_lat").remove("debug_lng").apply();
+                    com.reandroid.wallpaper.grass.GrassDayNightSystem.setDebugLocation(0, 0);
+                    Toast.makeText(this, "Debug location cleared", Toast.LENGTH_SHORT).show();
+                })
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
     }
 
     private void showResetAllDialog() {
