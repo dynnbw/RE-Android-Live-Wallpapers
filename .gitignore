@@ -1,0 +1,47 @@
+# IDE / Editor
+.idea/
+.vscode/
+.aider*
+.cursor/
+.claude/
+.windsurf/
+.gemini/
+.crush/
+.aiexclude
+.codebuddy/
+.continue/
+
+# Gradle / Android build artifacts
+.gradle/
+**/build/
+captures/
+*.apk
+*.aab
+*.ap_
+*.dex
+
+# Local machine config / secrets
+local.properties
+gradle.properties
+*.jks
+*.keystore
+
+# Logs and temp files
+*.log
+build_output.txt
+luminousdots_log.txt
+luminousdots_full_log.txt
+
+# Large local-only resources / notes
+web_version/
+docs/
+
+# Local git identity switching config
+git-identity.config.ps1
+
+# Local git identity helper scripts
+git-identity-switch.ps1
+git-identity.config.example.ps1
+use-work-git.bat
+use-personal-git.bat
+show-git-identity.bat

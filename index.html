@@ -173,11 +173,49 @@
   footer a { color: var(--accent); text-decoration: none; }
   footer .divider { margin: 0 8px; color: #cbd5e1; }
 
+  /* ── Demo Overlay ── */
+  .demo-overlay {
+    position: fixed; inset: 0; z-index: 1000;
+    background: rgba(0,0,0,.7);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; visibility: hidden;
+    transition: opacity .3s, visibility .3s;
+  }
+  .demo-overlay.active { opacity: 1; visibility: visible; }
+
+  .demo-frame {
+    position: relative; width: min(94vw, 900px); height: min(85vh, 700px);
+    background: #fff; border-radius: var(--radius);
+    overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,.3);
+    display: flex; flex-direction: column;
+  }
+  .demo-frame-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 20px; background: #f8fafc;
+    border-bottom: 1px solid var(--border);
+    font-weight: 600; font-size: .9em;
+  }
+  .demo-frame-header .demo-title { color: var(--text); }
+  .demo-frame-header .demo-close {
+    width: 32px; height: 32px; border-radius: 8px;
+    border: 1px solid var(--border); background: var(--surface);
+    font-size: 1.1em; line-height: 1; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--muted); transition: all .2s;
+  }
+  .demo-frame-header .demo-close:hover {
+    background: #fee2e2; color: #dc2626; border-color: #fecaca;
+  }
+  .demo-frame iframe {
+    flex: 1; border: 0; width: 100%;
+  }
+
   @media (max-width: 600px) {
     .hero { padding: 60px 0 40px; }
     .stats { gap: 32px; }
     .demos { grid-template-columns: 1fr; }
     nav .links { display: none; }
+    .demo-frame { width: 100vw; height: 100vh; border-radius: 0; }
   }
 </style>
 </head>
@@ -228,7 +266,7 @@
           <h2>Fall &mdash; Autumn Leaves</h2>
           <p>Wind-blown leaves drift across a pond. Touch the water to create ripples.</p>
           <div class="actions">
-            <a class="btn btn-demo" href="fall/">Run Demo</a>
+            <a class="btn btn-demo" href="javascript:void(0)" onclick="openDemo('fall/','Fall &mdash; Autumn Leaves')">Run Demo</a>
             <a class="btn btn-source" href="https://github.com/dynnbw/RE-Android-Live-Wallpapers">Source</a>
           </div>
         </div>
@@ -245,7 +283,7 @@
           <h2>Grass &mdash; Dynamic Meadow</h2>
           <p>Real-time wind simulation with day/night cycles, weather effects, and fireflies.</p>
           <div class="actions">
-            <a class="btn btn-demo" href="grass/">Run Demo</a>
+            <a class="btn btn-demo" href="javascript:void(0)" onclick="openDemo('grass/','Grass &mdash; Dynamic Meadow')">Run Demo</a>
             <a class="btn btn-source" href="https://github.com/dynnbw/RE-Android-Live-Wallpapers">Source</a>
           </div>
         </div>
@@ -263,6 +301,54 @@
     Built with WebGL &middot; Ported from AOSP RenderScript
   </footer>
 
+
+  <!-- Demo iframe overlay -->
+  <div class="demo-overlay" id="demoOverlay">
+    <div class="demo-frame">
+      <div class="demo-frame-header">
+        <span class="demo-title" id="demoTitle">Demo</span>
+        <button class="demo-close" id="demoClose">&times;</button>
+      </div>
+      <iframe id="demoIframe" src="" allow="autoplay" allowfullscreen></iframe>
+    </div>
+  </div>
+
 </div>
+
+<script>
+(function() {
+  var overlay = document.getElementById('demoOverlay');
+  var iframe = document.getElementById('demoIframe');
+  var title  = document.getElementById('demoTitle');
+  var close  = document.getElementById('demoClose');
+
+  function openDemo(url, label) {
+    title.textContent = label;
+    iframe.src = url;
+    overlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeDemo() {
+    overlay.classList.remove('active');
+    iframe.src = '';
+    document.body.style.overflow = '';
+  }
+
+  close.addEventListener('click', closeDemo);
+
+  overlay.addEventListener('click', function(e) {
+    if (e.target === overlay) closeDemo();
+  });
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && overlay.classList.contains('active')) closeDemo();
+  });
+
+  window.openDemo = openDemo;
+  window.closeDemo = closeDemo;
+})();
+</script>
+
 </body>
 </html>
