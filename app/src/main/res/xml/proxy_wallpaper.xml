@@ -4,5 +4,5 @@
     android:author="@string/wallpapers"
     android:description="@string/app_name"
     android:settingsActivity="com.reandroid.settings.PluginSettingsActivity"
-    android:thumbnail="@drawable/wallpaper_thumb"
+    android:thumbnail="@drawable/ic_launcher_wallpaper"
     android:showMetadataInPreview="true" />
