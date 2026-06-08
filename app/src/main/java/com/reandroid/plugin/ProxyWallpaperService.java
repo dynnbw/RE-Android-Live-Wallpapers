@@ -65,41 +65,48 @@ public class ProxyWallpaperService extends WallpaperService {
         private Thread mRenderThread;
         private volatile boolean mRunning;
         private volatile boolean mVisible;
+        private String mCurrentPluginId;
+        private int mLastFormat;
+        private int mLastWidth;
+        private int mLastHeight;
         private final Object mLock = new Object();
 
         @Override
         public void onCreate(SurfaceHolder surfaceHolder) {
             super.onCreate(surfaceHolder);
             setTouchEventsEnabled(true);
+            createEngine(getActivePlugin(ProxyWallpaperService.this));
+        }
 
-            String pluginId = getActivePlugin(ProxyWallpaperService.this);
-            Log.d(TAG, "onCreate pluginId=" + pluginId);
+        private void createEngine(String pluginId) {
             if (pluginId == null) {
                 Log.e(TAG, "No plugin configured");
                 return;
             }
+            Log.d(TAG, "createEngine pluginId=" + pluginId);
+            mCurrentPluginId = pluginId;
 
             try {
                 mPlugin = loadPlugin(pluginId);
-                Log.d(TAG, "Plugin loaded: " + (mPlugin != null ? mPlugin.getId() : "null"));
                 if (mPlugin == null) {
                     Log.e(TAG, "Failed to load plugin: " + pluginId);
                     return;
                 }
                 mHost = new PluginHostImpl(ProxyWallpaperService.this, pluginId);
                 mEngine = mPlugin.createEngine(ProxyWallpaperService.this, mHost);
-                Log.d(TAG, "Engine created: " + (mEngine != null ? mEngine.getClass().getSimpleName() : "null"));
                 if (mEngine != null) {
-                    mEngine.onCreate(surfaceHolder);
-                    Log.d(TAG, "Engine onCreate completed");
+                    mEngine.onCreate(getSurfaceHolder());
+                    mEngine.setPreview(isPreview());
+                    if (mLastWidth > 0 && mLastHeight > 0) {
+                        mEngine.onSurfaceChanged(getSurfaceHolder(), mLastFormat, mLastWidth, mLastHeight);
+                    }
                 }
             } catch (Exception e) {
                 Log.e(TAG, "Plugin init failed", e);
             }
         }
 
-        @Override
-        public void onDestroy() {
+        private void destroyEngine() {
             mRunning = false;
             if (mRenderThread != null) {
                 try { mRenderThread.join(1000); } catch (InterruptedException ignored) {}
@@ -114,6 +121,11 @@ public class ProxyWallpaperService extends WallpaperService {
                 mPlugin.release();
                 mPlugin = null;
             }
+        }
+
+        @Override
+        public void onDestroy() {
+            destroyEngine();
             super.onDestroy();
         }
 
@@ -121,12 +133,23 @@ public class ProxyWallpaperService extends WallpaperService {
         public void onVisibilityChanged(boolean visible) {
             Log.d(TAG, "onVisibilityChanged visible=" + visible + " engine=" + (mEngine != null));
             mVisible = visible;
+            if (visible) {
+                // Detect plugin ID change (user switched to a different wallpaper
+                // via settings while this engine was running): recreate the engine.
+                String activeId = getActivePlugin(ProxyWallpaperService.this);
+                if (activeId != null && !activeId.equals(mCurrentPluginId)) {
+                    Log.i(TAG, "Plugin changed: " + mCurrentPluginId + " -> " + activeId);
+                    destroyEngine();
+                    createEngine(activeId);
+                }
+            }
             if (mEngine != null) mEngine.onVisibilityChanged(visible);
             if (visible) ensureRenderThread();
         }
 
         @Override
         public void onSurfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+            mLastFormat = format; mLastWidth = width; mLastHeight = height;
             if (mEngine != null) {
                 mEngine.setPreview(isPreview());
                 mEngine.onSurfaceChanged(holder, format, width, height);
@@ -135,12 +158,7 @@ public class ProxyWallpaperService extends WallpaperService {
 
         @Override
         public void onSurfaceDestroyed(SurfaceHolder holder) {
-            mRunning = false;
-            if (mRenderThread != null) {
-                try { mRenderThread.join(1000); } catch (InterruptedException ignored) {}
-                mRenderThread = null;
-            }
-            if (mEngine != null) mEngine.onDestroy();
+            destroyEngine();
             super.onSurfaceDestroyed(holder);
         }
 
