@@ -623,8 +623,15 @@ public class SettingsActivity extends AppCompatActivity
                 .setTitle(R.string.reset_all_settings_title)
                 .setMessage(R.string.reset_all_settings_message)
                 .setPositiveButton(R.string.reset_action_confirm, (dialog, which) -> {
+                    // Save global settings that should survive reset
                     String defName = getPackageName() + "_preferences";
-                    getSharedPreferences(defName, MODE_PRIVATE).edit().clear().apply();
+                    SharedPreferences mainPrefs = getSharedPreferences(defName, MODE_PRIVATE);
+                    String apiKey = mainPrefs.getString("openweather_api_key", "");
+                    String previewRatio = mainPrefs.getString(KEY_PREVIEW_RATIO, "");
+                    String frameRate = mainPrefs.getString(KEY_GLOBAL_FRAME_RATE, "");
+                    String weatherInterval = mainPrefs.getString("weather_update_minutes", "");
+
+                    mainPrefs.edit().clear().apply();
                     java.io.File prefsDir = new java.io.File(getApplicationInfo().dataDir, "shared_prefs");
                     if (prefsDir.isDirectory()) {
                         String[] files = prefsDir.list();
@@ -637,6 +644,13 @@ public class SettingsActivity extends AppCompatActivity
                             }
                         }
                     }
+                    // Restore preserved settings
+                    mainPrefs.edit()
+                            .putString("openweather_api_key", apiKey)
+                            .putString(KEY_PREVIEW_RATIO, previewRatio)
+                            .putString(KEY_GLOBAL_FRAME_RATE, frameRate)
+                            .putString("weather_update_minutes", weatherInterval)
+                            .apply();
                     android.widget.Toast.makeText(this, R.string.reset_all_settings_done,
                             android.widget.Toast.LENGTH_SHORT).show();
                     recreate();
