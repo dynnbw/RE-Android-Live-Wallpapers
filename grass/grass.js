@@ -687,11 +687,6 @@
                 const brightness = computeGrassBrightness(timeFrac);
                 // Night desaturation: when dark, grass loses color
                 const nightDesat = brightness < 0.2 ? (0.2 - brightness) / 0.2 : 0.0;
-                const now = new Date();
-                const hours = now.getHours().toString().padStart(2,'0');
-                const minutes = now.getMinutes().toString().padStart(2,'0');
-                document.getElementById('time-status').innerHTML = `${hours}:${minutes} | 亮度:${brightness.toFixed(2)} | 黎明 ${Math.floor(gDawn*24)}:${Math.floor((gDawn*24)%1*60)} 黄昏 ${Math.floor(gDusk*24)}:${Math.floor((gDusk*24)%1*60)}`;
-                
                 drawBackground(timeFrac);
                 const flowTime = performance.now() / 1000 * 0.04;
                 updateGrassGeometry(flowTime, brightness, nightDesat);

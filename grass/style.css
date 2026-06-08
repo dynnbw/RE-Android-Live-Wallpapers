@@ -1,18 +1,1 @@
-        body { margin: 0; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-#time-status {
-            position: fixed;
-            top: 15px;
-            right: 15px;
-            background: rgba(0,0,0,0.4);
-            color: #e0e0e0;
-            padding: 4px 12px;
-            border-radius: 16px;
-            font-size: 11px;
-            font-family: monospace;
-            backdrop-filter: blur(6px);
-            pointer-events: none;
-            z-index: 10;
-        }
-        @media (max-width: 600px) {
-            #time-status { font-size: 9px; padding: 4px 10px; }
-        }
+body { margin: 0; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
