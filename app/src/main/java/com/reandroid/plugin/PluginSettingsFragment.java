@@ -123,6 +123,39 @@ public class PluginSettingsFragment extends PreferenceFragmentCompat
             screen.addPreference(vkSwitch);
         }
 
+        // Restore defaults button (placed before dynamic prefs as separator)
+        Preference resetPref = new Preference(ctx);
+        resetPref.setTitle(com.reandroid.wallpaper.R.string.reset_current_settings_title);
+        resetPref.setSummary(com.reandroid.wallpaper.R.string.reset_current_settings_summary);
+        resetPref.setLayoutResource(com.reandroid.wallpaper.R.layout.preference_modern_item);
+        resetPref.setOnPreferenceClickListener(pref -> {
+            prefs.edit().clear().apply();
+            // Remove only dynamic preferences (everything after reset button)
+            PreferenceScreen scr = getPreferenceScreen();
+            while (scr.getPreferenceCount() > 0) {
+                Preference last = scr.getPreference(scr.getPreferenceCount() - 1);
+                if (last == resetPref) break;
+                scr.removePreference(last);
+            }
+            // Rebuild dynamic section
+            JSONObject layout = PluginResources.loadLayout(requireContext(), pluginId);
+            if (layout != null) {
+                JSONObject language = PluginResources.loadLanguageForLocale(requireContext(), pluginId);
+                DynamicPreferenceFactory.buildPreferences(requireContext(), prefs, layout,
+                        scr::addPreference, language);
+                Map<String, String> buttonActions = DynamicPreferenceFactory.collectButtonActions(layout);
+                for (Map.Entry<String, String> entry : buttonActions.entrySet()) {
+                    Preference btn = scr.findPreference(entry.getKey());
+                    if (btn != null) {
+                        wireButtonAction(btn, entry.getValue(), pluginId, prefs);
+                    }
+                }
+            }
+            if (mPreview != null) mPreview.refreshScene();
+            return true;
+        });
+        screen.addPreference(resetPref);
+
         // Dynamic preferences from layout.json
         JSONObject layout = PluginResources.loadLayout(ctx, pluginId);
         if (layout != null) {
@@ -139,26 +172,21 @@ public class PluginSettingsFragment extends PreferenceFragmentCompat
                 }
             }
         }
-
-        // Restore defaults button
-        Preference resetPref = new Preference(ctx);
-        resetPref.setTitle(com.reandroid.wallpaper.R.string.reset_current_settings_title);
-        resetPref.setSummary(com.reandroid.wallpaper.R.string.reset_current_settings_summary);
-        resetPref.setLayoutResource(com.reandroid.wallpaper.R.layout.preference_modern_item);
-        resetPref.setOnPreferenceClickListener(pref -> {
-            prefs.edit().clear().apply();
-            // Recreate the preference screen
-            getPreferenceScreen().removeAll();
-            onCreatePreferences(null, null);
-            return true;
-        });
-        screen.addPreference(resetPref);
     }
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
         if (mPreview != null) {
-            mPreview.refreshScene();
+            GLESScene scene = mPreview.getScene();
+            if (scene != null) {
+                try {
+                    java.lang.reflect.Method m = scene.getClass()
+                            .getMethod("setPluginPrefs", SharedPreferences.class);
+                    m.invoke(scene, prefs);
+                } catch (Exception ignored) {
+                    mPreview.refreshScene();
+                }
+            }
         }
     }
 
