@@ -123,11 +123,11 @@
     <string name="pref_nexus_custom_background_summary">Select a background image</string>
     <string name="pref_nexus_reset_background_title">Reset background</string>
     <string name="pref_nexus_reset_background_summary">Clear custom background and use built-in</string>
-    <string name="nexus_bg_pyramid">Pyramid</string>
-    <string name="nexus_bg_pyramid_1">Pyramid 1</string>
-    <string name="nexus_bg_pyramid_2">Pyramid 2</string>
-    <string name="nexus_bg_pyramid_3">Pyramid 3</string>
-    <string name="nexus_bg_pyramid_4">Pyramid 4</string>
+    <string name="nexus_bg_pyramid">Default</string>
+    <string name="nexus_bg_pyramid_1">Style 1</string>
+    <string name="nexus_bg_pyramid_2">Style 2</string>
+    <string name="nexus_bg_pyramid_3">Style 3</string>
+    <string name="nexus_bg_pyramid_4">Style 4</string>
 
     <!-- Deep Sea settings -->
     <string name="deepsea_custom_background_title">Custom background</string>
