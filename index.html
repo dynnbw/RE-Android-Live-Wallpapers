@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reborn Android Live Wallpapers — WebGL Demos</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+         background: #0d1117; color: #c9d1d9; min-height: 100vh; }
+  .hero { text-align: center; padding: 60px 20px 40px; }
+  .hero h1 { font-size: 2em; color: #58a6ff; margin-bottom: 10px; }
+  .hero p { color: #8b949e; font-size: 1.1em; }
+  .demos { display: flex; flex-wrap: wrap; gap: 24px; max-width: 800px;
+           margin: 0 auto; padding: 20px; justify-content: center; }
+  .card { background: #161b22; border: 1px solid #30363d; border-radius: 12px;
+          overflow: hidden; width: 340px; transition: border-color .2s; }
+  .card:hover { border-color: #58a6ff; }
+  .card img { width: 100%; height: 200px; object-fit: cover; background: #0d1117; }
+  .card-body { padding: 16px; }
+  .card-body h2 { font-size: 1.2em; color: #58a6ff; margin-bottom: 6px; }
+  .card-body p { color: #8b949e; font-size: .9em; margin-bottom: 12px; }
+  .card-body a { display: inline-block; background: #238636; color: #fff;
+                 padding: 8px 20px; border-radius: 6px; text-decoration: none;
+                 font-size: .9em; transition: background .2s; }
+  .card-body a:hover { background: #2ea043; }
+  .footer { text-align: center; padding: 40px 20px; color: #484f58; font-size: .85em; }
+  .footer a { color: #58a6ff; text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="hero">
+  <h1>Reborn Android Live Wallpapers</h1>
+  <p>WebGL live previews &mdash; open in a browser, set as wallpaper on Android</p>
+</div>
+<div class="demos">
+  <div class="card">
+    <img src="fall/pond.jpg" alt="Fall">
+    <div class="card-body">
+      <h2>Fall &mdash; Autumn Leaves</h2>
+      <p>Wind-blown leaves with water ripple effects. Click or touch to create ripples.</p>
+      <a href="fall/">View Demo</a>
+    </div>
+  </div>
+  <div class="card">
+    <img src="grass/sky.jpg" alt="Grass">
+    <div class="card-body">
+      <h2>Grass &mdash; Dynamic Meadow</h2>
+      <p>Real-time grass simulation with day/night sky transitions.</p>
+      <a href="grass/">View Demo</a>
+    </div>
+  </div>
+</div>
+<div class="footer">
+  <a href="https://github.com/dynnbw/RE-Android-Live-Wallpapers">GitHub</a> &middot;
+  <a href="https://github.com/dynnbw/RE-Android-Live-Wallpapers/releases">Download APK</a>
+</div>
+</body>
+</html>
