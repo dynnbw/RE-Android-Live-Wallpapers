@@ -38,7 +38,6 @@ void main() {
     gl_Position = pc.uMvpMatrix * vec4(aPosition, 1.0);
     vec2 pos = aPosition.xy;
 
-    float posScaledX = (pos.x + 1.0) * pc.u_meshScaleX;
     float posScaledY = ((pos.y / (pc.u_glHeight * 0.5)) + 1.0) * pc.u_meshScaleY;
 
     float varU = pos.x + 1.0;
@@ -47,7 +46,6 @@ void main() {
     if (pc.u_rotate < 1) {
         varU = varU * 0.25 + pc.u_xOffset * 0.5;
         varV *= 0.33 * (3.333 / pc.u_glHeight);
-        posScaledX += pc.u_xOffset * 2.0;
     } else {
         varU *= 0.5;
         varV *= 0.3125 * (3.333 / pc.u_glHeight);
@@ -55,6 +53,11 @@ void main() {
 
     varU = 0.5 + (varU - 0.5) * pc.u_bgScale;
     varV = 0.5 + (varV - 0.5) * pc.u_bgScale;
+
+    // xOffset applied BEFORE scaleX to match addDrop() CPU math
+    float pxAdj = pos.x;
+    if (pc.u_rotate < 1) pxAdj += pc.u_xOffset * 2.0;
+    float posScaledX = (pxAdj + 1.0) * pc.u_meshScaleX;
 
     vec2 ripplePos = vec2(posScaledX, posScaledY);
     vec2 texOffset = vec2(0.0);
