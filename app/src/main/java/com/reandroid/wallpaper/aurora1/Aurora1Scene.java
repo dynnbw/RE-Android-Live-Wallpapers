@@ -329,8 +329,9 @@ final class Aurora1Scene {
         }
         
         // 根据 xOffset 计算背景位置，支持水平滚动
-        float scrollOffset = (0.5f - mXOffset) * mWidth;
-        bg.x = bg.width * 0.5f + scrollOffset;
+        // 滚动范围 = 背景宽度 - 屏幕宽度，确保任意 xOffset 均无黑边
+        float scrollRange = Math.max(0, bg.width - mWidth);
+        bg.x = bg.width * 0.5f - mXOffset * scrollRange;
         bg.y = mHeight * 0.5f;
     }
 
