@@ -303,9 +303,6 @@ public class LuminousDotsGL extends GLESScene {
         GLES20.glUniform1f(mGradiantGapUpLoc, data.gradGapUp);
         GLES20.glUniform1f(mGradiantGapDownLoc, data.gradGapDown);
 
-        // --- Scissor enable ---
-        GLES20.glEnable(GLES20.GL_SCISSOR_TEST);
-        GLES20.glScissor(0, 0, mWidth, mHeight);
         GLES20.glUniform1i(mIsGradiantLoc, 0);
 
         // --- Battery alpha ---
@@ -390,74 +387,6 @@ public class LuminousDotsGL extends GLESScene {
             GLES20.glUniformMatrix4fv(mMVPLoc, 1, false, mvp, 0);
             GLES20.glDrawElements(GLES20.GL_TRIANGLES, 6, GLES20.GL_UNSIGNED_SHORT, data.indices);
         }
-
-        // --- Gradient mask passes (matching original rendering) ---
-        GLES20.glUniform1i(mIsGradiantLoc, 1);
-        GLES20.glUniform1f(mAlphaLoc, 1.0f);
-        float[] rotMask = LuminousDotsScene.ROTATE_TYPE[LuminousDotsScene.ROTATE_IDX[0][1]];
-
-        if (mWidth > mHeight) {
-            // Wide screen: 3 passes matching original
-            // Layer 2 at Y = yMaxOffset/2
-            float[] mvp0 = new float[16];
-            LuminousDotsScene.buildMVP(mvp0, mProjMatrix, mHeight,
-                -data.xMaxOffset, data.yMaxOffset / 2f, 0f, 1f, rotMask, 0, 50f);
-            if (data.verticesGrad2 != null) {
-                bindVertexAttribs(data.verticesGrad2);
-                GLES20.glUniformMatrix4fv(mMVPLoc, 1, false, mvp0, 0);
-                GLES20.glDrawElements(GLES20.GL_TRIANGLES, 6, GLES20.GL_UNSIGNED_SHORT, data.indices);
-            }
-            // Layer 0 at Y = yMaxOffset/4
-            float[] mvp1 = new float[16];
-            LuminousDotsScene.buildMVP(mvp1, mProjMatrix, mHeight,
-                -data.xMaxOffset, data.yMaxOffset / 4f, 0f, 1f, rotMask, 0, 50f);
-            if (data.verticesGrad0 != null) {
-                bindVertexAttribs(data.verticesGrad0);
-                GLES20.glUniformMatrix4fv(mMVPLoc, 1, false, mvp1, 0);
-                GLES20.glDrawElements(GLES20.GL_TRIANGLES, 6, GLES20.GL_UNSIGNED_SHORT, data.indices);
-            }
-            // Layer 1 at Y = -yMaxOffset/5
-            float[] mvp2 = new float[16];
-            LuminousDotsScene.buildMVP(mvp2, mProjMatrix, mHeight,
-                -data.xMaxOffset, -data.yMaxOffset / 5f, 0f, 1f, rotMask, 0, 50f);
-            if (data.verticesGrad1 != null) {
-                bindVertexAttribs(data.verticesGrad1);
-                GLES20.glUniformMatrix4fv(mMVPLoc, 1, false, mvp2, 0);
-                GLES20.glDrawElements(GLES20.GL_TRIANGLES, 6, GLES20.GL_UNSIGNED_SHORT, data.indices);
-            }
-        } else {
-            // Tall screen: matching original per-colorState rendering
-            // Layer 2 at Y = yMaxOffset/1.518f
-            float[] mvp0 = new float[16];
-            LuminousDotsScene.buildMVP(mvp0, mProjMatrix, mHeight,
-                -data.xMaxOffset, data.yMaxOffset / 1.518f, 0f, 1f, rotMask, 0, 50f);
-            if (data.verticesGrad2 != null) {
-                bindVertexAttribs(data.verticesGrad2);
-                GLES20.glUniformMatrix4fv(mMVPLoc, 1, false, mvp0, 0);
-                GLES20.glDrawElements(GLES20.GL_TRIANGLES, 6, GLES20.GL_UNSIGNED_SHORT, data.indices);
-            }
-            // Layer 0 at Y = yMaxOffset/2.18f
-            float[] mvp1 = new float[16];
-            LuminousDotsScene.buildMVP(mvp1, mProjMatrix, mHeight,
-                -data.xMaxOffset, data.yMaxOffset / 2.18f, 0f, 1f, rotMask, 0, 50f);
-            if (data.verticesGrad0 != null) {
-                bindVertexAttribs(data.verticesGrad0);
-                GLES20.glUniformMatrix4fv(mMVPLoc, 1, false, mvp1, 0);
-                GLES20.glDrawElements(GLES20.GL_TRIANGLES, 6, GLES20.GL_UNSIGNED_SHORT, data.indices);
-            }
-            // Layer 1 at Y = -yMaxOffset/8.9f (colorState=0) or -yMaxOffset/2.999f (otherwise)
-            float y1 = data.colorState == 0 ? -data.yMaxOffset / 8.9f : -data.yMaxOffset / 2.999f;
-            float[] mvp2 = new float[16];
-            LuminousDotsScene.buildMVP(mvp2, mProjMatrix, mHeight,
-                -data.xMaxOffset, y1, 0f, 1f, rotMask, 0, 50f);
-            if (data.verticesGrad1 != null) {
-                bindVertexAttribs(data.verticesGrad1);
-                GLES20.glUniformMatrix4fv(mMVPLoc, 1, false, mvp2, 0);
-                GLES20.glDrawElements(GLES20.GL_TRIANGLES, 6, GLES20.GL_UNSIGNED_SHORT, data.indices);
-            }
-        }
-
-        GLES20.glDisable(GLES20.GL_SCISSOR_TEST);
     }
 
     private void renderPass(java.nio.FloatBuffer vertices, java.nio.ShortBuffer indices,

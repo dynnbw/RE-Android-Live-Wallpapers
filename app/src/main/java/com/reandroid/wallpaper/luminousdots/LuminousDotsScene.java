@@ -798,7 +798,6 @@ final class LuminousDotsScene {
     // Built vertex data
     FloatBuffer mVerticesUp;
     FloatBuffer mVerticesDown;
-    FloatBuffer mVerticesGrad0, mVerticesGrad1, mVerticesGrad2; // 3 gradient mask layers
     ShortBuffer mIndices;
     // Glow data
     final List<GlowData> mGlowList = new ArrayList<>();
@@ -875,7 +874,6 @@ final class LuminousDotsScene {
     // --- SceneData output ---
     static final class SceneData {
         FloatBuffer verticesUp, verticesDown;
-        FloatBuffer verticesGrad0, verticesGrad1, verticesGrad2; // 3 gradient mask layers
         ShortBuffer indices;
         float mScale;
         int halfLayoutSize;
@@ -889,7 +887,6 @@ final class LuminousDotsScene {
         int rotIdxLU0, rotIdxLU1, rotIdxRU0, rotIdxRU1;
         int rotIdxLD0, rotIdxLD1, rotIdxRD0, rotIdxRD1;
         int rotIdxGlow;
-        boolean useScissor;
         int shape;
         int colorState;
         float batteryAlpha;
@@ -1018,9 +1015,6 @@ final class LuminousDotsScene {
         mData = new SceneData();
         mData.verticesUp = mVerticesUp;
         mData.verticesDown = mVerticesDown;
-        mData.verticesGrad0 = mVerticesGrad0;
-        mData.verticesGrad1 = mVerticesGrad1;
-        mData.verticesGrad2 = mVerticesGrad2;
         mData.indices = mIndices;
         mData.mScale = mScale;
         mData.halfLayoutSize = mHalfLayoutSize;
@@ -1049,7 +1043,6 @@ final class LuminousDotsScene {
         mData.xMaxOffset = mMaxOffset;
         mData.yMaxOffset = mMaxOffset;
         mData.glowList = mGlowList;
-        mData.useScissor = true;
 
         // Gradient parameters (matching original onDrawFrame calculations)
         int yMaxOffset = mMaxOffset;
@@ -1221,35 +1214,6 @@ final class LuminousDotsScene {
         applyPattern(mVerticesUp, OBJ_PATTERN, mColorState);
         applyPattern(mVerticesDown, OBJ_PATTERN_DOWN, mColorState);
         mEventTimer = System.currentTimeMillis(); // commit pattern time for alpha pulsing
-
-        // Build gradient mask — 3 independent layers matching original visible()
-        float[] gInit = getInitObjAttr(0f, 0f, 0f, 1f);
-        gInit[4] = 0.016f; gInit[5] = 0.016f; gInit[6] = 0.016f; gInit[7] = 1f;
-        int gw = mMaxOffset * 2;
-        int gh0, gh2, gh1;
-        if (mWidth > mHeight) {
-            gh0 = (int)(mMaxOffset / 2.225f);
-            gh2 = mMaxOffset / 4;
-        } else {
-            gh0 = mColorState == 0 ? (int)(mMaxOffset / 1.75f) : (int)(mMaxOffset / 1.26f);
-            gh2 = mMaxOffset / 5;
-        }
-        gh1 = (int)(mMaxOffset / 1.75f);
-
-        // Layer 0 (index 0)
-        mVerticesGrad0 = ByteBuffer.allocateDirect(4 * 4 * ATTRS)
-            .order(ByteOrder.nativeOrder()).asFloatBuffer();
-        oneDotSetting(mVerticesGrad0, 0, 0, gInit, gw, gh0, false);
-
-        // Layer 2 (index 2 in original, rendered first)
-        mVerticesGrad2 = ByteBuffer.allocateDirect(4 * 4 * ATTRS)
-            .order(ByteOrder.nativeOrder()).asFloatBuffer();
-        oneDotSetting(mVerticesGrad2, 0, 0, gInit, gw, gh2, false);
-
-        // Layer 1 (index 1 in original, rendered last)
-        mVerticesGrad1 = ByteBuffer.allocateDirect(4 * 4 * ATTRS)
-            .order(ByteOrder.nativeOrder()).asFloatBuffer();
-        oneDotSetting(mVerticesGrad1, 0, 0, gInit, gw, gh1, false);
 
         mGridBuilt = true;
     }
