@@ -28,7 +28,7 @@ final class ManyScene {
 
     // ManyScene-specific state
     float mRotate = 0f;
-    float mTilt = -20f;
+    float mTilt = 0f; // negated from original RS -20: RS CW ≠ GL CCW
     private int mIdle = 0;
     private int mWaveCounter = 0;
 
@@ -266,7 +266,8 @@ final class ManyScene {
 
     void updateProjection() {
         float aspect = (float) mWave.mWidth / (float) mWave.mHeight;
-        Mat4.frustumM(mProj, -aspect, aspect, -1f, 1f, 1f, 6000f);
+        // Swap left/right to match RenderScript→GL coordinate conversion
+        Mat4.frustumM(mProj, aspect, -aspect, -1f, 1f, 1f, 6000f);
     }
 
     // ---- per-frame tick ----
