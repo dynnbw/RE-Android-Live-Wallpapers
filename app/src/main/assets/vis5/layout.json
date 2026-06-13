@@ -1,3 +1,36 @@
 {
-  "prefs": []
+  "prefs": [
+    {
+      "type": "list",
+      "key": "musicvis_wave_mode",
+      "title": "pref_vis5_wave_mode",
+      "default": "0",
+      "values": ["0", "1", "2"],
+      "labels": ["pref_vis5_wave_mode_0", "pref_vis5_wave_mode_1", "pref_vis5_wave_mode_2"]
+    },
+    {
+      "type": "list",
+      "key": "musicvis_bg_color",
+      "title": "musicvis_bg_color",
+      "default": "#000000",
+      "values": [
+        "#000000",
+        "#300303",
+        "#50330",
+        "#2F4F4F",
+        "#FFE4DE",
+        "#F0FFFF",
+        "#EDDEFF"
+      ],
+      "labels": [
+        "@string/musicvis_bg_black",
+        "@string/musicvis_bg_dark_red",
+        "@string/musicvis_bg_dark_blue",
+        "@string/musicvis_bg_dark_green",
+        "@string/musicvis_bg_pink",
+        "@string/musicvis_bg_light_green",
+        "@string/musicvis_bg_light_purple"
+      ]
+    }
+  ]
 }

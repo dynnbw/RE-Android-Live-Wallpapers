@@ -1,4 +1,9 @@
 {
   "title": "Many",
-  "settings_entry": "Many"
+  "settings_entry": "Many",
+  "pref_vis5_wave_mode": "Wave mode",
+  "musicvis_wave_mode_label_0": "PCM Waveform",
+  "musicvis_wave_mode_label_1": "FFT Spectrum",
+  "musicvis_wave_mode_label_2": "Mixed (FFT+PCM)",
+  "musicvis_bg_color": "Background"
 }

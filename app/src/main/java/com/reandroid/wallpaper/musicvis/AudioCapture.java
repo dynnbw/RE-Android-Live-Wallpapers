@@ -9,20 +9,29 @@ public class AudioCapture {
 
     public static final int TYPE_PCM = 0;
     public static final int TYPE_FFT = 1;
+    public static final int TYPE_BOTH = 2;
 
     private final int mType;
     private final int mSize;
 
     private Visualizer mVisualizer;
 
-    // Double-buffering: capture thread fills one buffer while render thread reads the other
+    // PCM double-buffering
     private byte[] mRawBufferA;
     private byte[] mRawBufferB;
     private volatile byte[] mReadyRawBuffer;
-
     private int[] mFormattedBufferA;
     private int[] mFormattedBufferB;
     private volatile int[] mReadyFormattedBuffer;
+
+    // FFT double-buffering (TYPE_BOTH only)
+    private byte[] mFftRawA;
+    private byte[] mFftRawB;
+    private volatile byte[] mReadyFftRaw;
+    private int[] mFftFmtA;
+    private int[] mFftFmtB;
+    private volatile int[] mReadyFftFmt;
+    private volatile boolean mFftHasData;
 
     private final byte[] mRawNullData = new byte[0];
     private final int[] mFormattedNullData = new int[0];
@@ -44,6 +53,13 @@ public class AudioCapture {
         mRawBufferB = new byte[size];
         mFormattedBufferA = new int[size];
         mFormattedBufferB = new int[size];
+
+        if (mType == TYPE_BOTH) {
+            mFftRawA = new byte[size];
+            mFftRawB = new byte[size];
+            mFftFmtA = new int[size];
+            mFftFmtB = new int[size];
+        }
 
         try {
             mVisualizer = new Visualizer(0);
@@ -92,6 +108,11 @@ public class AudioCapture {
         mReadyRawBuffer = null;
         mReadyFormattedBuffer = null;
         mHasData = false;
+        if (mType == TYPE_BOTH) {
+            mReadyFftRaw = null;
+            mReadyFftFmt = null;
+            mFftHasData = false;
+        }
 
         if (mVisualizer != null) {
             try {
@@ -120,7 +141,7 @@ public class AudioCapture {
         if (!mHasData || mReadyFormattedBuffer == null) {
             return mFormattedNullData;
         }
-        if (mType == TYPE_PCM) {
+        if (mType == TYPE_PCM || mType == TYPE_BOTH) {
             byte[] raw = mReadyRawBuffer;
             int[] fmt = mReadyFormattedBuffer;
             for (int i = 0; i < mSize; i++) {
@@ -137,8 +158,21 @@ public class AudioCapture {
         return mReadyFormattedBuffer;
     }
 
+    /** Returns FFT data captured simultaneously with PCM (TYPE_BOTH only). */
+    public int[] getFftFormattedData() {
+        if (mType != TYPE_BOTH || !mFftHasData || mReadyFftFmt == null) {
+            return mFormattedNullData;
+        }
+        byte[] raw = mReadyFftRaw;
+        int[] fmt = mReadyFftFmt;
+        // FFT bytes are signed — matching TYPE_FFT getFormattedData(1,1)
+        for (int i = 0; i < mSize; i++) {
+            fmt[i] = raw[i];
+        }
+        return mReadyFftFmt;
+    }
+
     private class CaptureThread extends Thread {
-        // Indexing: which buffer are we capturing INTO right now (0 = A, 1 = B)
         private int mCaptureIndex;
 
         CaptureThread() {
@@ -152,36 +186,56 @@ public class AudioCapture {
             byte[] bufB = mRawBufferB;
             int[] fmtA = mFormattedBufferA;
             int[] fmtB = mFormattedBufferB;
+            // FFT buffers (TYPE_BOTH)
+            byte[] fftA = mFftRawA;
+            byte[] fftB = mFftRawB;
+            int[] fftFmtA = mFftFmtA;
+            int[] fftFmtB = mFftFmtB;
 
             while (mRunning) {
-                int status = Visualizer.ERROR;
+                int pcmStatus = Visualizer.ERROR;
+                int fftStatus = Visualizer.ERROR;
                 try {
                     if (mVisualizer != null) {
-                        byte[] target = (mCaptureIndex == 0) ? bufA : bufB;
-                        if (mType == TYPE_PCM) {
-                            status = mVisualizer.getWaveForm(target);
+                        byte[] pcmTarget = (mCaptureIndex == 0) ? bufA : bufB;
+                        if (mType == TYPE_FFT) {
+                            fftStatus = mVisualizer.getFft(pcmTarget);
+                            pcmStatus = fftStatus;
                         } else {
-                            status = mVisualizer.getFft(target);
+                            pcmStatus = mVisualizer.getWaveForm(pcmTarget);
+                            if (mType == TYPE_BOTH) {
+                                byte[] fftTarget = (mCaptureIndex == 0) ? fftA : fftB;
+                                fftStatus = mVisualizer.getFft(fftTarget);
+                            }
                         }
                     }
                 } catch (IllegalStateException e) {
                     Log.e(TAG, "capture IllegalStateException");
                 }
 
-                if (status == Visualizer.SUCCESS) {
+                if (pcmStatus == Visualizer.SUCCESS) {
                     byte[] captured = (mCaptureIndex == 0) ? bufA : bufB;
-                    // Check if all zeros (silence)
-                    if (!isAllSilence(captured)) {
+                    if (!isAllSilence(captured, true)) {
                         mLastValidCaptureTimeMs = System.currentTimeMillis();
                         mHasData = true;
                     } else if ((System.currentTimeMillis() - mLastValidCaptureTimeMs) > MAX_IDLE_TIME_MS) {
                         mHasData = false;
                     }
-
-                    // Swap: publish the just-filled buffer as ready
                     mReadyRawBuffer = captured;
                     mReadyFormattedBuffer = (mCaptureIndex == 0) ? fmtA : fmtB;
-                    mCaptureIndex ^= 1; // toggle 0↔1
+                }
+
+                if (mType == TYPE_BOTH && fftStatus == Visualizer.SUCCESS) {
+                    byte[] fftCaptured = (mCaptureIndex == 0) ? fftA : fftB;
+                    if (!isAllSilence(fftCaptured, false)) {
+                        mFftHasData = true;
+                    }
+                    mReadyFftRaw = fftCaptured;
+                    mReadyFftFmt = (mCaptureIndex == 0) ? fftFmtA : fftFmtB;
+                }
+
+                if (pcmStatus == Visualizer.SUCCESS || fftStatus == Visualizer.SUCCESS) {
+                    mCaptureIndex ^= 1;
                 }
 
                 try { Thread.sleep(5); } catch (InterruptedException ignored) {}
@@ -189,8 +243,8 @@ public class AudioCapture {
         }
     }
 
-    private boolean isAllSilence(byte[] data) {
-        byte nullValue = (mType == TYPE_PCM) ? (byte) 0x80 : 0;
+    private boolean isAllSilence(byte[] data, boolean isPcm) {
+        byte nullValue = isPcm ? (byte) 0x80 : 0;
         for (byte b : data) {
             if (b != nullValue) return false;
         }

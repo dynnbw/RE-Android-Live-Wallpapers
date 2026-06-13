@@ -12,23 +12,29 @@ import android.graphics.Color;
 final class ManyScene {
     private static final int LINE_COUNT = 256;
 
-    // Composed sub-scenes
-    final WaveScene mWave;
+    // Composed sub-scenes — reuse vis2 (PCM) and vis3 (FFT) WaveScene directly
+    final WaveScene mWave;      // PCM waveform
+    final WaveScene mWaveFFT;   // FFT spectrum (reuses vis3 logic)
     final VuScene mNeedle;
 
-    // Audio
+    // Audio — single TYPE_BOTH capture produces PCM + FFT simultaneously
     private AudioCapture mAudioCapture;
     int[] mVizData = new int[1024];
 
-    // Wave data (stored in mWave's arrays)
+    // Wave data: PCM
     final float[] mLinePositions = new float[LINE_COUNT * 4];
     final float[] mLineTexCoords = new float[LINE_COUNT * 4];
+    // Wave data: FFT (reads from mWaveFFT.mPositions/mTexCoords)
+
+    // Wave mode: 0=PCM, 1=FFT, 2=Mixed (FFT left 240°, PCM front 0° + right 120°)
+    int mWaveMode = 0;
 
     // Needle state (read from mNeedle fields)
 
     // ManyScene-specific state
     float mRotate = 0f;
-    float mTilt = 0f; // negated from original RS -20: RS CW ≠ GL CCW
+    float mTilt = 0f;
+    float mFloorY = -200f; // reflection floor Y position
     private int mIdle = 0;
     private int mWaveCounter = 0;
 
@@ -46,22 +52,36 @@ final class ManyScene {
 
     boolean mUseTriangleStrip = true;
     boolean mHasPrefInit = false;
+    private int mFrameCount;
     private SharedPreferences mPluginPrefs;
+
+    // HSL recolor state — synced from vis2 (PCM) and vis3 (FFT) prefs
+    boolean mRecolorPCM, mRecolorFFT;
+    boolean mRecolorDynPCM, mRecolorDynFFT; // audio-driven hue
+    float mHuePCM, mHueFFT;
+    float mSatPCM = 1f, mSatFFT = 1f;
+    float mBriPCM = 1f, mBriFFT = 1f;
+    int mFftSize = 512; // synced from vis3 prefs
+    final float[] mAdjustData = new float[LINE_COUNT * 2 * 3 * 2]; // PCM + FFT: 2 verts × 3 HSL × 256 lines × 2 types
+    // Texture index: 0=fire (PCM vis2), 1=ice (FFT vis3)
+    int mLineTexPCM, mLineTexFFT;
 
     final float[] mBgColor = new float[3];
     final float[] mProj = new float[16];
 
     ManyScene(int width, int height, Context context) {
         mWave = new WaveScene(width, height, WaveScene.Mode.PCM, context);
+        mWaveFFT = new WaveScene(width, height, WaveScene.Mode.FFT, context);
         mNeedle = new VuScene(width, height, context);
         initPointData();
+        initPointDataSubset(mWaveFFT.mPointData);
     }
 
     // ---- lifecycle ----
 
     void start() {
         if (mAudioCapture == null) {
-            mAudioCapture = new AudioCapture(AudioCapture.TYPE_PCM, 1024);
+            mAudioCapture = new AudioCapture(AudioCapture.TYPE_BOTH, 1024);
         }
         mAudioCapture.start();
     }
@@ -88,17 +108,19 @@ final class ManyScene {
     // ---- point data init ----
 
     void initPointData() {
-        // Initialize the first LINE_COUNT entries of mWave.mPointData
-        float[] pd = mWave.mPointData;
-        int outlen = LINE_COUNT;
-        int half = outlen / 2;
-        for (int i = 0; i < outlen; i++) {
-            pd[i * 8]     = i - half;   // start X
-            pd[i * 8 + 2] = 0f;        // start S
-            pd[i * 8 + 3] = 0f;        // start T
-            pd[i * 8 + 4] = i - half;  // end X
-            pd[i * 8 + 6] = 1.0f;      // end S
-            pd[i * 8 + 7] = 0f;        // end T
+        initPointDataSubset(mWave.mPointData);
+    }
+
+    /** Initialize X/S/T coords for the first LINE_COUNT entries. */
+    private static void initPointDataSubset(float[] pd) {
+        int half = LINE_COUNT / 2;
+        for (int i = 0; i < LINE_COUNT; i++) {
+            pd[i * 8]     = i - half;
+            pd[i * 8 + 2] = 0f;
+            pd[i * 8 + 3] = 0f;
+            pd[i * 8 + 4] = i - half;
+            pd[i * 8 + 6] = 1.0f;
+            pd[i * 8 + 7] = 0f;
         }
     }
 
@@ -111,7 +133,18 @@ final class ManyScene {
         boolean pref = p.getBoolean("musicvis_use_triangle_strip", true);
         if (!mHasPrefInit || pref != mUseTriangleStrip) {
             mUseTriangleStrip = pref;
+        }
+        mWaveMode = Integer.parseInt(p.getString("musicvis_wave_mode", "0"));
+        // Sync static HSL + FFT config from vis2/vis3 prefs (only on first call — dynamic hue manages itself)
+        if (!mHasPrefInit) {
+            syncVis2Prefs();
+            syncVis3Prefs();
             mHasPrefInit = true;
+        }
+        // Re-sync periodically in case user changed vis2/vis3 settings at runtime
+        if (mFrameCount++ % 120 == 0) {
+            syncVis2Prefs();
+            syncVis3Prefs();
         }
         String hex = p.getString("musicvis_bg_color", "#000000");
         try {
@@ -122,6 +155,41 @@ final class ManyScene {
         } catch (Exception e) {
             mBgColor[0] = mBgColor[1] = mBgColor[2] = 0f;
         }
+    }
+
+    private void syncVis2Prefs() {
+        SharedPreferences p2 = getPluginPrefs("vis2");
+        if (p2 == null) return;
+        mWave.readPrefs(p2);
+        mRecolorPCM = mWave.mRecolorEnabled;
+        mRecolorDynPCM = mWave.mRecolorDynamic;
+        if (!mRecolorDynPCM) mHuePCM = mWave.mHue; // keep dynamic hue if running
+        mSatPCM = mWave.mSaturation;
+        mBriPCM = mWave.mBrightness;
+    }
+
+    private void syncVis3Prefs() {
+        SharedPreferences p3 = getPluginPrefs("vis3");
+        if (p3 == null) return;
+        mWaveFFT.readPrefs(p3);
+        mRecolorFFT = mWaveFFT.mRecolorEnabled;
+        mRecolorDynFFT = mWaveFFT.mRecolorDynamic;
+        if (!mRecolorDynFFT) mHueFFT = mWaveFFT.mHue;
+        mSatFFT = mWaveFFT.mSaturation;
+        mBriFFT = mWaveFFT.mBrightness;
+        mFftSize = mWaveFFT.mFftSize;
+    }
+
+    /** Try plugin pref name first, then legacy name as fallback. */
+    private SharedPreferences getPluginPrefs(String pluginId) {
+        Context ctx = mWave.mContext;
+        SharedPreferences p = ctx.getSharedPreferences("plugin_" + pluginId, Context.MODE_PRIVATE);
+        if (p.getAll().isEmpty()) {
+            String legacy = "musicvis" + pluginId + "_prefs";
+            SharedPreferences lp = ctx.getSharedPreferences(legacy, Context.MODE_PRIVATE);
+            if (!lp.getAll().isEmpty()) return lp;
+        }
+        return p;
     }
 
     // ---- auto rotation ----
@@ -243,31 +311,113 @@ final class ManyScene {
         wave4pos++; wave4amp++;
     }
 
+    // ---- FFT wave data (reuses WaveScene FFT, same as vis3) ----
+
+    void updateWaveDataFFT() {
+        if (mAudioCapture == null) return;
+        int[] fft = mAudioCapture.getFftFormattedData();
+        if (fft == null || fft.length == 0) return;
+        // mWaveFFT never started — init analyzer lazily
+        if (mWaveFFT.mAnalyzer == null) mWaveFFT.mAnalyzer = new int[512];
+        // Limit bins to synced FFT size
+        int maxBins = mFftSize / 2;
+        int len = Math.min(fft.length / 2, maxBins);
+        if (len > mWaveFFT.mAnalyzer.length) len = mWaveFFT.mAnalyzer.length;
+
+        // FFT bin processing (matching Visualization3RS algorithm)
+        for (int i = 1; i < len - 1; i++) {
+            int val1 = fft[i * 2];
+            int val2 = fft[i * 2 + 1];
+            int val = val1 * val1 + val2 * val2;
+            int newval = val * (i / 16 + 1);
+            int oldval = mWaveFFT.mAnalyzer[i];
+            if (newval >= oldval - 800) {
+            } else {
+                newval = oldval - 800;
+            }
+            mWaveFFT.mAnalyzer[i] = newval;
+        }
+
+        // Map bins to LINE_COUNT bars
+        int srcidx = 0;
+        int cnt = 0;
+        float[] pd = mWaveFFT.mPointData;
+        for (int i = 0; i < LINE_COUNT; i++) {
+            float val = mWaveFFT.mAnalyzer[srcidx] * 64f / 8f; // gain to match PCM amplitude range
+            if (val < 1f && val > -1f) val = 1f;
+            pd[i * 8 + 1] = val;
+            pd[i * 8 + 5] = -val;
+            cnt += len;
+            if (cnt > LINE_COUNT) { srcidx++; cnt -= LINE_COUNT; }
+        }
+    }
+
     // ---- line buffer building ----
 
     void updateLineBuffers() {
+        // PCM
         float[] pd = mWave.mPointData;
         for (int i = 0; i < LINE_COUNT; i++) {
-            int base = i * 8;
-            int out = i * 4;
+            int base = i * 8, out = i * 4;
             mLinePositions[out]     = pd[base];
             mLinePositions[out + 1] = pd[base + 1];
             mLinePositions[out + 2] = pd[base + 4];
             mLinePositions[out + 3] = pd[base + 5];
-
             mLineTexCoords[out]     = pd[base + 2];
             mLineTexCoords[out + 1] = pd[base + 3];
             mLineTexCoords[out + 2] = pd[base + 6];
             mLineTexCoords[out + 3] = pd[base + 7];
         }
+        // FFT — convert point data to position/texcoord arrays
+        mWaveFFT.updateBuffers();
+    }
+
+    /** Build HSL adjust buffer + advance dynamic hue for both PCM and FFT. */
+    void updateAdjustBuffer() {
+        // Dynamic hue: compute average amplitude and shift hue (matching WaveScene.updateDynamicHue)
+        if (mRecolorPCM && mRecolorDynPCM) updateDynamicHue(false); // PCM → mWave.mPointData
+        if (mRecolorFFT && mRecolorDynFFT) updateDynamicHue(true);  // FFT → mWaveFFT.mPointData
+        // PCM section
+        float h = mRecolorPCM ? mHuePCM : -1f;
+        for (int i = 0; i < LINE_COUNT * 2; i++) {
+            int b = i * 3;
+            mAdjustData[b] = h; mAdjustData[b + 1] = mSatPCM; mAdjustData[b + 2] = mBriPCM;
+        }
+        // FFT section
+        int off = LINE_COUNT * 2 * 3;
+        h = mRecolorFFT ? mHueFFT : -1f;
+        for (int i = 0; i < LINE_COUNT * 2; i++) {
+            int b = off + i * 3;
+            mAdjustData[b] = h; mAdjustData[b + 1] = mSatFFT; mAdjustData[b + 2] = mBriFFT;
+        }
+    }
+
+    private void updateDynamicHue(boolean isFFT) {
+        float[] pd = isFFT ? mWaveFFT.mPointData : mWave.mPointData;
+        float sum = 0f;
+        for (int i = 0; i < LINE_COUNT; i++) {
+            sum += Math.abs(pd[i * 8 + 1]);
+        }
+        float avg = sum / LINE_COUNT;
+        float norm = Math.min(1f, avg / 800f);
+        if (isFFT) mHueFFT = (mHueFFT + norm * 0.03f) % 1f;
+        else       mHuePCM = (mHuePCM + norm * 0.03f) % 1f;
+    }
+
+    /** Propagate resize to WaveScene instances (FFT bin mapping needs current width). */
+    void resizeWaves(int width, int height) {
+        mWave.mWidth = width;
+        mWave.mHeight = height;
+        mWaveFFT.mWidth = width;
+        mWaveFFT.mHeight = height;
     }
 
     // ---- projection ----
 
     void updateProjection() {
         float aspect = (float) mWave.mWidth / (float) mWave.mHeight;
-        // Swap left/right to match RenderScript→GL coordinate conversion
-        Mat4.frustumM(mProj, aspect, -aspect, -1f, 1f, 1f, 6000f);
+        // Flip X and Y to match RenderScript→GL coordinate conversion
+        Mat4.frustumM(mProj, aspect, -aspect, 1f, -1f, 1f, 6000f);
     }
 
     // ---- per-frame tick ----

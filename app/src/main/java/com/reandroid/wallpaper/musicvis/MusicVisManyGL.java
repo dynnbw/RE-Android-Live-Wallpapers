@@ -36,6 +36,16 @@ public class MusicVisManyGL extends GLESScene {
     private int mLineMvpLoc;
     private int mLineSamplerLoc;
 
+    // HSL color shader
+    private int mColorProgram;
+    private int mColorPosLoc;
+    private int mColorTexLoc;
+    private int mColorMvpLoc;
+    private int mColorSamplerLoc;
+    private int mColorAdjustLoc;
+    private int mTexGrey;
+    private FloatBuffer mAdjustBuffer;
+
     // Textures
     private int mTexBackground;
     private int mTexFrame;
@@ -44,13 +54,16 @@ public class MusicVisManyGL extends GLESScene {
     private int mTexPeakOff;
     private int mTexBlack;
     private int mTexAlbum;
-    private int mTexLine;
+    private int mTexLine;    // fire (PCM, vis2)
+    private int mTexLineFFT;  // ice (FFT, vis3)
 
     // Buffers
     private FloatBuffer mPosBuffer;
     private FloatBuffer mTexBuffer;
     private FloatBuffer mLinePosBuffer;
     private FloatBuffer mLineTexBuffer;
+    private FloatBuffer mLinePosBufferFFT;
+    private FloatBuffer mLineTexBufferFFT;
     private float[] mQuadUvs;
 
     private final float[] mMvp = new float[16];
@@ -72,6 +85,7 @@ public class MusicVisManyGL extends GLESScene {
     @Override
     public void resize(int width, int height) {
         super.resize(width, height);
+        mScene.resizeWaves(width, height);
         mScene.updateProjection();
     }
 
@@ -101,8 +115,10 @@ public class MusicVisManyGL extends GLESScene {
         s.updateAutoRotation(timeMs);
         s.updateNeedle();
         s.updateWaveData();
+        s.updateWaveDataFFT();
         s.applyIdleAndFade();
         s.updateLineBuffers();
+        s.updateAdjustBuffer();
 
         uploadBuffers(s);
 
@@ -113,6 +129,7 @@ public class MusicVisManyGL extends GLESScene {
 
         float[] base = new float[16];
         Matrix.setIdentityM(base, 0);
+        Matrix.translateM(base, 0, 0f, 1.0f, 0f); // camera height offset
         Matrix.rotateM(base, 0, s.mTilt, 1f, 0f, 0f);
         Matrix.rotateM(base, 0, s.mAutoRotation + s.mRotate, 0f, 1f, 0f);
 
@@ -158,6 +175,20 @@ public class MusicVisManyGL extends GLESScene {
         mTexBlack = GLTextureUtils.loadTextureFromAsset(mContext, "musicvis/drawable/musicvis_black.png");
         mTexAlbum = GLTextureUtils.loadTextureFromAsset(mContext, "musicvis/drawable/musicvis_albumart.png");
         mTexLine = GLTextureUtils.loadTextureFromAsset(mContext, "musicvis/drawable/musicvis_fire.png");
+        mTexLineFFT = GLTextureUtils.loadTextureFromAsset(mContext, "musicvis/drawable/musicvis_ice.png");
+        mTexGrey = GLTextureUtils.loadTextureFromAsset(mContext, "musicvis/drawable/musicvis_grey.png");
+
+        // HSL color shader (reuses vis2/vis3 wave color shader)
+        String cvs = AssetLoader.readText(mContext, "musicvis/shaders/GLES/musicvis_wave_color_vs.glsl");
+        String cfs = AssetLoader.readText(mContext, "musicvis/shaders/GLES/musicvis_wave_color_fs.glsl");
+        mColorProgram = createProgram(cvs, cfs);
+        if (mColorProgram != 0) {
+            mColorPosLoc = GLES20.glGetAttribLocation(mColorProgram, "aPosition");
+            mColorTexLoc = GLES20.glGetAttribLocation(mColorProgram, "aTexCoord");
+            mColorAdjustLoc = GLES20.glGetAttribLocation(mColorProgram, "aAdjust");
+            mColorMvpLoc = GLES20.glGetUniformLocation(mColorProgram, "uMVP");
+            mColorSamplerLoc = GLES20.glGetUniformLocation(mColorProgram, "uTex");
+        }
 
         mQuadUvs = AssetLoader.readFloatArray(mContext, "musicvis/data/musicvis_quad_uv.csv");
 
@@ -165,6 +196,9 @@ public class MusicVisManyGL extends GLESScene {
         mTexBuffer = ByteBuffer.allocateDirect(mQuadUvs.length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
         mLinePosBuffer = ByteBuffer.allocateDirect(mScene.mLinePositions.length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
         mLineTexBuffer = ByteBuffer.allocateDirect(mScene.mLineTexCoords.length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
+        mLinePosBufferFFT = ByteBuffer.allocateDirect(mScene.mWaveFFT.mPositions.length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
+        mLineTexBufferFFT = ByteBuffer.allocateDirect(mScene.mWaveFFT.mTexCoords.length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
+        mAdjustBuffer = ByteBuffer.allocateDirect(mScene.mAdjustData.length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
 
         mScene.updateProjection();
     }
@@ -174,17 +208,26 @@ public class MusicVisManyGL extends GLESScene {
         mLinePosBuffer.put(s.mLinePositions).position(0);
         mLineTexBuffer.position(0);
         mLineTexBuffer.put(s.mLineTexCoords).position(0);
+        // FFT: upload from WaveScene(FFT) built-in buffers
+        mLinePosBufferFFT.position(0);
+        mLinePosBufferFFT.put(s.mWaveFFT.mPositions).position(0);
+        mLineTexBufferFFT.position(0);
+        mLineTexBufferFFT.put(s.mWaveFFT.mTexCoords).position(0);
+        // HSL adjust
+        mAdjustBuffer.position(0);
+        mAdjustBuffer.put(s.mAdjustData).position(0);
     }
 
     // ---- rendering helpers ----
 
     private void drawVizLayer(float[] baseMatrix) {
         float[] layer = baseMatrix.clone();
+        int waveIdx = 0;
         for (int i = 0; i < 6; i++) {
             if ((i & 1) == 1) {
                 drawVU(layer);
             } else {
-                drawWave(layer);
+                drawWave(layer, waveIdx++);
             }
             Matrix.rotateM(layer, 0, 60f, 0f, 1f, 0f);
         }
@@ -218,35 +261,64 @@ public class MusicVisManyGL extends GLESScene {
         drawQuad(mTexFrame, -236f, -60f, 600f, 236f, 230f, 600f);
     }
 
-    private void drawWave(float[] baseMatrix) {
+    private void drawWave(float[] baseMatrix, int waveIdx) {
         ManyScene s = mScene;
+        boolean useFFT = (s.mWaveMode == 1)
+                || (s.mWaveMode == 2 && waveIdx == 2);
+        FloatBuffer posBuf = useFFT ? mLinePosBufferFFT : mLinePosBuffer;
+        FloatBuffer texBuf = useFFT ? mLineTexBufferFFT : mLineTexBuffer;
+
         float[] model = baseMatrix.clone();
         Matrix.scaleM(model, 0, 0.008f, 0.008f / 2048f, 0.008f);
         Matrix.translateM(model, 0, 0f, 81920f, 350f);
 
-        setLineMvp(model);
-        GLES20.glUseProgram(mLineProgram);
-        GLES20.glUniform1i(mLineSamplerLoc, 0);
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTexLine);
+        Matrix.multiplyMM(mMvp, 0, s.mProj, 0, model, 0);
 
-        GLES20.glEnableVertexAttribArray(mLinePosLoc);
-        GLES20.glEnableVertexAttribArray(mLineTexLoc);
+        boolean recolor = (useFFT ? s.mRecolorFFT : s.mRecolorPCM) && mColorProgram != 0;
+        if (recolor) {
+            GLES20.glUseProgram(mColorProgram);
+            GLES20.glUniformMatrix4fv(mColorMvpLoc, 1, false, mMvp, 0);
+            GLES20.glUniform1i(mColorSamplerLoc, 0);
+            GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTexGrey);
+            GLES20.glEnableVertexAttribArray(mColorPosLoc);
+            GLES20.glEnableVertexAttribArray(mColorTexLoc);
+            GLES20.glEnableVertexAttribArray(mColorAdjustLoc);
+            GLES20.glVertexAttribPointer(mColorPosLoc, 2, GLES20.GL_FLOAT, false, 0, posBuf);
+            GLES20.glVertexAttribPointer(mColorTexLoc, 2, GLES20.GL_FLOAT, false, 0, texBuf);
+            // Use PCM or FFT section of adjust buffer
+            mAdjustBuffer.position(useFFT ? LINE_COUNT * 2 * 3 : 0);
+            GLES20.glVertexAttribPointer(mColorAdjustLoc, 3, GLES20.GL_FLOAT, false, 0, mAdjustBuffer);
+        } else {
+            GLES20.glUseProgram(mLineProgram);
+            GLES20.glUniformMatrix4fv(mLineMvpLoc, 1, false, mMvp, 0);
+            GLES20.glUniform1i(mLineSamplerLoc, 0);
+            GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+            // vis2 fire texture for PCM, vis3 ice texture for FFT
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, useFFT ? mTexLineFFT : mTexLine);
+            GLES20.glEnableVertexAttribArray(mLinePosLoc);
+            GLES20.glEnableVertexAttribArray(mLineTexLoc);
+            GLES20.glVertexAttribPointer(mLinePosLoc, 2, GLES20.GL_FLOAT, false, 0, posBuf);
+            GLES20.glVertexAttribPointer(mLineTexLoc, 2, GLES20.GL_FLOAT, false, 0, texBuf);
+        }
 
-        GLES20.glVertexAttribPointer(mLinePosLoc, 2, GLES20.GL_FLOAT, false, 0, mLinePosBuffer);
-        GLES20.glVertexAttribPointer(mLineTexLoc, 2, GLES20.GL_FLOAT, false, 0, mLineTexBuffer);
+        int glMode = s.mUseTriangleStrip ? GLES20.GL_TRIANGLE_STRIP : GLES20.GL_LINES;
+        GLES20.glDrawArrays(glMode, 0, LINE_COUNT * 2);
 
-        int mode = s.mUseTriangleStrip ? GLES20.GL_TRIANGLE_STRIP : GLES20.GL_LINES;
-        GLES20.glDrawArrays(mode, 0, LINE_COUNT * 2);
-
-        GLES20.glDisableVertexAttribArray(mLinePosLoc);
-        GLES20.glDisableVertexAttribArray(mLineTexLoc);
+        if (recolor) {
+            GLES20.glDisableVertexAttribArray(mColorPosLoc);
+            GLES20.glDisableVertexAttribArray(mColorTexLoc);
+            GLES20.glDisableVertexAttribArray(mColorAdjustLoc);
+        } else {
+            GLES20.glDisableVertexAttribArray(mLinePosLoc);
+            GLES20.glDisableVertexAttribArray(mLineTexLoc);
+        }
     }
 
     private void drawReflectPlane(float[] baseMatrix) {
         float[] model = baseMatrix.clone();
         setMvp(model);
-        drawQuadXZ(mTexAlbum, -1500f, 1500f, -60f, -1500f, 1500f);
+        drawQuadXZ(mTexAlbum, -1500f, 1500f, mScene.mFloorY, -1500f, 1500f);
     }
 
     private void setMvp(float[] model) {
