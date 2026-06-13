@@ -1,0 +1,17 @@
+{
+  "pref_shape": "Shape",
+  "pref_shape_0": "Box",
+  "pref_shape_1": "Round",
+  "pref_shape_2": "Dot",
+  "pref_color": "Color theme",
+  "pref_color_0": "Urban",
+  "pref_color_1": "Natural",
+  "pref_color_2": "Luxury",
+  "pref_scale": "Scale",
+  "pref_amount": "Dot amount",
+  "pref_pattern": "Random pattern",
+  "pref_pattern_0": "None",
+  "pref_pattern_1": "Stripes",
+  "pref_pattern_2": "Blocks",
+  "pref_speed": "Speed"
+}

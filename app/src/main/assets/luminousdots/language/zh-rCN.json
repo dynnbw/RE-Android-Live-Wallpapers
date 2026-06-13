@@ -1,0 +1,17 @@
+{
+  "pref_shape": "形状",
+  "pref_shape_0": "方框",
+  "pref_shape_1": "圆形",
+  "pref_shape_2": "圆点",
+  "pref_color": "色彩主题",
+  "pref_color_0": "都市",
+  "pref_color_1": "自然",
+  "pref_color_2": "奢华",
+  "pref_scale": "缩放",
+  "pref_amount": "点阵密度",
+  "pref_pattern": "随机图案",
+  "pref_pattern_0": "无",
+  "pref_pattern_1": "条纹",
+  "pref_pattern_2": "方块",
+  "pref_speed": "速度"
+}

@@ -1,0 +1,52 @@
+{
+  "prefs": [
+    {
+      "type": "list",
+      "key": "shape",
+      "title": "pref_shape",
+      "default": "0",
+      "values": ["0", "1", "2"],
+      "labels": ["pref_shape_0", "pref_shape_1", "pref_shape_2"]
+    },
+    {
+      "type": "list",
+      "key": "color",
+      "title": "pref_color",
+      "default": "0",
+      "values": ["0", "1", "2"],
+      "labels": ["pref_color_0", "pref_color_1", "pref_color_2"]
+    },
+    {
+      "type": "seekbar",
+      "key": "scale",
+      "title": "pref_scale",
+      "default": 0,
+      "min": 0,
+      "max": 10
+    },
+    {
+      "type": "seekbar",
+      "key": "amount",
+      "title": "pref_amount",
+      "default": 0,
+      "min": 0,
+      "max": 10
+    },
+    {
+      "type": "list",
+      "key": "pattern",
+      "title": "pref_pattern",
+      "default": "0",
+      "values": ["0", "1", "2"],
+      "labels": ["pref_pattern_0", "pref_pattern_1", "pref_pattern_2"]
+    },
+    {
+      "type": "seekbar",
+      "key": "speed",
+      "title": "pref_speed",
+      "default": 0,
+      "min": 0,
+      "max": 10
+    }
+  ]
+}

@@ -86,6 +86,9 @@
     <string name="wallpaper_vis4">VU Meter</string>
     <string name="wallpaper_vis5">Many</string>
 
+    <!-- Wallpaper showing luminous dots -->
+    <string name="wallpaper_luminousdots">Luminous Dots</string>
+
     <!-- Polar clock: title of settings activity -->
     <string name="clock_settings">Polar clock settings</string>
     <!-- Polar clock: label for "show seconds" pref -->

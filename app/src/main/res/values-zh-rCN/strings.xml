@@ -88,6 +88,9 @@
     <string name="wallpaper_vis4">音量表</string>
     <string name="wallpaper_vis5">多重可视化</string>
 
+    <!-- Wallpaper showing luminous dots -->
+    <string name="wallpaper_luminousdots">发光点</string>
+
     <!-- Polar clock: title of settings activity -->
     <string name="clock_settings">极地时钟设置</string>
     <!-- Polar clock: label for "show seconds" pref -->

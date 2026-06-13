@@ -1,0 +1,6 @@
+{
+  "label": "@string/wallpaper_luminousdots",
+  "plugin": "com.reandroid.wallpaper.luminousdots.LuminousDotsPlugin",
+  "previewClass": "com.reandroid.wallpaper.luminousdots.LuminousDotsGL",
+  "permissions": []
+}
