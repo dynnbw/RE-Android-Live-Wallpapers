@@ -97,7 +97,8 @@ public class LuminousDotsGL extends GLESScene {
     private int maPositionHandle, maTextureHandle, maAlphaHandle, maColorHandle;
 
     // Textures
-    private int mObjTexId0, mObjTexId0_1, mObjTexId1, mObjTexId2;
+    private int mObjTexId0, mObjTexId0_1, mObjTexId0_64, mObjTexId0_1_64;
+    private int mObjTexId1, mObjTexId2;
     private int mGlowTexId0, mGlowTexId1, mGlowTexId2;
 
     // Projection
@@ -116,6 +117,11 @@ public class LuminousDotsGL extends GLESScene {
     public void setPluginPrefs(android.content.SharedPreferences prefs) {
         mPluginPrefs = prefs;
         mScene.setPluginPrefs(prefs);
+    }
+
+    /** Called by Engine to forward battery level to Scene. */
+    public void setBatteryLevel(int level) {
+        mScene.setBatteryLevel(level);
     }
 
     @Override
@@ -145,7 +151,8 @@ public class LuminousDotsGL extends GLESScene {
 
     @Override
     public void release() {
-        int[] tex = {mObjTexId0, mObjTexId0_1, mObjTexId1, mObjTexId2,
+        int[] tex = {mObjTexId0, mObjTexId0_1, mObjTexId0_64, mObjTexId0_1_64,
+                     mObjTexId1, mObjTexId2,
                      mGlowTexId0, mGlowTexId1, mGlowTexId2};
         GLES20.glDeleteTextures(tex.length, tex, 0);
 
@@ -200,12 +207,12 @@ public class LuminousDotsGL extends GLESScene {
 
     private void loadTextures() {
         String base = "luminousdots/drawable/";
-        mObjTexId0   = loadTex(base + "box0_128.png");
-        mObjTexId0_1 = loadTex(base + "box0_1_128.png");
-        // Also load 64px textures (scale >= 1.9 uses 64px)
-        // mObjTexId1 = round0, mObjTexId2 = dot0
-        mObjTexId1   = loadTex(base + "round0.png");
-        mObjTexId2   = loadTex(base + "dot0.png");
+        mObjTexId0      = loadTex(base + "box0_128.png");
+        mObjTexId0_1    = loadTex(base + "box0_1_128.png");
+        mObjTexId0_64   = loadTex(base + "box0_64.png");
+        mObjTexId0_1_64 = loadTex(base + "box0_1_64.png");
+        mObjTexId1      = loadTex(base + "round0.png");
+        mObjTexId2      = loadTex(base + "dot0.png");
         mGlowTexId0  = loadTex(base + "glowbox.png");
         mGlowTexId1  = loadTex(base + "glowdot.png");
         mGlowTexId2  = loadTex(base + "glowround.png");
@@ -252,7 +259,7 @@ public class LuminousDotsGL extends GLESScene {
         if (data == null || data.verticesUp == null) return;
 
         GLES20.glViewport(0, 0, mWidth, mHeight);
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT); // 16640 in original
         GLES20.glUseProgram(mProgram);
         GLES20.glEnable(GLES20.GL_BLEND);
         GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
@@ -262,9 +269,12 @@ public class LuminousDotsGL extends GLESScene {
         int objTex;
         switch (data.shape) {
             case 0:
-                // Check scale for 128 vs 64
-                if (data.mScale >= 1.9f) objTex = mObjTexId0_1; // 64px
-                else objTex = mObjTexId0;
+                // Original: colorState selects variant, scale selects resolution
+                if (data.mScale >= 1.9f) {
+                    objTex = (data.colorState != 0) ? mObjTexId0_1_64 : mObjTexId0_64;
+                } else {
+                    objTex = (data.colorState != 0) ? mObjTexId0_1 : mObjTexId0;
+                }
                 break;
             case 1: objTex = mObjTexId1; break;
             case 2: objTex = mObjTexId2; break;
@@ -298,7 +308,7 @@ public class LuminousDotsGL extends GLESScene {
         GLES20.glUniform1i(mIsGradiantLoc, 0);
 
         // --- Battery alpha ---
-        GLES20.glUniform1f(mBatteryAlphaLoc, 1.0f);
+        GLES20.glUniform1f(mBatteryAlphaLoc, data.batteryAlpha);
 
         // --- 8 rendering passes ---
         float f2 = data.halfLayoutSize * data.mScale;
@@ -361,9 +371,9 @@ public class LuminousDotsGL extends GLESScene {
             LuminousDotsScene.GlowData glow = data.glowList.get(gi);
             if (glow == null || glow.vertices == null) continue;
 
-            // Bind glow texture based on shape
+            // Bind glow texture based on wallpaper shape (original: all glows use same texture = mShape)
             GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-            switch (glow.glowShape) {
+            switch (data.shape) {
                 case 0: GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mGlowTexId0); break;
                 case 1: GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mGlowTexId1); break;
                 case 2: GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mGlowTexId2); break;

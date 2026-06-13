@@ -42,7 +42,7 @@ final class LuminousDotsScene {
         {-25, -25}, {-50,   0}, {-25,  25}, {  0,  50}
     };
 
-    // 10 glow positions: {gridX, gridY, glowColorIdx, glowShape, unused, startMs, endMs}
+    // 10 glow positions: {gridX, gridY, glowColorIdx, alphaLevel, unused, startMs, endMs}
     static final int[][] GLOW_POS = {
         { 7,  1, 1, 2, 0,  3000, 11000},
         {17,  4, 2, 2, 0,  5200, 13700},
@@ -506,6 +506,229 @@ final class LuminousDotsScene {
         {27, 27, 5, 1, 5, 0, 0, 1},
     };
 
+    // OBJ_PATTERN_DOWN: 223 entries for the DOWN layer (original uses different pattern set for mMDownPattern)
+    static final int[][] OBJ_PATTERN_DOWN = {
+        {1, 3, 0, 1, 4, 4600, 13800, 0},
+        {6, 3, 0, 1, 4, 0, 0, 0},
+        {6, 2, 0, 2, 4, 0, 0, 0},
+        {6, 1, 5, 1, 4, 0, 0, 0},
+        {6, 0, 5, 1, 5, 0, 0, 1},
+        {15, 0, 0, 2, 3, 2400, 10500, 0},
+        {14, 0, 0, 3, 3, 1800, 10500, 0},
+        {13, 0, 0, 2, 3, 2200, 10500, 0},
+        {12, 0, 5, 2, 3, 0, 0, 1},
+        {11, 0, 0, 2, 3, 0, 0, 0},
+        {19, 0, 5, 1, 3, 0, 0, 0},
+        {18, 0, 0, 2, 3, 1300, 10500, 0},
+        {17, 0, 0, 1, 3, 1200, 10500, 0},
+        {16, 0, 20, 1, 3, 0, 0, 1},
+        {21, 3, 5, 1, 4, 0, 0, 0},
+        {21, 2, 5, 2, 4, 0, 0, 0},
+        {21, 1, 0, 2, 4, 0, 0, 0},
+        {21, 0, 0, 2, 5, 0, 0, 1},
+        {23, 0, 0, 2, 3, 0, 0, 1},
+        {24, 0, 0, 3, 3, 0, 0, 1},
+        {25, 0, 1, 2, 3, 0, 0, 1},
+        {26, 0, 3, 2, 2, 0, 0, 1},
+        {27, 0, 7, 5, 3, 0, 0, 1},
+        {28, 0, 7, 4, 3, 0, 0, 1},
+        {29, 0, 12, 4, 3, 0, 0, 1},
+        {30, 0, 14, 2, 2, 0, 0, 1},
+        {31, 0, 8, 2, 3, 0, 0, 1},
+        {0, 4, 0, 3, 2, 0, 0, 0},
+        {1, 8, 20, 0, 5, 0, 0, 1},
+        {1, 7, 0, 1, 4, 0, 0, 0},
+        {1, 6, 0, 2, 4, 0, 0, 0},
+        {1, 5, 1, 1, 4, 0, 0, 0},
+        {1, 4, 20, 1, 5, 0, 0, 1},
+        {6, 8, 5, 1, 5, 0, 0, 1},
+        {6, 7, 1, 2, 4, 0, 0, 1},
+        {6, 6, 1, 3, 4, 0, 0, 1},
+        {6, 5, 0, 2, 4, 0, 0, 1},
+        {6, 4, 0, 2, 5, 0, 0, 1},
+        {11, 4, 0, 2, 2, 0, 0, 1},
+        {14, 4, 0, 1, 3, 0, 0, 0},
+        {13, 4, 1, 2, 3, 0, 0, 0},
+        {12, 4, 5, 1, 3, 0, 0, 0},
+        {11, 4, 20, 1, 3, 0, 0, 1},
+        {16, 8, 1, 0, 5, 0, 0, 1},
+        {16, 7, 1, 1, 4, 0, 0, 0},
+        {16, 6, 1, 2, 4, 0, 0, 0},
+        {16, 5, 1, 1, 4, 0, 0, 0},
+        {16, 4, 5, 1, 5, 0, 0, 1},
+        {15, 5, 0, 3, 3, 0, 0, 1},
+        {17, 4, 8, 2, 3, 0, 0, 1},
+        {18, 4, 8, 2, 2, 0, 0, 0},
+        {19, 4, 7, 3, 2, 0, 0, 0},
+        {20, 4, 7, 2, 2, 0, 0, 0},
+        {21, 4, 7, 2, 3, 0, 0, 1},
+        {22, 4, 7, 3, 2, 0, 0, 1},
+        {23, 4, 1, 1, 2, 0, 0, 0},
+        {24, 4, 0, 2, 3, 0, 0, 0},
+        {25, 4, 1, 1, 3, 0, 0, 0},
+        {26, 4, 2, 2, 2, 0, 0, 1},
+        {27, 4, 7, 3, 2, 0, 0, 1},
+        {28, 4, 7, 2, 2, 0, 0, 1},
+        {29, 4, 0, 2, 3, 0, 0, 1},
+        {30, 4, 1, 2, 3, 0, 0, 1},
+        {31, 4, 8, 2, 3, 0, 0, 1},
+        {0, 9, 0, 3, 2, 5500, 13500, 0},
+        {5, 9, 0, 2, 3, 0, 0, 1},
+        {4, 9, 0, 1, 2, 6400, 16000, 0},
+        {3, 9, 0, 2, 2, 6300, 16000, 0},
+        {2, 9, 7, 1, 2, 0, 0, 0},
+        {1, 9, 1, 2, 2, 0, 0, 1},
+        {6, 13, 1, 0, 2, 0, 0, 1},
+        {7, 12, 1, 1, 3, 0, 0, 0},
+        {8, 11, 1, 2, 3, 0, 0, 0},
+        {9, 10, 0, 1, 3, 0, 0, 0},
+        {10, 9, 0, 2, 2, 0, 0, 1},
+        {11, 13, 7, 3, 5, 0, 0, 1},
+        {11, 12, 1, 0, 4, 0, 0, 0},
+        {11, 11, 1, 1, 4, 0, 0, 0},
+        {11, 10, 1, 1, 4, 0, 0, 1},
+        {11, 9, 7, 3, 5, 0, 0, 1},
+        {16, 13, 8, 0, 4, 0, 0, 1},
+        {16, 12, 1, 1, 5, 0, 0, 0},
+        {16, 11, 0, 2, 5, 0, 0, 0},
+        {16, 10, 7, 1, 5, 0, 0, 0},
+        {16, 9, 7, 1, 4, 0, 0, 1},
+        {21, 13, 1, 1, 4, 0, 0, 1},
+        {21, 12, 1, 1, 5, 0, 0, 1},
+        {19, 11, 1, 1, 5, 0, 0, 0},
+        {19, 10, 0, 2, 4, 0, 0, 0},
+        {19, 9, 5, 1, 4, 0, 0, 0},
+        {26, 9, 1, 0, 3, 0, 0, 1},
+        {27, 9, 1, 1, 3, 7400, 15500, 0},
+        {28, 9, 1, 2, 3, 7300, 15500, 0},
+        {29, 9, 0, 2, 3, 4400, 11400, 1},
+        {30, 9, 0, 2, 3, 4300, 11400, 1},
+        {0, 14, 1, 0, 2, 0, 0, 0},
+        {1, 18, 0, 0, 5, 0, 0, 1},
+        {1, 17, 1, 1, 4, 0, 0, 0},
+        {1, 16, 1, 2, 4, 0, 0, 0},
+        {1, 15, 1, 1, 4, 0, 0, 0},
+        {1, 14, 0, 1, 5, 0, 0, 1},
+        {6, 18, 5, 3, 5, 0, 0, 1},
+        {6, 17, 0, 1, 4, 0, 0, 0},
+        {6, 16, 0, 2, 4, 0, 0, 0},
+        {6, 15, 0, 1, 4, 0, 0, 0},
+        {6, 14, 5, 2, 5, 0, 0, 1},
+        {11, 16, 5, 0, 3, 0, 0, 1},
+        {12, 15, 5, 2, 2, 0, 0, 1},
+        {13, 14, 1, 2, 2, 0, 0, 1},
+        {14, 14, 0, 1, 2, 0, 0, 1},
+        {15, 14, 0, 1, 3, 0, 0, 1},
+        {12, 14, 0, 1, 4, 5600, 11700, 0},
+        {16, 18, 0, 2, 5, 0, 0, 1},
+        {16, 17, 0, 1, 4, 0, 0, 0},
+        {16, 16, 1, 2, 4, 0, 0, 0},
+        {16, 15, 5, 1, 4, 0, 0, 0},
+        {16, 14, 5, 2, 5, 0, 0, 1},
+        {16, 13, 2, 2, 3, 9600, 17100, 0},
+        {13, 13, 0, 1, 4, 9700, 17100, 0},
+        {21, 18, 20, 2, 5, 0, 0, 1},
+        {21, 17, 5, 1, 5, 0, 0, 0},
+        {21, 16, 0, 2, 5, 0, 0, 0},
+        {21, 15, 5, 1, 5, 0, 0, 0},
+        {21, 14, 20, 1, 5, 0, 0, 1},
+        {26, 18, 20, 0, 5, 0, 0, 1},
+        {26, 17, 1, 1, 4, 5400, 12200, 0},
+        {26, 16, 1, 2, 4, 5500, 12200, 0},
+        {26, 15, 0, 1, 4, 8900, 17700, 0},
+        {27, 14, 0, 2, 4, 8800, 17700, 0},
+        {26, 13, 5, 2, 4, 0, 0, 0},
+        {31, 9, 0, 1, 3, 0, 0, 0},
+        {5, 17, 1, 1, 3, 0, 0, 0},
+        {6, 16, 1, 2, 3, 3600, 9900, 0},
+        {7, 15, 1, 2, 3, 3400, 9900, 0},
+        {0, 23, 0, 2, 5, 7700, 17100, 0},
+        {0, 22, 0, 2, 5, 7600, 17100, 0},
+        {0, 21, 0, 1, 5, 0, 0, 0},
+        {0, 20, 0, 3, 5, 0, 0, 1},
+        {0, 19, 1, 0, 5, 0, 0, 1},
+        {5, 20, 0, 2, 3, 0, 0, 0},
+        {6, 19, 0, 1, 2, 0, 0, 0},
+        {7, 19, 0, 1, 2, 0, 0, 0},
+        {8, 19, 1, 2, 2, 0, 0, 0},
+        {9, 19, 5, 1, 2, 0, 0, 0},
+        {10, 17, 5, 2, 2, 0, 0, 1},
+        {10, 23, 5, 0, 5, 0, 0, 1},
+        {10, 22, 5, 1, 4, 0, 0, 1},
+        {11, 21, 0, 1, 4, 0, 0, 0},
+        {12, 20, 1, 1, 4, 0, 0, 1},
+        {13, 19, 1, 1, 5, 0, 0, 1},
+        {15, 23, 0, 2, 5, 200, 8300, 0},
+        {15, 22, 0, 2, 5, 100, 8300, 0},
+        {16, 21, 1, 2, 5, 3400, 12100, 0},
+        {17, 20, 1, 2, 5, 3300, 12100, 0},
+        {18, 19, 0, 2, 4, 0, 0, 1},
+        {20, 23, 1, 1, 5, 0, 0, 1},
+        {20, 22, 5, 2, 4, 0, 0, 1},
+        {21, 21, 0, 2, 3, 0, 0, 1},
+        {22, 20, 5, 1, 3, 0, 0, 1},
+        {23, 19, 1, 1, 5, 0, 0, 1},
+        {0, 24, 0, 3, 2, 6600, 18100, 0},
+        {1, 28, 5, 3, 5, 5600, 15100, 0},
+        {1, 27, 5, 1, 4, 0, 0, 0},
+        {1, 26, 0, 2, 4, 0, 0, 0},
+        {1, 25, 5, 1, 4, 0, 0, 0},
+        {0, 24, 5, 1, 5, 0, 0, 0},
+        {9, 24, 8, 2, 3, 0, 0, 1},
+        {8, 24, 7, 2, 3, 0, 0, 1},
+        {7, 24, 7, 2, 3, 0, 0, 1},
+        {6, 24, 12, 2, 3, 0, 0, 1},
+        {5, 24, 14, 2, 3, 0, 0, 1},
+        {14, 24, 14, 2, 3, 0, 0, 1},
+        {13, 24, 12, 2, 3, 0, 0, 1},
+        {12, 24, 7, 4, 3, 0, 0, 1},
+        {11, 24, 7, 5, 3, 0, 0, 1},
+        {10, 24, 8, 2, 3, 0, 0, 1},
+        {19, 24, 8, 2, 3, 0, 0, 1},
+        {18, 24, 3, 2, 3, 0, 0, 1},
+        {17, 24, 0, 2, 3, 0, 0, 1},
+        {16, 24, 5, 2, 3, 0, 0, 1},
+        {15, 24, 1, 2, 3, 0, 0, 1},
+        {15, 24, 0, 2, 4, 0, 0, 0},
+        {16, 27, 1, 2, 5, 1100, 8500, 0},
+        {17, 28, 1, 2, 5, 1000, 8500, 0},
+        {21, 28, 1, 1, 5, 0, 0, 1},
+        {21, 27, 8, 1, 4, 0, 0, 0},
+        {20, 26, 7, 2, 5, 0, 0, 0},
+        {20, 25, 7, 1, 5, 0, 0, 0},
+        {21, 24, 0, 1, 5, 0, 0, 1},
+        {26, 28, 1, 1, 5, 0, 0, 1},
+        {26, 27, 5, 1, 5, 0, 0, 0},
+        {26, 26, 0, 2, 5, 0, 0, 0},
+        {26, 25, 5, 1, 5, 0, 0, 0},
+        {26, 24, 1, 1, 5, 0, 0, 1},
+        {0, 31, 0, 2, 4, 0, 0, 0},
+        {0, 30, 0, 2, 4, 0, 0, 1},
+        {0, 29, 0, 1, 5, 0, 0, 1},
+        {5, 31, 0, 2, 5, 5700, 14800, 0},
+        {5, 30, 0, 1, 5, 5600, 14800, 0},
+        {5, 29, 20, 2, 5, 0, 0, 1},
+        {10, 31, 0, 2, 4, 3500, 10800, 0},
+        {10, 30, 0, 1, 4, 3600, 10800, 0},
+        {10, 29, 0, 2, 5, 0, 0, 1},
+        {20, 31, 1, 2, 5, 0, 0, 1},
+        {20, 30, 0, 2, 4, 3000, 12100, 0},
+        {20, 29, 0, 2, 4, 2900, 12100, 0},
+        {15, 31, 1, 3, 4, 0, 0, 1},
+        {16, 30, 0, 2, 4, 0, 0, 0},
+        {16, 29, 1, 2, 5, 0, 0, 1},
+        {31, 27, 7, 2, 3, 5600, 13300, 0},
+        {31, 22, 7, 2, 2, 5700, 13300, 0},
+        {30, 27, 5, 2, 3, 4500, 11100, 0},
+        {30, 22, 5, 2, 2, 4400, 11100, 0},
+        {25, 29, 3, 2, 4, 0, 0, 0},
+        {26, 31, 0, 2, 4, 0, 0, 0},
+        {27, 30, 5, 1, 4, 0, 0, 0},
+        {25, 30, 7, 2, 4, 1600, 8800, 0},
+        {25, 27, 1, 1, 3, 0, 0, 1},
+        {20, 25, 1, 1, 2, 0, 0, 0},
+    };
+
     // --- State ---
     private final Random mRandom = new Random();
 
@@ -557,6 +780,14 @@ final class LuminousDotsScene {
     boolean mIsScreenOff = true;
     float mScreenLockGap = 0f;
 
+    // Battery state (matching original thresholds)
+    private int mBatteryLevel = 100;
+    private float mUBatteryAlpha = 1f;     // current battery alpha (animated)
+    private float mBatteryLv2Max = 0.5f;   // alpha cap at ≤15%
+    private float mBatteryLv1Max = 0.7f;   // alpha cap at ≤30%
+    private boolean mBatteryChanged;
+    private long mBatteryUpdateTimer;
+
     // Settings
     private SharedPreferences mPrefs;
     int mShape;       // 0=box, 1=round, 2=dot
@@ -590,6 +821,26 @@ final class LuminousDotsScene {
     }
 
     // --- Settings parsing (matching original visible() calculations) ---
+
+    /** Called by Engine to set battery level (0-100). Mimics original battery broadcast receiver. */
+    void setBatteryLevel(int level) {
+        if (level == mBatteryLevel) return;
+        mBatteryLevel = level;
+        mBatteryChanged = true;
+
+        // Set thresholds based on theme + dot amount (matching original setbatteryLvMax)
+        switch (mColorState) {
+            case 0:
+                if (mDotAmount >= 10)      { mBatteryLv2Max = 0.3f; mBatteryLv1Max = 0.6f; }
+                else if (mDotAmount >= 5)  { mBatteryLv2Max = 0.4f; mBatteryLv1Max = 0.6f; }
+                else                        { mBatteryLv2Max = 0.5f; mBatteryLv1Max = 0.7f; }
+                break;
+            default: // 1, 2
+                if (mDotAmount >= 5)       { mBatteryLv2Max = 0.4f; mBatteryLv1Max = 0.6f; }
+                else                        { mBatteryLv2Max = 0.6f; mBatteryLv1Max = 0.7f; }
+                break;
+        }
+    }
 
     void readSettings() {
         SharedPreferences p = getPrefs();
@@ -641,6 +892,7 @@ final class LuminousDotsScene {
         boolean useScissor;
         int shape;
         int colorState;
+        float batteryAlpha;
         int width, height;
         int xMaxOffset, yMaxOffset;
         boolean isPreview;
@@ -650,18 +902,42 @@ final class LuminousDotsScene {
 
     static final class GlowData {
         FloatBuffer vertices;
-        int glowColorIdx;
-        int glowShape;
-        float alpha; // mGlowAlpha
+        int glowColorIdx;  // index into GLOW_COLOR (0-2)
+        float alpha;       // mGlowAlpha
     }
 
     void update(long nowMs) {
         if (!mGridBuilt) return;
 
-        // Battery alpha (simplified — always 1.0 for now since we don't have battery broadcast)
-        float uBatteryAlpha = 1f;
+        // Battery alpha fade — matching original batteryUpdate()
+        // Animate uBatteryAlpha toward target based on battery level
+        float targetAlpha;
+        if (mBatteryLevel <= 15)       targetAlpha = mBatteryLv2Max;
+        else if (mBatteryLevel <= 30)  targetAlpha = mBatteryLv1Max;
+        else                           targetAlpha = 1f;
 
-        // Screen-off / visible state logic (simplified: always "visible")
+        if (mBatteryChanged) {
+            if (targetAlpha < mUBatteryAlpha) {
+                mUBatteryAlpha -= 0.01f;
+                if (mUBatteryAlpha < targetAlpha) mUBatteryAlpha = targetAlpha;
+            } else if (targetAlpha > mUBatteryAlpha) {
+                mUBatteryAlpha += 0.01f;
+                if (mUBatteryAlpha > targetAlpha) mUBatteryAlpha = targetAlpha;
+            }
+            if (mUBatteryAlpha == targetAlpha) {
+                mBatteryChanged = false;
+                mNoViewedTimerGap += nowMs - mBatteryUpdateTimer;
+            }
+        } else if (mBatteryLevel > 30 && mUBatteryAlpha < 1f) {
+            mUBatteryAlpha += 0.01f;
+            mBatteryChanged = true;
+            if (mUBatteryAlpha > 1f) mUBatteryAlpha = 1f;
+        }
+        if (mBatteryChanged && mBatteryUpdateTimer == 0) {
+            mBatteryUpdateTimer = nowMs;
+        }
+
+        // Screen-off / visible state logic
         // In original: mIsScreenOff is managed by broadcast receivers
         if (mIsScreenOff) {
             // Fade from screen-off
@@ -767,6 +1043,7 @@ final class LuminousDotsScene {
         mData.rotIdxGlow = mRotateIdxGlow;
         mData.shape = mShape;
         mData.colorState = mColorState;
+        mData.batteryAlpha = mUBatteryAlpha;
         mData.width = mWidth;
         mData.height = mHeight;
         mData.xMaxOffset = mMaxOffset;
@@ -898,21 +1175,22 @@ final class LuminousDotsScene {
                 init[4] = color[0];
                 init[5] = color[1];
                 init[6] = color[2];
-                init[7] = color[3]; // + 0.2f was in original
+                init[7] = color[3] + 0.2f; // matches original: fArr[mColorState][3] + 0.2f
 
                 oneDotSetting(mVerticesUp, vp, 0, init, cellSize, cellSize, isRound);
                 oneDotSetting(mVerticesDown, vp, 0, init, cellSize, cellSize, isRound);
 
-                // Check glow positions
+                // Check glow positions: GLOW_POS = {gridX, gridY, glowColorIdx, alphaLevel, unused, startMs, endMs}
                 for (int gi = 0; gi < GLOW_POS.length; gi++) {
                     int[] gp = GLOW_POS[gi];
                     if (gp[0] == gridX && gp[1] == gridY) {
                         GlowData glow = new GlowData();
-                        glow.glowColorIdx = gp[3];
-                        glow.glowShape = gp[2];
+                        int glowColorIdx = gp[2];   // index into GLOW_COLOR
+                        int alphaLevel = gp[3];      // 0-5 for getLevAlpha
                         int startMs = gp[5];
                         int endMs = gp[6];
-                        float levAlpha = getLevAlpha(gp[3]);
+                        glow.glowColorIdx = glowColorIdx;
+                        float levAlpha = getLevAlpha(alphaLevel);
                         float[] gInit = new float[] {
                             gx - (int)(cellSize * 1.15f),
                             (int)(cellSize * 1.15f) + gy,
@@ -921,7 +1199,7 @@ final class LuminousDotsScene {
                             (float) startMs,
                             (float) (endMs + randomInt(1000, 3000))
                         };
-                        float[] glowC = GLOW_COLOR[glow.glowShape][mColorState];
+                        float[] glowC = GLOW_COLOR[glowColorIdx][mColorState];
                         gInit[4] = glowC[0];
                         gInit[5] = glowC[1];
                         gInit[6] = glowC[2];
@@ -939,9 +1217,9 @@ final class LuminousDotsScene {
             }
         }
 
-        // Apply pattern data
+        // Apply pattern data (UP uses OBJ_PATTERN, DOWN uses OBJ_PATTERN_DOWN — matching original)
         applyPattern(mVerticesUp, OBJ_PATTERN, mColorState);
-        applyPattern(mVerticesDown, OBJ_PATTERN, mColorState);
+        applyPattern(mVerticesDown, OBJ_PATTERN_DOWN, mColorState);
         mEventTimer = System.currentTimeMillis(); // commit pattern time for alpha pulsing
 
         // Build gradient mask — 3 independent layers matching original visible()
