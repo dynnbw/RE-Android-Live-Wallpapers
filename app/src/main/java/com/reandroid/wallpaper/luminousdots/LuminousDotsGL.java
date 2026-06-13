@@ -194,13 +194,14 @@ public class LuminousDotsGL extends GLESScene {
         // Load textures
         loadTextures();
 
-        // Build grid (needs textures to be loaded first? No, but needs prefs)
-        mScene.buildGrid();
-
-        // Initial projection
+        // Set diagonal XY BEFORE building grid — grid size depends on it
         float aspect = (float) mWidth / (float) mHeight;
         mScene.resize(mWidth, mHeight, mWidth, mHeight);
-        LuminousDotsScene.frustumM(mProjMatrix, -aspect, aspect, -1f, 1f, 1.4f, mWidth + 100f);
+        LuminousDotsScene.frustumM(mProjMatrix, -aspect, aspect, -1f, 1f, 1.4f,
+                Math.max(mWidth, mHeight) + 100f);
+
+        // Build grid (must be after resize so mDiagonalXY is set)
+        mScene.buildGrid();
 
         Log.d(TAG, "initGL complete. size=" + mWidth + "x" + mHeight);
     }
