@@ -185,7 +185,9 @@ final class ManyScene {
         Context ctx = mWave.mContext;
         SharedPreferences p = ctx.getSharedPreferences("plugin_" + pluginId, Context.MODE_PRIVATE);
         if (p.getAll().isEmpty()) {
-            String legacy = "musicvis" + pluginId + "_prefs";
+            // Legacy prefs: "musicvis2_prefs" or "musicvis3_prefs"
+            String num = pluginId.equals("vis2") ? "2" : "3";
+            String legacy = "musicvis" + num + "_prefs";
             SharedPreferences lp = ctx.getSharedPreferences(legacy, Context.MODE_PRIVATE);
             if (!lp.getAll().isEmpty()) return lp;
         }
