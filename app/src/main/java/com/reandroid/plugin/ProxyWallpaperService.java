@@ -109,6 +109,8 @@ public class ProxyWallpaperService extends WallpaperService {
         private void destroyEngine() {
             mRunning = false;
             if (mRenderThread != null) {
+                synchronized (mLock) { mLock.notifyAll(); }
+                mRenderThread.interrupt();
                 try { mRenderThread.join(1000); } catch (InterruptedException ignored) {}
                 mRenderThread = null;
             }
@@ -134,6 +136,7 @@ public class ProxyWallpaperService extends WallpaperService {
             Log.d(TAG, "onVisibilityChanged visible=" + visible + " engine=" + (mEngine != null));
             mVisible = visible;
             if (visible) {
+                synchronized (mLock) { mLock.notifyAll(); }
                 // Detect plugin ID change (user switched to a different wallpaper
                 // via settings while this engine was running): recreate the engine.
                 String activeId = getActivePlugin(ProxyWallpaperService.this);
@@ -209,8 +212,12 @@ public class ProxyWallpaperService extends WallpaperService {
                                     }
                                 }
                             }
+                            try { Thread.sleep(16); } catch (InterruptedException ignored) {}
+                        } else {
+                            synchronized (mLock) {
+                                try { mLock.wait(); } catch (InterruptedException ignored) {}
+                            }
                         }
-                        try { Thread.sleep(16); } catch (InterruptedException ignored) {}
                     }
                 }
             };
