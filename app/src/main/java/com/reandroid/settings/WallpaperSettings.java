@@ -16,6 +16,11 @@ public class WallpaperSettings {
         sInjectedPrefs = prefs;
     }
 
+    /** Called when engine is destroyed to prevent settings leakage across plugins. */
+    public static void clearSharedPreferences() {
+        sInjectedPrefs = null;
+    }
+
     public static final String KEY_GLOBAL_FRAME_RATE = "global_frame_rate";
     public static final String KEY_VK_ANR_DIAGNOSTICS = "pref_vk_anr_diag";
 

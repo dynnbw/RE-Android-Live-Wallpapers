@@ -49,7 +49,7 @@ public abstract class BaseVKPluginEngine implements WallpaperEngine, Runnable {
         mHolder = holder;
         WallpaperSettings.setSharedPreferences(mHost.getSharedPreferences());
     }
-    @Override public void onDestroy() { stopRenderer(); releaseNative(); }
+    @Override public void onDestroy() { stopRenderer(); releaseNative(); WallpaperSettings.clearSharedPreferences(); }
     @Override public void onVisibilityChanged(boolean visible) {
         mVisible = visible; if (visible) startRenderer(); else stopRenderer();
     }

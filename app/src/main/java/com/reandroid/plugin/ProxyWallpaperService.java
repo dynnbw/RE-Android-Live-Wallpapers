@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 
+import com.reandroid.settings.WallpaperSettings;
 import org.json.JSONObject;
 
 import java.io.InputStream;
@@ -123,6 +124,7 @@ public class ProxyWallpaperService extends WallpaperService {
                 mPlugin.release();
                 mPlugin = null;
             }
+            WallpaperSettings.clearSharedPreferences();
         }
 
         @Override
