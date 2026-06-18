@@ -81,21 +81,20 @@ public abstract class BaseVKPluginEngine implements WallpaperEngine, Runnable {
             return;
         }
 
-        mHolder = holder; mWidth = w; mHeight = h;
-
-        // Stop renderer before recreating swapchain
+        // Full destroy + recreate to avoid native swapchain-recreation bugs
         boolean wasRunning = (mThread != null);
         if (wasRunning) stopRenderer();
+        if (mSurfaceCreated) {
+            releaseNative();
+            mSurfaceCreated = false;
+        }
 
+        mHolder = holder; mWidth = w; mHeight = h;
         ensureOrResizeScene(); ensureRenderer();
         Surface s = holder.getSurface();
         if (s != null && s.isValid()) {
-            if (!mSurfaceCreated) {
-                mSurfaceCreated = true;
-                onSurfaceCreatedNative(s, w, h);
-            } else {
-                onSurfaceChangedNative(s, w, h);
-            }
+            mSurfaceCreated = true;
+            onSurfaceCreatedNative(s, w, h);
         }
         if (wasRunning) startRenderer();
     }
