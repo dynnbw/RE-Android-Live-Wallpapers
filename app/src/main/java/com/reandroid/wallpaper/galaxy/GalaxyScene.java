@@ -124,9 +124,9 @@ final class GalaxyScene {
     private float mEllipseTwist = DEFAULT_ELLIPSE_TWIST;
     private float mXOffset = 0.5f;
     private long mLastSettingsSyncTime = 0L;
-    private boolean mParticleDataDirty = true;
-    private boolean mParticleBuffersDirty = true;
-    private boolean mParticlePositionsDirty = false;
+    private volatile boolean mParticleDataDirty = true;
+    private volatile boolean mParticleBuffersDirty = true;
+    private volatile boolean mParticlePositionsDirty = false;
     private boolean mSkipParticleAdvanceOnNextUpdate = true;
 
     GalaxyScene(int width, int height, Context context) {
