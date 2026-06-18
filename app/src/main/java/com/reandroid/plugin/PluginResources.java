@@ -6,13 +6,17 @@ import android.util.Log;
 import org.json.JSONObject;
 
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * Loads plugin-localized resources from assets/{pluginId}/language/{locale}.json.
  * Falls back to "default" if the requested locale is not found.
  */
 public final class PluginResources {
+
+    private static final Map<String, JSONObject> sJsonCache = new HashMap<>();
 
     private PluginResources() {}
 
@@ -33,12 +37,15 @@ public final class PluginResources {
      * Load the full language JSON for a plugin.
      */
     public static JSONObject loadLanguage(Context context, String pluginId, String lang) {
-        // Try assets/{pluginId}/language/{lang}.json
         String path = pluginId + "/language/" + lang + ".json";
+        JSONObject cached = sJsonCache.get(path);
+        if (cached != null) return cached;
         try (InputStream is = context.getAssets().open(path)) {
             byte[] buf = new byte[is.available()];
             is.read(buf);
-            return new JSONObject(new String(buf, "UTF-8"));
+            JSONObject json = new JSONObject(new String(buf, "UTF-8"));
+            sJsonCache.put(path, json);
+            return json;
         } catch (Exception e) {
             Log.w("PluginResources", "Failed to load language JSON: " + path, e);
             return null;
@@ -79,12 +86,16 @@ public final class PluginResources {
      */
     public static JSONObject loadLayout(Context context, String pluginId) {
         String path = pluginId + "/layout.json";
+        JSONObject cached = sJsonCache.get(path);
+        if (cached != null) return cached;
         try (InputStream is = context.getAssets().open(path)) {
             byte[] buf = new byte[is.available()];
             is.read(buf);
-            return new JSONObject(new String(buf, "UTF-8"));
+            JSONObject json = new JSONObject(new String(buf, "UTF-8"));
+            sJsonCache.put(path, json);
+            return json;
         } catch (Exception e) {
-            Log.w("PluginResources", "Failed to load language JSON: " + path, e);
+            Log.w("PluginResources", "Failed to load layout JSON: " + path, e);
             return null;
         }
     }
