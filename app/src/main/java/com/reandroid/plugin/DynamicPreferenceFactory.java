@@ -146,12 +146,7 @@ public final class DynamicPreferenceFactory {
                 sp.setMin(item.optInt("min", 0));
                 sp.setMax(item.optInt("max", 100));
                 sp.setDefaultValue(item.optInt("default", 50));
-                try {
-                    // Show the value label (app:showSeekBarValue="true" equivalent)
-                    java.lang.reflect.Field f = SeekBarPreference.class.getDeclaredField("mShowSeekBarValue");
-                    f.setAccessible(true);
-                    f.setBoolean(sp, true);
-                } catch (Exception ignored) {}
+                sp.setShowSeekBarValue(true);
                 return sp;
             }
             case "list": {
