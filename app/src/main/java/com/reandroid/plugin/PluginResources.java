@@ -1,6 +1,7 @@
 package com.reandroid.plugin;
 
 import android.content.Context;
+import android.util.Log;
 
 import org.json.JSONObject;
 
@@ -38,7 +39,8 @@ public final class PluginResources {
             byte[] buf = new byte[is.available()];
             is.read(buf);
             return new JSONObject(new String(buf, "UTF-8"));
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            Log.w("PluginResources", "Failed to load language JSON: " + path, e);
             return null;
         }
     }
@@ -81,7 +83,8 @@ public final class PluginResources {
             byte[] buf = new byte[is.available()];
             is.read(buf);
             return new JSONObject(new String(buf, "UTF-8"));
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            Log.w("PluginResources", "Failed to load language JSON: " + path, e);
             return null;
         }
     }

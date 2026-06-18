@@ -3,6 +3,7 @@ package com.reandroid.settings;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.util.Log;
 
 import androidx.preference.PreferenceManager;
 
@@ -97,7 +98,8 @@ public class WallpaperSettings {
             String value = p.getString(KEY_GLOBAL_FRAME_RATE, String.valueOf(defValue));
             int fps = Integer.parseInt(value != null ? value : String.valueOf(defValue));
             return Math.max(1, fps);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            Log.w("WallpaperSettings", "Failed to parse global frame rate", e);
             return defValue;
         }
     }

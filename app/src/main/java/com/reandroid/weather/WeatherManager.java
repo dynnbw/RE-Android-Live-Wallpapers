@@ -342,7 +342,8 @@ public class WeatherManager {
                 return false;
             }
             return true;
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            Log.w(TAG, "Failed to parse weather response code as int, falling back to string", e);
             String code = root.optString("cod", "200");
             return "200".equals(code);
         }

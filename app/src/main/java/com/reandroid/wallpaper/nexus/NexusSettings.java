@@ -3,6 +3,7 @@ package com.reandroid.wallpaper.nexus;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
+import android.util.Log;
 
 import androidx.preference.PreferenceManager;
 
@@ -77,9 +78,7 @@ final class NexusSettings {
         if (prefs != null) {
             try {
                 mode = Integer.parseInt(prefs.getString("nexus_mode", "0"));
-            } catch (Exception ignored) {
-                mode = 0;
-            }
+            } catch (Exception e) { Log.w("NexusSettings", "Failed to parse nexus_mode", e); mode = 0; }
         }
         if (mode == 0 && resources != null) {
             try {
@@ -109,8 +108,6 @@ final class NexusSettings {
         }
         try {
             return prefs.getInt(key, fallback);
-        } catch (Exception ignored) {
-            return fallback;
-        }
+        } catch (Exception e) { Log.w("NexusSettings", "Failed to read int pref: " + key, e); return fallback; }
     }
 }

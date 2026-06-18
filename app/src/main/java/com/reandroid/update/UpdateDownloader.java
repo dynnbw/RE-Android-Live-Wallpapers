@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Uri;
+import android.util.Log;
 import android.os.Environment;
 
 import com.reandroid.wallpaper.R;
@@ -15,6 +16,7 @@ import com.reandroid.wallpaper.R;
  * 下载完成后通过广播通知，用户可点击系统通知安装。
  */
 public class UpdateDownloader {
+    private static final String TAG = "UpdateDownloader";
 
     private static final String PRIMARY_URL_PREFIX =
             "https://github.com/dynnbw/RE-Android-Live-Wallpapers/releases/download/";
@@ -92,8 +94,7 @@ public class UpdateDownloader {
         if (mRegistered) {
             try {
                 mContext.unregisterReceiver(mReceiver);
-            } catch (Exception ignored) {
-            }
+            } catch (Exception e) { Log.w(TAG, "Failed to unregister download receiver", e); }
             mRegistered = false;
         }
     }

@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -85,7 +86,7 @@ public class PluginSettingsFragment extends PreferenceFragmentCompat
             info = new JSONObject(new String(buf, "UTF-8"));
             previewClass = info.optString("previewClass", null);
             pluginVk = info.optString("pluginVk", null);
-        } catch (Exception ignored) {}
+        } catch (Exception e) { Log.w("PluginSettingsFragment", "Failed to read info.json for " + getPluginId(), e); }
         mPreviewClass = previewClass;
 
         // Request required permissions from info.json
@@ -183,7 +184,8 @@ public class PluginSettingsFragment extends PreferenceFragmentCompat
                     java.lang.reflect.Method m = scene.getClass()
                             .getMethod("setPluginPrefs", SharedPreferences.class);
                     m.invoke(scene, prefs);
-                } catch (Exception ignored) {
+                } catch (Exception e) {
+                    Log.w("PluginSettingsFragment", "Failed to inject prefs into preview, refreshing scene", e);
                     mPreview.refreshScene();
                 }
             }
@@ -217,7 +219,7 @@ public class PluginSettingsFragment extends PreferenceFragmentCompat
                     java.lang.reflect.Method m = scene.getClass()
                             .getMethod("setPluginPrefs", SharedPreferences.class);
                     m.invoke(scene, prefs);
-                } catch (Exception ignored) {}
+                } catch (Exception e) { Log.w("PluginSettingsFragment", "Failed to inject prefs into new scene", e); }
             }
             return scene;
         } catch (Exception e) {
@@ -265,7 +267,7 @@ public class PluginSettingsFragment extends PreferenceFragmentCompat
         try {
             ctx.getContentResolver().takePersistableUriPermission(uri,
                     Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        } catch (Exception ignored) {}
+        } catch (Exception e) { Log.w("PluginSettingsFragment", "Failed to take persistable URI permission", e); }
 
         prefs.edit().putString(KEY_CUSTOM_BG_URI, uri.toString()).apply();
         Toast.makeText(ctx, com.reandroid.wallpaper.R.string.fireworks_custom_background_set_toast,

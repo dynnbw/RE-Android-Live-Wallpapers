@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.res.AssetManager;
 import android.graphics.Rect;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 
 import androidx.annotation.Nullable;
@@ -23,6 +24,7 @@ import org.json.JSONObject;
 import java.io.InputStream;
 
 public class SettingsMainFragment extends PreferenceFragmentCompat {
+    private static final String TAG = "SettingsMainFragment";
     private static final int WALLPAPER_GRID_SPAN_COUNT = 2;
     private static final String KEY_OPEN_WALLPAPER_CHOOSER = "pref_open_wallpaper_chooser";
     private static final int FULL_WIDTH_SPACING_DP = -8;
@@ -115,9 +117,7 @@ public class SettingsMainFragment extends PreferenceFragmentCompat {
                     label = json.optString("label", null);
                     pluginClass = json.optString("plugin", null);
                     useLegacySettings = json.optBoolean("useLegacySettings", false);
-                } catch (Exception ignored) {
-                    continue;
-                }
+                } catch (Exception e) { Log.w(TAG, "Failed to parse info.json", e); continue; }
                 if (label == null) continue;
 
                 // Resolve @string/ references
@@ -147,8 +147,7 @@ public class SettingsMainFragment extends PreferenceFragmentCompat {
                 }
                 screen.addPreference(entry);
             }
-        } catch (Exception ignored) {
-        }
+        } catch (Exception e) { Log.w(TAG, "Failed to build wallpaper list", e); }
     }
 
     private void applyHomeLayouts() {

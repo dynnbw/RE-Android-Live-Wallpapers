@@ -3,6 +3,7 @@ package com.reandroid.wallpaper.phasebeam;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
+import android.util.Log;
 
 import com.reandroid.wallpaper.R;
 import com.reandroid.utils.AssetLoader;
@@ -17,6 +18,7 @@ import java.util.Random;
  * 负责粒子动画、HSL 色彩调整、背景网格数据管理。
  */
 final class PhaseBeamScene {
+    private static final String TAG = "PhaseBeamScene";
 
     static final String PREFS_NAME = "phasebeam";
     static final String KEY_ENABLED = "phasebeam_recolor_enabled";
@@ -155,7 +157,7 @@ final class PhaseBeamScene {
                 try { return min + (max - min) * p.getInt(key, defaultProgress) / 255f; }
                 catch (ClassCastException e) { return p.getFloat(key, min); }
             }
-        } catch (Exception ignored) {}
+        } catch (Exception e) { Log.w(TAG, "Failed to read preference: " + key, e); }
         return min + (max - min) * defaultProgress / 255f;
     }
 

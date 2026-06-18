@@ -158,7 +158,7 @@ public abstract class BasePluginEngine implements WallpaperEngine {
             try {
                 GLES20.glClearColor(0f, 0f, 0f, 1f);
                 GLES20.glEnable(GLES20.GL_BLEND);
-            } catch (Exception ignored) {}
+            } catch (Exception e) { Log.w(TAG, "GL clear/enable failed", e); }
 
             if (mSceneInitPending) {
                 Log.d(TAG, "Deferred scene.init() for " + mScene.getClass().getSimpleName());
