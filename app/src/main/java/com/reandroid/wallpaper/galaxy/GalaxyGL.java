@@ -85,7 +85,8 @@ public class GalaxyGL extends GLESScene {
 
     private boolean readLight2FromPrefs() {
         if (mPluginPrefs != null) return mPluginPrefs.getBoolean("pref_galaxy_use_light2", false);
-        return readLight2FromPrefs();
+        Log.w(TAG, "mPluginPrefs is null, defaulting light2 to false");
+        return false;
     }
 
     /**
