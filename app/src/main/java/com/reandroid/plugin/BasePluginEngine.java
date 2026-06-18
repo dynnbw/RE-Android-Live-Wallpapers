@@ -120,8 +120,8 @@ public abstract class BasePluginEngine implements WallpaperEngine {
             java.lang.reflect.Method m = scene.getClass()
                     .getMethod("setPluginPrefs", android.content.SharedPreferences.class);
             m.invoke(scene, mHost.getSharedPreferences());
-        } catch (NoSuchMethodException ignored) {
-            // Scene doesn't support plugin prefs — it will read from its own source
+        } catch (NoSuchMethodException e) {
+            Log.i(TAG, scene.getClass().getSimpleName() + " has no setPluginPrefs — using default prefs source");
         } catch (Exception e) {
             Log.w(TAG, "Failed to inject prefs into " + scene.getClass().getSimpleName(), e);
         }
