@@ -5,6 +5,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Process;
 import android.os.SystemClock;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.SurfaceHolder;
@@ -49,7 +50,10 @@ public abstract class BaseVKPluginEngine implements WallpaperEngine, Runnable {
         mHolder = holder;
         WallpaperSettings.setSharedPreferences(mHost.getSharedPreferences());
     }
-    @Override public void onDestroy() { stopRenderer(); releaseNative(); WallpaperSettings.clearSharedPreferences(); }
+    @Override public void onDestroy() {
+        stopRenderer(); releaseNative(); mSurfaceCreated = false;
+        WallpaperSettings.clearSharedPreferences();
+    }
     @Override public void onVisibilityChanged(boolean visible) {
         mVisible = visible; if (visible) startRenderer(); else stopRenderer();
     }
@@ -67,7 +71,22 @@ public abstract class BaseVKPluginEngine implements WallpaperEngine, Runnable {
 
     @Override
     public void onSurfaceChanged(SurfaceHolder holder, int format, int w, int h) {
+        Log.d(getLogTag(), "onSurfaceChanged: " + w + "x" + h
+                + " surfCreated=" + mSurfaceCreated + " oldSize=" + mWidth + "x" + mHeight
+                + " wasRunning=" + (mThread != null));
+
+        // Skip if nothing actually changed
+        if (mSurfaceCreated && mWidth == w && mHeight == h) {
+            Log.d(getLogTag(), "onSurfaceChanged: skipped (nothing changed)");
+            return;
+        }
+
         mHolder = holder; mWidth = w; mHeight = h;
+
+        // Stop renderer before recreating swapchain
+        boolean wasRunning = (mThread != null);
+        if (wasRunning) stopRenderer();
+
         ensureOrResizeScene(); ensureRenderer();
         Surface s = holder.getSurface();
         if (s != null && s.isValid()) {
@@ -78,7 +97,7 @@ public abstract class BaseVKPluginEngine implements WallpaperEngine, Runnable {
                 onSurfaceChangedNative(s, w, h);
             }
         }
-        startRenderer();
+        if (wasRunning) startRenderer();
     }
 
     // --- Render thread ---

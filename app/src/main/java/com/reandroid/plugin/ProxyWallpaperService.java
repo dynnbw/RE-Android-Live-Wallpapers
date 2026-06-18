@@ -100,8 +100,18 @@ public class ProxyWallpaperService extends WallpaperService {
                 if (mEngine != null) {
                     mEngine.onCreate(getSurfaceHolder());
                     mEngine.setPreview(isPreview());
-                    if (mLastWidth > 0 && mLastHeight > 0) {
-                        mEngine.onSurfaceChanged(getSurfaceHolder(), mLastFormat, mLastWidth, mLastHeight);
+                    int initW = mLastWidth, initH = mLastHeight;
+                    boolean fromFrame = false;
+                    if (initW <= 0 || initH <= 0) {
+                        android.graphics.Rect frame = getSurfaceHolder().getSurfaceFrame();
+                        initW = frame.width();
+                        initH = frame.height();
+                        fromFrame = true;
+                    }
+                    Log.d(TAG, "createEngine onSurfaceChanged: " + initW + "x" + initH
+                            + " (fromCache=" + !fromFrame + ")");
+                    if (initW > 0 && initH > 0) {
+                        mEngine.onSurfaceChanged(getSurfaceHolder(), mLastFormat, initW, initH);
                     }
                 }
             } catch (Exception e) {
@@ -110,6 +120,7 @@ public class ProxyWallpaperService extends WallpaperService {
         }
 
         private void destroyEngine() {
+            Log.d(TAG, "destroyEngine: lastSize=" + mLastWidth + "x" + mLastHeight);
             mRunning = false;
             if (mRenderThread != null) {
                 synchronized (mLock) { mLock.notifyAll(); }
@@ -117,6 +128,7 @@ public class ProxyWallpaperService extends WallpaperService {
                 try { mRenderThread.join(1000); } catch (InterruptedException ignored) {}
                 mRenderThread = null;
             }
+            mLastWidth = mLastHeight = 0;
             if (mEngine != null) {
                 mEngine.onDestroy();
                 mEngine.release();
@@ -156,6 +168,8 @@ public class ProxyWallpaperService extends WallpaperService {
 
         @Override
         public void onSurfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+            Log.d(TAG, "ProxyEngine.onSurfaceChanged: " + width + "x" + height
+                    + " engine=" + (mEngine != null));
             mLastFormat = format; mLastWidth = width; mLastHeight = height;
             if (mEngine != null) {
                 mEngine.setPreview(isPreview());

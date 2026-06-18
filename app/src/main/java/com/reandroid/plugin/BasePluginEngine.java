@@ -83,11 +83,24 @@ public abstract class BasePluginEngine implements WallpaperEngine {
 
     @Override
     public void onSurfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-        mWidth = width > 0 ? width : 256;
-        mHeight = height > 0 ? height : 256;
+        width = width > 0 ? width : 256;
+        height = height > 0 ? height : 256;
         Surface surface = holder.getSurface();
 
         if (surface == null || !surface.isValid()) return;
+
+        Log.d(TAG, "onSurfaceChanged: " + width + "x" + height
+                + " eglCreated=" + mEglCreated + " surfChanged=" + (mCurrentSurface != surface)
+                + " oldSize=" + mWidth + "x" + mHeight);
+
+        // Skip if nothing actually changed
+        if (mEglCreated && mCurrentSurface == surface && mWidth == width && mHeight == height) {
+            Log.d(TAG, "onSurfaceChanged: skipped (nothing changed)");
+            return;
+        }
+
+        mWidth = width;
+        mHeight = height;
 
         // Recreate EGL if surface changed
         if (mCurrentSurface != surface) {
@@ -170,6 +183,9 @@ public abstract class BasePluginEngine implements WallpaperEngine {
             mScene.start();
             Log.d(TAG, "Scene started: " + mScene.getClass().getSimpleName());
         }
+
+        // Always sync viewport — it may have changed due to rotation with same EGL surface
+        GLES20.glViewport(0, 0, mWidth, mHeight);
 
         mScene.drawFrame(timeMs);
         EGL14.eglSwapBuffers(mDisplay, mEglSurface);
