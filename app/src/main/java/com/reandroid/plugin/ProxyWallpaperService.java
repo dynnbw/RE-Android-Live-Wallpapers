@@ -14,6 +14,7 @@ import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 
 import com.reandroid.settings.WallpaperSettings;
+import com.reandroid.vulkan.FrameRateManager;
 import org.json.JSONObject;
 
 import java.io.InputStream;
@@ -71,6 +72,7 @@ public class ProxyWallpaperService extends WallpaperService {
         private int mLastWidth;
         private int mLastHeight;
         private final Object mLock = new Object();
+        private final FrameRateManager mFrameRate = new FrameRateManager(TAG);
 
         @Override
         public void onCreate(SurfaceHolder surfaceHolder) {
@@ -200,10 +202,12 @@ public class ProxyWallpaperService extends WallpaperService {
                     int frameCount = 0;
                     while (mRunning) {
                         if (mVisible) {
+                            long frameStart = System.currentTimeMillis();
+                            mFrameRate.syncPerfSettingsIfNeeded(frameStart);
                             synchronized (mLock) {
                                 if (mEngine != null) {
                                     try {
-                                        mEngine.drawFrame(System.currentTimeMillis());
+                                        mEngine.drawFrame(frameStart);
                                         if (++frameCount == 60) {
                                             Log.d(TAG, "Rendered 60 frames OK");
                                             frameCount = 0;
@@ -214,7 +218,10 @@ public class ProxyWallpaperService extends WallpaperService {
                                     }
                                 }
                             }
-                            try { Thread.sleep(16); } catch (InterruptedException ignored) {}
+                            long frameCost = System.currentTimeMillis() - frameStart;
+                            mFrameRate.recordFrameCost(frameCost);
+                            long sleepMs = Math.max(1L, mFrameRate.getTargetFrameMs() - frameCost);
+                            try { Thread.sleep(sleepMs); } catch (InterruptedException ignored) {}
                         } else {
                             synchronized (mLock) {
                                 try { mLock.wait(); } catch (InterruptedException ignored) {}
