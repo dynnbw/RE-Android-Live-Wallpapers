@@ -1,6 +1,6 @@
 {
-  "fall_leaf_size": "Leaf Size",
-  "fall_speed": "Fall Speed",
+  "fall_leaf_size": "पत्ती का आकार",
+  "fall_speed": "गिरने की गति",
   "pref_fall_leaf_count": "पत्तियों की संख्या",
   "pref_fall_max_drops": "अधिकतम तरंग बूँदें",
   "pref_fall_green_leaves": "हरी पत्तियाँ"

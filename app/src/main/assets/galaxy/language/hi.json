@@ -1,6 +1,6 @@
 {
-  "galaxy_radius": "Galaxy Size",
-  "galaxy_parallax": "Parallax Strength",
+  "galaxy_radius": "आकाशगंगा का आकार",
+  "galaxy_parallax": "लंबन शक्ति",
   "galaxy_particle_count": "कण संख्या",
   "galaxy_particle_alpha": "कण अपारदर्शिता",
   "galaxy_precise_calc": "सटीक सर्पिल गणना",

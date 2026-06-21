@@ -1,6 +1,6 @@
 {
-  "galaxy_radius": "Galaxy Size",
-  "galaxy_parallax": "Parallax Strength",
+  "galaxy_radius": "Размер галактики",
+  "galaxy_parallax": "Сила параллакса",
   "galaxy_particle_count": "Количество частиц",
   "galaxy_particle_alpha": "Непрозрачность частиц",
   "galaxy_precise_calc": "Точный спиральный расчёт",
