@@ -1,4 +1,6 @@
 {
+  "fall_leaf_size": "Leaf Size",
+  "fall_speed": "Fall Speed",
   "pref_fall_leaf_count": "Quantidade de folhas",
   "pref_fall_max_drops": "Máx. de ondulações",
   "pref_fall_green_leaves": "Folhas verdes"

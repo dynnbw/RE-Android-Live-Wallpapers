@@ -1,4 +1,9 @@
 {
+  "galaxy4_radius": "Galaxiegröße",
+  "galaxy4_rotation_speed": "Rotationsgeschwindigkeit",
+  "galaxy4_thickness": "Z-Dicke",
   "galaxy4_bg_star_count": "Anzahl Hintergrundsterne",
-  "galaxy4_space_cloud_count": "Anzahl Weltraumwolken"
+  "galaxy4_space_cloud_count": "Anzahl Weltraumwolken",
+  "galaxy4_particle_size": "Partikelgröße",
+  "galaxy4_particle_opacity": "Partikeldeckkraft"
 }

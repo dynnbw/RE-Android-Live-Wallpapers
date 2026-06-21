@@ -1,4 +1,9 @@
 {
-  "galaxy4_bg_star_count": "Nombre d’étoiles d’arrière-plan",
-  "galaxy4_space_cloud_count": "Nombre de nuages cosmiques"
+  "galaxy4_radius": "Taille de la galaxie",
+  "galaxy4_rotation_speed": "Vitesse de rotation",
+  "galaxy4_thickness": "Épaisseur Z",
+  "galaxy4_bg_star_count": "Nombre d'étoiles d'arrière-plan",
+  "galaxy4_space_cloud_count": "Nombre de nuages cosmiques",
+  "galaxy4_particle_size": "Taille des particules",
+  "galaxy4_particle_opacity": "Opacité des particules"
 }

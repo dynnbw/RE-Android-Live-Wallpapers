@@ -1,0 +1,17 @@
+{
+  "pref_shape": "Forma",
+  "shape_label_0": "Cuadrado",
+  "shape_label_1": "Redondo",
+  "shape_label_2": "Punto",
+  "pref_color": "Tema de color",
+  "color_label_0": "Urbano",
+  "color_label_1": "Natural",
+  "color_label_2": "Lujo",
+  "pref_scale": "Escala",
+  "pref_amount": "Cantidad de puntos",
+  "pref_pattern": "Patrón aleatorio",
+  "pattern_label_0": "Ninguno",
+  "pattern_label_1": "Rayas",
+  "pattern_label_2": "Bloques",
+  "pref_speed": "Velocidad"
+}

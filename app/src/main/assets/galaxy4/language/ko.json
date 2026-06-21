@@ -1,4 +1,9 @@
 {
+  "galaxy4_radius": "은하 크기",
+  "galaxy4_rotation_speed": "회전 속도",
+  "galaxy4_thickness": "두께 분포",
   "galaxy4_bg_star_count": "배경 별 수",
-  "galaxy4_space_cloud_count": "우주 구름 수"
+  "galaxy4_space_cloud_count": "우주 구름 수",
+  "galaxy4_particle_size": "입자 크기",
+  "galaxy4_particle_opacity": "입자 불투명도"
 }

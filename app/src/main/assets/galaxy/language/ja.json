@@ -1,4 +1,6 @@
 {
+  "galaxy_radius": "銀河のサイズ",
+  "galaxy_parallax": "視差の強さ",
   "galaxy_particle_count": "パーティクル数",
   "galaxy_particle_alpha": "パーティクルの透明度",
   "galaxy_precise_calc": "精密対数螺旋計算",

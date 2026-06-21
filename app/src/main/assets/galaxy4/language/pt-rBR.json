@@ -1,4 +1,9 @@
 {
+  "galaxy4_radius": "Tamanho da galáxia",
+  "galaxy4_rotation_speed": "Velocidade de rotação",
+  "galaxy4_thickness": "Espessura Z",
   "galaxy4_bg_star_count": "Quantidade de estrelas de fundo",
-  "galaxy4_space_cloud_count": "Quantidade de nuvens espaciais"
+  "galaxy4_space_cloud_count": "Quantidade de nuvens espaciais",
+  "galaxy4_particle_size": "Tamanho da partícula",
+  "galaxy4_particle_opacity": "Opacidade da partícula"
 }

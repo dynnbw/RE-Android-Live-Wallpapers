@@ -1,3 +1,6 @@
 {
-
+  "noisefield_dot_count": "粒子數量",
+  "noisefield_speed": "移動速度",
+  "noisefield_touch_force": "觸摸排斥力",
+  "noisefield_size": "粒子大小"
 }

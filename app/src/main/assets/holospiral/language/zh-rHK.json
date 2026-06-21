@@ -1,3 +1,16 @@
 {
-
+  "holospiral_color_scheme": "顏色主題",
+  "holospiral_color_scheme_label_default": "預設",
+  "holospiral_color_scheme_label_purple": "紫色",
+  "holospiral_color_scheme_label_red": "赤焰",
+  "holospiral_color_scheme_label_green": "翠色",
+  "holospiral_color_scheme_label_gold": "金色",
+  "holospiral_color_scheme_label_ice": "冰藍",
+  "holospiral_inner_points": "內螺旋點數",
+  "holospiral_outer_points": "外螺旋點數",
+  "holospiral_point_size": "光點大小",
+  "holospiral_inner_radius": "內螺旋半徑",
+  "holospiral_outer_radius": "外螺旋半徑",
+  "holospiral_fov": "視野角度",
+  "holospiral_rotate_speed": "旋轉速度"
 }

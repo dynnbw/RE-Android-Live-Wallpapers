@@ -1,3 +1,6 @@
 {
-
+  "noisefield_dot_count": "입자 수",
+  "noisefield_speed": "이동 속도",
+  "noisefield_touch_force": "터치 반발력",
+  "noisefield_size": "입자 크기"
 }

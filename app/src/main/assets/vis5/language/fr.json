@@ -1,4 +1,9 @@
 {
   "title": "Multitude",
-  "settings_entry": "Multitude"
+  "settings_entry": "Multitude",
+  "pref_vis5_wave_mode": "Mode vague",
+  "musicvis_wave_mode_label_0": "Forme d'onde PCM",
+  "musicvis_wave_mode_label_1": "Spectre FFT",
+  "musicvis_wave_mode_label_2": "Mixte (FFT+PCM)",
+  "musicvis_bg_color": "Arrière-plan"
 }

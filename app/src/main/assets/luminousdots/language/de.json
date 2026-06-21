@@ -1,0 +1,17 @@
+{
+  "pref_shape": "Form",
+  "shape_label_0": "Kasten",
+  "shape_label_1": "Rund",
+  "shape_label_2": "Punkt",
+  "pref_color": "Farbthema",
+  "color_label_0": "Urban",
+  "color_label_1": "Natürlich",
+  "color_label_2": "Luxus",
+  "pref_scale": "Skalierung",
+  "pref_amount": "Punktanzahl",
+  "pref_pattern": "Zufallsmuster",
+  "pattern_label_0": "Kein",
+  "pattern_label_1": "Streifen",
+  "pattern_label_2": "Blöcke",
+  "pref_speed": "Geschwindigkeit"
+}

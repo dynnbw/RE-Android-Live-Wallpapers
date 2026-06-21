@@ -1,3 +1,16 @@
 {
-
+  "holospiral_color_scheme": "Цветовая тема",
+  "holospiral_color_scheme_label_default": "По умолчанию",
+  "holospiral_color_scheme_label_purple": "Фиолетовый",
+  "holospiral_color_scheme_label_red": "Красный",
+  "holospiral_color_scheme_label_green": "Зелёный",
+  "holospiral_color_scheme_label_gold": "Золотой",
+  "holospiral_color_scheme_label_ice": "Ледяной",
+  "holospiral_inner_points": "Внутренние точки",
+  "holospiral_outer_points": "Внешние точки",
+  "holospiral_point_size": "Размер точек",
+  "holospiral_inner_radius": "Внутренний радиус",
+  "holospiral_outer_radius": "Внешний радиус",
+  "holospiral_fov": "Поле зрения",
+  "holospiral_rotate_speed": "Скорость вращения"
 }

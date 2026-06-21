@@ -1,4 +1,6 @@
 {
+  "galaxy_radius": "Galaxy Size",
+  "galaxy_parallax": "Parallax Strength",
   "galaxy_particle_count": "কণার সংখ্যা",
   "galaxy_particle_alpha": "কণার অস্বচ্ছতা",
   "galaxy_precise_calc": "সুনির্দিষ্ট সর্পিল গণনা",

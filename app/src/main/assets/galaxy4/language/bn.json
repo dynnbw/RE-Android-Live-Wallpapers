@@ -1,4 +1,9 @@
 {
+  "galaxy4_radius": "গ্যালাক্সির আকার",
+  "galaxy4_rotation_speed": "ঘূর্ণন গতি",
+  "galaxy4_thickness": "Z পুরুত্ব",
   "galaxy4_bg_star_count": "পটভূমি তারার সংখ্যা",
-  "galaxy4_space_cloud_count": "মহাকাশ মেঘের সংখ্যা"
+  "galaxy4_space_cloud_count": "মহাকাশ মেঘের সংখ্যা",
+  "galaxy4_particle_size": "কণার আকার",
+  "galaxy4_particle_opacity": "কণার অস্বচ্ছতা"
 }

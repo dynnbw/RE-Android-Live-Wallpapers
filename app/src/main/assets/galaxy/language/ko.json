@@ -1,4 +1,6 @@
 {
+  "galaxy_radius": "은하 크기",
+  "galaxy_parallax": "시차 강도",
   "galaxy_particle_count": "입자 수",
   "galaxy_particle_alpha": "입자 투명도",
   "galaxy_precise_calc": "정밀 나선 계산",

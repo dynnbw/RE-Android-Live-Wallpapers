@@ -1,9 +1,10 @@
 {
+  "phasebeam_dot_count": "Particle Count",
   "phasebeam_recolor_enabled": "Ajustar cores do feixe",
   "phasebeam_hue": "Cor",
   "phasebeam_saturation": "Saturação",
   "phasebeam_brightness": "Brilho",
-  "theme": "Color theme",
+  "theme": "Tema de cor",
   "theme_label_phasebeam": "Feixe de fase (azul)",
   "theme_label_sunbeam": "Raio de sol (quente)"
 }

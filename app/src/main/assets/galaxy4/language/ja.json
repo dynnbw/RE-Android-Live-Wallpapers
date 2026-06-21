@@ -1,4 +1,9 @@
 {
+  "galaxy4_radius": "銀河のサイズ",
+  "galaxy4_rotation_speed": "回転速度",
+  "galaxy4_thickness": "厚さの散布",
   "galaxy4_bg_star_count": "背景の星の数",
-  "galaxy4_space_cloud_count": "宇宙雲の数"
+  "galaxy4_space_cloud_count": "宇宙雲の数",
+  "galaxy4_particle_size": "粒子サイズ",
+  "galaxy4_particle_opacity": "粒子の不透明度"
 }

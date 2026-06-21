@@ -1,4 +1,9 @@
 {
   "title": "Mehrere",
-  "settings_entry": "Mehrere"
+  "settings_entry": "Mehrere",
+  "pref_vis5_wave_mode": "Wellenmodus",
+  "musicvis_wave_mode_label_0": "PCM-Wellenform",
+  "musicvis_wave_mode_label_1": "FFT-Spektrum",
+  "musicvis_wave_mode_label_2": "Gemischt (FFT+PCM)",
+  "musicvis_bg_color": "Hintergrund"
 }

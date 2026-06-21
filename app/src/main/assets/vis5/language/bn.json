@@ -1,4 +1,9 @@
 {
   "title": "একাধিক",
-  "settings_entry": "একাধিক"
+  "settings_entry": "একাধিক",
+  "pref_vis5_wave_mode": "তরঙ্গ মোড",
+  "musicvis_wave_mode_label_0": "PCM তরঙ্গরূপ",
+  "musicvis_wave_mode_label_1": "FFT বর্ণালী",
+  "musicvis_wave_mode_label_2": "মিশ্র (FFT+PCM)",
+  "musicvis_bg_color": "পটভূমি"
 }

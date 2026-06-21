@@ -1,4 +1,9 @@
 {
+  "galaxy4_radius": "गैलेक्सी का आकार",
+  "galaxy4_rotation_speed": "घूर्णन गति",
+  "galaxy4_thickness": "Z मोटाई",
   "galaxy4_bg_star_count": "पृष्ठभूमि तारा संख्या",
-  "galaxy4_space_cloud_count": "अंतरिक्ष बादल संख्या"
+  "galaxy4_space_cloud_count": "अंतरिक्ष बादल संख्या",
+  "galaxy4_particle_size": "कण का आकार",
+  "galaxy4_particle_opacity": "कण की अपारदर्शिता"
 }

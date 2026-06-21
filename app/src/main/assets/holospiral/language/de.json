@@ -1,3 +1,16 @@
 {
-
+  "holospiral_color_scheme": "Farbthema",
+  "holospiral_color_scheme_label_default": "Standard",
+  "holospiral_color_scheme_label_purple": "Lila",
+  "holospiral_color_scheme_label_red": "Rot",
+  "holospiral_color_scheme_label_green": "Grün",
+  "holospiral_color_scheme_label_gold": "Gold",
+  "holospiral_color_scheme_label_ice": "Eisblau",
+  "holospiral_inner_points": "Innere Punkte",
+  "holospiral_outer_points": "Äußere Punkte",
+  "holospiral_point_size": "Punktgröße",
+  "holospiral_inner_radius": "Innerer Radius",
+  "holospiral_outer_radius": "Äußerer Radius",
+  "holospiral_fov": "Sichtfeld",
+  "holospiral_rotate_speed": "Rotationsgeschwindigkeit"
 }

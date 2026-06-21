@@ -1,4 +1,9 @@
 {
   "title": "Múltiple",
-  "settings_entry": "Múltiple"
+  "settings_entry": "Múltiple",
+  "pref_vis5_wave_mode": "Modo de onda",
+  "musicvis_wave_mode_label_0": "Forma de onda PCM",
+  "musicvis_wave_mode_label_1": "Espectro FFT",
+  "musicvis_wave_mode_label_2": "Mixto (FFT+PCM)",
+  "musicvis_bg_color": "Fondo"
 }

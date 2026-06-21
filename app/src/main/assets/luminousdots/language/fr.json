@@ -1,0 +1,17 @@
+{
+  "pref_shape": "Forme",
+  "shape_label_0": "Carré",
+  "shape_label_1": "Rond",
+  "shape_label_2": "Point",
+  "pref_color": "Thème de couleur",
+  "color_label_0": "Urbain",
+  "color_label_1": "Naturel",
+  "color_label_2": "Luxe",
+  "pref_scale": "Échelle",
+  "pref_amount": "Nombre de points",
+  "pref_pattern": "Motif aléatoire",
+  "pattern_label_0": "Aucun",
+  "pattern_label_1": "Rayures",
+  "pattern_label_2": "Blocs",
+  "pref_speed": "Vitesse"
+}

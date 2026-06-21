@@ -1,0 +1,17 @@
+{
+  "pref_shape": "모양",
+  "shape_label_0": "사각형",
+  "shape_label_1": "라운드",
+  "shape_label_2": "점",
+  "pref_color": "색상 테마",
+  "color_label_0": "어반",
+  "color_label_1": "내추럴",
+  "color_label_2": "럭셔리",
+  "pref_scale": "스케일",
+  "pref_amount": "점 개수",
+  "pref_pattern": "랜덤 패턴",
+  "pattern_label_0": "없음",
+  "pattern_label_1": "줄무늬",
+  "pattern_label_2": "블록",
+  "pref_speed": "속도"
+}

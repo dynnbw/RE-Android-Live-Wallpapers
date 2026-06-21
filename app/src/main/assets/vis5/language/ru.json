@@ -1,4 +1,9 @@
 {
   "title": "Множественный",
-  "settings_entry": "Множественный"
+  "settings_entry": "Множественный",
+  "pref_vis5_wave_mode": "Режим волны",
+  "musicvis_wave_mode_label_0": "PCM-волна",
+  "musicvis_wave_mode_label_1": "FFT-спектр",
+  "musicvis_wave_mode_label_2": "Смешанный (FFT+PCM)",
+  "musicvis_bg_color": "Фон"
 }

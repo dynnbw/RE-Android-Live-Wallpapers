@@ -1,3 +1,16 @@
 {
-
+  "holospiral_color_scheme": "Tema de cor",
+  "holospiral_color_scheme_label_default": "Padrão",
+  "holospiral_color_scheme_label_purple": "Roxo",
+  "holospiral_color_scheme_label_red": "Vermelho",
+  "holospiral_color_scheme_label_green": "Verde",
+  "holospiral_color_scheme_label_gold": "Dourado",
+  "holospiral_color_scheme_label_ice": "Gelo",
+  "holospiral_inner_points": "Pontos internos",
+  "holospiral_outer_points": "Pontos externos",
+  "holospiral_point_size": "Tamanho do ponto",
+  "holospiral_inner_radius": "Raio interno",
+  "holospiral_outer_radius": "Raio externo",
+  "holospiral_fov": "Campo de visão",
+  "holospiral_rotate_speed": "Velocidade de rotação"
 }

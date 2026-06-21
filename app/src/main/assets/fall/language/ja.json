@@ -1,4 +1,6 @@
 {
+  "fall_leaf_size": "葉のサイズ",
+  "fall_speed": "落下速度",
   "pref_fall_leaf_count": "落ち葉の数",
   "pref_fall_max_drops": "最大波紋数",
   "pref_fall_green_leaves": "緑の葉"

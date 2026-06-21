@@ -1,4 +1,6 @@
 {
+  "fall_leaf_size": "잎 크기",
+  "fall_speed": "낙하 속도",
   "pref_fall_leaf_count": "낙엽 수",
   "pref_fall_max_drops": "최대 물결 수",
   "pref_fall_green_leaves": "초록색 잎"

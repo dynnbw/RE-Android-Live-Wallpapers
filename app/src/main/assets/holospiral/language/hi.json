@@ -1,3 +1,16 @@
 {
-
+  "holospiral_color_scheme": "रंग थीम",
+  "holospiral_color_scheme_label_default": "डिफ़ॉल्ट",
+  "holospiral_color_scheme_label_purple": "बैंगनी",
+  "holospiral_color_scheme_label_red": "लाल",
+  "holospiral_color_scheme_label_green": "हरा",
+  "holospiral_color_scheme_label_gold": "सुनहरा",
+  "holospiral_color_scheme_label_ice": "बर्फीला",
+  "holospiral_inner_points": "आंतरिक बिंदु",
+  "holospiral_outer_points": "बाहरी बिंदु",
+  "holospiral_point_size": "बिंदु आकार",
+  "holospiral_inner_radius": "आंतरिक त्रिज्या",
+  "holospiral_outer_radius": "बाहरी त्रिज्या",
+  "holospiral_fov": "दृश्य क्षेत्र",
+  "holospiral_rotate_speed": "घूर्णन गति"
 }

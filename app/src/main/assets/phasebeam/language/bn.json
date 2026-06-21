@@ -1,9 +1,10 @@
 {
+  "phasebeam_dot_count": "Particle Count",
   "phasebeam_recolor_enabled": "রশ্মির রঙ সামঞ্জস্য করুন",
   "phasebeam_hue": "রঙ",
   "phasebeam_saturation": "স্যাচুরেশন",
   "phasebeam_brightness": "উজ্জ্বলতা",
-  "theme": "Color theme",
+  "theme": "রঙ থিম",
   "theme_label_phasebeam": "ফেজ বিম (নীল)",
   "theme_label_sunbeam": "সানবিম (উষ্ণ)"
 }

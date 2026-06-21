@@ -1,4 +1,6 @@
 {
+  "fall_leaf_size": "Leaf Size",
+  "fall_speed": "Fall Speed",
   "pref_fall_leaf_count": "Количество листьев",
   "pref_fall_max_drops": "Макс. капель ряби",
   "pref_fall_green_leaves": "Зелёные листья"

@@ -1,4 +1,9 @@
 {
+  "galaxy4_radius": "星系大小",
+  "galaxy4_rotation_speed": "旋轉速度",
+  "galaxy4_thickness": "厚度散布",
   "galaxy4_bg_star_count": "粒子數量",
-  "galaxy4_space_cloud_count": "雲彩數量"
+  "galaxy4_space_cloud_count": "雲彩數量",
+  "galaxy4_particle_size": "粒子大小",
+  "galaxy4_particle_opacity": "粒子透明度"
 }

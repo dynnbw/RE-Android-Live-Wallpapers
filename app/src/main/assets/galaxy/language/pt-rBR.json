@@ -1,4 +1,6 @@
 {
+  "galaxy_radius": "Galaxy Size",
+  "galaxy_parallax": "Parallax Strength",
   "galaxy_particle_count": "Quantidade de partículas",
   "galaxy_particle_alpha": "Opacidade das partículas",
   "galaxy_precise_calc": "Cálculo espiral preciso",

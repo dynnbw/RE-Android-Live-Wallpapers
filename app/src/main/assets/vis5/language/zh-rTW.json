@@ -1,4 +1,9 @@
 {
   "title": "多重視覺化",
-  "settings_entry": "多重視覺化"
+  "settings_entry": "多重視覺化",
+  "pref_vis5_wave_mode": "波形模式",
+  "musicvis_wave_mode_label_0": "PCM 聲波",
+  "musicvis_wave_mode_label_1": "FFT 頻譜",
+  "musicvis_wave_mode_label_2": "混合 (FFT+PCM)",
+  "musicvis_bg_color": "背景顏色"
 }

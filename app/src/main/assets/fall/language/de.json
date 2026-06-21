@@ -1,4 +1,6 @@
 {
+  "fall_leaf_size": "Leaf Size",
+  "fall_speed": "Fall Speed",
   "pref_fall_leaf_count": "Anzahl Blätter",
   "pref_fall_max_drops": "Max. Wellentropfen",
   "pref_fall_green_leaves": "Grüne Blätter"

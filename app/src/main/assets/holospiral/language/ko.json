@@ -1,3 +1,16 @@
 {
-
+  "holospiral_color_scheme": "색상 테마",
+  "holospiral_color_scheme_label_default": "기본",
+  "holospiral_color_scheme_label_purple": "퍼플",
+  "holospiral_color_scheme_label_red": "레드",
+  "holospiral_color_scheme_label_green": "그린",
+  "holospiral_color_scheme_label_gold": "골드",
+  "holospiral_color_scheme_label_ice": "아이스",
+  "holospiral_inner_points": "내부 점 개수",
+  "holospiral_outer_points": "외부 점 개수",
+  "holospiral_point_size": "점 크기",
+  "holospiral_inner_radius": "내부 반지름",
+  "holospiral_outer_radius": "외부 반지름",
+  "holospiral_fov": "시야각",
+  "holospiral_rotate_speed": "회전 속도"
 }

@@ -1,0 +1,17 @@
+{
+  "pref_shape": "आकार",
+  "shape_label_0": "बक्सा",
+  "shape_label_1": "गोल",
+  "shape_label_2": "बिंदु",
+  "pref_color": "रंग थीम",
+  "color_label_0": "शहरी",
+  "color_label_1": "प्राकृतिक",
+  "color_label_2": "विलासिता",
+  "pref_scale": "स्केल",
+  "pref_amount": "बिंदु मात्रा",
+  "pref_pattern": "यादृच्छिक पैटर्न",
+  "pattern_label_0": "कोई नहीं",
+  "pattern_label_1": "धारियाँ",
+  "pattern_label_2": "ब्लॉक",
+  "pref_speed": "गति"
+}

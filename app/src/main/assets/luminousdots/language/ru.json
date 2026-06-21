@@ -1,0 +1,17 @@
+{
+  "pref_shape": "Форма",
+  "shape_label_0": "Квадрат",
+  "shape_label_1": "Круглый",
+  "shape_label_2": "Точка",
+  "pref_color": "Цветовая тема",
+  "color_label_0": "Городской",
+  "color_label_1": "Природный",
+  "color_label_2": "Роскошный",
+  "pref_scale": "Масштаб",
+  "pref_amount": "Количество точек",
+  "pref_pattern": "Случайный узор",
+  "pattern_label_0": "Нет",
+  "pattern_label_1": "Полоски",
+  "pattern_label_2": "Блоки",
+  "pref_speed": "Скорость"
+}

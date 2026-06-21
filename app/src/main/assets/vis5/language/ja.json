@@ -1,4 +1,9 @@
 {
   "title": "マルチビジュアライズ",
-  "settings_entry": "マルチビジュアライズ"
+  "settings_entry": "マルチビジュアライズ",
+  "pref_vis5_wave_mode": "波形モード",
+  "musicvis_wave_mode_label_0": "PCM 波形",
+  "musicvis_wave_mode_label_1": "FFT スペクトル",
+  "musicvis_wave_mode_label_2": "混合 (FFT+PCM)",
+  "musicvis_bg_color": "背景色"
 }

@@ -1,0 +1,17 @@
+{
+  "pref_shape": "আকৃতি",
+  "shape_label_0": "বাক্স",
+  "shape_label_1": "গোলাকার",
+  "shape_label_2": "বিন্দু",
+  "pref_color": "রঙের থিম",
+  "color_label_0": "শহুরে",
+  "color_label_1": "প্রাকৃতিক",
+  "color_label_2": "বিলাসিতা",
+  "pref_scale": "স্কেল",
+  "pref_amount": "বিন্দুর পরিমাণ",
+  "pref_pattern": "এলোমেলো প্যাটার্ন",
+  "pattern_label_0": "কিছুই না",
+  "pattern_label_1": "ডোরাকাটা",
+  "pattern_label_2": "ব্লক",
+  "pref_speed": "গতি"
+}

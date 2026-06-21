@@ -1,0 +1,17 @@
+{
+  "pref_shape": "形状",
+  "shape_label_0": "四角",
+  "shape_label_1": "丸",
+  "shape_label_2": "点",
+  "pref_color": "カラーテーマ",
+  "color_label_0": "アーバン",
+  "color_label_1": "ナチュラル",
+  "color_label_2": "ラグジュアリー",
+  "pref_scale": "スケール",
+  "pref_amount": "点の数",
+  "pref_pattern": "ランダムパターン",
+  "pattern_label_0": "なし",
+  "pattern_label_1": "ストライプ",
+  "pattern_label_2": "ブロック",
+  "pref_speed": "速度"
+}

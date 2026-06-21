@@ -1,4 +1,9 @@
 {
   "title": "एकाधिक",
-  "settings_entry": "एकाधिक"
+  "settings_entry": "एकाधिक",
+  "pref_vis5_wave_mode": "तरंग मोड",
+  "musicvis_wave_mode_label_0": "PCM तरंगरूप",
+  "musicvis_wave_mode_label_1": "FFT स्पेक्ट्रम",
+  "musicvis_wave_mode_label_2": "मिश्रित (FFT+PCM)",
+  "musicvis_bg_color": "पृष्ठभूमि"
 }
