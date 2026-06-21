@@ -1,5 +1,6 @@
 package com.reandroid.wallpaper.noisefield;
 
+import android.content.SharedPreferences;
 import android.view.MotionEvent;
 
 import com.reandroid.utils.MathUtils;
@@ -7,8 +8,6 @@ import com.reandroid.utils.MathUtils;
 import java.util.Random;
 
 final class NoiseFieldScene {
-    static final int DOT_COUNT = 83;
-
     private static final int B = 0x100;
     private static final int BM = 0xff;
     private static final int N = 0x1000;
@@ -18,13 +17,18 @@ final class NoiseFieldScene {
     private final int[] p = new int[B + B + 2];
     private final float[][] g2 = new float[B + B + 2][2];
 
-    private final float[] mDotPositions = new float[DOT_COUNT * 3];
-    private final float[] mDotSpeeds = new float[DOT_COUNT];
-    private final float[] mDotAlpha = new float[DOT_COUNT];
-    private final float[] mDotAlphaStart = new float[DOT_COUNT];
-    private final float[] mDotWander = new float[DOT_COUNT];
-    private final int[] mDotLife = new int[DOT_COUNT];
-    private final int[] mDotDeath = new int[DOT_COUNT];
+    private float[] mDotPositions;
+    private float[] mDotSpeeds;
+    private float[] mDotAlpha;
+    private float[] mDotAlphaStart;
+    private float[] mDotWander;
+    private int[] mDotLife;
+    private int[] mDotDeath;
+
+    private int mDotCount = 83;
+    private float mSpeedMultiplier = 1.0f;
+    private float mTouchForce = 0.20f;
+    private boolean mParamsDirty;
 
     private boolean mTouchDown = false;
     private float mTouchInfluence = 0f;
@@ -39,6 +43,33 @@ final class NoiseFieldScene {
     NoiseFieldScene(int width, int height) {
         mWidth = width;
         mHeight = height;
+        allocateArrays();
+    }
+
+    void setPluginPrefs(SharedPreferences prefs) {
+        mDotCount = MathUtils.clamp(prefs.getInt("noisefield_dot_count", 83), 30, 150);
+        mSpeedMultiplier = prefs.getInt("noisefield_speed", 100) / 100.0f;
+        mTouchForce = prefs.getInt("noisefield_touch_force", 20) / 100.0f;
+        mParamsDirty = true;
+    }
+
+    boolean consumeParamsDirty() {
+        boolean v = mParamsDirty;
+        mParamsDirty = false;
+        return v;
+    }
+
+    int getDotCount() { return mDotCount; }
+
+    void allocateArrays() {
+        int c = mDotCount;
+        mDotPositions = new float[c * 3];
+        mDotSpeeds = new float[c];
+        mDotAlpha = new float[c];
+        mDotAlphaStart = new float[c];
+        mDotWander = new float[c];
+        mDotLife = new int[c];
+        mDotDeath = new int[c];
     }
 
     void resize(int width, int height) {
@@ -87,7 +118,7 @@ final class NoiseFieldScene {
     }
 
     void positionParticles() {
-        for (int i = 0; i < DOT_COUNT; i++) {
+        for (int i = 0; i < mDotCount; i++) {
             int idx = i * 3;
             mDotPositions[idx] = rand(-1.0f, 1.0f);
             mDotPositions[idx + 1] = rand(-1.0f, 1.0f);
@@ -102,7 +133,7 @@ final class NoiseFieldScene {
     }
 
     void updateParticles() {
-        for (int i = 0; i < DOT_COUNT; i++) {
+        for (int i = 0; i < mDotCount; i++) {
             int idx = i * 3;
 
             if (mDotLife[i] < 0 || mDotPositions[idx] < -1.2f || mDotPositions[idx] > 1.2f
@@ -134,16 +165,16 @@ final class NoiseFieldScene {
                 } else {
                     speed = 0.3f;
                 }
-                mDotPositions[idx] += Math.cos(rads) * speed * 0.2f * mTouchFrameScale;
-                mDotPositions[idx + 1] += Math.sin(rads) * speed * 0.2f * mTouchFrameScale;
+                mDotPositions[idx] += Math.cos(rads) * speed * mTouchForce * mTouchFrameScale * mSpeedMultiplier;
+                mDotPositions[idx + 1] += Math.sin(rads) * speed * mTouchForce * mTouchFrameScale * mSpeedMultiplier;
             }
 
             float angle = 360f * noiseval * mDotWander[i];
             float speed = noiseval * mDotSpeeds[i] + 0.01f;
             float rads = (float) (angle * Math.PI / 180.0);
 
-            mDotPositions[idx] += Math.cos(rads) * speed * 0.33f * mTouchFrameScale;
-            mDotPositions[idx + 1] += Math.sin(rads) * speed * 0.33f * mTouchFrameScale;
+            mDotPositions[idx] += Math.cos(rads) * speed * 0.33f * mTouchFrameScale * mSpeedMultiplier;
+            mDotPositions[idx + 1] += Math.sin(rads) * speed * 0.33f * mTouchFrameScale * mSpeedMultiplier;
 
             mDotLife[i]--;
             mDotDeath[i]++;

@@ -1,3 +1,36 @@
 {
-  "prefs": []
+  "prefs": [
+    {
+      "type": "seekbar",
+      "key": "noisefield_dot_count",
+      "title": "noisefield_dot_count",
+      "default": "83",
+      "min": 30,
+      "max": 150
+    },
+    {
+      "type": "seekbar",
+      "key": "noisefield_speed",
+      "title": "noisefield_speed",
+      "default": "100",
+      "min": 50,
+      "max": 200
+    },
+    {
+      "type": "seekbar",
+      "key": "noisefield_touch_force",
+      "title": "noisefield_touch_force",
+      "default": "20",
+      "min": 5,
+      "max": 50
+    },
+    {
+      "type": "seekbar",
+      "key": "noisefield_size",
+      "title": "noisefield_size",
+      "default": "100",
+      "min": 50,
+      "max": 200
+    }
+  ]
 }

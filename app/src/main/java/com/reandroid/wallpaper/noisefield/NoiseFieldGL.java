@@ -57,6 +57,7 @@ public class NoiseFieldGL extends GLESScene {
     private int mDotTexture;
 
     private float mScaleSize = 1.0f;
+    private float mSizeMultiplier = 1.0f;
     private final float[] mMvp = new float[16];
     private boolean mInitialized;
 
@@ -74,6 +75,12 @@ public class NoiseFieldGL extends GLESScene {
         super(width, height);
         mContext = context;
         mScene = new NoiseFieldScene(width, height);
+    }
+
+    /** Called by BasePluginEngine via reflection to inject plugin-isolated prefs. */
+    public void setPluginPrefs(android.content.SharedPreferences prefs) {
+        mScene.setPluginPrefs(prefs);
+        mSizeMultiplier = prefs.getInt("noisefield_size", 100) / 100.0f;
     }
 
     @Override
@@ -129,6 +136,11 @@ public class NoiseFieldGL extends GLESScene {
         initGLIfNeeded();
         if (!mInitialized) return;
 
+        if (mScene.consumeParamsDirty()) {
+            mScene.allocateArrays();
+            mScene.positionParticles();
+        }
+
         mScene.updateFrameScale(timeMs);
 
         GLES20.glViewport(0, 0, mWidth, mHeight);
@@ -171,6 +183,9 @@ public class NoiseFieldGL extends GLESScene {
         mDotTexLoc = GLES20.glGetUniformLocation(mDotProgram, "UNI_Tex0");
 
         createBackgroundMesh();
+        if (mScene.consumeParamsDirty()) {
+            mScene.allocateArrays();
+        }
         mScene.positionParticles();
         updateParticleBuffers();
         updateMvp();
@@ -219,7 +234,7 @@ public class NoiseFieldGL extends GLESScene {
     private void drawDots() {
         GLES20.glUseProgram(mDotProgram);
         GLES20.glUniformMatrix4fv(mDotMvpLoc, 1, false, mMvp, 0);
-        GLES20.glUniform1f(mDotScaleLoc, mScaleSize);
+        GLES20.glUniform1f(mDotScaleLoc, mScaleSize * mSizeMultiplier);
         GLES20.glUniform1i(mDotTexLoc, 0);
 
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
@@ -233,7 +248,7 @@ public class NoiseFieldGL extends GLESScene {
         GLES20.glVertexAttribPointer(mDotSpeedLoc, 1, GLES20.GL_FLOAT, false, 0, mDotSpeedBuffer);
         GLES20.glVertexAttribPointer(mDotAlphaLoc, 1, GLES20.GL_FLOAT, false, 0, mDotAlphaBuffer);
 
-        GLES20.glDrawArrays(GLES20.GL_POINTS, 0, NoiseFieldScene.DOT_COUNT);
+        GLES20.glDrawArrays(GLES20.GL_POINTS, 0, mScene.getDotCount());
 
         GLES20.glDisableVertexAttribArray(mDotPositionLoc);
         GLES20.glDisableVertexAttribArray(mDotSpeedLoc);
