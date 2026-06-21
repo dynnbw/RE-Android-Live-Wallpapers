@@ -1,3 +1,16 @@
 {
-
+  "holospiral_color_scheme": "配色方案",
+  "holospiral_color_scheme_label_default": "默认",
+  "holospiral_color_scheme_label_purple": "紫韵",
+  "holospiral_color_scheme_label_red": "赤焰",
+  "holospiral_color_scheme_label_green": "翠色",
+  "holospiral_color_scheme_label_gold": "鎏金",
+  "holospiral_color_scheme_label_ice": "冰蓝",
+  "holospiral_inner_points": "内螺旋点数",
+  "holospiral_outer_points": "外螺旋点数",
+  "holospiral_point_size": "光点大小",
+  "holospiral_inner_radius": "内螺旋半径",
+  "holospiral_outer_radius": "外螺旋半径",
+  "holospiral_fov": "视野角度",
+  "holospiral_rotate_speed": "旋转速度"
 }

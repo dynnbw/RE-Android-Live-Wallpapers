@@ -1,3 +1,16 @@
 {
-
+  "holospiral_color_scheme": "Color Theme",
+  "holospiral_color_scheme_label_default": "Default",
+  "holospiral_color_scheme_label_purple": "Purple",
+  "holospiral_color_scheme_label_red": "Red",
+  "holospiral_color_scheme_label_green": "Green",
+  "holospiral_color_scheme_label_gold": "Gold",
+  "holospiral_color_scheme_label_ice": "Ice",
+  "holospiral_inner_points": "Inner Points",
+  "holospiral_outer_points": "Outer Points",
+  "holospiral_point_size": "Point Size",
+  "holospiral_inner_radius": "Inner Radius",
+  "holospiral_outer_radius": "Outer Radius",
+  "holospiral_fov": "Field of View",
+  "holospiral_rotate_speed": "Rotation Speed"
 }

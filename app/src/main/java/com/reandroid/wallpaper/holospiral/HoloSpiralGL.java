@@ -17,6 +17,7 @@
 package com.reandroid.wallpaper.holospiral;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
@@ -33,33 +34,37 @@ import java.nio.FloatBuffer;
 public class HoloSpiralGL extends GLESScene {
     private static final String TAG = "HoloSpiralGL";
 
-    private static final float MAX_POINT_SIZE = 75.0f;
     private static final float NEAR_PLANE = 1.0f;
     private static final float FAR_PLANE = 55.0f;
 
-    private static final int NUM_INNER_POINTS = 100;
-    private static final float INNER_SPIRAL_DEPTH = 50.0f;
-    private static final float INNER_RADIUS = 5.0f;
-    private static final float INNER_SEPARATION_DEG = 23.0f;
-
-    private static final int NUM_OUTER_POINTS = 50;
-    private static final float OUTER_SPIRAL_DEPTH = 30.0f;
-    private static final float OUTER_RADIUS = 10.0f;
-    private static final float OUTER_SEPARATION_DEG = 23.0f;
-
-    private static final float FOV = 60.0f;
-    private static final float SPIRAL_ROTATE_SPEED = 15.0f;
-    private static final float INNER_ROTATE_SPEED = 1.5f;
-    private static final float OUTER_ROTATE_SPEED = 0.5f;
-
-    private static final int POINTS_COLOR_BLUE = 0xB30000FF;
-    private static final int POINTS_COLOR_GREEN = 0xD2A633FF;
-    private static final int POINTS_COLOR_AQUA = 0xDC267894;
-    private static final int BG_COLOR_BLACK = 0xFF1A1A53;
-    private static final int BG_COLOR_BLUE = 0xFF08001A;
+    // ---- User-configurable parameters (initialized from SharedPreferences) ----
+    private int mNumInnerPoints = 100;
+    private float mInnerSpiralDepth = 50.0f;
+    private float mInnerRadius = 5.0f;
+    private float mInnerSeparationDeg = 23.0f;
+    private int mNumOuterPoints = 50;
+    private float mOuterSpiralDepth = 30.0f;
+    private float mOuterRadius = 10.0f;
+    private float mOuterSeparationDeg = 23.0f;
+    private float mFov = 60.0f;
+    private float mSpiralRotateSpeed = 15.0f;
+    private float mInnerRotateSpeed = 1.5f;
+    private float mOuterRotateSpeed = 0.5f;
+    private float mMaxPointSize = 75.0f;
+    private int mInnerColorPrimary = 0xB30000FF;
+    private int mInnerColorSecondary = 0xD2A633FF;
+    private int mOuterColor = 0xDC267894;
+    private int mBgColorTop = 0xFF08001A;
+    private int mBgColorBottom = 0xFF1A1A53;
 
     private static final int FLOATS_PER_VERTEX = 7;
     private static final int STRIDE_BYTES = FLOATS_PER_VERTEX * 4;
+
+    // ---- Prefs ----
+    private SharedPreferences mPluginPrefs;
+    private boolean mGeometryDirty;
+    private final SharedPreferences.OnSharedPreferenceChangeListener mPrefsListener =
+            (sp, key) -> { if (key != null && key.startsWith("holospiral_")) mGeometryDirty = true; };
 
     private int mProgramBackground;
     private int mProgramGeometry;
@@ -99,6 +104,68 @@ public class HoloSpiralGL extends GLESScene {
         mContext = context;
     }
 
+    /** Called by BasePluginEngine via reflection to inject plugin-isolated prefs. */
+    public void setPluginPrefs(SharedPreferences prefs) {
+        if (mPluginPrefs != null) {
+            mPluginPrefs.unregisterOnSharedPreferenceChangeListener(mPrefsListener);
+        }
+        mPluginPrefs = prefs;
+        readParamsFromPrefs();
+        prefs.registerOnSharedPreferenceChangeListener(mPrefsListener);
+    }
+
+    private void readParamsFromPrefs() {
+        if (mPluginPrefs == null) return;
+        SharedPreferences p = mPluginPrefs;
+        String scheme = p.getString("holospiral_color_scheme", "default");
+
+        mNumInnerPoints = p.getInt("holospiral_inner_points", 100);
+        mNumOuterPoints = p.getInt("holospiral_outer_points", 50);
+        mMaxPointSize = p.getInt("holospiral_point_size", 75);
+        mInnerRadius = p.getInt("holospiral_inner_radius", 5);
+        mOuterRadius = p.getInt("holospiral_outer_radius", 10);
+        mFov = p.getInt("holospiral_fov", 60);
+        mSpiralRotateSpeed = p.getInt("holospiral_rotate_speed", 15);
+        mInnerSeparationDeg = 23.0f;
+        mOuterSeparationDeg = 23.0f;
+        mInnerSpiralDepth = 50.0f;
+        mOuterSpiralDepth = 30.0f;
+        mInnerRotateSpeed = 1.5f;
+        mOuterRotateSpeed = 0.5f;
+
+        applyColorScheme(scheme);
+        mGeometryDirty = true;
+    }
+
+    private void applyColorScheme(String scheme) {
+        switch (scheme) {
+            case "purple":
+                mInnerColorPrimary = 0xB36600FF; mInnerColorSecondary = 0xD2CC33FF;
+                mOuterColor = 0xDC8B00FF; mBgColorTop = 0xFF0D001A; mBgColorBottom = 0xFF1A0A3A;
+                break;
+            case "red":
+                mInnerColorPrimary = 0xB3FF3300; mInnerColorSecondary = 0xD2FFAA33;
+                mOuterColor = 0xDCFF6633; mBgColorTop = 0xFF1A0008; mBgColorBottom = 0xFF3A0A1A;
+                break;
+            case "green":
+                mInnerColorPrimary = 0xB300FF44; mInnerColorSecondary = 0xD233FFAA;
+                mOuterColor = 0xDC26FF78; mBgColorTop = 0xFF001A08; mBgColorBottom = 0xFF0A3A1A;
+                break;
+            case "gold":
+                mInnerColorPrimary = 0xB3FFAA00; mInnerColorSecondary = 0xD2FFDD66;
+                mOuterColor = 0xDCFFCC33; mBgColorTop = 0xFF1A1000; mBgColorBottom = 0xFF3A2A0A;
+                break;
+            case "ice":
+                mInnerColorPrimary = 0xB300CCFF; mInnerColorSecondary = 0xD266EEFF;
+                mOuterColor = 0xDC44CCFF; mBgColorTop = 0xFF00101A; mBgColorBottom = 0xFF0A2030;
+                break;
+            default: // "default"
+                mInnerColorPrimary = 0xB30000FF; mInnerColorSecondary = 0xD2A633FF;
+                mOuterColor = 0xDC267894; mBgColorTop = 0xFF08001A; mBgColorBottom = 0xFF1A1A53;
+                break;
+        }
+    }
+
     @Override
     protected void onCreate() {
         if (mInitialized) {
@@ -110,6 +177,7 @@ public class HoloSpiralGL extends GLESScene {
         }
         mInitialized = true;
 
+        readParamsFromPrefs();
         createPrograms();
         getHandles();
         createGeometry();
@@ -127,13 +195,18 @@ public class HoloSpiralGL extends GLESScene {
     public void resize(int width, int height) {
         super.resize(width, height);
         float aspect = width > 0 && height > 0 ? (float) width / (float) height : 1.0f;
-        Matrix.perspectiveM(mProjection, 0, FOV, aspect, NEAR_PLANE, FAR_PLANE);
+        Matrix.perspectiveM(mProjection, 0, mFov, aspect, NEAR_PLANE, FAR_PLANE);
     }
 
     @Override
     public void drawFrame(long timeMs) {
         if (!mInitialized) {
             return;
+        }
+        if (mGeometryDirty) {
+            mGeometryDirty = false;
+            readParamsFromPrefs();
+            createGeometry();
         }
         float dt = updateTime(timeMs);
 
@@ -148,6 +221,10 @@ public class HoloSpiralGL extends GLESScene {
 
     @Override
     public void release() {
+        if (mPluginPrefs != null) {
+            mPluginPrefs.unregisterOnSharedPreferenceChangeListener(mPrefsListener);
+            mPluginPrefs = null;
+        }
         if (mPointTextureId != 0) {
             int[] textures = {mPointTextureId};
             GLES20.glDeleteTextures(1, textures, 0);
@@ -190,10 +267,10 @@ public class HoloSpiralGL extends GLESScene {
 
     private void createGeometry() {
         mBackgroundBuffer = buildBackgroundBuffer();
-        mInnerBuffer = buildSpiralBuffer(NUM_INNER_POINTS, INNER_SPIRAL_DEPTH, INNER_RADIUS,
-                INNER_SEPARATION_DEG, POINTS_COLOR_BLUE, POINTS_COLOR_GREEN);
-        mOuterBuffer = buildSpiralBuffer(NUM_OUTER_POINTS, OUTER_SPIRAL_DEPTH, OUTER_RADIUS,
-                OUTER_SEPARATION_DEG, POINTS_COLOR_AQUA, POINTS_COLOR_AQUA);
+        mInnerBuffer = buildSpiralBuffer(mNumInnerPoints, mInnerSpiralDepth, mInnerRadius,
+                mInnerSeparationDeg, mInnerColorPrimary, mInnerColorSecondary);
+        mOuterBuffer = buildSpiralBuffer(mNumOuterPoints, mOuterSpiralDepth, mOuterRadius,
+                mOuterSeparationDeg, mOuterColor, mOuterColor);
     }
 
     private void createTexture() {
@@ -260,7 +337,7 @@ public class HoloSpiralGL extends GLESScene {
         GLES20.glEnable(GLES20.GL_BLEND);
         GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
 
-        GLES20.glUniform1f(mGeoMaxPointSizeHandle, MAX_POINT_SIZE);
+        GLES20.glUniform1f(mGeoMaxPointSizeHandle, mMaxPointSize);
         GLES20.glUniform1f(mGeoFarPlaneHandle, FAR_PLANE);
 
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
@@ -269,13 +346,13 @@ public class HoloSpiralGL extends GLESScene {
 
         Matrix.setIdentityM(mModelView, 0);
         System.arraycopy(mBaseModelView, 0, mModelView, 0, mBaseModelView.length);
-        Matrix.rotateM(mModelView, 0, mXOffset * -SPIRAL_ROTATE_SPEED, 0.0f, 1.0f, 0.0f);
+        Matrix.rotateM(mModelView, 0, mXOffset * -mSpiralRotateSpeed, 0.0f, 1.0f, 0.0f);
 
-        drawSpiral(mOuterBuffer, NUM_OUTER_POINTS, -mOuterRotateAngle);
-        drawSpiral(mInnerBuffer, NUM_INNER_POINTS, mInnerRotateAngle);
+        drawSpiral(mOuterBuffer, mNumOuterPoints, -mOuterRotateAngle);
+        drawSpiral(mInnerBuffer, mNumInnerPoints, mInnerRotateAngle);
 
-        mOuterRotateAngle = modulo360(mOuterRotateAngle + (dt * OUTER_ROTATE_SPEED));
-        mInnerRotateAngle = modulo360(mInnerRotateAngle + (dt * INNER_ROTATE_SPEED));
+        mOuterRotateAngle = modulo360(mOuterRotateAngle + (dt * mOuterRotateSpeed));
+        mInnerRotateAngle = modulo360(mInnerRotateAngle + (dt * mInnerRotateSpeed));
     }
 
     private void drawSpiral(FloatBuffer buffer, int count, float rotationZ) {
@@ -299,8 +376,8 @@ public class HoloSpiralGL extends GLESScene {
     }
 
     private FloatBuffer buildBackgroundBuffer() {
-        float[] blue = convertColor(BG_COLOR_BLUE);
-        float[] black = convertColor(BG_COLOR_BLACK);
+        float[] blue = convertColor(mBgColorTop);
+        float[] black = convertColor(mBgColorBottom);
 
         float[] data = new float[] {
             -1.0f,  1.0f, 0.0f, blue[0],  blue[1],  blue[2],  blue[3],

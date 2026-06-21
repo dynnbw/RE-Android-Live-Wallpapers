@@ -1,3 +1,68 @@
 {
-  "prefs": []
+  "prefs": [
+    {
+      "type": "list",
+      "key": "holospiral_color_scheme",
+      "title": "holospiral_color_scheme",
+      "default": "default",
+      "values": ["default", "purple", "red", "green", "gold", "ice"],
+      "labels": ["holospiral_color_default", "holospiral_color_purple", "holospiral_color_red", "holospiral_color_green", "holospiral_color_gold", "holospiral_color_ice"]
+    },
+    {
+      "type": "seekbar",
+      "key": "holospiral_inner_points",
+      "title": "holospiral_inner_points",
+      "default": "100",
+      "min": 50,
+      "max": 300
+    },
+    {
+      "type": "seekbar",
+      "key": "holospiral_outer_points",
+      "title": "holospiral_outer_points",
+      "default": "50",
+      "min": 20,
+      "max": 150
+    },
+    {
+      "type": "seekbar",
+      "key": "holospiral_point_size",
+      "title": "holospiral_point_size",
+      "default": "75",
+      "min": 30,
+      "max": 120
+    },
+    {
+      "type": "seekbar",
+      "key": "holospiral_inner_radius",
+      "title": "holospiral_inner_radius",
+      "default": "5",
+      "min": 2,
+      "max": 10
+    },
+    {
+      "type": "seekbar",
+      "key": "holospiral_outer_radius",
+      "title": "holospiral_outer_radius",
+      "default": "10",
+      "min": 5,
+      "max": 20
+    },
+    {
+      "type": "seekbar",
+      "key": "holospiral_fov",
+      "title": "holospiral_fov",
+      "default": "60",
+      "min": 40,
+      "max": 90
+    },
+    {
+      "type": "seekbar",
+      "key": "holospiral_rotate_speed",
+      "title": "holospiral_rotate_speed",
+      "default": "15",
+      "min": 5,
+      "max": 100
+    }
+  ]
 }
