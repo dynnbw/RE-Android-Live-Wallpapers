@@ -391,8 +391,9 @@ public class GalaxyGL extends GLESScene {
         int mvpHandle = GLES20.glGetUniformLocation(mLightProgram, "uMVPMatrix");
         int samplerHandle = GLES20.glGetUniformLocation(mLightProgram, "uTexture");
 
-        float sx = (512.0f / mWidth) * 1.1f;
-        float sy = (512.0f / mWidth) * 1.2f;
+        float baseSize = mScene.getGalaxyRadius() * 512.0f / 300.0f;
+        float sx = (baseSize / mWidth) * 1.1f;
+        float sy = (baseSize / mWidth) * 1.2f;
 
         mLightQuadVerts[0]  = -sx; mLightQuadVerts[1]  = -sy; mLightQuadVerts[2] = 0; mLightQuadVerts[3] = 0; mLightQuadVerts[4] = 0;
         mLightQuadVerts[5]  =  sx; mLightQuadVerts[6]  = -sy; mLightQuadVerts[7] = 0; mLightQuadVerts[8] = 1; mLightQuadVerts[9] = 0;

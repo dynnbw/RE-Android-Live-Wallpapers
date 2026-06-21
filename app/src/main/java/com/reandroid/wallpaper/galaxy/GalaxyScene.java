@@ -53,7 +53,8 @@ final class GalaxyScene {
     private static final float ELLIPSE_TWIST = 0.023333333f;
     private static final float PI = 3.1415f;
     private static final float TWO_PI = 6.283f;
-    private static final int GALAXY_RADIUS = 300;
+    private int mGalaxyRadius = 300;
+    private float mThicknessMultiplier = 0.4f;
 
     private static final float PITCH_ANGLE_DEG = 6.7f;
     private static final float FORBIDDEN_RADIUS_KPC = 2.82f;
@@ -157,6 +158,8 @@ final class GalaxyScene {
     SceneData getSceneData() {
         return mSceneData;
     }
+
+    int getGalaxyRadius() { return mGalaxyRadius; }
 
     boolean consumeParticleBufferRebuildRequested() {
         boolean value = mParticleBuffersDirty;
@@ -318,18 +321,18 @@ final class GalaxyScene {
 
     private void rebuildParticleData() {
         float halfWidth = Math.max(1.0f, mWidth * 0.5f);
-        float scale = GALAXY_RADIUS / halfWidth;
+        float scale = mGalaxyRadius / halfWidth;
         float[] particlePositions = new float[mParticleCount * 3];
         float[] particleColors = new float[mParticleCount * 4];
         float[] particleSpeeds = new float[mParticleCount];
 
         for (int i = 0; i < mParticleCount; i++) {
-            float d = Math.abs(randomGauss()) * GALAXY_RADIUS * 0.5f + mRandom.nextFloat() * 64.0f;
-            float id = d / GALAXY_RADIUS;
-            float z = randomGauss() * 0.4f * (1.0f - id);
+            float d = Math.abs(randomGauss()) * mGalaxyRadius * 0.5f + mRandom.nextFloat() * 64.0f;
+            float id = d / mGalaxyRadius;
+            float z = randomGauss() * mThicknessMultiplier * (1.0f - id);
 
             int colorIndex = i * 4;
-            if (d < GALAXY_RADIUS * 0.33f) {
+            if (d < mGalaxyRadius * 0.33f) {
                 particleColors[colorIndex] = 220 + id * 35;
                 particleColors[colorIndex + 1] = 220;
                 particleColors[colorIndex + 2] = 220;
@@ -340,13 +343,13 @@ final class GalaxyScene {
             }
             particleColors[colorIndex + 3] = (mRandom.nextFloat() * 0.9f + 1.2f) * 6.0f;
 
-            if (d > GALAXY_RADIUS * 0.15f) {
+            if (d > mGalaxyRadius * 0.15f) {
                 z *= 0.6f * (1.0f - id);
             } else {
                 z *= 0.72f;
             }
 
-            float mappedDistance = mapf(-4.0f, GALAXY_RADIUS + 4.0f, 0.0f, scale, d);
+            float mappedDistance = mapf(-4.0f, mGalaxyRadius + 4.0f, 0.0f, scale, d);
             float angle = mUsePreciseCalculation ? calculatePreciseInitialAngle(d) : mRandom.nextFloat() * TWO_PI;
 
             int positionIndex = i * 3;
@@ -407,7 +410,7 @@ final class GalaxyScene {
         float absoluteAngle = Math.abs(a);
 
         Matrix.setIdentityM(matrix, 0);
-        Matrix.translateM(matrix, 0, 0.0f, 0.0f, 10.0f - 6.0f * absoluteAngle / 50.0f);
+        Matrix.translateM(matrix, 0, 0.0f, 0.0f, 10.0f - 6.0f * absoluteAngle / angle);
 
         if (mHeight > mWidth) {
             Matrix.scaleM(matrix, 0, 6.6f, 6.0f, 1.0f);
@@ -626,10 +629,24 @@ final class GalaxyScene {
             mParticleAlphaPercent = prefParticleAlpha;
             mSceneData.particleAlphaMultiplier = mParticleAlphaPercent / 100.0f;
         }
+
+        int prefGalaxyRadius = MathUtils.clamp(defaultPrefs.getInt("galaxy_radius", 300), 150, 600);
+        if (prefGalaxyRadius != mGalaxyRadius) {
+            mGalaxyRadius = prefGalaxyRadius;
+            requestParticleRebuild();
+        }
+
+        int prefThickness = MathUtils.clamp(
+                defaultPrefs.getInt("galaxy_parallax", 40), 10, 100);
+        float thickVal = prefThickness / 100.0f;
+        if (thickVal != mThicknessMultiplier) {
+            mThicknessMultiplier = thickVal;
+            requestParticleRebuild();
+        }
     }
 
     private float calculatePreciseInitialAngle(float radiusInScreenSpace) {
-        float radiusKpc = radiusInScreenSpace * (GALAXY_RADIUS_KPC / GALAXY_RADIUS);
+        float radiusKpc = radiusInScreenSpace * (GALAXY_RADIUS_KPC / mGalaxyRadius);
         float safeForbiddenRadius = Math.max(0.001f, mForbiddenRadiusKpc);
         float radiusRatio = radiusKpc / safeForbiddenRadius;
         float angle;

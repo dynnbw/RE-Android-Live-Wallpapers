@@ -2,6 +2,22 @@
   "prefs": [
     {
       "type": "seekbar",
+      "key": "galaxy_radius",
+      "title": "galaxy_radius",
+      "default": "300",
+      "min": 150,
+      "max": 600
+    },
+    {
+      "type": "seekbar",
+      "key": "galaxy_parallax",
+      "title": "galaxy_parallax",
+      "default": "40",
+      "min": 10,
+      "max": 100
+    },
+    {
+      "type": "seekbar",
       "key": "galaxy_particle_count",
       "title": "galaxy_particle_count",
       "default": "12000",
