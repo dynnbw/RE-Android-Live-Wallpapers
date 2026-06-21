@@ -22,6 +22,7 @@
 
     <!-- Application name -->
     <string name="wallpapers">REAndroid 라이브 배경화면</string>
+    <string name="app_name">REAndroid 라이브 배경화면</string>
 
     <!-- Wallpapers -->
     <string name="wallpaper_walkaround">투시</string>
@@ -172,7 +173,7 @@
     <string name="about_app_info">앱 정보</string>
     <string name="about_project_intro">프로젝트 소개</string>
     <string name="about_project_one_liner">클래식 라이브 배경화면 리메이크</string>
-    <string name="about_project_description">클래식 Android 라이브 배경화면을 완전히 리메이크하여 새 기기에适配했습니다. RenderScript → OpenGL ES 2.0, 높은 호환성, 낮은 전력 소비, GPU 가속.</string>
+    <string name="about_project_description">클래식 Android 라이브 배경화면을 완전히 리메이크하여 새 기기에 맞게 조정했습니다. RenderScript → OpenGL ES 2.0, 높은 호환성, 낮은 전력 소비, GPU 가속.</string>
     <string name="about_project_highlights">하이라이트</string>
     <string name="about_project_highlights_detail">저전력, 고호환성, 원본 그대로, GPU 가속, 장기 유지보수</string>
     <string name="about_links">링크 및 연락처</string>

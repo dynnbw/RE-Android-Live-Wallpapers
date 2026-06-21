@@ -3,6 +3,7 @@
 
     <!-- Application name -->
     <string name="wallpapers">REAndroid ライブ壁紙</string>
+    <string name="app_name">REAndroid ライブ壁紙</string>
 
     <!-- Wallpapers -->
     <string name="wallpaper_walkaround">透視</string>
@@ -18,7 +19,7 @@
 
     <string name="wallpaper_galaxy4">銀河 4</string>
 
-    <string name="wallpaper_phasebeam">レーザービーム</string>
+    <string name="wallpaper_phasebeam">パルスビーム</string>
 
     <!-- Cube wallpaper -->
     <string name="wallpaper_cube">キューブ</string>
@@ -56,7 +57,7 @@
     <string name="clock_settings">極地時計の設定</string>
     <string name="palette_gray">アイアングレー</string>
     <string name="palette_violet">ミッドナイト</string>
-    <string name="palette_matrix">パルスビーム</string>
+    <string name="palette_matrix">グリーンスクリーン</string>
     <string name="palette_white_c">シロクマ（動的）</string>
     <string name="palette_black_c">ブラックホール（動的）</string>
     <string name="palette_halloween">パンプキンパイ</string>

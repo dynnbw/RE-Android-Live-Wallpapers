@@ -12,7 +12,7 @@
     
 
     <!-- Обои с предпросмотром камеры -->
-    <string name="wallpaper_walkaround">Сквозь телефон</string>
+    <string name="wallpaper_walkaround">В объективе</string>
 
     <!-- Обои с травой и небом -->
     <string name="wallpaper_grass">Трава</string>
@@ -53,7 +53,7 @@
     <string name="wallpaper_clock">Полярные часы</string>
 
     <!-- Обои Nexus -->
-    <string name="wallpaper_nexus">Nexus</string>
+    <string name="wallpaper_nexus">Нейроны</string>
 
     <!-- Обои Шумовое поле -->
     <string name="wallpaper_noisefield">Шумовое поле</string>
@@ -69,13 +69,13 @@
     <string name="clock_settings">Настройки полярных часов</string>
 
     <!-- Названия палитр -->
-    <string name="palette_gray">Железо</string>
+    <string name="palette_gray">Сталь</string>
     <string name="palette_violet">Полночь</string>
     <string name="palette_matrix">Зелёный экран</string>
     <string name="palette_white_c">Белый медведь (динамический)</string>
     <string name="palette_black_c">Чёрная дыра (динамическая)</string>
     <string name="palette_halloween">Тыквенный пирог</string>
-    <string name="palette_zenburn">Фруктовый салат пришельца</string>
+    <string name="palette_zenburn">Винегрет с других планет</string>
     <string name="palette_oceanic">Синий лазер</string>
 
     <!-- Интерфейс настроек -->
@@ -149,8 +149,8 @@
 
     <!-- Настройки обоев Галактика 4 -->
 
-    <!-- Обои Фазовый луч -->
-    <string name="wallpaper_phasebeam">Фазовый луч</string>
+    <!-- Обои Блики и лучи -->
+    <string name="wallpaper_phasebeam">Блики и лучи</string>
 
     <!-- Cube wallpaper -->
     <string name="wallpaper_cube">Куб</string>

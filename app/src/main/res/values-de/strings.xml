@@ -8,7 +8,7 @@
 
 
     <!-- Flsorescence (荧光) Wallpaper -->
-    <string name="wallpaper_flsorescence">Flsorescence</string>
+    <string name="wallpaper_flsorescence">Fluoreszenz</string>
 
     <!-- Wallpapers: -->
     
@@ -20,8 +20,8 @@
     <string name="wallpaper_grass">Gras</string>
     <string name="wallpaper_grass_vk">Gras Vulkan</string>
 
-    <string name="wallpaper_aurora1">Aurora</string>
-    <string name="wallpaper_aurora2">Aurora 2</string>
+    <string name="wallpaper_aurora1">Nordlicht</string>
+    <string name="wallpaper_aurora2">Nordlicht 2</string>
 
     <!-- Wallpaper showing a galaxy -->
     <string name="wallpaper_galaxy">Galaxie</string>
@@ -163,7 +163,7 @@
     <!-- Galaxy 4 wallpaper preferences -->
 
     <!-- Phase Beam wallpaper -->
-    <string name="wallpaper_phasebeam">Phase Beam</string>
+    <string name="wallpaper_phasebeam">Phasenstrahl</string>
 
     <!-- Cube wallpaper -->
     <string name="wallpaper_cube">Würfel</string>
