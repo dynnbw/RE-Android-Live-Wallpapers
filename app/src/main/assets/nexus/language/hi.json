@@ -1,8 +1,8 @@
 {
   "nexus_background_preset": "पृष्ठभूमि",
-  "nexus_max_pulses": "अधिकतम दालें",
-  "nexus_max_extras": "अधिकतम अतिरिक्त दालें",
-  "nexus_pulse_size": "दाल का आकार",
+  "nexus_max_pulses": "अधिकतम पल्स",
+  "nexus_max_extras": "अधिकतम अतिरिक्त पल्स",
+  "nexus_pulse_size": "पल्स का आकार",
   "nexus_glow_size": "चमक का आकार",
   "nexus_speed": "गति",
   "nexus_speed_delta_min": "न्यूनतम गति डेल्टा",

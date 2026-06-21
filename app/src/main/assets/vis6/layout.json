@@ -16,8 +16,8 @@
         "dynamic"
       ],
       "labels": [
-        "@string/musicvis_recolor_mode_static",
-        "@string/musicvis_recolor_mode_dynamic"
+        "musicvis_recolor_mode_label_static",
+        "musicvis_recolor_mode_label_dynamic"
       ]
     },
     {
@@ -75,13 +75,13 @@
         "#EDDEFF"
       ],
       "labels": [
-        "@string/musicvis_bg_black",
-        "@string/musicvis_bg_dark_red",
-        "@string/musicvis_bg_dark_blue",
-        "@string/musicvis_bg_dark_green",
-        "@string/musicvis_bg_pink",
-        "@string/musicvis_bg_light_green",
-        "@string/musicvis_bg_light_purple"
+        "musicvis_bg_color_label_#000000",
+        "musicvis_bg_color_label_#300303",
+        "musicvis_bg_color_label_#50330",
+        "musicvis_bg_color_label_#2F4F4F",
+        "musicvis_bg_color_label_#FFE4DE",
+        "musicvis_bg_color_label_#F0FFFF",
+        "musicvis_bg_color_label_#EDDEFF"
       ]
     }
   ]

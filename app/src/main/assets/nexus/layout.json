@@ -13,11 +13,11 @@
         "pyramid_background4"
       ],
       "labels": [
-        "@string/nexus_bg_pyramid",
-        "@string/nexus_bg_pyramid_1",
-        "@string/nexus_bg_pyramid_2",
-        "@string/nexus_bg_pyramid_3",
-        "@string/nexus_bg_pyramid_4"
+        "nexus_background_preset_label_pyramid_background",
+        "nexus_background_preset_label_pyramid_background1",
+        "nexus_background_preset_label_pyramid_background2",
+        "nexus_background_preset_label_pyramid_background3",
+        "nexus_background_preset_label_pyramid_background4"
       ]
     },
     {

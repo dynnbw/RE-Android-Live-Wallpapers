@@ -26,8 +26,8 @@
         "modern"
       ],
       "labels": [
-        "@string/pref_microbes_color_mode_original",
-        "@string/pref_microbes_color_mode_modern"
+        "microbes_color_mode_label_original",
+        "microbes_color_mode_label_modern"
       ]
     }
   ]

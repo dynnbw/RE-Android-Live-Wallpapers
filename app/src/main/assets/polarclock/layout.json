@@ -28,14 +28,14 @@
         "palette_zenburn"
       ],
       "labels": [
-        "@string/palette_gray",
-        "@string/palette_white_c",
-        "@string/palette_black_c",
-        "@string/palette_matrix",
-        "@string/palette_halloween",
-        "@string/palette_violet",
-        "@string/palette_oceanic",
-        "@string/palette_zenburn"
+        "palette_label_palette_gray",
+        "palette_label_palette_white_c",
+        "palette_label_palette_black_c",
+        "palette_label_palette_matrix",
+        "palette_label_palette_halloween",
+        "palette_label_palette_violet",
+        "palette_label_palette_oceanic",
+        "palette_label_palette_zenburn"
       ]
     }
   ]

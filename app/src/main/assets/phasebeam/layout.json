@@ -18,8 +18,8 @@
         "sunbeam"
       ],
       "labels": [
-        "@string/phasebeam_theme_phasebeam",
-        "@string/phasebeam_theme_sunbeam"
+        "theme_label_phasebeam",
+        "theme_label_sunbeam"
       ]
     },
     {

@@ -1,8 +1,8 @@
 {
   "nexus_background_preset": "পটভূমি",
-  "nexus_max_pulses": "সর্বোচ্চ ডাল",
-  "nexus_max_extras": "সর্বোচ্চ অতিরিক্ত ডাল",
-  "nexus_pulse_size": "ডালের আকার",
+  "nexus_max_pulses": "সর্বোচ্চ পাল্স",
+  "nexus_max_extras": "সর্বোচ্চ অতিরিক্ত পাল্স",
+  "nexus_pulse_size": "পাল্সের আকার",
   "nexus_glow_size": "আভার আকার",
   "nexus_speed": "গতি",
   "nexus_speed_delta_min": "ন্যূনতম গতি ডেল্টা",

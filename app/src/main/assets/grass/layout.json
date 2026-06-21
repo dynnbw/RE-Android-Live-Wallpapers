@@ -77,15 +77,15 @@
         "#ffffff"
       ],
       "labels": [
-        "@string/grass_color_default",
-        "@string/grass_color_green",
-        "@string/grass_color_blue",
-        "@string/grass_color_red",
-        "@string/grass_color_pink",
-        "@string/grass_color_purple",
-        "@string/grass_color_yellow",
-        "@string/grass_color_black",
-        "@string/grass_color_white"
+        "pref_grass_color_label_default",
+        "pref_grass_color_label_#00ff0d",
+        "pref_grass_color_label_#42A5F5",
+        "pref_grass_color_label_#EF5350",
+        "pref_grass_color_label_#ffbfca",
+        "pref_grass_color_label_#AB47BC",
+        "pref_grass_color_label_#ffd900",
+        "pref_grass_color_label_#2f2e34",
+        "pref_grass_color_label_#ffffff"
       ]
     },
     {
