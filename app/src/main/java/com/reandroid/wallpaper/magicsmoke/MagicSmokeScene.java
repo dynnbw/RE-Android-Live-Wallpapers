@@ -97,11 +97,14 @@ final class MagicSmokeScene {
         mLastTime = 0L;
     }
 
+    private float mSpeedMultiplier = 1.0f;
+
     /**
      * Plugin path: use host-provided prefs instead of hardcoded "magicsmoke" name.
      */
     void setPluginPrefs(SharedPreferences p) {
         mPluginPrefs = p;
+        mSpeedMultiplier = p.getInt("magicsmoke_speed", 100) / 100.0f;
     }
 
     /**
@@ -125,7 +128,7 @@ final class MagicSmokeScene {
             mLastTime = timeMs;
             return;
         }
-        float timeDelta = (timeMs - mLastTime) / 44.0f;
+        float timeDelta = (timeMs - mLastTime) / 44.0f * mSpeedMultiplier;
         mLastTime = timeMs;
 
         // Limit time delta to prevent jumps after sleep

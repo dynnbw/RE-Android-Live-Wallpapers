@@ -1,6 +1,14 @@
 {
   "prefs": [
     {
+      "type": "seekbar",
+      "key": "magicsmoke_speed",
+      "title": "magicsmoke_speed",
+      "default": "100",
+      "min": 25,
+      "max": 300
+    },
+    {
       "type": "list",
       "key": "preset",
       "title": "preset",
