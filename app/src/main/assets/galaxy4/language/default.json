@@ -1,4 +1,7 @@
 {
+  "galaxy4_radius": "Galaxy Size",
+  "galaxy4_rotation_speed": "Rotation Speed",
+  "galaxy4_thickness": "Z Thickness",
   "galaxy4_bg_star_count": "Background star count",
   "galaxy4_space_cloud_count": "Space cloud count",
   "galaxy4_particle_size": "Particle size",

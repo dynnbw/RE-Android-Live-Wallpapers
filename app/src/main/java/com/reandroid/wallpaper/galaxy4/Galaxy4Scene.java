@@ -50,11 +50,11 @@ final class Galaxy4Scene {
     private static final int MAX_SPACE_CLOUD_COUNT = 100;
 
     private static final int STATIC_STAR_COUNT = 50;
-    private static final int GALAXY_RADIUS = 300;
+    private int mGalaxyRadius = 300;
+    private float mThicknessMultiplier = 0.4f;
+    private float mRotationSpeedMultiplier = 1.0f;
     private static final long SETTINGS_SYNC_INTERVAL_MS = 500L;
     private static final float TWO_PI = (float) (Math.PI * 2.0);
-    private static final float SPACE_CLOUD_ROTATION_DELTA = -0.065f;
-    private static final float BG_STAR_ROTATION_DELTA = -0.007f;
 
     private final Context mContext;
     private final Random mRandom = new Random();
@@ -196,6 +196,17 @@ final class Galaxy4Scene {
 
         mSceneData.particleSize = defaultPrefs.getInt("galaxy4_particle_size", 100) / 100.0f;
         mSceneData.particleOpacity = defaultPrefs.getInt("galaxy4_particle_opacity", 100) / 100.0f;
+
+        int prefRadius = MathUtils.clamp(defaultPrefs.getInt("galaxy4_radius", 300), 150, 600);
+        if (prefRadius != mGalaxyRadius) {
+            mGalaxyRadius = prefRadius;
+            requestParticleRebuild();
+        }
+        int prefThickness = MathUtils.clamp(defaultPrefs.getInt("galaxy4_thickness", 40), 10, 100);
+        mThicknessMultiplier = prefThickness / 100.0f;
+
+        int prefRotation = MathUtils.clamp(defaultPrefs.getInt("galaxy4_rotation_speed", 100), 25, 300);
+        mRotationSpeedMultiplier = prefRotation / 100.0f;
     }
 
     private void requestParticleRebuild() {
@@ -219,7 +230,7 @@ final class Galaxy4Scene {
             screenWidth = screenHeight;
         }
 
-        float scale = GALAXY_RADIUS / Math.max(1.0f, screenWidth * 0.5f);
+        float scale = mGalaxyRadius / Math.max(1.0f, screenWidth * 0.5f);
 
         mSceneData.spaceClouds = buildOrbitParticles(mSpaceCloudCount, scale);
         mSceneData.bgStars = buildOrbitParticles(mBgStarCount, scale);
@@ -238,12 +249,12 @@ final class Galaxy4Scene {
     private float[] buildOrbitParticles(int count, float scale) {
         float[] particles = new float[count * 3];
         for (int i = 0; i < count; i++) {
-            float distance = Math.abs(randomGauss()) * GALAXY_RADIUS * 0.5f + mRandom.nextFloat() * 64.0f;
-            distance = mapf(-4.0f, GALAXY_RADIUS + 4.0f, 0.0f, scale, distance);
-            float normalizedDistance = distance / GALAXY_RADIUS;
-            float z = randomGauss() * 0.4f * (1.0f - normalizedDistance);
+            float distance = Math.abs(randomGauss()) * mGalaxyRadius * 0.5f + mRandom.nextFloat() * 64.0f;
+            distance = mapf(-4.0f, mGalaxyRadius + 4.0f, 0.0f, scale, distance);
+            float normalizedDistance = distance / mGalaxyRadius;
+            float z = randomGauss() * mThicknessMultiplier * (1.0f - normalizedDistance);
 
-            if (distance > GALAXY_RADIUS * 0.15f) {
+            if (distance > mGalaxyRadius * 0.15f) {
                 z *= 0.6f * (1.0f - normalizedDistance);
             } else {
                 z *= 0.72f;
@@ -287,11 +298,13 @@ final class Galaxy4Scene {
     }
 
     private void advanceParticles() {
+        float cloudDelta = -0.065f * mRotationSpeedMultiplier;
+        float starDelta = -0.007f * mRotationSpeedMultiplier;
         for (int i = 0; i < mSpaceCloudCount; i++) {
-            mSceneData.spaceClouds[i * 3] += SPACE_CLOUD_ROTATION_DELTA;
+            mSceneData.spaceClouds[i * 3] += cloudDelta;
         }
         for (int i = 0; i < mBgStarCount; i++) {
-            mSceneData.bgStars[i * 3] += BG_STAR_ROTATION_DELTA;
+            mSceneData.bgStars[i * 3] += starDelta;
         }
     }
 

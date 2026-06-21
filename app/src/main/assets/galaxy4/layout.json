@@ -2,6 +2,30 @@
   "prefs": [
     {
       "type": "seekbar",
+      "key": "galaxy4_radius",
+      "title": "galaxy4_radius",
+      "default": "300",
+      "min": 150,
+      "max": 600
+    },
+    {
+      "type": "seekbar",
+      "key": "galaxy4_rotation_speed",
+      "title": "galaxy4_rotation_speed",
+      "default": "100",
+      "min": 25,
+      "max": 300
+    },
+    {
+      "type": "seekbar",
+      "key": "galaxy4_thickness",
+      "title": "galaxy4_thickness",
+      "default": "40",
+      "min": 10,
+      "max": 100
+    },
+    {
+      "type": "seekbar",
       "key": "galaxy4_bg_star_count",
       "title": "galaxy4_bg_star_count",
       "default": "11000",
