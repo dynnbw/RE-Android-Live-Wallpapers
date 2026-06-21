@@ -1,4 +1,6 @@
 {
+  "fall_leaf_size": "叶子大小",
+  "fall_speed": "飘落速度",
   "pref_fall_leaf_count": "落叶数量",
   "pref_fall_max_drops": "最大涟漪数量",
   "pref_fall_green_leaves": "绿色树叶"

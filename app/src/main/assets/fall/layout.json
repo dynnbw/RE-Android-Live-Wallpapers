@@ -2,6 +2,22 @@
   "prefs": [
     {
       "type": "seekbar",
+      "key": "fall_leaf_size",
+      "title": "fall_leaf_size",
+      "default": "100",
+      "min": 50,
+      "max": 200
+    },
+    {
+      "type": "seekbar",
+      "key": "fall_speed",
+      "title": "fall_speed",
+      "default": "100",
+      "min": 25,
+      "max": 300
+    },
+    {
+      "type": "seekbar",
       "key": "pref_fall_leaf_count",
       "title": "pref_fall_leaf_count",
       "default": "14",

@@ -343,6 +343,7 @@ public class FallGL extends GLESScene {
         if (mLeafTextures == null || mLeafTextures.length == 0) {
             return;
         }
+        float sizeMul = mScene.getLeafSizeMultiplier();
 
         if (leaf.altitude > 0.0f) {
             float shadowAlpha = 1.0f;
@@ -353,8 +354,8 @@ public class FallGL extends GLESScene {
 
             float shadowOffset = leaf.altitude * 0.2f;
             int texture = mLeafTextures[leaf.leafTextureIndex % mLeafTextures.length];
-            drawLeafQuad(leaf.x - shadowOffset, leaf.y - shadowOffset, leaf.scale, leaf.angle, texture,
-                    shadowAlpha, true, sceneData);
+            drawLeafQuad(leaf.x - shadowOffset, leaf.y - shadowOffset, leaf.scale * sizeMul, leaf.angle,
+                    texture, shadowAlpha, true, sceneData);
         }
 
         float leafAlpha = 1.0f;
@@ -366,7 +367,8 @@ public class FallGL extends GLESScene {
         }
 
         int texture = mLeafTextures[leaf.leafTextureIndex % mLeafTextures.length];
-        drawLeafQuad(leaf.x, leaf.y, leaf.scale, leaf.angle, texture, leafAlpha, false, sceneData);
+        drawLeafQuad(leaf.x, leaf.y, leaf.scale * sizeMul, leaf.angle, texture, leafAlpha, false,
+                sceneData);
     }
 
     private void drawLeafQuad(float x, float y, float scale, float rotation, int texture, float alpha,

@@ -169,9 +169,16 @@ final class FallScene {
         prepareNonGLResources();
     }
 
+    private float mLeafSizeMultiplier = 1.0f;
+    private float mFallSpeedMultiplier = 1.0f;
+
+    float getLeafSizeMultiplier() { return mLeafSizeMultiplier; }
+
     /** Plugin path: use host-provided prefs instead of WallpaperSettings. */
     void setPluginPrefs(SharedPreferences prefs) {
         mPrefs = prefs;
+        mLeafSizeMultiplier = prefs.getInt("fall_leaf_size", 100) / 100.0f;
+        mFallSpeedMultiplier = prefs.getInt("fall_speed", 100) / 100.0f;
     }
 
     void setLeafTextureCount(int leafTextureCount) {
@@ -274,7 +281,7 @@ final class FallScene {
             int base = i * 6;
             mVkLeafData[base] = leaf.x;
             mVkLeafData[base + 1] = leaf.y;
-            mVkLeafData[base + 2] = leaf.scale;
+            mVkLeafData[base + 2] = leaf.scale * mLeafSizeMultiplier;
             mVkLeafData[base + 3] = leaf.angle;
             mVkLeafData[base + 4] = leaf.altitude;
             mVkLeafData[base + 5] = leaf.leafTextureIndex;
@@ -458,10 +465,10 @@ final class FallScene {
                 }
 
                 leaf.x += leaf.deltaX * mDeltaTime;
-                leaf.y += leaf.deltaY * mDeltaTime;
+                leaf.y += leaf.deltaY * mDeltaTime * mFallSpeedMultiplier;
                 leaf.angle += leaf.spin;
 
-                float margin = LEAF_SIZE * 0.6f;
+                float margin = LEAF_SIZE * mLeafSizeMultiplier * 0.6f;
                 float screenBottom = -mGlHeight / 2.0f - margin;
                 float screenTop = mGlHeight / 2.0f + margin;
                 if (leaf.y < screenBottom || leaf.y > screenTop) {
