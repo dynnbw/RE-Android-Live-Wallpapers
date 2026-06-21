@@ -121,7 +121,8 @@ public class PhaseBeamGL extends GLESScene implements SharedPreferences.OnShared
         if (PhaseBeamScene.KEY_ENABLED.equals(key) || PhaseBeamScene.KEY_HUE.equals(key)
                 || PhaseBeamScene.KEY_SATURATION.equals(key)
                 || PhaseBeamScene.KEY_BRIGHTNESS.equals(key)
-                || PhaseBeamScene.KEY_THEME.equals(key)) {
+                || PhaseBeamScene.KEY_THEME.equals(key)
+                || "phasebeam_dot_count".equals(key)) {
             mScene.reloadPreferences(mResources);
             if (PhaseBeamScene.KEY_THEME.equals(key)) {
                 mScene.mDirtyTexture = true;
@@ -144,6 +145,12 @@ public class PhaseBeamGL extends GLESScene implements SharedPreferences.OnShared
         if (mScene.mNeedViewport) {
             GLES20.glViewport(0, 0, mWidth, mHeight);
             mScene.mNeedViewport = false;
+        }
+
+        if (mScene.consumeParamsDirty()) {
+            mScene.allocateArrays();
+            mScene.positionParticles();
+            mScene.updateParticleBuffers();
         }
 
         long now = timeMs;
@@ -216,6 +223,9 @@ public class PhaseBeamGL extends GLESScene implements SharedPreferences.OnShared
                 "sunbeam".equals(mScene.mTheme)
                         ? "phasebeam/data/sunbeam_bg_mesh.csv"
                         : "phasebeam/data/phasebeam_bg_mesh.csv");
+        if (mScene.consumeParamsDirty()) {
+            mScene.allocateArrays();
+        }
         mScene.positionParticles();
         mScene.updateBackgroundBuffers(mScene.mXOffset * 2.0f);
         mScene.updateParticleBuffers();
@@ -280,14 +290,14 @@ public class PhaseBeamGL extends GLESScene implements SharedPreferences.OnShared
         GLES20.glVertexAttribPointer(mDotPositionLoc, 3, GLES20.GL_FLOAT, false, 0, mScene.mBeamPositionBuffer);
         GLES20.glVertexAttribPointer(mDotOffsetLoc, 1, GLES20.GL_FLOAT, false, 0, mScene.mBeamOffsetBuffer);
         GLES20.glVertexAttribPointer(mDotAdjustLoc, 3, GLES20.GL_FLOAT, false, 0, mScene.mBeamAdjustBuffer);
-        GLES20.glDrawArrays(GLES20.GL_POINTS, 0, PhaseBeamScene.DOT_COUNT);
+        GLES20.glDrawArrays(GLES20.GL_POINTS, 0, mScene.getDotCount());
 
         // Draw dots
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTexDot);
         GLES20.glVertexAttribPointer(mDotPositionLoc, 3, GLES20.GL_FLOAT, false, 0, mScene.mDotPositionBuffer);
         GLES20.glVertexAttribPointer(mDotOffsetLoc, 1, GLES20.GL_FLOAT, false, 0, mScene.mDotOffsetBuffer);
         GLES20.glVertexAttribPointer(mDotAdjustLoc, 3, GLES20.GL_FLOAT, false, 0, mScene.mDotAdjustBuffer);
-        GLES20.glDrawArrays(GLES20.GL_POINTS, 0, PhaseBeamScene.DOT_COUNT);
+        GLES20.glDrawArrays(GLES20.GL_POINTS, 0, mScene.getDotCount());
 
         GLES20.glDisableVertexAttribArray(mDotPositionLoc);
         GLES20.glDisableVertexAttribArray(mDotOffsetLoc);

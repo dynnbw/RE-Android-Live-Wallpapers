@@ -1,6 +1,14 @@
 {
   "prefs": [
     {
+      "type": "seekbar",
+      "key": "phasebeam_dot_count",
+      "title": "phasebeam_dot_count",
+      "default": "28",
+      "min": 10,
+      "max": 60
+    },
+    {
       "type": "list",
       "key": "theme",
       "title": "theme",

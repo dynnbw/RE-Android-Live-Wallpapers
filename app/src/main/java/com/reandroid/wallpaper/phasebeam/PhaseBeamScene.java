@@ -5,6 +5,8 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.util.Log;
 
+import com.reandroid.utils.MathUtils;
+
 import com.reandroid.wallpaper.R;
 import com.reandroid.utils.AssetLoader;
 
@@ -27,7 +29,8 @@ final class PhaseBeamScene {
     static final String KEY_BRIGHTNESS = "phasebeam_brightness";
     static final String KEY_THEME = "theme";
 
-    static final int DOT_COUNT = 28;
+    private int mDotCount = 28;
+    private boolean mParamsDirty;
 
     private static final float ZX_PARTICLE_SPEED = 0.0000780f;
     private static final float ZX_BEAM_SPEED = 0.00005f;
@@ -65,14 +68,13 @@ final class PhaseBeamScene {
     float[] mBgBaseColors;
     int mBgVertexCount;
 
-    // Particle position/offset/adjust arrays
-    final float[] mDotPositions = new float[DOT_COUNT * 3];
-    final float[] mDotOffsets = new float[DOT_COUNT];
-    final float[] mDotAdjusts = new float[DOT_COUNT * 3];
-
-    final float[] mBeamPositions = new float[DOT_COUNT * 3];
-    final float[] mBeamOffsets = new float[DOT_COUNT];
-    final float[] mBeamAdjusts = new float[DOT_COUNT * 3];
+    // Particle position/offset/adjust arrays (dynamically allocated)
+    float[] mDotPositions;
+    float[] mDotOffsets;
+    float[] mDotAdjusts;
+    float[] mBeamPositions;
+    float[] mBeamOffsets;
+    float[] mBeamAdjusts;
 
     // Background buffers (NIO, created by Scene, read by GL)
     FloatBuffer mBgPositionBuffer;
@@ -93,6 +95,7 @@ final class PhaseBeamScene {
 
     PhaseBeamScene(Context context) {
         mContext = context;
+        allocateArrays();
     }
 
     /**
@@ -132,12 +135,35 @@ final class PhaseBeamScene {
 
     public void setPluginPrefs(SharedPreferences prefs) {
         mPluginPrefs = prefs;
+        int newCount = MathUtils.clamp(prefs.getInt("phasebeam_dot_count", 28), 10, 60);
+        if (newCount != mDotCount) {
+            mDotCount = newCount;
+            mParamsDirty = true;
+        }
+    }
+
+    boolean consumeParamsDirty() { boolean v = mParamsDirty; mParamsDirty = false; return v; }
+    int getDotCount() { return mDotCount; }
+
+    void allocateArrays() {
+        int c = mDotCount;
+        mDotPositions = new float[c * 3];
+        mDotOffsets = new float[c];
+        mDotAdjusts = new float[c * 3];
+        mBeamPositions = new float[c * 3];
+        mBeamOffsets = new float[c];
+        mBeamAdjusts = new float[c * 3];
     }
 
     private void readPrefs(Resources resources) {
         if (resources == null) return;
         SharedPreferences p = getPrefs();
         if (p == null) return;
+        int newCount = MathUtils.clamp(p.getInt("phasebeam_dot_count", 28), 10, 60);
+        if (newCount != mDotCount) {
+            mDotCount = newCount;
+            mParamsDirty = true;
+        }
         mTheme = p.getString(KEY_THEME, "phasebeam");
         mSpeedMultiplier = "sunbeam".equals(mTheme) ? 3.0f : 1.0f;
         mRecolorEnabled = p.getBoolean(KEY_ENABLED, resources.getBoolean(R.bool.recolor_enabled));
@@ -254,7 +280,7 @@ final class PhaseBeamScene {
      * 初始化粒子位置
      */
     void positionParticles() {
-        for (int i = 0; i < DOT_COUNT; i++) {
+        for (int i = 0; i < mDotCount; i++) {
             int idx = i * 3;
             mDotPositions[idx] = rand(0.0f, 3.0f);
             mDotPositions[idx + 1] = rand(-1.25f, 1.25f);
@@ -277,7 +303,7 @@ final class PhaseBeamScene {
             setAdjust(mDotAdjusts, i, mAdjust);
         }
 
-        for (int i = 0; i < DOT_COUNT; i++) {
+        for (int i = 0; i < mDotCount; i++) {
             int idx = i * 3;
             float z;
             if (i < 20) {
@@ -297,7 +323,7 @@ final class PhaseBeamScene {
      * 更新所有粒子的 HSL 调整值
      */
     void updateParticleAdjusts() {
-        for (int i = 0; i < DOT_COUNT; i++) {
+        for (int i = 0; i < mDotCount; i++) {
             setAdjust(mDotAdjusts, i, mAdjust);
             setAdjust(mBeamAdjusts, i, mAdjust);
         }
@@ -325,7 +351,7 @@ final class PhaseBeamScene {
     void updateParticles(float timeScale, float newOffset) {
         final float sm = mSpeedMultiplier;
 
-        for (int i = 0; i < DOT_COUNT; i++) {
+        for (int i = 0; i < mDotCount; i++) {
             int idx = i * 3;
             float x = mBeamPositions[idx];
             float y = mBeamPositions[idx + 1];
@@ -347,7 +373,7 @@ final class PhaseBeamScene {
             mBeamOffsets[i] = newOffset;
         }
 
-        for (int i = 0; i < DOT_COUNT; i++) {
+        for (int i = 0; i < mDotCount; i++) {
             int idx = i * 3;
             float x = mDotPositions[idx];
             float y = mDotPositions[idx + 1];
