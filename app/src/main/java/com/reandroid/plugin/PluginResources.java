@@ -53,23 +53,40 @@ public final class PluginResources {
     }
 
     /**
-     * Load language for the current device locale, falling back to "default".
-     * Tries full locale (e.g. zh-rCN) first, then language-only (zh), then default.
+     * Load language for the current device locale, with default.json as fallback base.
+     * Tries full locale (e.g. zh-rCN) first, then language-only (zh), merged onto default.
+     * Keys missing in the locale file automatically fall back to default (English).
      */
     public static JSONObject loadLanguageForLocale(Context context, String pluginId) {
+        // Always load default.json as base
+        JSONObject base = loadLanguage(context, pluginId, "default");
+        if (base == null) base = new JSONObject();
+
         Locale locale = Locale.getDefault();
-        // Try full locale: zh-rCN, pt-rBR, etc.
         String fullTag = toAssetLocaleTag(locale);
-        JSONObject json = loadLanguage(context, pluginId, fullTag);
-        // Try language only: zh, pt, etc.
-        if (json == null) {
-            json = loadLanguage(context, pluginId, locale.getLanguage());
+        JSONObject localeJson = loadLanguage(context, pluginId, fullTag);
+        if (localeJson == null) {
+            localeJson = loadLanguage(context, pluginId, locale.getLanguage());
         }
-        // Fallback to default
-        if (json == null) {
-            json = loadLanguage(context, pluginId, "default");
+
+        // Merge locale overrides onto base (keys not in locale fall back to base)
+        if (localeJson != null) {
+            try {
+                JSONObject merged = new JSONObject();
+                for (java.util.Iterator<String> it = base.keys(); it.hasNext(); ) {
+                    String key = it.next();
+                    merged.put(key, localeJson.has(key) ? localeJson.get(key) : base.get(key));
+                }
+                for (java.util.Iterator<String> it = localeJson.keys(); it.hasNext(); ) {
+                    String key = it.next();
+                    if (!merged.has(key)) merged.put(key, localeJson.get(key));
+                }
+                return merged;
+            } catch (org.json.JSONException e) {
+                Log.w("PluginResources", "Failed to merge language JSON", e);
+            }
         }
-        return json;
+        return base;
     }
 
     private static String toAssetLocaleTag(Locale locale) {
