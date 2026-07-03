@@ -225,7 +225,6 @@ public class WindmillGL extends GLESScene {
 
         GLES20.glClearColor(0f, 0f, 0f, 0f);
         GLES20.glEnable(GLES20.GL_BLEND);
-        GLES20.glEnable(GLES20.GL_DEPTH_TEST);
 
         mScene.updateProjection(mWidth, mHeight);
         loadTextures();
