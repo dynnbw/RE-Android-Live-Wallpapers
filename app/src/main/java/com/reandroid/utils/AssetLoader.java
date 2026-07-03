@@ -52,6 +52,15 @@ public final class AssetLoader {
         }
     }
 
+    public static Bitmap decodeBitmapWithOptions(Context context, String assetPath,
+                                                  BitmapFactory.Options opts) {
+        try (InputStream input = context.getAssets().open(assetPath)) {
+            return BitmapFactory.decodeStream(input, null, opts);
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to decode asset bitmap: " + assetPath, e);
+        }
+    }
+
     public static byte[] readBytes(Context context, String assetPath) {
         try (InputStream input = context.getAssets().open(assetPath)) {
             ByteArrayOutputStream output = new ByteArrayOutputStream();
