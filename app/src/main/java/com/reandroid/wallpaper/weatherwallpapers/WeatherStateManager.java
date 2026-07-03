@@ -56,10 +56,11 @@ public class WeatherStateManager {
     }
 
     public synchronized void update(long timeMs, boolean preview) {
-        if (!preview) {
-            return;
+        if (preview) {
+            updatePreviewCycle(timeMs);
         }
-        updatePreviewCycle(timeMs);
+        // Always re-evaluate day/night based on current time (original behavior)
+        mIsNight = computeIsNight();
     }
 
     public synchronized WeatherCondition getCondition() {
@@ -86,7 +87,7 @@ public class WeatherStateManager {
         mPreviewActive = true;
         mPreviewIndex = 0;
         mPreviewNextMs = 0L;
-        mIsNight = computePreviewIsNight();
+        mIsNight = computeIsNight();
         mCondition = WeatherCondition.D1_CLEAR;
     }
 
@@ -114,7 +115,7 @@ public class WeatherStateManager {
         mPreviewNextMs = timeMs + PREVIEW_STEP_MS;
     }
 
-    private boolean computePreviewIsNight() {
+    private boolean computeIsNight() {
         long nowMs = System.currentTimeMillis();
         long sunriseUtc = mPrefs != null ? mPrefs.getLong("last_sunrise", 0L) : 0L;
         long sunsetUtc = mPrefs != null ? mPrefs.getLong("last_sunset", 0L) : 0L;
