@@ -15,20 +15,75 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Source Serif 4', 'Noto Serif SC', 'Noto Serif', Georgia, serif;
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
   overflow-x: hidden;
 }
 
-/* Ambient background glow */
+/* ── Flowing background blobs ── */
+.bg-blobs {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+}
+.bg-blob {
+  position: absolute; border-radius: 50%; filter: blur(120px);
+  opacity: .35; animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite; animation-direction: alternate;
+}
+.bg-blob:nth-child(1) {
+  width: 700px; height: 700px;
+  background: radial-gradient(circle, rgba(4,120,87,.4), transparent);
+  top: -15%; left: -10%;
+  animation-name: drift1; animation-duration: 18s;
+}
+.bg-blob:nth-child(2) {
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(5,150,105,.35), transparent);
+  bottom: -20%; right: -5%;
+  animation-name: drift2; animation-duration: 22s;
+}
+.bg-blob:nth-child(3) {
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(16,185,129,.25), transparent);
+  top: 50%; left: 50%;
+  animation-name: drift3; animation-duration: 20s;
+}
+.bg-blob:nth-child(4) {
+  width: 450px; height: 450px;
+  background: radial-gradient(circle, rgba(20,100,200,.2), transparent);
+  top: -5%; right: 30%;
+  animation-name: drift4; animation-duration: 24s;
+}
+
+@keyframes drift1 {
+  0%   { transform: translate(0, 0) scale(1); }
+  50%  { transform: translate(80px, 40px) scale(1.15); }
+  100% { transform: translate(-30px, 60px) scale(.9); }
+}
+@keyframes drift2 {
+  0%   { transform: translate(0, 0) scale(1); }
+  50%  { transform: translate(-60px, -30px) scale(1.1); }
+  100% { transform: translate(40px, -50px) scale(.95); }
+}
+@keyframes drift3 {
+  0%   { transform: translate(0, 0) scale(1); }
+  50%  { transform: translate(50px, -20px) scale(1.2); }
+  100% { transform: translate(-40px, 30px) scale(.85); }
+}
+@keyframes drift4 {
+  0%   { transform: translate(0, 0) scale(1); }
+  50%  { transform: translate(-20px, 40px) scale(1.05); }
+  100% { transform: translate(30px, -10px) scale(1.1); }
+}
+
+/* Noise texture overlay */
 body::before {
   content: '';
   position: fixed; inset: 0;
-  background: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(4,120,87,.08), transparent),
-              radial-gradient(ellipse 60% 40% at 80% 80%, rgba(5,150,105,.06), transparent);
-  pointer-events: none; z-index: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.4'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+  opacity: .025; pointer-events: none; z-index: 0;
 }
 
 .container { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 0 24px; }
