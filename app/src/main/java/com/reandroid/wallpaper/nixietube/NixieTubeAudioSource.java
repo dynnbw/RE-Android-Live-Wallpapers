@@ -104,9 +104,16 @@ final class NixieTubeAudioSource {
             mAudioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC,
                     SAMPLE_RATE, AudioFormat.CHANNEL_IN_MONO,
                     AudioFormat.ENCODING_PCM_16BIT, bufSize);
+            if (mAudioRecord.getState() != AudioRecord.STATE_INITIALIZED) {
+                Log.e(TAG, "Mic: AudioRecord state=" + mAudioRecord.getState());
+                mAudioRecord.release();
+                mAudioRecord = null;
+                return;
+            }
             mAudioRecord.startRecording();
-        } catch (SecurityException e) {
-            Log.w(TAG, "No mic permission");
+            Log.d(TAG, "Mic: started ok, buf=" + bufSize);
+        } catch (Exception e) {
+            Log.e(TAG, "Mic: init failed", e);
             return;
         }
 

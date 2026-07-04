@@ -18,7 +18,7 @@
       "type": "seekbar",
       "key": "nixie_threshold_db",
       "title": "nixie_threshold_db",
-      "default": "-30",
+      "default": "-25",
       "min": -60,
       "max": -10
     },

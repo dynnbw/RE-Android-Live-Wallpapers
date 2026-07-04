@@ -70,14 +70,34 @@ final class NixieTubeScene {
     private NixieTubeAudioSource mAudioSourceObj;
 
     void setPluginPrefs(SharedPreferences prefs) {
+        if (mPrefs != null) {
+            mPrefs.unregisterOnSharedPreferenceChangeListener(mPrefsListener);
+        }
         mPrefs = prefs;
-        mAudioThresholdDb = prefs.getInt("nixie_threshold_db", -30);
-        mAudioSource = Integer.parseInt(prefs.getString("nixie_audio_source", "0"));
-        mAudioEnabled = prefs.getBoolean("nixie_audio_enabled", true);
+        readPrefs();
+        prefs.registerOnSharedPreferenceChangeListener(mPrefsListener);
     }
 
+    private void readPrefs() {
+        if (mPrefs == null) return;
+        mAudioThresholdDb = mPrefs.getInt("nixie_threshold_db", -50);
+        mAudioSource = Integer.parseInt(mPrefs.getString("nixie_audio_source", "0"));
+        mAudioEnabled = mPrefs.getBoolean("nixie_audio_enabled", true);
+    }
+
+    private final SharedPreferences.OnSharedPreferenceChangeListener mPrefsListener = (p, key) -> {
+        if (key == null) return;
+        if (key.startsWith("nixie_")) {
+            readPrefs();
+            if (key.equals("nixie_audio_source") || key.equals("nixie_audio_enabled")) {
+                startAudio(); // restart to pick up new source
+            }
+        }
+    };
+
     void startAudio() {
-        if (!mAudioEnabled || mAudioSourceObj != null) return;
+        if (!mAudioEnabled) return;
+        stopAudio(); // restart to pick up source changes or permission grants
         mAudioSourceObj = new NixieTubeAudioSource(this::onAudioLevel, mAudioSource);
         mAudioSourceObj.start();
     }
