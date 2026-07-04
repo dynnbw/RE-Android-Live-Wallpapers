@@ -88,6 +88,8 @@
 
     <!-- Wallpaper showing luminous dots -->
     <string name="wallpaper_luminousdots">Luminous Dots</string>
+    <string name="wallpaper_nixietube">NixieTube</string>
+    <string name="wallpaper_nixietube_desc">Glow-tube display: elegant clock by default, VU meter when audio plays</string>
 
     <!-- Polar clock: title of settings activity -->
     <string name="clock_settings">Polar clock settings</string>

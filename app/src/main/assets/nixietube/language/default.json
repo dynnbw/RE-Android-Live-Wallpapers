@@ -1,0 +1,8 @@
+{
+  "nixie_audio_enabled": "Audio Reactive",
+  "nixie_audio_source": "Audio Source",
+  "nixie_audio_source_label_system": "System Audio",
+  "nixie_audio_source_label_mic": "Microphone",
+  "nixie_threshold_db": "Trigger Threshold (dBFS)",
+  "nixie_decay_speed": "Decay Speed"
+}

@@ -91,6 +91,8 @@
 
     <!-- Wallpaper showing luminous dots -->
     <string name="wallpaper_luminousdots">发光点</string>
+    <string name="wallpaper_nixietube">辉光管</string>
+    <string name="wallpaper_nixietube_desc">辉光管阵列：默认为优雅桌面时钟，音频响起时变身分贝仪</string>
 
     <!-- Polar clock: title of settings activity -->
     <string name="clock_settings">极地时钟设置</string>

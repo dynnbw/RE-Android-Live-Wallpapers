@@ -1,0 +1,34 @@
+{
+  "prefs": [
+    {
+      "type": "switch",
+      "key": "nixie_audio_enabled",
+      "title": "nixie_audio_enabled",
+      "default": "true"
+    },
+    {
+      "type": "list",
+      "key": "nixie_audio_source",
+      "title": "nixie_audio_source",
+      "default": "0",
+      "values": ["0", "1"],
+      "labels": ["nixie_audio_source_label_system", "nixie_audio_source_label_mic"]
+    },
+    {
+      "type": "seekbar",
+      "key": "nixie_threshold_db",
+      "title": "nixie_threshold_db",
+      "default": "-30",
+      "min": -60,
+      "max": -10
+    },
+    {
+      "type": "seekbar",
+      "key": "nixie_decay_speed",
+      "title": "nixie_decay_speed",
+      "default": "95",
+      "min": 80,
+      "max": 99
+    }
+  ]
+}
