@@ -53,19 +53,20 @@ final class NixieTubeScene {
     }
 
     // ---- Audio mode ----
-    private float mPeakDb  = -60f;
+    private volatile float mPeakDb  = -60f;
     private float mAudioThresholdDb = -30f;
-    private float mDecaySpeed = 0.98f;
+    private volatile float mDecaySpeed = 0.98f;
     private boolean mAudioEnabled = true;
     private int mAudioSource = 0; // 0=system, 1=mic
-    private long mAudioSilenceMs;
+    private volatile long mAudioSilenceMs;
     private static final long AUDIO_HOLD_MS = 2000;
 
     // ---- State ----
-    private Mode mMode = Mode.TIME;
+    private volatile Mode mMode = Mode.TIME;
 
     // ---- Prefs ----
     private SharedPreferences mPrefs;
+    private NixieTubeAudioSource mAudioSourceObj;
 
     void setPluginPrefs(SharedPreferences prefs) {
         mPrefs = prefs;
@@ -73,6 +74,19 @@ final class NixieTubeScene {
         mDecaySpeed = prefs.getInt("nixie_decay_speed", 95) / 100.0f;
         mAudioSource = Integer.parseInt(prefs.getString("nixie_audio_source", "0"));
         mAudioEnabled = prefs.getBoolean("nixie_audio_enabled", true);
+    }
+
+    void startAudio() {
+        if (!mAudioEnabled || mAudioSourceObj != null) return;
+        mAudioSourceObj = new NixieTubeAudioSource(this::onAudioLevel, mAudioSource);
+        mAudioSourceObj.start();
+    }
+
+    void stopAudio() {
+        if (mAudioSourceObj != null) {
+            mAudioSourceObj.stop();
+            mAudioSourceObj = null;
+        }
     }
 
     // ---- Called every frame by GL thread ----
@@ -97,15 +111,18 @@ final class NixieTubeScene {
     void onAudioLevel(float dbFS) {
         if (!mAudioEnabled) return;
 
-        if (dbFS > mPeakDb) {
+        float oldPeak = mPeakDb;
+        if (dbFS > oldPeak) {
             mPeakDb = dbFS;
         } else {
-            mPeakDb = mPeakDb * mDecaySpeed + dbFS * (1.0f - mDecaySpeed);
+            mPeakDb = oldPeak * mDecaySpeed + dbFS * (1.0f - mDecaySpeed);
         }
 
         if (dbFS > mAudioThresholdDb) {
             mAudioSilenceMs = 0;
-            mMode = Mode.AUDIO;
+            if (mMode != Mode.CLICK) {
+                mMode = Mode.AUDIO;
+            }
         }
     }
 
@@ -169,7 +186,8 @@ final class NixieTubeScene {
     }
 
     private void updateAudioMode(long timeMs) {
-        // Check if we should switch back to time
+        // When the decayed peak drops below threshold, start a silence timer.
+        // Once silence persists for AUDIO_HOLD_MS, go back to clock display.
         if (mPeakDb <= mAudioThresholdDb) {
             if (mAudioSilenceMs == 0) {
                 mAudioSilenceMs = timeMs;

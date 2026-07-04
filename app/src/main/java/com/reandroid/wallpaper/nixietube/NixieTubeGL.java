@@ -114,6 +114,7 @@ public class NixieTubeGL extends GLESScene {
             mProgram = 0;
         }
         mGlReady = false;
+        mScene.stopAudio();
         mScene.stop();
     }
 
@@ -147,6 +148,7 @@ public class NixieTubeGL extends GLESScene {
         GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         GLES20.glDisable(GLES20.GL_DEPTH_TEST);
         resize(mWidth, mHeight);
+        mScene.startAudio();
         mGlReady = true;
     }
 
