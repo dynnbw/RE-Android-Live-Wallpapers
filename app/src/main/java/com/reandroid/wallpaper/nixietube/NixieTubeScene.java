@@ -37,6 +37,21 @@ final class NixieTubeScene {
     private static final long CLICK_HOLD_MS    = 3000;
     private static final long CLICK_TICK_MS    = 50;
 
+    /** Weighted random digit: values near 0 have higher probability. */
+    private int weightedDigit() {
+        return (int) (Math.pow(mRandom.nextFloat(), 3.0) * 10);
+    }
+
+    /** Generate a click result: ones digit weighted toward 0, decimals uniform random. */
+    private void generateClickResult() {
+        int sign = mRandom.nextBoolean() ? 1 : -1;
+        mClickResult[0] = weightedDigit();
+        mClickResult[1] = sign >= 0 ? NixieTubeGL.FRAME_RD : NixieTubeGL.FRAME_LD;
+        for (int i = 2; i < TUBE_COUNT; i++) {
+            mClickResult[i] = mRandom.nextInt(10);
+        }
+    }
+
     // ---- Audio mode ----
     private float mPeakDb  = -60f;
     private float mAudioThresholdDb = -30f;
@@ -76,13 +91,7 @@ final class NixieTubeScene {
         mClickStartMs = System.currentTimeMillis();
         mClickNextMs = 0;
         mClickResultReady = false;
-        // Pre-generate the final result
-        int sign = mRandom.nextBoolean() ? 1 : -1;
-        mClickResult[0] = mRandom.nextInt(10);
-        mClickResult[1] = sign >= 0 ? NixieTubeGL.FRAME_RD : NixieTubeGL.FRAME_LD;
-        for (int i = 2; i < TUBE_COUNT; i++) {
-            mClickResult[i] = mRandom.nextInt(10);
-        }
+        generateClickResult();
     }
 
     void onAudioLevel(float dbFS) {
