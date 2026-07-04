@@ -12,7 +12,7 @@
       "title": "nixie_audio_source",
       "default": "0",
       "values": ["0", "1"],
-      "labels": ["nixie_audio_source_label_system", "nixie_audio_source_label_mic"]
+      "labels": ["nixie_audio_source_label_0", "nixie_audio_source_label_1"]
     },
     {
       "type": "seekbar",
