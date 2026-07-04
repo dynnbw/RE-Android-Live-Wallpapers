@@ -83,7 +83,7 @@ public class SettingsActivity extends AppCompatActivity
         float savedLat = prefs.getFloat("debug_lat", Float.NaN);
         if (!Float.isNaN(savedLat)) {
             float savedLng = prefs.getFloat("debug_lng", 0);
-            com.reandroid.wallpaper.grass.GrassDayNightSystem.setDebugLocation(savedLat, savedLng);
+            com.reandroid.utils.LocationProvider.setDebugLocation(savedLat, savedLng);
         }
 
         weatherManager = new WeatherManager(getApplicationContext(), state -> {
@@ -577,42 +577,42 @@ public class SettingsActivity extends AppCompatActivity
         EditText input = new EditText(this);
         input.setInputType(InputType.TYPE_CLASS_TEXT);
         input.setSingleLine(true);
-        input.setHint("lat, lng (e.g. 51.5074, -0.1278)");
+        input.setHint(getString(R.string.debug_location_hint));
         if (!current.isEmpty()) input.setText(current);
         input.setSelection(input.getText().length());
 
         new AlertDialog.Builder(this, R.style.ThemeOverlay_WallpaperSettings_AppCompatDialog)
-                .setTitle("Debug Location Override")
-                .setMessage("Override GPS lat/lng for sun/moon calculation.\nLeave empty to use real GPS.")
+                .setTitle(R.string.debug_location_title)
+                .setMessage(R.string.debug_location_message)
                 .setView(input)
                 .setPositiveButton(android.R.string.ok, (dialog, which) -> {
                     String text = input.getText() == null ? "" : input.getText().toString().trim();
                     if (text.isEmpty()) {
                         prefs.edit().remove("debug_lat").remove("debug_lng").apply();
-                        com.reandroid.wallpaper.grass.GrassDayNightSystem.setDebugLocation(0, 0);
-                        Toast.makeText(this, "Debug location cleared", Toast.LENGTH_SHORT).show();
+                        com.reandroid.utils.LocationProvider.setDebugLocation(0, 0);
+                        Toast.makeText(this, R.string.debug_location_cleared, Toast.LENGTH_SHORT).show();
                         return;
                     }
                     String[] parts = text.split(",");
                     if (parts.length != 2) {
-                        Toast.makeText(this, "Format: lat, lng", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, R.string.debug_location_format, Toast.LENGTH_SHORT).show();
                         return;
                     }
                     try {
                         float lat = Float.parseFloat(parts[0].trim());
                         float lng = Float.parseFloat(parts[1].trim());
                         prefs.edit().putFloat("debug_lat", lat).putFloat("debug_lng", lng).apply();
-                        com.reandroid.wallpaper.grass.GrassDayNightSystem.setDebugLocation(lat, lng);
-                        Toast.makeText(this, "Debug location set: " + lat + ", " + lng,
+                        com.reandroid.utils.LocationProvider.setDebugLocation(lat, lng);
+                        Toast.makeText(this, getString(R.string.debug_location_set, lat, lng),
                                 Toast.LENGTH_SHORT).show();
                     } catch (NumberFormatException e) {
-                        Toast.makeText(this, "Invalid numbers", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, R.string.debug_location_invalid, Toast.LENGTH_SHORT).show();
                     }
                 })
-                .setNeutralButton("Clear", (d, w) -> {
+                .setNeutralButton(R.string.debug_location_clear, (d, w) -> {
                     prefs.edit().remove("debug_lat").remove("debug_lng").apply();
-                    com.reandroid.wallpaper.grass.GrassDayNightSystem.setDebugLocation(0, 0);
-                    Toast.makeText(this, "Debug location cleared", Toast.LENGTH_SHORT).show();
+                    com.reandroid.utils.LocationProvider.setDebugLocation(0, 0);
+                    Toast.makeText(this, R.string.debug_location_cleared, Toast.LENGTH_SHORT).show();
                 })
                 .setNegativeButton(android.R.string.cancel, null)
                 .show();

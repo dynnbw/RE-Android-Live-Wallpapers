@@ -293,4 +293,14 @@
     <string name="pref_use_vulkan_title">Vulkan Renderer</string>
     <string name="pref_use_vulkan_summary">Use Vulkan for better performance (reapply wallpaper to take effect)</string>
     <string name="pref_disabled_prefix">[Disabled]</string>
+
+    <!-- Debug location override -->
+    <string name="debug_location_title">Debug Location Override</string>
+    <string name="debug_location_message">Override GPS lat/lng for sun/moon calculation.\nLeave empty to use real GPS.</string>
+    <string name="debug_location_hint">lat, lng (e.g. 51.5074, -0.1278)</string>
+    <string name="debug_location_set">Debug location set: %1$s, %2$s</string>
+    <string name="debug_location_cleared">Debug location cleared</string>
+    <string name="debug_location_invalid">Invalid numbers</string>
+    <string name="debug_location_format">Format: lat, lng</string>
+    <string name="debug_location_clear">Clear</string>
 </resources>

@@ -32,6 +32,13 @@ final class NightSkyLocationController {
         if (context == null) {
             return;
         }
+        // Check debug location override first
+        float[] debugLoc = com.reandroid.utils.LocationProvider.getDebugLocation();
+        if (debugLoc != null) {
+            latitudeDeg = debugLoc[0];
+            longitudeDeg = debugLoc[1];
+            return;
+        }
         if (!hasLocationPermission(context)) {
             return;
         }

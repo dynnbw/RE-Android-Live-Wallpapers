@@ -271,7 +271,7 @@ final public class GrassDayNightSystem {
         if (lastLocationUpdateMs != 0L && (nowMs - lastLocationUpdateMs) < 300000L) return;
 
         // Debug override: use manually configured lat/lng instead of GPS
-        float[] debugLoc = getDebugLocation();
+        float[] debugLoc = com.reandroid.utils.LocationProvider.getDebugLocation();
         if (debugLoc != null) {
             location.setLatitude(debugLoc[0]);
             location.setLongitude(debugLoc[1]);
@@ -309,18 +309,6 @@ final public class GrassDayNightSystem {
             lastLocationUpdateMs = nowMs;
         }
     }
-
-    // ---- Debug location override ----
-
-    private static float[] sDebugLatLng = null;
-
-    /** Set a manual lat/lng override for testing (null to clear). */
-    public static void setDebugLocation(float lat, float lng) {
-        if (lat == 0 && lng == 0) sDebugLatLng = null;
-        else sDebugLatLng = new float[]{lat, lng};
-    }
-
-    public static float[] getDebugLocation() { return sDebugLatLng; }
 
     private static Location pickBestLocation(Location a, Location b) {
         if (a == null) return b;

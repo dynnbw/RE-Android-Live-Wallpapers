@@ -251,19 +251,26 @@ public class WeatherManager {
             return mLastState;
         }
 
-        Location location = getBestLastKnownLocation();
+        // Check debug location override first (shared with Grass wallpaper)
+        float[] debugLoc = com.reandroid.utils.LocationProvider.getDebugLocation();
         double lat;
         double lon;
-        if (location != null) {
-            lat = location.getLatitude();
-            lon = location.getLongitude();
+        if (debugLoc != null) {
+            lat = debugLoc[0];
+            lon = debugLoc[1];
         } else {
-            double[] stored = getStoredLatLon();
-            if (stored == null) {
-                return mLastState;
+            Location location = getBestLastKnownLocation();
+            if (location != null) {
+                lat = location.getLatitude();
+                lon = location.getLongitude();
+            } else {
+                double[] stored = getStoredLatLon();
+                if (stored == null) {
+                    return mLastState;
+                }
+                lat = stored[0];
+                lon = stored[1];
             }
-            lat = stored[0];
-            lon = stored[1];
         }
         mPrefs.edit().putString(KEY_LAST_LAT, String.format(Locale.US, "%.6f", lat))
                 .putString(KEY_LAST_LON, String.format(Locale.US, "%.6f", lon))
