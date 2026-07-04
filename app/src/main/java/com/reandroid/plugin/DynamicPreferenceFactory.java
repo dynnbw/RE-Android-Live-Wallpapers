@@ -76,25 +76,10 @@ public final class DynamicPreferenceFactory {
             if ((dep != null && !dep.isEmpty()) || (dk != null && !dk.isEmpty())) {
                 boolean depDefTrue = depDefaults[i];
                 boolean dkDefFalse = dkDefaults[i];
-                final String origSummary = p.getSummary() != null ? p.getSummary().toString() : null;
-                // Initial state
-                boolean blocked = false;
-                if (dep != null && !dep.isEmpty()) blocked = !prefs.getBoolean(dep, depDefTrue);
-                if (!blocked && dk != null && !dk.isEmpty()) blocked = prefs.getBoolean(dk, dkDefFalse);
-                if (blocked) p.setSummary(context.getString(com.reandroid.wallpaper.R.string.pref_disabled_prefix) + " " + (origSummary != null ? origSummary : ""));
                 p.setOnPreferenceChangeListener((pref, newValue) -> {
                     if (dep != null && !dep.isEmpty() && !prefs.getBoolean(dep, depDefTrue)) return false;
                     if (dk != null && !dk.isEmpty() && prefs.getBoolean(dk, dkDefFalse)) return false;
                     return true;
-                });
-                prefs.registerOnSharedPreferenceChangeListener((sp, key) -> {
-                    if (key.equals(dep) || key.equals(dk)) {
-                        boolean nowBlocked = false;
-                        if (dep != null && !dep.isEmpty()) nowBlocked = !sp.getBoolean(dep, depDefTrue);
-                        if (!nowBlocked && dk != null && !dk.isEmpty()) nowBlocked = sp.getBoolean(dk, dkDefFalse);
-                        p.setSummary(nowBlocked ? context.getString(com.reandroid.wallpaper.R.string.pref_disabled_prefix) + " " + (origSummary != null ? origSummary : "")
-                                               : origSummary);
-                    }
                 });
             }
         }
