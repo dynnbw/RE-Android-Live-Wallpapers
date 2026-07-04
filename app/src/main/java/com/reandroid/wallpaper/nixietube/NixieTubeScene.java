@@ -12,7 +12,7 @@ import java.util.TimeZone;
  * Modes:
  *   TIME  — HH:MM:SS clock, updates every second
  *   CLICK — random digit flicker for 0.5s after tap
- *   AUDIO — VU meter (peak-hold + slow decay)
+ *   AUDIO — VU meter (instantaneous dBFS)
  *
  * Transition: TIME ↔ ACTIVE based on audio threshold or tap.
  */
@@ -53,9 +53,10 @@ final class NixieTubeScene {
     }
 
     // ---- Audio mode ----
-    private volatile float mPeakDb  = -60f;
+    private volatile float mLevelDb = -60f;      // instantaneous dBFS for threshold detection
+    private volatile float mEnvelopeDb = -60f;   // attack-release smoothed for VU display
+    private static final float ENVELOPE_RELEASE = 0.5f; // per-frame decay (30Hz → ~100ms)
     private float mAudioThresholdDb = -30f;
-    private volatile float mDecaySpeed = 0.98f;
     private boolean mAudioEnabled = true;
     private int mAudioSource = 0; // 0=system, 1=mic
     private volatile long mAudioSilenceMs;
@@ -71,7 +72,6 @@ final class NixieTubeScene {
     void setPluginPrefs(SharedPreferences prefs) {
         mPrefs = prefs;
         mAudioThresholdDb = prefs.getInt("nixie_threshold_db", -30);
-        mDecaySpeed = prefs.getInt("nixie_decay_speed", 95) / 100.0f;
         mAudioSource = Integer.parseInt(prefs.getString("nixie_audio_source", "0"));
         mAudioEnabled = prefs.getBoolean("nixie_audio_enabled", true);
     }
@@ -111,11 +111,15 @@ final class NixieTubeScene {
     void onAudioLevel(float dbFS) {
         if (!mAudioEnabled) return;
 
-        float oldPeak = mPeakDb;
-        if (dbFS > oldPeak) {
-            mPeakDb = dbFS;
+        // Instantaneous level for threshold: fast switching
+        mLevelDb = dbFS;
+
+        // Attack-release envelope for display: fast attack, slow release
+        if (dbFS > mEnvelopeDb) {
+            mEnvelopeDb = dbFS;                      // instant attack
         } else {
-            mPeakDb = oldPeak * mDecaySpeed + dbFS * (1.0f - mDecaySpeed);
+            mEnvelopeDb = mEnvelopeDb * ENVELOPE_RELEASE
+                        + dbFS * (1.0f - ENVELOPE_RELEASE); // slow release
         }
 
         if (dbFS > mAudioThresholdDb) {
@@ -186,9 +190,9 @@ final class NixieTubeScene {
     }
 
     private void updateAudioMode(long timeMs) {
-        // When the decayed peak drops below threshold, start a silence timer.
+        // When the instantaneous level drops below threshold, start a silence timer.
         // Once silence persists for AUDIO_HOLD_MS, go back to clock display.
-        if (mPeakDb <= mAudioThresholdDb) {
+        if (mLevelDb <= mAudioThresholdDb) {
             if (mAudioSilenceMs == 0) {
                 mAudioSilenceMs = timeMs;
             } else if (timeMs - mAudioSilenceMs > AUDIO_HOLD_MS) {
@@ -200,13 +204,15 @@ final class NixieTubeScene {
             mAudioSilenceMs = 0;
         }
 
-        // Display peak dB as: integer integer . decimal decimal decimal decimal decimal
-        int intPart = (int) Math.abs(mPeakDb);
+        // Display as 60 - |dB|: 0 = silence, 60 = full scale. Always positive → use RD.
+        float displayVal = 60.0f + mEnvelopeDb;  // mEnvelopeDb is negative, so this reduces
+        if (displayVal < 0f) displayVal = 0f;
+        if (displayVal > 99.99999f) displayVal = 99.99999f;
+        int intPart = (int) displayVal;
         mDisplay[0] = (intPart / 10) % 10;
         mDisplay[1] = intPart % 10;
-        mDisplay[2] = mPeakDb >= 0 ? NixieTubeGL.FRAME_RD : NixieTubeGL.FRAME_LD;
-        // Decimal digits from fractional part
-        float frac = Math.abs(mPeakDb) - (float) Math.floor(Math.abs(mPeakDb));
+        mDisplay[2] = NixieTubeGL.FRAME_RD;
+        float frac = displayVal - (float) intPart;
         for (int i = 3; i < TUBE_COUNT; i++) {
             frac *= 10;
             int d = (int) frac;

@@ -55,6 +55,7 @@ public class NixieTubeGL extends GLESScene {
     private FloatBuffer[] mTubeBuffers;
     private final float[] mMvpMatrix = new float[16];
     private boolean mGlReady;
+    private float mScale = 1.0f;
 
     public NixieTubeGL(int width, int height, Context context) {
         super(width, height);
@@ -76,6 +77,17 @@ public class NixieTubeGL extends GLESScene {
         super.resize(width, height);
         float aspect = (float) width / (float) height;
         Matrix.orthoM(mMvpMatrix, 0, -aspect, aspect, 1.0f, -1.0f, -1.0f, 1.0f);
+
+        // The ortho projection ties the coordinate unit to half the screen height,
+        // so in landscape (tall aspect) the fixed-width tube row shrinks to a small
+        // fraction of the wide screen. Scale the row to fill ~70% of the screen
+        // width — same as it already does in portrait — without shrinking portrait
+        // and without letting tube height overflow the screen.
+        float fillWidth = 1.4f * aspect;                  // 70% of the 2*aspect width
+        float scale = fillWidth / TOTAL_W;
+        scale = Math.max(1.0f, scale);                    // never shrink (portrait stays as-is)
+        scale = Math.min(scale, 1.6f / TUBE_H);           // cap: keep tube height ≤ 80% of screen
+        mScale = scale;
     }
 
     @Override
@@ -176,10 +188,14 @@ public class NixieTubeGL extends GLESScene {
 
     /** Populate the vertex buffer for tube i with UVs for the given frame. */
     private void buildTubeBuffer(int i, int frame) {
-        float x0 = -TOTAL_W / 2.0f + i * (TUBE_W + GAP);
-        float y0 = -TUBE_H / 2.0f;  // bottom
-        float x1 = x0 + TUBE_W;
-        float y1 =  TUBE_H / 2.0f;  // top
+        float tubeW  = TUBE_W * mScale;
+        float tubeH  = TUBE_H * mScale;
+        float gap    = GAP * mScale;
+        float totalW = TOTAL_W * mScale;
+        float x0 = -totalW / 2.0f + i * (tubeW + gap);
+        float y0 = -tubeH / 2.0f;  // bottom
+        float x1 = x0 + tubeW;
+        float y1 =  tubeH / 2.0f;  // top
 
         int col = frame % ATLAS_COLS;
         int row = frame / ATLAS_COLS;
