@@ -74,7 +74,7 @@ final class WindmillScene {
     }
 
     void updateProjection(int width, int height) {
-        mLandscape = width < height ? 1.0f : 2.0f;
+        mLandscape = width < height ? 1.0f : (float) width / (float) height;
         float aspect = (float) width / (float) height;
         float refAspect = 9.0f / 16.0f;
         mFillScaleY = aspect < refAspect ? (refAspect / aspect) : 1.0f;
