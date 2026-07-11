@@ -1,5 +1,5 @@
 {
-  "versionCode": 7,
+  "versionCode": 6,
   "versionName": "1.6",
   "changelog": {
     "en": "New wallpapers: NixieTube (glow-tube clock), LuminousDots (Samsung particle port)\n\nFixed: rendering freeze on plugin switch, black screen on screen rotation, landscape stretching (Ocean/Windmill), black edges on PNG textures, weather day/night incorrect (Grass), Windmill GPU texture occlusion, Aurora1 black bar, audio spectrum jitter and alignment, Galaxy crash, Fall touch ripple position, plugin settings cross-contamination, MIUI permission dialog, PhaseBeam/Galaxy/Grass/WalkAround settings range errors, Reset All clearing global config, memory leaks, translation errors in 7 languages",
