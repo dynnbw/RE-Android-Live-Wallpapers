@@ -80,6 +80,13 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
+    lint {
+        // arrays in locale-specific folders (zh-rCN, ja, ko, etc.) override base values
+        // without a corresponding base declaration — these are intentional translations,
+        // not leftover cruft.
+        disable 'ExtraTranslation'
+    }
+
     signingConfigs {
         release {
             // 使用 gradle.properties 中定义的变量（安全访问，避免未定义属性抛出异常）

@@ -1,11 +1,8 @@
 {
-  "versionCode": 6,
-  "versionName": "1.5",
-  "apkSize": 0,
+  "versionCode": 7,
+  "versionName": "1.6",
   "changelog": {
-    "en": "",
-    "zh": ""
-  },
-  "forceUpdate": false,
-  "minVersionCode": 1
+    "en": "New wallpapers: NixieTube (glow-tube clock), LuminousDots (Samsung particle port)\n\nFixed: rendering freeze on plugin switch, black screen on screen rotation, landscape stretching (Ocean/Windmill), black edges on PNG textures, weather day/night incorrect (Grass), Windmill GPU texture occlusion, Aurora1 black bar, audio spectrum jitter and alignment, Galaxy crash, Fall touch ripple position, plugin settings cross-contamination, MIUI permission dialog, PhaseBeam/Galaxy/Grass/WalkAround settings range errors, Reset All clearing global config, memory leaks, translation errors in 7 languages",
+    "zh": "新增壁纸：辉光管时钟 NixieTube、Samsung 微光粒子 LuminousDots\n\n修复：切壁纸时渲染冻结/黑屏、横屏旋转画面拉伸变形、Ocean/Windmill 边缘黑边、Windmill 部分 GPU 纹理遮挡、Aurora1 左侧黑条、Grass 天气白天/夜晚判断错误、音频可视化频谱抖动与对齐、Galaxy 崩溃、Fall 点击涟漪位置偏移、切壁纸后设置互相污染、MIUI 权限弹窗不出现、PhaseBeam/Galaxy/Grass/WalkAround 设置项范围错误、重置全部设置丢失全局配置、内存泄漏、7 种语言翻译错误"
+  }
 }
