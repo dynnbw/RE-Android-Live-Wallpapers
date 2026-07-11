@@ -9,9 +9,11 @@ import com.reandroid.wallpaper.BuildConfig;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -53,13 +55,12 @@ public class UpdateChecker {
             }
 
             try {
-                Log.d(TAG, "version.json response: " + raw);
+                if (BuildConfig.DEBUG) Log.d(TAG, "version.json response: " + raw);
 
                 JSONObject json = new JSONObject(raw);
                 VersionInfo info = new VersionInfo();
                 info.versionCode = json.getInt("versionCode");
                 info.versionName = json.optString("versionName", "");
-                info.apkSize = json.optLong("apkSize", 0);
 
                 if (json.opt("changelog") instanceof JSONObject) {
                     JSONObject cl = json.getJSONObject("changelog");
@@ -69,9 +70,6 @@ public class UpdateChecker {
                     info.changelogEn = json.optString("changelog", "");
                     info.changelogZh = info.changelogEn;
                 }
-
-                info.forceUpdate = json.optBoolean("forceUpdate", false);
-                info.minVersionCode = json.optInt("minVersionCode", 1);
 
                 Log.d(TAG, "remote versionCode=" + info.versionCode
                         + " local=" + BuildConfig.VERSION_CODE
@@ -92,9 +90,11 @@ public class UpdateChecker {
 
     @androidx.annotation.Nullable
     private static String fetch(String urlStr, int timeoutMs) {
+        HttpURLConnection conn = null;
+        BufferedReader reader = null;
         try {
             URL url = new URL(urlStr + "?t=" + System.currentTimeMillis());
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn = (HttpURLConnection) url.openConnection();
             conn.setConnectTimeout(timeoutMs);
             conn.setReadTimeout(timeoutMs);
             conn.setRequestMethod("GET");
@@ -103,23 +103,29 @@ public class UpdateChecker {
 
             int code = conn.getResponseCode();
             if (code != HttpURLConnection.HTTP_OK) {
-                conn.disconnect();
                 return null;
             }
 
-            BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(conn.getInputStream()));
+            reader = new BufferedReader(
+                    new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
             StringBuilder sb = new StringBuilder();
             String line;
             while ((line = reader.readLine()) != null) {
                 sb.append(line);
             }
-            reader.close();
-            conn.disconnect();
             return sb.toString();
         } catch (Exception e) {
             Log.d(TAG, "Fetch failed for " + urlStr + ": " + e.getMessage());
             return null;
+        } finally {
+            // Release the connection and reader on every path (including exception),
+            // otherwise the socket leaks when getResponseCode/getInputStream/readLine throw.
+            if (reader != null) {
+                try { reader.close(); } catch (IOException ignored) {}
+            }
+            if (conn != null) {
+                conn.disconnect();
+            }
         }
     }
 

@@ -1,7 +1,6 @@
 package com.reandroid.utils;
 
 import android.content.Context;
-import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
@@ -12,7 +11,6 @@ import java.nio.charset.StandardCharsets;
 
 /**
  * Loads text, float arrays, bitmaps, and raw bytes from assets/.
- * Mirrors RawResourceLoader but reads from the assets directory tree.
  */
 public final class AssetLoader {
     private AssetLoader() {}

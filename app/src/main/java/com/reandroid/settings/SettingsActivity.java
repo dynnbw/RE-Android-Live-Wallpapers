@@ -38,7 +38,7 @@ public class SettingsActivity extends AppCompatActivity
 
     private static final String KEY_GLOBAL_FRAME_RATE = "global_frame_rate";
     private static final String KEY_PREVIEW_RATIO = "pref_preview_ratio";
-    private static final String DEFAULT_PREVIEW_RATIO = "9:16";
+    private static final String DEFAULT_PREVIEW_RATIO = "1:1";
     private static final String KEY_PREVIEW = "pref_preview";
 
     private boolean mUpdateChecked;
@@ -329,8 +329,8 @@ public class SettingsActivity extends AppCompatActivity
 
     private void showGlobalFrameRateDialog() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        String[] entries = {"test", "24 FPS", "30 FPS", "45 FPS", "60 FPS", "90 FPS", "120 FPS", "180 FPS"};
-        String[] values = {"1", "24", "30", "45", "60", "90", "120", "180"};
+        String[] entries = {"24 FPS", "30 FPS", "45 FPS", "60 FPS", "90 FPS", "120 FPS", "180 FPS"};
+        String[] values = {"24", "30", "45", "60", "90", "120", "180"};
         String currentValue = prefs.getString(KEY_GLOBAL_FRAME_RATE, "60");
         int checkedIndex = 0;
         for (int i = 0; i < values.length; i++) {

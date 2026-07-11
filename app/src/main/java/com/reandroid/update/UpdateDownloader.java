@@ -18,8 +18,13 @@ import com.reandroid.wallpaper.R;
 public class UpdateDownloader {
     private static final String TAG = "UpdateDownloader";
 
-    private static final String PRIMARY_URL_PREFIX =
+    private static final String URL_PREFIX =
             "https://github.com/dynnbw/RE-Android-Live-Wallpapers/releases/download/";
+
+    /** Strict version-name format; versionName is server-supplied and concatenated into the
+     *  download URL and destination filename, so reject anything that could malform them. */
+    private static final java.util.regex.Pattern VERSION_NAME_PATTERN =
+            java.util.regex.Pattern.compile("^[0-9A-Za-z.\\-]+$");
 
     private final Context mContext;
     private long mDownloadId;
@@ -41,10 +46,24 @@ public class UpdateDownloader {
      * 直连 GitHub，国内用户可在浏览器手动添加加速镜像。
      */
     public void download(VersionInfo info, Callback callback) {
+        // Guard against re-entry: cancel any in-flight download before starting a new one,
+        // otherwise the old receiver is orphaned (leaked on the application Context) and
+        // mDownloadId is overwritten, losing the first download's completion handling.
+        if (mRegistered) {
+            cancel();
+        }
+
         mCallback = callback;
 
+        // versionName is server-supplied and concatenated into the URL and filename —
+        // reject anything outside a strict version format to avoid path/URL manipulation.
+        if (info.versionName == null || !VERSION_NAME_PATTERN.matcher(info.versionName).matches()) {
+            if (mCallback != null) mCallback.onError("Invalid version name: " + info.versionName);
+            return;
+        }
+
         String filename = "REWallpapers_v" + info.versionName + ".apk";
-        String url = PRIMARY_URL_PREFIX + "v" + info.versionName + "/app-release.apk";
+        String url = URL_PREFIX + "v" + info.versionName + "/app-release.apk";
 
         DownloadManager dm = (DownloadManager) mContext.getSystemService(Context.DOWNLOAD_SERVICE);
         DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
@@ -61,6 +80,20 @@ public class UpdateDownloader {
 
         mDownloadId = dm.enqueue(request);
         if (mCallback != null) mCallback.onDownloadStarted();
+    }
+
+    /** Cancel any in-flight download and unregister the receiver. Safe to call from the host
+     *  Activity/Fragment onDestroy to release the receiver when navigating away mid-download. */
+    public void cancel() {
+        if (mDownloadId != 0) {
+            try {
+                DownloadManager dm = (DownloadManager) mContext.getSystemService(Context.DOWNLOAD_SERVICE);
+                if (dm != null) dm.remove(mDownloadId);
+            } catch (Exception e) { Log.w(TAG, "Failed to remove download", e); }
+            mDownloadId = 0;
+        }
+        unregister();
+        mCallback = null;
     }
 
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
@@ -81,7 +114,11 @@ public class UpdateDownloader {
                             cursor.getColumnIndex(DownloadManager.COLUMN_STATUS));
                     if (status == DownloadManager.STATUS_SUCCESSFUL) {
                         Uri uri = dm.getUriForDownloadedFile(mDownloadId);
-                        if (mCallback != null) mCallback.onComplete(uri);
+                        if (uri == null) {
+                            if (mCallback != null) mCallback.onError("Downloaded file URI is null");
+                        } else if (mCallback != null) {
+                            mCallback.onComplete(uri);
+                        }
                     } else {
                         if (mCallback != null) mCallback.onError("Download status: " + status);
                     }

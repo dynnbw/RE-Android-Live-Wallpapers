@@ -23,6 +23,7 @@ import androidx.preference.SwitchPreferenceCompat;
 import com.reandroid.gles.GLESScene;
 
 import com.reandroid.settings.PreviewPreference;
+import com.reandroid.utils.IoUtils;
 
 import org.json.JSONObject;
 
@@ -81,9 +82,7 @@ public class PluginSettingsFragment extends PreferenceFragmentCompat
         String pluginVk = null;
         JSONObject info = null;
         try (InputStream is = ctx.getAssets().open(pluginId + "/info.json")) {
-            byte[] buf = new byte[is.available()];
-            is.read(buf);
-            info = new JSONObject(new String(buf, "UTF-8"));
+            info = new JSONObject(new String(IoUtils.readAllBytes(is), "UTF-8"));
             previewClass = info.optString("previewClass", null);
             pluginVk = info.optString("pluginVk", null);
         } catch (Exception e) { Log.w("PluginSettingsFragment", "Failed to read info.json for " + getPluginId(), e); }

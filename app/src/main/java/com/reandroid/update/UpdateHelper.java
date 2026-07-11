@@ -3,6 +3,7 @@ package com.reandroid.update;
 import android.app.Activity;
 import android.content.Context;
 import android.net.Uri;
+import android.util.Log;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
@@ -17,6 +18,10 @@ import java.util.Locale;
  * 更新对话框和下载辅助方法，供 Activity 和 Fragment 共用。
  */
 public final class UpdateHelper {
+
+    private static final String TAG = "UpdateHelper";
+    private static final android.os.Handler sHandler =
+            new android.os.Handler(android.os.Looper.getMainLooper());
 
     private UpdateHelper() {}
 
@@ -77,8 +82,11 @@ public final class UpdateHelper {
             @Override
             public void onUpdateAvailable(VersionInfo info) {
                 if (activity.isFinishing() || activity.isDestroyed()) return;
-                android.util.Log.d("UpdateHelper", "onUpdateAvailable, showing dialog");
-                new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+                Log.d(TAG, "onUpdateAvailable, showing dialog");
+                // Brief delay so the dialog does not race the activity enter transition
+                // (this check fires from onResume; showing immediately can clash with the
+                // transition and leave the dialog dismissed or mis-stacked).
+                sHandler.postDelayed(() -> {
                     if (!activity.isFinishing() && !activity.isDestroyed()) {
                         showUpdateDialog(activity, info);
                     }
@@ -87,7 +95,7 @@ public final class UpdateHelper {
 
             @Override
             public void onUpToDate() {
-                if (silent || activity.isFinishing()) return;
+                if (silent || activity.isFinishing() || activity.isDestroyed()) return;
                 Toast.makeText(activity,
                         activity.getString(R.string.up_to_date_message, BuildConfig.VERSION_NAME),
                         Toast.LENGTH_SHORT).show();
@@ -95,7 +103,7 @@ public final class UpdateHelper {
 
             @Override
             public void onError(String message) {
-                if (silent || activity.isFinishing()) return;
+                if (silent || activity.isFinishing() || activity.isDestroyed()) return;
                 Toast.makeText(activity,
                         activity.getString(R.string.update_check_failed, message),
                         Toast.LENGTH_SHORT).show();
@@ -121,23 +129,5 @@ public final class UpdateHelper {
                         Toast.LENGTH_SHORT).show();
             }
         });
-    }
-
-    // ---- 24h 缓存 ----
-
-    private static final String PREFS_NAME = "update_prefs";
-    private static final String KEY_LAST_CHECK = "last_check_time";
-
-    public static boolean shouldCheck(Context context) {
-        long last = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-                .getLong(KEY_LAST_CHECK, 0);
-        return System.currentTimeMillis() - last > 24 * 3600 * 1000L;
-    }
-
-    public static void recordCheck(Context context) {
-        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-                .edit()
-                .putLong(KEY_LAST_CHECK, System.currentTimeMillis())
-                .apply();
     }
 }

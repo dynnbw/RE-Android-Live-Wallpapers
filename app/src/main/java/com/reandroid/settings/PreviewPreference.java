@@ -57,10 +57,7 @@ public class PreviewPreference extends Preference {
 
     /** Release the current preview and force a full rebind with updated settings. */
     public void refreshScene() {
-        if (mPreviewView != null) {
-            mPreviewView.stopRenderer();
-            mPreviewView = null;
-        }
+        releasePreview();
         notifyChanged();
     }
 

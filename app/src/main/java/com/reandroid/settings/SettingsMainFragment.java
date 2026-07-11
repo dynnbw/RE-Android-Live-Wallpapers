@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.reandroid.plugin.PluginSettingsFragment;
+import com.reandroid.utils.IoUtils;
 import com.reandroid.wallpaper.R;
 
 import org.json.JSONObject;
@@ -110,9 +111,7 @@ public class SettingsMainFragment extends PreferenceFragmentCompat {
                 String pluginClass = null;
                 boolean useLegacySettings = false;
                 try (InputStream is = am.open(jsonPath)) {
-                    byte[] buf = new byte[is.available()];
-                    is.read(buf);
-                    JSONObject json = new JSONObject(new String(buf, "UTF-8"));
+                    JSONObject json = new JSONObject(new String(IoUtils.readAllBytes(is), "UTF-8"));
                     fragmentClass = json.optString("fragment", null);
                     label = json.optString("label", null);
                     pluginClass = json.optString("plugin", null);

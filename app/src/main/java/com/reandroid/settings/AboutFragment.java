@@ -14,8 +14,6 @@ import com.reandroid.update.UpdateHelper;
 import com.reandroid.wallpaper.BuildConfig;
 import com.reandroid.wallpaper.R;
 
-import android.content.Context;
-
 public class AboutFragment extends PreferenceFragmentCompat {
 
     @Override
@@ -114,12 +112,6 @@ public class AboutFragment extends PreferenceFragmentCompat {
         } catch (ActivityNotFoundException e) {
             Toast.makeText(getContext(), R.string.no_email_found, Toast.LENGTH_SHORT).show();
         }
-    }
-
-    private void copyToClipboard(String text) {
-        android.content.ClipboardManager clipboard = (android.content.ClipboardManager) requireContext().getSystemService(android.content.Context.CLIPBOARD_SERVICE);
-        android.content.ClipData clip = android.content.ClipData.newPlainText("label", text);
-        clipboard.setPrimaryClip(clip);
     }
 
 }

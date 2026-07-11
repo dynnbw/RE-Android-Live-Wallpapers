@@ -13,7 +13,4 @@ public interface WallpaperPluginHost {
 
     /** Host application context. */
     Context getContext();
-
-    /** Request the host to schedule a render frame. */
-    void requestRender();
 }

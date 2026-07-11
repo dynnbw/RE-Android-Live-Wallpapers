@@ -3,6 +3,8 @@ package com.reandroid.plugin;
 import android.content.Context;
 import android.util.Log;
 
+import com.reandroid.utils.IoUtils;
+
 import org.json.JSONObject;
 
 import java.io.InputStream;
@@ -41,9 +43,7 @@ public final class PluginResources {
         JSONObject cached = sJsonCache.get(path);
         if (cached != null) return cached;
         try (InputStream is = context.getAssets().open(path)) {
-            byte[] buf = new byte[is.available()];
-            is.read(buf);
-            JSONObject json = new JSONObject(new String(buf, "UTF-8"));
+            JSONObject json = new JSONObject(new String(IoUtils.readAllBytes(is), "UTF-8"));
             sJsonCache.put(path, json);
             return json;
         } catch (Exception e) {
@@ -106,9 +106,7 @@ public final class PluginResources {
         JSONObject cached = sJsonCache.get(path);
         if (cached != null) return cached;
         try (InputStream is = context.getAssets().open(path)) {
-            byte[] buf = new byte[is.available()];
-            is.read(buf);
-            JSONObject json = new JSONObject(new String(buf, "UTF-8"));
+            JSONObject json = new JSONObject(new String(IoUtils.readAllBytes(is), "UTF-8"));
             sJsonCache.put(path, json);
             return json;
         } catch (Exception e) {

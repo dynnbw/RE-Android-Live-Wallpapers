@@ -6,9 +6,6 @@ package com.reandroid.update;
 public class VersionInfo {
     public int versionCode;
     public String versionName;
-    public long apkSize;
     public String changelogEn;
     public String changelogZh;
-    public boolean forceUpdate;
-    public int minVersionCode;
 }
