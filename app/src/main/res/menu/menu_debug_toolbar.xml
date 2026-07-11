@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_debug_location_override"
+        android:title="@string/action_debug_location_override"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_export_debug_log"
+        android:title="@string/action_export_debug_log"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_clear_debug_log"
+        android:title="@string/action_clear_debug_log"
+        app:showAsAction="never" />
+</menu>

@@ -296,6 +296,11 @@
     <string name="pref_use_vulkan_summary">Use Vulkan for better performance (reapply wallpaper to take effect)</string>
     <string name="pref_disabled_prefix">[Disabled]</string>
 
+    <!-- Debug -->
+    <string name="action_export_debug_log">Export debug log</string>
+    <string name="action_clear_debug_log">Clear log buffer</string>
+    <string name="action_debug_location_override">Debug location override</string>
+
     <!-- Debug location override -->
     <string name="debug_location_title">Debug Location Override</string>
     <string name="debug_location_message">Override GPS lat/lng for sun/moon calculation.\nLeave empty to use real GPS.</string>

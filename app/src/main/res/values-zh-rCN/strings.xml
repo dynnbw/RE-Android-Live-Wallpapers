@@ -293,6 +293,11 @@
     <string name="pref_use_vulkan_summary">使用 Vulkan 获得更好性能（重新应用壁纸生效）</string>
     <string name="pref_disabled_prefix">[已禁用]</string>
 
+    <!-- Debug -->
+    <string name="action_export_debug_log">导出调试日志</string>
+    <string name="action_clear_debug_log">清空日志缓冲</string>
+    <string name="action_debug_location_override">调试位置覆盖</string>
+
     <!-- Debug location override -->
     <string name="debug_location_title">调试位置覆盖</string>
     <string name="debug_location_message">覆盖GPS经纬度用于日出日落/天气计算。\n留空则使用真实GPS。</string>

@@ -28,6 +28,7 @@ import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 
 import com.reandroid.update.UpdateHelper;
+import com.reandroid.utils.DebugExporter;
 import com.reandroid.wallpaper.R;
 import com.reandroid.weather.WeatherCondition;
 import com.reandroid.weather.WeatherManager;
@@ -557,7 +558,7 @@ public class SettingsActivity extends AppCompatActivity
             if (child instanceof android.widget.ImageButton
                     || child instanceof android.widget.ImageView) {
                 child.setOnLongClickListener(v -> {
-                    showLocationDebugDialog();
+                    showDebugPopupMenu(v);
                     return true;
                 });
                 return;
@@ -566,6 +567,32 @@ public class SettingsActivity extends AppCompatActivity
                 setOverflowButtonLongPress((android.view.ViewGroup) child);
             }
         }
+    }
+
+    private void showDebugPopupMenu(android.view.View anchor) {
+        ContextThemeWrapper themedContext = new ContextThemeWrapper(
+                this,
+                R.style.ThemeOverlay_WallpaperSettings_ToolbarPopup
+        );
+        PopupMenu popupMenu = new PopupMenu(themedContext, anchor);
+        popupMenu.getMenuInflater().inflate(R.menu.menu_debug_toolbar, popupMenu.getMenu());
+        popupMenu.setOnMenuItemClickListener(item -> {
+            int itemId = item.getItemId();
+            if (itemId == R.id.action_debug_location_override) {
+                showLocationDebugDialog();
+                return true;
+            }
+            if (itemId == R.id.action_export_debug_log) {
+                DebugExporter.exportAndShare(this);
+                return true;
+            }
+            if (itemId == R.id.action_clear_debug_log) {
+                DebugExporter.clearLogcat(this);
+                return true;
+            }
+            return false;
+        });
+        popupMenu.show();
     }
 
     private void showLocationDebugDialog() {
