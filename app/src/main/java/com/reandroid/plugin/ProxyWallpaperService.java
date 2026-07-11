@@ -1,11 +1,7 @@
 package com.reandroid.plugin;
 
-import android.app.WallpaperManager;
-import android.content.ComponentName;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Process;
 import android.service.wallpaper.WallpaperService;
@@ -14,6 +10,7 @@ import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 
 import com.reandroid.settings.WallpaperSettings;
+import com.reandroid.utils.IoUtils;
 import com.reandroid.vulkan.FrameRateManager;
 import org.json.JSONObject;
 
@@ -42,18 +39,6 @@ public class ProxyWallpaperService extends WallpaperService {
                 .getString(KEY_PLUGIN_ID, null);
     }
 
-    /**
-     * Apply a plugin as wallpaper: set the active plugin and open the system
-     * wallpaper preview directly (skips the chooser list).
-     */
-    public static void applyPluginAndOpenPreview(Context context, String pluginId) {
-        setActivePlugin(context, pluginId);
-        Intent intent = new Intent(WallpaperManager.ACTION_CHANGE_LIVE_WALLPAPER);
-        intent.putExtra(WallpaperManager.EXTRA_LIVE_WALLPAPER_COMPONENT,
-                new ComponentName(context, ProxyWallpaperService.class));
-        context.startActivity(intent);
-    }
-
     @Override
     public Engine onCreateEngine() {
         return new ProxyEngine();
@@ -62,7 +47,7 @@ public class ProxyWallpaperService extends WallpaperService {
     private class ProxyEngine extends Engine {
 
         private WallpaperPlugin mPlugin;
-        private WallpaperEngine mEngine;
+        private volatile WallpaperEngine mEngine;
         private PluginHostImpl mHost;
         private Thread mRenderThread;
         private volatile boolean mRunning;
@@ -125,7 +110,17 @@ public class ProxyWallpaperService extends WallpaperService {
             if (mRenderThread != null) {
                 synchronized (mLock) { mLock.notifyAll(); }
                 mRenderThread.interrupt();
-                try { mRenderThread.join(1000); } catch (InterruptedException ignored) {}
+                long deadline = System.currentTimeMillis() + 2000L;
+                while (mRenderThread.isAlive() && System.currentTimeMillis() < deadline) {
+                    try {
+                        mRenderThread.join(Math.max(1L, deadline - System.currentTimeMillis()));
+                    } catch (InterruptedException ignored) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
+                if (mRenderThread.isAlive()) {
+                    Log.w(TAG, "Render thread did not exit within 2s");
+                }
                 mRenderThread = null;
             }
             mLastWidth = mLastHeight = 0;
@@ -167,13 +162,39 @@ public class ProxyWallpaperService extends WallpaperService {
         }
 
         @Override
+        public void onSurfaceCreated(SurfaceHolder holder) {
+            super.onSurfaceCreated(holder);
+            // Recreate the engine after surface destruction — without this override,
+            // a surface-recreate (rotation, multi-window) leaves the wallpaper black
+            // because onSurfaceDestroyed nulled mEngine with no rebuild path.
+            if (mEngine == null) {
+                String activeId = getActivePlugin(ProxyWallpaperService.this);
+                if (activeId != null) {
+                    createEngine(activeId);
+                }
+            }
+        }
+
+        // ---- Engine callbacks forwarded under mLock (mirrors GLESWallpaper.mSceneLock) ----
+        // mLock serializes the render thread (drawFrame) with these mutating callbacks,
+        // preventing concurrent EGL-context/scene access when BasePluginEngine rebuilds
+        // EGL in onSurfaceChanged on the callback thread while drawFrame runs on the
+        // render thread.  Plugin exceptions are caught to avoid crashing the host.
+
+        @Override
         public void onSurfaceChanged(SurfaceHolder holder, int format, int width, int height) {
             Log.d(TAG, "ProxyEngine.onSurfaceChanged: " + width + "x" + height
                     + " engine=" + (mEngine != null));
             mLastFormat = format; mLastWidth = width; mLastHeight = height;
-            if (mEngine != null) {
-                mEngine.setPreview(isPreview());
-                mEngine.onSurfaceChanged(holder, format, width, height);
+            synchronized (mLock) {
+                if (mEngine != null) {
+                    try {
+                        mEngine.setPreview(isPreview());
+                        mEngine.onSurfaceChanged(holder, format, width, height);
+                    } catch (Exception e) {
+                        Log.e(TAG, "Plugin onSurfaceChanged crashed", e);
+                    }
+                }
             }
         }
 
@@ -187,21 +208,43 @@ public class ProxyWallpaperService extends WallpaperService {
         public void onOffsetsChanged(float xOffset, float yOffset,
                                      float xOffsetStep, float yOffsetStep,
                                      int xPixelOffset, int yPixelOffset) {
-            if (mEngine != null) {
-                mEngine.onOffsetsChanged(xOffset, yOffset, xOffsetStep, yOffsetStep,
-                        xPixelOffset, yPixelOffset);
+            synchronized (mLock) {
+                if (mEngine != null) {
+                    try {
+                        mEngine.onOffsetsChanged(xOffset, yOffset, xOffsetStep, yOffsetStep,
+                                xPixelOffset, yPixelOffset);
+                    } catch (Exception e) {
+                        Log.e(TAG, "Plugin onOffsetsChanged crashed", e);
+                    }
+                }
             }
         }
 
         @Override
         public void onTouchEvent(MotionEvent event) {
-            if (mEngine != null) mEngine.onTouchEvent(event);
+            synchronized (mLock) {
+                if (mEngine != null) {
+                    try {
+                        mEngine.onTouchEvent(event);
+                    } catch (Exception e) {
+                        Log.e(TAG, "Plugin onTouchEvent crashed", e);
+                    }
+                }
+            }
         }
 
         @Override
         public Bundle onCommand(String action, int x, int y, int z,
                                 Bundle extras, boolean resultRequested) {
-            if (mEngine != null) mEngine.onCommand(action, x, y, z, extras);
+            synchronized (mLock) {
+                if (mEngine != null) {
+                    try {
+                        mEngine.onCommand(action, x, y, z, extras);
+                    } catch (Exception e) {
+                        Log.e(TAG, "Plugin onCommand crashed", e);
+                    }
+                }
+            }
             return null;
         }
 
@@ -252,9 +295,7 @@ public class ProxyWallpaperService extends WallpaperService {
             String className = null;
             String pluginVk = null;
             try (InputStream is = getAssets().open(pluginId + "/info.json")) {
-                byte[] buf = new byte[is.available()];
-                is.read(buf);
-                JSONObject json = new JSONObject(new String(buf, "UTF-8"));
+                JSONObject json = new JSONObject(new String(IoUtils.readAllBytes(is), "UTF-8"));
                 className = json.optString("plugin", null);
                 pluginVk = json.optString("pluginVk", null);
             } catch (Exception e) {
@@ -299,9 +340,5 @@ public class ProxyWallpaperService extends WallpaperService {
             return mContext;
         }
 
-        @Override
-        public void requestRender() {
-            // The render thread is always running; no explicit scheduling needed for now
-        }
     }
 }

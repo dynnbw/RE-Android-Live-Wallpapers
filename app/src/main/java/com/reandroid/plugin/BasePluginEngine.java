@@ -208,7 +208,12 @@ public abstract class BasePluginEngine implements WallpaperEngine {
                 EGL14.EGL_RENDERABLE_TYPE,EGL14.EGL_OPENGL_ES2_BIT, EGL14.EGL_NONE};
         EGLConfig[] configs = new EGLConfig[1];
         int[] numConfig = new int[1];
-        EGL14.eglChooseConfig(mDisplay, attribs, 0, configs, 0, 1, numConfig, 0);
+        if (!EGL14.eglChooseConfig(mDisplay, attribs, 0, configs, 0, 1, numConfig, 0)
+                || numConfig[0] <= 0
+                || configs[0] == null) {
+            Log.e(TAG, "eglChooseConfig failed");
+            return false;
+        }
         int[] ctxAttribs = {EGL14.EGL_CONTEXT_CLIENT_VERSION, 2, EGL14.EGL_NONE};
         mEglContext = EGL14.eglCreateContext(mDisplay, configs[0], EGL14.EGL_NO_CONTEXT, ctxAttribs, 0);
         if (mEglContext == EGL14.EGL_NO_CONTEXT) return false;

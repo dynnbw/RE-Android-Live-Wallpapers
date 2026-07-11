@@ -19,8 +19,10 @@ public abstract class VKSurfaceView<T> extends SurfaceView
 
     protected Thread mThread;
     protected volatile boolean mRunning;
-    protected long mRendererHandle;
+    protected volatile long mRendererHandle;
     protected volatile T mScene;
+    protected final Object mSceneLock = new Object();
+    protected boolean mNativeSurfaceAlive;
     protected int mWidth, mHeight;
 
     // 共享帧率控制与诊断
@@ -52,6 +54,7 @@ public abstract class VKSurfaceView<T> extends SurfaceView
         ensureRenderer();
         Surface surface = holder.getSurface();
         if (surface != null && surface.isValid() && mWidth > 0 && mHeight > 0) {
+            mNativeSurfaceAlive = true;
             onSurfaceCreatedNative(surface);
         }
         startRenderer();
@@ -62,10 +65,13 @@ public abstract class VKSurfaceView<T> extends SurfaceView
         mWidth = width;
         mHeight = height;
         ensureScene();
-        onSceneResize(width, height);
+        synchronized (mSceneLock) {
+            onSceneResize(width, height);
+        }
         ensureRenderer();
         Surface surface = holder.getSurface();
         if (surface != null && surface.isValid()) {
+            mNativeSurfaceAlive = true;
             onSurfaceChangedNative(surface);
         }
         startRenderer();
@@ -74,8 +80,9 @@ public abstract class VKSurfaceView<T> extends SurfaceView
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
         stopRenderer();
-        if (mRendererHandle != 0L) {
+        if (mNativeSurfaceAlive && mRendererHandle != 0L) {
             onSurfaceDestroyedNative();
+            mNativeSurfaceAlive = false;
         }
     }
 
@@ -92,7 +99,10 @@ public abstract class VKSurfaceView<T> extends SurfaceView
     public void releaseRenderer() {
         stopRenderer();
         if (mRendererHandle != 0L) {
-            onSurfaceDestroyedNative();
+            if (mNativeSurfaceAlive) {
+                onSurfaceDestroyedNative();
+                mNativeSurfaceAlive = false;
+            }
             destroyRenderer();
             mRendererHandle = 0L;
         }
@@ -112,8 +122,10 @@ public abstract class VKSurfaceView<T> extends SurfaceView
             mFrameRate.syncPerfSettingsIfNeeded(frameStart);
 
             if (mRendererHandle != 0L && mScene != null) {
-                syncTexturesIfNeeded();
-                renderFrame();
+                synchronized (mSceneLock) {
+                    syncTexturesIfNeeded();
+                    renderFrame();
+                }
             }
 
             long frameCost = SystemClock.uptimeMillis() - frameStart;
@@ -139,10 +151,16 @@ public abstract class VKSurfaceView<T> extends SurfaceView
     protected void stopRenderer() {
         mRunning = false;
         if (mThread != null) {
-            try {
-                mThread.join(1000L);
-            } catch (InterruptedException ignored) {
-                Thread.currentThread().interrupt();
+            long deadline = System.currentTimeMillis() + 2000L;
+            while (mThread.isAlive() && System.currentTimeMillis() < deadline) {
+                try {
+                    mThread.join(Math.max(1L, deadline - System.currentTimeMillis()));
+                } catch (InterruptedException ignored) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+            if (mThread.isAlive()) {
+                android.util.Log.e(getLogTag(), "Render thread did not exit within 2s");
             }
             mThread = null;
         }

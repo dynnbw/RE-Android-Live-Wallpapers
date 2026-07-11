@@ -24,25 +24,17 @@ public class GLESPreviewView extends SurfaceView implements SurfaceHolder.Callba
 
     private final SceneFactory mFactory;
     private volatile GLESScene mScene;
+    private final Object mSceneLock = new Object();
     private Thread mThread;
-    private boolean mRunning;
+    private volatile boolean mRunning;
     private EGLDisplay mDisplay;
     private EGLContext mContext;
     private EGLSurface mSurface;
-    private int mPendingWidth;
-    private int mPendingHeight;
+    private volatile int mPendingWidth;
+    private volatile int mPendingHeight;
 
     public GLESPreviewView(Context context, SceneFactory factory) {
         super(context);
-        mFactory = factory;
-        setFocusable(true);
-        setFocusableInTouchMode(true);
-        setClickable(true);
-        getHolder().addCallback(this);
-    }
-
-    public GLESPreviewView(Context context, AttributeSet attrs, SceneFactory factory) {
-        super(context, attrs);
         mFactory = factory;
         setFocusable(true);
         setFocusableInTouchMode(true);
@@ -64,11 +56,13 @@ public class GLESPreviewView extends SurfaceView implements SurfaceHolder.Callba
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-        if (mScene != null) {
-            mScene.resize(width, height);
-        } else {
-            mPendingWidth = width;
-            mPendingHeight = height;
+        synchronized (mSceneLock) {
+            if (mScene != null) {
+                mScene.resize(width, height);
+            } else {
+                mPendingWidth = width;
+                mPendingHeight = height;
+            }
         }
     }
 
@@ -79,9 +73,11 @@ public class GLESPreviewView extends SurfaceView implements SurfaceHolder.Callba
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if (mScene != null) {
-            mScene.onTouchEvent(event);
-            return true;
+        synchronized (mSceneLock) {
+            if (mScene != null) {
+                mScene.onTouchEvent(event);
+                return true;
+            }
         }
         return super.onTouchEvent(event);
     }
@@ -121,10 +117,10 @@ public class GLESPreviewView extends SurfaceView implements SurfaceHolder.Callba
             try { mThread.join(1000); } catch (InterruptedException ignored) {}
             mThread = null;
         }
-        if (mScene != null) {
-            mScene.stop();
-            mScene.release();
-            mScene = null;
+        synchronized (mSceneLock) {
+            if (mScene != null) {
+                mScene.stop();
+            }
         }
         destroyEgl();
     }
@@ -156,11 +152,13 @@ public class GLESPreviewView extends SurfaceView implements SurfaceHolder.Callba
 
         while (mRunning) {
             long now = System.currentTimeMillis();
-            scene = mScene;
-            if (scene != null) {
-                scene.drawFrame(now);
-            } else {
-                GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+            synchronized (mSceneLock) {
+                scene = mScene;
+                if (scene != null) {
+                    scene.drawFrame(now);
+                } else {
+                    GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+                }
             }
             if (!EGL14.eglSwapBuffers(mDisplay, mSurface)) {
                 int error = EGL14.eglGetError();
@@ -174,9 +172,14 @@ public class GLESPreviewView extends SurfaceView implements SurfaceHolder.Callba
             }
         }
 
-        scene = mScene;
-        if (scene != null) {
-            scene.stop();
+        GLESScene sceneToRelease;
+        synchronized (mSceneLock) {
+            sceneToRelease = mScene;
+            mScene = null;
+        }
+        if (sceneToRelease != null) {
+            sceneToRelease.stop();
+            sceneToRelease.release();
         }
     }
 

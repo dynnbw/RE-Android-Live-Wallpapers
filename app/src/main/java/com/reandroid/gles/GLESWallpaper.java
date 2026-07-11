@@ -359,8 +359,6 @@ public abstract class GLESWallpaper extends WallpaperService {
             long targetFrameTimeMs = 1000 / targetFps;
             logD("目标FPS: " + targetFps);
 
-            long lastTime = System.currentTimeMillis();
-            int frameCount = 0;
             while (mRunning) {
                 long now = System.currentTimeMillis();
                 synchronized (mSceneLock) {
@@ -372,8 +370,6 @@ public abstract class GLESWallpaper extends WallpaperService {
                     mRunning = false;
                     break;
                 }
-                frameCount++;
-                // 根据目标帧数计算休眠时间
                 long frameTime = System.currentTimeMillis() - now;
                 long sleep = Math.max(1, targetFrameTimeMs - frameTime);
                 try { Thread.sleep(sleep); } catch (InterruptedException ignored) {}

@@ -20,7 +20,9 @@ public abstract class VKWallpaperEngine<T> extends WallpaperService.Engine imple
     protected boolean mVisible;
     protected SurfaceHolder mHolder;
     protected volatile T mScene;
-    protected long mRendererHandle;
+    protected final Object mSceneLock = new Object();
+    protected volatile long mRendererHandle;
+    protected boolean mNativeSurfaceAlive;
     protected int mWidth, mHeight;
 
     // 共享帧率控制与诊断
@@ -36,7 +38,10 @@ public abstract class VKWallpaperEngine<T> extends WallpaperService.Engine imple
     public void onDestroy() {
         stopRenderer();
         if (mRendererHandle != 0L) {
-            onSurfaceDestroyedNative();
+            if (mNativeSurfaceAlive) {
+                onSurfaceDestroyedNative();
+                mNativeSurfaceAlive = false;
+            }
             destroyRenderer();
             mRendererHandle = 0L;
         }
@@ -46,6 +51,7 @@ public abstract class VKWallpaperEngine<T> extends WallpaperService.Engine imple
     @Override
     public void onSurfaceCreated(SurfaceHolder holder) {
         super.onSurfaceCreated(holder);
+        setTouchEventsEnabled(true);
         mHolder = holder;
 
         if (mWidth <= 0 || mHeight <= 0) {
@@ -60,6 +66,7 @@ public abstract class VKWallpaperEngine<T> extends WallpaperService.Engine imple
         ensureRenderer();
         Surface surface = holder.getSurface();
         if (surface != null && surface.isValid() && mWidth > 0 && mHeight > 0) {
+            mNativeSurfaceAlive = true;
             onSurfaceCreatedNative(surface);
         }
         startRenderer();
@@ -71,10 +78,13 @@ public abstract class VKWallpaperEngine<T> extends WallpaperService.Engine imple
         mHolder = holder;
         mWidth = width;
         mHeight = height;
-        ensureOrResizeScene();
+        synchronized (mSceneLock) {
+            ensureOrResizeScene();
+        }
         ensureRenderer();
         Surface surface = holder.getSurface();
         if (surface != null && surface.isValid()) {
+            mNativeSurfaceAlive = true;
             onSurfaceChangedNative(surface);
         }
         startRenderer();
@@ -83,8 +93,9 @@ public abstract class VKWallpaperEngine<T> extends WallpaperService.Engine imple
     @Override
     public void onSurfaceDestroyed(SurfaceHolder holder) {
         stopRenderer();
-        if (mRendererHandle != 0L) {
+        if (mNativeSurfaceAlive && mRendererHandle != 0L) {
             onSurfaceDestroyedNative();
+            mNativeSurfaceAlive = false;
         }
         mHolder = null;
         super.onSurfaceDestroyed(holder);
@@ -105,8 +116,10 @@ public abstract class VKWallpaperEngine<T> extends WallpaperService.Engine imple
     public void onOffsetsChanged(float xOffset, float yOffset, float xStep, float yStep,
             int xPixels, int yPixels) {
         super.onOffsetsChanged(xOffset, yOffset, xStep, yStep, xPixels, yPixels);
-        if (mScene != null) {
-            onSceneOffset(xOffset);
+        synchronized (mSceneLock) {
+            if (mScene != null) {
+                onSceneOffset(xOffset);
+            }
         }
         if (mVisible) {
             startRenderer();
@@ -127,8 +140,10 @@ public abstract class VKWallpaperEngine<T> extends WallpaperService.Engine imple
             mFrameRate.syncPerfSettingsIfNeeded(frameStart);
 
             if (mRendererHandle != 0L && mScene != null) {
-                syncTexturesIfNeeded();
-                renderFrame();
+                synchronized (mSceneLock) {
+                    syncTexturesIfNeeded();
+                    renderFrame();
+                }
             }
 
             long frameCost = SystemClock.uptimeMillis() - frameStart;
@@ -156,10 +171,16 @@ public abstract class VKWallpaperEngine<T> extends WallpaperService.Engine imple
     protected void stopRenderer() {
         mRunning = false;
         if (mThread != null) {
-            try {
-                mThread.join(1000L);
-            } catch (InterruptedException ignored) {
-                Thread.currentThread().interrupt();
+            long deadline = System.currentTimeMillis() + 2000L;
+            while (mThread.isAlive() && System.currentTimeMillis() < deadline) {
+                try {
+                    mThread.join(Math.max(1L, deadline - System.currentTimeMillis()));
+                } catch (InterruptedException ignored) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+            if (mThread.isAlive()) {
+                android.util.Log.e(getLogTag(), "Render thread did not exit within 2s");
             }
             mThread = null;
         }

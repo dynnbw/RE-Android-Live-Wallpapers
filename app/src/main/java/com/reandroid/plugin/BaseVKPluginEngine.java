@@ -1,7 +1,6 @@
 package com.reandroid.plugin;
 
 import android.content.Context;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Process;
 import android.os.SystemClock;
@@ -16,19 +15,27 @@ import com.reandroid.vulkan.FrameRateManager;
 public abstract class BaseVKPluginEngine implements WallpaperEngine, Runnable {
     protected final Context mContext;
     protected final WallpaperPluginHost mHost;
-    protected long mRendererHandle;
+    protected volatile long mRendererHandle;
     protected int mWidth = 256, mHeight = 256;
     protected volatile boolean mRunning;
     protected boolean mVisible;
     protected boolean mPreview;
     protected boolean mSurfaceCreated;
+    protected Surface mCurrentSurface;
     protected SurfaceHolder mHolder;
     protected Thread mThread;
-    private final FrameRateManager mFrameRate = new FrameRateManager(getLogTag());
+    private FrameRateManager mFrameRate;
 
     public BaseVKPluginEngine(Context context, WallpaperPluginHost host) {
         mContext = context;
         mHost = host;
+    }
+
+    /** Lazy-accessed to avoid calling the overridable abstract {@link #getLogTag()}
+     *  from the field initializer (constructor trap). */
+    private FrameRateManager frameRate() {
+        if (mFrameRate == null) mFrameRate = new FrameRateManager(getLogTag());
+        return mFrameRate;
     }
 
     // --- Abstract methods each VK wallpaper implements ---
@@ -75,8 +82,12 @@ public abstract class BaseVKPluginEngine implements WallpaperEngine, Runnable {
                 + " surfCreated=" + mSurfaceCreated + " oldSize=" + mWidth + "x" + mHeight
                 + " wasRunning=" + (mThread != null));
 
-        // Skip if nothing actually changed
-        if (mSurfaceCreated && mWidth == w && mHeight == h) {
+        Surface surface = holder.getSurface();
+        if (surface == null || !surface.isValid()) return;
+
+        // Skip if nothing actually changed (now includes Surface identity —
+        // a new Surface at the same dimensions still requires a full recreate).
+        if (mSurfaceCreated && mCurrentSurface == surface && mWidth == w && mHeight == h) {
             Log.d(getLogTag(), "onSurfaceChanged: skipped (nothing changed)");
             return;
         }
@@ -91,11 +102,9 @@ public abstract class BaseVKPluginEngine implements WallpaperEngine, Runnable {
 
         mHolder = holder; mWidth = w; mHeight = h;
         ensureOrResizeScene(); ensureRenderer();
-        Surface s = holder.getSurface();
-        if (s != null && s.isValid()) {
-            mSurfaceCreated = true;
-            onSurfaceCreatedNative(s, w, h);
-        }
+        mSurfaceCreated = true;
+        mCurrentSurface = surface;
+        onSurfaceCreatedNative(surface, w, h);
         if (wasRunning) startRenderer();
     }
 
@@ -110,18 +119,29 @@ public abstract class BaseVKPluginEngine implements WallpaperEngine, Runnable {
     }
     protected void stopRenderer() {
         mRunning = false;
-        if (mThread != null) { try { mThread.join(1000); } catch (InterruptedException ignored) {} mThread = null; }
+        if (mThread != null) {
+            long deadline = System.currentTimeMillis() + 2000L;
+            while (mThread.isAlive() && System.currentTimeMillis() < deadline) {
+                try {
+                    mThread.join(Math.max(1L, deadline - System.currentTimeMillis()));
+                } catch (InterruptedException ignored) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+            if (mThread.isAlive()) Log.e(getLogTag(), "Render thread did not exit within 2s");
+            mThread = null;
+        }
     }
     @Override public void run() {
         Process.setThreadPriority(Process.THREAD_PRIORITY_DISPLAY);
         while (mRunning) {
             long now = SystemClock.uptimeMillis();
-            mFrameRate.syncPerfSettingsIfNeeded(now);
+            frameRate().syncPerfSettingsIfNeeded(now);
             syncTexturesIfNeeded();
             renderFrame();
             long cost = SystemClock.uptimeMillis() - now;
-            mFrameRate.recordFrameCost(cost);
-            long sleep = Math.max(1, mFrameRate.getTargetFrameMs() - cost);
+            frameRate().recordFrameCost(cost);
+            long sleep = Math.max(1, frameRate().getTargetFrameMs() - cost);
             try { Thread.sleep(sleep); } catch (InterruptedException ignored) {}
         }
     }
