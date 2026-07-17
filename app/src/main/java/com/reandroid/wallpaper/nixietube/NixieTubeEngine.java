@@ -16,4 +16,18 @@ public class NixieTubeEngine extends BasePluginEngine {
     protected GLESScene createScene(int width, int height, Context context) {
         return new NixieTubeGL(width, height, context);
     }
+
+    @Override
+    public void onVisibilityChanged(boolean visible) {
+        super.onVisibilityChanged(visible);   // GLESScene.start/stop lifecycle
+        if (mScene instanceof NixieTubeGL) {
+            NixieTubeGL gl = (NixieTubeGL) mScene;
+            if (visible) {
+                gl.startAudio();
+            } else {
+                gl.stopAudio();
+                gl.resetModeToTime();    // show clock immediately when returning
+            }
+        }
+    }
 }

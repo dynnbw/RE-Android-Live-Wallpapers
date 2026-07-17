@@ -72,7 +72,14 @@ public abstract class BasePluginEngine implements WallpaperEngine {
     }
 
     @Override
-    public void onVisibilityChanged(boolean visible) {}
+    public void onVisibilityChanged(boolean visible) {
+        if (mScene == null) return;
+        if (visible) {
+            mScene.start();           // resume audio capture / resources
+        } else {
+            mScene.stop();            // pause audio capture to save power
+        }
+    }
 
     @Override
     public void setPreview(boolean isPreview) {

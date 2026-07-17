@@ -69,6 +69,15 @@ public class NixieTubeGL extends GLESScene {
         mScene.setPluginPrefs(prefs);
     }
 
+    /** Start audio capture (called on visibility / GL ready). */
+    void startAudio() { mScene.startAudio(); }
+
+    /** Stop audio capture (called on invisibility / release). */
+    void stopAudio() { mScene.stopAudio(); }
+
+    /** Force display back to clock mode (called when wallpaper goes invisible). */
+    void resetModeToTime() { mScene.stop(); }
+
     @Override
     protected void onCreate() {}
 
