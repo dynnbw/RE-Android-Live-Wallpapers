@@ -215,30 +215,38 @@ public class AudioCapture {
 
                 if (pcmStatus == Visualizer.SUCCESS) {
                     byte[] captured = (mCaptureIndex == 0) ? bufA : bufB;
-                    if (!isAllSilence(captured, true)) {
+                    // FFT data has null value 0, not 0x80 — match the original
+                    // Android source which selects nullValue based on capture type.
+                    boolean isPcm = (mType != TYPE_FFT);
+                    if (!isAllSilence(captured, isPcm)) {
                         mLastValidCaptureTimeMs = System.currentTimeMillis();
                         mHasData = true;
+                        // Only publish when there is real audio — keep the last
+                        // valid frame in the buffer so the scene's fade-out has
+                        // something to fade from.
+                        mReadyRawBuffer = captured;
+                        mReadyFormattedBuffer = (mCaptureIndex == 0) ? fmtA : fmtB;
+                        mCaptureIndex ^= 1;
                     } else if ((System.currentTimeMillis() - mLastValidCaptureTimeMs) > MAX_IDLE_TIME_MS) {
                         mHasData = false;
                     }
-                    mReadyRawBuffer = captured;
-                    mReadyFormattedBuffer = (mCaptureIndex == 0) ? fmtA : fmtB;
+                    // Silent: don't publish, don't toggle — last valid data stays.
                 }
 
                 if (mType == TYPE_BOTH && fftStatus == Visualizer.SUCCESS) {
                     byte[] fftCaptured = (mCaptureIndex == 0) ? fftA : fftB;
                     if (!isAllSilence(fftCaptured, false)) {
                         mFftHasData = true;
+                        mReadyFftRaw = fftCaptured;
+                        mReadyFftFmt = (mCaptureIndex == 0) ? fftFmtA : fftFmtB;
                     }
-                    mReadyFftRaw = fftCaptured;
-                    mReadyFftFmt = (mCaptureIndex == 0) ? fftFmtA : fftFmtB;
+                    // Silent FFT: don't publish — keep last valid frame.
                 }
 
-                if (pcmStatus == Visualizer.SUCCESS || fftStatus == Visualizer.SUCCESS) {
-                    mCaptureIndex ^= 1;
-                }
-
-                try { Thread.sleep(5); } catch (InterruptedException ignored) {}
+                // Adaptive polling: fast (200 Hz) when audio is present,
+                // slow (5 Hz) during silence to save CPU.
+                long delay = mHasData ? 5 : 200;
+                try { Thread.sleep(delay); } catch (InterruptedException ignored) {}
             }
         }
     }
