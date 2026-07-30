@@ -6,5 +6,6 @@
   "phasebeam_saturation": "채도",
   "phasebeam_brightness": "밝기",
   "theme_label_phasebeam": "위상 빔 (파랑)",
-  "theme_label_sunbeam": "햇살 (따뜻함)"
+  "theme_label_sunbeam": "햇살 (따뜻함)",
+  "theme_label_waterbeam": "워터 빔 (파랑)"
 }

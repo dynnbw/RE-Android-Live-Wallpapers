@@ -132,7 +132,9 @@ public class PhaseBeamGL extends GLESScene implements SharedPreferences.OnShared
                 mScene.loadBackgroundMesh(mContext,
                         "sunbeam".equals(mScene.mTheme)
                                 ? "phasebeam/data/sunbeam_bg_mesh.csv"
-                                : "phasebeam/data/phasebeam_bg_mesh.csv");
+                                : "waterbeam".equals(mScene.mTheme)
+                                    ? "phasebeam/data/water_bg_mesh.csv"
+                                    : "phasebeam/data/phasebeam_bg_mesh.csv");
             }
         }
     }
@@ -222,7 +224,9 @@ public class PhaseBeamGL extends GLESScene implements SharedPreferences.OnShared
         mScene.loadBackgroundMesh(mContext,
                 "sunbeam".equals(mScene.mTheme)
                         ? "phasebeam/data/sunbeam_bg_mesh.csv"
-                        : "phasebeam/data/phasebeam_bg_mesh.csv");
+                        : "waterbeam".equals(mScene.mTheme)
+                            ? "phasebeam/data/water_bg_mesh.csv"
+                            : "phasebeam/data/phasebeam_bg_mesh.csv");
         if (mScene.consumeParamsDirty()) {
             mScene.allocateArrays();
         }
@@ -238,18 +242,15 @@ public class PhaseBeamGL extends GLESScene implements SharedPreferences.OnShared
         int[] tex = new int[] { mTexDot, mTexBeam };
         GLES20.glDeleteTextures(tex.length, tex, 0);
 
-        boolean isSunbeam = "sunbeam".equals(mScene.mTheme);
         final String texPath = "phasebeam/drawable/";
-        String dotFile, beamFile;
-        if (mScene.mRecolorEnabled) {
-            dotFile = isSunbeam ? "sunbeam_dot.png" : "phasebeam_dot_grey.png";
-            beamFile = isSunbeam ? "sunbeam_beam.png" : "phasebeam_beam_grey.png";
-        } else {
-            dotFile = isSunbeam ? "sunbeam_dot.png" : "phasebeam_dot.png";
-            beamFile = isSunbeam ? "sunbeam_beam.png" : "phasebeam_beam.png";
-        }
-        mTexDot = loadTexture(texPath + dotFile);
-        mTexBeam = loadTexture(texPath + beamFile);
+        // Sunbeam and waterbeam use their original colored textures; phasebeam uses grey in recolor mode
+        boolean useGrey = mScene.mRecolorEnabled && "phasebeam".equals(mScene.mTheme);
+        String prefix = "sunbeam".equals(mScene.mTheme) ? "sunbeam"
+                : "waterbeam".equals(mScene.mTheme) ? "water"
+                : "phasebeam";
+        String suffix = useGrey ? "_grey" : "";
+        mTexDot = loadTexture(texPath + prefix + "_dot" + suffix + ".png");
+        mTexBeam = loadTexture(texPath + prefix + "_beam" + suffix + ".png");
         mScene.mDirtyTexture = false;
     }
 

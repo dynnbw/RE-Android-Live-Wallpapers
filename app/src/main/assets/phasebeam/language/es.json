@@ -6,5 +6,6 @@
   "phasebeam_brightness": "Brillo",
   "theme": "Tema de color",
   "theme_label_phasebeam": "Haz de fase (azul)",
-  "theme_label_sunbeam": "Rayo de sol (cálido)"
+  "theme_label_sunbeam": "Rayo de sol (cálido)",
+  "theme_label_waterbeam": "Haz de agua (azul)"
 }

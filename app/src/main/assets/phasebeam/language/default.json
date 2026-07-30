@@ -6,5 +6,6 @@
   "phasebeam_saturation": "Saturation",
   "phasebeam_brightness": "Brightness",
   "theme_label_phasebeam": "Phase Beam (blue)",
-  "theme_label_sunbeam": "Sunbeam (warm)"
+  "theme_label_sunbeam": "Sunbeam (warm)",
+  "theme_label_waterbeam": "Water Beam (blue)"
 }

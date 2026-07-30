@@ -15,11 +15,13 @@
       "default": "phasebeam",
       "values": [
         "phasebeam",
-        "sunbeam"
+        "sunbeam",
+        "waterbeam"
       ],
       "labels": [
         "theme_label_phasebeam",
-        "theme_label_sunbeam"
+        "theme_label_sunbeam",
+        "theme_label_waterbeam"
       ]
     },
     {

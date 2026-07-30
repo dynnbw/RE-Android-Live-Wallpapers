@@ -6,5 +6,6 @@
   "phasebeam_saturation": "彩度",
   "phasebeam_brightness": "明るさ",
   "theme_label_phasebeam": "フェーズビーム (青)",
-  "theme_label_sunbeam": "サンビーム (暖色)"
+  "theme_label_sunbeam": "サンビーム (暖色)",
+  "theme_label_waterbeam": "ウォータービーム (青)"
 }

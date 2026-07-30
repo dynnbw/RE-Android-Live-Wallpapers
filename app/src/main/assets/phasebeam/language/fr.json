@@ -6,5 +6,6 @@
   "phasebeam_brightness": "Luminosité",
   "theme": "Theme de couleur",
   "theme_label_phasebeam": "Faisceau de phase (bleu)",
-  "theme_label_sunbeam": "Rayon de soleil (chaud)"
+  "theme_label_sunbeam": "Rayon de soleil (chaud)",
+  "theme_label_waterbeam": "Faisceau d'eau (bleu)"
 }

@@ -6,5 +6,6 @@
   "phasebeam_saturation": "饱和度",
   "phasebeam_brightness": "亮度",
   "theme_label_phasebeam": "蓝色相位束",
-  "theme_label_sunbeam": "暖色日光束"
+  "theme_label_sunbeam": "暖色日光束",
+  "theme_label_waterbeam": "蓝色水束"
 }

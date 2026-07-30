@@ -6,5 +6,6 @@
   "phasebeam_brightness": "Яркость",
   "theme": "Цветовая тема",
   "theme_label_phasebeam": "Фазовый луч (синий)",
-  "theme_label_sunbeam": "Солнечный луч (тёплый)"
+  "theme_label_sunbeam": "Солнечный луч (тёплый)",
+  "theme_label_waterbeam": "Водяной луч (синий)"
 }

@@ -6,5 +6,6 @@
   "phasebeam_brightness": "Helligkeit",
   "theme": "Farbthema",
   "theme_label_phasebeam": "Phasenstrahl (blau)",
-  "theme_label_sunbeam": "Sonnenstrahl (warm)"
+  "theme_label_sunbeam": "Sonnenstrahl (warm)",
+  "theme_label_waterbeam": "Wasserstrahl (blau)"
 }
