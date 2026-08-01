@@ -317,9 +317,13 @@ public class FallGL extends GLESScene {
         mWaterMeshVertexBuffer.position(0);
         GLES20.glVertexAttribPointer(mWPositionHandle, 3, GLES20.GL_FLOAT, false, 12, mWaterMeshVertexBuffer);
 
-        GLES20.glEnableVertexAttribArray(mWTexCoordHandle);
-        mWaterMeshTexCoordBuffer.position(0);
-        GLES20.glVertexAttribPointer(mWTexCoordHandle, 2, GLES20.GL_FLOAT, false, 8, mWaterMeshTexCoordBuffer);
+        // 水面顶点着色器不使用 aTexCoord 属性（vTexCoord 由 VS 程序化计算），
+        // 未声明的属性 location 为 -1，启用/绑定它会触发 GL_INVALID_VALUE (1281)。
+        if (mWTexCoordHandle >= 0) {
+            GLES20.glEnableVertexAttribArray(mWTexCoordHandle);
+            mWaterMeshTexCoordBuffer.position(0);
+            GLES20.glVertexAttribPointer(mWTexCoordHandle, 2, GLES20.GL_FLOAT, false, 8, mWaterMeshTexCoordBuffer);
+        }
 
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mRiverbedTexture);
@@ -336,7 +340,9 @@ public class FallGL extends GLESScene {
         }
 
         GLES20.glDisableVertexAttribArray(mWPositionHandle);
-        GLES20.glDisableVertexAttribArray(mWTexCoordHandle);
+        if (mWTexCoordHandle >= 0) {
+            GLES20.glDisableVertexAttribArray(mWTexCoordHandle);
+        }
     }
 
     private void drawLeaf(FallScene.Leaf leaf, FallScene.SceneData sceneData) {

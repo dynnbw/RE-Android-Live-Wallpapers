@@ -270,8 +270,9 @@ public class ProxyWallpaperService extends WallpaperService {
                                             frameCount = 0;
                                         }
                                     } catch (Exception e) {
+                                        // 单帧异常不应杀死渲染线程，否则壁纸会永久冻结；
+                                        // 继续渲染，帧率节流仍在循环内生效。
                                         Log.e(TAG, "drawFrame crashed", e);
-                                        mRunning = false;
                                     }
                                 }
                             }

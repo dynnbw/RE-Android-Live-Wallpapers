@@ -44,6 +44,10 @@ public abstract class BasePluginEngine implements WallpaperEngine {
     private Resources mPendingResources;
     private boolean mPendingPreview;
 
+    // start() 延迟标记：由可见性变化置位，在渲染线程 drawFrame 中消费，
+    // 保证场景 GL 初始化始终在 EGL 上下文 current 的线程上执行。
+    private volatile boolean mSceneStartPending;
+
     protected int mWidth = 256, mHeight = 256;
     private boolean mPreview;
 
@@ -75,7 +79,10 @@ public abstract class BasePluginEngine implements WallpaperEngine {
     public void onVisibilityChanged(boolean visible) {
         if (mScene == null) return;
         if (visible) {
-            mScene.start();           // resume audio capture / resources
+            // start() 不能在此线程(主线程)直接调用：EGL 上下文尚未 current，
+            // 场景的 GL 初始化(program/纹理)会全部失败(如 FallGL 着色器编译失败)，
+            // 且纹理加载会阻塞主线程导致壁纸加载缓慢。延迟到渲染线程 drawFrame 执行。
+            mSceneStartPending = true;
         } else {
             mScene.stop();            // pause audio capture to save power
         }
@@ -188,7 +195,14 @@ public abstract class BasePluginEngine implements WallpaperEngine {
 
             mScene.resize(mWidth, mHeight);
             mScene.start();
+            mSceneStartPending = false;
             Log.d(TAG, "Scene started: " + mScene.getClass().getSimpleName());
+        }
+
+        // 可见性恢复触发的 start() 在渲染线程执行（EGL 上下文已 current）
+        if (mSceneStartPending) {
+            mSceneStartPending = false;
+            mScene.start();
         }
 
         // Always sync viewport — it may have changed due to rotation with same EGL surface
