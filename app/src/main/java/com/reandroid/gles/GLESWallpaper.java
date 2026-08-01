@@ -88,7 +88,7 @@ public abstract class GLESWallpaper extends WallpaperService {
     }
 
     private class GLESEngine extends Engine implements Runnable {
-        private Thread mThread;
+        private volatile Thread mThread;
         private volatile boolean mRunning = false;
         private boolean mVisible = false;
         private GLESScene mScene;
@@ -113,9 +113,16 @@ public abstract class GLESWallpaper extends WallpaperService {
 
         private void stopRenderer() {
             mRunning = false;
-            if (mThread != null) {
-                try { mThread.join(2000); } catch (InterruptedException ignored) {}
-                mThread = null;
+            // 捕获局部引用：渲染线程退出时会把 mThread 置 null，
+            // 若直接读字段，join 期间线程退出会导致 mThread.isAlive() NPE。
+            Thread thread = mThread;
+            if (thread != null) {
+                try { thread.join(2000); } catch (InterruptedException ignored) {}
+                if (thread.isAlive()) {
+                    // 超时未退出：保留引用，由渲染线程退出时自行清理，
+                    // 避免旧线程未结束时又启动新线程导致并发渲染/EGL互相销毁。
+                    Log.w(TAG, "Render thread did not exit within 2s");
+                }
             }
             synchronized (mSceneLock) {
                 if (mScene != null) {
@@ -270,125 +277,129 @@ public abstract class GLESWallpaper extends WallpaperService {
             Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
             logD("GL线程启动");
 
-            
-            EGLDisplay display = EGL14.eglGetDisplay(EGL14.EGL_DEFAULT_DISPLAY);
-            if (display == null || display == EGL14.EGL_NO_DISPLAY) {
-                Log.e(TAG, "eglGetDisplay failed");
-                return;
-            }
-
-            int[] version = new int[2];
-            if (!EGL14.eglInitialize(display, version, 0, version, 1)) {
-                Log.e(TAG, "eglInitialize failed");
-                cleanupEgl(display, EGL14.EGL_NO_SURFACE, EGL14.EGL_NO_CONTEXT);
-                return;
-            }
-
-            int[] attribList = {
-                    EGL14.EGL_RED_SIZE, 8,
-                    EGL14.EGL_GREEN_SIZE, 8,
-                    EGL14.EGL_BLUE_SIZE, 8,
-                    EGL14.EGL_RENDERABLE_TYPE, EGL14.EGL_OPENGL_ES2_BIT,
-                    EGL14.EGL_NONE
-            };
-            EGLConfig[] configs = new EGLConfig[1];
-            int[] numConfig = new int[1];
-            if (!EGL14.eglChooseConfig(display, attribList, 0, configs, 0, 1, numConfig, 0)
-                    || numConfig[0] <= 0
-                    || configs[0] == null) {
-                Log.e(TAG, "eglChooseConfig failed");
-                cleanupEgl(display, EGL14.EGL_NO_SURFACE, EGL14.EGL_NO_CONTEXT);
-                return;
-            }
-            EGLConfig config = configs[0];
-
-            int[] attrib_list = {EGL14.EGL_CONTEXT_CLIENT_VERSION, 2, EGL14.EGL_NONE};
-            EGLContext context = EGL14.eglCreateContext(display, config, EGL14.EGL_NO_CONTEXT, attrib_list, 0);
-            if (context == null || context == EGL14.EGL_NO_CONTEXT) {
-                Log.e(TAG, "eglCreateContext failed");
-                cleanupEgl(display, EGL14.EGL_NO_SURFACE, context);
-                return;
-            }
-
-            Surface surface = mHolder == null ? null : mHolder.getSurface();
-            
+            EGLDisplay display = EGL14.EGL_NO_DISPLAY;
             EGLSurface eglSurface = EGL14.EGL_NO_SURFACE;
-            if (surface != null && surface.isValid()) {
-                int[] surfaceAttribs = {EGL14.EGL_NONE};
-                eglSurface = EGL14.eglCreateWindowSurface(display, config, surface, surfaceAttribs, 0);
-            }
+            EGLContext context = EGL14.EGL_NO_CONTEXT;
+            try {
+                display = EGL14.eglGetDisplay(EGL14.EGL_DEFAULT_DISPLAY);
+                if (display == null || display == EGL14.EGL_NO_DISPLAY) {
+                    Log.e(TAG, "eglGetDisplay failed");
+                    return;
+                }
 
-            if (eglSurface == null || eglSurface == EGL14.EGL_NO_SURFACE) {
-                Log.e(TAG, "eglSurface无效，停止渲染");
-                cleanupEgl(display, eglSurface, context);
-                return;
-            }
+                int[] version = new int[2];
+                if (!EGL14.eglInitialize(display, version, 0, version, 1)) {
+                    Log.e(TAG, "eglInitialize failed");
+                    return;
+                }
 
-            if (!EGL14.eglMakeCurrent(display, eglSurface, eglSurface, context)) {
-                Log.e(TAG, "eglMakeCurrent failed");
-                cleanupEgl(display, eglSurface, context);
-                return;
-            }
+                int[] attribList = {
+                        EGL14.EGL_RED_SIZE, 8,
+                        EGL14.EGL_GREEN_SIZE, 8,
+                        EGL14.EGL_BLUE_SIZE, 8,
+                        EGL14.EGL_RENDERABLE_TYPE, EGL14.EGL_OPENGL_ES2_BIT,
+                        EGL14.EGL_NONE
+                };
+                EGLConfig[] configs = new EGLConfig[1];
+                int[] numConfig = new int[1];
+                if (!EGL14.eglChooseConfig(display, attribList, 0, configs, 0, 1, numConfig, 0)
+                        || numConfig[0] <= 0
+                        || configs[0] == null) {
+                    Log.e(TAG, "eglChooseConfig failed");
+                    return;
+                }
+                EGLConfig config = configs[0];
 
-            // **CRITICAL BUGFIX**: If mScene is still null, create it now in the GL thread
-            // This can happen if onSurfaceChanged() was never called by the system
-            // OR if the scene was destroyed and we're restarting the renderer
-            synchronized (mSceneLock) {
-                if (mScene == null && mHolder != null) {
-                    android.graphics.Rect frame = mHolder.getSurfaceFrame();
-                    if (frame != null && (frame.width() > 0 && frame.height() > 0)) {
-                        int width = frame.width();
-                        int height = frame.height();
-                        mScene = createScene(width, height);
-                        Resources res = getApplicationContext() != null ? getApplicationContext().getResources() : getResources();
-                        mScene.init(surface, res, isPreview());
-                        mScene.setResources(res);
-                        mScene.resize(width, height);
+                int[] attrib_list = {EGL14.EGL_CONTEXT_CLIENT_VERSION, 2, EGL14.EGL_NONE};
+                context = EGL14.eglCreateContext(display, config, EGL14.EGL_NO_CONTEXT, attrib_list, 0);
+                if (context == null || context == EGL14.EGL_NO_CONTEXT) {
+                    Log.e(TAG, "eglCreateContext failed");
+                    return;
+                }
+
+                Surface surface = mHolder == null ? null : mHolder.getSurface();
+
+                if (surface != null && surface.isValid()) {
+                    int[] surfaceAttribs = {EGL14.EGL_NONE};
+                    eglSurface = EGL14.eglCreateWindowSurface(display, config, surface, surfaceAttribs, 0);
+                }
+
+                if (eglSurface == null || eglSurface == EGL14.EGL_NO_SURFACE) {
+                    Log.e(TAG, "eglSurface无效，停止渲染");
+                    return;
+                }
+
+                if (!EGL14.eglMakeCurrent(display, eglSurface, eglSurface, context)) {
+                    Log.e(TAG, "eglMakeCurrent failed");
+                    return;
+                }
+
+                // **CRITICAL BUGFIX**: If mScene is still null, create it now in the GL thread
+                // This can happen if onSurfaceChanged() was never called by the system
+                // OR if the scene was destroyed and we're restarting the renderer
+                synchronized (mSceneLock) {
+                    if (mScene == null && mHolder != null) {
+                        android.graphics.Rect frame = mHolder.getSurfaceFrame();
+                        if (frame != null && (frame.width() > 0 && frame.height() > 0)) {
+                            int width = frame.width();
+                            int height = frame.height();
+                            mScene = createScene(width, height);
+                            Resources res = getApplicationContext() != null ? getApplicationContext().getResources() : getResources();
+                            mScene.init(surface, res, isPreview());
+                            mScene.setResources(res);
+                            mScene.resize(width, height);
+                        }
                     }
                 }
-            }
 
-            GLESScene sceneRef;
-            synchronized (mSceneLock) {
-                sceneRef = mScene;
-            }
-            if (sceneRef != null) sceneRef.start();
-
-            // 获取全局帧数设置
-            int targetFps = getTargetFrameRate();
-            long targetFrameTimeMs = 1000 / targetFps;
-            logD("目标FPS: " + targetFps);
-
-            while (mRunning) {
-                long now = System.currentTimeMillis();
+                GLESScene sceneRef;
                 synchronized (mSceneLock) {
-                    if (mScene != null) mScene.drawFrame(now);
+                    sceneRef = mScene;
                 }
-                if (!EGL14.eglSwapBuffers(display, eglSurface)) {
-                    int error = EGL14.eglGetError();
-                    Log.e(TAG, "eglSwapBuffers失败: 0x" + Integer.toHexString(error));
-                    mRunning = false;
-                    break;
-                }
-                long frameTime = System.currentTimeMillis() - now;
-                long sleep = Math.max(1, targetFrameTimeMs - frameTime);
-                try { Thread.sleep(sleep); } catch (InterruptedException ignored) {}
-            }
+                if (sceneRef != null) sceneRef.start();
 
-            GLESScene sceneToRelease;
-            synchronized (mSceneLock) {
-                sceneToRelease = mScene;
-                mScene = null;
+                // 获取全局帧数设置
+                int targetFps = getTargetFrameRate();
+                long targetFrameTimeMs = 1000 / targetFps;
+                logD("目标FPS: " + targetFps);
+
+                while (mRunning) {
+                    long now = System.currentTimeMillis();
+                    try {
+                        synchronized (mSceneLock) {
+                            if (mScene != null) mScene.drawFrame(now);
+                        }
+                    } catch (Exception e) {
+                        // 单帧异常不能杀死渲染线程，否则壁纸会永久冻结
+                        Log.e(TAG, "drawFrame异常", e);
+                    }
+                    if (!EGL14.eglSwapBuffers(display, eglSurface)) {
+                        int error = EGL14.eglGetError();
+                        Log.e(TAG, "eglSwapBuffers失败: 0x" + Integer.toHexString(error));
+                        mRunning = false;
+                        break;
+                    }
+                    long frameTime = System.currentTimeMillis() - now;
+                    long sleep = Math.max(1, targetFrameTimeMs - frameTime);
+                    try { Thread.sleep(sleep); } catch (InterruptedException ignored) {}
+                }
+            } finally {
+                // 仅当当前线程仍持有槽位时才释放场景并清理线程引用：
+                // 避免旧线程晚退时清掉新线程正在使用的场景，或覆盖新线程的引用。
+                if (mThread == Thread.currentThread()) {
+                    GLESScene sceneToRelease;
+                    synchronized (mSceneLock) {
+                        sceneToRelease = mScene;
+                        mScene = null;
+                    }
+                    if (sceneToRelease != null) {
+                        sceneToRelease.stop();
+                        sceneToRelease.release();
+                    }
+                    mThread = null;
+                }
+                cleanupEgl(display, eglSurface, context);
             }
-            if (sceneToRelease != null) {
-                sceneToRelease.stop();
-                sceneToRelease.release();
-            }
-            EGL14.eglMakeCurrent(display, EGL14.EGL_NO_SURFACE, EGL14.EGL_NO_SURFACE, EGL14.EGL_NO_CONTEXT);
-            EGL14.eglDestroySurface(display, eglSurface);
-            EGL14.eglDestroyContext(display, context);
-            EGL14.eglTerminate(display);
-            mThread = null;
         }
     }
 

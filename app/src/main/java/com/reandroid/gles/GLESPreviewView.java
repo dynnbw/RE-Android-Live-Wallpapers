@@ -25,7 +25,7 @@ public class GLESPreviewView extends SurfaceView implements SurfaceHolder.Callba
     private final SceneFactory mFactory;
     private volatile GLESScene mScene;
     private final Object mSceneLock = new Object();
-    private Thread mThread;
+    private volatile Thread mThread;
     private volatile boolean mRunning;
     private EGLDisplay mDisplay;
     private EGLContext mContext;
@@ -113,73 +113,94 @@ public class GLESPreviewView extends SurfaceView implements SurfaceHolder.Callba
 
     public void stopRenderer() {
         mRunning = false;
-        if (mThread != null) {
-            try { mThread.join(1000); } catch (InterruptedException ignored) {}
-            mThread = null;
+        // 捕获局部引用：渲染线程退出时会把 mThread 置 null，
+        // 若直接读字段，join 期间线程退出会导致 mThread.isAlive() NPE。
+        Thread thread = mThread;
+        if (thread != null) {
+            try { thread.join(1000); } catch (InterruptedException ignored) {}
+            if (thread.isAlive()) {
+                // 超时未退出：保留引用，由渲染线程退出时自行清理并销毁EGL，
+                // 避免旧线程未结束时又启动新线程导致并发渲染/双重释放。
+                Log.w(TAG, "Render thread did not exit within 1s");
+            }
         }
         synchronized (mSceneLock) {
             if (mScene != null) {
                 mScene.stop();
             }
         }
-        destroyEgl();
     }
 
     @Override
     public void run() {
         Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
-        Surface surface = getHolder().getSurface();
-        if (surface == null || !surface.isValid()) {
-            mRunning = false;
-            return;
-        }
-        if (!initEgl(surface)) {
-            mRunning = false;
-            return;
-        }
+        try {
+            Surface surface = getHolder().getSurface();
+            if (surface == null || !surface.isValid()) {
+                mRunning = false;
+                return;
+            }
+            if (!initEgl(surface)) {
+                mRunning = false;
+                return;
+            }
 
-        GLESScene scene = mScene;
-        if (scene != null) {
-            int width = mPendingWidth > 0 ? mPendingWidth : getWidth();
-            int height = mPendingHeight > 0 ? mPendingHeight : getHeight();
-            if (width <= 0) width = 256;
-            if (height <= 0) height = 256;
-            scene.init(surface, getResources(), true);
-            scene.setResources(getResources());
-            scene.resize(width, height);
-            scene.start();
-        }
+            GLESScene scene = mScene;
+            if (scene != null) {
+                int width = mPendingWidth > 0 ? mPendingWidth : getWidth();
+                int height = mPendingHeight > 0 ? mPendingHeight : getHeight();
+                if (width <= 0) width = 256;
+                if (height <= 0) height = 256;
+                scene.init(surface, getResources(), true);
+                scene.setResources(getResources());
+                scene.resize(width, height);
+                scene.start();
+            }
 
-        while (mRunning) {
-            long now = System.currentTimeMillis();
-            synchronized (mSceneLock) {
-                scene = mScene;
-                if (scene != null) {
-                    scene.drawFrame(now);
-                } else {
-                    GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+            while (mRunning) {
+                long now = System.currentTimeMillis();
+                try {
+                    synchronized (mSceneLock) {
+                        scene = mScene;
+                        if (scene != null) {
+                            scene.drawFrame(now);
+                        } else {
+                            GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+                        }
+                    }
+                } catch (Exception e) {
+                    // 单帧异常不能杀死渲染线程，否则预览会永久冻结
+                    Log.e(TAG, "drawFrame failed", e);
+                }
+                if (!EGL14.eglSwapBuffers(mDisplay, mSurface)) {
+                    int error = EGL14.eglGetError();
+                    Log.e(TAG, "eglSwapBuffers failed: 0x" + Integer.toHexString(error));
+                    mRunning = false;
+                    break;
+                }
+                try {
+                    Thread.sleep(33);
+                } catch (InterruptedException ignored) {
                 }
             }
-            if (!EGL14.eglSwapBuffers(mDisplay, mSurface)) {
-                int error = EGL14.eglGetError();
-                Log.e(TAG, "eglSwapBuffers failed: 0x" + Integer.toHexString(error));
-                mRunning = false;
-                break;
+        } finally {
+            // 仅当当前线程仍持有槽位时才释放场景并清理线程引用：
+            // 避免旧线程晚退时清掉新线程正在使用的场景，或覆盖新线程的引用。
+            if (mThread == Thread.currentThread()) {
+                GLESScene sceneToRelease;
+                synchronized (mSceneLock) {
+                    sceneToRelease = mScene;
+                    mScene = null;
+                }
+                if (sceneToRelease != null) {
+                    sceneToRelease.stop();
+                    sceneToRelease.release();
+                }
+                mThread = null;
             }
-            try {
-                Thread.sleep(33);
-            } catch (InterruptedException ignored) {
-            }
-        }
-
-        GLESScene sceneToRelease;
-        synchronized (mSceneLock) {
-            sceneToRelease = mScene;
-            mScene = null;
-        }
-        if (sceneToRelease != null) {
-            sceneToRelease.stop();
-            sceneToRelease.release();
+            // EGL 始终由渲染线程自身销毁，避免 stopRenderer 在 UI 线程
+            // 与仍在运行的渲染线程并发操作同一 display。
+            destroyEgl();
         }
     }
 

@@ -15,7 +15,7 @@ import android.view.SurfaceHolder;
  */
 public abstract class VKWallpaperEngine<T> extends WallpaperService.Engine implements Runnable {
 
-    protected Thread mThread;
+    protected volatile Thread mThread;
     protected volatile boolean mRunning;
     protected boolean mVisible;
     protected SurfaceHolder mHolder;
@@ -135,26 +135,39 @@ public abstract class VKWallpaperEngine<T> extends WallpaperService.Engine imple
         } catch (Throwable ignored) {
         }
 
-        while (mRunning) {
-            long frameStart = SystemClock.uptimeMillis();
-            mFrameRate.syncPerfSettingsIfNeeded(frameStart);
+        try {
+            while (mRunning) {
+                long frameStart = SystemClock.uptimeMillis();
+                mFrameRate.syncPerfSettingsIfNeeded(frameStart);
 
-            if (mRendererHandle != 0L && mScene != null) {
-                synchronized (mSceneLock) {
-                    syncTexturesIfNeeded();
-                    renderFrame();
+                try {
+                    if (mRendererHandle != 0L && mScene != null) {
+                        synchronized (mSceneLock) {
+                            syncTexturesIfNeeded();
+                            renderFrame();
+                        }
+                    }
+                } catch (Exception e) {
+                    // 单帧异常不能杀死渲染线程，否则壁纸会永久冻结
+                    android.util.Log.e(getLogTag(), "renderFrame failed", e);
+                }
+
+                long frameCost = SystemClock.uptimeMillis() - frameStart;
+                mFrameRate.recordFrameCost(frameCost);
+
+                try {
+                    long sleepMs = Math.max(1L, mFrameRate.getTargetFrameMs() - frameCost);
+                    Thread.sleep(sleepMs);
+                } catch (InterruptedException ignored) {
+                    Thread.currentThread().interrupt();
+                    return;
                 }
             }
-
-            long frameCost = SystemClock.uptimeMillis() - frameStart;
-            mFrameRate.recordFrameCost(frameCost);
-
-            try {
-                long sleepMs = Math.max(1L, mFrameRate.getTargetFrameMs() - frameCost);
-                Thread.sleep(sleepMs);
-            } catch (InterruptedException ignored) {
-                Thread.currentThread().interrupt();
-                return;
+        } finally {
+            // 线程退出时释放槽位，使 startRenderer 可以重新启动（异常/中断退出也能恢复）
+            if (mThread == Thread.currentThread()) {
+                mThread = null;
+                mRunning = false;
             }
         }
     }
@@ -170,19 +183,22 @@ public abstract class VKWallpaperEngine<T> extends WallpaperService.Engine imple
 
     protected void stopRenderer() {
         mRunning = false;
-        if (mThread != null) {
+        // 捕获局部引用：渲染线程退出时会把 mThread 置 null，
+        // 若直接读字段，join 期间线程退出会导致 mThread.isAlive() NPE。
+        Thread thread = mThread;
+        if (thread != null) {
             long deadline = System.currentTimeMillis() + 2000L;
-            while (mThread.isAlive() && System.currentTimeMillis() < deadline) {
+            while (thread.isAlive() && System.currentTimeMillis() < deadline) {
                 try {
-                    mThread.join(Math.max(1L, deadline - System.currentTimeMillis()));
+                    thread.join(Math.max(1L, deadline - System.currentTimeMillis()));
                 } catch (InterruptedException ignored) {
                     Thread.currentThread().interrupt();
                 }
             }
-            if (mThread.isAlive()) {
+            if (thread.isAlive()) {
                 android.util.Log.e(getLogTag(), "Render thread did not exit within 2s");
+                // 保留引用：由渲染线程退出时自行清理，避免旧线程未结束时又启动新线程导致并发渲染
             }
-            mThread = null;
         }
     }
 

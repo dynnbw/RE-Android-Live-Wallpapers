@@ -23,7 +23,7 @@ public abstract class BaseVKPluginEngine implements WallpaperEngine, Runnable {
     protected boolean mSurfaceCreated;
     protected Surface mCurrentSurface;
     protected SurfaceHolder mHolder;
-    protected Thread mThread;
+    protected volatile Thread mThread;
     private FrameRateManager mFrameRate;
 
     public BaseVKPluginEngine(Context context, WallpaperPluginHost host) {
@@ -105,7 +105,9 @@ public abstract class BaseVKPluginEngine implements WallpaperEngine, Runnable {
         mSurfaceCreated = true;
         mCurrentSurface = surface;
         onSurfaceCreatedNative(surface, w, h);
-        if (wasRunning) startRenderer();
+        // startRenderer 内部会检查 mVisible / mThread，可安全无条件调用；
+        // 依赖 wasRunning 判断会导致线程异常退出后（mThread 已清理）无法重启渲染。
+        startRenderer();
     }
 
     // --- Render thread ---
@@ -119,30 +121,46 @@ public abstract class BaseVKPluginEngine implements WallpaperEngine, Runnable {
     }
     protected void stopRenderer() {
         mRunning = false;
-        if (mThread != null) {
+        // 捕获局部引用：渲染线程退出时会把 mThread 置 null，
+        // 若直接读字段，join 期间线程退出会导致 mThread.isAlive() NPE。
+        Thread thread = mThread;
+        if (thread != null) {
             long deadline = System.currentTimeMillis() + 2000L;
-            while (mThread.isAlive() && System.currentTimeMillis() < deadline) {
+            while (thread.isAlive() && System.currentTimeMillis() < deadline) {
                 try {
-                    mThread.join(Math.max(1L, deadline - System.currentTimeMillis()));
+                    thread.join(Math.max(1L, deadline - System.currentTimeMillis()));
                 } catch (InterruptedException ignored) {
                     Thread.currentThread().interrupt();
                 }
             }
-            if (mThread.isAlive()) Log.e(getLogTag(), "Render thread did not exit within 2s");
-            mThread = null;
+            if (thread.isAlive()) Log.e(getLogTag(), "Render thread did not exit within 2s");
+            // 不在这里置 null：由渲染线程退出时自行清理，避免旧线程未结束时又启动新线程导致并发渲染
         }
     }
     @Override public void run() {
         Process.setThreadPriority(Process.THREAD_PRIORITY_DISPLAY);
-        while (mRunning) {
-            long now = SystemClock.uptimeMillis();
-            frameRate().syncPerfSettingsIfNeeded(now);
-            syncTexturesIfNeeded();
-            renderFrame();
-            long cost = SystemClock.uptimeMillis() - now;
-            frameRate().recordFrameCost(cost);
-            long sleep = Math.max(1, frameRate().getTargetFrameMs() - cost);
-            try { Thread.sleep(sleep); } catch (InterruptedException ignored) {}
+        try {
+            while (mRunning) {
+                long now = SystemClock.uptimeMillis();
+                frameRate().syncPerfSettingsIfNeeded(now);
+                try {
+                    syncTexturesIfNeeded();
+                    renderFrame();
+                } catch (Exception e) {
+                    // 单帧异常不能杀死渲染线程，否则壁纸会永久冻结
+                    Log.e(getLogTag(), "renderFrame failed", e);
+                }
+                long cost = SystemClock.uptimeMillis() - now;
+                frameRate().recordFrameCost(cost);
+                long sleep = Math.max(1, frameRate().getTargetFrameMs() - cost);
+                try { Thread.sleep(sleep); } catch (InterruptedException ignored) {}
+            }
+        } finally {
+            // 线程退出时释放槽位，使 startRenderer 可以重新启动（异常/中断退出也能恢复）
+            if (mThread == Thread.currentThread()) {
+                mThread = null;
+                mRunning = false;
+            }
         }
     }
 
