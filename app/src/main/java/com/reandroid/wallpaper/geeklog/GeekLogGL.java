@@ -69,15 +69,15 @@ public class GeekLogGL extends GLESScene implements SharedPreferences.OnSharedPr
     private boolean mLoggedShaderFail;   // mProgram==0 持久失败态只记一次 logcat
 
     // 渲染统计窗口（15s）：帧率均值 + 帧耗时均值 + 顶点数
-    private static final long STATS_INTERVAL_MS = 15000;
+    private static final long STATS_INTERVAL_MS = 1500;
     private long mFpsWindowStartMs;
     private int mFpsFrameCount;
     private long mFpsFrameTimeAccumUs;
     private long mLastFrameTimeMs;
     private int mLastReportedVerts;
 
-    // 系统状态轮询（60s）
-    private static final long SYS_INTERVAL_MS = 60000;
+    // 系统状态轮询（5s）
+    private static final long SYS_INTERVAL_MS = 5000;
     private long mLastSysLogMs;
 
     public GeekLogGL(int width, int height, Context context) {
@@ -119,7 +119,7 @@ public class GeekLogGL extends GLESScene implements SharedPreferences.OnSharedPr
             logStartupInfo();
         } catch (Exception e) {
             Log.e(TAG, "init failed", e);
-            mScene.log(GeekLogScene.LEVEL_ERROR, "render: init failed - " + e.getClass().getSimpleName());
+            mScene.log(GeekLogScene.LEVEL_ERROR, "render: init failed");
             mInitialized = false;
         }
     }
@@ -191,7 +191,7 @@ public class GeekLogGL extends GLESScene implements SharedPreferences.OnSharedPr
                 mScene.onFpsDrop((int) fps);
             } else {
                 mScene.log(GeekLogScene.LEVEL_INFO, String.format(Locale.US,
-                        "render: %.1f fps avg, %.1f ms/frame, %d verts",
+                        "render: %.1ffps, %.1fms, %dv",
                         fps, avgFrameMs, mLastReportedVerts));
             }
             mFpsFrameCount = 0;
@@ -384,8 +384,8 @@ public class GeekLogGL extends GLESScene implements SharedPreferences.OnSharedPr
                 memFreeMb = mi.availMem / (1024L * 1024L);
             }
             mScene.log(GeekLogScene.LEVEL_INFO, String.format(Locale.US,
-                    "system: battery %d%% (%s), mem %dMB free",
-                    battery, charging ? "charging" : "not charging", memFreeMb));
+                    "system: bat %d%% %s, mem %dM",
+                    battery, charging ? "chg" : "nochg", memFreeMb));
         } catch (Exception e) {
             Log.w(TAG, "system state read failed", e);
         }
@@ -399,18 +399,19 @@ public class GeekLogGL extends GLESScene implements SharedPreferences.OnSharedPr
                     uptimeSec / 3600, (uptimeSec % 3600) / 60);
             float density = mResources != null ? mResources.getDisplayMetrics().density : 1f;
             mScene.log(GeekLogScene.LEVEL_INFO, String.format(Locale.US,
-                    "system: uptime %s, screen %dx%d, density %.2f, android %s",
-                    uptime, mWidth, mHeight, density, Build.VERSION.RELEASE));
+                    "system: up %s, %dx%d, a%s",
+                    uptime, mWidth, mHeight, Build.VERSION.RELEASE));
         } catch (Exception e) {
             Log.w(TAG, "startup info read failed", e);
         }
     }
 
     private void layoutMetrics() {
-        // 每行 60 字符（终端风格列宽）。字符宽按屏幕宽度分配，
-        // 行高按像素宽高比 0.6 计算，并折算 NDC 纵横比——否则字形会被拉成高瘦条。
+        // 每行 80 字符（终端风格列宽，比 60 列再缩 25% 字宽）。
+        // 字符宽按屏幕宽度分配，行高按像素宽高比 0.6 计算，
+        // 并折算 NDC 纵横比——否则字形会被拉成高瘦条。
         float aspect = (float) mWidth / Math.max(1, mHeight);
-        mCols = 60;
+        mCols = 80;
         mCharWidthNDC = 2f / mCols;
         mRowHeight = mCharWidthNDC * aspect / 0.6f;
         mRows = Math.max(10, (int) (2f / mRowHeight));

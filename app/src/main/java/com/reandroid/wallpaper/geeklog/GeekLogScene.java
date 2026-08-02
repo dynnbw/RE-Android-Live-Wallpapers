@@ -17,7 +17,8 @@ final class GeekLogScene {
 
     /** 每行前缀固定长度：[HH:mm:ss.SSS] 0001>  = 15 + 6 = 21 */
     static final int PREFIX_LEN = 21;
-    static final int MAX_LINE_CHARS = 120;
+    /** 消息长度上限：渲染层固定 80 列，21 前缀 + 59 消息恰好一屏不截断 */
+    static final int MAX_LINE_CHARS = 59;
 
     static final class Entry {
         final int level;
@@ -143,7 +144,7 @@ final class GeekLogScene {
         long now = System.currentTimeMillis();
         if (now - mLastPrefsLogMs < 500) return;
         mLastPrefsLogMs = now;
-        log(LEVEL_INFO, "settings: " + (key == null ? "unknown" : key) + " changed");
+        log(LEVEL_INFO, "settings: " + (key == null ? "unknown" : key));
     }
 
     /** 帧率监测（GL 层 10s 统计回调），去抖 10s。 */
