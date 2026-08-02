@@ -61,6 +61,7 @@ public class GeekLogGL extends GLESScene implements SharedPreferences.OnSharedPr
     private int mCols;                   // 每行最多字符数
 
     private boolean mInitialized;
+    private boolean mLoggedShaderFail;   // mProgram==0 持久失败态只记一次 logcat
 
     // 帧率统计（10s 窗口）
     private long mFpsWindowStartMs;
@@ -140,8 +141,14 @@ public class GeekLogGL extends GLESScene implements SharedPreferences.OnSharedPr
 
     @Override
     public void drawFrame(long timeMs) {
-        if (!mInitialized || mProgram == 0) {
-            Log.w(TAG, "drawFrame before init");
+        if (!mInitialized) {
+            return;
+        }
+        if (mProgram == 0) {
+            if (!mLoggedShaderFail) {
+                mLoggedShaderFail = true;
+                Log.w(TAG, "drawFrame skipped: shader program not ready");
+            }
             return;
         }
 

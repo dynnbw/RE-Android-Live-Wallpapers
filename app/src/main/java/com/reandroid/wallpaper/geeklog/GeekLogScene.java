@@ -34,9 +34,8 @@ final class GeekLogScene {
     /** 渲染状态（GL 线程读取，volatile 保证可见性） */
     volatile int mColorIndex;          // 0=green 1=amber 2=cyan 3=white
     volatile boolean mHighlightErrors; // WARN 琥珀 / ERROR 红
-    private volatile boolean mStateDirty = true;
 
-    private int mMaxLines = 80;
+    private volatile int mMaxLines = 80;
 
     // 去抖时间戳
     private long mLastOffsetLogMs;
@@ -44,10 +43,9 @@ final class GeekLogScene {
     private long mLastFpsWarnMs;
     private long mLastOverflowMs;
 
-    void setColorIndex(int index) { mColorIndex = index; mStateDirty = true; }
-    void setHighlightErrors(boolean on) { mHighlightErrors = on; mStateDirty = true; }
+    void setColorIndex(int index) { mColorIndex = index; }
+    void setHighlightErrors(boolean on) { mHighlightErrors = on; }
     void setMaxLines(int maxLines) { mMaxLines = Math.max(10, maxLines); }
-    boolean consumeStateDirty() { boolean d = mStateDirty; mStateDirty = false; return d; }
 
     /** 追加一条日志（线程安全）。 */
     synchronized void log(int level, String msg) {
