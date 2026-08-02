@@ -4,10 +4,6 @@ import android.app.ActivityManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.Typeface;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
 import android.os.BatteryManager;
@@ -29,10 +25,12 @@ import java.util.Locale;
 public class GeekLogGL extends GLESScene implements SharedPreferences.OnSharedPreferenceChangeListener {
     private static final String TAG = "GeekLogGL";
 
-    // 字符图集：16 列 x 8 行槽位，每槽 64x64 px，纹理 1024x512（2 的幂）
+    // 预烘焙字符图集（assets/geeklog/drawable/glyph_00.png）：
+    // 256x256 RGBA，16 列 x 16 行槽位，每槽 16x16 px，槽位索引 = 字符码
+    // （左上角槽位为字符 0x00，char 码 0x00-0xFF 按行列顺序排列）
     private static final int ATLAS_COLS = 16;
-    private static final int ATLAS_ROWS = 8;
-    private static final int SLOT_PX = 64;
+    private static final int ATLAS_ROWS = 16;
+    private static final int SLOT_PX = 16;
     private static final int ATLAS_W = ATLAS_COLS * SLOT_PX;
     private static final int ATLAS_H = ATLAS_ROWS * SLOT_PX;
 
@@ -270,19 +268,18 @@ public class GeekLogGL extends GLESScene implements SharedPreferences.OnSharedPr
             for (int c = 0; c < len; c++) {
                 char ch = text.charAt(c);
                 if (ch < 0x20 || ch > 0x7E) continue;
-                int glyph = ch - 0x20;
                 float x0 = -1f + c * mCharWidthNDC;
                 float[] col = (c < GeekLogScene.PREFIX_LEN) ? dimColor : lineColor;
-                vCount = addQuad(vCount, x0, y0, glyph, col, alpha);
+                vCount = addQuad(vCount, x0, y0, ch, col, alpha);
             }
         }
 
-        // 光标：最新一行末尾闪烁块
+        // 光标：最新一行末尾闪烁块（'#' 字符槽）
         if (timeMs % 1000 < 500) {
             GeekLogScene.Entry last = entries.get(entries.size() - 1);
             int cursorCol = Math.min(last.text.length(), mCols - 1);
             float x0 = -1f + cursorCol * mCharWidthNDC;
-            vCount = addCursorQuad(vCount, x0, -1f, THEME_COLORS[mScene.mColorIndex]);
+            vCount = addCursorQuad(vCount, x0, -1f, 0x23, THEME_COLORS[mScene.mColorIndex]);
         }
 
         mVertexCount = vCount;
@@ -308,14 +305,13 @@ public class GeekLogGL extends GLESScene implements SharedPreferences.OnSharedPr
     }
 
     /** 光标块：0.4 字符宽 x 0.8 行高，用图集 '#' 槽位保证可见 */
-    private int addCursorQuad(int vCount, float x0, float y0, float[] col) {
+    private int addCursorQuad(int vCount, float x0, float y0, int glyph, float[] col) {
         float w = mCharWidthNDC * 0.4f;
         float h = mRowHeight * 0.8f;
         float x1 = x0 + w;
         float y1 = y0 + h;
-        int glyphHash = 0x23 - 0x20;   // '#'
-        int colIdx = glyphHash % ATLAS_COLS;
-        int rowIdx = glyphHash / ATLAS_COLS;
+        int colIdx = glyph % ATLAS_COLS;
+        int rowIdx = glyph / ATLAS_COLS;
         float u0 = colIdx / (float) ATLAS_COLS, u1 = (colIdx + 1) / (float) ATLAS_COLS;
         float v0 = rowIdx / (float) ATLAS_ROWS, v1 = (rowIdx + 1) / (float) ATLAS_ROWS;
         addVertex(vCount, x0, y0, u0, v1, col, 1f);
@@ -432,33 +428,16 @@ public class GeekLogGL extends GLESScene implements SharedPreferences.OnSharedPr
         mTexLoc = GLES20.glGetUniformLocation(mProgram, "uTexture");
     }
 
-    /** 生成 95 个 ASCII 可打印字符图集（Bitmap+Paint，白色文字 → alpha 通道）。 */
+    /** 加载预烘焙字符图集（像素风格，槽位索引 = 字符码）。 */
     private void createGlyphTexture() {
-        Bitmap bmp = Bitmap.createBitmap(ATLAS_W, ATLAS_H, Bitmap.Config.ARGB_8888);
-        bmp.eraseColor(Color.TRANSPARENT);   // createBitmap 内容未定义，必须清底
-        Canvas canvas = new Canvas(bmp);
-        Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        paint.setTypeface(Typeface.MONOSPACE);
-        paint.setTextSize(SLOT_PX * 0.75f);
-        paint.setColor(Color.WHITE);
-        Paint.FontMetrics fm = paint.getFontMetrics();
-        float baseline = SLOT_PX / 2f - (fm.ascent + fm.descent) / 2f;
-
-        for (int i = 0; i < 95; i++) {
-            char c = (char) (0x20 + i);
-            int col = i % ATLAS_COLS;
-            int row = i / ATLAS_COLS;
-            canvas.drawText(String.valueOf(c),
-                    col * SLOT_PX + SLOT_PX * 0.1f,
-                    row * SLOT_PX + baseline, paint);
-        }
-
+        Bitmap bmp = AssetLoader.decodeBitmap(mContext, "geeklog/drawable/glyph_00.png");
         int[] tex = new int[1];
         GLES20.glGenTextures(1, tex, 0);
         mGlyphTexture = tex[0];
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mGlyphTexture);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
+        // 像素字体用 NEAREST，避免 LINEAR 模糊
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST);
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_NEAREST);
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
         GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bmp, 0);
