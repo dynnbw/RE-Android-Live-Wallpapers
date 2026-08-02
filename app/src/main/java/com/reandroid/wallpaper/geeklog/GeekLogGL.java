@@ -46,9 +46,6 @@ public class GeekLogGL extends GLESScene implements SharedPreferences.OnSharedPr
 
     private static final int FLOATS_PER_VERTEX = 7; // x, y, u, v, r, g, b
 
-    // 复用 UV 结果缓冲
-    private final float[] uArr = new float[4];
-
     private final Context mContext;
     private final GeekLogScene mScene = new GeekLogScene();
     private SharedPreferences mPluginPrefs;
@@ -290,9 +287,12 @@ public class GeekLogGL extends GLESScene implements SharedPreferences.OnSharedPr
 
     /** 一个字符 quad = 6 顶点（triangles 展开） */
     private int addQuad(int vCount, float x0, float y0, int glyph, float[] col, float alpha) {
-        float u0, u1, v0, v1;
-        glyphUV(glyph, uArr);
-        u0 = uArr[0]; u1 = uArr[1]; v0 = uArr[2]; v1 = uArr[3];
+        int colIdx = glyph % ATLAS_COLS;
+        int rowIdx = glyph / ATLAS_COLS;
+        float u0 = colIdx / (float) ATLAS_COLS;
+        float u1 = (colIdx + 1) / (float) ATLAS_COLS;
+        float v0 = rowIdx / (float) ATLAS_ROWS;
+        float v1 = (rowIdx + 1) / (float) ATLAS_ROWS;
         float x1 = x0 + mCharWidthNDC;
         float y1 = y0 + mRowHeight;
         addVertex(vCount, x0, y0, u0, v1, col, alpha);
@@ -310,9 +310,10 @@ public class GeekLogGL extends GLESScene implements SharedPreferences.OnSharedPr
         float h = mRowHeight * 0.8f;
         float x1 = x0 + w;
         float y1 = y0 + h;
-        float u0, u1, v0, v1;
-        glyphUV(glyph, uArr);
-        u0 = uArr[0]; u1 = uArr[1]; v0 = uArr[2]; v1 = uArr[3];
+        int colIdx = glyph % ATLAS_COLS;
+        int rowIdx = glyph / ATLAS_COLS;
+        float u0 = colIdx / (float) ATLAS_COLS, u1 = (colIdx + 1) / (float) ATLAS_COLS;
+        float v0 = rowIdx / (float) ATLAS_ROWS, v1 = (rowIdx + 1) / (float) ATLAS_ROWS;
         addVertex(vCount, x0, y0, u0, v1, col, 1f);
         addVertex(vCount + 1, x1, y0, u1, v1, col, 1f);
         addVertex(vCount + 2, x0, y1, u0, v0, col, 1f);
@@ -320,20 +321,6 @@ public class GeekLogGL extends GLESScene implements SharedPreferences.OnSharedPr
         addVertex(vCount + 4, x0, y1, u0, v0, col, 1f);
         addVertex(vCount + 5, x1, y0, u1, v1, col, 1f);
         return vCount + 6;
-    }
-
-    /**
-     * 槽位 UV 计算（texel snapping）：UV 收缩半像素到槽中心范围，
-     * 避免 NEAREST 采样在槽边界取到相邻槽的像素（字形被切/串行）。
-     * 输出到 out[4]：{u0, u1, v0, v1}
-     */
-    private void glyphUV(int glyph, float[] out) {
-        int colIdx = glyph % ATLAS_COLS;
-        int rowIdx = glyph / ATLAS_COLS;
-        out[0] = (colIdx + 0.5f) / ATLAS_COLS;
-        out[1] = (colIdx + 1f - 0.5f) / ATLAS_COLS;
-        out[2] = (rowIdx + 0.5f) / ATLAS_ROWS;
-        out[3] = (rowIdx + 1f - 0.5f) / ATLAS_ROWS;
     }
 
     private void addVertex(int vCount, float x, float y, float u, float v, float[] col, float alpha) {
@@ -448,9 +435,9 @@ public class GeekLogGL extends GLESScene implements SharedPreferences.OnSharedPr
         GLES20.glGenTextures(1, tex, 0);
         mGlyphTexture = tex[0];
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mGlyphTexture);
-        // 像素字体用 NEAREST，避免 LINEAR 模糊
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_NEAREST);
+        // LINEAR：无 NEAREST 的槽边界硬切问题（部分设备 NEAREST+收缩 UV 会黑屏）
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
         GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bmp, 0);
