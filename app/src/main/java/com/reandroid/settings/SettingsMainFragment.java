@@ -110,14 +110,17 @@ public class SettingsMainFragment extends PreferenceFragmentCompat {
                 String label = null;
                 String pluginClass = null;
                 boolean useLegacySettings = false;
+                boolean hidden = false;
                 try (InputStream is = am.open(jsonPath)) {
                     JSONObject json = new JSONObject(new String(IoUtils.readAllBytes(is), "UTF-8"));
                     fragmentClass = json.optString("fragment", null);
                     label = json.optString("label", null);
                     pluginClass = json.optString("plugin", null);
                     useLegacySettings = json.optBoolean("useLegacySettings", false);
+                    hidden = json.optBoolean("hidden", false);
                 } catch (Exception e) { Log.w(TAG, "Failed to parse info.json", e); continue; }
-                if (label == null) continue;
+                // 隐藏入口：info.json 中 "hidden": true 时不在列表显示
+                if (label == null || hidden) continue;
 
                 // Resolve @string/ references
                 String title = label;
