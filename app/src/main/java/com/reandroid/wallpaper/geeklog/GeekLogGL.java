@@ -1,5 +1,6 @@
 package com.reandroid.wallpaper.geeklog;
 
+import android.app.ActivityManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -9,6 +10,9 @@ import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
+import android.os.BatteryManager;
+import android.os.Build;
+import android.os.SystemClock;
 import android.util.Log;
 
 import com.reandroid.utils.AssetLoader;
@@ -16,6 +20,7 @@ import com.reandroid.gles.GLESScene;
 
 import java.nio.FloatBuffer;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * GeekLog GLES2 渲染层。
@@ -63,9 +68,17 @@ public class GeekLogGL extends GLESScene implements SharedPreferences.OnSharedPr
     private boolean mInitialized;
     private boolean mLoggedShaderFail;   // mProgram==0 持久失败态只记一次 logcat
 
-    // 帧率统计（10s 窗口）
+    // 渲染统计窗口（15s）：帧率均值 + 帧耗时均值 + 顶点数
+    private static final long STATS_INTERVAL_MS = 15000;
     private long mFpsWindowStartMs;
     private int mFpsFrameCount;
+    private long mFpsFrameTimeAccumUs;
+    private long mLastFrameTimeMs;
+    private int mLastReportedVerts;
+
+    // 系统状态轮询（60s）
+    private static final long SYS_INTERVAL_MS = 60000;
+    private long mLastSysLogMs;
 
     public GeekLogGL(int width, int height, Context context) {
         super(width, height);
@@ -103,6 +116,7 @@ public class GeekLogGL extends GLESScene implements SharedPreferences.OnSharedPr
             createProgram();
             createGlyphTexture();
             layoutMetrics();
+            logStartupInfo();
         } catch (Exception e) {
             Log.e(TAG, "init failed", e);
             mScene.log(GeekLogScene.LEVEL_ERROR, "render: init failed - " + e.getClass().getSimpleName());
@@ -161,22 +175,41 @@ public class GeekLogGL extends GLESScene implements SharedPreferences.OnSharedPr
             return;
         }
 
-        // 帧率统计（10s 窗口，低于 20fps 记 WARN）
-        mFpsFrameCount++;
+        // 渲染统计（15s 窗口）：帧率/帧耗时均值，低帧率记 WARN，否则记 INFO
         long now = System.currentTimeMillis();
+        if (mLastFrameTimeMs != 0) {
+            mFpsFrameTimeAccumUs += Math.min(now - mLastFrameTimeMs, 200L) * 1000L;
+        }
+        mLastFrameTimeMs = now;
+        mFpsFrameCount++;
         if (mFpsWindowStartMs == 0) mFpsWindowStartMs = now;
         long elapsed = now - mFpsWindowStartMs;
-        if (elapsed >= 10000) {
-            float fps = mFpsFrameCount * 1000f / elapsed;
-            if (fps < 20f) mScene.onFpsDrop((int) fps);
+        if (elapsed >= STATS_INTERVAL_MS) {
+            float fps = mFpsFrameCount * 1000f / Math.max(1, elapsed);
+            float avgFrameMs = mFpsFrameTimeAccumUs / 1000f / Math.max(1, mFpsFrameCount);
+            if (fps < 20f) {
+                mScene.onFpsDrop((int) fps);
+            } else {
+                mScene.log(GeekLogScene.LEVEL_INFO, String.format(Locale.US,
+                        "render: %.1f fps avg, %.1f ms/frame, %d verts",
+                        fps, avgFrameMs, mLastReportedVerts));
+            }
             mFpsFrameCount = 0;
             mFpsWindowStartMs = now;
+            mFpsFrameTimeAccumUs = 0L;
+        }
+
+        // 周期系统状态（60s）
+        if (now - mLastSysLogMs >= SYS_INTERVAL_MS) {
+            mLastSysLogMs = now;
+            logSystemState();
         }
 
         GLES20.glClearColor(0f, 0f, 0f, 1f);
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
 
         buildVertices(timeMs);
+        mLastReportedVerts = mVertexCount;
 
         if (mVertexCount == 0) return;
         GLES20.glUseProgram(mProgram);
@@ -329,6 +362,48 @@ public class GeekLogGL extends GLESScene implements SharedPreferences.OnSharedPr
             if (level == GeekLogScene.LEVEL_ERROR) return ERROR_COLOR;
         }
         return THEME_COLORS[mScene.mColorIndex];
+    }
+
+    /** 周期系统状态（60s）：电量、内存、充电状态。静态读取，无需权限。 */
+    private void logSystemState() {
+        try {
+            int battery = -1;
+            boolean charging = false;
+            BatteryManager bm = (BatteryManager) mContext.getSystemService(Context.BATTERY_SERVICE);
+            if (bm != null) {
+                battery = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    charging = bm.isCharging();
+                }
+            }
+            long memFreeMb = -1;
+            ActivityManager am = (ActivityManager) mContext.getSystemService(Context.ACTIVITY_SERVICE);
+            if (am != null) {
+                ActivityManager.MemoryInfo mi = new ActivityManager.MemoryInfo();
+                am.getMemoryInfo(mi);
+                memFreeMb = mi.availMem / (1024L * 1024L);
+            }
+            mScene.log(GeekLogScene.LEVEL_INFO, String.format(Locale.US,
+                    "system: battery %d%% (%s), mem %dMB free",
+                    battery, charging ? "charging" : "not charging", memFreeMb));
+        } catch (Exception e) {
+            Log.w(TAG, "system state read failed", e);
+        }
+    }
+
+    /** 启动系统信息（一次）：开机时长、屏幕、密度、系统版本。 */
+    private void logStartupInfo() {
+        try {
+            long uptimeSec = SystemClock.elapsedRealtime() / 1000;
+            String uptime = String.format(Locale.US, "%dh%02dm",
+                    uptimeSec / 3600, (uptimeSec % 3600) / 60);
+            float density = mResources != null ? mResources.getDisplayMetrics().density : 1f;
+            mScene.log(GeekLogScene.LEVEL_INFO, String.format(Locale.US,
+                    "system: uptime %s, screen %dx%d, density %.2f, android %s",
+                    uptime, mWidth, mHeight, density, Build.VERSION.RELEASE));
+        } catch (Exception e) {
+            Log.w(TAG, "startup info read failed", e);
+        }
     }
 
     private void layoutMetrics() {
