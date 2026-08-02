@@ -3,7 +3,6 @@ package com.reandroid.wallpaper.geeklog;
 import android.content.Context;
 import android.os.Bundle;
 import android.view.MotionEvent;
-import android.view.SurfaceHolder;
 
 import com.reandroid.gles.GLESScene;
 import com.reandroid.plugin.BasePluginEngine;
@@ -24,11 +23,6 @@ public class GeekLogEngine extends BasePluginEngine {
         GeekLogGL gl = new GeekLogGL(width, height, context);
         gl.logInfo("engine: created");
         return gl;
-    }
-
-    @Override
-    public void onCreate(SurfaceHolder holder) {
-        super.onCreate(holder);
     }
 
     @Override

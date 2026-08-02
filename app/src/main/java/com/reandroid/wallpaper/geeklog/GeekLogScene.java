@@ -54,7 +54,17 @@ final class GeekLogScene {
         String line = format(id, level, msg);
         mEntries.add(new Entry(level, line));
         if (mEntries.size() > mMaxLines) {
+            trimToLimit();
             overflowLog();
+        }
+    }
+
+    private int mDroppedCount;
+
+    private void trimToLimit() {
+        while (mEntries.size() > mMaxLines) {
+            mEntries.remove(0);
+            mDroppedCount++;
         }
     }
 
@@ -62,9 +72,11 @@ final class GeekLogScene {
         long now = System.currentTimeMillis();
         if (now - mLastOverflowMs < 30000) return;
         mLastOverflowMs = now;
-        String line = format(mNextId++, LEVEL_WARN, "log buffer: oldest line dropped");
+        if (mDroppedCount == 0) return;
+        String line = format(mNextId++, LEVEL_WARN, "log buffer: dropped " + mDroppedCount + " oldest lines");
         mEntries.add(new Entry(LEVEL_WARN, line));
-        while (mEntries.size() > mMaxLines) mEntries.remove(0);
+        mDroppedCount = 0;
+        trimToLimit();
     }
 
     private String format(int id, int level, String msg) {
@@ -100,7 +112,12 @@ final class GeekLogScene {
 
     // ---- 事件 API（由 Engine / GL 层调用）----
 
+    private long mLastTapLogMs;
+
     void onTap(int x, int y) {
+        long now = System.currentTimeMillis();
+        if (now - mLastTapLogMs < 200) return;
+        mLastTapLogMs = now;
         log(LEVEL_INFO, "user input: tap (" + x + ", " + y + ")");
     }
 

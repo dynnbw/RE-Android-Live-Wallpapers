@@ -95,10 +95,18 @@ public class GeekLogGL extends GLESScene implements SharedPreferences.OnSharedPr
         if (mInitialized) return;
         mInitialized = true;
         mScene.log(GeekLogScene.LEVEL_INFO, "render: initialized (" + mWidth + "x" + mHeight + ")");
-        readPrefs();
-        createProgram();
-        createGlyphTexture();
-        layoutMetrics();
+        try {
+            GLES20.glEnable(GLES20.GL_BLEND);
+            GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+            readPrefs();
+            createProgram();
+            createGlyphTexture();
+            layoutMetrics();
+        } catch (Exception e) {
+            Log.e(TAG, "init failed", e);
+            mScene.log(GeekLogScene.LEVEL_ERROR, "render: init failed - " + e.getClass().getSimpleName());
+            mInitialized = false;
+        }
     }
 
     @Override
@@ -298,7 +306,7 @@ public class GeekLogGL extends GLESScene implements SharedPreferences.OnSharedPr
 
     private SharedPreferences prefs() {
         return mPluginPrefs != null ? mPluginPrefs
-                : mContext.getSharedPreferences("geeklog", Context.MODE_PRIVATE);
+                : mContext.getSharedPreferences("plugin_geeklog", Context.MODE_PRIVATE);
     }
 
     private void readPrefs() {
