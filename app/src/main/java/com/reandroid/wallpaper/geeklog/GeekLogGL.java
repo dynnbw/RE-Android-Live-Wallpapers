@@ -87,6 +87,7 @@ public class GeekLogGL extends GLESScene implements SharedPreferences.OnSharedPr
     public void onVisibility(boolean visible) { mScene.onVisibility(visible); }
     public void logOffsetsChanged() { mScene.onOffsetsChanged(); }
     public void logTap(int x, int y) { mScene.onTap(x, y); }
+    public void logDrag(int x, int y) { mScene.onDrag(x, y); }
 
     // ---- GL 生命周期 ----
 
@@ -331,10 +332,13 @@ public class GeekLogGL extends GLESScene implements SharedPreferences.OnSharedPr
     }
 
     private void layoutMetrics() {
-        mRows = 30;
-        mRowHeight = 2f / mRows;
-        mCharWidthNDC = mRowHeight * 0.6f;
-        mCols = Math.max(1, (int) (2f / mCharWidthNDC));
+        // 每行 60 字符（终端风格列宽）。字符宽按屏幕宽度分配，
+        // 行高按像素宽高比 0.6 计算，并折算 NDC 纵横比——否则字形会被拉成高瘦条。
+        float aspect = (float) mWidth / Math.max(1, mHeight);
+        mCols = 60;
+        mCharWidthNDC = 2f / mCols;
+        mRowHeight = mCharWidthNDC * aspect / 0.6f;
+        mRows = Math.max(10, (int) (2f / mRowHeight));
     }
 
     private void createProgram() {
@@ -355,6 +359,7 @@ public class GeekLogGL extends GLESScene implements SharedPreferences.OnSharedPr
     /** 生成 95 个 ASCII 可打印字符图集（Bitmap+Paint，白色文字 → alpha 通道）。 */
     private void createGlyphTexture() {
         Bitmap bmp = Bitmap.createBitmap(ATLAS_W, ATLAS_H, Bitmap.Config.ARGB_8888);
+        bmp.eraseColor(Color.TRANSPARENT);   // createBitmap 内容未定义，必须清底
         Canvas canvas = new Canvas(bmp);
         Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         paint.setTypeface(Typeface.MONOSPACE);

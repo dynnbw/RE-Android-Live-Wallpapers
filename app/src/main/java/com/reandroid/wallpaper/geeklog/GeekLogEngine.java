@@ -45,8 +45,14 @@ public class GeekLogEngine extends BasePluginEngine {
     @Override
     public void onTouchEvent(MotionEvent event) {
         super.onTouchEvent(event);
-        if (event.getAction() == MotionEvent.ACTION_DOWN && mScene instanceof GeekLogGL) {
-            ((GeekLogGL) mScene).logTap((int) event.getX(), (int) event.getY());
+        if (mScene instanceof GeekLogGL) {
+            GeekLogGL gl = (GeekLogGL) mScene;
+            int action = event.getActionMasked();
+            if (action == MotionEvent.ACTION_DOWN) {
+                gl.logTap((int) event.getX(), (int) event.getY());
+            } else if (action == MotionEvent.ACTION_MOVE) {
+                gl.logDrag((int) event.getX(), (int) event.getY());
+            }
         }
     }
 
