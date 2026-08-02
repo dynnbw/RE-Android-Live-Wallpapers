@@ -2,6 +2,7 @@ package com.reandroid.wallpaper.geeklog;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * GeekLog 场景逻辑层（纯 Java，无 GL 调用）。
@@ -14,8 +15,8 @@ final class GeekLogScene {
     static final int LEVEL_WARN = 1;
     static final int LEVEL_ERROR = 2;
 
-    /** 每行前缀固定长度：[HH:mm:ss.SSS] 0001>  = 16 + 6 = 22 */
-    static final int PREFIX_LEN = 22;
+    /** 每行前缀固定长度：[HH:mm:ss.SSS] 0001>  = 15 + 6 = 21 */
+    static final int PREFIX_LEN = 21;
     static final int MAX_LINE_CHARS = 120;
 
     static final class Entry {
@@ -55,7 +56,6 @@ final class GeekLogScene {
         String line = format(id, level, msg);
         mEntries.add(new Entry(level, line));
         if (mEntries.size() > mMaxLines) {
-            mEntries.remove(0);
             overflowLog();
         }
     }
@@ -66,11 +66,12 @@ final class GeekLogScene {
         mLastOverflowMs = now;
         String line = format(mNextId++, LEVEL_WARN, "log buffer: oldest line dropped");
         mEntries.add(new Entry(LEVEL_WARN, line));
+        while (mEntries.size() > mMaxLines) mEntries.remove(0);
     }
 
     private String format(int id, int level, String msg) {
         return "[" + timestamp(System.currentTimeMillis()) + "] "
-                + String.format("%04d", id) + "> " + sanitize(msg);
+                + String.format(Locale.US, "%04d", id) + "> " + sanitize(msg);
     }
 
     /** 时间戳 HH:mm:ss.SSS（手动格式化，避免 SimpleDateFormat 线程问题） */
@@ -81,7 +82,7 @@ final class GeekLogScene {
         long totalMin = totalSec / 60;
         long min = totalMin % 60;
         long hour = totalMin / 60 % 24;
-        return String.format("%02d:%02d:%02d.%03d", hour, min, sec, ms);
+        return String.format(Locale.US, "%02d:%02d:%02d.%03d", hour, min, sec, ms);
     }
 
     /** 仅保留 ASCII 可打印字符（0x20-0x7E），其余转义为 '?'；超长截断。 */
