@@ -140,7 +140,7 @@ public class GeekLogGL extends GLESScene implements SharedPreferences.OnSharedPr
 
     @Override
     public void drawFrame(long timeMs) {
-        if (!mInitialized) {
+        if (!mInitialized || mProgram == 0) {
             Log.w(TAG, "drawFrame before init");
             return;
         }
@@ -172,12 +172,16 @@ public class GeekLogGL extends GLESScene implements SharedPreferences.OnSharedPr
         GLES20.glEnableVertexAttribArray(mUVLoc);
         GLES20.glEnableVertexAttribArray(mColorLoc);
 
+        mVertexBuffer.position(0);
         GLES20.glVertexAttribPointer(mPosLoc, 2, GLES20.GL_FLOAT, false,
                 FLOATS_PER_VERTEX * 4, mVertexBuffer);
+        mVertexBuffer.position(2);
         GLES20.glVertexAttribPointer(mUVLoc, 2, GLES20.GL_FLOAT, false,
                 FLOATS_PER_VERTEX * 4, mVertexBuffer);
+        mVertexBuffer.position(4);
         GLES20.glVertexAttribPointer(mColorLoc, 3, GLES20.GL_FLOAT, false,
                 FLOATS_PER_VERTEX * 4, mVertexBuffer);
+        mVertexBuffer.position(0);
 
         GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, mVertexCount);
 
@@ -193,7 +197,7 @@ public class GeekLogGL extends GLESScene implements SharedPreferences.OnSharedPr
         int shown = Math.min(entries.size(), mRows);
         if (shown == 0) { mVertexCount = 0; return; }
 
-        int capacity = shown * mCols * 6 * FLOATS_PER_VERTEX;
+        int capacity = (shown * mCols + 1) * 6 * FLOATS_PER_VERTEX;
         if (mVertexBuffer == null || mVertexBuffer.capacity() < capacity) {
             mVertexBuffer = createFloatBuffer(new float[capacity]);
         }
@@ -201,11 +205,11 @@ public class GeekLogGL extends GLESScene implements SharedPreferences.OnSharedPr
 
         int vCount = 0;
 
-        int start = entries.size() - shown;
+        int start = entries.size() - 1;
         for (int r = 0; r < shown; r++) {
-            GeekLogScene.Entry e = entries.get(start + r);
+            GeekLogScene.Entry e = entries.get(start - r);
             float y0 = -1f + r * mRowHeight;
-            float alpha = 1f - (shown - 1 - r) / (float) Math.max(1, shown - 1) * 0.6f;
+            float alpha = 1f - r / (float) Math.max(1, shown - 1) * 0.6f;
 
             float[] lineColor = colorFor(e.level);
             float[] dimColor = {
@@ -245,12 +249,12 @@ public class GeekLogGL extends GLESScene implements SharedPreferences.OnSharedPr
         float v1 = (rowIdx + 1) / (float) ATLAS_ROWS;
         float x1 = x0 + mCharWidthNDC;
         float y1 = y0 + mRowHeight;
-        addVertex(vCount, x0, y0, u0, v0, col, alpha);
-        addVertex(vCount + 1, x1, y0, u1, v0, col, alpha);
-        addVertex(vCount + 2, x0, y1, u0, v1, col, alpha);
-        addVertex(vCount + 3, x1, y1, u1, v1, col, alpha);
-        addVertex(vCount + 4, x0, y1, u0, v1, col, alpha);
-        addVertex(vCount + 5, x1, y0, u1, v0, col, alpha);
+        addVertex(vCount, x0, y0, u0, v1, col, alpha);
+        addVertex(vCount + 1, x1, y0, u1, v1, col, alpha);
+        addVertex(vCount + 2, x0, y1, u0, v0, col, alpha);
+        addVertex(vCount + 3, x1, y1, u1, v0, col, alpha);
+        addVertex(vCount + 4, x0, y1, u0, v0, col, alpha);
+        addVertex(vCount + 5, x1, y0, u1, v1, col, alpha);
         return vCount + 6;
     }
 
@@ -265,12 +269,12 @@ public class GeekLogGL extends GLESScene implements SharedPreferences.OnSharedPr
         int rowIdx = glyphHash / ATLAS_COLS;
         float u0 = colIdx / (float) ATLAS_COLS, u1 = (colIdx + 1) / (float) ATLAS_COLS;
         float v0 = rowIdx / (float) ATLAS_ROWS, v1 = (rowIdx + 1) / (float) ATLAS_ROWS;
-        addVertex(vCount, x0, y0, u0, v0, col, 1f);
-        addVertex(vCount + 1, x1, y0, u1, v0, col, 1f);
-        addVertex(vCount + 2, x0, y1, u0, v1, col, 1f);
-        addVertex(vCount + 3, x1, y1, u1, v1, col, 1f);
-        addVertex(vCount + 4, x0, y1, u0, v1, col, 1f);
-        addVertex(vCount + 5, x1, y0, u1, v0, col, 1f);
+        addVertex(vCount, x0, y0, u0, v1, col, 1f);
+        addVertex(vCount + 1, x1, y0, u1, v1, col, 1f);
+        addVertex(vCount + 2, x0, y1, u0, v0, col, 1f);
+        addVertex(vCount + 3, x1, y1, u1, v0, col, 1f);
+        addVertex(vCount + 4, x0, y1, u0, v0, col, 1f);
+        addVertex(vCount + 5, x1, y0, u1, v1, col, 1f);
         return vCount + 6;
     }
 
@@ -316,7 +320,6 @@ public class GeekLogGL extends GLESScene implements SharedPreferences.OnSharedPr
         mRowHeight = 2f / mRows;
         mCharWidthNDC = mRowHeight * 0.6f;
         mCols = Math.max(1, (int) (2f / mCharWidthNDC));
-        mVertexBuffer = null; // 容量变化，下次 build 重建
     }
 
     private void createProgram() {
