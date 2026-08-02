@@ -1,0 +1,9 @@
+{
+  "geeklog_color": "Farbthema",
+  "geeklog_color_label_green": "Terminal-Grün",
+  "geeklog_color_label_amber": "Bernstein",
+  "geeklog_color_label_cyan": "Cyan",
+  "geeklog_color_label_white": "Weiß",
+  "geeklog_highlight_errors": "Fehler hervorheben",
+  "geeklog_max_lines": "Aufbewahrte Logzeilen"
+}

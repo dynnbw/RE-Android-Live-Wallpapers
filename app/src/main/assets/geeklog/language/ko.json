@@ -1,0 +1,9 @@
+{
+  "geeklog_color": "색상 테마",
+  "geeklog_color_label_green": "터미널 그린",
+  "geeklog_color_label_amber": "앰버",
+  "geeklog_color_label_cyan": "시안",
+  "geeklog_color_label_white": "화이트",
+  "geeklog_highlight_errors": "오류 강조",
+  "geeklog_max_lines": "로그 줄 수"
+}

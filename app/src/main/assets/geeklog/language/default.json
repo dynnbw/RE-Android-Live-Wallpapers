@@ -1,0 +1,9 @@
+{
+  "geeklog_color": "Color theme",
+  "geeklog_color_label_green": "Terminal Green",
+  "geeklog_color_label_amber": "Amber",
+  "geeklog_color_label_cyan": "Cyan",
+  "geeklog_color_label_white": "White",
+  "geeklog_highlight_errors": "Highlight errors",
+  "geeklog_max_lines": "Log lines kept"
+}

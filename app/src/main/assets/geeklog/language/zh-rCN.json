@@ -1,0 +1,9 @@
+{
+  "geeklog_color": "配色主题",
+  "geeklog_color_label_green": "终端绿",
+  "geeklog_color_label_amber": "琥珀",
+  "geeklog_color_label_cyan": "青色",
+  "geeklog_color_label_white": "白色",
+  "geeklog_highlight_errors": "错误高亮",
+  "geeklog_max_lines": "日志保留行数"
+}

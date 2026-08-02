@@ -1,0 +1,9 @@
+{
+  "geeklog_color": "रंग थीम",
+  "geeklog_color_label_green": "टर्मिनल हरा",
+  "geeklog_color_label_amber": "एम्बर",
+  "geeklog_color_label_cyan": "सियान",
+  "geeklog_color_label_white": "सफ़ेद",
+  "geeklog_highlight_errors": "त्रुटियाँ हाइलाइट करें",
+  "geeklog_max_lines": "लॉग लाइनें"
+}

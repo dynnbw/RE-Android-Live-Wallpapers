@@ -188,6 +188,7 @@
 
     <!-- Phase Beam wallpaper -->
     <string name="wallpaper_phasebeam">Phase Beam</string>
+    <string name="wallpaper_geeklog">GeekLog</string>
 
     <string name="phasebeam_theme_phasebeam">Phase Beam (blue)</string>
     <string name="phasebeam_theme_sunbeam">Sunbeam (warm)</string>

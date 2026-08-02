@@ -1,0 +1,30 @@
+{
+  "prefs": [
+    {
+      "type": "list",
+      "key": "geeklog_color",
+      "title": "geeklog_color",
+      "default": "green",
+      "values": ["green", "amber", "cyan", "white"],
+      "labels": [
+        "geeklog_color_label_green",
+        "geeklog_color_label_amber",
+        "geeklog_color_label_cyan",
+        "geeklog_color_label_white"
+      ]
+    },
+    {
+      "type": "switch",
+      "key": "geeklog_highlight_errors",
+      "title": "geeklog_highlight_errors"
+    },
+    {
+      "type": "seekbar",
+      "key": "geeklog_max_lines",
+      "title": "geeklog_max_lines",
+      "default": "80",
+      "min": 40,
+      "max": 120
+    }
+  ]
+}

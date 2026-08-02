@@ -1,0 +1,9 @@
+{
+  "geeklog_color": "Tema de cor",
+  "geeklog_color_label_green": "Verde terminal",
+  "geeklog_color_label_amber": "Âmbar",
+  "geeklog_color_label_cyan": "Ciano",
+  "geeklog_color_label_white": "Branco",
+  "geeklog_highlight_errors": "Destacar erros",
+  "geeklog_max_lines": "Linhas de log"
+}

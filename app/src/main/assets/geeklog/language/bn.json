@@ -1,0 +1,9 @@
+{
+  "geeklog_color": "রঙ থিম",
+  "geeklog_color_label_green": "টার্মিনাল সবুজ",
+  "geeklog_color_label_amber": "অ্যাম্বার",
+  "geeklog_color_label_cyan": "সায়ান",
+  "geeklog_color_label_white": "সাদা",
+  "geeklog_highlight_errors": "ত্রুটি হাইলাইট",
+  "geeklog_max_lines": "লগ লাইন সংখ্যা"
+}

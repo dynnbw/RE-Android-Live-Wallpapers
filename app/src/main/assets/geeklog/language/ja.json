@@ -1,0 +1,9 @@
+{
+  "geeklog_color": "配色テーマ",
+  "geeklog_color_label_green": "ターミナルグリーン",
+  "geeklog_color_label_amber": "アンバー",
+  "geeklog_color_label_cyan": "シアン",
+  "geeklog_color_label_white": "ホワイト",
+  "geeklog_highlight_errors": "エラーを強調",
+  "geeklog_max_lines": "ログ行数"
+}

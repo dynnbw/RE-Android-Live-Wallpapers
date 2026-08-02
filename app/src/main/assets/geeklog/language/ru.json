@@ -1,0 +1,9 @@
+{
+  "geeklog_color": "Цветовая тема",
+  "geeklog_color_label_green": "Терминальный зелёный",
+  "geeklog_color_label_amber": "Янтарный",
+  "geeklog_color_label_cyan": "Голубой",
+  "geeklog_color_label_white": "Белый",
+  "geeklog_highlight_errors": "Подсветка ошибок",
+  "geeklog_max_lines": "Строк лога"
+}
