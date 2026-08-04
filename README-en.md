@@ -1,8 +1,20 @@
-# Reborn Android Live Wallpapers
+<p align="center">
+  <img src="app/src/main/res/drawable/ic_launcher_wallpaper.png" width="120" alt="Reborn Android Live Wallpapers"/>
+</p>
 
-[简体中文](README.md)
+<h1 align="center">Reborn Android Live Wallpapers</h1>
 
-An Android live wallpaper collection that ports classic AOSP / MediaTek wallpapers from RenderScript to OpenGL ES 2.0 and Vulkan, allowing them to run on modern Android versions.
+<p align="center">
+  <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/dynnbw/RE-Android-Live-Wallpapers?style=flat-square&color=green"/>
+  <img alt="License" src="https://img.shields.io/badge/License-Apache_2.0-green"/>
+  <img alt="Android" src="https://img.shields.io/badge/Android-7.0%2B-3DDC84?style=flat-square&logo=android&logoColor=white&color=green"/>
+  <img alt="Wallpapers" src="https://img.shields.io/badge/Wallpapers-30-3DDC84?style=flat-square&color=green"/>
+   <img alt="Wallpapers" src="https://img.shields.io/github/downloads/dynnbw/RE-Android-Live-Wallpapers/total?logo=github&logoColor=white&label=Release%20downloads&color=green"/>
+</p>
+
+<font color=#98FB98>An Android live wallpaper collection that ports classic AOSP / MediaTek wallpapers from RenderScript to OpenGL ES 2.0 and Vulkan, allowing them to run on modern Android versions.</font>
+
+>  **Language**：[简体中文](README.md)
 
 > **Quick Navigation**: [User Guide](#user-guide) · [Installation](#installation) · [Weather Setup](#weather-setup) · [Music Visualization](#music-visualization) · [Permissions](#permissions) · [Performance Reference](#performance-reference) · [FAQ](#faq) 　|　 [Developer Docs](#developer-docs)
 
@@ -32,12 +44,12 @@ Method 3: Long-press home screen → Wallpapers → find "REAndroid Live Wallpap
 
 ## Wallpaper List
 
-**28** wallpapers total, with **3** (Galaxy, Grass, Fall) offering an additional Vulkan backend
+**30** wallpapers total, with **4** (Galaxy, Galaxy4, Grass, Fall) offering an additional Vulkan backend
 
 | Wallpaper | Type | VK | Description |
 | --- | --- | --- | --- |
 | Galaxy | Starfield | ✓ | Rotating star field, color gradients |
-| Galaxy4 | Starfield | | Rotating star field, color gradients |
+| Galaxy4 | Starfield | ✓ | Rotating star field, color gradients |
 | NightSky | Starfield | | 9,000 real stars from the Hipparcos catalog, gyroscope tracking, long-press to accelerate star trails |
 | Microbes | Particles | | Microbial swarm AI, touch to feed, reproduction/death cycle |
 | Grass | Nature | ✓ | Wind-blown grass, solar/lunar eclipses, weather integration |
@@ -58,7 +70,9 @@ Method 3: Long-press home screen → Wallpapers → find "REAndroid Live Wallpap
 | Aurora1 | Aurora | | Northern lights, 99-frame glow animation |
 | Aurora2 | Aurora | | Northern lights v2, more brilliant colors |
 | Fireworks | Effects | | Firework particles, tap to launch |
+| LuminousDots | Effects | | Luminous particle field |
 | PolarClock | Clock | | Polar clock, three palette styles |
+| NixieTube | Clock | | Nixie tube clock, audio-reactive |
 | vis2 | Music | | Audio spectrum visualization — FFT waveform |
 | vis3 | Music | | Audio spectrum visualization — PCM waveform |
 | vis4 | Music | | Audio visualization — VU meter style |
@@ -72,7 +86,7 @@ Compared to the original AOSP/MediaTek wallpapers:
 - **Independent Settings**: Each wallpaper has its own settings page — adjust particle count, color, animation speed, etc.
 - **Weather Integration**: Grass, Ocean, and Windmill change visuals based on real weather (requires API key).
 - **Music Visualization**: 5 audio spectrum styles — wallpapers react to music in real time.
-- **Vulkan Backend**: Galaxy, Grass, and Fall support optional Vulkan rendering.
+- **Vulkan Backend**: Galaxy, Galaxy4, Grass, and Fall support optional Vulkan rendering.
 
 <a id="weather-setup"></a>
 ## Weather Setup
@@ -141,7 +155,7 @@ Hardware consumption varies significantly across wallpapers:
 **Power-saving Tips:**
 - Lower particle count or grass blade count via wallpaper settings
 - Set global framerate to 30 FPS (Settings page overflow menu → Global Framerate)
-- For Galaxy/Grass/Fall, try enabling Vulkan rendering
+- For Galaxy/Galaxy4/Grass/Fall, try enabling Vulkan rendering
 - Weather integration can be turned off (Grass settings → disable "Enable Weather Effects")
 
 <a id="faq"></a>
@@ -154,7 +168,7 @@ MIUI/HyperOS users need to grant "Live Wallpaper Service" permission in system s
 Check: ① Is the OpenWeather API Key filled in correctly? ② Is location permission granted? ③ Is the network working? (Some regions/ISPs may not reach OpenWeather) ④ Has the free quota run out? (1,000 calls/day) Long-press the weather icon to see the last refresh time.
 
 **Q: Why can't I see the Vulkan toggle?**
-Only Galaxy, Grass, and Fall have Vulkan backends. If your device doesn't support Vulkan, the toggle will be visible but switching may have no effect or cause crashes.
+Only Galaxy, Galaxy4, Grass, and Fall have Vulkan backends. If your device doesn't support Vulkan, the toggle will be visible but switching may have no effect or cause crashes.
 
 **Q: Music visualization isn't responding?**
 Confirm: ① Record Audio permission is granted ② Audio is currently playing (media volume is not zero)
@@ -283,7 +297,7 @@ com.reandroid
 │                   PreviewPreference / WallpaperSettings / MiuiPermissionHelper
 ├── weather/        WeatherManager / WeatherCondition / WeatherState
 ├── update/         UpdateHelper / UpdateChecker / UpdateDownloader / VersionInfo
-└── wallpaper/      31 Plugin + 31 Engine + 24 Scene + 27 GL (grouped by subpackage)
+└── wallpaper/      35 Plugin + 35 Engine + 27 Scene + 30 GL (grouped by subpackage)
     ├── weatherwallpapers/  Ocean / Windmill
     ├── musicvis/           5 music visualization plugins, shared Scene/GL/assets
     └── ......
@@ -293,13 +307,13 @@ com.reandroid
 
 ```mermaid
 graph TD
-    WS[ProxyWallpaperService<br/>Single entry point, 28 wallpapers]
+    WS[ProxyWallpaperService<br/>Single entry point, 30 wallpapers]
 
-    WS -->|25 pure GLES| GLW[BasePluginEngine<br/>+ GLESScene]
+    WS -->|26 pure GLES| GLW[BasePluginEngine<br/>+ GLESScene]
     WS -->|3 VK toggle| VKW[BaseVKPluginEngine<br/>+ VK Native]
 
     GLW -->|creates| GLS[GLESScene]
-    GLS -->|20| SPLIT[Scene/GL separation<br/>Scene pure logic + GL pure render]
+    GLS -->|21| SPLIT[Scene/GL separation<br/>Scene pure logic + GL pure render]
     GLS -->|3| MONO[GL monolithic<br/>HoloSpiral, PolarClock, WalkAround]
     GLS -->|4 Scene| MV[MusicVis Scene<br/>Wave, Vu, Many, Circle]
     GLS -->|5 GL| MVGL[MusicVis GL<br/>WaveGL, VuGL, ManyGL, CircleGL]
@@ -310,7 +324,7 @@ graph TD
 
 ### Scene/GL Separation Pattern
 
-20 wallpapers adopt Scene (pure logic) + GL (pure rendering) separation:
+21 wallpapers adopt Scene (pure logic) + GL (pure rendering) separation:
 
 - **Scene class**: `package-private final class`, handles physics, animation state, entity management — zero Android/GL imports
 - **GL class**: `public class extends GLESScene`, handles shader compilation, texture loading, draw calls — no business logic
@@ -332,7 +346,7 @@ flowchart LR
     SCENE -- getSceneData<br/>immutable snapshot --> GL
 ```
 
-20 Scene/GL separated wallpapers: Aurora1, Aurora2, BlueSea, Cube, DeepSea, Fall, Fireworks, Forest, Galaxy, Galaxy4, Grass, MagicSmoke, Microbes, Nexus, NightSky, NoiseField, Ocean, PhaseBeam, WildWorld, Windmill
+21 Scene/GL separated wallpapers: Aurora1, Aurora2, BlueSea, Cube, DeepSea, Fall, Fireworks, Forest, Galaxy, Galaxy4, GeekLog, Grass, MagicSmoke, Microbes, Nexus, NightSky, NoiseField, Ocean, PhaseBeam, WildWorld, Windmill
 
 4 MusicVis Scene classes shared by 5 plugins: WaveScene (vis2 FFT + vis3 PCM), VuScene (vis4), ManyScene (vis5 → WaveScene + VuScene combo), CircleScene (vis6)
 
@@ -368,7 +382,7 @@ This solves the problem where `onSurfaceChanged` is called on the main thread bu
 
 ### Vulkan Path
 
-3 wallpapers (Fall, Galaxy, Grass) provide Vulkan backends, implementing `WallpaperEngine` + `Runnable` via `BaseVKPluginEngine`, with self-managed render threads. They reuse the Scene pure logic classes from their GL counterparts.
+4 wallpapers (Fall, Galaxy, Galaxy4, Grass) provide Vulkan backends, implementing `WallpaperEngine` + `Runnable` via `BaseVKPluginEngine`, with self-managed render threads. They reuse the Scene pure logic classes from their GL counterparts.
 
 ```mermaid
 graph TD
@@ -479,9 +493,9 @@ app/src/main/
 │   ├── settings/          Settings UI
 │   ├── weather/           Weather data layer
 │   ├── update/            Update system
-│   └── wallpaper/         All wallpapers (31 Plugin + 31 Engine + 24 Scene + 27 GL)
+│   └── wallpaper/         All wallpapers (35 Plugin + 35 Engine + 27 Scene + 30 GL)
 ├── assets/
-│   ├── {wallpaper}/        Per-wallpaper asset directories (28 total)
+│   ├── {wallpaper}/        Per-wallpaper asset directories (30 total)
 │   │   ├── drawable/        Texture images
 │   │   ├── shaders/GLES/    GLSL shaders
 │   │   ├── data/            CSV mesh/vertex data

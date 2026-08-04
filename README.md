@@ -1,8 +1,19 @@
-# Reborn Android Live Wallpapers
+<p align="center">
+  <img src="app/src/main/res/drawable/ic_launcher_wallpaper.png" width="120" alt="Reborn Android Live Wallpapers"/>
+</p>
 
-[English](README-en.md)
+<h1 align="center">Reborn Android Live Wallpapers</h1>
 
-Android 动态壁纸合集，将 AOSP / MediaTek 经典壁纸从 RenderScript 移植到 OpenGL ES 2.0 和 Vulkan，在新时代 Android 上继续运行。
+<p align="center">
+  <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/dynnbw/RE-Android-Live-Wallpapers?style=flat-square&color=green"/>
+  <img alt="License" src="https://img.shields.io/badge/License-Apache_2.0-green"/>
+  <img alt="Android" src="https://img.shields.io/badge/安卓-7.0%2B-3DDC84?style=flat-square&logo=android&logoColor=white&color=green"/>
+  <img alt="Wallpapers" src="https://img.shields.io/badge/壁纸总数-30-3DDC84?style=flat-square&color=green"/>
+ <img alt="Wallpapers" src="https://img.shields.io/github/downloads/dynnbw/RE-Android-Live-Wallpapers/total?logo=github&logoColor=white&label=资源下载数&color=green"/>
+
+<font color=#98FB98>Android 动态壁纸合集，将 AOSP / MediaTek 经典壁纸从 RenderScript 移植到 OpenGL ES 2.0 和 Vulkan，在新时代 Android 上继续运行。</font>
+
+>  **语言**：[English](README-en.md)
 
 >  **快速导航**：[用户使用](#用户指南) · [天气配置](#天气配置) · [音乐可视化](#音乐可视化) · [权限说明](#权限说明) · [性能参考](#性能参考) · [常见问题](#常见问题)　|　[开发者文档](#开发文档)
 
@@ -31,7 +42,7 @@ Android 动态壁纸合集，将 AOSP / MediaTek 经典壁纸从 RenderScript �
 
 ## 壁纸清单
 
-共 **28 个**壁纸，**3 个**（Galaxy、Grass、Fall）额外提供 Vulkan 后端
+共 **30 个**壁纸，**4 个**（Galaxy、Galaxy4、Grass、Fall）额外提供 Vulkan 后端
 
 | 壁纸 | 类型 | VK | 说明 |
 | --- | --- | --- | --- |
@@ -57,7 +68,9 @@ Android 动态壁纸合集，将 AOSP / MediaTek 经典壁纸从 RenderScript �
 | Aurora1 | 极光 | | 北极光，99 帧光晕动画 |
 | Aurora2 | 极光 | | 北极光第二版，色彩更加绚烂 |
 | Fireworks | 特效 | | 烟花粒子，触摸发射烟花 |
+| LuminousDots | 特效 | | 发光粒子点阵 |
 | PolarClock | 时钟 | | 极地时钟，三种调色板风格 |
+| NixieTube | 时钟 | | 辉光管数码时钟，音频响应 |
 | vis2 | 音乐 | | 音频频谱可视化 — FFT 波形 |
 | vis3 | 音乐 | | 音频频谱可视化 — PCM 波形 |
 | vis4 | 音乐 | | 音频可视化 — VU 表头风格 |
@@ -71,7 +84,7 @@ Android 动态壁纸合集，将 AOSP / MediaTek 经典壁纸从 RenderScript �
 - **独立设置**：每个壁纸有独立的设置页面，调整粒子数、颜色、动画速度等
 - **天气联动**：Grass、Ocean、Windmill 可根据真实天气改变画面（需配置 API Key）
 - **音乐可视化**：5 种音频频谱风格，播放音乐时壁纸随节奏变化
-- **Vulkan 后端**：Galaxy、Grass、Fall 可选 Vulkan 渲染
+- **Vulkan 后端**：Galaxy、Galaxy4、Grass、Fall 可选 Vulkan 渲染
 
 ## 天气配置
 
@@ -148,7 +161,7 @@ MIUI/HyperOS 用户需要在系统设置中授予"动态壁纸服务"权限。�
 检查：① OpenWeather API Key 是否正确填入 ② 是否给予位置权限 ③ 网络是否正常，部分地区、运营商无法访问OpenWeather ④ 免费额度是否用完（1000 次/天）长按天气图标可查看上次刷新时间
 
 **Q: Vulkan 开关为什么看不到？**
-只有 Galaxy、Grass、Fall 三个壁纸有 Vulkan 后端。如果你的设备不支持 Vulkan，开关虽然可见但切换后可能无效果或崩溃。
+只有 Galaxy、Galaxy4、Grass、Fall 四个壁纸有 Vulkan 后端。如果你的设备不支持 Vulkan，开关虽然可见但切换后可能无效果或崩溃。
 
 **Q: 音乐可视化没有反应？**
 确认：① 已授予录音权限 ② 正在播放音频（媒体音量不为零）
@@ -276,7 +289,7 @@ com.reandroid
 │                   PreviewPreference / WallpaperSettings / MiuiPermissionHelper
 ├── weather/        WeatherManager / WeatherCondition / WeatherState
 ├── update/         UpdateHelper / UpdateChecker / UpdateDownloader / VersionInfo
-└── wallpaper/      31 Plugin + 31 Engine + 24 Scene + 27 GL（按子包划分）
+└── wallpaper/      35 Plugin + 35 Engine + 27 Scene + 30 GL（按子包划分）
     ├── weatherwallpapers/  Ocean / Windmill
     ├── musicvis/           5 个音乐可视化插件，共享 Scene/GL/资产
     └── ......
@@ -286,13 +299,13 @@ com.reandroid
 
 ```mermaid
 graph TD
-    WS[ProxyWallpaperService<br/>单一入口 28 壁纸]
+    WS[ProxyWallpaperService<br/>单一入口 30 壁纸]
 
-    WS -->|25 个纯 GLES| GLW[BasePluginEngine<br/>+ GLESScene]
-    WS -->|3 个 toggle VK| VKW[BaseVKPluginEngine<br/>+ VK Native]
+    WS -->|26 个纯 GLES| GLW[BasePluginEngine<br/>+ GLESScene]
+    WS -->|4 个 toggle VK| VKW[BaseVKPluginEngine<br/>+ VK Native]
 
     GLW -->|创建| GLS[GLESScene]
-    GLS -->|20 个| SPLIT[Scene/GL 分离<br/>Scene 纯逻辑 + GL 纯渲染]
+    GLS -->|21 个| SPLIT[Scene/GL 分离<br/>Scene 纯逻辑 + GL 纯渲染]
     GLS -->|3 个| MONO[GL 单体<br/>HoloSpiral, PolarClock, WalkAround]
     GLS -->|4 个 Scene| MV[MusicVis Scene<br/>Wave, Vu, Many, Circle]
     GLS -->|5 个 GL| MVGL[MusicVis GL<br/>WaveGL, VuGL, ManyGL, CircleGL]
@@ -303,7 +316,7 @@ graph TD
 
 ### Scene/GL 分离模式
 
-20 个壁纸采用 Scene（纯逻辑）+ GL（纯渲染）分离：
+21 个壁纸采用 Scene（纯逻辑）+ GL（纯渲染）分离：
 
 - **Scene 类**：`package-private final class`，负责物理模拟、动画状态、实体管理，零 Android/GL 导入
 - **GL 类**：`public class extends GLESScene`，负责 shader 编译、纹理加载、绘制调用，不包含业务逻辑
@@ -325,7 +338,7 @@ flowchart LR
     SCENE -- getSceneData<br/>不可变数据快照 --> GL
 ```
 
-20 个 Scene/GL 分离壁纸：Aurora1、Aurora2、BlueSea、Cube、DeepSea、Fall、Fireworks、Forest、Galaxy、Galaxy4、Grass、MagicSmoke、Microbes、Nexus、NightSky、NoiseField、Ocean、PhaseBeam、WildWorld、Windmill
+21 个 Scene/GL 分离壁纸：Aurora1、Aurora2、BlueSea、Cube、DeepSea、Fall、Fireworks、Forest、Galaxy、Galaxy4、GeekLog、Grass、MagicSmoke、Microbes、Nexus、NightSky、NoiseField、Ocean、PhaseBeam、WildWorld、Windmill
 
 4 个 MusicVis Scene 类供 5 个插件共享：WaveScene（vis2 FFT + vis3 PCM）、VuScene（vis4）、ManyScene（vis5 → WaveScene + VuScene 组合）、CircleScene（vis6）
 
@@ -361,7 +374,7 @@ onSurfaceChanged (main thread)
 
 ### Vulkan 路径
 
-3 个壁纸（Fall、Galaxy、Grass）提供 Vulkan 后端，通过 `BaseVKPluginEngine` 实现 `WallpaperEngine` + `Runnable`，自管渲染线程。复用同名 GL 壁纸的 Scene 纯逻辑类。
+4 个壁纸（Fall、Galaxy、Galaxy4、Grass）提供 Vulkan 后端，通过 `BaseVKPluginEngine` 实现 `WallpaperEngine` + `Runnable`，自管渲染线程。复用同名 GL 壁纸的 Scene 纯逻辑类。
 
 ```mermaid
 graph TD
@@ -472,9 +485,9 @@ app/src/main/
 │   ├── settings/          设置 UI
 │   ├── weather/           天气数据层
 │   ├── update/            更新系统
-│   └── wallpaper/         所有壁纸（31 Plugin + 31 Engine + 24 Scene + 27 GL）
+│   └── wallpaper/         所有壁纸（35 Plugin + 35 Engine + 27 Scene + 30 GL）
 ├── assets/
-│   ├── {wallpaper}/        每个壁纸独立资产（28 个）
+│   ├── {wallpaper}/        每个壁纸独立资产（30 个）
 │   │   ├── drawable/        纹理图片
 │   │   ├── shaders/GLES/    GLSL 着色器
 │   │   ├── data/            CSV 网格/顶点数据
