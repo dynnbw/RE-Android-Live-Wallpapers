@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reborn Android Live Wallpapers — Classic UI</title>
+<link rel="icon" type="image/png" href="images/ic_launcher_wallpaper.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/holo.css">
+</head>
+<body>
+<div class="container">
+
+  <header class="holo-bar">
+    <h1 class="holo-title">
+      <img src="images/ic_launcher_wallpaper.png" alt="Reborn Android Live Wallpapers" class="holo-icon">
+      Classic wallpapers reborn for modern Android
+    </h1>
+    <a class="holo-btn holo-btn-primary" href="https://github.com/dynnbw/RE-Android-Live-Wallpapers/releases">Download APK</a>
+  </header>
+
+  <div class="stats-window">
+    <div class="stats-header">
+      <span class="dot dot-red"></span>
+      <span class="dot dot-yellow"></span>
+      <span class="dot dot-green"></span>
+      <span class="stats-label">STATS</span>
+    </div>
+    <div class="stats-body">
+      <div class="stat"><div class="stat-num blue">30</div><div class="stat-label">Wallpapers</div></div>
+      <div class="stat"><div class="stat-num">27</div><div class="stat-label">OpenGL ES</div></div>
+      <div class="stat"><div class="stat-num">4</div><div class="stat-label">Vulkan</div></div>
+    </div>
+  </div>
+
+  <div class="section-label">WEBGL PREVIEWS</div>
+
+  <div class="holo-grid">
+    <a class="tile" href="javascript:void(0)" onclick="openDemo('fall/','Fall &mdash; Autumn Leaves')">
+      <div class="tile-frame">
+        <div class="tile-thumb"><img src="fall/icon.jpg" alt="Fall wallpaper preview"></div>
+      </div>
+      <div class="tile-caption">Fall &middot; Autumn Leaves</div>
+    </a>
+
+    <a class="tile" href="javascript:void(0)" onclick="openDemo('grass/','Grass &mdash; Dynamic Meadow')">
+      <div class="tile-frame">
+        <div class="tile-thumb"><img src="grass/icon.jpg" alt="Grass wallpaper preview"></div>
+      </div>
+      <div class="tile-caption">Grass &middot; Dynamic Meadow</div>
+    </a>
+
+    <a class="tile" href="javascript:void(0)" onclick="openDemo('galaxy/','Galaxy &mdash; Spiral Nebula')">
+      <div class="tile-frame">
+        <div class="tile-thumb"><img src="galaxy/icon.jpg" alt="Galaxy wallpaper preview"></div>
+      </div>
+      <div class="tile-caption">Galaxy &middot; Spiral Nebula</div>
+    </a>
+  </div>
+
+  <footer>
+    <a href="https://github.com/dynnbw/RE-Android-Live-Wallpapers">GitHub</a>
+    <span class="divider">&middot;</span>
+    <a href="https://github.com/dynnbw/RE-Android-Live-Wallpapers/releases">Releases</a>
+    <span class="divider">&middot;</span>
+    <a href="https://github.com/dynnbw/RE-Android-Live-Wallpapers/blob/main/LICENSE">Apache 2.0</a>
+    <span class="divider">&middot;</span>
+    <a href="https://apkpure.com/p/com.reandroid.wallpaper">APKPure</a>
+    <span class="divider">&middot;</span>
+    <a href="index.html">Modern version</a>
+    <br><br>
+    Built with WebGL &middot; Ported from AOSP RenderScript
+  </footer>
+
+  <!-- Demo iframe overlay (ids must match js/script.js) -->
+  <div class="demo-overlay" id="demoOverlay">
+    <div class="demo-frame">
+      <div class="demo-frame-header">
+        <span class="demo-title" id="demoTitle">Demo</span>
+        <button class="demo-close" id="demoClose">&times;</button>
+      </div>
+      <iframe id="demoIframe" src="" allow="autoplay" allowfullscreen></iframe>
+    </div>
+  </div>
+
+</div>
+
+<script src="js/script.js"></script>
+
+</body>
+</html>
