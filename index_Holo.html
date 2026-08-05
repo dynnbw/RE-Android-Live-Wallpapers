@@ -25,46 +25,30 @@
   <div class="holo-layout">
 
     <div class="holo-main">
-      <div class="section-label">LIVE PREVIEWS</div>
+      <div class="section-label">WALLPAPERS</div>
 
       <div class="holo-grid">
-        <div class="tile tile-live">
+        <a class="tile tile-demo" href="javascript:void(0)" onclick="showPreview('fall/','Fall — Autumn Leaves')">
           <div class="tile-frame">
-            <div class="tile-thumb tile-live-thumb">
-              <iframe src="fall/" title="Fall — Autumn Leaves" allow="autoplay" loading="eager"></iframe>
-              <span class="tile-badge">WebGL</span>
-              <button class="tile-expand" onclick="openDemo('fall/','Fall &mdash; Autumn Leaves')">Expand &#8599;</button>
-            </div>
+            <div class="tile-thumb"><img src="fall/icon.jpg" alt="Fall wallpaper preview"><span class="tile-badge">WebGL</span></div>
           </div>
           <div class="tile-caption">Fall &middot; Autumn Leaves</div>
-        </div>
+        </a>
 
-        <div class="tile tile-live">
+        <a class="tile tile-demo" href="javascript:void(0)" onclick="showPreview('grass/','Grass — Dynamic Meadow')">
           <div class="tile-frame">
-            <div class="tile-thumb tile-live-thumb">
-              <iframe src="grass/" title="Grass — Dynamic Meadow" allow="autoplay" loading="lazy"></iframe>
-              <span class="tile-badge">WebGL</span>
-              <button class="tile-expand" onclick="openDemo('grass/','Grass &mdash; Dynamic Meadow')">Expand &#8599;</button>
-            </div>
+            <div class="tile-thumb"><img src="grass/icon.jpg" alt="Grass wallpaper preview"><span class="tile-badge">WebGL</span></div>
           </div>
           <div class="tile-caption">Grass &middot; Dynamic Meadow</div>
-        </div>
+        </a>
 
-        <div class="tile tile-live">
+        <a class="tile tile-demo" href="javascript:void(0)" onclick="showPreview('galaxy/','Galaxy — Spiral Nebula')">
           <div class="tile-frame">
-            <div class="tile-thumb tile-live-thumb">
-              <iframe src="galaxy/" title="Galaxy — Spiral Nebula" allow="autoplay" loading="lazy"></iframe>
-              <span class="tile-badge">WebGL</span>
-              <button class="tile-expand" onclick="openDemo('galaxy/','Galaxy &mdash; Spiral Nebula')">Expand &#8599;</button>
-            </div>
+            <div class="tile-thumb"><img src="galaxy/icon.jpg" alt="Galaxy wallpaper preview"><span class="tile-badge">WebGL</span></div>
           </div>
           <div class="tile-caption">Galaxy &middot; Spiral Nebula</div>
-        </div>
-      </div>
+        </a>
 
-      <div class="section-label">MORE WALLPAPERS</div>
-
-      <div class="holo-grid">
         <div class="tile tile-static">
           <div class="tile-frame">
             <div class="tile-thumb"><img src="thumbs/aurora2.jpg" alt="Aurora wallpaper preview" loading="lazy"></div>
@@ -110,6 +94,18 @@
     </div>
 
     <div class="holo-sidebar">
+
+      <div class="win preview-win">
+        <div class="win-header">
+          <span class="dot dot-red"></span>
+          <span class="dot dot-yellow"></span>
+          <span class="dot dot-green"></span>
+          <span class="win-title" id="previewTitle">PREVIEW &mdash; Fall</span>
+        </div>
+        <div class="preview-body">
+          <iframe id="livePreview" src="fall/" title="Live wallpaper preview" allow="autoplay"></iframe>
+        </div>
+      </div>
 
       <div class="stats-window">
         <div class="stats-header">
@@ -180,6 +176,15 @@
 </div>
 
 <script src="js/script.js"></script>
+<script>
+function showPreview(url, label) {
+  var f = document.getElementById('livePreview');
+  var t = document.getElementById('previewTitle');
+  if (!f || !t) return;
+  f.src = url;
+  t.textContent = 'PREVIEW — ' + label;
+}
+</script>
 <script>
 (function() {
   var el = document.getElementById('ghStars');
