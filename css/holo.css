@@ -59,7 +59,7 @@ body {
 /* ── STATS window (Windows 7 window look) ── */
 .stats-window {
   border: 1px solid #B8B8B8; border-radius: 5px;
-  background: #fff; overflow: hidden; margin-bottom: 22px;
+  background: #fff; overflow: hidden; margin: 18px 0 22px;
   box-shadow: 0 2px 6px rgba(0,0,0,.16), inset 0 1px 0 #fff;
 }
 .stats-header {
