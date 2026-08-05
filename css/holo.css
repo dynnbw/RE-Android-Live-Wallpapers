@@ -239,11 +239,14 @@ footer .divider { margin: 0 8px; color: #BBB; }
 @media (max-width: 1050px) {
   .holo-layout { flex-wrap: wrap; }
   .holo-main { flex-basis: 100%; order: 3; }
+  /* Sidebar stretches to fill the row next to the phone, windows stay stacked */
+  .holo-sidebar { flex: 1; }
 }
 
 @media (max-width: 700px) {
   .holo-layout { flex-direction: column; }
   .preview-win, .holo-sidebar { width: 100%; }
+  .holo-sidebar { flex: none; }
 }
 
 @media (max-width: 600px) {
