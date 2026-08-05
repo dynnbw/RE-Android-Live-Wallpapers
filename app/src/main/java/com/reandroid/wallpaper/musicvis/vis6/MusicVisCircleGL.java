@@ -1,4 +1,4 @@
-package com.reandroid.wallpaper.musicvis;
+package com.reandroid.wallpaper.musicvis.vis6;
 
 import com.reandroid.utils.GLTextureUtils;
 import android.content.Context;

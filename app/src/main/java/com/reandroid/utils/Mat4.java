@@ -1,19 +1,19 @@
-package com.reandroid.wallpaper.musicvis;
+package com.reandroid.utils;
 
 /**
  * Minimal 4x4 column-major matrix math (replaces android.opengl.Matrix).
  * All static methods operate on float[16] in place.
  */
-final class Mat4 {
+public final class Mat4 {
     private Mat4() {}
 
-    static void setIdentityM(float[] m) {
+    public static void setIdentityM(float[] m) {
         for (int i = 0; i < 16; i++) m[i] = 0f;
         m[0] = m[5] = m[10] = m[15] = 1f;
     }
 
     /** Build an orthographic projection matrix into m (offset 0). */
-    static void orthoM(float[] m, float left, float right,
+    public static void orthoM(float[] m, float left, float right,
                        float bottom, float top, float near, float far) {
         float rml = right - left;
         float tmb = top - bottom;
@@ -29,7 +29,7 @@ final class Mat4 {
     }
 
     /** Build a frustum projection matrix into m (offset 0). */
-    static void frustumM(float[] m, float left, float right,
+    public static void frustumM(float[] m, float left, float right,
                          float bottom, float top, float near, float far) {
         float rml = right - left;
         float tmb = top - bottom;
@@ -45,14 +45,14 @@ final class Mat4 {
     }
 
     /** Right-multiply m by a translation matrix: m = m * T(x,y,z). */
-    static void translateM(float[] m, float x, float y, float z) {
+    public static void translateM(float[] m, float x, float y, float z) {
         for (int i = 0; i < 4; i++) {
             m[12 + i] += m[i] * x + m[4 + i] * y + m[8 + i] * z;
         }
     }
 
     /** Right-multiply m by a scale matrix: m = m * S(x,y,z). */
-    static void scaleM(float[] m, float x, float y, float z) {
+    public static void scaleM(float[] m, float x, float y, float z) {
         for (int i = 0; i < 4; i++) {
             m[i]     *= x;
             m[4 + i] *= y;
@@ -61,7 +61,7 @@ final class Mat4 {
     }
 
     /** Right-multiply m by a rotation matrix: m = m * R(angle, axis). */
-    static void rotateM(float[] m, float angle, float ax, float ay, float az) {
+    public static void rotateM(float[] m, float angle, float ax, float ay, float az) {
         float rad = (float) Math.toRadians(angle);
         float c = (float) Math.cos(rad);
         float s = (float) Math.sin(rad);
@@ -93,7 +93,7 @@ final class Mat4 {
     }
 
     /** Multiply two 4x4 matrices: result = a * b. */
-    static void multiplyMM(float[] result, float[] a, float[] b) {
+    public static void multiplyMM(float[] result, float[] a, float[] b) {
         float[] tmp = new float[16];
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
@@ -108,7 +108,7 @@ final class Mat4 {
     }
 
     /** Copy src into dst (both float[16]). */
-    static void copy(float[] dst, float[] src) {
+    public static void copy(float[] dst, float[] src) {
         System.arraycopy(src, 0, dst, 0, 16);
     }
 }

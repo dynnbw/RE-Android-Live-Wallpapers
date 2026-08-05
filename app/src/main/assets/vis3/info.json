@@ -1,7 +1,7 @@
 {
   "label": "@string/wallpaper_vis3",
-  "plugin": "com.reandroid.wallpaper.musicvis.Vis3Plugin",
-  "previewClass": "com.reandroid.wallpaper.musicvis.MusicVisWaveSceneFFT",
+  "plugin": "com.reandroid.wallpaper.musicvis.vis3.Vis3Plugin",
+  "previewClass": "com.reandroid.wallpaper.musicvis.vis3.WaveSceneFFT",
   "permissions": [
     "RECORD_AUDIO"
   ]

@@ -1,6 +1,7 @@
 package com.reandroid.wallpaper.musicvis;
 
 import android.content.Context;
+import com.reandroid.utils.Mat4;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 

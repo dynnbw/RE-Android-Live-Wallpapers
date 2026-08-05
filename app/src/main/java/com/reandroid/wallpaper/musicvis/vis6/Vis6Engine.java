@@ -1,4 +1,4 @@
-package com.reandroid.wallpaper.musicvis;
+package com.reandroid.wallpaper.musicvis.vis6;
 import android.content.Context;
 import com.reandroid.gles.GLESScene;
 import com.reandroid.plugin.BasePluginEngine;

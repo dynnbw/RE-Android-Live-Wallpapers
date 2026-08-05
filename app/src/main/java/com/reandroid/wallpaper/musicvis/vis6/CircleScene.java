@@ -1,6 +1,9 @@
-package com.reandroid.wallpaper.musicvis;
+package com.reandroid.wallpaper.musicvis.vis6;
 
 import android.content.Context;
+import com.reandroid.wallpaper.musicvis.AudioCapture;
+import com.reandroid.wallpaper.musicvis.AudioVisBase;
+import com.reandroid.utils.Mat4;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 

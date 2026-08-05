@@ -1,13 +1,14 @@
 package com.reandroid.wallpaper.musicvis;
 
 import android.content.Context;
+import com.reandroid.utils.Mat4;
 
 /**
  * Pure-logic VU meter scene for vis4.
  * Contains needle physics, projection computation.
  * Has ZERO GL imports.
  */
-final class VuScene extends AudioVisBase {
+public final class VuScene extends AudioVisBase {
 
     // Needle physics
     int mNeedlePos = 0;

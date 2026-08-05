@@ -1,6 +1,7 @@
 package com.reandroid.wallpaper.musicvis;
 
 import android.content.Context;
+import com.reandroid.utils.Mat4;
 import android.content.SharedPreferences;
 
 /**
@@ -8,8 +9,8 @@ import android.content.SharedPreferences;
  * Contains ALL data processing, idle/fade, buffer building, and MVP computation.
  * Has ZERO GL imports.
  */
-final class WaveScene extends AudioVisBase {
-    enum Mode { PCM, FFT }
+public final class WaveScene extends AudioVisBase {
+    public enum Mode { PCM, FFT }
 
     static final int LINE_COUNT = 1024;
     private static final int FADEOUT_LENGTH = 100;

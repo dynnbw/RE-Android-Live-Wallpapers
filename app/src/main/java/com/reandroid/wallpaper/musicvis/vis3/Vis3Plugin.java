@@ -1,4 +1,4 @@
-package com.reandroid.wallpaper.musicvis;
+package com.reandroid.wallpaper.musicvis.vis3;
 import android.content.Context;
 import com.reandroid.plugin.WallpaperEngine;
 import com.reandroid.plugin.WallpaperPlugin;
