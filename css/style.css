@@ -15,11 +15,16 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-  font-family: 'Source Serif 4', 'Noto Serif SC', 'Noto Serif', Georgia, serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
   overflow-x: hidden;
+}
+
+/* Serif is reserved for display type; UI chrome stays sans */
+.logo, h1, h2, .section-title {
+  font-family: 'Source Serif 4', 'Noto Serif SC', 'Noto Serif', Georgia, serif;
 }
 
 /* ── Flowing background blobs ── */
@@ -156,11 +161,36 @@ nav .gh:hover { background: var(--surface-hover); }
   background: var(--surface); border: 1px solid var(--border);
   border-radius: var(--radius); overflow: hidden;
   transition: all .3s; position: relative;
+  /* Default accent = brand green (Grass theme); per-card overrides below */
+  --card-accent: var(--green);
+  --card-glow: var(--green-glow);
+  --card-badge-bg: rgba(34,197,94,.15);
+  --card-badge-bd: rgba(34,197,94,.25);
+  --card-btn: var(--accent);
+  --card-btn-hover: #065f46;
 }
 .card:hover {
-  border-color: var(--accent);
+  border-color: var(--card-accent);
   transform: translateY(-2px);
-  box-shadow: 0 12px 40px rgba(0,0,0,.08), 0 0 60px var(--accent-glow);
+  box-shadow: 0 12px 40px rgba(0,0,0,.08), 0 0 60px var(--card-glow);
+}
+
+/* Per-card accents sampled from each wallpaper's palette */
+.card-fall {
+  --card-accent: #d97706;
+  --card-glow: rgba(217,119,6,.15);
+  --card-badge-bg: rgba(217,119,6,.14);
+  --card-badge-bd: rgba(217,119,6,.28);
+  --card-btn: #d97706;
+  --card-btn-hover: #b45309;
+}
+.card-galaxy {
+  --card-accent: #7c3aed;
+  --card-glow: rgba(124,58,237,.15);
+  --card-badge-bg: rgba(124,58,237,.14);
+  --card-badge-bd: rgba(124,58,237,.28);
+  --card-btn: #7c3aed;
+  --card-btn-hover: #6d28d9;
 }
 .card-media {
   position: relative; height: 220px; overflow: hidden;
@@ -173,18 +203,18 @@ nav .gh:hover { background: var(--surface-hover); }
 .card:hover .card-media img { transform: scale(1.04); }
 .card-media .overlay {
   position: absolute; inset: 0;
-  background: linear-gradient(to top, rgba(9,9,11,.6), transparent 50%);
+  background: linear-gradient(to top, rgba(9,9,11,.75), transparent 55%);
 }
 .card-media .live-badge {
   position: absolute; top: 12px; right: 12px;
-  background: rgba(34,197,94,.15); color: var(--green);
+  background: var(--card-badge-bg); color: var(--card-accent);
   font-size: .75em; font-weight: 600; padding: 3px 10px;
-  border-radius: 6px; border: 1px solid rgba(34,197,94,.25);
+  border-radius: 6px; border: 1px solid var(--card-badge-bd);
   display: flex; align-items: center; gap: 5px;
 }
 .live-badge::before {
   content: ''; width: 6px; height: 6px; border-radius: 50%;
-  background: var(--green); animation: pulse 2s infinite;
+  background: var(--card-accent); animation: pulse 2s infinite;
 }
 @keyframes pulse {
   0%,100% { opacity: 1; } 50% { opacity: .3; }
@@ -196,7 +226,7 @@ nav .gh:hover { background: var(--surface-hover); }
   font-size: .72em; font-weight: 500; padding: 2px 8px;
   border-radius: 5px; background: var(--surface-hover); color: var(--muted);
 }
-.tag.gl { background: rgba(59,130,246,.1); color: var(--accent); border: 1px solid rgba(59,130,246,.2); }
+.tag.gl { background: rgba(59,130,246,.1); color: #2563eb; border: 1px solid rgba(59,130,246,.2); }
 .tag.vk { background: rgba(168,85,247,.1); color: #a855f7; border: 1px solid rgba(168,85,247,.2); }
 
 .card-body h2 { font-size: 1.15em; font-weight: 700; margin-bottom: 6px; letter-spacing: -.01em; }
@@ -207,10 +237,8 @@ nav .gh:hover { background: var(--surface-hover); }
   font-size: .88em; font-weight: 600; text-decoration: none;
   transition: all .2s;
 }
-.btn-demo { background: var(--accent); color: #fff; }
-.btn-demo:hover { background: #065f46; }
-.btn-source { background: var(--surface-hover); color: var(--text); border: 1px solid var(--border); }
-.btn-source:hover { background: #e2e8f0; }
+.btn-demo { background: var(--card-btn); color: #fff; }
+.btn-demo:hover { background: var(--card-btn-hover); }
 
 /* .Footer */
 footer {
@@ -255,6 +283,11 @@ footer .divider { margin: 0 8px; color: #cbd5e1; }
 }
 .demo-frame iframe {
   flex: 1; border: 0; width: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bg-blob { animation: none; }
+  .live-badge::before { animation: none; }
 }
 
 @media (max-width: 600px) {

@@ -28,6 +28,6 @@ python3 -m http.server 8080
 
 ## 源码
 
-完整的 Android 项目 — 31 款壁纸，OpenGL ES 2.0 与 Vulkan 双后端 — 位于仓库 `main` 分支：
+完整的 Android 项目 — 30 款壁纸，OpenGL ES 2.0 与 Vulkan 双后端 — 位于仓库 `main` 分支：
 
 [github.com/dynnbw/RE-Android-Live-Wallpapers](https://github.com/dynnbw/RE-Android-Live-Wallpapers)

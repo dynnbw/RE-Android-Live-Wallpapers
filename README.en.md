@@ -28,6 +28,6 @@ python3 -m http.server 8080
 
 ## Source
 
-The full Android project — 31 wallpapers with OpenGL ES 2.0 and Vulkan backends — is on the `main` branch of this repository:
+The full Android project — 30 wallpapers with OpenGL ES 2.0 and Vulkan backends — is on the `main` branch of this repository:
 
 [github.com/dynnbw/RE-Android-Live-Wallpapers](https://github.com/dynnbw/RE-Android-Live-Wallpapers)
