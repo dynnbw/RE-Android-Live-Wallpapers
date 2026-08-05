@@ -45,3 +45,5 @@ git-identity.config.example.ps1
 use-work-git.bat
 use-personal-git.bat
 show-git-identity.bat
+# Visual companion mockups
+.superpowers/

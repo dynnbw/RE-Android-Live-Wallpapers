@@ -59,7 +59,7 @@ body {
 /* ── STATS window (Windows 7 window look) ── */
 .stats-window {
   border: 1px solid #B8B8B8; border-radius: 5px;
-  background: #fff; overflow: hidden; margin: 18px 0 22px;
+  background: #fff; overflow: hidden; margin: 0;
   box-shadow: 0 2px 6px rgba(0,0,0,.16), inset 0 1px 0 #fff;
 }
 .stats-header {
@@ -128,6 +128,53 @@ body {
   transition: color .15s;
 }
 .tile:hover .tile-caption { color: var(--holo-blue-main); }
+.tile-static { cursor: default; }
+.tile-badge {
+  position: absolute; top: 5px; right: 5px; z-index: 1;
+  background: linear-gradient(#8EDBFF, #33B5E5);
+  border: 1px solid #0078A8; border-radius: 2px;
+  padding: 1px 6px; font-size: .6em; font-weight: 700; letter-spacing: .3px;
+  color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,.5);
+}
+
+/* ── Layout: grid left + sidebar windows right ── */
+.holo-layout {
+  display: flex; gap: 18px; align-items: flex-start;
+}
+.holo-main { flex: 2.2; min-width: 0; }
+.holo-sidebar { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 14px; }
+
+/* ── Generic window (Windows 7 look) ── */
+.win {
+  border: 1px solid #B8B8B8; border-radius: 5px;
+  background: #fff; overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0,0,0,.16), inset 0 1px 0 #fff;
+}
+.win-header {
+  display: flex; align-items: center; gap: 5px;
+  padding: 5px 9px;
+  background: linear-gradient(#F7F7F7, #E6E6E6);
+  border-bottom: 1px solid #D2D2D2;
+  box-shadow: inset 0 1px 0 #fff;
+}
+.win-title { font-size: .68em; font-weight: 600; letter-spacing: .5px; color: #777; margin-left: 6px; }
+
+.feat-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 8px 10px; font-size: .82em;
+}
+.feat-row + .feat-row { border-top: 1px solid #ECECEC; }
+.feat-key { color: #333; font-weight: 500; }
+.feat-val { color: #888; }
+
+.gh-star-row { padding: 8px 10px; font-size: .82em; color: #333; border-bottom: 1px solid #ECECEC; }
+.gh-star { color: #FF8800; }
+.gh-link {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 8px 10px; font-size: .82em; color: var(--holo-blue-main); text-decoration: none;
+}
+.gh-link:hover { background: #F0F9FF; text-decoration: underline; }
+.gh-arrow { color: #BBB; }
 
 /* ── Footer ── */
 footer {
@@ -175,8 +222,15 @@ footer .divider { margin: 0 8px; color: #BBB; }
 }
 .demo-frame iframe { flex: 1; border: 0; width: 100%; }
 
+@media (max-width: 900px) {
+  .holo-layout { flex-direction: column; }
+  .holo-sidebar { flex-direction: row; }
+  .holo-sidebar .win, .holo-sidebar .stats-window { flex: 1; }
+}
+
 @media (max-width: 600px) {
   .holo-grid { grid-template-columns: 1fr; }
+  .holo-sidebar { flex-direction: column; }
   .holo-title { font-size: .9em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .holo-btn { padding: 6px 12px; }
   .demo-frame { width: 100vw; height: 100vh; border-radius: 0; }

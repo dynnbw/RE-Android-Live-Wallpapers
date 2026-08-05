@@ -22,43 +22,118 @@
 
 <div class="container">
 
-  <div class="stats-window">
-    <div class="stats-header">
-      <span class="dot dot-red"></span>
-      <span class="dot dot-yellow"></span>
-      <span class="dot dot-green"></span>
-      <span class="stats-label">STATS</span>
+  <div class="holo-layout">
+
+    <div class="holo-main">
+      <div class="section-label">WEBGL PREVIEWS</div>
+
+      <div class="holo-grid">
+        <a class="tile tile-demo" href="javascript:void(0)" onclick="openDemo('fall/','Fall &mdash; Autumn Leaves')">
+          <div class="tile-frame">
+            <div class="tile-thumb"><img src="fall/icon.jpg" alt="Fall wallpaper preview"><span class="tile-badge">WebGL</span></div>
+          </div>
+          <div class="tile-caption">Fall &middot; Autumn Leaves</div>
+        </a>
+
+        <a class="tile tile-demo" href="javascript:void(0)" onclick="openDemo('grass/','Grass &mdash; Dynamic Meadow')">
+          <div class="tile-frame">
+            <div class="tile-thumb"><img src="grass/icon.jpg" alt="Grass wallpaper preview"><span class="tile-badge">WebGL</span></div>
+          </div>
+          <div class="tile-caption">Grass &middot; Dynamic Meadow</div>
+        </a>
+
+        <a class="tile tile-demo" href="javascript:void(0)" onclick="openDemo('galaxy/','Galaxy &mdash; Spiral Nebula')">
+          <div class="tile-frame">
+            <div class="tile-thumb"><img src="galaxy/icon.jpg" alt="Galaxy wallpaper preview"><span class="tile-badge">WebGL</span></div>
+          </div>
+          <div class="tile-caption">Galaxy &middot; Spiral Nebula</div>
+        </a>
+
+        <div class="tile tile-static">
+          <div class="tile-frame">
+            <div class="tile-thumb"><img src="thumbs/aurora2.jpg" alt="Aurora wallpaper preview" loading="lazy"></div>
+          </div>
+          <div class="tile-caption">Aurora</div>
+        </div>
+
+        <div class="tile tile-static">
+          <div class="tile-frame">
+            <div class="tile-thumb"><img src="thumbs/fireworks.jpg" alt="Fireworks wallpaper preview" loading="lazy"></div>
+          </div>
+          <div class="tile-caption">Fireworks</div>
+        </div>
+
+        <div class="tile tile-static">
+          <div class="tile-frame">
+            <div class="tile-thumb"><img src="thumbs/microbes.jpg" alt="Microbes wallpaper preview" loading="lazy"></div>
+          </div>
+          <div class="tile-caption">Microbes</div>
+        </div>
+
+        <div class="tile tile-static">
+          <div class="tile-frame">
+            <div class="tile-thumb"><img src="thumbs/nexus.jpg" alt="Nexus wallpaper preview" loading="lazy"></div>
+          </div>
+          <div class="tile-caption">Nexus</div>
+        </div>
+
+        <div class="tile tile-static">
+          <div class="tile-frame">
+            <div class="tile-thumb"><img src="thumbs/polarclock.jpg" alt="Polar Clock wallpaper preview" loading="lazy"></div>
+          </div>
+          <div class="tile-caption">Polar Clock</div>
+        </div>
+
+        <div class="tile tile-static">
+          <div class="tile-frame">
+            <div class="tile-thumb"><img src="thumbs/wildworld.jpg" alt="Wild World wallpaper preview" loading="lazy"></div>
+          </div>
+          <div class="tile-caption">Wild World</div>
+        </div>
+      </div>
     </div>
-    <div class="stats-body">
-      <div class="stat"><div class="stat-num blue">30</div><div class="stat-label">Wallpapers</div></div>
-      <div class="stat"><div class="stat-num">27</div><div class="stat-label">OpenGL ES</div></div>
-      <div class="stat"><div class="stat-num">4</div><div class="stat-label">Vulkan</div></div>
+
+    <div class="holo-sidebar">
+
+      <div class="stats-window">
+        <div class="stats-header">
+          <span class="dot dot-red"></span>
+          <span class="dot dot-yellow"></span>
+          <span class="dot dot-green"></span>
+          <span class="stats-label">STATS</span>
+        </div>
+        <div class="stats-body">
+          <div class="stat"><div class="stat-num blue">30</div><div class="stat-label">Wallpapers</div></div>
+          <div class="stat"><div class="stat-num">27</div><div class="stat-label">OpenGL ES</div></div>
+          <div class="stat"><div class="stat-num">4</div><div class="stat-label">Vulkan</div></div>
+        </div>
+      </div>
+
+      <div class="win">
+        <div class="win-header">
+          <span class="dot dot-red"></span>
+          <span class="dot dot-yellow"></span>
+          <span class="dot dot-green"></span>
+          <span class="win-title">FEATURES</span>
+        </div>
+        <div class="feat-row"><span class="feat-key">Dual backend</span><span class="feat-val">GLES + Vulkan</span></div>
+        <div class="feat-row"><span class="feat-key">Ported from</span><span class="feat-val">RenderScript</span></div>
+        <div class="feat-row"><span class="feat-key">Android</span><span class="feat-val">API 24+</span></div>
+        <div class="feat-row"><span class="feat-key">License</span><span class="feat-val">Apache 2.0</span></div>
+      </div>
+
+      <div class="win">
+        <div class="win-header">
+          <span class="dot dot-red"></span>
+          <span class="dot dot-yellow"></span>
+          <span class="dot dot-green"></span>
+          <span class="win-title">GITHUB</span>
+        </div>
+        <div class="gh-star-row"><span class="gh-star">&#9733;</span> <span id="ghStars">8</span> stars</div>
+        <a class="gh-link" href="https://github.com/dynnbw/RE-Android-Live-Wallpapers">View on GitHub <span class="gh-arrow">&#8250;</span></a>
+      </div>
+
     </div>
-  </div>
-
-  <div class="section-label">WEBGL PREVIEWS</div>
-
-  <div class="holo-grid">
-    <a class="tile" href="javascript:void(0)" onclick="openDemo('fall/','Fall &mdash; Autumn Leaves')">
-      <div class="tile-frame">
-        <div class="tile-thumb"><img src="fall/icon.jpg" alt="Fall wallpaper preview"></div>
-      </div>
-      <div class="tile-caption">Fall &middot; Autumn Leaves</div>
-    </a>
-
-    <a class="tile" href="javascript:void(0)" onclick="openDemo('grass/','Grass &mdash; Dynamic Meadow')">
-      <div class="tile-frame">
-        <div class="tile-thumb"><img src="grass/icon.jpg" alt="Grass wallpaper preview"></div>
-      </div>
-      <div class="tile-caption">Grass &middot; Dynamic Meadow</div>
-    </a>
-
-    <a class="tile" href="javascript:void(0)" onclick="openDemo('galaxy/','Galaxy &mdash; Spiral Nebula')">
-      <div class="tile-frame">
-        <div class="tile-thumb"><img src="galaxy/icon.jpg" alt="Galaxy wallpaper preview"></div>
-      </div>
-      <div class="tile-caption">Galaxy &middot; Spiral Nebula</div>
-    </a>
   </div>
 
   <footer>
@@ -89,6 +164,20 @@
 </div>
 
 <script src="js/script.js"></script>
+<script>
+(function() {
+  var el = document.getElementById('ghStars');
+  if (!el) return;
+  fetch('https://api.github.com/repos/dynnbw/RE-Android-Live-Wallpapers', {cache: 'no-store'})
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d && typeof d.stargazers_count === 'number') {
+        el.textContent = d.stargazers_count.toLocaleString();
+      }
+    })
+    .catch(function() {});
+})();
+</script>
 
 </body>
 </html>
