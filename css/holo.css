@@ -136,6 +136,12 @@ body {
   padding: 1px 6px; font-size: .6em; font-weight: 700; letter-spacing: .3px;
   color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,.5);
 }
+.tile-badge-pc {
+  left: 5px; right: auto;
+  background: linear-gradient(#A0A0A0, #5E5E5E);
+  border: 1px solid #3F3F3F;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.4);
+}
 
 /* ── Layout: phone | wallpapers | info (3 columns) ── */
 .holo-layout {
