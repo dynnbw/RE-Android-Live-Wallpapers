@@ -137,13 +137,15 @@ body {
   color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,.5);
 }
 
-/* ── Layout: phone preview left + grid/windows right ── */
+/* ── Layout: phone | wallpapers | info (3 columns) ── */
 .holo-layout {
   display: flex; gap: 18px; align-items: flex-start;
 }
 .holo-main { flex: 1; min-width: 0; }
-.holo-windows { display: flex; gap: 14px; margin-bottom: 24px; }
-.holo-windows > * { flex: 1; min-width: 0; }
+.holo-sidebar {
+  width: 300px; flex: none;
+  display: flex; flex-direction: column; gap: 14px;
+}
 
 /* ── Generic window (Windows 7 look) ── */
 .win {
@@ -234,16 +236,18 @@ footer .divider { margin: 0 8px; color: #BBB; }
 }
 .demo-frame iframe { flex: 1; border: 0; width: 100%; }
 
-@media (max-width: 900px) {
+@media (max-width: 1050px) {
+  .holo-layout { flex-wrap: wrap; }
+  .holo-main { flex-basis: 100%; order: 3; }
+}
+
+@media (max-width: 700px) {
   .holo-layout { flex-direction: column; }
-  .preview-win { width: 100%; max-width: 320px; margin: 0 auto; }
-  .holo-windows { flex-wrap: wrap; }
-  .holo-windows > * { flex: 1 1 200px; }
+  .preview-win, .holo-sidebar { width: 100%; }
 }
 
 @media (max-width: 600px) {
   .holo-grid { grid-template-columns: 1fr; }
-  .holo-windows { flex-direction: column; }
   .holo-title { font-size: .9em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .holo-btn { padding: 6px 12px; }
   .demo-frame { width: 100vw; height: 100vh; border-radius: 0; }
