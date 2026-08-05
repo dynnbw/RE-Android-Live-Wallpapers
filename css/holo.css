@@ -146,6 +146,7 @@ body {
 /* ── Layout: phone | wallpapers | info (3 columns) ── */
 .holo-layout {
   display: flex; gap: 18px; align-items: flex-start;
+  margin-top: 18px;
 }
 .holo-main { flex: 1; min-width: 0; }
 .holo-sidebar {
