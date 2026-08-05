@@ -69,10 +69,6 @@ body {
   border-bottom: 1px solid #D2D2D2;
   box-shadow: inset 0 1px 0 #fff;
 }
-.dot { width: 10px; height: 10px; border-radius: 50%; }
-.dot-red { background: #E8503E; border: 1px solid #C73B2B; }
-.dot-yellow { background: #E8B53E; border: 1px solid #C99B2B; }
-.dot-green { background: #5EC43E; border: 1px solid #48A52C; }
 .stats-label { font-size: .7em; font-weight: 500; letter-spacing: .5px; color: #777; margin-left: 6px; }
 .stats-body { display: flex; }
 .stat { flex: 1; text-align: center; padding: 18px 0 14px; }
@@ -168,6 +164,8 @@ body {
   box-shadow: inset 0 1px 0 #fff;
 }
 .win-title { font-size: .68em; font-weight: 600; letter-spacing: .5px; color: #777; margin-left: 6px; }
+.win-icon { width: 16px; height: 16px; flex: none; }
+.win-icon-we { height: 12px; width: 12px; max-width: 48px; }
 
 /* ── Phone preview window (9:16 portrait, simulates a phone; scales with viewport) ── */
 .preview-win { width: auto; flex: 0 0 clamp(300px, 26vw, 520px); }
