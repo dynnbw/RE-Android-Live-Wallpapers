@@ -17,12 +17,12 @@ body {
   min-height: 100vh;
 }
 
-.container { max-width: 1500px; margin: 0 auto; padding: 0 20px; }
+.container { width: 100%; margin: 0 auto; padding: 0 20px; }
 
 /* ── Aero glass action bar (full-width window title bar; no blue underline) ── */
 .holo-bar {
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  width: 100%; padding: 10px max(20px, calc((100% - 1500px) / 2));
+  width: 100%; padding: 10px 20px;
   background: linear-gradient(#505050, #262626 60%, #1A1A1A);
   border-radius: 0;
   border-bottom: 1px solid #0F0F0F;
