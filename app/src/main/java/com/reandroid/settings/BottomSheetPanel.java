@@ -6,7 +6,6 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
-import android.view.ViewGroup;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.FrameLayout;
 
@@ -18,8 +17,8 @@ import com.reandroid.wallpaper.R;
  * 全屏预览下的底部设置抽屉。
  * 两态：默认态（peek，把手 + 第一行设置项）与展开态（75% 屏高完整列表）。
  * 触摸规则：
- *  - 默认态：抽屉区域内手势超过 slop 即拖动抽屉（列表不滚动）；
- *  - 展开态：列表可内部滚动，滚到顶部后下拉转交抽屉；
+ *  - 抽屉的展开/收回严格约束在把手（handle_area）区域拖动；
+ *  - 列表区域手势完全交给列表自身滚动，面板永不截胡；
  *  - 预览区域（抽屉上方）点按：展开时收起回默认态，事件透传给下层预览。
  */
 public class BottomSheetPanel extends FrameLayout {
@@ -32,11 +31,12 @@ public class BottomSheetPanel extends FrameLayout {
     private final ViewDragHelper mDragHelper;
     private final int mTouchSlop;
     private View mSheet;
+    private View mHandle;
     private int mExpandedTop;    // 展开态时抽屉顶部 y
     private int mCollapsedTop;   // 默认态时抽屉顶部 y
     private boolean mSheetMeasured;
     private boolean mExpanded;
-    private boolean mTouchInSheet;
+    private boolean mTouchOnHandle;
     private boolean mDragging;
     private float mDownY;
 
@@ -64,6 +64,7 @@ public class BottomSheetPanel extends FrameLayout {
     protected void onFinishInflate() {
         super.onFinishInflate();
         mSheet = findViewById(R.id.sheet_content);
+        mHandle = findViewById(R.id.handle_area);
     }
 
     @Override
@@ -105,77 +106,44 @@ public class BottomSheetPanel extends FrameLayout {
         int action = ev.getActionMasked();
         if (action == MotionEvent.ACTION_DOWN) {
             mDownY = ev.getY();
-            mTouchInSheet = ev.getY() >= mSheet.getTop();
+            mTouchOnHandle = isTouchOnHandle(ev.getX(), ev.getY());
             mDragging = false;
             mDragHelper.shouldInterceptTouchEvent(ev); // 仅让 ViewDragHelper 跟踪指针
-            if (!mTouchInSheet && mExpanded) {
+            if (ev.getY() < mSheet.getTop() && mExpanded) {
                 // 预览区域点按：收起回默认态，事件透传给下层预览
                 animateTo(mCollapsedTop);
                 setExpanded(false);
             }
             return false; // 先让子视图（按钮/列表）看到按下
         }
-        if (action == MotionEvent.ACTION_MOVE && mTouchInSheet) {
+        if (action == MotionEvent.ACTION_MOVE && mTouchOnHandle) {
             if (mDragging) {
                 return true; // 已接管的手势继续归面板处理
             }
-            float dy = ev.getY() - mDownY;
-            if (Math.abs(dy) <= mTouchSlop) {
-                return false;
-            }
-            boolean dragSheet = !mExpanded || !canScrollInDirection(ev.getX(), ev.getY(), dy);
-            if (dragSheet) {
-                // 手动接管拖拽：先喂给 ViewDragHelper 更新运动追踪，再显式捕获抽屉
+            if (Math.abs(ev.getY() - mDownY) > mTouchSlop) {
+                // 把手手势：先喂给 ViewDragHelper 更新运动追踪，再显式捕获抽屉
                 mDragging = true;
                 mDragHelper.shouldInterceptTouchEvent(ev);
                 mDragHelper.captureChildView(mSheet, ev.getPointerId(0));
                 return true;
             }
-            return false; // 列表自身可沿该方向滚动，交给列表
         }
         if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL) {
             mDragging = false;
         }
-        return false;
+        return false; // 其余区域（列表等）一律不拦截，交给自身滚动
     }
 
-    /**
-     * 从触摸点视图向上查找是否有可沿 dy 方向滚动的视图。
-     * dy > 0（手指下滑）→ 朝列表起始方向滚动；dy < 0（手指上滑）→ 朝列表末尾方向。
-     */
-    private boolean canScrollInDirection(float x, float y, float dy) {
-        int direction = dy > 0 ? 1 : -1;
-        View v = findViewUnder(x, y);
+    /** 触摸点是否落在把手区域内（面板坐标系）。 */
+    private boolean isTouchOnHandle(float x, float y) {
+        if (mHandle == null) return false;
+        int top = 0;
+        View v = mHandle;
         while (v != null && v != this) {
-            if (v.canScrollVertically(direction)) {
-                return true;
-            }
+            top += v.getTop();
             v = (View) v.getParent();
         }
-        return false;
-    }
-
-    /** 深度优先命中测试，返回触摸点最深的子视图。 */
-    private View findViewUnder(float x, float y) {
-        return findDeepestChild(this, x, y);
-    }
-
-    private View findDeepestChild(ViewGroup parent, float x, float y) {
-        for (int i = parent.getChildCount() - 1; i >= 0; i--) {
-            View child = parent.getChildAt(i);
-            if (child.getVisibility() != View.VISIBLE) continue;
-            if (x >= child.getLeft() && x < child.getRight()
-                    && y >= child.getTop() && y < child.getBottom()) {
-                if (child instanceof ViewGroup
-                        && ((ViewGroup) child).getChildCount() > 0) {
-                    View deep = findDeepestChild((ViewGroup) child,
-                            x - child.getLeft(), y - child.getTop());
-                    if (deep != null) return deep;
-                }
-                return child;
-            }
-        }
-        return null;
+        return y >= top && y < top + mHandle.getHeight();
     }
 
     @Override
