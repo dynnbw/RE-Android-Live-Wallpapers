@@ -6,6 +6,7 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
+import android.view.ViewGroup;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.FrameLayout;
 
@@ -35,6 +36,8 @@ public class BottomSheetPanel extends FrameLayout {
     private int mCollapsedTop;   // 默认态时抽屉顶部 y
     private boolean mSheetMeasured;
     private boolean mExpanded;
+    private boolean mTouchInSheet;
+    private boolean mDragging;
     private float mDownY;
 
     public BottomSheetPanel(Context context, AttributeSet attrs) {
@@ -102,28 +105,77 @@ public class BottomSheetPanel extends FrameLayout {
         int action = ev.getActionMasked();
         if (action == MotionEvent.ACTION_DOWN) {
             mDownY = ev.getY();
-            mDragHelper.shouldInterceptTouchEvent(ev); // 让 ViewDragHelper 跟踪指针
-            if (ev.getY() < mSheet.getTop()) {
-                // 预览区域：展开时收起，事件透传给下层预览
-                if (mExpanded) {
-                    animateTo(mCollapsedTop);
-                    setExpanded(false);
-                }
-                return false;
+            mTouchInSheet = ev.getY() >= mSheet.getTop();
+            mDragging = false;
+            mDragHelper.shouldInterceptTouchEvent(ev); // 仅让 ViewDragHelper 跟踪指针
+            if (!mTouchInSheet && mExpanded) {
+                // 预览区域点按：收起回默认态，事件透传给下层预览
+                animateTo(mCollapsedTop);
+                setExpanded(false);
             }
             return false; // 先让子视图（按钮/列表）看到按下
         }
-        if (action == MotionEvent.ACTION_MOVE && !mExpanded) {
-            // 默认态：手势超过 slop 即拖动抽屉（列表不允许滚动）
-            if (ev.getY() >= mSheet.getTop()
-                    && Math.abs(ev.getY() - mDownY) > mTouchSlop) {
+        if (action == MotionEvent.ACTION_MOVE && mTouchInSheet) {
+            if (mDragging) {
+                return true; // 已接管的手势继续归面板处理
+            }
+            float dy = ev.getY() - mDownY;
+            if (Math.abs(dy) <= mTouchSlop) {
+                return false;
+            }
+            boolean dragSheet = !mExpanded || !canScrollInDirection(ev.getX(), ev.getY(), dy);
+            if (dragSheet) {
+                // 手动接管拖拽：先喂给 ViewDragHelper 更新运动追踪，再显式捕获抽屉
+                mDragging = true;
+                mDragHelper.shouldInterceptTouchEvent(ev);
+                mDragHelper.captureChildView(mSheet, ev.getPointerId(0));
                 return true;
             }
+            return false; // 列表自身可沿该方向滚动，交给列表
         }
-        if (mExpanded) {
-            return mDragHelper.shouldInterceptTouchEvent(ev);
+        if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL) {
+            mDragging = false;
         }
-        return super.onInterceptTouchEvent(ev);
+        return false;
+    }
+
+    /**
+     * 从触摸点视图向上查找是否有可沿 dy 方向滚动的视图。
+     * dy > 0（手指下滑）→ 朝列表起始方向滚动；dy < 0（手指上滑）→ 朝列表末尾方向。
+     */
+    private boolean canScrollInDirection(float x, float y, float dy) {
+        int direction = dy > 0 ? 1 : -1;
+        View v = findViewUnder(x, y);
+        while (v != null && v != this) {
+            if (v.canScrollVertically(direction)) {
+                return true;
+            }
+            v = (View) v.getParent();
+        }
+        return false;
+    }
+
+    /** 深度优先命中测试，返回触摸点最深的子视图。 */
+    private View findViewUnder(float x, float y) {
+        return findDeepestChild(this, x, y);
+    }
+
+    private View findDeepestChild(ViewGroup parent, float x, float y) {
+        for (int i = parent.getChildCount() - 1; i >= 0; i--) {
+            View child = parent.getChildAt(i);
+            if (child.getVisibility() != View.VISIBLE) continue;
+            if (x >= child.getLeft() && x < child.getRight()
+                    && y >= child.getTop() && y < child.getBottom()) {
+                if (child instanceof ViewGroup
+                        && ((ViewGroup) child).getChildCount() > 0) {
+                    View deep = findDeepestChild((ViewGroup) child,
+                            x - child.getLeft(), y - child.getTop());
+                    if (deep != null) return deep;
+                }
+                return child;
+            }
+        }
+        return null;
     }
 
     @Override
