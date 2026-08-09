@@ -20,16 +20,14 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <!-- 与"打开系统壁纸选择器"卡片同款：内容层携带水波纹，跟随父级按压状态 -->
+        <!-- 内容层自身 clickable 承载水波纹；点击在代码中转发给根布局（触发 Preference 动作） -->
         <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/tile_content"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:clickable="true"
             android:focusable="true"
-            android:foreground="?attr/selectableItemBackground"
-            app:cardBackgroundColor="@color/md_theme_surface"
-            app:cardCornerRadius="6dp"
-            app:cardElevation="0dp">
+            android:foreground="?attr/selectableItemBackground">
 
             <!-- 4:3 缩略图（CardView 圆角裁剪） -->
             <androidx.constraintlayout.widget.ConstraintLayout

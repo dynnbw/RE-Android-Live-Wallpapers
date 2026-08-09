@@ -1,6 +1,7 @@
 package com.reandroid.settings;
 
 import android.app.WallpaperManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
@@ -12,12 +13,14 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceGroup;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceScreen;
+import androidx.preference.PreferenceViewHolder;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -137,7 +140,7 @@ public class SettingsMainFragment extends PreferenceFragmentCompat {
                     if (id != 0) title = getString(id);
                 }
 
-                Preference entry = new Preference(requireContext());
+                Preference entry = new WallpaperGridPreference(requireContext());
                 entry.setTitle(title);
                 entry.setLayoutResource(R.layout.preference_wallpaper_grid_item);
                 entry.setIcon(loadWallpaperIcon(am, dir));
@@ -185,6 +188,22 @@ public class SettingsMainFragment extends PreferenceFragmentCompat {
     private int dpToPx(int dp) {
         float density = requireContext().getResources().getDisplayMetrics().density;
         return Math.round(dp * density);
+    }
+
+    /** 网格磁贴：卡片内容层自持水波纹（clickable），点击转发给根布局触发 Preference 动作 */
+    private static class WallpaperGridPreference extends Preference {
+        WallpaperGridPreference(Context context) {
+            super(context);
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull PreferenceViewHolder holder) {
+            super.onBindViewHolder(holder);
+            View content = holder.itemView.findViewById(R.id.tile_content);
+            if (content != null) {
+                content.setOnClickListener(v -> holder.itemView.performClick());
+            }
+        }
     }
 
     /** 从 assets/{dir}/ 加载壁纸缩略图（icon.png 或 icon.jpg），失败回退占位图 */
