@@ -189,10 +189,6 @@
     <!-- Экран О программе -->
     <string name="about_app_info">Информация о приложении</string>
     <string name="about_project_intro">Описание проекта</string>
-    <string name="about_project_one_liner">Ремастер классических живых обоев</string>
-    <string name="about_project_description">Классические живые обои Android, полностью переработанные и модернизированные для новых устройств. RenderScript → OpenGL ES 2.0, высокая совместимость, низкое энергопотребление, ускорение GPU.</string>
-    <string name="about_project_highlights">Особенности</string>
-    <string name="about_project_highlights_detail">Низкое энергопотребление, высокая совместимость, оригинальная визуальная точность, ускорение GPU, долгосрочное обслуживание.</string>
     <string name="about_links">Ссылки и контакты</string>
     <string name="about_official_website">Открытый исходный код</string>
     <string name="about_official_website_url">https://github.com/dynnbw/RE-Android-Live-Wallpapers</string>

@@ -233,13 +233,6 @@
     <!-- About/关于界面专用 -->
     <string name="about_app_info">App Info</string>
     <string name="about_project_intro">Project Introduction</string>
-    <string name="about_project_one_liner">Classic live wallpaper remaster</string>
-    <string name="about_project_description">Classic Android live wallpapers, fully remastered and
-        modernized for new devices. RenderScript → OpenGL ES 2.0, high compatibility, low power, GPU
-        acceleration.</string>
-    <string name="about_project_highlights">Highlights</string>
-    <string name="about_project_highlights_detail">Low power, high compatibility, original visual
-        fidelity, GPU acceleration, long-term maintenance.</string>
     <string name="about_links">Links and Contact</string>
     <string name="about_official_website">Open-source project</string>
     <string name="about_official_website_url">https://github.com/dynnbw/RE-Android-Live-Wallpapers</string>

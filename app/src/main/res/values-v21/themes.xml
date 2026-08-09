@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- API 21+ 使用 preference 库的 values-v21 变体：分类标题 textColor=?android:attr/colorAccent，
+         而 colorAccent（md_theme_secondary）与背景同色导致不可见。
+         同名覆盖为跟随主题控制色：亮色深青近黑、暗色亮白。 -->
+    <style name="PreferenceCategoryTitleTextStyle">
+        <item name="android:textAppearance">?attr/preferenceCategoryTitleTextAppearance</item>
+        <item name="android:textColor">@color/md_theme_control</item>
+    </style>
+</resources>

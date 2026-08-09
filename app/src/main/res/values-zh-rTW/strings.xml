@@ -189,10 +189,6 @@
     <string name="about_title">關於</string>
     <string name="about_app_info">應用程式資訊</string>
     <string name="about_project_intro">專案簡介</string>
-    <string name="about_project_one_liner">經典動態桌布重製</string>
-    <string name="about_project_description">經典 Android 動態桌布，全面重製並適配新裝置。RenderScript → OpenGL ES 2.0，高相容、低功耗、GPU 加速。</string>
-    <string name="about_project_highlights">亮點</string>
-    <string name="about_project_highlights_detail">低功耗、高相容、原汁原味、GPU 加速、長期維護</string>
     <string name="about_links">連結與聯絡方式</string>
     <string name="about_official_website">開源項目</string>
     <string name="about_official_website_url">https://github.com/dynnbw/RE-Android-Live-Wallpapers</string>

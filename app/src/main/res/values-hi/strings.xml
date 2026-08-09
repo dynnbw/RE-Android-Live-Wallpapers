@@ -192,10 +192,6 @@
     <!-- परिचय/अबाउट स्क्रीन -->
     <string name="about_app_info">ऐप जानकारी</string>
     <string name="about_project_intro">परियोजना परिचय</string>
-    <string name="about_project_one_liner">क्लासिक लाइव वॉलपेपर रीमास्टर</string>
-    <string name="about_project_description">क्लासिक एंड्रॉइड लाइव वॉलपेपर, पूरी तरह से रीमास्टर किए गए और नए उपकरणों के लिए आधुनिकीकृत। रेंडरस्क्रिप्ट → ओपनजीएल ईएस 2.0, उच्च संगतता, कम बिजली, जीपीयू त्वरण।</string>
-    <string name="about_project_highlights">मुख्य बिंदु</string>
-    <string name="about_project_highlights_detail">कम बिजली, उच्च संगतता, मूल दृश्य सटीकता, जीपीयू त्वरण, दीर्घकालिक रखरखाव।</string>
     <string name="about_links">लिंक और संपर्क</string>
     <string name="about_official_website">ओपन सोर्स</string>
     <string name="about_official_website_url">https://github.com/dynnbw/RE-Android-Live-Wallpapers</string>

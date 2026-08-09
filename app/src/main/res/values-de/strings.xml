@@ -204,10 +204,6 @@
     <!-- About/关于界面专用 -->
     <string name="about_app_info">App-Info</string>
     <string name="about_project_intro">Projektvorstellung</string>
-    <string name="about_project_one_liner">Klassische Live-Hintergründe neu aufbereitet</string>
-    <string name="about_project_description">Klassische Android-Live-Hintergründe, vollständig neu aufbereitet und für neue Geräte modernisiert. RenderScript → OpenGL ES 2.0, hohe Kompatibilität, geringer Stromverbrauch, GPU-Beschleunigung.</string>
-    <string name="about_project_highlights">Highlights</string>
-    <string name="about_project_highlights_detail">Geringer Stromverbrauch, hohe Kompatibilität, originale visuelle Treue, GPU-Beschleunigung, langfristige Wartung.</string>
     <string name="about_links">Links und Kontakt</string>
     <string name="about_official_website">Open Source</string>
     <string name="about_official_website_url">https://github.com/dynnbw/RE-Android-Live-Wallpapers</string>

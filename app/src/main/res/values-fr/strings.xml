@@ -189,10 +189,6 @@
     <!-- Écran À propos -->
     <string name="about_app_info">Informations sur l’application</string>
     <string name="about_project_intro">Présentation du projet</string>
-    <string name="about_project_one_liner">Remasterisation de fonds d’écran animés classiques</string>
-    <string name="about_project_description">Fonds d’écran animés classiques d’Android, entièrement remasterisés et modernisés pour les nouveaux appareils. RenderScript → OpenGL ES 2.0, haute compatibilité, faible consommation, accélération GPU.</string>
-    <string name="about_project_highlights">Points forts</string>
-    <string name="about_project_highlights_detail">Faible consommation, haute compatibilité, fidélité visuelle d’origine, accélération GPU, maintenance à long terme.</string>
     <string name="about_links">Liens et contact</string>
     <string name="about_official_website">Open Source</string>
     <string name="about_official_website_url">https://github.com/dynnbw/RE-Android-Live-Wallpapers</string>

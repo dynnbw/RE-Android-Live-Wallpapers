@@ -12,44 +12,40 @@
         android:key="about_version" />
 
     <Preference
+        android:icon="@drawable/ic_update"
         android:title="@string/check_for_updates"
         android:summary="@string/app_version_summary"
         android:key="about_check_update" />
 
-    <!-- 项目简介 -->
-    <PreferenceCategory android:title="@string/about_project_intro" />
-    <Preference
-        android:title="@string/about_project_one_liner"
-        android:summary="@string/about_project_description"
-        android:selectable="false" />
-    <Preference
-        android:title="@string/about_project_highlights"
-        android:summary="@string/about_project_highlights_detail"
-        android:selectable="false" />
-
     <!-- 跳转链接与联系方式 -->
     <PreferenceCategory android:title="@string/about_links" />
     <Preference
+        android:icon="@drawable/ic_github"
         android:title="@string/about_official_website"
         android:summary="@string/about_official_website_url"
         android:key="about_official_website" />
     <Preference
+        android:icon="@drawable/ic_email"
         android:title="@string/about_email"
         android:summary="@string/about_email_address"
         android:key="about_email" />
     <Preference
+        android:icon="@drawable/ic_email"
         android:title="@string/about_email"
         android:summary="@string/about_email_address_alt"
         android:key="about_email2" />
     <Preference
+        android:icon="@drawable/ic_bilibili"
         android:title="@string/about_bilibili"
         android:summary="@string/about_bilibili_url"
         android:key="about_bilibili" />
     <Preference
+        android:icon="@drawable/ic_qq"
         android:title="@string/about_qq"
         android:summary="@string/about_qq_url"
         android:key="about_qq" />
     <Preference
+        android:icon="@drawable/ic_feedback"
         android:title="@string/about_feedback"
         android:summary="@string/about_feedback_contact"
         android:key="about_feedback" />

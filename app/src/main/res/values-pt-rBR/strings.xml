@@ -194,10 +194,6 @@
     <!-- Tela Sobre/App Info -->
     <string name="about_app_info">Informações do Aplicativo</string>
     <string name="about_project_intro">Introdução do Projeto</string>
-    <string name="about_project_one_liner">Remasterização de papéis de parede vivos clássicos</string>
-    <string name="about_project_description">Papéis de parede vivos clássicos do Android, totalmente remasterizados e modernizados para novos dispositivos. RenderScript → OpenGL ES 2.0, alta compatibilidade, baixo consumo, aceleração por GPU.</string>
-    <string name="about_project_highlights">Destaques</string>
-    <string name="about_project_highlights_detail">Baixo consumo, alta compatibilidade, fidelidade visual original, aceleração por GPU, manutenção de longo prazo.</string>
     <string name="about_links">Links e Contato</string>
     <string name="about_official_website">Código Aberto</string>
     <string name="about_official_website_url">https://github.com/dynnbw/RE-Android-Live-Wallpapers</string>

@@ -189,10 +189,6 @@
     <!-- পরিচিতি/অ্যাপ তথ্য স্ক্রিন -->
     <string name="about_app_info">অ্যাপ তথ্য</string>
     <string name="about_project_intro">প্রকল্পের পরিচিতি</string>
-    <string name="about_project_one_liner">ক্লাসিক লাইভ ওয়ালপেপার রিমাস্টার</string>
-    <string name="about_project_description">ক্লাসিক অ্যান্ড্রয়েড লাইভ ওয়ালপেপার, নতুন ডিভাইসের জন্য সম্পূর্ণরূপে রিমাস্টার এবং আধুনিকীকরণ করা হয়েছে। রেন্ডারস্ক্রিপ্ট → ওপেনজিএল ইএস ২.০, উচ্চ সামঞ্জস্য, কম শক্তি, জিপিইউ ত্বরণ।</string>
-    <string name="about_project_highlights">মূল বৈশিষ্ট্য</string>
-    <string name="about_project_highlights_detail">কম শক্তি, উচ্চ সামঞ্জস্য, মূল ভিজুয়াল নির্ভুলতা, জিপিইউ ত্বরণ, দীর্ঘমেয়াদী রক্ষণাবেক্ষণ।</string>
     <string name="about_links">লিঙ্ক এবং যোগাযোগ</string>
     <string name="about_official_website">ওপেন সোর্স</string>
     <string name="about_official_website_url">https://github.com/dynnbw/RE-Android-Live-Wallpapers</string>

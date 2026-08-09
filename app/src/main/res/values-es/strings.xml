@@ -200,10 +200,6 @@
     <!-- About/关于界面专用 -->
     <string name="about_app_info">Información de la aplicación</string>
     <string name="about_project_intro">Introducción del proyecto</string>
-    <string name="about_project_one_liner">Remasterización de fondos de pantalla en vivo clásicos</string>
-    <string name="about_project_description">Fondos de pantalla en vivo clásicos de Android, completamente remasterizados y modernizados para dispositivos nuevos. RenderScript → OpenGL ES 2.0, alta compatibilidad, bajo consumo, aceleración por GPU.</string>
-    <string name="about_project_highlights">Destacados</string>
-    <string name="about_project_highlights_detail">Bajo consumo, alta compatibilidad, fidelidad visual original, aceleración por GPU, mantenimiento a largo plazo.</string>
     <string name="about_links">Enlaces y contacto</string>
     <string name="about_official_website">Código Abierto</string>
     <string name="about_official_website_url">https://github.com/dynnbw/RE-Android-Live-Wallpapers</string>

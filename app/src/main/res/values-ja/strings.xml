@@ -142,10 +142,6 @@
     <string name="about_title">このアプリについて</string>
     <string name="about_app_info">アプリ情報</string>
     <string name="about_project_intro">プロジェクト紹介</string>
-    <string name="about_project_one_liner">クラシックライブ壁紙リマスター</string>
-    <string name="about_project_description">クラシックなAndroidライブ壁紙を完全リマスターし、新デバイスに最適化。RenderScript → OpenGL ES 2.0、高互換性・低消費電力・GPU加速。</string>
-    <string name="about_project_highlights">ハイライト</string>
-    <string name="about_project_highlights_detail">低消費電力・高互換性・オリジナル再現・GPU加速・長期メンテナンス</string>
     <string name="about_links">リンクと連絡先</string>
     <string name="about_official_website">オープンソース</string>
     <string name="about_official_website_url">https://github.com/dynnbw/RE-Android-Live-Wallpapers</string>
