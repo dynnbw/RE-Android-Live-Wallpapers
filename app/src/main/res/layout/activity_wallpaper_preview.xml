@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/md_theme_surface"
+    android:fitsSystemWindows="true">
+
+    <!-- 全屏实时预览容器（GLESPreviewView 由代码创建加入） -->
+    <FrameLayout
+        android:id="@+id/preview_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- 实心工具栏：标题由代码设置为壁纸名 -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/md_theme_primary"
+        app:popupTheme="@style/ThemeOverlay.WallpaperSettings.ToolbarPopup"
+        app:titleTextColor="@color/md_theme_onPrimary" />
+
+    <com.reandroid.settings.BottomSheetPanel
+        android:id="@+id/bottom_sheet"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <!-- 抽屉内容：把手 + 设置列表容器。
+             高度/topMargin 由 BottomSheetPanel.onLayout 覆写（75% 屏高、默认态偏移） -->
+        <LinearLayout
+            android:id="@+id/sheet_content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/bg_sheet_top_rounded"
+            android:orientation="vertical">
+
+            <FrameLayout
+                android:id="@+id/handle_area"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:background="#33000000">
+
+                <View
+                    android:layout_width="36dp"
+                    android:layout_height="4dp"
+                    android:layout_gravity="center"
+                    android:background="@drawable/bg_sheet_handle" />
+            </FrameLayout>
+
+            <FrameLayout
+                android:id="@+id/settings_container"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+        </LinearLayout>
+    </com.reandroid.settings.BottomSheetPanel>
+
+</FrameLayout>
