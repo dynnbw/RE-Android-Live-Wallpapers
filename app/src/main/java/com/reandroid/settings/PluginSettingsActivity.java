@@ -39,6 +39,10 @@ public class PluginSettingsActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_wallpaper_preview);
 
+        // 与主设置页一致：挂接支持 ActionBar，返回箭头 + 标题（setTitle 经此渲染）
+        androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
         mPluginId = getIntent().getStringExtra(EXTRA_PLUGIN_ID);
         if (mPluginId == null) {
             mPluginId = ProxyWallpaperService.getActivePlugin(this);
