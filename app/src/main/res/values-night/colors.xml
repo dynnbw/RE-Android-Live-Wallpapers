@@ -11,5 +11,7 @@
     <color name="md_theme_background">#2F4F4F</color>
     <color name="md_theme_onBackground">#F0FFFF</color>
     <color name="md_theme_surface">#2F4F4F</color>
+    <!-- 半透明 surface（75% 不透明），用于全屏预览上的设置抽屉 -->
+    <color name="md_theme_surface_translucent">#BF2F4F4F</color>
     <color name="md_theme_onSurface">#F0FFFF</color>
 </resources>
