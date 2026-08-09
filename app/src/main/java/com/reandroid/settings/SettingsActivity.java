@@ -38,9 +38,6 @@ public class SettingsActivity extends AppCompatActivity
     implements PreferenceFragmentCompat.OnPreferenceStartFragmentCallback {
 
     private static final String KEY_GLOBAL_FRAME_RATE = "global_frame_rate";
-    private static final String KEY_PREVIEW_RATIO = "pref_preview_ratio";
-    private static final String DEFAULT_PREVIEW_RATIO = "1:1";
-    private static final String KEY_PREVIEW = "pref_preview";
 
     private boolean mUpdateChecked;
     private Toolbar mToolbar;
@@ -162,10 +159,6 @@ public class SettingsActivity extends AppCompatActivity
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.action_global_frame_rate) {
             showGlobalFrameRateDialog();
-            return true;
-        }
-        if (item.getItemId() == R.id.action_preview_ratio) {
-            showPreviewRatioDialog();
             return true;
         }
         if (item.getItemId() == R.id.action_reset_all) {
@@ -351,30 +344,6 @@ public class SettingsActivity extends AppCompatActivity
                 .show();
     }
 
-    private void showPreviewRatioDialog() {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        EditText input = new EditText(this);
-        input.setInputType(InputType.TYPE_CLASS_TEXT);
-        input.setSingleLine(true);
-        input.setText(prefs.getString(KEY_PREVIEW_RATIO, DEFAULT_PREVIEW_RATIO));
-        input.setSelection(input.getText().length());
-
-        new AlertDialog.Builder(this, R.style.ThemeOverlay_WallpaperSettings_AppCompatDialog)
-                .setTitle(R.string.pref_preview_ratio)
-                .setView(input)
-                .setPositiveButton(android.R.string.ok, (dialog, which) -> {
-                    String normalized = normalizeRatio(input.getText() == null ? null : input.getText().toString());
-                    if (normalized == null) {
-                        Toast.makeText(this, R.string.pref_preview_ratio_invalid, Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-                    prefs.edit().putString(KEY_PREVIEW_RATIO, normalized).apply();
-                    notifyPreviewRatioChanged();
-                })
-                .setNegativeButton(android.R.string.cancel, null)
-                .show();
-    }
-
     private void showWeatherUpdateIntervalDialog() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         String[] entries = {"15 分钟", "30 分钟", "1 小时", "3 小时"};
@@ -471,31 +440,6 @@ public class SettingsActivity extends AppCompatActivity
         startActivity(new Intent(this, OpenWeatherApiGuideActivity.class));
     }
 
-    @Nullable
-    private String normalizeRatio(@Nullable String value) {
-        if (value == null) {
-            return null;
-        }
-        String raw = value.trim();
-        if (TextUtils.isEmpty(raw)) {
-            return null;
-        }
-        String[] parts = raw.split(":");
-        if (parts.length != 2) {
-            return null;
-        }
-        try {
-            int width = Integer.parseInt(parts[0].trim());
-            int height = Integer.parseInt(parts[1].trim());
-            if (width <= 0 || height <= 0) {
-                return null;
-            }
-            return width + ":" + height;
-        } catch (NumberFormatException e) {
-            return null;
-        }
-    }
-
     private int getWeatherIconRes(WeatherState state) {
         if (state == null || state.condition == null) {
             return R.drawable.weather_day_sunny;
@@ -523,19 +467,6 @@ public class SettingsActivity extends AppCompatActivity
                 return isNight ? R.drawable.weather_night_sleet : R.drawable.weather_day_sleet;
             default:
                 return R.drawable.weather_day_sunny;
-        }
-    }
-
-    private void notifyPreviewRatioChanged() {
-        for (androidx.fragment.app.Fragment fragment : getSupportFragmentManager().getFragments()) {
-            if (!(fragment instanceof PreferenceFragmentCompat)) {
-                continue;
-            }
-            PreferenceFragmentCompat prefFragment = (PreferenceFragmentCompat) fragment;
-            Preference previewPref = prefFragment.findPreference(KEY_PREVIEW);
-            if (previewPref instanceof PreviewPreference) {
-                ((PreviewPreference) previewPref).refreshPreviewRatioNow();
-            }
         }
     }
 
@@ -654,7 +585,6 @@ public class SettingsActivity extends AppCompatActivity
                     String defName = getPackageName() + "_preferences";
                     SharedPreferences mainPrefs = getSharedPreferences(defName, MODE_PRIVATE);
                     String apiKey = mainPrefs.getString("openweather_api_key", "");
-                    String previewRatio = mainPrefs.getString(KEY_PREVIEW_RATIO, "");
                     String frameRate = mainPrefs.getString(KEY_GLOBAL_FRAME_RATE, "");
                     String weatherInterval = mainPrefs.getString("weather_update_minutes", "");
 
@@ -674,7 +604,6 @@ public class SettingsActivity extends AppCompatActivity
                     // Restore preserved settings
                     mainPrefs.edit()
                             .putString("openweather_api_key", apiKey)
-                            .putString(KEY_PREVIEW_RATIO, previewRatio)
                             .putString(KEY_GLOBAL_FRAME_RATE, frameRate)
                             .putString("weather_update_minutes", weatherInterval)
                             .apply();

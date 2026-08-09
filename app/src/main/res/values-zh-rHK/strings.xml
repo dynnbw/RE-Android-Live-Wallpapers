@@ -124,8 +124,6 @@
 
     <!-- 全局幀數設置 -->
     <string name="pref_global_frame_rate">全局幀數</string>
-    <string name="pref_preview_ratio">實時預覽比例</string>
-    <string name="pref_preview_ratio_invalid">比例無效，請使用 寬:高，例如 9:16</string>
     <string name="pref_weather_refresh_now">立即刷新天氣</string>
     <string name="pref_weather_refresh_now_success">天氣刷新完成</string>
     <string name="pref_weather_refresh_now_failed">天氣刷新失敗</string>

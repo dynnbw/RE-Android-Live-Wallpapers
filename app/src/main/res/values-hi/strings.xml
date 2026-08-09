@@ -161,8 +161,6 @@
 
     <!-- वैश्विक फ्रेम दर सेटिंग्स -->
     <string name="pref_global_frame_rate">वैश्विक फ्रेम दर</string>
-    <string name="pref_preview_ratio">लाइव पूर्वावलोकन अनुपात</string>
-    <string name="pref_preview_ratio_invalid">अमान्य अनुपात। चौ:ऊं का उपयोग करें, उदा. 9:16</string>
 
     <string name="grass_color_default">डिफ़ॉल्ट</string>
     <string name="grass_color_green">हरा</string>

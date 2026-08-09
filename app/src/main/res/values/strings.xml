@@ -201,8 +201,6 @@
 
     <!-- Global frame rate settings -->
     <string name="pref_global_frame_rate">Global Frame Rate</string>
-    <string name="pref_preview_ratio">Live preview ratio</string>
-    <string name="pref_preview_ratio_invalid">Invalid ratio. Use W:H, e.g. 9:16</string>
 
     <string name="grass_color_default">Default</string>
     <string name="grass_color_green">Green</string>

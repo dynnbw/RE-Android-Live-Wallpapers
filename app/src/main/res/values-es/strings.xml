@@ -169,8 +169,6 @@
 
     <!-- Global frame rate settings -->
     <string name="pref_global_frame_rate">Frecuencia de cuadros global</string>
-    <string name="pref_preview_ratio">Relación de vista previa en vivo</string>
-    <string name="pref_preview_ratio_invalid">Relación no válida. Use A:A, ej. 9:16</string>
 
     <string name="grass_color_default">Predeterminado</string>
     <string name="grass_color_green">Verde</string>

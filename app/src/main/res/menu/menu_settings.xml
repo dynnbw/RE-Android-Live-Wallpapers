@@ -6,10 +6,6 @@
         android:title="@string/pref_global_frame_rate"
         app:showAsAction="never" />
     <item
-        android:id="@+id/action_preview_ratio"
-        android:title="@string/pref_preview_ratio"
-        app:showAsAction="never" />
-    <item
         android:id="@+id/action_reset_all"
         android:title="@string/reset_all_settings_title"
         app:showAsAction="never" />

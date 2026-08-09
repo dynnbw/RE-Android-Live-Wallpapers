@@ -100,8 +100,6 @@
 
     <!-- Global settings -->
     <string name="pref_global_frame_rate">전역 프레임 수</string>
-    <string name="pref_preview_ratio">실시간 미리보기 비율</string>
-    <string name="pref_preview_ratio_invalid">비율이 유효하지 않습니다. 너비:높이 형식을 사용하세요, 예: 9:16</string>
 
     <!-- Weather settings -->
     <string name="pref_weather_refresh_now">지금 날씨 새로고침</string>

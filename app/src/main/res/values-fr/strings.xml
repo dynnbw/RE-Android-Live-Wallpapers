@@ -158,8 +158,6 @@
 
     <!-- Paramètres globaux de fréquence d’images -->
     <string name="pref_global_frame_rate">Fréquence d’images globale</string>
-    <string name="pref_preview_ratio">Ratio de l’aperçu en direct</string>
-    <string name="pref_preview_ratio_invalid">Ratio invalide. Utilisez L:H, ex. 9:16</string>
 
     <string name="grass_color_default">Par défaut</string>
     <string name="grass_color_green">Vert</string>

@@ -81,8 +81,6 @@
 
     <!-- Global settings -->
     <string name="pref_global_frame_rate">全体フレームレート</string>
-    <string name="pref_preview_ratio">リアルタイムプレビュー比率</string>
-    <string name="pref_preview_ratio_invalid">比率が無効です。幅:高さの形式で入力してください（例：9:16）</string>
 
     <!-- Weather settings -->
     <string name="pref_weather_refresh_now">今すぐ天気を更新</string>

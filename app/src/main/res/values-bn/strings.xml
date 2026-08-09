@@ -158,8 +158,6 @@
 
     <!-- বৈশ্বিক ফ্রেম রেট সেটিংস -->
     <string name="pref_global_frame_rate">বৈশ্বিক ফ্রেম রেট</string>
-    <string name="pref_preview_ratio">লাইভ প্রিভিউ অনুপাত</string>
-    <string name="pref_preview_ratio_invalid">অবৈধ অনুপাত। প্র:উ ব্যবহার করুন, যেমন ৯:১৬</string>
 
     <string name="grass_color_default">ডিফল্ট</string>
     <string name="grass_color_green">সবুজ</string>

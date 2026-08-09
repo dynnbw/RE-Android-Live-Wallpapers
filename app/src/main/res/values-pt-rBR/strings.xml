@@ -163,8 +163,6 @@
 
     <!-- Configurações globais de taxa de quadros -->
     <string name="pref_global_frame_rate">Taxa de Quadros Global</string>
-    <string name="pref_preview_ratio">Proporção da pré-visualização ao vivo</string>
-    <string name="pref_preview_ratio_invalid">Proporção inválida. Use L:A, ex: 9:16</string>
 
     <string name="grass_color_default">Padrão</string>
     <string name="grass_color_green">Verde</string>
