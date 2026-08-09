@@ -85,7 +85,7 @@
     <string name="settings_title">लाइव वॉलपेपर सेटिंग्स</string>
 
 
-    <string name="pref_open_wallpaper_picker">सिस्टम पूर्वावलोकन खोलें</string>
+    <string name="pref_open_wallpaper_picker">वॉलपेपर के रूप में सेट करें</string>
     <string name="pref_open_wallpaper_picker_failed">वॉलपेपर पूर्वावलोकन समर्थित नहीं है</string>
     <string name="pref_open_wallpaper_chooser">वॉलपेपर चयनकर्ता खोलें</string>
     <string name="pref_live_preview">लाइव पूर्वावलोकन</string>

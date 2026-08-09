@@ -82,7 +82,7 @@
     <string name="settings_title">Paramètres des fonds d’écran animés</string>
 
 
-    <string name="pref_open_wallpaper_picker">Ouvrir l’aperçu système</string>
+    <string name="pref_open_wallpaper_picker">Définir comme fond d’écran</string>
     <string name="pref_open_wallpaper_picker_failed">Aperçu du fond d’écran non pris en charge</string>
     <string name="pref_open_wallpaper_chooser">Ouvrir le sélecteur de fonds d’écran</string>
     <string name="pref_live_preview">Aperçu en direct</string>

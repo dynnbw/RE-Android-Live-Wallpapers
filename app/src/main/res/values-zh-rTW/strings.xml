@@ -153,7 +153,7 @@
     <!-- 藍色海洋桌布 -->
     <string name="wallpaper_bluesea">藍色海洋</string>
 
-    <string name="pref_open_wallpaper_picker">開啟系統預覽</string>
+    <string name="pref_open_wallpaper_picker">設定桌布</string>
     <string name="pref_open_wallpaper_picker_failed">不支援桌布預覽</string>
     <string name="pref_microbes_color_mode_original">經典版</string>
     <string name="pref_microbes_color_mode_modern">新版</string>

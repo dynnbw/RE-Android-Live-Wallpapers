@@ -93,7 +93,7 @@
     <string name="settings_title">Configuración de fondos de pantalla en vivo</string>
 
 
-    <string name="pref_open_wallpaper_picker">Abrir vista previa del sistema</string>
+    <string name="pref_open_wallpaper_picker">Establecer como fondo de pantalla</string>
     <string name="pref_open_wallpaper_picker_failed">Vista previa de fondo de pantalla no compatible</string>
     <string name="pref_open_wallpaper_chooser">Abrir selector de fondos de pantalla</string>
     <string name="pref_live_preview">Vista previa en vivo</string>

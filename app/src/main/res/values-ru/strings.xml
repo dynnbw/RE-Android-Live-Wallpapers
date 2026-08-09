@@ -82,7 +82,7 @@
     <string name="settings_title">Настройки живых обоев</string>
 
 
-    <string name="pref_open_wallpaper_picker">Открыть системный предпросмотр</string>
+    <string name="pref_open_wallpaper_picker">Установить обои</string>
     <string name="pref_open_wallpaper_picker_failed">Предпросмотр обоев не поддерживается</string>
     <string name="pref_open_wallpaper_chooser">Открыть выбор обоев</string>
     <string name="pref_live_preview">Живой предпросмотр</string>

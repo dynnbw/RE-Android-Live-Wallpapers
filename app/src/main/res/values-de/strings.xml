@@ -95,7 +95,7 @@
     <string name="settings_title">Live-Hintergrundeinstellungen</string>
 
 
-    <string name="pref_open_wallpaper_picker">Systemvorschau öffnen</string>
+    <string name="pref_open_wallpaper_picker">Als Hintergrundbild festlegen</string>
     <string name="pref_open_wallpaper_picker_failed">Hintergrundvorschau nicht unterstützt</string>
     <string name="pref_open_wallpaper_chooser">Hintergrundauswahl öffnen</string>
     <string name="pref_live_preview">Live-Vorschau</string>

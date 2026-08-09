@@ -160,7 +160,7 @@
     <!-- 蓝色海洋壁纸 -->
     <string name="wallpaper_bluesea">蓝色海洋</string>
 
-    <string name="pref_open_wallpaper_picker">打开系统预览</string>
+    <string name="pref_open_wallpaper_picker">设置壁纸</string>
     <string name="pref_open_wallpaper_picker_failed">不支持壁纸预览</string>
     <string name="pref_microbes_color_mode_original">原版</string>
     <string name="pref_microbes_color_mode_modern">新版</string>

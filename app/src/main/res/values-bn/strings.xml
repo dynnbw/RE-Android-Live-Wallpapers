@@ -82,7 +82,7 @@
     <string name="settings_title">লাইভ ওয়ালপেপার সেটিংস</string>
 
 
-    <string name="pref_open_wallpaper_picker">সিস্টেম প্রিভিউ খুলুন</string>
+    <string name="pref_open_wallpaper_picker">ওয়ালপেপার হিসেবে সেট করুন</string>
     <string name="pref_open_wallpaper_picker_failed">ওয়ালপেপার প্রিভিউ সমর্থিত নয়</string>
     <string name="pref_open_wallpaper_chooser">ওয়ালপেপার নির্বাচক খুলুন</string>
     <string name="pref_live_preview">লাইভ প্রিভিউ</string>

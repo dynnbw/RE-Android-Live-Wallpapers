@@ -87,7 +87,7 @@
     <string name="settings_title">Configurações de Papel de Parede Vivo</string>
 
 
-    <string name="pref_open_wallpaper_picker">Abrir pré-visualização do sistema</string>
+    <string name="pref_open_wallpaper_picker">Definir como papel de parede</string>
     <string name="pref_open_wallpaper_picker_failed">Pré-visualização do papel de parede não suportada</string>
     <string name="pref_open_wallpaper_chooser">Abrir seletor de papel de parede</string>
     <string name="pref_live_preview">Pré-visualização ao vivo</string>
