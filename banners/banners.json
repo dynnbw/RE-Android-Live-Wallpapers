@@ -1,0 +1,14 @@
+{
+  "banners": [
+    {
+      "image": "https://dynnbw.github.io/RE-Android-Live-Wallpapers/banners/banner_20260805_1.png",
+      "link": "https://dynnbw.github.io/RE-Android-Live-Wallpapers/index.html",
+      "alt": "经典壁纸 · 焕新重生"
+    },
+    {
+      "image": "https://dynnbw.github.io/RE-Android-Live-Wallpapers/banners/banner_20260805_2.png",
+      "link": "https://dynnbw.github.io/RE-Android-Live-Wallpapers/index_Holo.html",
+      "alt": "PC 版现已上线 Wallpaper Engine"
+    }
+  ]
+}
