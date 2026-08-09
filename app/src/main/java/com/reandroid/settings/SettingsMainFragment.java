@@ -24,7 +24,6 @@ import androidx.preference.PreferenceViewHolder;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.reandroid.plugin.PluginSettingsFragment;
 import com.reandroid.utils.IoUtils;
 import com.reandroid.wallpaper.R;
 
@@ -147,12 +146,9 @@ public class SettingsMainFragment extends PreferenceFragmentCompat {
                 if (pluginClass != null && !useLegacySettings) {
                     String finalDir = dir;
                     entry.setOnPreferenceClickListener(pref -> {
-                        PluginSettingsFragment frag = PluginSettingsFragment.newInstance(finalDir);
-                        requireActivity().getSupportFragmentManager()
-                                .beginTransaction()
-                                .replace(com.reandroid.wallpaper.R.id.settings_container, frag)
-                                .addToBackStack(null)
-                                .commit();
+                        Intent intent = new Intent(requireContext(), PluginSettingsActivity.class);
+                        intent.putExtra(PluginSettingsActivity.EXTRA_PLUGIN_ID, finalDir);
+                        startActivity(intent);
                         return true;
                     });
                 } else {
