@@ -12,14 +12,28 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <!-- 实心工具栏：标题由代码设置为壁纸名 -->
+    <!-- 实心工具栏：标题由代码设置为壁纸名；天气按钮与溢出菜单与主设置页一致 -->
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/md_theme_primary"
         app:popupTheme="@style/ThemeOverlay.WallpaperSettings.ToolbarPopup"
-        app:titleTextColor="@color/md_theme_onPrimary" />
+        app:titleTextColor="@color/md_theme_onPrimary">
+
+        <androidx.appcompat.widget.AppCompatImageButton
+            android:id="@+id/toolbar_weather_button"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="end|center_vertical"
+            android:layout_marginEnd="20dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/weather_toolbar_title"
+            android:padding="1dp"
+            android:scaleType="fitCenter"
+            app:srcCompat="@drawable/weather_day_sunny" />
+
+    </androidx.appcompat.widget.Toolbar>
 
     <com.reandroid.settings.BottomSheetPanel
         android:id="@+id/bottom_sheet"

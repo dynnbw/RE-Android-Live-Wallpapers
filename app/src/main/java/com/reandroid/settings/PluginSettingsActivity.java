@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.FrameLayout;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -33,6 +35,7 @@ public class PluginSettingsActivity extends AppCompatActivity
     private GLESPreviewView mPreviewView;
     private String mPreviewClass;
     private boolean mPreviewStopped;
+    private SettingsToolbarHelper mToolbarHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +45,9 @@ public class PluginSettingsActivity extends AppCompatActivity
         // 与主设置页一致：挂接支持 ActionBar，返回箭头 + 标题（setTitle 经此渲染）
         androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        // 天气按钮 + 溢出菜单（全局帧率/重置所有/关于）+ 调试入口，与主设置页共用控制器
+        mToolbarHelper = new SettingsToolbarHelper(this, toolbar);
+        mToolbarHelper.setup();
 
         mPluginId = getIntent().getStringExtra(EXTRA_PLUGIN_ID);
         if (mPluginId == null) {
@@ -78,6 +84,7 @@ public class PluginSettingsActivity extends AppCompatActivity
     @Override
     protected void onStart() {
         super.onStart();
+        if (mToolbarHelper != null) mToolbarHelper.onStart();
         if (mPreviewStopped) {
             createPreviewView(); // 重新挂载视图，surfaceCreated 触发渲染线程重启
         }
@@ -85,20 +92,45 @@ public class PluginSettingsActivity extends AppCompatActivity
 
     @Override
     protected void onStop() {
-        super.onStop();
+        if (mToolbarHelper != null) mToolbarHelper.onStop();
         if (mPreviewView != null) {
             mPreviewView.stopRenderer();
             mPreviewStopped = true;
         }
+        super.onStop();
     }
 
     @Override
     protected void onDestroy() {
+        if (mToolbarHelper != null) mToolbarHelper.onDestroy();
         if (mPreviewView != null) {
             mPreviewView.stopRenderer();
             mPreviewView = null;
         }
         super.onDestroy();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        if (mToolbarHelper != null) {
+            mToolbarHelper.onCreateOptionsMenu(menu);
+            return true;
+        }
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        if (mToolbarHelper != null) mToolbarHelper.onPrepareOptionsMenu(menu);
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (mToolbarHelper != null && mToolbarHelper.onOptionsItemSelected(item)) {
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
