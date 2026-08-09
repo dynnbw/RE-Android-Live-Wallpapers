@@ -1,85 +1,79 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- 壁纸磁贴（双列网格项）：普通卡片（14dp 圆角 + elevation 阴影，与横幅/选择器卡片同款），
+     4:3 缩略图带圆角铺满，图注在卡片内 -->
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@android:color/transparent"
-    android:paddingStart="3dp"
-    android:paddingTop="6dp"
-    android:paddingEnd="3dp"
-    android:paddingBottom="6dp">
+    android:clickable="true"
+    android:focusable="true">
 
     <androidx.cardview.widget.CardView
-        android:layout_width="match_parent"
+        android:id="@+id/tile_card"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         app:cardBackgroundColor="@color/md_theme_surface"
         app:cardCornerRadius="14dp"
-        app:cardElevation="3dp"
-        app:cardUseCompatPadding="true">
+        app:cardElevation="4dp"
+        app:cardUseCompatPadding="true"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
-        <LinearLayout
+        <!-- 与"打开系统壁纸选择器"卡片同款：内容层携带水波纹，跟随父级按压状态 -->
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="?attr/selectableItemBackground"
-            android:duplicateParentState="true"
-            android:gravity="center_vertical"
-            android:minHeight="52dp"
-            android:orientation="horizontal"
-            android:paddingStart="12dp"
-            android:paddingTop="10dp"
-            android:paddingEnd="12dp"
-            android:paddingBottom="10dp">
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            app:cardBackgroundColor="@color/md_theme_surface"
+            app:cardCornerRadius="6dp"
+            app:cardElevation="0dp">
 
-            <FrameLayout
-                android:id="@android:id/icon_frame"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:layout_marginEnd="10dp"
-                android:background="@drawable/bg_dialog_card"
-                android:foregroundGravity="center">
+            <!-- 4:3 缩略图（CardView 圆角裁剪） -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/thumb_area"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                app:layout_constraintDimensionRatio="4:3"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
 
                 <ImageView
                     android:id="@android:id/icon"
-                    android:layout_width="18dp"
-                    android:layout_height="18dp"
-                    android:layout_gravity="center"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
                     android:contentDescription="@null"
-                    android:scaleType="centerInside"
-                    android:tint="@color/md_theme_primary"
+                    android:scaleType="centerCrop"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
                     app:srcCompat="@drawable/ic_wallpaper_placeholder" />
-            </FrameLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <LinearLayout
+            <!-- 图注 -->
+            <TextView
+                android:id="@android:id/title"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical">
+                android:ellipsize="end"
+                android:gravity="center"
+                android:maxLines="1"
+                android:paddingStart="6dp"
+                android:paddingTop="8dp"
+                android:paddingEnd="6dp"
+                android:paddingBottom="9dp"
+                android:textColor="@color/md_theme_onSurface"
+                android:textSize="13sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/thumb_area" />
 
-                <TextView
-                    android:id="@android:id/title"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:ellipsize="end"
-                    android:maxLines="2"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:textColor="@color/md_theme_onSurface"
-                    android:textSize="15sp" />
-
-                <TextView
-                    android:id="@android:id/summary"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:visibility="gone" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@android:id/widget_frame"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:visibility="gone" />
-        </LinearLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.cardview.widget.CardView>
 
-</FrameLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

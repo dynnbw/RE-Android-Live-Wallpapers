@@ -3,12 +3,17 @@ package com.reandroid.settings;
 import android.app.WallpaperManager;
 import android.content.Intent;
 import android.content.res.AssetManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Rect;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceGroup;
 import androidx.preference.PreferenceFragmentCompat;
@@ -22,15 +27,17 @@ import com.reandroid.wallpaper.R;
 
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.io.InputStream;
 
 public class SettingsMainFragment extends PreferenceFragmentCompat {
     private static final String TAG = "SettingsMainFragment";
     private static final int WALLPAPER_GRID_SPAN_COUNT = 2;
     private static final String KEY_OPEN_WALLPAPER_CHOOSER = "pref_open_wallpaper_chooser";
-    private static final int FULL_WIDTH_SPACING_DP = -8;
+    private static final String KEY_BANNER_CAROUSEL = "pref_banner_carousel";
+    private static final int FULL_WIDTH_SPACING_DP = 4;
     private static final int GRID_EDGE_SPACING_DP = 8;
-    private static final int GRID_MIDDLE_SPACING_DP = -10;
+    private static final int GRID_MIDDLE_SPACING_DP = 8;
 
     @Override
     public void onCreatePreferences(@Nullable Bundle savedInstanceState, @Nullable String rootKey) {
@@ -133,6 +140,7 @@ public class SettingsMainFragment extends PreferenceFragmentCompat {
                 Preference entry = new Preference(requireContext());
                 entry.setTitle(title);
                 entry.setLayoutResource(R.layout.preference_wallpaper_grid_item);
+                entry.setIcon(loadWallpaperIcon(am, dir));
                 if (pluginClass != null && !useLegacySettings) {
                     String finalDir = dir;
                     entry.setOnPreferenceClickListener(pref -> {
@@ -171,12 +179,43 @@ public class SettingsMainFragment extends PreferenceFragmentCompat {
             return true;
         }
         String key = preference.getKey();
-        return KEY_OPEN_WALLPAPER_CHOOSER.equals(key);
+        return KEY_OPEN_WALLPAPER_CHOOSER.equals(key) || KEY_BANNER_CAROUSEL.equals(key);
     }
 
     private int dpToPx(int dp) {
         float density = requireContext().getResources().getDisplayMetrics().density;
         return Math.round(dp * density);
+    }
+
+    /** 从 assets/{dir}/ 加载壁纸缩略图（icon.png 或 icon.jpg），失败回退占位图 */
+    private Drawable loadWallpaperIcon(AssetManager am, String dir) {
+        Bitmap bmp = decodeIcon(am, dir, "icon.png");
+        if (bmp == null) bmp = decodeIcon(am, dir, "icon.jpg");
+        if (bmp == null) {
+            return ContextCompat.getDrawable(requireContext(), R.drawable.ic_wallpaper_placeholder);
+        }
+        return new BitmapDrawable(getResources(), bmp);
+    }
+
+    private Bitmap decodeIcon(AssetManager am, String dir, String name) {
+        try (InputStream is = am.open(dir + "/" + name)) {
+            BitmapFactory.Options bounds = new BitmapFactory.Options();
+            bounds.inJustDecodeBounds = true;
+            BitmapFactory.decodeStream(is, null, bounds);
+            if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return null;
+
+            int sample = 1;
+            int maxDim = Math.max(bounds.outWidth, bounds.outHeight);
+            while (maxDim / sample > 640) sample *= 2;
+
+            BitmapFactory.Options opts = new BitmapFactory.Options();
+            opts.inSampleSize = sample;
+            try (InputStream is2 = am.open(dir + "/" + name)) {
+                return BitmapFactory.decodeStream(is2, null, opts);
+            }
+        } catch (IOException e) {
+            return null;
+        }
     }
 
     private void openLiveWallpaperChooser() {

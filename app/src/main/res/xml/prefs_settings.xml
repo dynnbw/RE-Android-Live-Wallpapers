@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
+    <!-- 首页横幅轮播 -->
+    <com.reandroid.settings.BannerCarouselPreference />
     <Preference android:key="pref_open_wallpaper_chooser"
         android:title="@string/pref_open_wallpaper_chooser"
         android:layout="@layout/preference_modern_item" />
