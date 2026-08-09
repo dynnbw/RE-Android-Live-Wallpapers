@@ -3,10 +3,10 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingStart="16dp"
-    android:paddingEnd="16dp"
-    android:paddingTop="8dp"
-    android:paddingBottom="8dp">
+    android:paddingStart="4dp"
+    android:paddingEnd="4dp"
+    android:paddingTop="2dp"
+    android:paddingBottom="2dp">
 
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
@@ -23,11 +23,12 @@
             android:clipChildren="false"
             android:clipToPadding="false"
             android:gravity="center_vertical"
+            android:minHeight="64dp"
             android:orientation="horizontal"
             android:paddingStart="16dp"
-            android:paddingTop="6dp"
+            android:paddingTop="14dp"
             android:paddingEnd="16dp"
-            android:paddingBottom="10dp">
+            android:paddingBottom="14dp">
 
             <FrameLayout
                 android:id="@android:id/icon_frame"
@@ -48,12 +49,7 @@
                 android:layout_height="wrap_content"
                 android:clipChildren="false"
                 android:clipToPadding="false"
-                android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:paddingStart="16dp"
-            android:paddingTop="14dp"
-            android:paddingEnd="16dp"
-            android:paddingBottom="14dp">
+                android:gravity="center_vertical">
 
                 <TextView
                     android:id="@android:id/title"
