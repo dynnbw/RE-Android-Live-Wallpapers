@@ -22,12 +22,8 @@ import androidx.preference.SwitchPreferenceCompat;
 
 import com.reandroid.gles.GLESScene;
 
-import com.reandroid.settings.PreviewPreference;
-import com.reandroid.utils.IoUtils;
-
 import org.json.JSONObject;
 
-import java.io.InputStream;
 import java.util.Map;
 
 /**
@@ -37,11 +33,22 @@ import java.util.Map;
 public class PluginSettingsFragment extends PreferenceFragmentCompat
         implements SharedPreferences.OnSharedPreferenceChangeListener {
 
+    /**
+     * 全屏预览宿主（由 PluginSettingsActivity 实现）。
+     * 场景创建/刷新/获取均委托给宿主，Fragment 不再持有 GL 视图。
+     */
+    public interface PreviewHost {
+        GLESScene createScene(int width, int height);
+
+        void refreshPreview();
+
+        GLESScene getScene();
+    }
+
     private static final String ARG_PLUGIN_ID = "plugin_id";
     private static final String KEY_CUSTOM_BG_URI = "pref_custom_background_uri";
     private boolean mRebuilding;
-    private PreviewPreference mPreview;
-    private String mPreviewClass;
+    private PreviewHost mHost;
     private ActivityResultLauncher<String> mImagePickerLauncher;
 
     public static PluginSettingsFragment newInstance(String pluginId) {
@@ -50,6 +57,10 @@ public class PluginSettingsFragment extends PreferenceFragmentCompat
         args.putString(ARG_PLUGIN_ID, pluginId);
         f.setArguments(args);
         return f;
+    }
+
+    public void setPreviewHost(PreviewHost host) {
+        mHost = host;
     }
 
     @Override
@@ -77,28 +88,12 @@ public class PluginSettingsFragment extends PreferenceFragmentCompat
         SharedPreferences prefs = ctx.getSharedPreferences(prefsName, Context.MODE_PRIVATE);
         prefs.registerOnSharedPreferenceChangeListener(this);
 
-        // Read info.json for preview class, VK plugin, and required permissions
-        String previewClass = null;
-        String pluginVk = null;
-        JSONObject info = null;
-        try (InputStream is = ctx.getAssets().open(pluginId + "/info.json")) {
-            info = new JSONObject(new String(IoUtils.readAllBytes(is), "UTF-8"));
-            previewClass = info.optString("previewClass", null);
-            pluginVk = info.optString("pluginVk", null);
-        } catch (Exception e) { Log.w("PluginSettingsFragment", "Failed to read info.json for " + getPluginId(), e); }
-        mPreviewClass = previewClass;
+        // Read info.json for VK plugin flag and required permissions
+        JSONObject info = PluginResources.loadInfo(ctx, pluginId);
+        String pluginVk = info != null ? info.optString("pluginVk", null) : null;
 
         // Request required permissions from info.json
         requestPermissionsIfNeeded(info);
-
-        // Live preview
-        if (previewClass != null) {
-            mPreview = new PreviewPreference(ctx, null);
-            mPreview.setKey("pref_preview");
-            mPreview.setTitle(com.reandroid.wallpaper.R.string.pref_live_preview);
-            mPreview.setSceneFactory((w, h) -> createPreviewScene(mPreviewClass, w, h, ctx));
-            screen.addPreference(mPreview);
-        }
 
         // "Set as Wallpaper" button
         Preference applyPref = new Preference(ctx);
@@ -151,7 +146,7 @@ public class PluginSettingsFragment extends PreferenceFragmentCompat
                     }
                 }
             }
-            if (mPreview != null) mPreview.refreshScene();
+            if (mHost != null) mHost.refreshPreview();
             return true;
         });
         screen.addPreference(resetPref);
@@ -176,53 +171,16 @@ public class PluginSettingsFragment extends PreferenceFragmentCompat
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
-        if (mPreview != null) {
-            GLESScene scene = mPreview.getScene();
-            if (scene != null) {
-                try {
-                    java.lang.reflect.Method m = scene.getClass()
-                            .getMethod("setPluginPrefs", SharedPreferences.class);
-                    m.invoke(scene, prefs);
-                } catch (Exception e) {
-                    Log.w("PluginSettingsFragment", "Failed to inject prefs into preview, refreshing scene", e);
-                    mPreview.refreshScene();
-                }
-            }
-        }
-    }
-
-    private GLESScene createPreviewScene(String className, int w, int h, Context ctx) {
-        try {
-            Class<?> clz = Class.forName(className);
-            GLESScene scene = null;
-
-            // Try constructor patterns in order: (int,int,Context), (Context,int,int), (int,int)
+        GLESScene scene = mHost != null ? mHost.getScene() : null;
+        if (scene != null) {
             try {
-                scene = (GLESScene) clz.getConstructor(int.class, int.class, Context.class)
-                        .newInstance(w, h, ctx);
-            } catch (NoSuchMethodException e1) {
-                try {
-                    scene = (GLESScene) clz.getConstructor(Context.class, int.class, int.class)
-                            .newInstance(ctx, w, h);
-                } catch (NoSuchMethodException e2) {
-                    scene = (GLESScene) clz.getConstructor(int.class, int.class)
-                            .newInstance(w, h);
-                }
+                java.lang.reflect.Method m = scene.getClass()
+                        .getMethod("setPluginPrefs", SharedPreferences.class);
+                m.invoke(scene, prefs);
+            } catch (Exception e) {
+                Log.w("PluginSettingsFragment", "Failed to inject prefs into preview, refreshing scene", e);
+                if (mHost != null) mHost.refreshPreview();
             }
-            // Inject plugin prefs so the preview reads current settings
-            String pluginId = getPluginId();
-            if (pluginId != null) {
-                SharedPreferences prefs = ctx.getSharedPreferences(
-                        "plugin_" + pluginId, Context.MODE_PRIVATE);
-                try {
-                    java.lang.reflect.Method m = scene.getClass()
-                            .getMethod("setPluginPrefs", SharedPreferences.class);
-                    m.invoke(scene, prefs);
-                } catch (Exception e) { Log.w("PluginSettingsFragment", "Failed to inject prefs into new scene", e); }
-            }
-            return scene;
-        } catch (Exception e) {
-            return null;
         }
     }
 
@@ -247,7 +205,7 @@ public class PluginSettingsFragment extends PreferenceFragmentCompat
                             com.reandroid.wallpaper.R.string.fireworks_background_reset_toast,
                             Toast.LENGTH_SHORT).show();
                     updateBackgroundButtonSummary(btn, prefs);
-                    if (mPreview != null) mPreview.refreshScene();
+                    if (mHost != null) mHost.refreshPreview();
                     return true;
                 });
                 updateBackgroundButtonSummary(btn, prefs);
@@ -275,7 +233,7 @@ public class PluginSettingsFragment extends PreferenceFragmentCompat
         // Update button summary and refresh preview
         Preference btn = findPreference("pref_custom_background");
         if (btn != null) updateBackgroundButtonSummary(btn, prefs);
-        if (mPreview != null) mPreview.refreshScene();
+        if (mHost != null) mHost.refreshPreview();
     }
 
     private void updateBackgroundButtonSummary(Preference btn, SharedPreferences prefs) {
