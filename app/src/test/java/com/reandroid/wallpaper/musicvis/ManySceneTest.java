@@ -1,5 +1,7 @@
 package com.reandroid.wallpaper.musicvis;
 
+import com.reandroid.utils.Mat4;
+
 import org.junit.Test;
 import static org.junit.Assert.*;
 
