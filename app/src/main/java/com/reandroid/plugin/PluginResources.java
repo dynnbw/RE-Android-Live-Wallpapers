@@ -114,4 +114,46 @@ public final class PluginResources {
             return null;
         }
     }
+
+    /**
+     * Load the plugin's info.json (label, previewClass, pluginVk, permissions).
+     */
+    public static JSONObject loadInfo(Context context, String pluginId) {
+        String path = pluginId + "/info.json";
+        JSONObject cached = sJsonCache.get(path);
+        if (cached != null) return cached;
+        try (InputStream is = context.getAssets().open(path)) {
+            JSONObject json = new JSONObject(new String(IoUtils.readAllBytes(is), "UTF-8"));
+            sJsonCache.put(path, json);
+            return json;
+        } catch (Exception e) {
+            Log.w("PluginResources", "Failed to load info JSON: " + path, e);
+            return null;
+        }
+    }
+
+    /**
+     * Parse a "@string/name" label reference; returns the resource name,
+     * or null when the label is a plain string (or any other @ prefix).
+     */
+    public static String parseLabelRef(String label) {
+        if (label == null) return null;
+        final String PREFIX = "@string/";
+        return label.startsWith(PREFIX) ? label.substring(PREFIX.length()) : null;
+    }
+
+    /**
+     * Resolve a wallpaper display label: "@string/name" → localized string,
+     * plain label → as-is, missing → pluginId fallback.
+     */
+    public static String resolveLabel(Context context, String pluginId, JSONObject info) {
+        String label = info != null ? info.optString("label", null) : null;
+        String ref = parseLabelRef(label);
+        if (ref != null) {
+            int id = context.getResources().getIdentifier(ref, "string", context.getPackageName());
+            if (id != 0) return context.getString(id);
+            return ref;
+        }
+        return label != null ? label : pluginId;
+    }
 }
