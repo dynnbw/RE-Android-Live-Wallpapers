@@ -229,6 +229,8 @@ public class GrassGL extends GLESScene {
     public void setPluginPrefs(SharedPreferences prefs) {
         mScene.setPluginPrefs(prefs);
         mWeatherIntegration.setPluginPrefs(prefs);
+        mWeatherRenderer.setPluginPrefs(prefs);
+        mStarRenderer.setPluginPrefs(prefs);
     }
 
     // ---- GLESScene lifecycle ----

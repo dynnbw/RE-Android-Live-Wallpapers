@@ -1,5 +1,6 @@
 package com.reandroid.wallpaper.grass;
 
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.opengl.GLES20;
 
@@ -11,6 +12,13 @@ import java.nio.ByteOrder;
 import com.reandroid.utils.MathUtils;
 
 final class GrassWeatherRenderer {
+
+    private SharedPreferences mPluginPrefs;
+
+    void setPluginPrefs(SharedPreferences prefs) {
+        mPluginPrefs = prefs;
+    }
+
     private static final int RAIN_BATCH_GROUP_COUNT = 3;
     private static final int SNOW_BATCH_GROUP_COUNT = 4;
     private static final int CLOUD_BATCH_GROUP_COUNT = 4;
@@ -416,7 +424,9 @@ final class GrassWeatherRenderer {
     }
 
     private int resolveRainCount(boolean intense) {
-        int base = WallpaperSettings.getGrassWeatherRainCount(25);
+        int base = mPluginPrefs != null
+                ? mPluginPrefs.getInt(WallpaperSettings.KEY_GRASS_WEATHER_RAIN_COUNT, 25)
+                : WallpaperSettings.getGrassWeatherRainCount(25);
         if (!intense) {
             return Math.max(10, base / 2);
         }
@@ -424,7 +434,9 @@ final class GrassWeatherRenderer {
     }
 
     private int resolveSnowCount(boolean intense) {
-        int base = WallpaperSettings.getGrassWeatherSnowCount(25);
+        int base = mPluginPrefs != null
+                ? mPluginPrefs.getInt(WallpaperSettings.KEY_GRASS_WEATHER_SNOW_COUNT, 25)
+                : WallpaperSettings.getGrassWeatherSnowCount(25);
         if (!intense) {
             return Math.max(10, base / 2);
         }

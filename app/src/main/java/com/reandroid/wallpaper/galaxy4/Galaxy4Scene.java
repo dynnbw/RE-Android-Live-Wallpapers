@@ -34,6 +34,8 @@ final class Galaxy4Scene {
 
     public void setPluginPrefs(SharedPreferences prefs) {
         mPluginPrefs = prefs;
+        // 注入后再读取：构造期读取会落到默认 prefs（错误的文件）
+        loadParticleCountsFromPreferences();
     }
 
     private SharedPreferences getPrefs() {
@@ -75,7 +77,7 @@ final class Galaxy4Scene {
         mWidth = width;
         mHeight = height;
         mContext = context;
-        loadParticleCountsFromPreferences();
+        // 配置读取延后到 setPluginPrefs（注入 plugin_{id} 之后）
     }
 
     void update(long timeMs) {
@@ -168,6 +170,10 @@ final class Galaxy4Scene {
 
         mBgStarCount = MathUtils.clamp(mBgStarCount, MIN_BG_STAR_COUNT, MAX_BG_STAR_COUNT);
         mSpaceCloudCount = MathUtils.clamp(mSpaceCloudCount, MIN_SPACE_CLOUD_COUNT, MAX_SPACE_CLOUD_COUNT);
+
+        // 注入/变更路径必须显式请求重建：直接写字段不会置脏标记，
+        // 否则粒子数组保持旧尺寸（大调小→多余粒子冻结，小调大→越界黑屏）
+        requestParticleRebuild();
     }
 
     private void syncSettingsFromPreferencesIfNeeded(long now) {

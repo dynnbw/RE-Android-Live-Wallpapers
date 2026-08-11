@@ -1,8 +1,14 @@
 package com.reandroid.wallpaper.grass;
 
+import android.content.SharedPreferences;
 import android.opengl.GLES20;
 
 final class GrassStarRenderer {
+
+    void setPluginPrefs(SharedPreferences prefs) {
+        nightStarsLayer.setPluginPrefs(prefs);
+    }
+
 
     private static final int STAR_TEXTURE_GROUP_COUNT = 4;
     private static final int STAR_ALPHA_BIN_COUNT = 8;

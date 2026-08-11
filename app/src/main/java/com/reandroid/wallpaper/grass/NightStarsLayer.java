@@ -1,5 +1,7 @@
 package com.reandroid.wallpaper.grass;
 
+import android.content.SharedPreferences;
+
 import com.reandroid.settings.WallpaperSettings;
 
 import java.util.Random;
@@ -10,6 +12,13 @@ import com.reandroid.utils.MathUtils;
  * Kept independent from GrassScene so rendering logic can evolve without touching scene state.
  */
 class NightStarsLayer {
+
+    private SharedPreferences mPluginPrefs;
+
+    void setPluginPrefs(SharedPreferences prefs) {
+        mPluginPrefs = prefs;
+    }
+
 
     static final int STAR_TINT_WHITE = 0;
     static final int STAR_TINT_RED = 1;
@@ -31,7 +40,9 @@ class NightStarsLayer {
         if (width <= 0 || height <= 0 || drawer == null) {
             return;
         }
-        int configuredCount = WallpaperSettings.getGrassStarCount(DEFAULT_STAR_COUNT);
+        int configuredCount = mPluginPrefs != null
+                ? mPluginPrefs.getInt(WallpaperSettings.KEY_GRASS_STAR_COUNT, DEFAULT_STAR_COUNT)
+                : WallpaperSettings.getGrassStarCount(DEFAULT_STAR_COUNT);
         ensureStars(width, height, configuredCount);
         float t = animNowMs * 0.001f;
         for (Star s : mStars) {

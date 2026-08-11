@@ -33,6 +33,9 @@ final class GalaxyScene {
 
     public void setPluginPrefs(SharedPreferences prefs) {
         mPluginPrefs = prefs;
+        // 注入后再读取：构造期读取会落到默认 prefs（错误的文件），
+        // 且旧版 "wallpaper_settings" 迁移写入也在此刻落在正确的 plugin_{id}
+        loadSettingsFromPreferences();
     }
 
     private SharedPreferences getPrefs() {
@@ -134,7 +137,7 @@ final class GalaxyScene {
         mWidth = width;
         mHeight = height;
         mContext = context;
-        loadSettingsFromPreferences();
+        // 配置读取延后到 setPluginPrefs（注入 plugin_{id} 之后）
     }
 
     void update(long timeMs) {
@@ -464,6 +467,10 @@ final class GalaxyScene {
         mParticleCount = MathUtils.clamp(mParticleCount, MIN_PARTICLE_COUNT, MAX_PARTICLE_COUNT);
         mParticleAlphaPercent = MathUtils.clamp(mParticleAlphaPercent, MIN_PARTICLE_ALPHA_PERCENT, MAX_PARTICLE_ALPHA_PERCENT);
         mSceneData.particleAlphaMultiplier = mParticleAlphaPercent / 100.0f;
+
+        // 注入/变更路径必须显式请求重建：直接写字段不会置脏标记，
+        // 否则粒子数组保持旧尺寸（大调小→多余粒子冻结，小调大→越界黑屏）
+        requestParticleRebuild();
     }
 
     private void loadPreciseShapeSettings(SharedPreferences defaultPrefs, SharedPreferences legacyPrefs) {

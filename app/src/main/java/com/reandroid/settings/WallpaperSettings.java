@@ -92,10 +92,12 @@ public class WallpaperSettings {
     }
 
     public static int getGlobalFrameRate(int defValue) {
-        SharedPreferences p = prefs();
-        if (p == null) return defValue;
+        // 全局设置：固定读默认 prefs，不随插件注入（保证 VK/GLES 两渲染器一致）
+        Context ctx = getContext();
+        if (ctx == null) return defValue;
         try {
-            String value = p.getString(KEY_GLOBAL_FRAME_RATE, String.valueOf(defValue));
+            String value = PreferenceManager.getDefaultSharedPreferences(ctx)
+                    .getString(KEY_GLOBAL_FRAME_RATE, String.valueOf(defValue));
             int fps = Integer.parseInt(value != null ? value : String.valueOf(defValue));
             return Math.max(1, fps);
         } catch (Exception e) {
@@ -105,9 +107,10 @@ public class WallpaperSettings {
     }
 
     public static boolean isVulkanAnrDiagnosticsEnabled(boolean defValue) {
-        SharedPreferences p = prefs();
-        if (p == null) return defValue;
-        return p.getBoolean(KEY_VK_ANR_DIAGNOSTICS, defValue);
+        // 全局设置：固定读默认 prefs，不随插件注入
+        Context ctx = getContext();
+        if (ctx == null) return defValue;
+        return PreferenceManager.getDefaultSharedPreferences(ctx).getBoolean(KEY_VK_ANR_DIAGNOSTICS, defValue);
     }
 
     public static boolean isGrassEnabled(boolean defValue) {
