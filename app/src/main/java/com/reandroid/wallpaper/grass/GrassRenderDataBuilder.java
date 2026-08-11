@@ -326,11 +326,18 @@ final class GrassRenderDataBuilder {
     private float[] buildLegacySpriteVertices(SceneData sd, int legacyTargetType,
             boolean fireflyFlarePass, boolean includeFirefly, boolean updateState,
             float[] reusableBuffer) {
-        if (!sd.legacyParticles || sd.legacyType != legacyTargetType
-                || sd.legacyNormal == null || sd.legacyExtras == null) {
+        // 双套粒子：按目标类型选对应粒子集（蒲公英白天 / 萤火虫夜晚），
+        // alpha 乘交叉淡入系数（1-transition / transition）
+        LegacyParticle[] normalSet = legacyTargetType == LEGACY_TYPE_DANDELION
+                ? sd.legacyNormal : sd.legacyNormalNight;
+        LegacyParticle[] extrasSet = legacyTargetType == LEGACY_TYPE_DANDELION
+                ? sd.legacyExtras : sd.legacyExtrasNight;
+        if (!sd.legacyParticles || normalSet == null || extrasSet == null) {
             mVKTempSpriteFloatCount = 0;
             return reusableBuffer;
         }
+        float alphaMultiplier = legacyTargetType == LEGACY_TYPE_DANDELION
+                ? (1.0f - sd.legacyTransition) : sd.legacyTransition;
 
         int required = (LEGACY_MAX_NORMAL + LEGACY_MAX_EXTRAS) * 30;
         float[] out = reusableBuffer;
@@ -342,11 +349,12 @@ final class GrassRenderDataBuilder {
         long animNowMs = sd.legacyNow;
 
         for (int i = 0; i < LEGACY_MAX_NORMAL; i++) {
-            LegacyParticle p = sd.legacyNormal[i];
+            LegacyParticle p = normalSet[i];
             if (p == null || !p.active) continue;
             cursor = updateAndAppendLegacyParticle(out, cursor, p, sd,
                     legacyTargetType, i, false, animNowMs,
-                    fireflyFlarePass, includeFirefly, updateState);
+                    fireflyFlarePass, includeFirefly, updateState,
+                    alphaMultiplier, normalSet, extrasSet);
             if (cursor > out.length) {
                 break;
             }
@@ -354,11 +362,12 @@ final class GrassRenderDataBuilder {
 
         if (cursor <= out.length) {
             for (int i = 0; i < LEGACY_MAX_EXTRAS; i++) {
-                LegacyParticle p = sd.legacyExtras[i];
+                LegacyParticle p = extrasSet[i];
                 if (p == null || !p.active) continue;
                 cursor = updateAndAppendLegacyParticle(out, cursor, p, sd,
                         legacyTargetType, i + 100, true, animNowMs,
-                        fireflyFlarePass, includeFirefly, updateState);
+                        fireflyFlarePass, includeFirefly, updateState,
+                        alphaMultiplier, normalSet, extrasSet);
                 if (cursor > out.length) {
                     break;
                 }
@@ -371,7 +380,8 @@ final class GrassRenderDataBuilder {
 
     private int updateAndAppendLegacyParticle(float[] out, int cursor, LegacyParticle p,
             SceneData sd, int legacyType, int index, boolean isExtras, long animNowMs,
-            boolean fireflyFlarePass, boolean includeFirefly, boolean updateState) {
+            boolean fireflyFlarePass, boolean includeFirefly, boolean updateState,
+            float alphaMultiplier, LegacyParticle[] normalSet, LegacyParticle[] extrasSet) {
         if (updateState) {
             long delta = animNowMs - p.startTime;
             if (delta < 0L) return cursor;
@@ -381,9 +391,9 @@ final class GrassRenderDataBuilder {
                 LegacyParticle np = legacyOps.createLegacyParticle(legacyType);
                 np.active = true;
                 if (isExtras) {
-                    sd.legacyExtras[index - 100] = np;
+                    extrasSet[index - 100] = np;
                 } else {
-                    sd.legacyNormal[index] = np;
+                    normalSet[index] = np;
                 }
                 p = np;
                 delta = animNowMs - p.startTime;
@@ -418,13 +428,14 @@ final class GrassRenderDataBuilder {
             if (fireflyFlarePass != flareActive) return cursor;
 
             float flicker = 0.5f + 0.5f * (float) Math.sin((animNowMs + index * 1234L) * 0.002);
-            float alpha = 0.2f + 0.8f * flicker;
+            float alpha = (0.2f + 0.8f * flicker) * alphaMultiplier;
             float size = (isExtras ? 48.0f : 72.0f) * (0.8f + 0.4f * flicker);
             return appendSpriteQuadVertices(out, cursor, p.originX, p.originY, size, alpha, false, 0.0f);
         }
 
         float size = isExtras ? 64.0f : 96.0f;
-        return appendSpriteQuadVertices(out, cursor, p.originX, p.originY, size, 0.9f, true, p.angle);
+        return appendSpriteQuadVertices(out, cursor, p.originX, p.originY, size,
+                0.9f * alphaMultiplier, true, p.angle);
     }
 
     private boolean isLegacyParticleOutOfBounds(LegacyParticle p, int legacyType) {

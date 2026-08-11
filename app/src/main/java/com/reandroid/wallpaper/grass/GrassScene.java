@@ -105,13 +105,16 @@ final class GrassScene {
     private boolean mHasWeatherNightOverride = false;
     private boolean mWeatherNightOverride = false;
 
-    // Legacy particles
+    // Legacy particles（传统模式）
     private boolean mLegacyParticles = false;
-    int legacyType = LEGACY_TYPE_DANDELION;
     int legacyDirection = 0;
     long legacyBlowTime = 0, legacyNow = 0;
+    // 双套粒子常驻：蒲公英（白天）+ 萤火虫（夜晚），按 legacyTransition（夜空权重）
+    // 交叉淡入淡出。原版在日夜边界硬切换类型并整体重建，粒子突兀出现/消失。
     LegacyParticle[] legacyNormal = new LegacyParticle[LEGACY_MAX_NORMAL];
     LegacyParticle[] legacyExtras = new LegacyParticle[LEGACY_MAX_EXTRAS];
+    LegacyParticle[] legacyNormalNight = new LegacyParticle[LEGACY_MAX_NORMAL];
+    LegacyParticle[] legacyExtrasNight = new LegacyParticle[LEGACY_MAX_EXTRAS];
 
     // Rebuild signal
     private boolean mBladeIndexRebuildNeeded = false;
@@ -315,7 +318,7 @@ final class GrassScene {
                 GrassParticleSystem.updateFireflyPositions(mFireflies, dt, mWidth, mHeight);
             }
         } else {
-            updateLegacyState(isNight, animNowMs);
+            updateLegacyState(animNowMs);
         }
 
         // Populate SceneData
@@ -344,7 +347,9 @@ final class GrassScene {
         mSceneData.fireflies = mFireflies;
         mSceneData.legacyNormal = legacyNormal;
         mSceneData.legacyExtras = legacyExtras;
-        mSceneData.legacyType = legacyType;
+        mSceneData.legacyNormalNight = legacyNormalNight;
+        mSceneData.legacyExtrasNight = legacyExtrasNight;
+        mSceneData.legacyTransition = starVisibility; // 与星星同一夜空权重曲线
         mSceneData.legacyNow = legacyNow;
         mSceneData.timeFraction = timeFrac;
         mSceneData.dawn = mDayNightSystem.getDawn();
@@ -378,26 +383,27 @@ final class GrassScene {
         }
     }
 
-    private void updateLegacyState(boolean isNight, long animNowMs) {
+    private void updateLegacyState(long animNowMs) {
         legacyNow = animNowMs;
         if (legacyBlowTime < legacyNow) {
             legacyDirection = (legacyDirection == 0) ? 1 : 0;
             legacyBlowTime = (long) (legacyNow + Math.random() * LEGACY_MAX_BLOW_INTERVAL);
         }
-        int newType = isNight ? LEGACY_TYPE_FIREFLY : LEGACY_TYPE_DANDELION;
-        if (legacyType != newType) {
-            legacyType = newType;
-            for (int i = 0; i < LEGACY_MAX_NORMAL; i++) {
-                legacyNormal[i] = createLegacyParticle(legacyType);
-                legacyNormal[i].active = true;
+        ensureLegacySet(legacyNormal, legacyExtras, LEGACY_TYPE_DANDELION);
+        ensureLegacySet(legacyNormalNight, legacyExtrasNight, LEGACY_TYPE_FIREFLY);
+    }
+
+    private void ensureLegacySet(LegacyParticle[] normal, LegacyParticle[] extras, int type) {
+        for (int i = 0; i < normal.length; i++) {
+            if (normal[i] == null) {
+                normal[i] = createLegacyParticle(type);
+                normal[i].active = true;
             }
-            for (int i = 0; i < LEGACY_MAX_EXTRAS; i++) {
-                legacyExtras[i] = createLegacyParticle(legacyType);
-                legacyExtras[i].active = true;
-            }
-        } else if (legacyType == LEGACY_TYPE_DANDELION) {
-            for (int i = 0; i < LEGACY_MAX_EXTRAS; i++) {
-                if (legacyExtras[i] != null) legacyExtras[i].active = true;
+        }
+        for (int i = 0; i < extras.length; i++) {
+            if (extras[i] == null) {
+                extras[i] = createLegacyParticle(type);
+                extras[i].active = true;
             }
         }
     }
@@ -727,15 +733,22 @@ final class GrassScene {
 
     private void initLegacyParticles() {
         legacyNow = SystemClock.uptimeMillis();
-        legacyType = LEGACY_TYPE_DANDELION;
         legacyDirection = 0;
         legacyBlowTime = (long) (legacyNow + Math.random() * LEGACY_MAX_BLOW_INTERVAL);
+        // 双套粒子常驻：蒲公英 + 萤火虫，按夜空权重交叉淡入淡出
         for (int i = 0; i < LEGACY_MAX_NORMAL; i++) {
             legacyNormal[i] = createLegacyParticle(LEGACY_TYPE_DANDELION);
         }
         for (int i = 0; i < LEGACY_MAX_EXTRAS; i++) {
             legacyExtras[i] = createLegacyParticle(LEGACY_TYPE_DANDELION);
             legacyExtras[i].active = true;
+        }
+        for (int i = 0; i < LEGACY_MAX_NORMAL; i++) {
+            legacyNormalNight[i] = createLegacyParticle(LEGACY_TYPE_FIREFLY);
+        }
+        for (int i = 0; i < LEGACY_MAX_EXTRAS; i++) {
+            legacyExtrasNight[i] = createLegacyParticle(LEGACY_TYPE_FIREFLY);
+            legacyExtrasNight[i].active = true;
         }
     }
 

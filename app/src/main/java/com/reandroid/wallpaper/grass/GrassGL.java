@@ -188,6 +188,8 @@ public class GrassGL extends GLESScene {
     private final float[] mQuadVerts = new float[16];
     private final float[][] mLegacyBatchVertices = new float[LEGACY_BATCH_GROUP_COUNT][];
     private final int[] mLegacyBatchFloatCounts = new int[LEGACY_BATCH_GROUP_COUNT];
+    private float mLegacyDandelionAlpha = 1.0f; // 交叉淡入淡出：蒲公英 = 1 - transition
+    private float mLegacyFireflyAlpha = 0.0f;   // 萤火虫 = transition
 
     // Performance and diagnostics
     private static final long PERF_SYNC_INTERVAL_MS = 1000L;
@@ -914,10 +916,14 @@ public class GrassGL extends GLESScene {
         clearLegacyBatchCounts();
 
         long animNowMs = sd.legacyNow;
-        int legacyType = sd.legacyType;
+        // 双套粒子按夜空权重交叉淡入淡出（蒲公英白天、萤火虫夜晚）
+        mLegacyDandelionAlpha = 1.0f - sd.legacyTransition;
+        mLegacyFireflyAlpha = sd.legacyTransition;
 
-        drawLegacyParticleSet(sd.legacyNormal, legacyType, false, animNowMs);
-        drawLegacyParticleSet(sd.legacyExtras, legacyType, true, animNowMs);
+        drawLegacyParticleSet(sd.legacyNormal, LEGACY_TYPE_DANDELION, false, animNowMs);
+        drawLegacyParticleSet(sd.legacyExtras, LEGACY_TYPE_DANDELION, true, animNowMs);
+        drawLegacyParticleSet(sd.legacyNormalNight, LEGACY_TYPE_FIREFLY, false, animNowMs);
+        drawLegacyParticleSet(sd.legacyExtrasNight, LEGACY_TYPE_FIREFLY, true, animNowMs);
 
         flushLegacyBatches();
     }
@@ -995,33 +1001,36 @@ public class GrassGL extends GLESScene {
     }
 
     private void flushLegacyBatches() {
-        if (mTexDandelion != 0 && mLegacyBatchFloatCounts[LEGACY_BATCH_GROUP_DANDELION] > 0) {
+        if (mTexDandelion != 0 && mLegacyBatchFloatCounts[LEGACY_BATCH_GROUP_DANDELION] > 0
+                && mLegacyDandelionAlpha > 0.01f) {
             mSpriteRenderer.drawBatch(
                     mTexDandelion,
                     mLegacyBatchVertices[LEGACY_BATCH_GROUP_DANDELION],
                     mLegacyBatchFloatCounts[LEGACY_BATCH_GROUP_DANDELION],
-                    0.9f);
+                    0.9f * mLegacyDandelionAlpha);
         }
 
-        if (mTexFirefly1 != 0) {
+        if (mTexFirefly1 != 0 && mLegacyFireflyAlpha > 0.01f) {
             for (int bin = 0; bin < LEGACY_FIREFLY_ALPHA_BIN_COUNT; bin++) {
                 int group = LEGACY_BATCH_GROUP_FIREFLY1_START + bin;
                 int floatCount = mLegacyBatchFloatCounts[group];
                 if (floatCount <= 0) {
                     continue;
                 }
-                mSpriteRenderer.drawBatch(mTexFirefly1, mLegacyBatchVertices[group], floatCount, alphaForLegacyBin(bin));
+                mSpriteRenderer.drawBatch(mTexFirefly1, mLegacyBatchVertices[group], floatCount,
+                        alphaForLegacyBin(bin) * mLegacyFireflyAlpha);
             }
         }
 
-        if (mTexFirefly2 != 0) {
+        if (mTexFirefly2 != 0 && mLegacyFireflyAlpha > 0.01f) {
             for (int bin = 0; bin < LEGACY_FIREFLY_ALPHA_BIN_COUNT; bin++) {
                 int group = LEGACY_BATCH_GROUP_FIREFLY2_START + bin;
                 int floatCount = mLegacyBatchFloatCounts[group];
                 if (floatCount <= 0) {
                     continue;
                 }
-                mSpriteRenderer.drawBatch(mTexFirefly2, mLegacyBatchVertices[group], floatCount, alphaForLegacyBin(bin));
+                mSpriteRenderer.drawBatch(mTexFirefly2, mLegacyBatchVertices[group], floatCount,
+                        alphaForLegacyBin(bin) * mLegacyFireflyAlpha);
             }
         }
     }

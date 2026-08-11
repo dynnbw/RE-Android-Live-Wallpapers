@@ -70,7 +70,9 @@ final class SceneData {
     Firefly[] fireflies;
     LegacyParticle[] legacyNormal;
     LegacyParticle[] legacyExtras;
-    int legacyType;
+    LegacyParticle[] legacyNormalNight;
+    LegacyParticle[] legacyExtrasNight;
+    float legacyTransition;
     long legacyNow;
 
     float timeFraction, dawn, morning, afternoon, dusk;
