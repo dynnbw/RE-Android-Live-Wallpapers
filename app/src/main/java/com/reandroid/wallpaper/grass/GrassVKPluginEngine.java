@@ -22,6 +22,7 @@ public class GrassVKPluginEngine extends BaseVKPluginEngine {
     protected void ensureScene() {
         if (mScene == null && mWidth > 0 && mHeight > 0) {
             mScene = new GrassScene(mWidth, mHeight);
+            mScene.setPluginPrefs(mHost.getSharedPreferences());
             mScene.init(isPreview());
         }
     }
@@ -30,6 +31,7 @@ public class GrassVKPluginEngine extends BaseVKPluginEngine {
     protected void ensureOrResizeScene() {
         if (mScene == null) {
             mScene = new GrassScene(mWidth, mHeight);
+            mScene.setPluginPrefs(mHost.getSharedPreferences());
             mScene.init(isPreview());
         } else {
             mScene.resize(mWidth, mHeight);
