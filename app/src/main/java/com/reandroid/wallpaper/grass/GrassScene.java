@@ -38,7 +38,6 @@ import com.reandroid.utils.MathUtils;
  */
 final class GrassScene {
 
-    private static final float ONE_MINUTE_DAY_FRACTION = 1.0f / 1440.0f;
     private static final long CELESTIAL_CACHE_INTERVAL_MS = 60000L;
 
     // ---- Plugin prefs ----
@@ -482,32 +481,19 @@ final class GrassScene {
         return mDayNightSystem.computeSimpleNewB(now);
     }
 
+    /**
+     * 蒲公英可见度 = 白天权重（1 - 夜空权重），与星星/萤火虫/传统粒子同一曲线，
+     * 随天空渐变而非 1 分钟阶梯。
+     */
     private float computeDandelionVisibility(float now) {
-        float dawn = mDayNightSystem.getDawn();
-        float dusk = mDayNightSystem.getDusk();
-        float dawnProgress = progressFromStart(now, dawn, ONE_MINUTE_DAY_FRACTION);
-        if (dawnProgress >= 0.0f) {
-            return clamp(dawnProgress, 0.0f, 1.0f);
-        }
-        float duskProgress = progressFromStart(now, dusk, ONE_MINUTE_DAY_FRACTION);
-        if (duskProgress >= 0.0f) {
-            return clamp(1.0f - duskProgress, 0.0f, 1.0f);
-        }
-        return isBetweenClock(now, dawn, dusk) ? 1.0f : 0.0f;
+        return 1.0f - computeStarVisibility(now);
     }
 
+    /**
+     * 萤火虫可见度 = 夜空权重，与星星同一曲线。
+     */
     private float computeFireflyVisibility(float now) {
-        float dawn = mDayNightSystem.getDawn();
-        float dusk = mDayNightSystem.getDusk();
-        float duskProgress = progressFromStart(now, dusk, ONE_MINUTE_DAY_FRACTION);
-        if (duskProgress >= 0.0f) {
-            return clamp(duskProgress, 0.0f, 1.0f);
-        }
-        float dawnProgress = progressFromStart(now, dawn, ONE_MINUTE_DAY_FRACTION);
-        if (dawnProgress >= 0.0f) {
-            return clamp(1.0f - dawnProgress, 0.0f, 1.0f);
-        }
-        return isBetweenClock(now, dusk, dawn) ? 1.0f : 0.0f;
+        return computeStarVisibility(now);
     }
 
     /**
@@ -531,29 +517,6 @@ final class GrassScene {
         return w[0];
     }
 
-    private float progressFromStart(float now, float start, float duration) {
-        if (duration <= 0.0f) {
-            return -1.0f;
-        }
-        float delta = now - start;
-        if (delta < 0.0f) {
-            delta += 1.0f;
-        }
-        if (delta < 0.0f || delta > duration) {
-            return -1.0f;
-        }
-        return delta / duration;
-    }
-
-    private float wrap01(float value) {
-        if (value >= 1.0f) {
-            return value - 1.0f;
-        }
-        if (value < 0.0f) {
-            return value + 1.0f;
-        }
-        return value;
-    }
 
     private float celestialXFromHourAngle(double hourAngleDeg) {
         float ratio = (float) ((hourAngleDeg + 180.0) / 360.0);
@@ -779,14 +742,6 @@ final class GrassScene {
 
     private void updateAccurateWeights() {
         mDayNightSystem.updateAccurateWeights(System.currentTimeMillis());
-    }
-
-    private boolean isBetweenClock(float now, float start, float end) {
-        return GrassAstronomyCalculator.isBetweenClock(now, start, end);
-    }
-
-    private float clockProgress(float now, float start, float end) {
-        return GrassAstronomyCalculator.clockProgress(now, start, end);
     }
 
     private void updateLocationFromSystem(long nowMs) {
