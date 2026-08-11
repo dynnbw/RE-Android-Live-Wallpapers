@@ -22,7 +22,7 @@ import java.util.Locale;
  * GeekLog GLES2 渲染层。
  * 字符图集（Bitmap+Paint 生成一次）+ 每帧 quad 批量绘制 + 行级着色 + 顶部渐隐 + 闪烁光标。
  */
-public class GeekLogGL extends GLESScene implements SharedPreferences.OnSharedPreferenceChangeListener {
+public class GeekLogGL extends GLESScene {
     private static final String TAG = "GeekLogGL";
 
     // 预烘焙字符图集（assets/geeklog/drawable/glyph_00.png）：
@@ -83,9 +83,11 @@ public class GeekLogGL extends GLESScene implements SharedPreferences.OnSharedPr
         mContext = context.getApplicationContext();
     }
 
-    /** 反射注入（BasePluginEngine.tryInjectPrefs），在 onCreate 之前调用。 */
+    /** 反射注入（BasePluginEngine.tryInjectPrefs），在 onCreate 之前调用。注入后立即全量重读配置。 */
     public void setPluginPrefs(SharedPreferences prefs) {
         mPluginPrefs = prefs;
+        readPrefs();
+        mScene.onPrefsChanged(null);
     }
 
     /** 记录 engine 生命周期事件（createScene 时调用，无需 GL）。 */
@@ -123,18 +125,6 @@ public class GeekLogGL extends GLESScene implements SharedPreferences.OnSharedPr
     }
 
     @Override
-    public void start() {
-        SharedPreferences p = prefs();
-        if (p != null) p.registerOnSharedPreferenceChangeListener(this);
-    }
-
-    @Override
-    public void stop() {
-        SharedPreferences p = prefs();
-        if (p != null) p.unregisterOnSharedPreferenceChangeListener(this);
-    }
-
-    @Override
     public void release() {
         if (mProgram != 0) { GLES20.glDeleteProgram(mProgram); mProgram = 0; }
         if (mGlyphTexture != 0) {
@@ -149,13 +139,6 @@ public class GeekLogGL extends GLESScene implements SharedPreferences.OnSharedPr
     public void resize(int width, int height) {
         super.resize(width, height);
         layoutMetrics();
-    }
-
-    @Override
-    public void onSharedPreferenceChanged(SharedPreferences sp, String key) {
-        // 设置界面线程回调；只更新 scene 状态（volatile 原子），渲染线程安全读取
-        readPrefs();
-        mScene.onPrefsChanged(key);
     }
 
     // ---- 帧渲染 ----

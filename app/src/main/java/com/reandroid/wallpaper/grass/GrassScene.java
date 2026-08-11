@@ -15,15 +15,11 @@
  */
 package com.reandroid.wallpaper.grass;
 
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.location.Location;
 import android.opengl.Matrix;
 import android.os.SystemClock;
-
-import com.reandroid.gles.GLESWallpaper;
-import androidx.preference.PreferenceManager;
 
 import com.reandroid.settings.WallpaperSettings;
 import com.reandroid.weather.WeatherCondition;
@@ -47,15 +43,6 @@ final class GrassScene {
 
     // ---- Plugin prefs ----
     private SharedPreferences mPluginPrefs;
-
-    /**
-     * 监听器必须由字段强引用持有：SharedPreferences 内部用 WeakHashMap 存监听器，
-     * 匿名 lambda 会在 GC 后被回收导致设置变更不再触发 mPrefsDirty。
-     */
-    private final SharedPreferences.OnSharedPreferenceChangeListener mPrefsListener =
-            (sharedPrefs, key) -> {
-                mPrefsDirty = true;
-            };
 
     void setPluginPrefs(SharedPreferences prefs) {
         mPluginPrefs = prefs;
@@ -188,12 +175,6 @@ final class GrassScene {
         initFireflies();
 
         mDayNightSystem.initDefaultLocation();
-
-        Context appCtx = GLESWallpaper.getAppContext();
-        if (appCtx != null) {
-            SharedPreferences prefs = mPluginPrefs != null ? mPluginPrefs : PreferenceManager.getDefaultSharedPreferences(appCtx);
-            prefs.registerOnSharedPreferenceChangeListener(mPrefsListener);
-        }
 
         Matrix.orthoM(mSceneData.projectionMatrix, 0, 0, mWidth, mHeight, 0, -1.0f, 1.0f);
         mXOffset = isPreview ? 0.5f : 0.0f;

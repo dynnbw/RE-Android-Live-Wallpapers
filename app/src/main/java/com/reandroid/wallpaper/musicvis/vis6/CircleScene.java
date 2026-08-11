@@ -81,7 +81,6 @@ final class CircleScene extends AudioVisBase {
         } else {
             p = mContext.getSharedPreferences("musicvis6_prefs", Context.MODE_PRIVATE);
         }
-        p.registerOnSharedPreferenceChangeListener(this);
         readPrefs(p);
     }
 
@@ -90,18 +89,6 @@ final class CircleScene extends AudioVisBase {
         if (mAudioCapture != null) {
             mAudioCapture.stop();
         }
-        SharedPreferences p;
-        if (mPluginPrefs != null) {
-            p = mPluginPrefs;
-        } else {
-            p = mContext.getSharedPreferences("musicvis6_prefs", Context.MODE_PRIVATE);
-        }
-        p.unregisterOnSharedPreferenceChangeListener(this);
-    }
-
-    @Override
-    public void onSharedPreferenceChanged(SharedPreferences p, String key) {
-        readPrefs(p);
     }
 
     @Override

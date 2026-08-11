@@ -26,6 +26,7 @@ public class GalaxyVKPluginEngine extends BaseVKPluginEngine {
     protected void ensureScene() {
         if (mScene == null && mWidth > 0 && mHeight > 0) {
             mScene = new GalaxyScene(mWidth, mHeight, mContext);
+            mScene.setPluginPrefs(mHost.getSharedPreferences());
         }
     }
 
@@ -33,9 +34,15 @@ public class GalaxyVKPluginEngine extends BaseVKPluginEngine {
     protected void ensureOrResizeScene() {
         if (mScene == null) {
             mScene = new GalaxyScene(mWidth, mHeight, mContext);
+            mScene.setPluginPrefs(mHost.getSharedPreferences());
         } else {
             mScene.resize(mWidth, mHeight);
         }
+    }
+
+    @Override
+    protected void onPluginPrefsChanged() {
+        if (mScene != null) mScene.setPluginPrefs(mHost.getSharedPreferences());
     }
 
     @Override

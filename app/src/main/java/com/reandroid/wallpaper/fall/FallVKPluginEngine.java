@@ -33,6 +33,7 @@ public class FallVKPluginEngine extends BaseVKPluginEngine {
         if (mScene == null && mWidth > 0 && mHeight > 0) {
             mScene = new FallScene(mWidth, mHeight);
             mScene.setLeafTextureCount(mLeafTextureCount);
+            mScene.setPluginPrefs(mHost.getSharedPreferences());
         }
     }
 
@@ -41,9 +42,15 @@ public class FallVKPluginEngine extends BaseVKPluginEngine {
         if (mScene == null) {
             mScene = new FallScene(mWidth, mHeight);
             mScene.setLeafTextureCount(mLeafTextureCount);
+            mScene.setPluginPrefs(mHost.getSharedPreferences());
         } else {
             mScene.resize(mWidth, mHeight);
         }
+    }
+
+    @Override
+    protected void onPluginPrefsChanged() {
+        if (mScene != null) mScene.setPluginPrefs(mHost.getSharedPreferences());
     }
 
     @Override

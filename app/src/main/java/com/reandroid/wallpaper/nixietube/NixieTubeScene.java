@@ -70,12 +70,9 @@ final class NixieTubeScene {
     private NixieTubeAudioSource mAudioSourceObj;
 
     void setPluginPrefs(SharedPreferences prefs) {
-        if (mPrefs != null) {
-            mPrefs.unregisterOnSharedPreferenceChangeListener(mPrefsListener);
-        }
         mPrefs = prefs;
         readPrefs();
-        prefs.registerOnSharedPreferenceChangeListener(mPrefsListener);
+        startAudio(); // restart to pick up audio source/enabled changes
     }
 
     private void readPrefs() {
@@ -84,16 +81,6 @@ final class NixieTubeScene {
         mAudioSource = Integer.parseInt(mPrefs.getString("nixie_audio_source", "0"));
         mAudioEnabled = mPrefs.getBoolean("nixie_audio_enabled", true);
     }
-
-    private final SharedPreferences.OnSharedPreferenceChangeListener mPrefsListener = (p, key) -> {
-        if (key == null) return;
-        if (key.startsWith("nixie_")) {
-            readPrefs();
-            if (key.equals("nixie_audio_source") || key.equals("nixie_audio_enabled")) {
-                startAudio(); // restart to pick up new source
-            }
-        }
-    };
 
     void startAudio() {
         if (!mAudioEnabled) return;

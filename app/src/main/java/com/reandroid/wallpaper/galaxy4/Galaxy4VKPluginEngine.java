@@ -36,6 +36,10 @@ public class Galaxy4VKPluginEngine extends BaseVKPluginEngine {
         }
     }
 
+    @Override protected void onPluginPrefsChanged() {
+        if (mScene != null) mScene.setPluginPrefs(mHost.getSharedPreferences());
+    }
+
     @Override protected long createRenderer() {
         long handle = Galaxy4VKNative.nCreateRenderer(mContext.getAssets());
         if (handle != 0L) Galaxy4VKNative.uploadTextures(mContext, handle);

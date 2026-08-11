@@ -9,7 +9,7 @@ import android.graphics.Color;
  * Contains shared AudioCapture lifecycle, HSL recolor state, and preference utilities.
  * Subclasses implement getAudioType() and getAudioCaptureSize().
  */
-public abstract class AudioVisBase implements SharedPreferences.OnSharedPreferenceChangeListener {
+public abstract class AudioVisBase {
 
     protected Context mContext;
     protected int mWidth;
@@ -83,9 +83,6 @@ public abstract class AudioVisBase implements SharedPreferences.OnSharedPreferen
 
     // ---- lifecycle ----
 
-    @Override
-    public void onSharedPreferenceChanged(SharedPreferences p, String key) {}
-
     public void start() {}
 
     public void stop() {}
@@ -101,6 +98,9 @@ public abstract class AudioVisBase implements SharedPreferences.OnSharedPreferen
 
     public void setPluginPrefs(SharedPreferences p) {
         mPluginPrefs = p;
+        if (p != null) {
+            readPrefs(p);
+        }
     }
 
     // ---- abstract ----

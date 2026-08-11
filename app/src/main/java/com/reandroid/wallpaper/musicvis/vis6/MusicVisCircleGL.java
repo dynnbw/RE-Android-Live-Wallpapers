@@ -16,7 +16,7 @@ import java.nio.FloatBuffer;
  * GL renderer for circle/ring wallpaper (vis6).
  * Delegates all scene logic to CircleScene.
  */
-public class MusicVisCircleGL extends GLESScene implements SharedPreferences.OnSharedPreferenceChangeListener {
+public class MusicVisCircleGL extends GLESScene {
 
     private final Context mContext;
     private final CircleScene mScene;
@@ -41,6 +41,10 @@ public class MusicVisCircleGL extends GLESScene implements SharedPreferences.OnS
     public void setPluginPrefs(SharedPreferences p) {
         mPluginPrefs = p;
         mScene.setPluginPrefs(p);
+        // Scene re-read the prefs above — reallocate GL buffers if ring count changed
+        if (mRingBuffers == null || mRingBuffers.length != mScene.mRingCount) {
+            reallocateRingBuffers();
+        }
     }
 
     @Override
@@ -49,40 +53,16 @@ public class MusicVisCircleGL extends GLESScene implements SharedPreferences.OnS
     @Override
     public void start() {
         mScene.start();
-        SharedPreferences p;
-        if (mPluginPrefs != null) {
-            p = mPluginPrefs;
-        } else {
-            p = mContext.getSharedPreferences("musicvis6_prefs", Context.MODE_PRIVATE);
-        }
-        // Re-register this GL-level listener for prefs changes that affect GL resources
-        p.registerOnSharedPreferenceChangeListener(this);
     }
 
     @Override
     public void stop() {
         mScene.stop();
-        SharedPreferences p;
-        if (mPluginPrefs != null) {
-            p = mPluginPrefs;
-        } else {
-            p = mContext.getSharedPreferences("musicvis6_prefs", Context.MODE_PRIVATE);
-        }
-        p.unregisterOnSharedPreferenceChangeListener(this);
     }
 
     @Override
     public void setOffset(float xOffset, float yOffset, int xPixels, int yPixels) {
         mScene.setOffset(xOffset, yOffset, xPixels, yPixels);
-    }
-
-    @Override
-    public void onSharedPreferenceChanged(SharedPreferences p, String key) {
-        // Scene listener already handled the pref change.
-        // Check if ring count changed and reallocate GL buffers.
-        if (mRingBuffers == null || mRingBuffers.length != mScene.mRingCount) {
-            reallocateRingBuffers();
-        }
     }
 
     @Override

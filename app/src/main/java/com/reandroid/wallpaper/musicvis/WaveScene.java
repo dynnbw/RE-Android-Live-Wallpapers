@@ -74,7 +74,6 @@ public final class WaveScene extends AudioVisBase {
             p = mContext.getSharedPreferences(pn, Context.MODE_PRIVATE);
         }
         readPrefs(p);
-        p.registerOnSharedPreferenceChangeListener(this);
 
         int type = getAudioType();
         int size = getAudioCaptureSize();
@@ -92,23 +91,15 @@ public final class WaveScene extends AudioVisBase {
     @Override
     public void stop() {
         if (mAudioCapture != null) {
-            SharedPreferences p;
-            if (mPluginPrefs != null) {
-                p = mPluginPrefs;
-            } else {
-                String pn = (mMode == Mode.PCM) ? "musicvis2_prefs" : "musicvis3_prefs";
-                p = mContext.getSharedPreferences(pn, Context.MODE_PRIVATE);
-            }
-            p.unregisterOnSharedPreferenceChangeListener(this);
             mAudioCapture.stop();
         }
     }
 
     @Override
-    public void onSharedPreferenceChanged(SharedPreferences p, String key) {
+    public void setPluginPrefs(SharedPreferences prefs) {
         int oldFftSize = mFftSize;
-        readPrefs(p);
-        if ("musicvis_fft_size".equals(key) && mFftSize != oldFftSize) {
+        super.setPluginPrefs(prefs);
+        if (mFftSize != oldFftSize) {
             mFftSizeChanged = true;
         }
     }

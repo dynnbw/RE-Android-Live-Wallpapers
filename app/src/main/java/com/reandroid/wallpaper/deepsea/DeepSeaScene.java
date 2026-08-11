@@ -6,8 +6,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 
-import androidx.annotation.Nullable;
-
 import com.reandroid.gles.GLESWallpaper;
 
 import java.io.InputStream;
@@ -16,16 +14,26 @@ import java.io.InputStream;
  * DeepSea 壁纸场景逻辑层（纯逻辑，不接触 Android 系统服务）。
  * 负责偏好解析、颜色计算、容器生命周期。
  */
-final class DeepSeaScene implements SharedPreferences.OnSharedPreferenceChangeListener {
+final class DeepSeaScene {
 
     DeepSeaContainer mContainer;
     private SharedPreferences mPrefs;
     private SharedPreferences mPluginPrefs;
     Bitmap mCachedBackground;
 
-    /** Plugin path: use host-provided prefs instead of hardcoded name. */
+    /** Plugin path: use host-provided prefs instead of hardcoded name, and re-read all config. */
     void setPluginPrefs(SharedPreferences p) {
         mPluginPrefs = p;
+        applyAllPreferences(p);
+    }
+
+    /** Full re-read of all configuration state from prefs (idempotent; engine re-injects on every change). */
+    private void applyAllPreferences(SharedPreferences prefs) {
+        if (mContainer == null || prefs == null) {
+            return;
+        }
+        applyCachedBackground(prefs);
+        applyPreferences(prefs, null);
     }
 
     void onCreate() {
@@ -47,11 +55,9 @@ final class DeepSeaScene implements SharedPreferences.OnSharedPreferenceChangeLi
             } else {
                 mPrefs = context.getSharedPreferences(DeepSeaGL.PREFS_NAME, Context.MODE_PRIVATE);
             }
-            mPrefs.registerOnSharedPreferenceChangeListener(this);
         }
 
-        applyCachedBackground(mPrefs);
-        onSharedPreferenceChanged(mPrefs, null);
+        applyAllPreferences(mPrefs);
     }
 
     void release() {
@@ -59,10 +65,7 @@ final class DeepSeaScene implements SharedPreferences.OnSharedPreferenceChangeLi
             mContainer.remove();
             mContainer = null;
         }
-        if (mPrefs != null) {
-            mPrefs.unregisterOnSharedPreferenceChangeListener(this);
-            mPrefs = null;
-        }
+        mPrefs = null;
         recycleCachedBackground();
     }
 
@@ -80,27 +83,6 @@ final class DeepSeaScene implements SharedPreferences.OnSharedPreferenceChangeLi
             mContainer.initShader();
         }
         mContainer.draw();
-    }
-
-    @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, @Nullable String key) {
-        if (mContainer == null || sharedPreferences == null) {
-            return;
-        }
-
-        if (key == null
-                || DeepSeaGL.KEY_BACKGROUND_IMAGE_TYPE.equals(key)
-                || DeepSeaGL.KEY_BACKGROUND_UPDATED.equals(key)
-                || "pref_custom_background_uri".equals(key)) {
-            applyCachedBackground(sharedPreferences);
-        }
-
-        if (DeepSeaGL.KEY_BACKGROUND_UPDATED.equals(key)) {
-            applyPreferences(sharedPreferences, DeepSeaGL.KEY_BACKGROUND_IMAGE_TYPE);
-            return;
-        }
-
-        applyPreferences(sharedPreferences, key);
     }
 
     private void applyPreferences(SharedPreferences prefs, String key) {

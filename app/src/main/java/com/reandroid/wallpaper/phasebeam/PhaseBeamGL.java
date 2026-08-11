@@ -14,7 +14,7 @@ import com.reandroid.gles.GLESScene;
  * Phase Beam - 从RenderScript完整移植到OpenGL ES 2.0
  * 保持与原始RenderScript实现一致的视觉效果与动画逻辑
  */
-public class PhaseBeamGL extends GLESScene implements SharedPreferences.OnSharedPreferenceChangeListener {
+public class PhaseBeamGL extends GLESScene {
     private static final String TAG = "PhaseBeamGL";
 
     // 重新导出的常量，供外部使用（设置界面）
@@ -63,18 +63,6 @@ public class PhaseBeamGL extends GLESScene implements SharedPreferences.OnShared
     @Override
     public void start() {
         mScene.ensurePrefs();
-        SharedPreferences prefs = mScene.getPrefs();
-        if (prefs != null) {
-            prefs.registerOnSharedPreferenceChangeListener(this);
-        }
-    }
-
-    @Override
-    public void stop() {
-        SharedPreferences prefs = mScene.getPrefs();
-        if (prefs != null) {
-            prefs.unregisterOnSharedPreferenceChangeListener(this);
-        }
     }
 
     @Override
@@ -114,29 +102,14 @@ public class PhaseBeamGL extends GLESScene implements SharedPreferences.OnShared
 
     public void setPluginPrefs(SharedPreferences prefs) {
         mScene.setPluginPrefs(prefs);
-    }
-
-    @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        if (PhaseBeamScene.KEY_ENABLED.equals(key) || PhaseBeamScene.KEY_HUE.equals(key)
-                || PhaseBeamScene.KEY_SATURATION.equals(key)
-                || PhaseBeamScene.KEY_BRIGHTNESS.equals(key)
-                || PhaseBeamScene.KEY_THEME.equals(key)
-                || "phasebeam_dot_count".equals(key)) {
-            mScene.reloadPreferences(mResources);
-            if (PhaseBeamScene.KEY_THEME.equals(key)) {
-                mScene.mDirtyTexture = true;
-                mScene.mDirtyBackground = true;
-                mScene.mDirtyParticles = true;
-                // Reload mesh with new theme
-                mScene.loadBackgroundMesh(mContext,
-                        "sunbeam".equals(mScene.mTheme)
-                                ? "phasebeam/data/sunbeam_bg_mesh.csv"
-                                : "waterbeam".equals(mScene.mTheme)
-                                    ? "phasebeam/data/water_bg_mesh.csv"
-                                    : "phasebeam/data/phasebeam_bg_mesh.csv");
-            }
-        }
+        // Full re-read: engine re-injection means "everything changed"
+        mScene.reloadPreferences(mResources);
+        mScene.loadBackgroundMesh(mContext,
+                "sunbeam".equals(mScene.mTheme)
+                        ? "phasebeam/data/sunbeam_bg_mesh.csv"
+                        : "waterbeam".equals(mScene.mTheme)
+                            ? "phasebeam/data/water_bg_mesh.csv"
+                            : "phasebeam/data/phasebeam_bg_mesh.csv");
     }
 
     @Override

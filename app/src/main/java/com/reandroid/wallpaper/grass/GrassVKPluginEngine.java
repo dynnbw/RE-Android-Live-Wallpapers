@@ -39,6 +39,11 @@ public class GrassVKPluginEngine extends BaseVKPluginEngine {
     }
 
     @Override
+    protected void onPluginPrefsChanged() {
+        if (mScene != null) mScene.setPluginPrefs(mHost.getSharedPreferences());
+    }
+
+    @Override
     protected long createRenderer() {
         long handle = GrassVKNative.nCreateRenderer(mContext.getAssets());
         if (handle != 0L) {

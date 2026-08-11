@@ -1,6 +1,7 @@
 package com.reandroid.plugin;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Process;
 import android.os.SystemClock;
@@ -25,6 +26,9 @@ public abstract class BaseVKPluginEngine implements WallpaperEngine, Runnable {
     protected SurfaceHolder mHolder;
     protected volatile Thread mThread;
     private FrameRateManager mFrameRate;
+
+    private final SharedPreferences.OnSharedPreferenceChangeListener mPrefsListener =
+            (prefs, key) -> onPluginPrefsChanged();
 
     public BaseVKPluginEngine(Context context, WallpaperPluginHost host) {
         mContext = context;
@@ -52,12 +56,25 @@ public abstract class BaseVKPluginEngine implements WallpaperEngine, Runnable {
     protected abstract void onSceneOffset(float xOffset);
     protected abstract void onSceneTouch(float x, float y);
 
+    /** 插件设置变更时调用（主线程）。子类重写以把新 prefs 推给场景/渲染器。 */
+    protected void onPluginPrefsChanged() {}
+
     // --- WallpaperEngine lifecycle ---
     @Override public void onCreate(SurfaceHolder holder) {
         mHolder = holder;
         WallpaperSettings.setSharedPreferences(mHost.getSharedPreferences());
+        try {
+            mHost.getSharedPreferences().registerOnSharedPreferenceChangeListener(mPrefsListener);
+        } catch (Exception e) {
+            Log.w(getLogTag(), "Failed to register prefs change listener", e);
+        }
     }
     @Override public void onDestroy() {
+        try {
+            mHost.getSharedPreferences().unregisterOnSharedPreferenceChangeListener(mPrefsListener);
+        } catch (Exception e) {
+            Log.w(getLogTag(), "Failed to unregister prefs change listener", e);
+        }
         stopRenderer(); releaseNative(); mSurfaceCreated = false;
         WallpaperSettings.clearSharedPreferences();
     }

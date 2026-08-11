@@ -63,8 +63,6 @@ public class HoloSpiralGL extends GLESScene {
     // ---- Prefs ----
     private SharedPreferences mPluginPrefs;
     private boolean mGeometryDirty;
-    private final SharedPreferences.OnSharedPreferenceChangeListener mPrefsListener =
-            (sp, key) -> { if (key != null && key.startsWith("holospiral_")) mGeometryDirty = true; };
 
     private int mProgramBackground;
     private int mProgramGeometry;
@@ -106,12 +104,8 @@ public class HoloSpiralGL extends GLESScene {
 
     /** Called by BasePluginEngine via reflection to inject plugin-isolated prefs. */
     public void setPluginPrefs(SharedPreferences prefs) {
-        if (mPluginPrefs != null) {
-            mPluginPrefs.unregisterOnSharedPreferenceChangeListener(mPrefsListener);
-        }
         mPluginPrefs = prefs;
         readParamsFromPrefs();
-        prefs.registerOnSharedPreferenceChangeListener(mPrefsListener);
     }
 
     private void readParamsFromPrefs() {
@@ -221,10 +215,7 @@ public class HoloSpiralGL extends GLESScene {
 
     @Override
     public void release() {
-        if (mPluginPrefs != null) {
-            mPluginPrefs.unregisterOnSharedPreferenceChangeListener(mPrefsListener);
-            mPluginPrefs = null;
-        }
+        mPluginPrefs = null;
         if (mPointTextureId != 0) {
             int[] textures = {mPointTextureId};
             GLES20.glDeleteTextures(1, textures, 0);

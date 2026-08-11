@@ -11,7 +11,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
-public class CubeGL extends GLESScene implements SharedPreferences.OnSharedPreferenceChangeListener {
+public class CubeGL extends GLESScene {
     private static final String TAG = "CubeGL";
 
     public static final String PREFS_NAME = CubeScene.PREFS_NAME;
@@ -59,7 +59,6 @@ public class CubeGL extends GLESScene implements SharedPreferences.OnSharedPrefe
         mScene.ensurePrefs();
         SharedPreferences prefs = mScene.getPrefs();
         if (prefs != null) {
-            prefs.registerOnSharedPreferenceChangeListener(this);
             String shape = prefs.getString(KEY_SHAPE, "cube");
             mScene.loadShape(shape);
         }
@@ -68,14 +67,6 @@ public class CubeGL extends GLESScene implements SharedPreferences.OnSharedPrefe
     @Override
     public void start() {
         mScene.mStartTimeMs = System.currentTimeMillis();
-    }
-
-    @Override
-    public void stop() {
-        SharedPreferences prefs = mScene.getPrefs();
-        if (prefs != null) {
-            prefs.unregisterOnSharedPreferenceChangeListener(this);
-        }
     }
 
     @Override
@@ -107,11 +98,7 @@ public class CubeGL extends GLESScene implements SharedPreferences.OnSharedPrefe
 
     public void setPluginPrefs(SharedPreferences prefs) {
         mScene.setPluginPrefs(prefs);
-    }
-
-    @Override
-    public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
-        if (KEY_SHAPE.equals(key) && mResources != null) {
+        if (prefs != null) {
             String shape = prefs.getString(KEY_SHAPE, "cube");
             mScene.loadShape(shape);
         }

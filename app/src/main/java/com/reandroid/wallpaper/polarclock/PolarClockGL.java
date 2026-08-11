@@ -24,8 +24,6 @@ import android.opengl.Matrix;
 import android.text.format.Time;
 import android.util.Log;
 
-import androidx.annotation.Nullable;
-
 import com.reandroid.wallpaper.R;
 import com.reandroid.utils.AssetLoader;
 import com.reandroid.gles.GLESScene;
@@ -42,9 +40,9 @@ import static org.xmlpull.v1.XmlPullParser.START_TAG;
 
 /**
  * 极坐标时钟的OpenGL ES 2.0渲染核心类
- * 负责时钟的GL初始化、绘制逻辑、偏好设置监听、调色板加载等
+ * 负责时钟的GL初始化、绘制逻辑、偏好设置读取、调色板加载等
  */
-public class PolarClockGL extends GLESScene implements SharedPreferences.OnSharedPreferenceChangeListener {
+public class PolarClockGL extends GLESScene {
     static final String SHARED_PREFS_NAME = "polar_clock_settings";
     static final String PREF_SHOW_SECONDS = "show_seconds";
     static final String PREF_VARIABLE_LINE_WIDTH = "variable_line_width";
@@ -110,6 +108,9 @@ public class PolarClockGL extends GLESScene implements SharedPreferences.OnShare
 
     public void setPluginPrefs(SharedPreferences p) {
         mPluginPrefs = p;
+        if (p != null) {
+            reloadFromPrefs(p);
+        }
     }
 
     /**
@@ -138,7 +139,7 @@ public class PolarClockGL extends GLESScene implements SharedPreferences.OnShare
                 mPrefs = ctx.getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE);
             }
             // 初始化偏好设置对应的变量
-            onSharedPreferenceChanged(mPrefs, null);
+            reloadFromPrefs(mPrefs);
         }
 
         // 初始化日历，设置为当前时区和当前时间
@@ -153,25 +154,21 @@ public class PolarClockGL extends GLESScene implements SharedPreferences.OnShare
 
     /**
      * 场景启动时的逻辑
-     * 注册偏好设置监听器，确保设置生效
+     * 完整重读一次偏好设置（监听器已由引擎统一注入，无需自行注册）
      */
     @Override
     public void start() {
         if (mPrefs != null) {
-            mPrefs.registerOnSharedPreferenceChangeListener(this);
-            onSharedPreferenceChanged(mPrefs, null);
+            reloadFromPrefs(mPrefs);
         }
     }
 
     /**
      * 场景停止时的逻辑
-     * 注销偏好设置监听器，避免内存泄漏
+     * （偏好设置监听已由引擎统一管理，无需在此注销）
      */
     @Override
     public void stop() {
-        if (mPrefs != null) {
-            mPrefs.unregisterOnSharedPreferenceChangeListener(this);
-        }
     }
 
     @Override
@@ -315,34 +312,26 @@ public class PolarClockGL extends GLESScene implements SharedPreferences.OnShare
     }
 
     /**
-     * 偏好设置变化时的回调
-     * @param sharedPreferences 共享偏好实例
-     * @param key 变化的设置项Key（null表示所有项都要更新）
+     * 从偏好设置完整重读所有配置（插件注入或设置变更时调用）
+     * @param prefs 共享偏好实例
      */
-    @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, @Nullable String key) {
+    private void reloadFromPrefs(SharedPreferences prefs) {
         // 如果调色板未加载，先加载
         if (mPalettes.isEmpty()) {
             loadPalettes();
         }
         // 更新“显示秒环”设置
-        if (key == null || PREF_SHOW_SECONDS.equals(key)) {
-            mShowSeconds = sharedPreferences.getBoolean(PREF_SHOW_SECONDS, true);
-        }
+        mShowSeconds = prefs.getBoolean(PREF_SHOW_SECONDS, true);
         // 更新“可变线宽”设置
-        if (key == null || PREF_VARIABLE_LINE_WIDTH.equals(key)) {
-            mVariableLineWidth = sharedPreferences.getBoolean(PREF_VARIABLE_LINE_WIDTH, true);
-        }
+        mVariableLineWidth = prefs.getBoolean(PREF_VARIABLE_LINE_WIDTH, true);
         // 更新“调色板”设置
-        if (key == null || PREF_PALETTE.equals(key)) {
-            String paletteId = sharedPreferences.getString(PREF_PALETTE, "");
-            ClockPalette pal = mPalettes.get(paletteId);
-            if (pal != null) {
-                mPalette = pal;
-            } else if (mPalette == null) {
-                // 加载失败时使用回退调色板
-                mPalette = CyclingClockPalette.getFallback();
-            }
+        String paletteId = prefs.getString(PREF_PALETTE, "");
+        ClockPalette pal = mPalettes.get(paletteId);
+        if (pal != null) {
+            mPalette = pal;
+        } else if (mPalette == null) {
+            // 加载失败时使用回退调色板
+            mPalette = CyclingClockPalette.getFallback();
         }
     }
 
