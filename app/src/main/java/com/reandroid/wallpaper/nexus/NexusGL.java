@@ -8,6 +8,7 @@ import android.opengl.GLUtils;
 import android.opengl.Matrix;
 import android.os.SystemClock;
 import android.util.Log;
+import android.view.MotionEvent;
 
 import com.reandroid.utils.AssetLoader;
 import com.reandroid.gles.GLESScene;
@@ -146,20 +147,34 @@ public class NexusGL extends GLESScene {
      * @param y 点击Y坐标
      * @param z 额外参数（未使用）
      */
+    private void handleTap(int x, int y) {
+        if (mScene.mPulseController.getExtras() == null || mScene.MAX_EXTRAS <= 0 || mScene.PULSE_SIZE <= 0) {
+            return;
+        }
+        // 竖屏时修正X坐标（适配偏移）
+        if (mWidth < mHeight) {
+            x = (int) (x + (mScene.mXOffset * mWidth / mScene.mWorldScaleX));
+        }
+        // 添加点击触发的脉冲
+        mScene.addTap(x, y, SystemClock.uptimeMillis());
+    }
+
     @Override
     public void onCommand(String action, int x, int y, int z) {
+        // 桌面路径：系统发送 tap 命令
         if (WallpaperManager.COMMAND_TAP.equals(action)
                 || WallpaperManager.COMMAND_SECONDARY_TAP.equals(action)
                 || WallpaperManager.COMMAND_DROP.equals(action)) {
-            if (mScene.mPulseController.getExtras() == null || mScene.MAX_EXTRAS <= 0 || mScene.PULSE_SIZE <= 0) {
-                return;
-            }
-            // 竖屏时修正X坐标（适配偏移）
-            if (mWidth < mHeight) {
-                x = (int) (x + (mScene.mXOffset * mWidth / mScene.mWorldScaleX));
-            }
-            // 添加点击触发的脉冲
-            mScene.addTap(x, y, SystemClock.uptimeMillis());
+            handleTap(x, y);
+        }
+    }
+
+    @Override
+    public void onTouchEvent(MotionEvent event) {
+        // 应用内预览路径：预览只转发 onTouchEvent，不派发 tap 命令。
+        // 仅在预览模式接管，桌面继续走 onCommand，避免双重触发。
+        if (isPreview() && event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+            handleTap((int) event.getX(), (int) event.getY());
         }
     }
 

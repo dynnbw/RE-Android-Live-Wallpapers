@@ -7,6 +7,7 @@ import android.opengl.GLES20;
 import android.opengl.GLUtils;
 import android.opengl.Matrix;
 import android.os.SystemClock;
+import android.view.MotionEvent;
 
 import com.reandroid.utils.AssetLoader;
 import com.reandroid.gles.GLESScene;
@@ -155,10 +156,21 @@ public class FireworksGL extends GLESScene {
      */
     @Override
     public void onCommand(String action, int x, int y, int z) {
-        // 处理壁纸触摸事件
+        // 处理壁纸触摸事件（桌面路径：系统发送 tap 命令）
         if ("android.wallpaper.tap".equals(action)) {
             mScene.mTapX = x;
             mScene.mTapY = y;
+            mScene.mTapPending = true;
+        }
+    }
+
+    @Override
+    public void onTouchEvent(MotionEvent event) {
+        // 应用内预览路径：预览只转发 onTouchEvent，不派发 tap 命令。
+        // 仅在预览模式接管，桌面继续走 onCommand，避免双重触发。
+        if (isPreview() && event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+            mScene.mTapX = (int) event.getX();
+            mScene.mTapY = (int) event.getY();
             mScene.mTapPending = true;
         }
     }
