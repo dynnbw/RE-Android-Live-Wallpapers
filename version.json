@@ -1,8 +1,8 @@
 {
-  "versionCode": 7,
-  "versionName": "1.6",
+  "versionCode": 8,
+  "versionName": "1.7",
   "changelog": {
-    "en": "New wallpapers: NixieTube (glow-tube clock), LuminousDots (Samsung particle port)\n\nFixed: rendering freeze on plugin switch, black screen on screen rotation, landscape stretching (Ocean/Windmill), black edges on PNG textures, weather day/night incorrect (Grass), Windmill GPU texture occlusion, Aurora1 black bar, audio spectrum jitter and alignment, Galaxy crash, Fall touch ripple position, plugin settings cross-contamination, MIUI permission dialog, PhaseBeam/Galaxy/Grass/WalkAround settings range errors, Reset All clearing global config, memory leaks, translation errors in 7 languages",
-    "zh": "新增壁纸：辉光管时钟 NixieTube、Samsung 微光粒子 LuminousDots\n\n修复：切壁纸时渲染冻结/黑屏、横屏旋转画面拉伸变形、Ocean/Windmill 边缘黑边、Windmill 部分 GPU 纹理遮挡、Aurora1 左侧黑条、Grass 天气白天/夜晚判断错误、音频可视化频谱抖动与对齐、Galaxy 崩溃、Fall 点击涟漪位置偏移、切壁纸后设置互相污染、MIUI 权限弹窗不出现、PhaseBeam/Galaxy/Grass/WalkAround 设置项范围错误、重置全部设置丢失全局配置、内存泄漏、7 种语言翻译错误"
+    "en": "New: full-screen wallpaper preview with a bottom-sheet settings drawer (wallpaper name in the toolbar, weather button and overflow menu matching the main settings page, translucent sheet)\nNew: revamped wallpaper cards on the home screen, banner carousel, polished About page\nNew: tap interaction on the Grass wallpaper (release a dandelion seed or firefly at the tap point); the preview now supports tap interaction for Fireworks, Nexus and NixieTube\n\nFixed: wallpaper settings now take effect immediately without restarting the app or re-selecting the wallpaper, Grass stars/dandelions/fireflies fade smoothly with day and night, seekbar card margins aligned with regular cards\n\nChanged: 'open system preview' button renamed to 'set as wallpaper' across 13 languages, removed the obsolete preview-ratio menu option",
+    "zh": "新增：全屏壁纸预览 + 底部抽屉设置（工具栏显示壁纸名，天气按钮与溢出菜单与主设置页一致，抽屉半透明）\n新增：主设置页壁纸卡片改版、首页横幅轮播、关于页修改\n新增：草地壁纸点击交互（点击放出一粒蒲公英/萤火虫）；烟火、交错光幕、辉光管预览支持点击\n\n修复：壁纸设置修改后立即生效（无需重启程序或重选壁纸）、草地壁纸星星/蒲公英/萤火虫随日夜平滑渐变、SeekBar 卡片边距统一\n\n变更：按钮文案“打开系统预览”改为“设置壁纸”（13 种语言）、移除“预览比例”菜单项"
   }
 }
