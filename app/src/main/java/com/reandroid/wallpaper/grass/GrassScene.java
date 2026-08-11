@@ -504,29 +504,25 @@ final class GrassScene {
         return isBetweenClock(now, dusk, dawn) ? 1.0f : 0.0f;
     }
 
+    /**
+     * 星星可见度与夜空贴图同曲线，随 night 贴图一起淡入淡出：
+     * 简单模式跟随 computeSimpleSkyWeights 的 night 权重（背景贴图同一来源），
+     * 精确模式跟随 accurateWeights[0]（背景贴图同一来源）。
+     * 之前是独立的 1 分钟阶梯，夜空还在渐变时星星就瞬间全亮。
+     */
     private float computeStarVisibility(float now) {
         float dawn = mDayNightSystem.getDawn();
         float morning = mDayNightSystem.getMorning();
         float afternoon = mDayNightSystem.getAfternoon();
         float dusk = mDayNightSystem.getDusk();
 
-        if (isBetweenClock(now, dawn, morning)) {
-            return clamp(1.0f - clockProgress(now, dawn, morning), 0.0f, 1.0f);
+        if (mUseAccurateSun) {
+            float[] weights = mDayNightSystem.getAccurateWeights();
+            return weights != null ? weights[0] : 0.0f;
         }
-        if (isBetweenClock(now, morning, dusk)) {
-            return 0.0f;
-        }
-
-        float nightFadeEnd = wrap01(dusk + ONE_MINUTE_DAY_FRACTION);
-        if (isBetweenClock(now, dusk, nightFadeEnd)) {
-            return clamp(clockProgress(now, dusk, nightFadeEnd), 0.0f, 1.0f);
-        }
-
-        if (isBetweenClock(now, afternoon, dusk)) {
-            return 0.0f;
-        }
-
-        return 1.0f;
+        float[] w = new float[4];
+        SceneData.computeSimpleSkyWeights(now, dawn, morning, afternoon, dusk, w);
+        return w[0];
     }
 
     private float progressFromStart(float now, float start, float duration) {
