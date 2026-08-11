@@ -389,7 +389,7 @@ final class GrassRenderDataBuilder {
             boolean outOfBounds = isLegacyParticleOutOfBounds(p, legacyType);
             if (outOfBounds) {
                 LegacyParticle np = legacyOps.createLegacyParticle(legacyType);
-                np.active = true;
+                np.active = !isExtras; // extras 飞走后重置为空闲，等待下一次点击（原版 addTap 循环）
                 if (isExtras) {
                     extrasSet[index - 100] = np;
                 } else {

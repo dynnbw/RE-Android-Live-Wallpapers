@@ -119,6 +119,9 @@ final class GrassScene {
     private boolean mBladeIndexRebuildNeeded = false;
     private boolean mGrassGeometryDirty = true;
 
+    // Tap 效果的实体轮换游标（非传统模式重置于点击点）
+    private int mTapEntityIndex = 0;
+
     // Cached SceneData (reused to avoid allocations)
     private final SceneData mSceneData = new SceneData();
 
@@ -196,6 +199,46 @@ final class GrassScene {
 
     void setOffset(float xOffset) {
         mXOffset = xOffset;
+    }
+
+    // ---- Tap interaction（移植自原版 MTK grass.rs addTap）----
+
+    /**
+     * 点击效果：在点击位置放出一颗粒子。
+     * 传统模式：激活空闲 extra 粒子（原版 addTap 语义，随风吹走）；
+     * 非传统模式：把一粒蒲公英/萤火虫重置于点击点（按夜空权重选昼夜类型）。
+     */
+    void addTap(float x, float y) {
+        float nightWeight = computeStarVisibility(mSceneData.timeFraction);
+        if (mLegacyParticles) {
+            LegacyParticle[] extras = nightWeight > 0.5f ? legacyExtrasNight : legacyExtras;
+            for (int i = 0; i < extras.length; i++) {
+                LegacyParticle p = extras[i];
+                if (p != null && !p.active) {
+                    p.originX = x;
+                    p.originY = y;
+                    p.startTime = legacyNow;
+                    p.active = true;
+                    return;
+                }
+            }
+            return;
+        }
+        if (nightWeight > 0.5f) {
+            if (mFireflies != null && mFireflies.length > 0) {
+                Firefly f = mFireflies[mTapEntityIndex % mFireflies.length];
+                f.x = x;
+                f.y = y;
+                mTapEntityIndex++;
+            }
+        } else {
+            if (mDandelions != null && mDandelions.length > 0) {
+                Dandelion d = mDandelions[mTapEntityIndex % mDandelions.length];
+                d.x = x;
+                d.y = y;
+                mTapEntityIndex++;
+            }
+        }
     }
 
     SceneData getSceneData() {
@@ -402,7 +445,7 @@ final class GrassScene {
         for (int i = 0; i < extras.length; i++) {
             if (extras[i] == null) {
                 extras[i] = createLegacyParticle(type);
-                extras[i].active = true;
+                extras[i].active = false; // 空闲，等待点击激活（原版 addTap 语义）
             }
         }
     }
@@ -704,14 +747,14 @@ final class GrassScene {
         }
         for (int i = 0; i < LEGACY_MAX_EXTRAS; i++) {
             legacyExtras[i] = createLegacyParticle(LEGACY_TYPE_DANDELION);
-            legacyExtras[i].active = true;
+            legacyExtras[i].active = false; // 空闲，等待点击激活
         }
         for (int i = 0; i < LEGACY_MAX_NORMAL; i++) {
             legacyNormalNight[i] = createLegacyParticle(LEGACY_TYPE_FIREFLY);
         }
         for (int i = 0; i < LEGACY_MAX_EXTRAS; i++) {
             legacyExtrasNight[i] = createLegacyParticle(LEGACY_TYPE_FIREFLY);
-            legacyExtrasNight[i].active = true;
+            legacyExtrasNight[i].active = false; // 空闲，等待点击激活
         }
     }
 

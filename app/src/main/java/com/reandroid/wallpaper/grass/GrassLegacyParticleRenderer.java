@@ -61,7 +61,7 @@ final class GrassLegacyParticleRenderer {
             if (delta < 0L) continue;
             if (isOutOfBounds(p, legacyType, width, height)) {
                 LegacyParticle np = mScene.createLegacyParticle(legacyType);
-                np.active = true;
+                np.active = !isExtras; // extras 飞走后重置为空闲，等待下一次点击（原版 addTap 循环）
                 particles[i] = np;
                 p = np;
                 delta = animNowMs - p.startTime;

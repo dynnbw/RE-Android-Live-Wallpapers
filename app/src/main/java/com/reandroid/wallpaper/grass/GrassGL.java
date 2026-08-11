@@ -26,6 +26,7 @@ import android.opengl.GLUtils;
 import android.os.Process;
 import android.os.SystemClock;
 import android.util.Log;
+import android.view.MotionEvent;
 
 import com.reandroid.utils.AssetLoader;
 import com.reandroid.gles.GLESScene;
@@ -224,6 +225,17 @@ public class GrassGL extends GLESScene {
         mBackgroundRenderer.setViewport(width, height);
         mWeatherRenderer.setViewport(width, height);
         mStarRenderer.setViewport(width, height);
+    }
+
+    // ---- Tap interaction（移植自原版 MTK grass）----
+
+    @Override
+    public void onTouchEvent(MotionEvent event) {
+        // 桌面与预览统一走触摸事件（系统触摸必达，fall/forest 同模式）。
+        // 不再依赖 tap 命令，避免与触摸双触发。
+        if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+            mScene.addTap(event.getX(), event.getY());
+        }
     }
 
     // ---- Plugin prefs injection ----
@@ -942,7 +954,7 @@ public class GrassGL extends GLESScene {
             boolean outOfBounds = isLegacyParticleOutOfBounds(p, legacyType);
             if (outOfBounds) {
                 LegacyParticle np = mScene.createLegacyParticle(legacyType);
-                np.active = true;
+                np.active = !isExtras; // extras 飞走后重置为空闲，等待下一次点击（原版 addTap 循环）
                 particles[i] = np;
                 p = np;
                 delta = animNowMs - p.startTime;

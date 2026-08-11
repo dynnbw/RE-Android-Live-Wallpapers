@@ -117,6 +117,7 @@ public class GrassVKPluginEngine extends BaseVKPluginEngine {
 
     @Override
     protected void onSceneTouch(float x, float y) {
-        // Grass wallpaper has no touch interaction
+        // 点击放出一颗粒子（移植自原版 MTK grass addTap）
+        if (mScene != null) mScene.addTap(x, y);
     }
 }
