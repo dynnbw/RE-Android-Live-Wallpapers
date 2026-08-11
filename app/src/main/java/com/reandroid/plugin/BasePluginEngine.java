@@ -1,6 +1,7 @@
 package com.reandroid.plugin;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.opengl.EGL14;
 import android.opengl.EGLConfig;
@@ -51,10 +52,29 @@ public abstract class BasePluginEngine implements WallpaperEngine {
     protected int mWidth = 256, mHeight = 256;
     private boolean mPreview;
 
+    /**
+     * 插件设置变更 → 重注入场景。部分场景在 setPluginPrefs 时缓存值到字段，
+     * 没有此监听器的话改动要等引擎重建（重启/换壁纸）才生效。
+     * 监听器在主线程触发（设置页写入线程），setPluginPrefs 各实现均为纯字段写入，安全。
+     */
+    private final SharedPreferences.OnSharedPreferenceChangeListener mPrefsListener =
+            (prefs, key) -> {
+                if (mScene != null) {
+                    tryInjectPrefs(mScene);
+                }
+            };
+
     public BasePluginEngine(Context context, WallpaperPluginHost host) {
         mContext = context;
         mHost = host;
         GLESWallpaper.initializeAppContext(context);
+        if (mHost != null) {
+            try {
+                mHost.getSharedPreferences().registerOnSharedPreferenceChangeListener(mPrefsListener);
+            } catch (Exception e) {
+                Log.w(TAG, "Failed to register prefs change listener", e);
+            }
+        }
     }
 
     /** Create the GLESScene for this wallpaper. */
@@ -65,6 +85,13 @@ public abstract class BasePluginEngine implements WallpaperEngine {
 
     @Override
     public void onDestroy() {
+        if (mHost != null) {
+            try {
+                mHost.getSharedPreferences().unregisterOnSharedPreferenceChangeListener(mPrefsListener);
+            } catch (Exception e) {
+                Log.w(TAG, "Failed to unregister prefs change listener", e);
+            }
+        }
         if (mScene != null) {
             mScene.stop();
             mScene.release();

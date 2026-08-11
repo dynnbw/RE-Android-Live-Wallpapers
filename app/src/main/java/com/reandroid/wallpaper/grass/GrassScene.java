@@ -48,8 +48,18 @@ final class GrassScene {
     // ---- Plugin prefs ----
     private SharedPreferences mPluginPrefs;
 
+    /**
+     * 监听器必须由字段强引用持有：SharedPreferences 内部用 WeakHashMap 存监听器，
+     * 匿名 lambda 会在 GC 后被回收导致设置变更不再触发 mPrefsDirty。
+     */
+    private final SharedPreferences.OnSharedPreferenceChangeListener mPrefsListener =
+            (sharedPrefs, key) -> {
+                mPrefsDirty = true;
+            };
+
     void setPluginPrefs(SharedPreferences prefs) {
         mPluginPrefs = prefs;
+        mPrefsDirty = true; // 引擎重注入（设置变更）时触发下一帧重读
     }
 
     // ---- Instance fields ----
@@ -182,9 +192,7 @@ final class GrassScene {
         Context appCtx = GLESWallpaper.getAppContext();
         if (appCtx != null) {
             SharedPreferences prefs = mPluginPrefs != null ? mPluginPrefs : PreferenceManager.getDefaultSharedPreferences(appCtx);
-            prefs.registerOnSharedPreferenceChangeListener((sharedPrefs, key) -> {
-                mPrefsDirty = true;
-            });
+            prefs.registerOnSharedPreferenceChangeListener(mPrefsListener);
         }
 
         Matrix.orthoM(mSceneData.projectionMatrix, 0, 0, mWidth, mHeight, 0, -1.0f, 1.0f);
