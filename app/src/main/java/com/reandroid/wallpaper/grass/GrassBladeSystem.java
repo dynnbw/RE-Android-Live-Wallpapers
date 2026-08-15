@@ -22,9 +22,13 @@ import static com.reandroid.wallpaper.grass.GrassConstants.TESSELATION;
 import com.reandroid.utils.MathUtils;
 
 final class GrassBladeSystem {
+    // 脏判定基准：上次几何重建时各草叶的角度。
+    // 原来比较"每帧增量"，高 FPS 下每帧角度增量随帧率变小，
+    // 跌破阈值后脏标记永不为 true，草叶停止摆动（渲染冻结）。
     private static final float ANGLE_DIRTY_EPSILON = 0.00075f;
     private static final int WIND_SAMPLE_COUNT = 64;
     private static final float MIN_SAMPLE_SPAN = 0.0001f;
+    private float[] mRenderedAngles;
 
     private final Random random;
     private final GrassWindField windField;
@@ -109,8 +113,9 @@ final class GrassBladeSystem {
         }
 
         boolean dirty = false;
-        for (Blade blade : blades) {
-            float previousAngle = blade.angle;
+        boolean noRenderBaseline = mRenderedAngles == null || mRenderedAngles.length != blades.length;
+        for (int i = 0; i < blades.length; i++) {
+            Blade blade = blades[i];
 
             float noiseValue;
             if (span < MIN_SAMPLE_SPAN) {
@@ -133,11 +138,23 @@ final class GrassBladeSystem {
             float newAngle = (noiseValue - 0.5f) * 0.5f * windAmplitudeScale;
             blade.angle = MathUtils.clamp(blade.angle + (newAngle + blade.offset - blade.angle) * 0.15f,
                     -MAX_BEND, MAX_BEND);
-            if (!dirty && Math.abs(blade.angle - previousAngle) >= ANGLE_DIRTY_EPSILON) {
+            if (!dirty && (noRenderBaseline
+                    || Math.abs(blade.angle - mRenderedAngles[i]) >= ANGLE_DIRTY_EPSILON)) {
                 dirty = true;
             }
         }
         return dirty;
+    }
+
+    /** 几何重建后调用：记录当前角度作为下一轮脏判定基准。 */
+    void markAnglesRendered() {
+        if (blades == null) return;
+        if (mRenderedAngles == null || mRenderedAngles.length != blades.length) {
+            mRenderedAngles = new float[blades.length];
+        }
+        for (int i = 0; i < blades.length; i++) {
+            mRenderedAngles[i] = blades[i].angle;
+        }
     }
 
     Blade[] getBlades() {

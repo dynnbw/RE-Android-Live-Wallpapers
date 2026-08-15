@@ -341,6 +341,11 @@ final class GrassScene {
             * GrassWeatherSystem.windTimeScale(mWeatherCondition) * dayNightWind;
         boolean bladeAnglesDirty = mBladeSystem.updateBladeAngles(noiseNow,
             GrassWeatherSystem.windAmplitudeScale(mWeatherCondition) * dayNightWind);
+        // 上一帧的脏标记已被渲染器消费（几何已重建）：记录当前角度作为
+        // 新一轮脏判定基准。避免高 FPS 下每帧增量跌破阈值导致草停止摆动。
+        if (mSceneData.grassGeometryDirty) {
+            mBladeSystem.markAnglesRendered();
+        }
 
         boolean allowDandelion = GrassWeatherSystem.allowsDandelion(mWeatherCondition);
         boolean allowFirefly = GrassWeatherSystem.allowsFirefly(mWeatherCondition);
