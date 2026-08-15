@@ -221,14 +221,16 @@ public class PrecipitationRenderer {
                 mRaindrop2Scale[2] = 1.0f;
                 rainOn = false;
             }
+            // 图集播放速度对齐原版：窗口 25 帧、每渲染帧推进一帧。
+            // 之前窗口 100 帧 + 索引 /4，水滴下滑被人为放慢 4 倍，观感卡顿。
             for (int i = 0; i < 8; i++) {
-                if (frameCnt % 400 > mRaindrop1Start[i] && frameCnt % 400 < mRaindrop1Start[i] + 100) {
-                    int idx = ((frameCnt % 400) - mRaindrop1Start[i]) / 4;
+                if (frameCnt % 400 > mRaindrop1Start[i] && frameCnt % 400 < mRaindrop1Start[i] + 25) {
+                    int idx = ((frameCnt % 400) - mRaindrop1Start[i]);
                     drawer.drawSprite(raindrop1[idx], mRaindrop1X[i], mRaindrop1Y[i], -19.5f,
                             mRaindrop1Scale[i] * 0.11f * landscape, mRaindrop1Scale[i] * 0.45f, 0.0f, 1.0f);
                 }
-                if (frameCnt % 400 > mRaindrop2Start[i] && frameCnt % 400 < mRaindrop2Start[i] + 100) {
-                    int idx = ((frameCnt % 400) - mRaindrop2Start[i]) / 4;
+                if (frameCnt % 400 > mRaindrop2Start[i] && frameCnt % 400 < mRaindrop2Start[i] + 25) {
+                    int idx = ((frameCnt % 400) - mRaindrop2Start[i]);
                     drawer.drawSprite(raindrop2[idx], mRaindrop2X[i], mRaindrop2Y[i], -19.5f,
                             mRaindrop2Scale[i] * 0.11f * landscape, mRaindrop2Scale[i] * 0.9f, 0.0f, 1.0f);
                 }
