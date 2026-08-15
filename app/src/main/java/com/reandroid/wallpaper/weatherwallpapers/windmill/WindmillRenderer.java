@@ -18,7 +18,6 @@ class WindmillRenderer {
         float[] windmillScaleX = {0.2f, 0.35f, 0.75f, 0.5f, 0.3f, 0.15f, 0.12f, 0.12f, 0.15f, 0.09f, 0.08f, 0.08f, 0.08f};
         float[] windmillScaleY = {0.2f, 0.35f, 0.75f, 0.5f, 0.3f, 0.15f, 0.12f, 0.12f, 0.15f, 0.09f, 0.08f, 0.08f, 0.08f};
         int[] windmillDistance = {0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 2, 2, 2};
-        boolean[] windmillType = {true, true, true, true, true, false, false, false, false, false, false, false, false};
         boolean[] windmillFlip = {false, false, false, true, true, false, false, false, true, true, false, false, false};
         float[] windmillPillarOffsetX = {-0.05f, -0.1f, -0.15f, 0.1f, 0.05f, -0.05f, -0.05f, -0.05f, 0.05f, 0.05f, -0.05f, -0.05f, -0.05f};
         float[] windmillPillarOffsetY = {-1.55f, -2.7f, -5.9f, -3.9f, -2.32f, -1.2f, -0.9f, -0.9f, -1.1f, -0.7f, -0.6f, -0.6f, -0.6f};
@@ -35,7 +34,6 @@ class WindmillRenderer {
             mill.wing = new DrawingAttribute(windmillPosX[i], windmillPosY[i], windmillPosZ[i],
                     windmillScaleX[i], windmillScaleY[i]);
             mill.distance = windmillDistance[i];
-            mill.isTypeA = windmillType[i];
             mill.alpha = windmillAlpha[i];
             mill.flip = windmillFlip[i];
             mill.wingOffset = windmillWingOffset[i];
@@ -92,12 +90,10 @@ class WindmillRenderer {
                             int windmillPillarFlip2) {
         float weight = mill.distance == 0 ? 1.2f : mill.distance == 1 ? 0.5f : 0.2f;
 
-        int pillarTex;
-        if (mill.isTypeA) {
-            pillarTex = mill.flip ? windmillPillarFlip1 : windmillPillar1;
-        } else {
-            pillarTex = mill.flip ? windmillPillarFlip2 : windmillPillar2;
-        }
+        // 原版 drawWindMill 恒以 z=true 绘制：永远使用 01 系列杆子/轮毂纹理。
+        // 02 系列纹理的房屋/轮毂位置与 01 不同，用于远处风车会导致
+        // 扇叶与杆子错位分离（原版里这些纹理从不绘制）。
+        int pillarTex = mill.flip ? windmillPillarFlip1 : windmillPillar1;
         drawer.drawSpriteColored(
                 pillarTex,
                 calcX(mill.pillar.x, offset, weight),
@@ -127,7 +123,7 @@ class WindmillRenderer {
                 mill.alpha
         );
 
-        int centerTex = mill.isTypeA ? windmillCenter1 : windmillCenter2;
+        int centerTex = windmillCenter1;
         drawer.drawSpriteColored(
                 centerTex,
                 calcX(mill.center.x, offset, weight),
@@ -169,7 +165,6 @@ class WindmillRenderer {
         DrawingAttribute wing;
         float fanAngle;
         float alpha;
-        boolean isTypeA;
         boolean flip;
         int distance;
         float wingOffset;
