@@ -157,8 +157,16 @@ public class GLESPreviewView extends SurfaceView implements SurfaceHolder.Callba
                 scene.start();
             }
 
+            // 预览跟随全局帧率设置（与桌面引擎一致），每秒重读一次
+            long lastFpsCheckMs = 0;
+            long targetFrameMs = 33L;
             while (mRunning) {
                 long now = System.currentTimeMillis();
+                if (now - lastFpsCheckMs >= 1000L) {
+                    lastFpsCheckMs = now;
+                    int fps = com.reandroid.settings.WallpaperSettings.getGlobalFrameRate(30);
+                    targetFrameMs = Math.max(1L, 1000L / Math.max(1, fps));
+                }
                 try {
                     synchronized (mSceneLock) {
                         scene = mScene;
@@ -178,8 +186,10 @@ public class GLESPreviewView extends SurfaceView implements SurfaceHolder.Callba
                     mRunning = false;
                     break;
                 }
+                long frameCost = System.currentTimeMillis() - now;
+                long sleepMs = Math.max(1L, targetFrameMs - frameCost);
                 try {
-                    Thread.sleep(33);
+                    Thread.sleep(sleepMs);
                 } catch (InterruptedException ignored) {
                 }
             }
