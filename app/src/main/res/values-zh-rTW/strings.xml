@@ -227,6 +227,8 @@
     <string name="pref_fireworks_custom_background_summary">點擊選擇自訂背景圖片</string>
     <string name="pref_fireworks_reset_background_title">恢復預設背景</string>
     <string name="pref_fireworks_reset_background_summary">清除自訂背景，使用預設背景</string>
+    <string name="pref_fireworks_grass_night_title">草地夜景</string>
+    <string name="pref_fireworks_grass_night_summary">星空與草地，煙花在草叢後綻放</string>
     <string name="reset_all_settings_title">恢復全部預設設定</string>
     <string name="reset_all_settings_message">確定要將所有桌布和全域設定恢復為預設值嗎？</string>
     <string name="reset_all_settings_done">已恢復全部預設設定</string>

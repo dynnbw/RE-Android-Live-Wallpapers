@@ -1,18 +1,27 @@
 {
   "prefs": [
     {
+      "type": "switch",
+      "key": "pref_fireworks_grass_night",
+      "title": "@string/pref_fireworks_grass_night_title",
+      "summary": "@string/pref_fireworks_grass_night_summary",
+      "default": "false"
+    },
+    {
       "type": "button",
       "key": "pref_custom_background",
       "title": "@string/pref_fireworks_custom_background_title",
       "summary": "@string/pref_fireworks_custom_background_summary",
-      "action": "pickBackground"
+      "action": "pickBackground",
+      "disableOn": "pref_fireworks_grass_night"
     },
     {
       "type": "button",
       "key": "pref_reset_background",
       "title": "@string/pref_fireworks_reset_background_title",
       "summary": "@string/pref_fireworks_reset_background_summary",
-      "action": "resetBackground"
+      "action": "resetBackground",
+      "disableOn": "pref_fireworks_grass_night"
     }
   ]
 }

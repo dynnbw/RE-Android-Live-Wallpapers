@@ -218,6 +218,8 @@
     <string name="pref_fireworks_custom_background_summary">Tap to select a custom background image</string>
     <string name="pref_fireworks_reset_background_title">Reset to default background</string>
     <string name="pref_fireworks_reset_background_summary">Remove the custom background and use the default one</string>
+    <string name="pref_fireworks_grass_night_title">Grass night scene</string>
+    <string name="pref_fireworks_grass_night_summary">Night sky with stars and swaying grass; fireworks burst behind the grass</string>
 
     <!-- Holo Spiral Wallpaper -->
     <string name="wallpaper_holospiral">Holo Spiral</string>

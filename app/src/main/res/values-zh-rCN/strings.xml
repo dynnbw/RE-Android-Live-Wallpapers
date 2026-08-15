@@ -235,6 +235,8 @@
     <string name="pref_fireworks_custom_background_summary">点击选择自定义背景图片</string>
     <string name="pref_fireworks_reset_background_title">恢复默认背景</string>
     <string name="pref_fireworks_reset_background_summary">清除自定义背景，使用默认背景</string>
+    <string name="pref_fireworks_grass_night_title">草地夜景</string>
+    <string name="pref_fireworks_grass_night_summary">星空与草地，烟花在草丛后绽放</string>
     <string name="reset_all_settings_title">恢复全部默认配置</string>
     <string name="reset_all_settings_message">确定要将所有壁纸和全局设置恢复为默认值吗？</string>
     <string name="reset_all_settings_done">已恢复全部默认配置</string>

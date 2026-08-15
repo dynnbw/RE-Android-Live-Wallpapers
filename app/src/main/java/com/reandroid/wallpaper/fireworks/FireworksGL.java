@@ -10,6 +10,7 @@ import android.os.SystemClock;
 import android.view.MotionEvent;
 
 import com.reandroid.utils.AssetLoader;
+import com.reandroid.utils.MathUtils;
 import com.reandroid.gles.GLESScene;
 
 import java.nio.ByteBuffer;
@@ -70,6 +71,13 @@ public class FireworksGL extends GLESScene {
      */
     private android.content.SharedPreferences mPluginPrefs;
 
+    // 草地夜景变种：开启后背景变为恒夜草地（夜空+星星+草遮挡烟花）
+    private static final String KEY_GRASS_NIGHT = "pref_fireworks_grass_night";
+    private boolean mGrassNightEnabled = false;
+    private FireworksGrassBackdrop mBackdrop;
+    // 草地/星星配置跟随 grass 壁纸设置（每秒轮询 plugin_grass，契约外不注册监听器）
+    private long mLastGrassConfigPollMs = 0L;
+
     public FireworksGL(int width, int height, Context context) {
         super(width, height);
         mContext = context;
@@ -79,6 +87,9 @@ public class FireworksGL extends GLESScene {
     /** Called by BasePluginEngine via reflection to inject plugin-isolated prefs. */
     public void setPluginPrefs(android.content.SharedPreferences prefs) {
         mPluginPrefs = prefs;
+        if (prefs != null) {
+            mGrassNightEnabled = prefs.getBoolean(KEY_GRASS_NIGHT, false);
+        }
     }
 
     /** Returns the custom background URI, checking plugin prefs first. */
@@ -116,6 +127,11 @@ public class FireworksGL extends GLESScene {
             mProgram = 0;
         }
 
+        if (mBackdrop != null) {
+            mBackdrop.release();
+            mBackdrop = null;
+        }
+
         mGLInitialized = false;
     }
 
@@ -132,6 +148,9 @@ public class FireworksGL extends GLESScene {
             GLES20.glViewport(0, 0, mWidth, mHeight);
             // 更新正交投影矩阵
             Matrix.orthoM(mProjectionMatrix, 0, 0, mWidth, mHeight, 0, -1.0f, 1.0f);
+        }
+        if (mBackdrop != null) {
+            mBackdrop.resize(width, height);
         }
     }
 
@@ -188,9 +207,6 @@ public class FireworksGL extends GLESScene {
             initGL();
         }
 
-        // 检查并重新加载背景（如果URI变化）
-        checkAndReloadBackground();
-
         // 更新当前时间
         mScene.mNow = (int) SystemClock.uptimeMillis();
 
@@ -206,6 +222,15 @@ public class FireworksGL extends GLESScene {
         // 计算最终的X轴偏移（适配壁纸滚动）
         float offset = isPreview() ? 0.0f : mXOffset;
         float offsetX = offset * mWidth;
+
+        // 草地夜景变种：夜空 → 星星 → 烟花(加法) → 草叶遮挡
+        if (mGrassNightEnabled) {
+            drawGrassNightFrame(offsetX, offset);
+            return;
+        }
+
+        // 检查并重新加载背景（如果URI变化）
+        checkAndReloadBackground();
 
         // 清空颜色缓冲区（准备绘制新帧）
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
@@ -227,6 +252,69 @@ public class FireworksGL extends GLESScene {
         GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE);
         // 绘制所有粒子和拖尾
         draw(offsetX);
+    }
+
+    /**
+     * 草地夜景变种帧：夜空 → 星星 → 烟花(加法混合) → 草叶（草遮挡烟花）。
+     * 恒夜，无太阳/月亮/蒲公英/萤火虫；自定义背景不参与此模式。
+     */
+    private void drawGrassNightFrame(float offsetX, float offset) {
+        if (mBackdrop == null) {
+            mBackdrop = new FireworksGrassBackdrop();
+        }
+        if (!mBackdrop.isReady()) {
+            mBackdrop.initGL(mContext, mWidth, mHeight);
+        }
+
+        // 滚动语义与 grass 壁纸一致：预览固定 0.5，桌面跟随滚动偏移
+        mBackdrop.update(mScene.mNow, isPreview() ? 0.5f : offset);
+
+        // 草地/星星配置跟随 grass 壁纸（每秒轮询）
+        long now = SystemClock.uptimeMillis();
+        if (now - mLastGrassConfigPollMs >= 1000L) {
+            mLastGrassConfigPollMs = now;
+            pollGrassConfig();
+        }
+
+        // 清空颜色缓冲区（准备绘制新帧）
+        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+
+        // 夜空渐变 + 星星（标准 Alpha 混合）
+        mBackdrop.drawSky(mProjectionMatrix);
+        mBackdrop.drawStars(mProjectionMatrix);
+
+        // 更新所有粒子状态（物理计算）
+        mScene.update();
+
+        // 烟花：加法混合，发光效果，绘制于星星之上、草叶之下
+        GLES20.glUseProgram(mProgram);
+        GLES20.glUniformMatrix4fv(mMatrixHandle, 1, false, mProjectionMatrix, 0);
+        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE);
+        draw(offsetX);
+
+        // 草叶最后绘制，遮挡烟花
+        mBackdrop.drawGrass(mProjectionMatrix);
+    }
+
+    /**
+     * 读取 grass 壁纸的草/星星配置（plugin_grass），映射语义与 GrassScene 一致：
+     * 高/宽/硬度为百分比/100，范围分别夹在 0.1-10、0.1-10、0.3-10。
+     */
+    private void pollGrassConfig() {
+        if (mBackdrop == null || mContext == null) return;
+        try {
+            android.content.SharedPreferences p =
+                    mContext.getSharedPreferences("plugin_grass", android.content.Context.MODE_PRIVATE);
+            int bladeCount = p.getInt("pref_grass_count", 200);
+            float heightScale = MathUtils.clamp(p.getInt("pref_grass_height", 100) / 100.0f, 0.1f, 10.0f);
+            float widthScale = MathUtils.clamp(p.getInt("pref_grass_width", 100) / 100.0f, 0.1f, 10.0f);
+            float hardnessScale = MathUtils.clamp(p.getInt("pref_grass_hardness", 100) / 100.0f, 0.3f, 10.0f);
+            int starCount = p.getInt("pref_grass_star_count", 2048);
+            mBackdrop.setConfig(bladeCount, heightScale, widthScale, hardnessScale, starCount);
+        } catch (Exception e) {
+            // 轮询失败不影响本帧渲染
+            android.util.Log.e("FireworksGL", "grass config poll failed", e);
+        }
     }
 
     /**
