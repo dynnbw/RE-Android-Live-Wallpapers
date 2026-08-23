@@ -43,7 +43,7 @@ void main() {
     color += abs(sin(12.0 * angle)) * vec3(1.0, 0.808, 0.392) * 0.003 * rayMask;
 
     // 亮度衰减
-    color *= exp(1.0 - dist) / 6.0;
+    color *= exp(1.0 - dist) / 4.0;
     color = clamp(color, 0.0, 1.0);
 
     // alpha
