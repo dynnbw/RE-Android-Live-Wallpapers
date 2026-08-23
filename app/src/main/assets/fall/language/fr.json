@@ -3,5 +3,7 @@
   "fall_speed": "Vitesse de chute",
   "pref_fall_leaf_count": "Nombre de feuilles",
   "pref_fall_max_drops": "Max. d’ondulations",
-  "pref_fall_green_leaves": "Feuilles vertes"
+  "pref_fall_green_leaves": "Feuilles vertes",
+  "pref_fall_swipe_ripple": "Vagues continues au glissement",
+  "pref_fall_swipe_ripple_desc": "Crée des vagues en continu en glissant"
 }

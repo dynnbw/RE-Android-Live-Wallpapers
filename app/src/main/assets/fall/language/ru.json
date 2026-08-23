@@ -3,5 +3,7 @@
   "fall_speed": "Скорость падения",
   "pref_fall_leaf_count": "Количество листьев",
   "pref_fall_max_drops": "Макс. капель ряби",
-  "pref_fall_green_leaves": "Зелёные листья"
+  "pref_fall_green_leaves": "Зелёные листья",
+  "pref_fall_swipe_ripple": "Непрерывные волны при свайпе",
+  "pref_fall_swipe_ripple_desc": "Непрерывно создаёт волны при свайпе"
 }

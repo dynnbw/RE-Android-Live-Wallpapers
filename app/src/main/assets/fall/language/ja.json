@@ -3,5 +3,7 @@
   "fall_speed": "落下速度",
   "pref_fall_leaf_count": "落ち葉の数",
   "pref_fall_max_drops": "最大波紋数",
-  "pref_fall_green_leaves": "緑の葉"
+  "pref_fall_green_leaves": "緑の葉",
+  "pref_fall_swipe_ripple": "スワイプで連続波紋",
+  "pref_fall_swipe_ripple_desc": "スワイプで連続的に波紋を生成"
 }

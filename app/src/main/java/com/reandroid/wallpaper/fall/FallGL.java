@@ -198,6 +198,9 @@ public class FallGL extends GLESScene {
                 mLastTouchTriggerY = y;
                 break;
             case MotionEvent.ACTION_MOVE:
+                if (!mScene.isSwipeRippleEnabled()) {
+                    break;
+                }
                 if (mLastTouchTriggerX < 0.0f || mLastTouchTriggerY < 0.0f) {
                     mScene.addDrop((int) x, (int) y);
                     mLastTouchTriggerX = x;
@@ -221,6 +224,11 @@ public class FallGL extends GLESScene {
             default:
                 break;
         }
+    }
+
+    /** 滑动水波纹开关（滑动每 42px 触发一次水波纹），供 FallView 查询。 */
+    public boolean isSwipeRippleEnabled() {
+        return mScene.isSwipeRippleEnabled();
     }
 
     public void addDrop(int x, int y) {

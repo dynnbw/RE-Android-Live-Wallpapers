@@ -148,6 +148,9 @@ public class FallVKWallpaper extends WallpaperService {
                     mLastTouchTriggerY = y;
                     break;
                 case MotionEvent.ACTION_MOVE:
+                    if (!mScene.isSwipeRippleEnabled()) {
+                        break;
+                    }
                     if (mLastTouchTriggerX < 0.0f || mLastTouchTriggerY < 0.0f) {
                         mScene.addDrop((int) x, (int) y);
                         mLastTouchTriggerX = x;

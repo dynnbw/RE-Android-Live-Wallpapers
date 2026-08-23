@@ -3,5 +3,7 @@
   "fall_speed": "गिरने की गति",
   "pref_fall_leaf_count": "पत्तियों की संख्या",
   "pref_fall_max_drops": "अधिकतम तरंग बूँदें",
-  "pref_fall_green_leaves": "हरी पत्तियाँ"
+  "pref_fall_green_leaves": "हरी पत्तियाँ",
+  "pref_fall_swipe_ripple": "स्वाइप से निरंतर तरंगें",
+  "pref_fall_swipe_ripple_desc": "स्वाइप करने पर लगातार तरंगें"
 }

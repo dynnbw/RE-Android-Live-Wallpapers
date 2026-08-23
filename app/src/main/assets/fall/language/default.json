@@ -3,5 +3,7 @@
   "fall_speed": "Fall Speed",
   "pref_fall_leaf_count": "Leaf count",
   "pref_fall_max_drops": "Max ripple drops",
-  "pref_fall_green_leaves": "Green leaves"
+  "pref_fall_green_leaves": "Green leaves",
+  "pref_fall_swipe_ripple": "Continuous swipe ripples",
+  "pref_fall_swipe_ripple_desc": "Continuously create ripples while swiping"
 }

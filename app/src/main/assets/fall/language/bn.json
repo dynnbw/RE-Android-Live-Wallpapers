@@ -3,5 +3,7 @@
   "fall_speed": "পতনের গতি",
   "pref_fall_leaf_count": "পাতার সংখ্যা",
   "pref_fall_max_drops": "সর্বোচ্চ ঢেউ ফোঁটা",
-  "pref_fall_green_leaves": "সবুজ পাতা"
+  "pref_fall_green_leaves": "সবুজ পাতা",
+  "pref_fall_swipe_ripple": "সোয়াইপে অবিচ্ছিন্ন ঢেউ",
+  "pref_fall_swipe_ripple_desc": "সোয়াইপ করলে ক্রমাগত ঢেউ"
 }

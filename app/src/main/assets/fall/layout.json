@@ -37,6 +37,13 @@
       "key": "pref_fall_green_leaves",
       "title": "pref_fall_green_leaves",
       "default": "false"
+    },
+    {
+      "type": "switch",
+      "key": "pref_fall_swipe_ripple",
+      "title": "pref_fall_swipe_ripple",
+      "summary": "pref_fall_swipe_ripple_desc",
+      "default": "true"
     }
   ]
 }

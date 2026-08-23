@@ -3,5 +3,7 @@
   "fall_speed": "飄落速度",
   "pref_fall_leaf_count": "落葉數量",
   "pref_fall_max_drops": "最大漣漪數量",
-  "pref_fall_green_leaves": "綠色樹葉"
+  "pref_fall_green_leaves": "綠色樹葉",
+  "pref_fall_swipe_ripple": "滑動產生連續水波紋",
+  "pref_fall_swipe_ripple_desc": "滑動時連續產生水波紋"
 }

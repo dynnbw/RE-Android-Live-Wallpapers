@@ -565,4 +565,10 @@ final class FallScene {
         if (mPrefs != null) return mPrefs.getInt(WallpaperSettings.KEY_FALL_MAX_DROPS, DEFAULT_WATER_MESH_DROPS);
         return WallpaperSettings.getFallMaxDrops(DEFAULT_WATER_MESH_DROPS);
     }
+
+    /** 滑动水波纹开关：滑动每 42px 触发一次点击水波纹（默认开启） */
+    boolean isSwipeRippleEnabled() {
+        if (mPrefs != null) return mPrefs.getBoolean(WallpaperSettings.KEY_FALL_SWIPE_RIPPLE, true);
+        return WallpaperSettings.isFallSwipeRippleEnabled(true);
+    }
 }

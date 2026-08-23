@@ -3,5 +3,7 @@
   "fall_speed": "Velocidade de queda",
   "pref_fall_leaf_count": "Quantidade de folhas",
   "pref_fall_max_drops": "Máx. de ondulações",
-  "pref_fall_green_leaves": "Folhas verdes"
+  "pref_fall_green_leaves": "Folhas verdes",
+  "pref_fall_swipe_ripple": "Ondas contínuas ao deslizar",
+  "pref_fall_swipe_ripple_desc": "Cria ondas continuamente ao deslizar"
 }

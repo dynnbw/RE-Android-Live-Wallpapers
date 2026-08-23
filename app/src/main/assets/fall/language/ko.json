@@ -3,5 +3,7 @@
   "fall_speed": "낙하 속도",
   "pref_fall_leaf_count": "낙엽 수",
   "pref_fall_max_drops": "최대 물결 수",
-  "pref_fall_green_leaves": "초록색 잎"
+  "pref_fall_green_leaves": "초록색 잎",
+  "pref_fall_swipe_ripple": "스와이프 연속 잔물결",
+  "pref_fall_swipe_ripple_desc": "스와이프 시 연속으로 잔물결 생성"
 }

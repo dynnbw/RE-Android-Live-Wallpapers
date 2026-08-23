@@ -3,5 +3,7 @@
   "fall_speed": "Fallgeschwindigkeit",
   "pref_fall_leaf_count": "Anzahl Blätter",
   "pref_fall_max_drops": "Max. Wellentropfen",
-  "pref_fall_green_leaves": "Grüne Blätter"
+  "pref_fall_green_leaves": "Grüne Blätter",
+  "pref_fall_swipe_ripple": "Kontinuierliche Wisch-Wellen",
+  "pref_fall_swipe_ripple_desc": "Beim Wischen kontinuierlich Wellen erzeugen"
 }

@@ -86,6 +86,9 @@ class FallView extends View {
                 mLastTriggerY = y;
                 break;
             case MotionEvent.ACTION_MOVE:
+                if (!isSwipeRippleEnabled()) {
+                    break;
+                }
                 if (mLastTriggerX < 0.0f || mLastTriggerY < 0.0f) {
                     triggerRipple(x, y);
                     mLastTriggerX = x;
@@ -108,6 +111,17 @@ class FallView extends View {
                 break;
         }
         // 返回true表示消费了该触摸事件
+        return true;
+    }
+
+    /**
+     * 滑动水波纹开关（滑动每 42px 触发一次水波纹）
+     * 委托给 FallGL 查询，FallGL 不可用时保持默认开启
+     */
+    private boolean isSwipeRippleEnabled() {
+        if (mRender instanceof FallGL) {
+            return ((FallGL) mRender).isSwipeRippleEnabled();
+        }
         return true;
     }
 
