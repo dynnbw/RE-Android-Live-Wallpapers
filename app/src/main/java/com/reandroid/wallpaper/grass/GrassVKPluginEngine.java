@@ -10,6 +10,8 @@ import com.reandroid.plugin.WallpaperPluginHost;
 public class GrassVKPluginEngine extends BaseVKPluginEngine {
     private GrassScene mScene;
     private short[] mCachedIndices = new short[0];
+    private final NightStarsLayer mNightStars = new NightStarsLayer();
+    private final GrassVKNative.StarBatches mStarBatches = new GrassVKNative.StarBatches();
 
     public GrassVKPluginEngine(android.content.Context context, WallpaperPluginHost host) {
         super(context, host);
@@ -23,6 +25,7 @@ public class GrassVKPluginEngine extends BaseVKPluginEngine {
         if (mScene == null && mWidth > 0 && mHeight > 0) {
             mScene = new GrassScene(mWidth, mHeight);
             mScene.setPluginPrefs(mHost.getSharedPreferences());
+            mNightStars.setPluginPrefs(mHost.getSharedPreferences());
             mScene.init(isPreview());
         }
     }
@@ -32,6 +35,7 @@ public class GrassVKPluginEngine extends BaseVKPluginEngine {
         if (mScene == null) {
             mScene = new GrassScene(mWidth, mHeight);
             mScene.setPluginPrefs(mHost.getSharedPreferences());
+            mNightStars.setPluginPrefs(mHost.getSharedPreferences());
             mScene.init(isPreview());
         } else {
             mScene.resize(mWidth, mHeight);
@@ -40,7 +44,10 @@ public class GrassVKPluginEngine extends BaseVKPluginEngine {
 
     @Override
     protected void onPluginPrefsChanged() {
-        if (mScene != null) mScene.setPluginPrefs(mHost.getSharedPreferences());
+        if (mScene != null) {
+            mScene.setPluginPrefs(mHost.getSharedPreferences());
+            mNightStars.setPluginPrefs(mHost.getSharedPreferences());
+        }
     }
 
     @Override
@@ -93,12 +100,18 @@ public class GrassVKPluginEngine extends BaseVKPluginEngine {
         float[] verts = mScene.mRenderDataBuilder.buildGrassVertexArray(sd);
         int vertCount = mScene.mRenderDataBuilder.getGrassVertexCount();
 
+        GrassVKNative.StarBatches stars = GrassVKNative.buildStarBatches(mNightStars, sd, mWidth, mHeight, mStarBatches);
+
         GrassVKNative.nRenderFrame(mRendererHandle,
                 sky, sd.projectionMatrix,
                 verts, vertCount,
                 mCachedIndices, mCachedIndices.length,
                 mScene.mRenderDataBuilder.buildSunSpriteVertices(sd),
                 mScene.mRenderDataBuilder.getSunVertexCount(),
+                stars.white, stars.whiteCount,
+                stars.warm, stars.warmCount,
+                stars.cool, stars.coolCount,
+                stars.yellow, stars.yellowCount,
                 mScene.mRenderDataBuilder.buildDandelionSpriteVertices(sd),
                 mScene.mRenderDataBuilder.getDandelionVertexCount(),
                 mScene.mRenderDataBuilder.buildFireflySpriteVertices(sd),

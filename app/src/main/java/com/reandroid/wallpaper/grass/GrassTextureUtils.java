@@ -51,6 +51,51 @@ final class GrassTextureUtils {
         return cols.toArray(new int[0][]);
     }
 
+    /**
+     * Build a 24x64 ARGB pixel array from sky field color data.
+     * Matches createSkyFieldTexture() sampling; used by the Vulkan path
+     * which uploads pixels to the GPU instead of creating a GL texture.
+     */
+    static int[] skyFieldToARGB(int[][] fieldColors) {
+        if (fieldColors == null || fieldColors.length == 0 || fieldColors[0].length == 0) return null;
+
+        final int cols = fieldColors.length;
+        final int rows = fieldColors[0].length;
+        final int targetW = 24;
+        final int targetH = 64;
+        int[] argb = new int[targetW * targetH];
+
+        for (int y = 0; y < targetH; y++) {
+            float v = y / (float) (targetH - 1);
+            float srcY = v * (rows - 1);
+            int y0 = Math.max(0, Math.min(rows - 1, (int) Math.floor(srcY)));
+            int y1 = Math.min(rows - 1, y0 + 1);
+            float ty = srcY - y0;
+            for (int x = 0; x < targetW; x++) {
+                float u = x / (float) (targetW - 1);
+                float srcX = u * (cols - 1);
+                int x0 = Math.max(0, Math.min(cols - 1, (int) Math.floor(srcX)));
+                int x1 = Math.min(cols - 1, x0 + 1);
+                float tx = srcX - x0;
+
+                int c00 = fieldColors[x0][y0], c10 = fieldColors[x1][y0];
+                int c01 = fieldColors[x0][y1], c11 = fieldColors[x1][y1];
+
+                int r = Math.round(MathUtils.lerp(MathUtils.lerp(Color.red(c00), Color.red(c10), tx),
+                        MathUtils.lerp(Color.red(c01), Color.red(c11), tx), ty));
+                int g = Math.round(MathUtils.lerp(MathUtils.lerp(Color.green(c00), Color.green(c10), tx),
+                        MathUtils.lerp(Color.green(c01), Color.green(c11), tx), ty));
+                int b = Math.round(MathUtils.lerp(MathUtils.lerp(Color.blue(c00), Color.blue(c10), tx),
+                        MathUtils.lerp(Color.blue(c01), Color.blue(c11), tx), ty));
+                int a = Math.round(MathUtils.lerp(MathUtils.lerp(Color.alpha(c00), Color.alpha(c10), tx),
+                        MathUtils.lerp(Color.alpha(c01), Color.alpha(c11), tx), ty));
+
+                argb[y * targetW + x] = (a << 24) | (r << 16) | (g << 8) | b;
+            }
+        }
+        return argb;
+    }
+
     /** Create a 24x64 RGBA texture from sky field color data. */
     static int createSkyFieldTexture(int[][] fieldColors, boolean repeatS) {
         if (fieldColors == null || fieldColors.length == 0 || fieldColors[0].length == 0) return 0;

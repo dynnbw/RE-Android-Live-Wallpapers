@@ -7,8 +7,12 @@ namespace {
 constexpr uint32_t kMaxGrassVertices = 50000;
 constexpr uint32_t kMaxGrassIndices  = 150000;
 constexpr uint32_t kSkyTextureCount  = 5; // night, sunrise, sunset, sky, solar eclipse
-constexpr uint32_t kSpriteTextureCount = 5; // sun, dandelion, firefly1, moon, firefly2
-constexpr uint32_t kMaxSpriteVertices = 8192;
+// sun, dandelion, firefly1, moon, firefly2, starWhite, starWarm, starCool, starYellow
+constexpr uint32_t kSpriteTextureCount = 9;
+// 16384 = enough for 2048 stars x 6 vertices per quad (largest tint group)
+constexpr uint32_t kMaxSpriteVertices = 16384;
+// Star buffers sized for the full setting range (0..10000 stars x 6 vertices per quad)
+constexpr uint32_t kMaxStarVertices = 60000;
 
 // ---- vertex layout ----
 struct GrassVertex {
@@ -207,6 +211,10 @@ public:
             jfloatArray grassVertsArr, jint grassVertCount,
             jshortArray grassIdxArr,   jint grassIdxCount,
             jfloatArray sunVertsArr, jint sunVertCount,
+            jfloatArray starWhiteVertsArr, jint starWhiteVertCount,
+            jfloatArray starWarmVertsArr, jint starWarmVertCount,
+            jfloatArray starCoolVertsArr, jint starCoolVertCount,
+            jfloatArray starYellowVertsArr, jint starYellowVertCount,
             jfloatArray dandelionVertsArr, jint dandelionVertCount,
             jfloatArray fireflyVertsArr, jint fireflyVertCount,
             jfloatArray fireflyFlareVertsArr, jint fireflyFlareVertCount,
@@ -229,6 +237,14 @@ public:
 
         const uint32_t sunCount = static_cast<uint32_t>(
             std::min<int>(sunVertCount, static_cast<int>(kMaxSpriteVertices)));
+        const uint32_t starWhiteCount = static_cast<uint32_t>(
+            std::min<int>(starWhiteVertCount, static_cast<int>(kMaxStarVertices)));
+        const uint32_t starWarmCount = static_cast<uint32_t>(
+            std::min<int>(starWarmVertCount, static_cast<int>(kMaxStarVertices)));
+        const uint32_t starCoolCount = static_cast<uint32_t>(
+            std::min<int>(starCoolVertCount, static_cast<int>(kMaxStarVertices)));
+        const uint32_t starYellowCount = static_cast<uint32_t>(
+            std::min<int>(starYellowVertCount, static_cast<int>(kMaxStarVertices)));
         const uint32_t dandelionCount = static_cast<uint32_t>(
             std::min<int>(dandelionVertCount, static_cast<int>(kMaxSpriteVertices)));
         const uint32_t fireflyCount = static_cast<uint32_t>(
@@ -240,6 +256,14 @@ public:
 
         uploadSpriteGeometryLocked(env, sunVertsArr, sunCount,
             sunVertexMapped_, sunVertexBuffer_);
+        uploadSpriteGeometryLocked(env, starWhiteVertsArr, starWhiteCount,
+            starWhiteVertexMapped_, starWhiteVertexBuffer_);
+        uploadSpriteGeometryLocked(env, starWarmVertsArr, starWarmCount,
+            starWarmVertexMapped_, starWarmVertexBuffer_);
+        uploadSpriteGeometryLocked(env, starCoolVertsArr, starCoolCount,
+            starCoolVertexMapped_, starCoolVertexBuffer_);
+        uploadSpriteGeometryLocked(env, starYellowVertsArr, starYellowCount,
+            starYellowVertexMapped_, starYellowVertexBuffer_);
         uploadSpriteGeometryLocked(env, dandelionVertsArr, dandelionCount,
             dandelionVertexMapped_, dandelionVertexBuffer_);
         uploadSpriteGeometryLocked(env, fireflyVertsArr, fireflyCount,
@@ -308,7 +332,9 @@ public:
         vkResetCommandBuffer(cb, 0);
         if (!recordCommandBufferLocked(cb, imageIndex,
             vertexCount, indexCount,
-            sunCount, dandelionCount, fireflyCount, fireflyFlareCount, moonCount,
+            sunCount,
+            starWhiteCount, starWarmCount, starCoolCount, starYellowCount,
+            dandelionCount, fireflyCount, fireflyFlareCount, moonCount,
             skyPC, grassPC, moonPC)) return;
 
         VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
@@ -484,6 +510,26 @@ public:
         if (!createMappedBufferLocked(sizeof(SpriteVertex) * kMaxSpriteVertices,
                 VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
                 moonVertexBuffer_, moonVertexMemory_, moonVertexMapped_)) {
+            return false;
+        }
+        if (!createMappedBufferLocked(sizeof(SpriteVertex) * kMaxStarVertices,
+                VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+                starWhiteVertexBuffer_, starWhiteVertexMemory_, starWhiteVertexMapped_)) {
+            return false;
+        }
+        if (!createMappedBufferLocked(sizeof(SpriteVertex) * kMaxStarVertices,
+                VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+                starWarmVertexBuffer_, starWarmVertexMemory_, starWarmVertexMapped_)) {
+            return false;
+        }
+        if (!createMappedBufferLocked(sizeof(SpriteVertex) * kMaxStarVertices,
+                VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+                starCoolVertexBuffer_, starCoolVertexMemory_, starCoolVertexMapped_)) {
+            return false;
+        }
+        if (!createMappedBufferLocked(sizeof(SpriteVertex) * kMaxStarVertices,
+                VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+                starYellowVertexBuffer_, starYellowVertexMemory_, starYellowVertexMapped_)) {
             return false;
         }
         return true;
@@ -1259,7 +1305,10 @@ public:
 
     bool recordCommandBufferLocked(VkCommandBuffer cb, uint32_t imageIndex,
             uint32_t vertexCount, uint32_t indexCount,
-            uint32_t sunCount, uint32_t dandelionCount, uint32_t fireflyCount,
+            uint32_t sunCount,
+            uint32_t starWhiteCount, uint32_t starWarmCount, uint32_t starCoolCount,
+            uint32_t starYellowCount,
+            uint32_t dandelionCount, uint32_t fireflyCount,
             uint32_t fireflyFlareCount, uint32_t moonCount,
             const SkyPushConstants& skyPC, const GrassPushConstants& grassPC,
             const MoonPushConstants& moonPC) {
@@ -1324,6 +1373,29 @@ public:
             };
 
             drawSpriteGroup(0, sunVertexBuffer_, sunCount);
+        }
+
+        // ----- dynamic night stars pass (after sun, before moon, matching GL order) -----
+        if (spritePipeline_ != VK_NULL_HANDLE && spritePipelineLayout_ != VK_NULL_HANDLE) {
+            vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, spritePipeline_);
+            vkCmdPushConstants(cb, spritePipelineLayout_,
+                    VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                    0, sizeof(GrassPushConstants), &grassPC);
+
+            auto drawStarGroup = [&](uint32_t slot, VkBuffer vb, uint32_t count) {
+                if (count == 0 || vb == VK_NULL_HANDLE || slot >= kSpriteTextureCount) return;
+                if (spriteDescriptorSets_[slot] == VK_NULL_HANDLE) return;
+                vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                        spritePipelineLayout_, 0, 1, &spriteDescriptorSets_[slot], 0, nullptr);
+                VkDeviceSize offsets[] = {0};
+                vkCmdBindVertexBuffers(cb, 0, 1, &vb, offsets);
+                vkCmdDraw(cb, count, 1, 0, 0);
+            };
+
+            drawStarGroup(5, starWhiteVertexBuffer_, starWhiteCount);
+            drawStarGroup(6, starWarmVertexBuffer_, starWarmCount);
+            drawStarGroup(7, starCoolVertexBuffer_, starCoolCount);
+            drawStarGroup(8, starYellowVertexBuffer_, starYellowCount);
         }
 
         // ----- moon pass (before grass so blades can occlude the horizon) -----
@@ -1463,6 +1535,20 @@ public:
     VkBuffer        moonVertexBuffer_ = VK_NULL_HANDLE;
     VkDeviceMemory  moonVertexMemory_ = VK_NULL_HANDLE;
     void*           moonVertexMapped_ = nullptr;
+
+    // Dynamic night stars (4 tint groups)
+    VkBuffer        starWhiteVertexBuffer_ = VK_NULL_HANDLE;
+    VkDeviceMemory  starWhiteVertexMemory_ = VK_NULL_HANDLE;
+    void*           starWhiteVertexMapped_ = nullptr;
+    VkBuffer        starWarmVertexBuffer_ = VK_NULL_HANDLE;
+    VkDeviceMemory  starWarmVertexMemory_ = VK_NULL_HANDLE;
+    void*           starWarmVertexMapped_ = nullptr;
+    VkBuffer        starCoolVertexBuffer_ = VK_NULL_HANDLE;
+    VkDeviceMemory  starCoolVertexMemory_ = VK_NULL_HANDLE;
+    void*           starCoolVertexMapped_ = nullptr;
+    VkBuffer        starYellowVertexBuffer_ = VK_NULL_HANDLE;
+    VkDeviceMemory  starYellowVertexMemory_ = VK_NULL_HANDLE;
+    void*           starYellowVertexMapped_ = nullptr;
 };
 
 template <typename T>
@@ -1515,6 +1601,10 @@ Java_com_reandroid_wallpaper_grass_GrassVKNative_nRenderFrame(
         jfloatArray grassVerts, jint grassVertCount,
         jshortArray grassIndices, jint grassIndexCount,
         jfloatArray sunVerts, jint sunVertCount,
+        jfloatArray starWhiteVerts, jint starWhiteVertCount,
+        jfloatArray starWarmVerts, jint starWarmVertCount,
+        jfloatArray starCoolVerts, jint starCoolVertCount,
+        jfloatArray starYellowVerts, jint starYellowVertCount,
         jfloatArray dandelionVerts, jint dandelionVertCount,
         jfloatArray fireflyVerts, jint fireflyVertCount,
         jfloatArray fireflyFlareVerts, jint fireflyFlareVertCount,
@@ -1525,6 +1615,10 @@ Java_com_reandroid_wallpaper_grass_GrassVKNative_nRenderFrame(
             grassVerts, grassVertCount,
             grassIndices, grassIndexCount,
             sunVerts, sunVertCount,
+            starWhiteVerts, starWhiteVertCount,
+            starWarmVerts, starWarmVertCount,
+            starCoolVerts, starCoolVertCount,
+            starYellowVerts, starYellowVertCount,
             dandelionVerts, dandelionVertCount,
             fireflyVerts, fireflyVertCount,
             fireflyFlareVerts, fireflyFlareVertCount,

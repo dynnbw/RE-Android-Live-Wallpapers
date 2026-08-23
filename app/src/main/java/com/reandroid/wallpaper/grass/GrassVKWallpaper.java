@@ -15,6 +15,8 @@ public class GrassVKWallpaper extends WallpaperService {
 
     private final class GrassVKEngine extends VKWallpaperEngine<GrassScene> {
         private short[] mCachedIndices = new short[0];
+        private final NightStarsLayer mNightStars = new NightStarsLayer();
+        private final GrassVKNative.StarBatches mStarBatches = new GrassVKNative.StarBatches();
 
         GrassVKEngine() {
             super(GrassVKWallpaper.this);
@@ -87,12 +89,18 @@ public class GrassVKWallpaper extends WallpaperService {
             float[] verts = mScene.mRenderDataBuilder.buildGrassVertexArray(sd);
             int vertCount = mScene.mRenderDataBuilder.getGrassVertexCount();
 
+            GrassVKNative.StarBatches stars = GrassVKNative.buildStarBatches(mNightStars, sd, mWidth, mHeight, mStarBatches);
+
             GrassVKNative.nRenderFrame(mRendererHandle,
                     sky, sd.projectionMatrix,
                     verts, vertCount,
                     mCachedIndices, mCachedIndices.length,
                     mScene.mRenderDataBuilder.buildSunSpriteVertices(sd),
                     mScene.mRenderDataBuilder.getSunVertexCount(),
+                    stars.white, stars.whiteCount,
+                    stars.warm, stars.warmCount,
+                    stars.cool, stars.coolCount,
+                    stars.yellow, stars.yellowCount,
                     mScene.mRenderDataBuilder.buildDandelionSpriteVertices(sd),
                     mScene.mRenderDataBuilder.getDandelionVertexCount(),
                     mScene.mRenderDataBuilder.buildFireflySpriteVertices(sd),
