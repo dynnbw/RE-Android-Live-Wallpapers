@@ -10,7 +10,8 @@
       "type": "switch",
       "key": "pref_grass_weather_enabled",
       "title": "pref_grass_weather_enabled",
-      "default": "true"
+      "default": "true",
+      "disableOn": "use_vulkan"
     },
     {
       "type": "seekbar",
@@ -118,7 +119,8 @@
       "key": "pref_grass_procedural_sun",
       "title": "pref_grass_procedural_sun",
       "default": "true",
-      "dependency": "pref_grass_sun"
+      "dependency": "pref_grass_sun",
+      "disableOn": "use_vulkan"
     },
     {
       "type": "switch",

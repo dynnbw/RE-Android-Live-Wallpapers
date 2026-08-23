@@ -18,7 +18,8 @@
       "labels": [
         "musicvis_recolor_mode_label_static",
         "musicvis_recolor_mode_label_dynamic"
-      ]
+      ],
+      "dependency": "musicvis_recolor"
     },
     {
       "type": "seekbar",
@@ -26,7 +27,8 @@
       "title": "musicvis_hue",
       "default": "0",
       "min": 0,
-      "max": 255
+      "max": 255,
+      "dependency": "musicvis_recolor"
     },
     {
       "type": "seekbar",
@@ -34,7 +36,8 @@
       "title": "musicvis_saturation",
       "default": "255",
       "min": 0,
-      "max": 255
+      "max": 255,
+      "dependency": "musicvis_recolor"
     },
     {
       "type": "seekbar",
@@ -42,7 +45,8 @@
       "title": "musicvis_brightness",
       "default": "255",
       "min": 0,
-      "max": 255
+      "max": 255,
+      "dependency": "musicvis_recolor"
     },
     {
       "type": "seekbar",

@@ -50,7 +50,8 @@
       "title": "galaxy_arm_count",
       "default": "2",
       "min": 1,
-      "max": 6
+      "max": 6,
+      "dependency": "galaxy_precise_calc"
     },
     {
       "type": "seekbar",
@@ -58,7 +59,8 @@
       "title": "galaxy_arm_offset",
       "default": "3141",
       "min": 0,
-      "max": 6283
+      "max": 6283,
+      "dependency": "galaxy_precise_calc"
     },
     {
       "type": "seekbar",
@@ -66,7 +68,8 @@
       "title": "galaxy_pitch_angle_deg",
       "default": "67",
       "min": 0,
-      "max": 300
+      "max": 300,
+      "dependency": "galaxy_precise_calc"
     },
     {
       "type": "seekbar",
@@ -74,7 +77,8 @@
       "title": "galaxy_inner_scatter",
       "default": "135",
       "min": 0,
-      "max": 500
+      "max": 500,
+      "dependency": "galaxy_precise_calc"
     },
     {
       "type": "seekbar",
@@ -82,7 +86,8 @@
       "title": "galaxy_outer_scatter",
       "default": "75",
       "min": 0,
-      "max": 500
+      "max": 500,
+      "dependency": "galaxy_precise_calc"
     },
     {
       "type": "seekbar",
@@ -90,7 +95,8 @@
       "title": "galaxy_turbulence",
       "default": "28",
       "min": 0,
-      "max": 200
+      "max": 200,
+      "dependency": "galaxy_precise_calc"
     },
     {
       "type": "seekbar",
@@ -98,7 +104,8 @@
       "title": "galaxy_forbidden_radius",
       "default": "282",
       "min": 0,
-      "max": 1000
+      "max": 1000,
+      "dependency": "galaxy_precise_calc"
     },
     {
       "type": "seekbar",
@@ -106,7 +113,8 @@
       "title": "galaxy_ellipse_ratio",
       "default": "892",
       "min": 500,
-      "max": 1000
+      "max": 1000,
+      "dependency": "galaxy_precise_calc"
     },
     {
       "type": "seekbar",
@@ -114,7 +122,8 @@
       "title": "galaxy_ellipse_twist",
       "default": "123",
       "min": 0,
-      "max": 200
+      "max": 200,
+      "dependency": "galaxy_precise_calc"
     }
   ]
 }

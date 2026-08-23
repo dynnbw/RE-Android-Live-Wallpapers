@@ -35,7 +35,8 @@
       "title": "phasebeam_hue",
       "default": "0",
       "min": 0,
-      "max": 255
+      "max": 255,
+      "dependency": "phasebeam_recolor_enabled"
     },
     {
       "type": "seekbar",
@@ -43,7 +44,8 @@
       "title": "phasebeam_saturation",
       "default": "255",
       "min": 0,
-      "max": 255
+      "max": 255,
+      "dependency": "phasebeam_recolor_enabled"
     },
     {
       "type": "seekbar",
@@ -51,7 +53,8 @@
       "title": "phasebeam_brightness",
       "default": "128",
       "min": 0,
-      "max": 255
+      "max": 255,
+      "dependency": "phasebeam_recolor_enabled"
     }
   ]
 }
