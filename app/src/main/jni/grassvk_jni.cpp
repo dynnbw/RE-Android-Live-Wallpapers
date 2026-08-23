@@ -1306,24 +1306,7 @@ public:
             vkCmdDraw(cb, 3, 1, 0, 0); // full-screen triangle
         }
 
-        // ----- grass pass -----
-        if (grassDescriptorSet_ != VK_NULL_HANDLE
-                && grassVertexBuffer_ != VK_NULL_HANDLE
-                && grassIndexBuffer_  != VK_NULL_HANDLE
-                && vertexCount > 0 && indexCount > 0) {
-            vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, grassPipeline_);
-            vkCmdPushConstants(cb, grassPipelineLayout_,
-                    VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-                    0, sizeof(GrassPushConstants), &grassPC);
-            vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                    grassPipelineLayout_, 0, 1, &grassDescriptorSet_, 0, nullptr);
-            VkDeviceSize offsets[] = {0};
-            vkCmdBindVertexBuffers(cb, 0, 1, &grassVertexBuffer_, offsets);
-            vkCmdBindIndexBuffer(cb, grassIndexBuffer_, 0, VK_INDEX_TYPE_UINT16);
-            vkCmdDrawIndexed(cb, indexCount, 1, 0, 0, 0);
-        }
-
-        // ----- sprite pass -----
+        // ----- sun sprite pass (before grass so blades can occlude the horizon) -----
         if (spritePipeline_ != VK_NULL_HANDLE && spritePipelineLayout_ != VK_NULL_HANDLE) {
             vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, spritePipeline_);
             vkCmdPushConstants(cb, spritePipelineLayout_,
@@ -1341,11 +1324,9 @@ public:
             };
 
             drawSpriteGroup(0, sunVertexBuffer_, sunCount);
-            drawSpriteGroup(1, dandelionVertexBuffer_, dandelionCount);
-            drawSpriteGroup(2, fireflyVertexBuffer_, fireflyCount);
-            drawSpriteGroup(4, fireflyFlareVertexBuffer_, fireflyFlareCount);
         }
 
+        // ----- moon pass (before grass so blades can occlude the horizon) -----
         if (moonPipeline_ != VK_NULL_HANDLE && moonPipelineLayout_ != VK_NULL_HANDLE
                 && moonDescriptorSet_ != VK_NULL_HANDLE && moonVertexBuffer_ != VK_NULL_HANDLE
                 && moonCount > 0) {
@@ -1358,6 +1339,45 @@ public:
             VkDeviceSize offsets[] = {0};
             vkCmdBindVertexBuffers(cb, 0, 1, &moonVertexBuffer_, offsets);
             vkCmdDraw(cb, moonCount, 1, 0, 0);
+        }
+
+        // ----- grass pass (after sun/moon, before foreground sprites) -----
+        if (grassDescriptorSet_ != VK_NULL_HANDLE
+                && grassVertexBuffer_ != VK_NULL_HANDLE
+                && grassIndexBuffer_  != VK_NULL_HANDLE
+                && vertexCount > 0 && indexCount > 0) {
+            vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, grassPipeline_);
+            vkCmdPushConstants(cb, grassPipelineLayout_,
+                    VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                    0, sizeof(GrassPushConstants), &grassPC);
+            vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                    grassPipelineLayout_, 0, 1, &grassDescriptorSet_, 0, nullptr);
+            VkDeviceSize offsets[] = {0};
+            vkCmdBindVertexBuffers(cb, 0, 1, &grassVertexBuffer_, offsets);
+            vkCmdBindIndexBuffer(cb, grassIndexBuffer_, 0, VK_INDEX_TYPE_UINT16);
+            vkCmdDrawIndexed(cb, indexCount, 1, 0, 0, 0);
+        }
+
+        // ----- foreground sprite pass: dandelion / firefly (above grass) -----
+        if (spritePipeline_ != VK_NULL_HANDLE && spritePipelineLayout_ != VK_NULL_HANDLE) {
+            vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, spritePipeline_);
+            vkCmdPushConstants(cb, spritePipelineLayout_,
+                    VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                    0, sizeof(GrassPushConstants), &grassPC);
+
+            auto drawSpriteGroup = [&](uint32_t slot, VkBuffer vb, uint32_t count) {
+                if (count == 0 || vb == VK_NULL_HANDLE || slot >= kSpriteTextureCount) return;
+                if (spriteDescriptorSets_[slot] == VK_NULL_HANDLE) return;
+                vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                        spritePipelineLayout_, 0, 1, &spriteDescriptorSets_[slot], 0, nullptr);
+                VkDeviceSize offsets[] = {0};
+                vkCmdBindVertexBuffers(cb, 0, 1, &vb, offsets);
+                vkCmdDraw(cb, count, 1, 0, 0);
+            };
+
+            drawSpriteGroup(1, dandelionVertexBuffer_, dandelionCount);
+            drawSpriteGroup(2, fireflyVertexBuffer_, fireflyCount);
+            drawSpriteGroup(4, fireflyFlareVertexBuffer_, fireflyFlareCount);
         }
 
         vkCmdEndRenderPass(cb);
