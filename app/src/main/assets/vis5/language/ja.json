@@ -5,5 +5,12 @@
   "musicvis_wave_mode_label_0": "PCM 波形",
   "musicvis_wave_mode_label_1": "FFT スペクトル",
   "musicvis_wave_mode_label_2": "混合 (FFT+PCM)",
-  "musicvis_bg_color": "背景色"
+  "musicvis_bg_color": "背景色",
+  "musicvis_bg_color_label_#000000": "黒",
+  "musicvis_bg_color_label_#300303": "暗赤",
+  "musicvis_bg_color_label_#50330": "暗青",
+  "musicvis_bg_color_label_#2F4F4F": "暗緑",
+  "musicvis_bg_color_label_#FFE4DE": "ピンク",
+  "musicvis_bg_color_label_#F0FFFF": "薄緑",
+  "musicvis_bg_color_label_#EDDEFF": "薄紫"
 }

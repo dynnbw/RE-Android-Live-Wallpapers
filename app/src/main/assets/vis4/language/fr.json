@@ -1,4 +1,11 @@
 {
   "title": "VU-mètre",
-  "settings_entry": "VU-mètre"
+  "settings_entry": "VU-mètre",
+  "musicvis_bg_color_label_#000000": "Noir",
+  "musicvis_bg_color_label_#300303": "Rouge foncé",
+  "musicvis_bg_color_label_#50330": "Bleu foncé",
+  "musicvis_bg_color_label_#2F4F4F": "Vert foncé",
+  "musicvis_bg_color_label_#FFE4DE": "Rose",
+  "musicvis_bg_color_label_#F0FFFF": "Vert clair",
+  "musicvis_bg_color_label_#EDDEFF": "Violet clair"
 }

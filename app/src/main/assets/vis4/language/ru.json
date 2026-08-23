@@ -1,4 +1,11 @@
 {
   "title": "VU-метр",
-  "settings_entry": "VU-метр"
+  "settings_entry": "VU-метр",
+  "musicvis_bg_color_label_#000000": "Чёрный",
+  "musicvis_bg_color_label_#300303": "Тёмно-красный",
+  "musicvis_bg_color_label_#50330": "Тёмно-синий",
+  "musicvis_bg_color_label_#2F4F4F": "Тёмно-зелёный",
+  "musicvis_bg_color_label_#FFE4DE": "Розовый",
+  "musicvis_bg_color_label_#F0FFFF": "Светло-зелёный",
+  "musicvis_bg_color_label_#EDDEFF": "Светло-фиолетовый"
 }

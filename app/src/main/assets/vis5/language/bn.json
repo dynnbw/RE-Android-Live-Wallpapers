@@ -5,5 +5,12 @@
   "musicvis_wave_mode_label_0": "PCM তরঙ্গরূপ",
   "musicvis_wave_mode_label_1": "FFT বর্ণালী",
   "musicvis_wave_mode_label_2": "মিশ্র (FFT+PCM)",
-  "musicvis_bg_color": "পটভূমি"
+  "musicvis_bg_color": "পটভূমি",
+  "musicvis_bg_color_label_#000000": "কালো",
+  "musicvis_bg_color_label_#300303": "গাঢ় লাল",
+  "musicvis_bg_color_label_#50330": "গাঢ় নীল",
+  "musicvis_bg_color_label_#2F4F4F": "গাঢ় সবুজ",
+  "musicvis_bg_color_label_#FFE4DE": "গোলাপি",
+  "musicvis_bg_color_label_#F0FFFF": "হালকা সবুজ",
+  "musicvis_bg_color_label_#EDDEFF": "হালকা বেগুনি"
 }

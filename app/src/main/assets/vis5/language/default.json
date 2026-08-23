@@ -5,5 +5,12 @@
   "musicvis_wave_mode_label_0": "PCM Waveform",
   "musicvis_wave_mode_label_1": "FFT Spectrum",
   "musicvis_wave_mode_label_2": "Mixed (FFT+PCM)",
-  "musicvis_bg_color": "Background"
+  "musicvis_bg_color": "Background",
+  "musicvis_bg_color_label_#000000": "Black",
+  "musicvis_bg_color_label_#300303": "Dark red",
+  "musicvis_bg_color_label_#50330": "Dark blue",
+  "musicvis_bg_color_label_#2F4F4F": "Dark green",
+  "musicvis_bg_color_label_#FFE4DE": "Pink",
+  "musicvis_bg_color_label_#F0FFFF": "Light green",
+  "musicvis_bg_color_label_#EDDEFF": "Light purple"
 }

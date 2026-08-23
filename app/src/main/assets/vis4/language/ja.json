@@ -1,4 +1,11 @@
 {
   "title": "音量計",
-  "settings_entry": "音量計"
+  "settings_entry": "音量計",
+  "musicvis_bg_color_label_#000000": "黒",
+  "musicvis_bg_color_label_#300303": "暗赤",
+  "musicvis_bg_color_label_#50330": "暗青",
+  "musicvis_bg_color_label_#2F4F4F": "暗緑",
+  "musicvis_bg_color_label_#FFE4DE": "ピンク",
+  "musicvis_bg_color_label_#F0FFFF": "薄緑",
+  "musicvis_bg_color_label_#EDDEFF": "薄紫"
 }

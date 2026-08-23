@@ -1,4 +1,11 @@
 {
   "title": "音量表",
-  "settings_entry": "音量表"
+  "settings_entry": "音量表",
+  "musicvis_bg_color_label_#000000": "黑色",
+  "musicvis_bg_color_label_#300303": "暗紅",
+  "musicvis_bg_color_label_#50330": "暗藍",
+  "musicvis_bg_color_label_#2F4F4F": "暗綠",
+  "musicvis_bg_color_label_#FFE4DE": "粉色",
+  "musicvis_bg_color_label_#F0FFFF": "淺綠",
+  "musicvis_bg_color_label_#EDDEFF": "淺紫"
 }

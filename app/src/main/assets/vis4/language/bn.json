@@ -1,4 +1,11 @@
 {
   "title": "ভিইউ মিটার",
-  "settings_entry": "ভিইউ মিটার"
+  "settings_entry": "ভিইউ মিটার",
+  "musicvis_bg_color_label_#000000": "কালো",
+  "musicvis_bg_color_label_#300303": "গাঢ় লাল",
+  "musicvis_bg_color_label_#50330": "গাঢ় নীল",
+  "musicvis_bg_color_label_#2F4F4F": "গাঢ় সবুজ",
+  "musicvis_bg_color_label_#FFE4DE": "গোলাপি",
+  "musicvis_bg_color_label_#F0FFFF": "হালকা সবুজ",
+  "musicvis_bg_color_label_#EDDEFF": "হালকা বেগুনি"
 }

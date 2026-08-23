@@ -1,4 +1,11 @@
 {
   "title": "वीयू मीटर",
-  "settings_entry": "वीयू मीटर"
+  "settings_entry": "वीयू मीटर",
+  "musicvis_bg_color_label_#000000": "काला",
+  "musicvis_bg_color_label_#300303": "गहरा लाल",
+  "musicvis_bg_color_label_#50330": "गहरा नीला",
+  "musicvis_bg_color_label_#2F4F4F": "गहरा हरा",
+  "musicvis_bg_color_label_#FFE4DE": "गुलाबी",
+  "musicvis_bg_color_label_#F0FFFF": "हल्का हरा",
+  "musicvis_bg_color_label_#EDDEFF": "हल्का बैंगनी"
 }

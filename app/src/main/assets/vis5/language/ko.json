@@ -5,5 +5,12 @@
   "musicvis_wave_mode_label_0": "PCM 파형",
   "musicvis_wave_mode_label_1": "FFT 스펙트럼",
   "musicvis_wave_mode_label_2": "혼합 (FFT+PCM)",
-  "musicvis_bg_color": "배경 색상"
+  "musicvis_bg_color": "배경 색상",
+  "musicvis_bg_color_label_#000000": "검정",
+  "musicvis_bg_color_label_#300303": "진한 빨강",
+  "musicvis_bg_color_label_#50330": "진한 파랑",
+  "musicvis_bg_color_label_#2F4F4F": "진한 녹색",
+  "musicvis_bg_color_label_#FFE4DE": "분홍",
+  "musicvis_bg_color_label_#F0FFFF": "연한 녹색",
+  "musicvis_bg_color_label_#EDDEFF": "연한 보라"
 }
