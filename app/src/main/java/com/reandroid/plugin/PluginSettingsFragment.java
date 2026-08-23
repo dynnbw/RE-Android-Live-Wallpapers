@@ -22,6 +22,7 @@ import androidx.preference.SwitchPreferenceCompat;
 
 import com.reandroid.gles.GLESScene;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.Map;
@@ -119,33 +120,14 @@ public class PluginSettingsFragment extends PreferenceFragmentCompat
         }
 
         // Restore defaults button (placed before dynamic prefs as separator)
-        Preference resetPref = new Preference(ctx);
+        mResetPref = new Preference(ctx);
+        Preference resetPref = mResetPref;
         resetPref.setTitle(com.reandroid.wallpaper.R.string.reset_current_settings_title);
         resetPref.setSummary(com.reandroid.wallpaper.R.string.reset_current_settings_summary);
         resetPref.setLayoutResource(com.reandroid.wallpaper.R.layout.preference_modern_item);
         resetPref.setOnPreferenceClickListener(pref -> {
             prefs.edit().clear().apply();
-            // Remove only dynamic preferences (everything after reset button)
-            PreferenceScreen scr = getPreferenceScreen();
-            while (scr.getPreferenceCount() > 0) {
-                Preference last = scr.getPreference(scr.getPreferenceCount() - 1);
-                if (last == resetPref) break;
-                scr.removePreference(last);
-            }
-            // Rebuild dynamic section
-            JSONObject layout = PluginResources.loadLayout(requireContext(), pluginId);
-            if (layout != null) {
-                JSONObject language = PluginResources.loadLanguageForLocale(requireContext(), pluginId);
-                DynamicPreferenceFactory.buildPreferences(requireContext(), prefs, layout,
-                        scr::addPreference, language);
-                Map<String, String> buttonActions = DynamicPreferenceFactory.collectButtonActions(layout);
-                for (Map.Entry<String, String> entry : buttonActions.entrySet()) {
-                    Preference btn = scr.findPreference(entry.getKey());
-                    if (btn != null) {
-                        wireButtonAction(btn, entry.getValue(), pluginId, prefs);
-                    }
-                }
-            }
+            rebuildDynamicSection();
             if (mHost != null) mHost.refreshPreview();
             return true;
         });
@@ -154,16 +136,62 @@ public class PluginSettingsFragment extends PreferenceFragmentCompat
         // Dynamic preferences from layout.json
         JSONObject layout = PluginResources.loadLayout(ctx, pluginId);
         if (layout != null) {
+            collectDependencyParentKeys(layout);
             JSONObject language = PluginResources.loadLanguageForLocale(ctx, pluginId);
             DynamicPreferenceFactory.buildPreferences(ctx, prefs, layout,
                     screen::addPreference, language);
 
             // Wire up button-type preferences (custom background / reset background)
-            Map<String, String> buttonActions = DynamicPreferenceFactory.collectButtonActions(layout);
-            for (Map.Entry<String, String> entry : buttonActions.entrySet()) {
+            Map<String, String[]> buttonSpecs = DynamicPreferenceFactory.collectButtonSpecs(layout);
+            for (Map.Entry<String, String[]> entry : buttonSpecs.entrySet()) {
                 Preference btn = screen.findPreference(entry.getKey());
                 if (btn != null) {
-                    wireButtonAction(btn, entry.getValue(), pluginId, prefs);
+                    wireButtonAction(btn, entry.getValue()[0], entry.getValue()[1], pluginId, prefs);
+                }
+            }
+        }
+    }
+
+    /** 被 dependency/disableOn 引用的父项 key 集合（变化时触发动态区重建）。 */
+    private final java.util.Set<String> mDependencyParentKeys = new java.util.HashSet<>();
+    private Preference mResetPref;
+
+    private void collectDependencyParentKeys(JSONObject layout) {
+        JSONArray items = layout.optJSONArray("prefs");
+        if (items == null) return;
+        for (int i = 0; i < items.length(); i++) {
+            JSONObject item = items.optJSONObject(i);
+            if (item == null) continue;
+            String dep = item.optString("dependency", null);
+            if (dep != null && !dep.isEmpty()) mDependencyParentKeys.add(dep);
+            String dk = item.optString("disableOn", null);
+            if (dk != null && !dk.isEmpty()) mDependencyParentKeys.add(dk);
+        }
+    }
+
+    /** 重建动态偏好区（重置按钮与依赖变化共用）。 */
+    private void rebuildDynamicSection() {
+        String pluginId = getPluginId();
+        if (pluginId == null) return;
+        // Remove only dynamic preferences (everything after reset button)
+        PreferenceScreen scr = getPreferenceScreen();
+        while (scr.getPreferenceCount() > 0) {
+            Preference last = scr.getPreference(scr.getPreferenceCount() - 1);
+            if (last == mResetPref) break;
+            scr.removePreference(last);
+        }
+        JSONObject layout = PluginResources.loadLayout(requireContext(), pluginId);
+        if (layout != null) {
+            JSONObject language = PluginResources.loadLanguageForLocale(requireContext(), pluginId);
+            DynamicPreferenceFactory.buildPreferences(requireContext(),
+                    getPreferenceManager().getSharedPreferences(), layout,
+                    scr::addPreference, language);
+            Map<String, String[]> buttonSpecs = DynamicPreferenceFactory.collectButtonSpecs(layout);
+            for (Map.Entry<String, String[]> entry : buttonSpecs.entrySet()) {
+                Preference btn = scr.findPreference(entry.getKey());
+                if (btn != null) {
+                    wireButtonAction(btn, entry.getValue()[0], entry.getValue()[1], pluginId,
+                            getPreferenceManager().getSharedPreferences());
                 }
             }
         }
@@ -182,17 +210,22 @@ public class PluginSettingsFragment extends PreferenceFragmentCompat
                 if (mHost != null) mHost.refreshPreview();
             }
         }
+        // 依赖父项变化 → 重建动态区，置灰状态视觉必然正确（全量重绑）
+        if (key != null && mDependencyParentKeys.contains(key)) {
+            rebuildDynamicSection();
+        }
     }
 
     private String getPluginId() {
         return getArguments() != null ? getArguments().getString(ARG_PLUGIN_ID) : null;
     }
 
-    private void wireButtonAction(Preference btn, String action, String pluginId,
-                                   SharedPreferences prefs) {
+    private void wireButtonAction(Preference btn, String action, String disableOnKey,
+                                   String pluginId, SharedPreferences prefs) {
         switch (action) {
             case "pickBackground":
                 btn.setOnPreferenceClickListener(pref -> {
+                    if (isButtonDisabled(prefs, disableOnKey)) return true;
                     mImagePickerLauncher.launch("image/*");
                     return true;
                 });
@@ -200,6 +233,7 @@ public class PluginSettingsFragment extends PreferenceFragmentCompat
                 break;
             case "resetBackground":
                 btn.setOnPreferenceClickListener(pref -> {
+                    if (isButtonDisabled(prefs, disableOnKey)) return true;
                     prefs.edit().remove(KEY_CUSTOM_BG_URI).apply();
                     Toast.makeText(requireContext(),
                             com.reandroid.wallpaper.R.string.fireworks_background_reset_toast,
@@ -211,6 +245,11 @@ public class PluginSettingsFragment extends PreferenceFragmentCompat
                 updateBackgroundButtonSummary(btn, prefs);
                 break;
         }
+    }
+
+    /** 按钮 disableOn 检查：父开关开启时按钮不可用（按钮不存值，change-listener 拦截不适用）。 */
+    private static boolean isButtonDisabled(SharedPreferences prefs, String disableOnKey) {
+        return disableOnKey != null && !disableOnKey.isEmpty() && prefs.getBoolean(disableOnKey, false);
     }
 
     private void onImagePicked(Uri uri) {

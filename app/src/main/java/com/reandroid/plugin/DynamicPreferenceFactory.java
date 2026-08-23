@@ -16,11 +16,22 @@ import java.util.Map;
 
 /**
  * Creates AndroidX Preference objects from a plugin's layout.json definition.
- * Supported types: switch, seekbar, list.
+ * Supported types: switch, seekbar, list, button.
  */
 public final class DynamicPreferenceFactory {
 
     private DynamicPreferenceFactory() {}
+
+    /**
+     * Gray-out visual state for soft-disabled preferences.
+     * setEnabled(false) is avoided on purpose: rendering a disabled SeekBar
+     * crashes the ANGLE→Vulkan stack on some devices (fatal signal 11 in
+     * vkCmdBeginRenderPass). Alpha keeps the control interactive-looking but
+     * visibly disabled; the change-listener still blocks value writes.
+     */
+    private static final float GRAY_ALPHA = 0.4f;
+    private static final java.util.WeakHashMap<Preference, Boolean> sGrayedStates =
+            new java.util.WeakHashMap<>();
 
     /**
      * Parse layout.json and add all preferences to the given screen.
@@ -65,22 +76,47 @@ public final class DynamicPreferenceFactory {
             }
         }
 
-        // Pass 2: set soft-dependency (no setEnabled to avoid SeekBar crash)
+        // Pass 2: soft-dependency with initial visual gray-out.
+        // 值拦截（change-listener）软禁用，避免 SeekBar setEnabled 崩溃；
+        // 初始视觉用 alpha 置灰（onBindViewHolder 读取）。依赖父项变化时由
+        // PluginSettingsFragment 触发动态区 rebuild（视觉必然正确）。
         for (int i = 0; i < count; i++) {
             Preference p = created[i];
             if (p == null) continue;
             String dep = dependencies[i];
             String dk = disableOnKeys[i];
-            if ((dep != null && !dep.isEmpty()) || (dk != null && !dk.isEmpty())) {
-                boolean depDefTrue = depDefaults[i];
-                boolean dkDefFalse = dkDefaults[i];
-                p.setOnPreferenceChangeListener((pref, newValue) -> {
-                    if (dep != null && !dep.isEmpty() && !prefs.getBoolean(dep, depDefTrue)) return false;
-                    if (dk != null && !dk.isEmpty() && prefs.getBoolean(dk, dkDefFalse)) return false;
-                    return true;
-                });
-            }
+            boolean hasDep = dep != null && !dep.isEmpty();
+            boolean hasDk = dk != null && !dk.isEmpty();
+            if (!hasDep && !hasDk) continue;
+
+            final String fDep = dep;
+            final String fDk = dk;
+            final boolean depDefTrue = depDefaults[i];
+            final boolean dkDefFalse = dkDefaults[i];
+
+            // 值拦截（软禁用）
+            p.setOnPreferenceChangeListener((pref, newValue) ->
+                    dependencySatisfied(prefs, fDep, fDk, depDefTrue, dkDefFalse));
+
+            // 初始视觉置灰
+            setGrayed(p, dependencySatisfied(prefs, fDep, fDk, depDefTrue, dkDefFalse));
         }
+    }
+
+    /** Update gray-out state and re-bind the preference row.
+     *  setSelectable() 触发 notifyChanged() 重绑（onBindViewHolder 应用 alpha），
+     *  并让整行不可点击；避免 setEnabled(false) 的 ANGLE 驱动崩溃。 */
+    private static void setGrayed(Preference pref, boolean satisfied) {
+        sGrayedStates.put(pref, !satisfied);
+        pref.setSelectable(satisfied);
+    }
+
+    /** 依赖条件：dependency 父项为 true 且 disableOn 父项不为 true。 */
+    private static boolean dependencySatisfied(SharedPreferences prefs,
+            String dep, String dk, boolean depDefTrue, boolean dkDefFalse) {
+        if (dep != null && !dep.isEmpty() && !prefs.getBoolean(dep, depDefTrue)) return false;
+        if (dk != null && !dk.isEmpty() && prefs.getBoolean(dk, dkDefFalse)) return false;
+        return true;
     }
 
     static boolean findDefaultBool(JSONArray items, String key, boolean fallback) {
@@ -114,7 +150,13 @@ public final class DynamicPreferenceFactory {
 
         switch (type) {
             case "switch": {
-                SwitchPreferenceCompat sp = new SwitchPreferenceCompat(context);
+                SwitchPreferenceCompat sp = new SwitchPreferenceCompat(context) {
+                    @Override
+                    public void onBindViewHolder(androidx.preference.PreferenceViewHolder holder) {
+                        super.onBindViewHolder(holder);
+                        applyGrayAlpha(holder, this);
+                    }
+                };
                 sp.setKey(key);
                 sp.setTitle(title);
                 if (!summary.isEmpty()) sp.setSummary(summary);
@@ -122,7 +164,13 @@ public final class DynamicPreferenceFactory {
                 return sp;
             }
             case "seekbar": {
-                SeekBarPreference sp = new SeekBarPreference(context);
+                SeekBarPreference sp = new SeekBarPreference(context) {
+                    @Override
+                    public void onBindViewHolder(androidx.preference.PreferenceViewHolder holder) {
+                        super.onBindViewHolder(holder);
+                        applyGrayAlpha(holder, this);
+                    }
+                };
                 sp.setKey(key);
                 sp.setTitle(title);
                 if (!summary.isEmpty()) sp.setSummary(summary);
@@ -133,7 +181,13 @@ public final class DynamicPreferenceFactory {
                 return sp;
             }
             case "list": {
-                ListPreference lp = new ListPreference(context);
+                ListPreference lp = new ListPreference(context) {
+                    @Override
+                    public void onBindViewHolder(androidx.preference.PreferenceViewHolder holder) {
+                        super.onBindViewHolder(holder);
+                        applyGrayAlpha(holder, this);
+                    }
+                };
                 lp.setKey(key);
                 lp.setTitle(title);
                 JSONArray vals = item.optJSONArray("values");
@@ -160,7 +214,13 @@ public final class DynamicPreferenceFactory {
                 return lp;
             }
             case "button": {
-                Preference bp = new Preference(context);
+                Preference bp = new Preference(context) {
+                    @Override
+                    public void onBindViewHolder(androidx.preference.PreferenceViewHolder holder) {
+                        super.onBindViewHolder(holder);
+                        applyGrayAlpha(holder, this);
+                    }
+                };
                 bp.setKey(key);
                 bp.setTitle(title);
                 if (!summary.isEmpty()) bp.setSummary(summary);
@@ -171,23 +231,36 @@ public final class DynamicPreferenceFactory {
         return null;
     }
 
+    /** Alpha for the grayed-out visual state of a soft-disabled preference. */
+    private static float grayAlpha(Preference pref) {
+        Boolean grayed = sGrayedStates.get(pref);
+        return (grayed != null && grayed) ? GRAY_ALPHA : 1.0f;
+    }
+
+    /** Apply gray-out alpha in onBindViewHolder of the anonymous preference subclasses. */
+    private static void applyGrayAlpha(androidx.preference.PreferenceViewHolder holder, Preference pref) {
+        holder.itemView.setAlpha(grayAlpha(pref));
+    }
+
     /**
-     * Returns a map of button key → action string for all button-type prefs in the layout.
-     * Call after buildPreferences() to wire up click handlers.
+     * Returns a map of button key → {action, disableOnKey} for all button-type prefs
+     * in the layout. Call after buildPreferences() to wire up click handlers.
+     * disableOnKey is checked at click time because buttons store no value, so the
+     * change-listener soft-disable does not apply to them.
      */
-    public static Map<String, String> collectButtonActions(JSONObject layout) {
-        Map<String, String> actions = new LinkedHashMap<>();
+    public static Map<String, String[]> collectButtonSpecs(JSONObject layout) {
+        Map<String, String[]> specs = new LinkedHashMap<>();
         JSONArray items = layout != null ? layout.optJSONArray("prefs") : null;
-        if (items == null) return actions;
+        if (items == null) return specs;
         for (int i = 0; i < items.length(); i++) {
             JSONObject item = items.optJSONObject(i);
             if (item != null && "button".equals(item.optString("type"))) {
                 String key = item.optString("key");
                 String action = item.optString("action", "");
-                if (!key.isEmpty()) actions.put(key, action);
+                if (!key.isEmpty()) specs.put(key, new String[]{action, item.optString("disableOn", null)});
             }
         }
-        return actions;
+        return specs;
     }
 
     private static String resolveStringRef(Context ctx, String s) {
