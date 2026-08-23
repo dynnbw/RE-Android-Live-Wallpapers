@@ -20,7 +20,6 @@
   "pref_grass_firefly": "Show fireflies (night)",
   "pref_grass_firefly_count": "Firefly count",
   "pref_grass_star_count": "Star count",
-  "pref_grass_legacy_particles": "Classic dandelion and fireflies",
   "pref_grass_color_label_default": "Default",
   "pref_grass_color_label_#00ff0d": "Green",
   "pref_grass_color_label_#42A5F5": "Blue",
@@ -29,5 +28,9 @@
   "pref_grass_color_label_#AB47BC": "Purple",
   "pref_grass_color_label_#ffd900": "Yellow",
   "pref_grass_color_label_#2f2e34": "Black",
-  "pref_grass_color_label_#ffffff": "White"
+  "pref_grass_color_label_#ffffff": "White",
+  "pref_grass_legacy_dandelion": "Classic dandelions",
+  "pref_grass_legacy_dandelion_desc": "Use classic-style dandelions instead of the modern ones",
+  "pref_grass_legacy_firefly": "Classic fireflies",
+  "pref_grass_legacy_firefly_desc": "Use classic-style fireflies instead of the modern ones"
 }

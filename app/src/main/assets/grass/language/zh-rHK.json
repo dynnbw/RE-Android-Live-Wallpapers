@@ -19,7 +19,6 @@
   "pref_grass_firefly": "顯示螢火蟲",
   "pref_grass_firefly_count": "螢火蟲數量（影響性能）",
   "pref_grass_star_count": "星星數量（影響性能）",
-  "pref_grass_legacy_particles": "原版蒲公英、螢火蟲",
   "pref_grass_procedural_sun": "程序化太陽",
   "pref_grass_color_label_default": "預設",
   "pref_grass_color_label_#00ff0d": "綠色",
@@ -29,5 +28,9 @@
   "pref_grass_color_label_#AB47BC": "紫色",
   "pref_grass_color_label_#ffd900": "黃色",
   "pref_grass_color_label_#2f2e34": "黑色",
-  "pref_grass_color_label_#ffffff": "白色"
+  "pref_grass_color_label_#ffffff": "白色",
+  "pref_grass_legacy_dandelion": "原版蒲公英",
+  "pref_grass_legacy_dandelion_desc": "使用原版蒲公英替代現代蒲公英",
+  "pref_grass_legacy_firefly": "原版螢火蟲",
+  "pref_grass_legacy_firefly_desc": "使用原版螢火蟲替代現代螢火蟲"
 }

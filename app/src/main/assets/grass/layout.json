@@ -131,8 +131,7 @@
       "type": "switch",
       "key": "pref_grass_dandelion",
       "title": "pref_grass_dandelion",
-      "default": "false",
-      "disableOn": "pref_grass_legacy_particles"
+      "default": "false"
     },
     {
       "type": "seekbar",
@@ -142,7 +141,7 @@
       "min": 1,
       "max": 30,
       "dependency": "pref_grass_dandelion",
-      "disableOn": "pref_grass_legacy_particles"
+      "disableOn": "pref_grass_legacy_dandelion"
     },
     {
       "type": "seekbar",
@@ -152,14 +151,21 @@
       "min": 100,
       "max": 1000,
       "dependency": "pref_grass_dandelion",
-      "disableOn": "pref_grass_legacy_particles"
+      "disableOn": "pref_grass_legacy_dandelion"
+    },
+    {
+      "type": "switch",
+      "key": "pref_grass_legacy_dandelion",
+      "title": "pref_grass_legacy_dandelion",
+      "summary": "pref_grass_legacy_dandelion_desc",
+      "default": "false",
+      "dependency": "pref_grass_dandelion"
     },
     {
       "type": "switch",
       "key": "pref_grass_firefly",
       "title": "pref_grass_firefly",
-      "default": "false",
-      "disableOn": "pref_grass_legacy_particles"
+      "default": "false"
     },
     {
       "type": "seekbar",
@@ -169,7 +175,15 @@
       "min": 1,
       "max": 60,
       "dependency": "pref_grass_firefly",
-      "disableOn": "pref_grass_legacy_particles"
+      "disableOn": "pref_grass_legacy_firefly"
+    },
+    {
+      "type": "switch",
+      "key": "pref_grass_legacy_firefly",
+      "title": "pref_grass_legacy_firefly",
+      "summary": "pref_grass_legacy_firefly_desc",
+      "default": "false",
+      "dependency": "pref_grass_firefly"
     },
     {
       "type": "seekbar",
@@ -178,13 +192,6 @@
       "default": "2048",
       "min": 0,
       "max": 10000
-    },
-    {
-      "type": "switch",
-      "key": "pref_grass_legacy_particles",
-      "title": "pref_grass_legacy_particles",
-      "default": "false",
-      "disableOn": "pref_grass_dandelion"
     }
   ]
 }

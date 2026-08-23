@@ -19,7 +19,6 @@
   "pref_grass_firefly": "Mostrar vagalumes (noite)",
   "pref_grass_firefly_count": "Quantidade de vagalumes",
   "pref_grass_star_count": "Quantidade de estrelas",
-  "pref_grass_legacy_particles": "Dente-de-leão e vagalumes clássicos",
   "pref_grass_procedural_sun": "Sol procedural",
   "pref_grass_color_label_default": "Padrão",
   "pref_grass_color_label_#00ff0d": "Verde",
@@ -29,5 +28,9 @@
   "pref_grass_color_label_#AB47BC": "Roxo",
   "pref_grass_color_label_#ffd900": "Amarelo",
   "pref_grass_color_label_#2f2e34": "Preto",
-  "pref_grass_color_label_#ffffff": "Branco"
+  "pref_grass_color_label_#ffffff": "Branco",
+  "pref_grass_legacy_dandelion": "Dentes-de-leão clássicos",
+  "pref_grass_legacy_dandelion_desc": "Dentes-de-leão clássicos em vez dos modernos",
+  "pref_grass_legacy_firefly": "Vagalumes clássicos",
+  "pref_grass_legacy_firefly_desc": "Vagalumes clássicos em vez dos modernos"
 }

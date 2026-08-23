@@ -235,7 +235,7 @@ final class GrassRenderDataBuilder {
     }
 
     float[] buildDandelionSpriteVertices(SceneData sd) {
-        if (sd.legacyParticles) {
+        if (sd.legacyDandelionEnabled) {
             mVKDandelionVerts = buildLegacySpriteVertices(sd, LEGACY_TYPE_DANDELION,
                     false, false, true, mVKDandelionVerts);
             mVKDandelionFloatCount = mVKTempSpriteFloatCount;
@@ -271,7 +271,7 @@ final class GrassRenderDataBuilder {
     }
 
     float[] buildFireflySpriteVertices(SceneData sd) {
-        if (sd.legacyParticles) {
+        if (sd.legacyFireflyEnabled) {
             mVKFireflyVerts = buildLegacySpriteVertices(sd, LEGACY_TYPE_FIREFLY,
                     false, true, true, mVKFireflyVerts);
             mVKFireflyFloatCount = mVKTempSpriteFloatCount;
@@ -309,7 +309,7 @@ final class GrassRenderDataBuilder {
     }
 
     float[] buildFireflyFlareSpriteVertices(SceneData sd) {
-        if (!sd.legacyParticles) {
+        if (!sd.legacyFireflyEnabled) {
             mVKFireflyFlareFloatCount = 0;
             return mVKFireflyFlareVerts;
         }
@@ -332,7 +332,9 @@ final class GrassRenderDataBuilder {
                 ? sd.legacyNormal : sd.legacyNormalNight;
         LegacyParticle[] extrasSet = legacyTargetType == LEGACY_TYPE_DANDELION
                 ? sd.legacyExtras : sd.legacyExtrasNight;
-        if (!sd.legacyParticles || normalSet == null || extrasSet == null) {
+        boolean enabled = legacyTargetType == LEGACY_TYPE_DANDELION
+                ? sd.legacyDandelionEnabled : sd.legacyFireflyEnabled;
+        if (!enabled || normalSet == null || extrasSet == null) {
             mVKTempSpriteFloatCount = 0;
             return reusableBuffer;
         }

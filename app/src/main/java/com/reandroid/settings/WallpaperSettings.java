@@ -51,6 +51,8 @@ public class WallpaperSettings {
     public static final String KEY_GRASS_WEATHER_RAIN_COUNT = "pref_grass_weather_rain_count";
     public static final String KEY_GRASS_WEATHER_SNOW_COUNT = "pref_grass_weather_snow_count";
     public static final String KEY_GRASS_DANDELION_SPEED = "pref_grass_dandelion_speed";
+    public static final String KEY_GRASS_LEGACY_DANDELION = "pref_grass_legacy_dandelion";
+    public static final String KEY_GRASS_LEGACY_FIREFLY = "pref_grass_legacy_firefly";
 
     private static Context getContext() {
         return GLESWallpaper.getAppContext();
@@ -252,6 +254,18 @@ public class WallpaperSettings {
         int percent = p.getInt(KEY_GRASS_DANDELION_SPEED, Math.round(defValue * 100.0f));
         if (percent < 100) percent = 100;
         return percent / 100.0f;
+    }
+
+    public static boolean isGrassLegacyDandelionEnabled(boolean defValue) {
+        SharedPreferences p = prefs();
+        if (p == null) return defValue;
+        return p.getBoolean(KEY_GRASS_LEGACY_DANDELION, defValue);
+    }
+
+    public static boolean isGrassLegacyFireflyEnabled(boolean defValue) {
+        SharedPreferences p = prefs();
+        if (p == null) return defValue;
+        return p.getBoolean(KEY_GRASS_LEGACY_FIREFLY, defValue);
     }
 
     public static GrassTint getGrassTint() {

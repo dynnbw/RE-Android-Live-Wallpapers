@@ -20,7 +20,6 @@
   "pref_grass_firefly": "显示萤火虫",
   "pref_grass_firefly_count": "萤火虫数量（影响性能）",
   "pref_grass_star_count": "星星数量（影响性能）",
-  "pref_grass_legacy_particles": "原版蒲公英、萤火虫",
   "pref_grass_color_label_default": "默认",
   "pref_grass_color_label_#00ff0d": "绿色",
   "pref_grass_color_label_#42A5F5": "蓝色",
@@ -29,5 +28,9 @@
   "pref_grass_color_label_#AB47BC": "紫色",
   "pref_grass_color_label_#ffd900": "黄色",
   "pref_grass_color_label_#2f2e34": "黑色",
-  "pref_grass_color_label_#ffffff": "白色"
+  "pref_grass_color_label_#ffffff": "白色",
+  "pref_grass_legacy_dandelion": "传统蒲公英",
+  "pref_grass_legacy_dandelion_desc": "使用原版蒲公英替代现代蒲公英",
+  "pref_grass_legacy_firefly": "传统萤火虫",
+  "pref_grass_legacy_firefly_desc": "使用原版萤火虫替代现代萤火虫"
 }

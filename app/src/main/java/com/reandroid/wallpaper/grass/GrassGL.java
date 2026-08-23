@@ -877,15 +877,14 @@ public class GrassGL extends GLESScene {
     // ---- Sprite drawing ----
 
     private void drawSprites(SceneData sd) {
-        if (sd.legacyParticles) {
-            drawLegacyParticles(sd);
-            return;
-        }
         useProgram(mBackgroundProgram);
         setBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
         GLES20.glUniformMatrix4fv(mBgMatrixHandle, 1, false, sd.projectionMatrix, 0);
 
-        if (sd.dandelionVisibility > 0.001f && sd.dandelionEnabled
+        // 蒲公英：传统开关优先，否则现代粒子
+        if (sd.legacyDandelionEnabled) {
+            drawLegacyParticles(sd, true);
+        } else if (sd.dandelionVisibility > 0.001f && sd.dandelionEnabled
                 && mTexDandelion != 0 && sd.dandelions != null) {
             for (Dandelion d : sd.dandelions) {
                 float sway = (float) Math.sin(d.swayPhase + sd.animNowMs * 0.001f * d.swaySpeed) * 6.0f;
@@ -894,7 +893,10 @@ public class GrassGL extends GLESScene {
             }
         }
 
-        if (sd.fireflyVisibility > 0.001f && sd.fireflyEnabled
+        // 萤火虫：传统开关优先，否则现代粒子
+        if (sd.legacyFireflyEnabled) {
+            drawLegacyParticles(sd, false);
+        } else if (sd.fireflyVisibility > 0.001f && sd.fireflyEnabled
                 && mTexFirefly != 0 && sd.fireflies != null) {
             float time = sd.animNowMs * 0.001f;
             for (Firefly f : sd.fireflies) {
@@ -920,7 +922,8 @@ public class GrassGL extends GLESScene {
                 mWeatherIntegration.isWeatherEnabled(), mWeatherRenderOps, mSpriteRenderer);
     }
 
-    private void drawLegacyParticles(SceneData sd) {
+    /** 按类型绘制原版粒子（dandelionPass=true 画蒲公英，false 画萤火虫）。 */
+    private void drawLegacyParticles(SceneData sd, boolean dandelionPass) {
         useProgram(mBackgroundProgram);
         setBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
         GLES20.glUniformMatrix4fv(mBgMatrixHandle, 1, false, sd.projectionMatrix, 0);
@@ -928,16 +931,17 @@ public class GrassGL extends GLESScene {
         clearLegacyBatchCounts();
 
         long animNowMs = sd.legacyNow;
-        // 双套粒子按夜空权重交叉淡入淡出（蒲公英白天、萤火虫夜晚）
-        mLegacyDandelionAlpha = 1.0f - sd.legacyTransition;
-        mLegacyFireflyAlpha = sd.legacyTransition;
-
-        drawLegacyParticleSet(sd.legacyNormal, LEGACY_TYPE_DANDELION, false, animNowMs);
-        drawLegacyParticleSet(sd.legacyExtras, LEGACY_TYPE_DANDELION, true, animNowMs);
-        drawLegacyParticleSet(sd.legacyNormalNight, LEGACY_TYPE_FIREFLY, false, animNowMs);
-        drawLegacyParticleSet(sd.legacyExtrasNight, LEGACY_TYPE_FIREFLY, true, animNowMs);
-
-        flushLegacyBatches();
+        if (dandelionPass) {
+            mLegacyDandelionAlpha = 1.0f - sd.legacyTransition;
+            drawLegacyParticleSet(sd.legacyNormal, LEGACY_TYPE_DANDELION, false, animNowMs);
+            drawLegacyParticleSet(sd.legacyExtras, LEGACY_TYPE_DANDELION, true, animNowMs);
+            flushLegacyDandelionBatches();
+        } else {
+            mLegacyFireflyAlpha = sd.legacyTransition;
+            drawLegacyParticleSet(sd.legacyNormalNight, LEGACY_TYPE_FIREFLY, false, animNowMs);
+            drawLegacyParticleSet(sd.legacyExtrasNight, LEGACY_TYPE_FIREFLY, true, animNowMs);
+            flushLegacyFireflyBatches();
+        }
     }
 
     private void drawLegacyParticleSet(LegacyParticle[] particles, int legacyType,
@@ -1012,7 +1016,7 @@ public class GrassGL extends GLESScene {
         }
     }
 
-    private void flushLegacyBatches() {
+    private void flushLegacyDandelionBatches() {
         if (mTexDandelion != 0 && mLegacyBatchFloatCounts[LEGACY_BATCH_GROUP_DANDELION] > 0
                 && mLegacyDandelionAlpha > 0.01f) {
             mSpriteRenderer.drawBatch(
@@ -1021,7 +1025,9 @@ public class GrassGL extends GLESScene {
                     mLegacyBatchFloatCounts[LEGACY_BATCH_GROUP_DANDELION],
                     0.9f * mLegacyDandelionAlpha);
         }
+    }
 
+    private void flushLegacyFireflyBatches() {
         if (mTexFirefly1 != 0 && mLegacyFireflyAlpha > 0.01f) {
             for (int bin = 0; bin < LEGACY_FIREFLY_ALPHA_BIN_COUNT; bin++) {
                 int group = LEGACY_BATCH_GROUP_FIREFLY1_START + bin;

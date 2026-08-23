@@ -63,7 +63,8 @@ final class SceneData {
     float grassHeightScale, grassWidthScale, grassHardnessScale;
     boolean useGrassTint;
     float grassTintH, grassTintS, grassTintV;
-    boolean dandelionEnabled, fireflyEnabled, legacyParticles;
+    boolean dandelionEnabled, fireflyEnabled;
+    boolean legacyDandelionEnabled, legacyFireflyEnabled;
 
     Blade[] blades;
     Dandelion[] dandelions;

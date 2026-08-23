@@ -104,8 +104,9 @@ final class GrassScene {
     private boolean mHasWeatherNightOverride = false;
     private boolean mWeatherNightOverride = false;
 
-    // Legacy particles（传统模式）
-    private boolean mLegacyParticles = false;
+    // Legacy particles（传统粒子，按类型独立开关，传统优先于现代粒子）
+    private boolean mLegacyDandelionEnabled = false;
+    private boolean mLegacyFireflyEnabled = false;
     int legacyDirection = 0;
     long legacyBlowTime = 0, legacyNow = 0;
     // 双套粒子常驻：蒲公英（白天）+ 萤火虫（夜晚），按 legacyTransition（夜空权重）
@@ -210,21 +211,22 @@ final class GrassScene {
      */
     void addTap(float x, float y) {
         float nightWeight = computeStarVisibility(mSceneData.timeFraction);
-        if (mLegacyParticles) {
-            LegacyParticle[] extras = nightWeight > 0.5f ? legacyExtrasNight : legacyExtras;
-            for (int i = 0; i < extras.length; i++) {
-                LegacyParticle p = extras[i];
-                if (p != null && !p.active) {
-                    p.originX = x;
-                    p.originY = y;
-                    p.startTime = legacyNow;
-                    p.active = true;
-                    return;
-                }
-            }
-            return;
-        }
+        // 传统优先：对应类型的原版 extras 粒子优先，否则现代粒子
         if (nightWeight > 0.5f) {
+            if (mLegacyFireflyEnabled) {
+                LegacyParticle[] extras = legacyExtrasNight;
+                for (int i = 0; i < extras.length; i++) {
+                    LegacyParticle p = extras[i];
+                    if (p != null && !p.active) {
+                        p.originX = x;
+                        p.originY = y;
+                        p.startTime = legacyNow;
+                        p.active = true;
+                        return;
+                    }
+                }
+                return;
+            }
             if (mFireflies != null && mFireflies.length > 0) {
                 Firefly f = mFireflies[mTapEntityIndex % mFireflies.length];
                 f.x = x;
@@ -232,6 +234,20 @@ final class GrassScene {
                 mTapEntityIndex++;
             }
         } else {
+            if (mLegacyDandelionEnabled) {
+                LegacyParticle[] extras = legacyExtras;
+                for (int i = 0; i < extras.length; i++) {
+                    LegacyParticle p = extras[i];
+                    if (p != null && !p.active) {
+                        p.originX = x;
+                        p.originY = y;
+                        p.startTime = legacyNow;
+                        p.active = true;
+                        return;
+                    }
+                }
+                return;
+            }
             if (mDandelions != null && mDandelions.length > 0) {
                 Dandelion d = mDandelions[mTapEntityIndex % mDandelions.length];
                 d.x = x;
@@ -355,16 +371,15 @@ final class GrassScene {
                 ? computeFireflyVisibility(timeFrac) : 0.0f;
         float starVisibility = computeStarVisibility(timeFrac);
 
-        // Update particle positions
-        if (!mLegacyParticles) {
-            if (dandelionVisibility > 0.001f && mDandelions != null) {
-                GrassParticleSystem.updateDandelionPositions(mRandom, mDandelions, dt,
-                        mDandelionSpeedScale, mWidth, mHeight);
-            }
-            if (fireflyVisibility > 0.001f && mFireflies != null) {
-                GrassParticleSystem.updateFireflyPositions(mFireflies, dt, mWidth, mHeight);
-            }
-        } else {
+        // Update particle positions（传统优先：传统开关开启时现代粒子不再更新）
+        if (!mLegacyDandelionEnabled && dandelionVisibility > 0.001f && mDandelions != null) {
+            GrassParticleSystem.updateDandelionPositions(mRandom, mDandelions, dt,
+                    mDandelionSpeedScale, mWidth, mHeight);
+        }
+        if (!mLegacyFireflyEnabled && fireflyVisibility > 0.001f && mFireflies != null) {
+            GrassParticleSystem.updateFireflyPositions(mFireflies, dt, mWidth, mHeight);
+        }
+        if (mLegacyDandelionEnabled || mLegacyFireflyEnabled) {
             updateLegacyState(animNowMs);
         }
 
@@ -388,7 +403,8 @@ final class GrassScene {
         mSceneData.dandelionVisibility = dandelionVisibility;
         mSceneData.fireflyVisibility = fireflyVisibility;
         mSceneData.starVisibility = starVisibility;
-        mSceneData.legacyParticles = mLegacyParticles;
+        mSceneData.legacyDandelionEnabled = mLegacyDandelionEnabled;
+        mSceneData.legacyFireflyEnabled = mLegacyFireflyEnabled;
         mSceneData.blades = mBladeSystem.getBlades();
         mSceneData.dandelions = mDandelions;
         mSceneData.fireflies = mFireflies;
@@ -586,12 +602,19 @@ final class GrassScene {
         // ---- Plugin-aware settings fallback ----
         SharedPreferences p = mPluginPrefs;
 
-        boolean legacy = p != null
-                ? p.getBoolean("pref_grass_legacy_particles", false)
-                : WallpaperSettings.getBoolean("pref_grass_legacy_particles", false);
-        if (legacy != mLegacyParticles) {
-            mLegacyParticles = legacy;
-            if (mLegacyParticles) initLegacyParticles();
+        boolean legacyDandelion = p != null
+                ? p.getBoolean(WallpaperSettings.KEY_GRASS_LEGACY_DANDELION, false)
+                : WallpaperSettings.isGrassLegacyDandelionEnabled(false);
+        if (legacyDandelion != mLegacyDandelionEnabled) {
+            mLegacyDandelionEnabled = legacyDandelion;
+            if (mLegacyDandelionEnabled) initLegacyParticles();
+        }
+        boolean legacyFirefly = p != null
+                ? p.getBoolean(WallpaperSettings.KEY_GRASS_LEGACY_FIREFLY, false)
+                : WallpaperSettings.isGrassLegacyFireflyEnabled(false);
+        if (legacyFirefly != mLegacyFireflyEnabled) {
+            mLegacyFireflyEnabled = legacyFirefly;
+            if (mLegacyFireflyEnabled) initLegacyParticles();
         }
         WallpaperSettings.GrassTint tint = p != null
                 ? readGrassTint(p)
@@ -698,8 +721,10 @@ final class GrassScene {
             mBladeSystem.initBlades();
             syncBladeBuffersFromSystem(true);
         }
-        if (!mLegacyParticles) {
+        if (!mLegacyDandelionEnabled) {
             if (mDandelions == null || mDandelions.length != mDandelionCount) initDandelions();
+        }
+        if (!mLegacyFireflyEnabled) {
             if (mFireflies == null || mFireflies.length != mFireflyCount) initFireflies();
         }
     }

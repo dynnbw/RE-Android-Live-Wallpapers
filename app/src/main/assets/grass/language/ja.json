@@ -19,7 +19,6 @@
   "pref_grass_firefly": "ホタルを表示",
   "pref_grass_firefly_count": "ホタルの数（パフォーマンスに影響）",
   "pref_grass_star_count": "星の数（パフォーマンスに影響）",
-  "pref_grass_legacy_particles": "クラシック版 タンポポ・ホタル",
   "pref_grass_procedural_sun": "プロシージャル太陽",
   "pref_grass_color_label_default": "デフォルト",
   "pref_grass_color_label_#00ff0d": "緑",
@@ -29,5 +28,9 @@
   "pref_grass_color_label_#AB47BC": "紫",
   "pref_grass_color_label_#ffd900": "黄色",
   "pref_grass_color_label_#2f2e34": "黒",
-  "pref_grass_color_label_#ffffff": "白"
+  "pref_grass_color_label_#ffffff": "白",
+  "pref_grass_legacy_dandelion": "クラシック版タンポポ",
+  "pref_grass_legacy_dandelion_desc": "現代版の代わりにクラシック版のタンポポを使用",
+  "pref_grass_legacy_firefly": "クラシック版ホタル",
+  "pref_grass_legacy_firefly_desc": "現代版の代わりにクラシック版のホタルを使用"
 }
