@@ -14,5 +14,9 @@
   "musicvis_bg_color_label_#2F4F4F": "Dunkelgrün",
   "musicvis_bg_color_label_#FFE4DE": "Rosa",
   "musicvis_bg_color_label_#F0FFFF": "Hellgrün",
-  "musicvis_bg_color_label_#EDDEFF": "Hellviolett"
+  "musicvis_bg_color_label_#EDDEFF": "Hellviolett",
+  "musicvis_idle_mode": "Leerlauf-Animation",
+  "musicvis_idle_mode_label_wave": "Welle",
+  "musicvis_idle_mode_label_simulate": "Audio simulieren",
+  "musicvis_idle_mode_label_flat": "Flache Linie"
 }

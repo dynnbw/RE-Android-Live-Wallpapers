@@ -14,5 +14,9 @@
   "musicvis_bg_color_label_#2F4F4F": "暗绿",
   "musicvis_bg_color_label_#FFE4DE": "粉色",
   "musicvis_bg_color_label_#F0FFFF": "浅绿",
-  "musicvis_bg_color_label_#EDDEFF": "浅紫"
+  "musicvis_bg_color_label_#EDDEFF": "浅紫",
+  "musicvis_idle_mode": "空闲动画",
+  "musicvis_idle_mode_label_wave": "波浪",
+  "musicvis_idle_mode_label_simulate": "模拟声波",
+  "musicvis_idle_mode_label_flat": "静止直线"
 }

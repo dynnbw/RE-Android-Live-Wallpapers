@@ -14,5 +14,9 @@
   "musicvis_bg_color_label_#2F4F4F": "গাঢ় সবুজ",
   "musicvis_bg_color_label_#FFE4DE": "গোলাপি",
   "musicvis_bg_color_label_#F0FFFF": "হালকা সবুজ",
-  "musicvis_bg_color_label_#EDDEFF": "হালকা বেগুনি"
+  "musicvis_bg_color_label_#EDDEFF": "হালকা বেগুনি",
+  "musicvis_idle_mode": "নিষ্ক্রিয় অ্যানিমেশন",
+  "musicvis_idle_mode_label_wave": "তরঙ্গ",
+  "musicvis_idle_mode_label_simulate": "অডিও অনুকরণ",
+  "musicvis_idle_mode_label_flat": "সমতল রেখা"
 }

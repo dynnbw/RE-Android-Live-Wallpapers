@@ -19,5 +19,9 @@
   "musicvis_bg_color_label_#2F4F4F": "गहरा हरा",
   "musicvis_bg_color_label_#FFE4DE": "गुलाबी",
   "musicvis_bg_color_label_#F0FFFF": "हल्का हरा",
-  "musicvis_bg_color_label_#EDDEFF": "हल्का बैंगनी"
+  "musicvis_bg_color_label_#EDDEFF": "हल्का बैंगनी",
+  "musicvis_idle_mode": "निष्क्रिय एनीमेशन",
+  "musicvis_idle_mode_label_wave": "तरंग",
+  "musicvis_idle_mode_label_simulate": "ऑडियो अनुकरण",
+  "musicvis_idle_mode_label_flat": "सपाट रेखा"
 }

@@ -19,6 +19,22 @@
       ]
     },
     {
+      "type": "list",
+      "key": "musicvis_idle_mode",
+      "title": "musicvis_idle_mode",
+      "default": "wave",
+      "values": [
+        "wave",
+        "simulate",
+        "flat"
+      ],
+      "labels": [
+        "musicvis_idle_mode_label_wave",
+        "musicvis_idle_mode_label_simulate",
+        "musicvis_idle_mode_label_flat"
+      ]
+    },
+    {
       "type": "switch",
       "key": "musicvis_use_triangle_strip",
       "title": "musicvis_use_triangle_strip",

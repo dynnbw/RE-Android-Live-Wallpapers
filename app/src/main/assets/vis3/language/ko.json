@@ -19,5 +19,9 @@
   "musicvis_bg_color_label_#2F4F4F": "진한 녹색",
   "musicvis_bg_color_label_#FFE4DE": "분홍",
   "musicvis_bg_color_label_#F0FFFF": "연한 녹색",
-  "musicvis_bg_color_label_#EDDEFF": "연한 보라"
+  "musicvis_bg_color_label_#EDDEFF": "연한 보라",
+  "musicvis_idle_mode": "유휴 애니메이션",
+  "musicvis_idle_mode_label_wave": "파동",
+  "musicvis_idle_mode_label_simulate": "오디오 시뮬레이션",
+  "musicvis_idle_mode_label_flat": "평평한 선"
 }

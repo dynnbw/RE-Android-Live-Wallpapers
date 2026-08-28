@@ -19,5 +19,9 @@
   "musicvis_bg_color_label_#2F4F4F": "Dark green",
   "musicvis_bg_color_label_#FFE4DE": "Pink",
   "musicvis_bg_color_label_#F0FFFF": "Light green",
-  "musicvis_bg_color_label_#EDDEFF": "Light purple"
+  "musicvis_bg_color_label_#EDDEFF": "Light purple",
+  "musicvis_idle_mode": "Idle animation",
+  "musicvis_idle_mode_label_wave": "Wave",
+  "musicvis_idle_mode_label_simulate": "Simulate audio",
+  "musicvis_idle_mode_label_flat": "Flat line"
 }
