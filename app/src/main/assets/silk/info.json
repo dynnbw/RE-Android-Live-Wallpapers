@@ -1,0 +1,5 @@
+{
+  "label": "@string/wallpaper_silk",
+  "plugin": "com.reandroid.wallpaper.silk.SilkPlugin",
+  "previewClass": "com.reandroid.wallpaper.silk.SilkGL"
+}

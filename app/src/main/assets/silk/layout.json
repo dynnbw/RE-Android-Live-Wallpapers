@@ -1,0 +1,28 @@
+{
+  "prefs": [
+    {
+      "type": "list",
+      "key": "silk_theme",
+      "title": "silk_theme",
+      "default": "silk",
+      "values": [
+        "silk",
+        "coralsea",
+        "coffeetime"
+      ],
+      "labels": [
+        "Silk",
+        "Coral Sea",
+        "Coffee Time"
+      ]
+    },
+    {
+      "type": "seekbar",
+      "key": "silk_speed",
+      "title": "silk_speed",
+      "default": "100",
+      "min": 50,
+      "max": 200
+    }
+  ]
+}
