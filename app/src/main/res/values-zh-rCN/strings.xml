@@ -51,6 +51,7 @@
 
     <!-- Cube wallpaper -->
     <string name="wallpaper_cube">立方体</string>
+    <string name="wallpaper_silk">丝语流年</string>
 
     <!-- Wallpaper showing leaves floating on water -->
     <string name="wallpaper_fall">水面落叶</string>
