@@ -191,9 +191,9 @@ public class MicrobesGL extends GLESScene {
     // ---- Buffer / GL setup ----
 
     private void ensureBuffers() {
-        microbePosBuffer = newFloatBuffer(MICROBE_COUNT * 3);
-        microbeMiscBuffer = newFloatBuffer(MICROBE_COUNT * 3);
-        microbeColorBuffer = newFloatBuffer(MICROBE_COUNT * 3);
+        microbePosBuffer = newFloatBuffer(MICROBE_MAX * 3);
+        microbeMiscBuffer = newFloatBuffer(MICROBE_MAX * 3);
+        microbeColorBuffer = newFloatBuffer(MICROBE_MAX * 3);
         foodPosBuffer = newFloatBuffer(FOOD_COUNT * 3);
         decorPosBuffer = newFloatBuffer(DECOR_COUNT * 3);
         deadPosBuffer = newFloatBuffer(DEAD_COUNT * 4);
@@ -252,7 +252,7 @@ public class MicrobesGL extends GLESScene {
         // 原版在 480×800 设备上运行;按 (屏高/800) 等比放大点尺寸,
         // 使现代高分辨率屏上的视觉比例与原版一致(miscInfo.x 预乘,不动 aColor.b)
         float sizeScale = sizeScale();
-        for (int i = 0; i < MICROBE_COUNT; i++) {
+        for (int i = 0; i < mScene.microbeCount; i++) {
             microbePosBuffer.put(mScene.microbeX[i]).put(mScene.microbeY[i]).put(mScene.microbeAngle[i]);
             microbeMiscBuffer.put(mScene.microbeSize[i] * sizeScale).put(mScene.microbeEnergy[i]).put(mScene.microbePulseTs[i]);
             // 原版 aColor = (c0, c1, size)
@@ -274,7 +274,7 @@ public class MicrobesGL extends GLESScene {
         GLES20.glEnableVertexAttribArray(microbeAColor);
         GLES20.glVertexAttribPointer(microbeAColor, 3, GLES20.GL_FLOAT, false, 3 * 4, microbeColorBuffer);
 
-        GLES20.glDrawArrays(GLES20.GL_POINTS, 0, MICROBE_COUNT);
+        GLES20.glDrawArrays(GLES20.GL_POINTS, 0, mScene.microbeCount);
 
         GLES20.glDisableVertexAttribArray(microbeAPosition);
         GLES20.glDisableVertexAttribArray(microbeAMisc);

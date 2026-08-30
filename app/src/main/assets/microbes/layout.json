@@ -2,6 +2,14 @@
   "prefs": [
     {
       "type": "seekbar",
+      "key": "microbes_count",
+      "title": "microbes_count",
+      "default": "300",
+      "min": 50,
+      "max": 500
+    },
+    {
+      "type": "seekbar",
       "key": "microbes_lifecycle_speed",
       "title": "microbes_lifecycle_speed",
       "default": "100",

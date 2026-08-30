@@ -24,7 +24,8 @@ final class MicrobesScene {
     private SharedPreferences mPluginPrefs;
 
     // ---- 原版常量(sub_1674 内存布局推导)----
-    static final int MICROBE_COUNT = 300;   // 52B/个
+    static final int MICROBE_COUNT = 300;   // 52B/个(默认数量)
+    static final int MICROBE_MAX = 500;     // 数量可调上限(数组分配)
     static final int FOOD_COUNT = 600;      // 12B/个
     static final int DEAD_COUNT = 80;       // 16B/个(尸体)
     static final int DECOR_COUNT = 60;      // 12B/个
@@ -60,19 +61,19 @@ final class MicrobesScene {
     private final Random rng = new Random();
 
     // ---- 微生物(13 字段,对应 C 结构 52B)----
-    final float[] microbeX = new float[MICROBE_COUNT];       // +0
-    final float[] microbeY = new float[MICROBE_COUNT];       // +4
-    final float[] microbeAngle = new float[MICROBE_COUNT];   // +8
-    final float[] microbeBreed = new float[MICROBE_COUNT];   // +12 繁殖能量
-    final float[] microbeEnergy = new float[MICROBE_COUNT];  // +16
-    final float[] microbePulseTs = new float[MICROBE_COUNT]; // +20 脉冲时间戳
-    final float[] microbeC0 = new float[MICROBE_COUNT];      // +24 aColor.r
-    final float[] microbeC1 = new float[MICROBE_COUNT];      // +28 aColor.g
-    final float[] microbeSize = new float[MICROBE_COUNT];    // +32 aColor.b(原版复用为尺寸)
-    final float[] microbeVx = new float[MICROBE_COUNT];      // +36
-    final float[] microbeVy = new float[MICROBE_COUNT];      // +40
-    final float[] microbePhase = new float[MICROBE_COUNT];   // +44
-    final float[] microbeInterval = new float[MICROBE_COUNT];// +48 脉冲刷新间隔
+    final float[] microbeX = new float[MICROBE_MAX];       // +0
+    final float[] microbeY = new float[MICROBE_MAX];       // +4
+    final float[] microbeAngle = new float[MICROBE_MAX];   // +8
+    final float[] microbeBreed = new float[MICROBE_MAX];   // +12 繁殖能量
+    final float[] microbeEnergy = new float[MICROBE_MAX];  // +16
+    final float[] microbePulseTs = new float[MICROBE_MAX]; // +20 脉冲时间戳
+    final float[] microbeC0 = new float[MICROBE_MAX];      // +24 aColor.r
+    final float[] microbeC1 = new float[MICROBE_MAX];      // +28 aColor.g
+    final float[] microbeSize = new float[MICROBE_MAX];    // +32 aColor.b(原版复用为尺寸)
+    final float[] microbeVx = new float[MICROBE_MAX];      // +36
+    final float[] microbeVy = new float[MICROBE_MAX];      // +40
+    final float[] microbePhase = new float[MICROBE_MAX];   // +44
+    final float[] microbeInterval = new float[MICROBE_MAX];// +48 脉冲刷新间隔
 
     // ---- 食物(3 floats)----
     final float[] foodX = new float[FOOD_COUNT];
@@ -103,6 +104,7 @@ final class MicrobesScene {
     int viewportHeight;      // dword_4240(surface 高)
     int scrollXPx;           // dword_4244(滚动偏移)
     float foodRespawnTimer;  // 场景末 4B(0.2s 补食周期)
+    int microbeCount = MICROBE_COUNT;   // 当前微生物数量(可调,默认原版 300)
     float lifecycleSpeedScale = 1.0f;
     float motionActivityScale = 1.0f;
     boolean originalColorMode = true;
@@ -129,23 +131,20 @@ final class MicrobesScene {
         timeSec = 0.0f;
         foodRespawnTimer = 0.0f;
 
-        // sub_1594:全部微生物基础字段
-        for (int i = 0; i < MICROBE_COUNT; i++) {
+        // sub_1594:全部槽位(MICROBE_MAX)基础字段;前 30 个激活(其余 INVALID,靠繁殖逐步激活)
+        for (int i = 0; i < MICROBE_MAX; i++) {
             microbeX[i] = INVALID_POS;
             microbePhase[i] = rand01();
             microbeEnergy[i] = rand(0.5f, 0.8f);
             microbeBreed[i] = rand(0.9f, 1.1f);
             microbeInterval[i] = rand(4.0f, 5.0f);
+            assignMicrobeType(i);
         }
-        // 前 30 个激活(其余 INVALID,靠繁殖逐步激活)
         for (int i = 0; i < 30; i++) {
             microbeX[i] = rand(0.0f, worldWidth);
             microbeY[i] = rand(0.0f, worldHeight);
         }
-        // 全部随机类型(sub_14EC)
-        for (int i = 0; i < MICROBE_COUNT; i++) {
-            assignMicrobeType(i);
-        }
+        microbeCount = MICROBE_COUNT;
 
         // 食物:600 全 INVALID + phase;前 50 个激活
         for (int i = 0; i < FOOD_COUNT; i++) {
@@ -198,7 +197,7 @@ final class MicrobesScene {
         float t = timeSec;
 
         // 1. 漫游(sub_17A0):速度每帧重建 = 边界排斥 + cos/sin 噪声
-        for (int i = 0; i < MICROBE_COUNT; i++) {
+        for (int i = 0; i < microbeCount; i++) {
             if (microbeX[i] <= ACTIVE_MIN_X) continue;
             float x = microbeX[i];
             float y = microbeY[i];
@@ -226,10 +225,10 @@ final class MicrobesScene {
         }
 
         // 2. 两两互扰(sub_1B4C):dist<30,推力 (30-dist)*0.2,每微生物最多 4 个邻居
-        for (int i = 0; i < MICROBE_COUNT; i++) {
+        for (int i = 0; i < microbeCount; i++) {
             if (microbeX[i] <= ACTIVE_MIN_X) continue;
             int count = 0;
-            for (int j = i + 1; j < MICROBE_COUNT && count < 4; j++) {
+            for (int j = i + 1; j < microbeCount && count < 4; j++) {
                 if (microbeX[j] <= ACTIVE_MIN_X) continue;
                 float dx = microbeX[j] - microbeX[i];
                 float dy = microbeY[j] - microbeY[i];
@@ -249,7 +248,7 @@ final class MicrobesScene {
         }
 
         // 3. 食物吸引/进食(sub_1BC8):dist<80,最多 4 个食物
-        for (int i = 0; i < MICROBE_COUNT; i++) {
+        for (int i = 0; i < microbeCount; i++) {
             if (microbeX[i] <= ACTIVE_MIN_X) continue;
             int count = 0;
             for (int f = 0; f < FOOD_COUNT && count < 4; f++) {
@@ -280,7 +279,7 @@ final class MicrobesScene {
         }
 
         // 4. motion 吸引(sub_1CF8):dist<80
-        for (int i = 0; i < MICROBE_COUNT; i++) {
+        for (int i = 0; i < microbeCount; i++) {
             if (microbeX[i] <= ACTIVE_MIN_X) continue;
             for (int m = 0; m < MOTION_COUNT; m++) {
                 if (motionExpiry[m] <= t) continue;
@@ -297,7 +296,7 @@ final class MicrobesScene {
         }
 
         // 5. 积分(sub_1D78):限速 80,能量衰减,高能量额外衰减 + 繁殖能量累积
-        for (int i = 0; i < MICROBE_COUNT; i++) {
+        for (int i = 0; i < microbeCount; i++) {
             if (microbeX[i] <= ACTIVE_MIN_X) continue;
             float vx = microbeVx[i];
             float vy = microbeVy[i];
@@ -366,7 +365,7 @@ final class MicrobesScene {
         }
 
         // 9. 繁殖/死亡(每微生物,先繁殖后死亡)
-        for (int i = 0; i < MICROBE_COUNT; i++) {
+        for (int i = 0; i < microbeCount; i++) {
             if (microbeX[i] <= ACTIVE_MIN_X) continue;
             if (microbeBreed[i] >= BREED_THRESHOLD) {
                 int child = findInvalidMicrobeSlot();
@@ -388,7 +387,7 @@ final class MicrobesScene {
 
         // 10. 屏幕外换型:随机索引,NDC 投影出界则重掷类型(无活动性检查,忠实原版)
         int idx = (int) rand(0.0f, 3000.0f);
-        if (idx < MICROBE_COUNT) {
+        if (idx < microbeCount) {
             float sx = 2.0f / viewportWidth;
             float sy = 2.0f / viewportHeight;
             float tx = 2.0f * scrollXPx / viewportWidth - 1.0f;
@@ -452,6 +451,11 @@ final class MicrobesScene {
             int motionPercent = prefs.getInt("microbes_motion_activity", 100);
             motionPercent = Math.max(10, Math.min(200, motionPercent));
             motionActivityScale = motionPercent / 100.0f;
+            int count = prefs.getInt("microbes_count", MICROBE_COUNT);
+            count = Math.max(50, Math.min(MICROBE_MAX, count));
+            if (count != microbeCount) {
+                applyMicrobeCount(count);
+            }
             String mode = prefs.getString("microbes_color_mode", "original");
             boolean useOriginal = (mode == null) || "original".equals(mode);
             if (useOriginal != originalColorMode) {
@@ -466,6 +470,24 @@ final class MicrobesScene {
     }
 
     // ==================== 内部逻辑 ====================
+
+    /**
+     * 调整微生物数量:增大时立即激活新槽位(随机位置),缩小时置 INVALID(立即隐藏)。
+     * 槽位基础字段在 initScene 已全部初始化。
+     */
+    private void applyMicrobeCount(int newCount) {
+        if (newCount > microbeCount) {
+            for (int i = microbeCount; i < newCount; i++) {
+                microbeX[i] = rand(0.0f, worldWidth);
+                microbeY[i] = rand(0.0f, worldHeight);
+            }
+        } else {
+            for (int i = newCount; i < microbeCount; i++) {
+                microbeX[i] = INVALID_POS;
+            }
+        }
+        microbeCount = newCount;
+    }
 
     /** sub_14EC:4 类型(rand(0,4) 取整),颜色/尺寸为解码的原版浮点值 */
     private void assignMicrobeType(int index) {
@@ -501,7 +523,7 @@ final class MicrobesScene {
     }
 
     private void recolorAllMicrobes() {
-        for (int i = 0; i < MICROBE_COUNT; i++) {
+        for (int i = 0; i < microbeCount; i++) {
             assignMicrobeType(i);
         }
     }
@@ -526,7 +548,7 @@ final class MicrobesScene {
 
     /** 首个 INVALID 微生物槽(x ≤ -9000);无则 -1 */
     private int findInvalidMicrobeSlot() {
-        for (int i = 0; i < MICROBE_COUNT; i++) {
+        for (int i = 0; i < microbeCount; i++) {
             if (microbeX[i] <= ACTIVE_MIN_X) {
                 return i;
             }
