@@ -43,6 +43,7 @@ public class MicrobesGL extends GLESScene {
     private int foodAPosition;
     private int foodUTrans;
     private int foodUTime;
+    private int foodUSizeScale;
 
     private int deadAPos;
     private int deadUTrans;
@@ -51,6 +52,7 @@ public class MicrobesGL extends GLESScene {
     private int decorAPosition;
     private int decorUTrans;
     private int decorUTime;
+    private int decorUSizeScale;
 
     // ---- Frame timing ----
     private long lastFrameMs = -1L;
@@ -112,24 +114,17 @@ public class MicrobesGL extends GLESScene {
             mScene.touchMoved = false;
             mScene.touchStartX = event.getX();
             mScene.touchStartY = event.getY();
-            mScene.touchX = toWorldX(mScene.touchStartX);
-            mScene.touchY = toWorldY(mScene.touchStartY);
-            mScene.applyMotionTarget(mScene.touchX, mScene.touchY);
+            mScene.motion(toWorldX(mScene.touchStartX), toWorldY(mScene.touchStartY));
         } else if (action == MotionEvent.ACTION_MOVE) {
-            mScene.touchX = toWorldX(event.getX());
-            mScene.touchY = toWorldY(event.getY());
             if (!mScene.touchMoved) {
                 float dx = event.getX() - mScene.touchStartX;
                 float dy = event.getY() - mScene.touchStartY;
                 mScene.touchMoved = (dx * dx + dy * dy) > (TOUCH_DRAG_THRESHOLD_PX * TOUCH_DRAG_THRESHOLD_PX);
             }
-            mScene.applyMotionTarget(mScene.touchX, mScene.touchY);
+            mScene.motion(toWorldX(event.getX()), toWorldY(event.getY()));
         } else if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL) {
-            float upX = toWorldX(event.getX());
-            float upY = toWorldY(event.getY());
             if (!mScene.touchMoved) {
-                mScene.spawnFoodBurst(upX, upY);
-                mScene.repelMicrobesOnTap(upX, upY);
+                mScene.touchTap(toWorldX(event.getX()), toWorldY(event.getY()));
             }
             mScene.touchActive = false;
         }
@@ -159,20 +154,20 @@ public class MicrobesGL extends GLESScene {
         GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
         GLES20.glEnable(GLES20.GL_BLEND);
-        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+        // 原版:glBlendFunc(GL_SRC_ALPHA, GL_ONE)
+        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE);
 
-        float zoom = Math.max(1.0f, VIEW_CENTER_CROP_ZOOM);
         float width = Math.max(1.0f, mWidth);
         float height = Math.max(1.0f, mHeight);
-        float parallaxScrollX = mScene.scrollXPx * VIEW_SCROLL_PARALLAX;
-        float sx = (2.0f * zoom) / width;
-        float sy = (2.0f * zoom) / height;
-        float tx = -zoom + (2.0f * zoom * parallaxScrollX) / width;
-        float ty = -zoom;
+        float sx = 2.0f / width;
+        float sy = 2.0f / height;
+        float tx = 2.0f * mScene.scrollXPx / width - 1.0f;
+        float ty = -1.0f;
 
+        // 原版绘制顺序:decoration → dead → food → microbe
         drawDecor(sx, sy, tx, ty);
-        drawFood(sx, sy, tx, ty);
         drawDead(sx, sy, tx, ty);
+        drawFood(sx, sy, tx, ty);
         drawMicrobes(sx, sy, tx, ty);
 
         GLES20.glDisable(GLES20.GL_BLEND);
@@ -181,16 +176,16 @@ public class MicrobesGL extends GLESScene {
     // ---- Coordinate helpers ----
 
     private float toWorldX(float x) {
-        float width = Math.max(1.0f, mWidth);
-        float zoom = Math.max(1.0f, VIEW_CENTER_CROP_ZOOM);
-        float parallaxScrollX = mScene.scrollXPx * VIEW_SCROLL_PARALLAX;
-        return x / zoom + width * (zoom - 1.0f) / (2.0f * zoom) - parallaxScrollX;
+        return x - mScene.scrollXPx;
     }
 
     private float toWorldY(float y) {
-        float height = Math.max(1.0f, mHeight);
-        float zoom = Math.max(1.0f, VIEW_CENTER_CROP_ZOOM);
-        return height * (zoom + 1.0f) / (2.0f * zoom) - y / zoom;
+        return mHeight - y;
+    }
+
+    /** 原版运行于 480×800;按 (屏高/800) 等比放大点精灵尺寸以匹配原版视觉比例 */
+    private float sizeScale() {
+        return Math.max(1.0f, mHeight / 800.0f);
     }
 
     // ---- Buffer / GL setup ----
@@ -200,7 +195,7 @@ public class MicrobesGL extends GLESScene {
         microbeMiscBuffer = newFloatBuffer(MICROBE_COUNT * 3);
         microbeColorBuffer = newFloatBuffer(MICROBE_COUNT * 3);
         foodPosBuffer = newFloatBuffer(FOOD_COUNT * 3);
-        decorPosBuffer = newFloatBuffer(DECOR_COUNT * 4);
+        decorPosBuffer = newFloatBuffer(DECOR_COUNT * 3);
         deadPosBuffer = newFloatBuffer(DEAD_COUNT * 4);
     }
 
@@ -232,14 +227,16 @@ public class MicrobesGL extends GLESScene {
         foodAPosition = GLES20.glGetAttribLocation(foodProgram, "aPosition");
         foodUTrans = GLES20.glGetUniformLocation(foodProgram, "uTrans");
         foodUTime = GLES20.glGetUniformLocation(foodProgram, "time");
+        foodUSizeScale = GLES20.glGetUniformLocation(foodProgram, "uSizeScale");
 
-        deadAPos = GLES20.glGetAttribLocation(deadProgram, "pos");
+        deadAPos = GLES20.glGetAttribLocation(deadProgram, "aPosition");
         deadUTrans = GLES20.glGetUniformLocation(deadProgram, "uTrans");
         deadUTime = GLES20.glGetUniformLocation(deadProgram, "time");
 
-        decorAPosition = GLES20.glGetAttribLocation(decorProgram, "aPosition");
+        decorAPosition = GLES20.glGetAttribLocation(decorProgram, "pos");
         decorUTrans = GLES20.glGetUniformLocation(decorProgram, "uTrans");
         decorUTime = GLES20.glGetUniformLocation(decorProgram, "time");
+        decorUSizeScale = GLES20.glGetUniformLocation(decorProgram, "uSizeScale");
 
         GLES20.glDisable(GLES20.GL_DEPTH_TEST);
         GLES20.glDisable(GLES20.GL_CULL_FACE);
@@ -252,10 +249,14 @@ public class MicrobesGL extends GLESScene {
         microbeMiscBuffer.clear();
         microbeColorBuffer.clear();
 
+        // 原版在 480×800 设备上运行;按 (屏高/800) 等比放大点尺寸,
+        // 使现代高分辨率屏上的视觉比例与原版一致(miscInfo.x 预乘,不动 aColor.b)
+        float sizeScale = sizeScale();
         for (int i = 0; i < MICROBE_COUNT; i++) {
             microbePosBuffer.put(mScene.microbeX[i]).put(mScene.microbeY[i]).put(mScene.microbeAngle[i]);
-            microbeMiscBuffer.put(mScene.microbeSize[i]).put(mScene.clamp(mScene.microbeEnergy[i], 0.0f, 1.8f)).put(mScene.microbePulseTime[i]);
-            microbeColorBuffer.put(mScene.microbeR[i]).put(mScene.microbeG[i]).put(mScene.microbeB[i]);
+            microbeMiscBuffer.put(mScene.microbeSize[i] * sizeScale).put(mScene.microbeEnergy[i]).put(mScene.microbePulseTs[i]);
+            // 原版 aColor = (c0, c1, size)
+            microbeColorBuffer.put(mScene.microbeC0[i]).put(mScene.microbeC1[i]).put(mScene.microbeSize[i]);
         }
 
         microbePosBuffer.position(0);
@@ -290,6 +291,7 @@ public class MicrobesGL extends GLESScene {
         GLES20.glUseProgram(foodProgram);
         GLES20.glUniform4f(foodUTrans, sx, sy, tx, ty);
         GLES20.glUniform1f(foodUTime, mScene.timeSec);
+        GLES20.glUniform1f(foodUSizeScale, sizeScale());
         GLES20.glEnableVertexAttribArray(foodAPosition);
         GLES20.glVertexAttribPointer(foodAPosition, 3, GLES20.GL_FLOAT, false, 3 * 4, foodPosBuffer);
         GLES20.glDrawArrays(GLES20.GL_POINTS, 0, FOOD_COUNT);
@@ -299,31 +301,30 @@ public class MicrobesGL extends GLESScene {
     private void drawDecor(float sx, float sy, float tx, float ty) {
         decorPosBuffer.clear();
         for (int i = 0; i < DECOR_COUNT; i++) {
-            decorPosBuffer.put(mScene.decorX[i]).put(mScene.decorY[i]).put(mScene.decorAngle[i]).put(mScene.decorSize[i]);
+            decorPosBuffer.put(mScene.decorX[i]).put(mScene.decorY[i]).put(mScene.decorZ[i]);
         }
         decorPosBuffer.position(0);
 
         GLES20.glUseProgram(decorProgram);
         GLES20.glUniform4f(decorUTrans, sx, sy, tx, ty);
         GLES20.glUniform1f(decorUTime, mScene.timeSec);
+        // 装饰是极低 alpha 的软边光晕:全比例放大会把渐变拉成雾团导致模糊,
+        // 限制最大 1.3×(260px),保留放大但不糊
+        GLES20.glUniform1f(decorUSizeScale, Math.min(sizeScale(), 1.3f));
         GLES20.glEnableVertexAttribArray(decorAPosition);
-        GLES20.glVertexAttribPointer(decorAPosition, 4, GLES20.GL_FLOAT, false, 4 * 4, decorPosBuffer);
+        GLES20.glVertexAttribPointer(decorAPosition, 3, GLES20.GL_FLOAT, false, 3 * 4, decorPosBuffer);
         GLES20.glDrawArrays(GLES20.GL_POINTS, 0, DECOR_COUNT);
         GLES20.glDisableVertexAttribArray(decorAPosition);
     }
 
     private void drawDead(float sx, float sy, float tx, float ty) {
+        // 原版:80 槽全量绘制(x,y,angle,breed),INVALID 槽 y=-10000 自然出屏
+        // breed 仅作 aPosition.w(点尺寸),按屏高等比预乘
+        float sizeScale = sizeScale();
         deadPosBuffer.clear();
-        int active = 0;
         for (int i = 0; i < DEAD_COUNT; i++) {
-            if (mScene.deadAge[i] >= DEAD_VISIBLE_AGE_MAX) {
-                continue;
-            }
-            deadPosBuffer.put(mScene.deadX[i]).put(mScene.deadY[i]).put(mScene.deadDrift[i]).put(0.0f);
-            active++;
-        }
-        if (active <= 0) {
-            return;
+            deadPosBuffer.put(mScene.deadX[i]).put(mScene.deadY[i])
+                    .put(mScene.deadAngle[i]).put(mScene.deadBreed[i] * sizeScale);
         }
         deadPosBuffer.position(0);
 
@@ -332,7 +333,7 @@ public class MicrobesGL extends GLESScene {
         GLES20.glUniform1f(deadUTime, mScene.timeSec);
         GLES20.glEnableVertexAttribArray(deadAPos);
         GLES20.glVertexAttribPointer(deadAPos, 4, GLES20.GL_FLOAT, false, 4 * 4, deadPosBuffer);
-        GLES20.glDrawArrays(GLES20.GL_POINTS, 0, active);
+        GLES20.glDrawArrays(GLES20.GL_POINTS, 0, DEAD_COUNT);
         GLES20.glDisableVertexAttribArray(deadAPos);
     }
 

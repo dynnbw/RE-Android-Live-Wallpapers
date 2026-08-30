@@ -9,402 +9,431 @@ import com.reandroid.gles.GLESWallpaper;
 import java.util.Random;
 
 /**
- * Microbes 壁纸场景逻辑层（纯 Java，无 GL 调用）。
- * 负责微生物 AI（移动/繁殖/死亡）、食物系统、装饰粒子、触摸交互。
+ * Microbes 壁纸场景逻辑层(纯 Java,无 GL 调用)。
+ * <p>
+ * 忠实移植 AOSP Microbes GL 原生引擎(libmicrobes_jni.so.c,IDA 反编译):
+ * 逐函数转写 sub_1674(init)/ sub_1E88(step)/ sub_17A0(漫游)/ sub_1918(食物漂移)/
+ * sub_1B4C(互扰)/ sub_1BC8(食物)/ sub_1CF8(motion)/ sub_1D78(积分)/
+ * sub_1378(触摸)/ sub_14EC(类型)/ sub_1A90(繁殖)。
+ * <p>
+ * 与反编译的唯一偏差:生命周期速度/运动活跃度两个设置作为倍率叠加(默认 100% = 原版),
+ * 以及配色模式设置(默认 original = 原版 4 类型)。
  */
 final class MicrobesScene {
 
     private SharedPreferences mPluginPrefs;
 
-    static final int MICROBE_COUNT = 300;
-    static final int FOOD_COUNT = 140;
-    static final int DECOR_COUNT = 120;
-    static final int DEAD_COUNT = 600;
+    // ---- 原版常量(sub_1674 内存布局推导)----
+    static final int MICROBE_COUNT = 300;   // 52B/个
+    static final int FOOD_COUNT = 600;      // 12B/个
+    static final int DEAD_COUNT = 80;       // 16B/个(尸体)
+    static final int DECOR_COUNT = 60;      // 12B/个
+    static final int MOTION_COUNT = 15;     // 12B/个
 
-    private static final float INVALID_POS = -10000.0f;
-    private static final float TOUCH_FORCE = 35.0f;
-    static final float TOUCH_DRAG_THRESHOLD_PX = 30.0f;
-    private static final int TAP_SPAWN_FOOD_COUNT = 12;
-    private static final float AUTO_FOOD_RESPAWN_PER_SEC = 12.0f;
-    private static final float MOTION_INFLUENCE_RADIUS2 = 320.0f * 320.0f;
-    private static final int MOTION_MAX_AFFECTED = 36;
-    private static final float TAP_REPEL_RADIUS2 = 180.0f * 180.0f;
-    private static final float TAP_REPEL_FORCE = 240.0f;
-    private static final float MICROBE_INTERACT_DIST2 = 900.0f;
-    private static final float FOOD_ATTRACT_DIST2 = 6400.0f;
-    private static final float REPRODUCE_ENERGY = 1.2f;
-    private static final float ENERGY_DECAY_RATE = 0.012f;
-    private static final float DEATH_ENERGY_THRESHOLD = 0.005f;
-    private static final float REPRODUCE_CHANCE_PER_SEC = 0.035f;
-    private static final float MAX_SPEED = 220.0f;
-    private static final float CLUSTER_RADIUS2 = 60.0f * 60.0f;
-    private static final int CLUSTER_NEIGHBOR_THRESHOLD = 5;
-    private static final float CLUSTER_RELEASE_SECONDS = 3.2f;
-    static final float DEAD_VISIBLE_AGE_MAX = 4.6f;
-    private static final float DEAD_AGE_ADVANCE_PER_SEC = 0.18f;
-    private static final int DEAD_INITIAL_SPAWN_COUNT = 180;
-    private static final float DEAD_AMBIENT_SPAWN_PER_SEC = 4.0f;
+    private static final float INVALID_POS = -10000.0f;   // -971227136
+    private static final float ACTIVE_MIN_X = -9000.0f;   // x > -9000 视为有效
+    private static final float SPEED_LIMIT = 80.0f;
+    private static final float INTERACT_DIST2 = 900.0f;   // 30² 互扰距离
+    private static final float ATTRACT_DIST2 = 6400.0f;   // 80² 食物/motion 吸引距离
+    private static final float BOUNDARY_MARGIN = 90.0f;
+    private static final float BOUNDARY_FACTOR = 0.1f;
+    private static final float WANDER_PUSH = 20.0f;
+    private static final float ENERGY_DECAY_RATE = 0.0125f;
+    private static final float EAT_ENERGY_GAIN_LOW = 0.375f;   // 能量 ≤ 0.25 时进食
+    private static final float EAT_ENERGY_GAIN_HIGH = 0.125f;
+    private static final float HIGH_ENERGY_LEVEL = 0.75f;
+    private static final float HIGH_ENERGY_EXTRA_DECAY = 0.025f;
+    private static final float BREED_ACCUMULATE_RATE = 0.02f;
+    private static final float BREED_THRESHOLD = 1.2f;
+    private static final float BREED_RESET = 0.7f;
+    private static final float FOOD_RESPAWN_INTERVAL = 0.2f;
+    private static final float MOTION_VALID_SECONDS = 0.5f;
+    private static final float CORPSE_SINK_RATE = 10.0f;
+    private static final float CORPSE_REUSE_Y = -10.0f;
+    private static final float TOUCH_SPAWN_FOOD_COUNT = 5;
+    private static final float TOUCH_FOOD_SCATTER = 35.0f;
+    private static final float SPLIT_OFFSET = 2.0f;
     private static final long PREF_POLL_INTERVAL_MS = 1000L;
-    static final float VIEW_CENTER_CROP_ZOOM = 2.0f;
-    static final float VIEW_SCROLL_PARALLAX = 0.32f;
-    private static final float ROAM_RETARGET_MIN_S = 2.0f;
-    private static final float ROAM_RETARGET_MAX_S = 5.2f;
-    private static final float ROAM_PUSH = 85.0f;
-    private static final float WANDER_NOISE_PUSH = 18.0f;
 
-    final Random rng = new Random();
+    static final float TOUCH_DRAG_THRESHOLD_PX = 30.0f;
 
-    // Microbe data arrays
-    final float[] microbeX = new float[MICROBE_COUNT];
-    final float[] microbeY = new float[MICROBE_COUNT];
-    final float[] microbeVx = new float[MICROBE_COUNT];
-    final float[] microbeVy = new float[MICROBE_COUNT];
-    final float[] microbeAngle = new float[MICROBE_COUNT];
-    final float[] microbeSize = new float[MICROBE_COUNT];
-    final float[] microbeEnergy = new float[MICROBE_COUNT];
-    final float[] microbePulseTime = new float[MICROBE_COUNT];
-    final float[] microbeTargetX = new float[MICROBE_COUNT];
-    final float[] microbeTargetY = new float[MICROBE_COUNT];
-    final int[] microbeNeighborCount = new int[MICROBE_COUNT];
-    final float[] microbeClusterTime = new float[MICROBE_COUNT];
-    final float[] microbeRoamRetargetTimer = new float[MICROBE_COUNT];
-    final float[] microbeRoamPhase = new float[MICROBE_COUNT];
-    final float[] microbeR = new float[MICROBE_COUNT];
-    final float[] microbeG = new float[MICROBE_COUNT];
-    final float[] microbeB = new float[MICROBE_COUNT];
+    private final Random rng = new Random();
 
-    // Food data arrays
+    // ---- 微生物(13 字段,对应 C 结构 52B)----
+    final float[] microbeX = new float[MICROBE_COUNT];       // +0
+    final float[] microbeY = new float[MICROBE_COUNT];       // +4
+    final float[] microbeAngle = new float[MICROBE_COUNT];   // +8
+    final float[] microbeBreed = new float[MICROBE_COUNT];   // +12 繁殖能量
+    final float[] microbeEnergy = new float[MICROBE_COUNT];  // +16
+    final float[] microbePulseTs = new float[MICROBE_COUNT]; // +20 脉冲时间戳
+    final float[] microbeC0 = new float[MICROBE_COUNT];      // +24 aColor.r
+    final float[] microbeC1 = new float[MICROBE_COUNT];      // +28 aColor.g
+    final float[] microbeSize = new float[MICROBE_COUNT];    // +32 aColor.b(原版复用为尺寸)
+    final float[] microbeVx = new float[MICROBE_COUNT];      // +36
+    final float[] microbeVy = new float[MICROBE_COUNT];      // +40
+    final float[] microbePhase = new float[MICROBE_COUNT];   // +44
+    final float[] microbeInterval = new float[MICROBE_COUNT];// +48 脉冲刷新间隔
+
+    // ---- 食物(3 floats)----
     final float[] foodX = new float[FOOD_COUNT];
     final float[] foodY = new float[FOOD_COUNT];
     final float[] foodPhase = new float[FOOD_COUNT];
-    final float[] foodVx = new float[FOOD_COUNT];
-    final float[] foodVy = new float[FOOD_COUNT];
 
-    // Decor data arrays
-    final float[] decorX = new float[DECOR_COUNT];
-    final float[] decorY = new float[DECOR_COUNT];
-    final float[] decorAngle = new float[DECOR_COUNT];
-    final float[] decorSize = new float[DECOR_COUNT];
-
-    // Dead data arrays
+    // ---- 尸体(16B: x, y, angle, breed)----
     final float[] deadX = new float[DEAD_COUNT];
     final float[] deadY = new float[DEAD_COUNT];
-    final float[] deadDrift = new float[DEAD_COUNT];
-    final float[] deadAge = new float[DEAD_COUNT];
-    int deadWriteCursor = 0;
+    final float[] deadAngle = new float[DEAD_COUNT];
+    final float[] deadBreed = new float[DEAD_COUNT];
 
-    // Simulation state
-    float timeSec;
-    float worldWidth;
-    float worldHeight;
-    int scrollXPx;
+    // ---- 装饰(12B: x, y, z)----
+    final float[] decorX = new float[DECOR_COUNT];
+    final float[] decorY = new float[DECOR_COUNT];
+    final float[] decorZ = new float[DECOR_COUNT];
+
+    // ---- motion(12B: x, y, expiry)----
+    final float[] motionX = new float[MOTION_COUNT];
+    final float[] motionY = new float[MOTION_COUNT];
+    final float[] motionExpiry = new float[MOTION_COUNT];
+
+    // ---- 模拟状态 ----
+    float timeSec;           // 全局 t
+    float worldWidth;        // scrollInfo(desiredMinWidth)
+    float worldHeight;       // dword_4238(desiredMinHeight)
+    int viewportWidth;       // dword_423C(surface 宽)
+    int viewportHeight;      // dword_4240(surface 高)
+    int scrollXPx;           // dword_4244(滚动偏移)
+    float foodRespawnTimer;  // 场景末 4B(0.2s 补食周期)
     float lifecycleSpeedScale = 1.0f;
     float motionActivityScale = 1.0f;
     boolean originalColorMode = true;
-    float foodRespawnAccumulator;
-    float deadAmbientAccumulator;
     long lastPrefPollMs = Long.MIN_VALUE;
 
-    // Touch state
+    // ---- 触摸状态 ----
     boolean touchActive;
-    float touchX;
-    float touchY;
     float touchStartX;
     float touchStartY;
     boolean touchMoved;
-
-    /**
-     * 构造方法
-     */
-    MicrobesScene() {
-    }
 
     void setPluginPrefs(SharedPreferences p) {
         mPluginPrefs = p;
     }
 
-    /**
-     * 初始化场景实体
-     * @param width 视图宽度
-     * @param height 视图高度
-     */
+    // ==================== 初始化(sub_1674)====================
+
     void initScene(int width, int height) {
         worldWidth = Math.max(1.0f, width * 2.0f);
         worldHeight = Math.max(1.0f, height);
+        viewportWidth = width;
+        viewportHeight = height;
+        scrollXPx = 0;
+        timeSec = 0.0f;
+        foodRespawnTimer = 0.0f;
 
+        // sub_1594:全部微生物基础字段
         for (int i = 0; i < MICROBE_COUNT; i++) {
+            microbeX[i] = INVALID_POS;
+            microbePhase[i] = rand01();
+            microbeEnergy[i] = rand(0.5f, 0.8f);
+            microbeBreed[i] = rand(0.9f, 1.1f);
+            microbeInterval[i] = rand(4.0f, 5.0f);
+        }
+        // 前 30 个激活(其余 INVALID,靠繁殖逐步激活)
+        for (int i = 0; i < 30; i++) {
             microbeX[i] = rand(0.0f, worldWidth);
             microbeY[i] = rand(0.0f, worldHeight);
-            microbeVx[i] = rand(-40.0f, 40.0f);
-            microbeVy[i] = rand(-40.0f, 40.0f);
-            microbeAngle[i] = rand(0.0f, (float) (Math.PI * 2.0));
-            microbeSize[i] = rand(0.55f, 1.20f);
-            microbeEnergy[i] = rand(0.7f, 1.2f);
-            microbePulseTime[i] = -1000.0f;
-            microbeTargetX[i] = microbeX[i];
-            microbeTargetY[i] = microbeY[i];
-            microbeRoamRetargetTimer[i] = rand(0.0f, ROAM_RETARGET_MAX_S);
-            microbeRoamPhase[i] = rand(0.0f, (float) (Math.PI * 2.0));
-            assignMicrobeColor(i);
+        }
+        // 全部随机类型(sub_14EC)
+        for (int i = 0; i < MICROBE_COUNT; i++) {
+            assignMicrobeType(i);
         }
 
+        // 食物:600 全 INVALID + phase;前 50 个激活
         for (int i = 0; i < FOOD_COUNT; i++) {
-            spawnFood(i);
+            foodX[i] = INVALID_POS;
+            foodPhase[i] = rand01();
+        }
+        for (int i = 0; i < 50; i++) {
+            foodX[i] = rand(0.0f, worldWidth);
+            foodY[i] = rand(0.0f, worldHeight);
         }
 
-        for (int i = 0; i < DECOR_COUNT; i++) {
-            decorX[i] = rand(0.0f, worldWidth);
-            decorY[i] = rand(0.0f, worldHeight);
-            decorAngle[i] = rand(0.0f, (float) (Math.PI * 2.0));
-            decorSize[i] = rand(0.15f, 0.45f);
-        }
-
+        // 尸体:x=0, y=INVALID(绘制时 y 出屏)
         for (int i = 0; i < DEAD_COUNT; i++) {
-            deadAge[i] = DEAD_VISIBLE_AGE_MAX;
-            deadX[i] = INVALID_POS;
+            deadX[i] = 0.0f;
             deadY[i] = INVALID_POS;
-            deadDrift[i] = 0.0f;
         }
-        deadWriteCursor = 0;
-        for (int i = 0; i < Math.min(DEAD_INITIAL_SPAWN_COUNT, DEAD_COUNT); i++) {
-            emitAmbientDead(rand(0.0f, DEAD_VISIBLE_AGE_MAX * 0.45f));
+
+        // 装饰(sub_15E0):z=rand(0,1), s=1-0.8z, x=s·W+r·s·W
+        for (int i = 0; i < DECOR_COUNT; i++) {
+            float z = rand01();
+            float s = 1.0f - 0.8f * z;
+            decorZ[i] = z;
+            decorX[i] = s * worldWidth + rand(-1.0f, 1.0f) * s * worldWidth;
+            decorY[i] = s * worldHeight + rand(-1.0f, 1.0f) * s * worldHeight;
         }
-        foodRespawnAccumulator = 0.0f;
-        deadAmbientAccumulator = 0.0f;
+
+        // motion 过期 = 0
+        for (int i = 0; i < MOTION_COUNT; i++) {
+            motionExpiry[i] = 0.0f;
+        }
     }
 
-    /**
-     * 更新尺寸
-     * @param width 新宽度
-     * @param height 新高度
-     */
     void resize(int width, int height) {
-        worldWidth = Math.max(width, worldWidth);
+        worldWidth = Math.max(worldWidth, width * 2.0f);
         worldHeight = Math.max(1.0f, height);
+        viewportWidth = width;
+        viewportHeight = height;
     }
 
-    /**
-     * 设置滚动偏移
-     * @param xPixels 像素偏移
-     * @param viewWidth 视图宽度
-     */
     void setScroll(int xPixels, int viewWidth) {
         scrollXPx = xPixels;
         worldWidth = Math.max(worldWidth, viewWidth + Math.abs(xPixels) + viewWidth);
     }
 
-    /**
-     * 更新所有实体状态
-     * @param dt 时间步长（秒）
-     */
+    // ==================== 每帧步进(sub_1E88)====================
+
     void updateScene(float dt) {
-        float lifeScale = lifecycleSpeedScale;
         float moveScale = motionActivityScale;
-        float roamPush = ROAM_PUSH * moveScale;
-        float wanderPush = WANDER_NOISE_PUSH * moveScale;
-        float targetDrivePush = (35.0f + 70.0f * moveScale) * moveScale;
-        float noisePush = 32.0f * (0.55f + 0.45f * moveScale);
-        float roamMin = Math.max(0.6f, ROAM_RETARGET_MIN_S / Math.max(0.5f, moveScale));
-        float roamMax = Math.max(roamMin + 0.3f, ROAM_RETARGET_MAX_S / Math.max(0.5f, moveScale));
+        float lifeDT = dt * lifecycleSpeedScale;
+        float t = timeSec;
+
+        // 1. 漫游(sub_17A0):速度每帧重建 = 边界排斥 + cos/sin 噪声
         for (int i = 0; i < MICROBE_COUNT; i++) {
-            microbeNeighborCount[i] = 0;
-
-            microbeRoamRetargetTimer[i] -= dt;
-            if (microbeRoamRetargetTimer[i] <= 0.0f) {
-                microbeTargetX[i] = microbeX[i] + rand(-220.0f, 220.0f);
-                microbeTargetY[i] = microbeY[i] + rand(-180.0f, 180.0f);
-                microbeRoamRetargetTimer[i] = rand(roamMin, roamMax);
-            }
-
-            float dxTarget = microbeTargetX[i] - microbeX[i];
-            float dyTarget = microbeTargetY[i] - microbeY[i];
-            float dTarget2 = dxTarget * dxTarget + dyTarget * dyTarget;
-            if (dTarget2 > 1.0f) {
-                float inv = invSqrt(dTarget2 + 64.0f);
-                microbeVx[i] += dxTarget * inv * (targetDrivePush + roamPush) * dt;
-                microbeVy[i] += dyTarget * inv * (targetDrivePush + roamPush) * dt;
-            }
-
-            microbeRoamPhase[i] += dt * rand(0.7f, 1.4f);
-            float swimAx = (float) Math.cos(microbeRoamPhase[i] + i * 0.19f);
-            float swimAy = (float) Math.sin(microbeRoamPhase[i] + i * 0.27f);
-            microbeVx[i] += swimAx * wanderPush * dt;
-            microbeVy[i] += swimAy * wanderPush * dt;
-            microbeVx[i] += rand(-1.0f, 1.0f) * noisePush * dt;
-            microbeVy[i] += rand(-1.0f, 1.0f) * noisePush * dt;
+            if (microbeX[i] <= ACTIVE_MIN_X) continue;
+            float x = microbeX[i];
+            float y = microbeY[i];
+            float vx = 0.0f;
+            float vy = 0.0f;
+            float left = BOUNDARY_MARGIN - x;
+            if (left < 0.0f) left = 0.0f;
+            float right = (worldWidth - BOUNDARY_MARGIN) - x;
+            if (right > 0.0f) right = 0.0f;
+            vx += (left + right) * BOUNDARY_FACTOR;
+            float bottom = BOUNDARY_MARGIN - y;
+            if (bottom < 0.0f) bottom = 0.0f;
+            float top = (worldHeight - BOUNDARY_MARGIN) - y;
+            if (top > 0.0f) top = 0.0f;
+            vy += (bottom + top) * BOUNDARY_FACTOR;
+            float phase = microbePhase[i];
+            float v11 = (float) Math.cos(t + phase * 30.0f);
+            float v12 = microbeAngle[i]
+                    + (float) Math.cos(phase * 30.0f + t * 0.3f) * 0.01f
+                    + v11 * 0.03f;
+            vx += (float) Math.cos(v12) * WANDER_PUSH * moveScale;
+            vy += (float) Math.sin(v12) * WANDER_PUSH * moveScale;
+            microbeVx[i] = vx;
+            microbeVy[i] = vy;
         }
 
+        // 2. 两两互扰(sub_1B4C):dist<30,推力 (30-dist)*0.2,每微生物最多 4 个邻居
         for (int i = 0; i < MICROBE_COUNT; i++) {
-            for (int j = i + 1; j < MICROBE_COUNT; j++) {
-                float dx = microbeX[i] - microbeX[j];
-                float dy = microbeY[i] - microbeY[j];
+            if (microbeX[i] <= ACTIVE_MIN_X) continue;
+            int count = 0;
+            for (int j = i + 1; j < MICROBE_COUNT && count < 4; j++) {
+                if (microbeX[j] <= ACTIVE_MIN_X) continue;
+                float dx = microbeX[j] - microbeX[i];
+                float dy = microbeY[j] - microbeY[i];
                 float dist2 = dx * dx + dy * dy;
-                if (dist2 < CLUSTER_RADIUS2) {
-                    microbeNeighborCount[i]++;
-                    microbeNeighborCount[j]++;
-                }
-                if (dist2 < MICROBE_INTERACT_DIST2 && dist2 > 1e-4f) {
-                    float force = (MICROBE_INTERACT_DIST2 - dist2) * 0.00045f;
-                    float inv = invSqrt(dist2);
-                    float ax = dx * inv * force;
-                    float ay = dy * inv * force;
-                    microbeVx[i] += ax;
-                    microbeVy[i] += ay;
-                    microbeVx[j] -= ax;
-                    microbeVy[j] -= ay;
-                }
+                if (dist2 >= INTERACT_DIST2) continue;
+                float dist = (float) Math.sqrt(dist2);
+                if (dist < 1e-3f) continue;   // 防御:原版在 dist=0 时产生 NaN
+                float push = (30.0f - dist) * 0.2f * moveScale;
+                float nx = dx / dist;
+                float ny = dy / dist;
+                microbeVx[i] -= nx * push;
+                microbeVy[i] -= ny * push;
+                microbeVx[j] += nx * push;
+                microbeVy[j] += ny * push;
+                count++;
             }
         }
 
+        // 3. 食物吸引/进食(sub_1BC8):dist<80,最多 4 个食物
         for (int i = 0; i < MICROBE_COUNT; i++) {
-            microbeVx[i] *= Math.max(0.0f, 1.0f - 1.5f * dt);
-            microbeVy[i] *= Math.max(0.0f, 1.0f - 1.5f * dt);
-
-            float speed2 = microbeVx[i] * microbeVx[i] + microbeVy[i] * microbeVy[i];
-            if (speed2 > MAX_SPEED * MAX_SPEED) {
-                float inv = MAX_SPEED * invSqrt(speed2);
-                microbeVx[i] *= inv;
-                microbeVy[i] *= inv;
+            if (microbeX[i] <= ACTIVE_MIN_X) continue;
+            int count = 0;
+            for (int f = 0; f < FOOD_COUNT && count < 4; f++) {
+                if (foodX[f] <= ACTIVE_MIN_X) continue;
+                float dx = foodX[f] - microbeX[i];
+                float dy = foodY[f] - microbeY[i];
+                float dist2 = dx * dx + dy * dy;
+                if (dist2 >= ATTRACT_DIST2) continue;
+                count++;
+                float dist = (float) Math.sqrt(dist2);
+                if (dist < 1e-3f) continue;
+                if (microbeEnergy[i] <= 1.0f) {
+                    if (dist < 10.0f) {
+                        // 进食:能量 ≤0.25 时 +0.375,否则 +0.125
+                        microbeEnergy[i] += microbeEnergy[i] <= 0.25f
+                                ? EAT_ENERGY_GAIN_LOW : EAT_ENERGY_GAIN_HIGH;
+                        foodX[f] = INVALID_POS;
+                        microbePulseTs[i] = t;
+                    } else {
+                        float v6;
+                        if (dist < 20.0f && microbeEnergy[i] < 0.8f) v6 = 40.0f;
+                        else v6 = dist < 40.0f ? 10.0f : 3.0f;
+                        microbeVx[i] += (dx / dist) * v6 * moveScale;
+                        microbeVy[i] += (dy / dist) * v6 * moveScale;
+                    }
+                }
             }
+        }
 
-            microbeX[i] += microbeVx[i] * dt;
-            microbeY[i] += microbeVy[i] * dt;
-            microbeAngle[i] = (float) Math.atan2(microbeVy[i], microbeVx[i]);
-
-            if (microbeX[i] < 0.0f) {
-                microbeX[i] += worldWidth;
-            } else if (microbeX[i] > worldWidth) {
-                microbeX[i] -= worldWidth;
+        // 4. motion 吸引(sub_1CF8):dist<80
+        for (int i = 0; i < MICROBE_COUNT; i++) {
+            if (microbeX[i] <= ACTIVE_MIN_X) continue;
+            for (int m = 0; m < MOTION_COUNT; m++) {
+                if (motionExpiry[m] <= t) continue;
+                float dx = motionX[m] - microbeX[i];
+                float dy = motionY[m] - microbeY[i];
+                float dist2 = dx * dx + dy * dy;
+                if (dist2 >= ATTRACT_DIST2) continue;
+                float dist = (float) Math.sqrt(dist2);
+                if (dist < 1e-3f) continue;
+                float v6 = dist < 20.0f ? 100.0f : (dist < 40.0f ? 40.0f : 20.0f);
+                microbeVx[i] += (dx / dist) * v6 * moveScale;
+                microbeVy[i] += (dy / dist) * v6 * moveScale;
             }
-            if (microbeY[i] < 0.0f) {
-                microbeY[i] += worldHeight;
-            } else if (microbeY[i] > worldHeight) {
-                microbeY[i] -= worldHeight;
-            }
+        }
 
-            microbeEnergy[i] -= ENERGY_DECAY_RATE * dt * lifeScale;
-            if (microbeEnergy[i] <= DEATH_ENERGY_THRESHOLD) {
-                emitDead(i);
-                respawnMicrobe(i);
-            } else if (microbeEnergy[i] > REPRODUCE_ENERGY && rng.nextFloat() < REPRODUCE_CHANCE_PER_SEC * dt * lifeScale) {
-                int child = findReproductionSlot(i);
+        // 5. 积分(sub_1D78):限速 80,能量衰减,高能量额外衰减 + 繁殖能量累积
+        for (int i = 0; i < MICROBE_COUNT; i++) {
+            if (microbeX[i] <= ACTIVE_MIN_X) continue;
+            float vx = microbeVx[i];
+            float vy = microbeVy[i];
+            float speed = (float) Math.sqrt(vx * vx + vy * vy);
+            if (speed > SPEED_LIMIT) {
+                float k = SPEED_LIMIT / speed;
+                vx *= k;
+                vy *= k;
+            }
+            microbeX[i] += vx * dt;
+            microbeY[i] += vy * dt;
+            microbeAngle[i] = (float) Math.atan2(vy, vx);
+            microbeVx[i] = vx;
+            microbeVy[i] = vy;
+            float energy = microbeEnergy[i] - ENERGY_DECAY_RATE * lifeDT;
+            microbeEnergy[i] = energy;
+            if (energy > HIGH_ENERGY_LEVEL) {
+                microbeEnergy[i] = energy - HIGH_ENERGY_EXTRA_DECAY * lifeDT;
+                microbeBreed[i] += BREED_ACCUMULATE_RATE * lifeDT;
+            }
+            if ((t - microbePulseTs[i]) > microbeInterval[i]) {
+                microbePulseTs[i] = t;
+            }
+        }
+
+        // 6. 食物漂移(sub_1918):边界左/下 ×1.0、右/上 ×0.1(原版不对称),噪声位移
+        for (int f = 0; f < FOOD_COUNT; f++) {
+            if (foodX[f] <= ACTIVE_MIN_X) continue;
+            float x = foodX[f];
+            float y = foodY[f];
+            float left = BOUNDARY_MARGIN - x;
+            if (left < 0.0f) left = 0.0f;
+            float right = (worldWidth - BOUNDARY_MARGIN) - x;
+            if (right > 0.0f) right = 0.0f;
+            float bottom = BOUNDARY_MARGIN - y;
+            if (bottom < 0.0f) bottom = 0.0f;
+            float top = (worldHeight - BOUNDARY_MARGIN) - y;
+            if (top > 0.0f) top = 0.0f;
+            float phase = foodPhase[f];
+            float v11 = t + phase * 1000.0f;
+            float v14 = (float) Math.sin(v11 * 0.1f);
+            float v16 = v14 + v11 * (phase - 0.5f)
+                    + (float) Math.sin(phase + v11 * 0.01f);
+            x += (left + right * 0.1f + (float) Math.cos(v16) * 3.0f) * dt;
+            y += (bottom + top * 0.1f + (float) Math.sin(v16) * 3.0f) * dt;
+            foodX[f] = x;
+            foodY[f] = y;
+        }
+
+        // 7. 尸体下沉:y > -10 → y -= 10·dt
+        for (int d = 0; d < DEAD_COUNT; d++) {
+            if (deadY[d] > CORPSE_REUSE_Y) {
+                deadY[d] -= CORPSE_SINK_RATE * lifeDT;
+            }
+        }
+
+        // 8. 食物补充:每 0.2s 一个,补到随机位置
+        foodRespawnTimer += lifeDT;
+        if (foodRespawnTimer >= FOOD_RESPAWN_INTERVAL) {
+            foodRespawnTimer -= FOOD_RESPAWN_INTERVAL;
+            int slot = findInvalidFoodSlot();
+            if (slot >= 0) {
+                foodX[slot] = rand(0.0f, worldWidth);
+                foodY[slot] = rand(0.0f, worldHeight);
+            }
+        }
+
+        // 9. 繁殖/死亡(每微生物,先繁殖后死亡)
+        for (int i = 0; i < MICROBE_COUNT; i++) {
+            if (microbeX[i] <= ACTIVE_MIN_X) continue;
+            if (microbeBreed[i] >= BREED_THRESHOLD) {
+                int child = findInvalidMicrobeSlot();
                 if (child >= 0) {
-                    microbeX[child] = microbeX[i] + rand(-25.0f, 25.0f);
-                    microbeY[child] = microbeY[i] + rand(-25.0f, 25.0f);
-                    microbeVx[child] = -microbeVx[i] * 0.5f;
-                    microbeVy[child] = -microbeVy[i] * 0.5f;
-                    microbeEnergy[child] = 0.35f;
-                    microbeSize[child] = rand(0.5f, 1.1f);
-                    assignChildColor(child, i);
-                    microbeEnergy[i] *= 0.70f;
-                    microbePulseTime[i] = timeSec;
-                    microbePulseTime[child] = timeSec;
+                    reproduce(i, child);
+                } else {
+                    microbeBreed[i] = BREED_THRESHOLD;   // 无空槽:保持待繁殖
                 }
             }
-
-            if (microbeNeighborCount[i] >= CLUSTER_NEIGHBOR_THRESHOLD) {
-                microbeClusterTime[i] += dt;
-                if (microbeClusterTime[i] >= CLUSTER_RELEASE_SECONDS) {
-                    float a = rand(0.0f, (float) (Math.PI * 2.0));
-                    float push = rand(150.0f, 240.0f);
-                    float dx = (float) Math.cos(a);
-                    float dy = (float) Math.sin(a);
-                    microbeVx[i] += dx * push;
-                    microbeVy[i] += dy * push;
-                    microbeTargetX[i] = microbeX[i] + dx * rand(180.0f, 260.0f);
-                    microbeTargetY[i] = microbeY[i] + dy * rand(180.0f, 260.0f);
-                    microbePulseTime[i] = timeSec;
-                    microbeClusterTime[i] = 0.0f;
-                }
-            } else {
-                microbeClusterTime[i] = Math.max(0.0f, microbeClusterTime[i] - dt * 1.7f);
+            if (microbeEnergy[i] < 0.0f) {
+                int corpse = findReusableCorpseSlot();
+                deadX[corpse] = microbeX[i];
+                deadY[corpse] = microbeY[i];
+                deadAngle[corpse] = microbeAngle[i];
+                deadBreed[corpse] = microbeBreed[i];
+                microbeX[i] = INVALID_POS;
             }
         }
 
-        foodRespawnAccumulator += dt * AUTO_FOOD_RESPAWN_PER_SEC;
-        int autoRespawns = (int) foodRespawnAccumulator;
-        if (autoRespawns > 0) {
-            foodRespawnAccumulator -= autoRespawns;
-            int base = rng.nextInt(FOOD_COUNT);
-            int cap = Math.min(autoRespawns, FOOD_COUNT);
-            for (int n = 0; n < cap; n++) {
-                spawnFood((base + n) % FOOD_COUNT);
-            }
-        }
-
-        for (int i = 0; i < FOOD_COUNT; i++) {
-            foodVx[i] += rand(-1.0f, 1.0f) * 26.0f * dt;
-            foodVy[i] += rand(-1.0f, 1.0f) * 26.0f * dt;
-
-            float bestDx = 0.0f;
-            float bestDy = 0.0f;
-            float bestDist2 = FOOD_ATTRACT_DIST2;
-            int nearestMicrobe = -1;
-            for (int j = 0; j < MICROBE_COUNT; j++) {
-                float dx = microbeX[j] - foodX[i];
-                float dy = microbeY[j] - foodY[i];
-                float d2 = dx * dx + dy * dy;
-                if (d2 < bestDist2) {
-                    bestDist2 = d2;
-                    bestDx = dx;
-                    bestDy = dy;
-                    nearestMicrobe = j;
-                }
-            }
-
-            if (bestDist2 < FOOD_ATTRACT_DIST2) {
-                float inv = invSqrt(bestDist2 + 40.0f);
-                foodVx[i] += bestDx * inv * 120.0f * dt;
-                foodVy[i] += bestDy * inv * 120.0f * dt;
-                if (bestDist2 < 196.0f) {
-                    int eater = nearestMicrobe >= 0 ? nearestMicrobe : rng.nextInt(MICROBE_COUNT);
-                    microbeEnergy[eater] = Math.min(1.8f, microbeEnergy[eater] + 0.18f);
-                    microbePulseTime[eater] = timeSec;
-                    spawnFood(i);
-                }
-            }
-
-            foodVx[i] *= Math.max(0.0f, 1.0f - 1.2f * dt);
-            foodVy[i] *= Math.max(0.0f, 1.0f - 1.2f * dt);
-            foodX[i] += foodVx[i] * dt;
-            foodY[i] += foodVy[i] * dt;
-
-            wrapFood(i);
-        }
-
-        for (int i = 0; i < DECOR_COUNT; i++) {
-            decorX[i] += (float) Math.sin(timeSec * 0.25f + decorY[i] * 0.01f) * 18.0f * dt;
-            decorY[i] += (float) Math.cos(timeSec * 0.21f + decorX[i] * 0.01f) * 14.0f * dt;
-            decorAngle[i] += 0.25f * dt;
-            if (decorAngle[i] > Math.PI * 2.0f) {
-                decorAngle[i] -= (float) (Math.PI * 2.0);
-            }
-            if (decorX[i] < -40.0f || decorX[i] > worldWidth + 40.0f || decorY[i] < -40.0f || decorY[i] > worldHeight + 40.0f) {
-                decorX[i] = rand(0.0f, worldWidth);
-                decorY[i] = rand(0.0f, worldHeight);
-            }
-        }
-
-        for (int i = 0; i < DEAD_COUNT; i++) {
-            if (deadAge[i] < DEAD_VISIBLE_AGE_MAX) {
-                deadAge[i] += dt * DEAD_AGE_ADVANCE_PER_SEC;
-            }
-        }
-
-        deadAmbientAccumulator += dt * DEAD_AMBIENT_SPAWN_PER_SEC;
-        int deadRespawns = (int) deadAmbientAccumulator;
-        if (deadRespawns > 0) {
-            deadAmbientAccumulator -= deadRespawns;
-            for (int i = 0; i < deadRespawns; i++) {
-                emitAmbientDead(0.0f);
+        // 10. 屏幕外换型:随机索引,NDC 投影出界则重掷类型(无活动性检查,忠实原版)
+        int idx = (int) rand(0.0f, 3000.0f);
+        if (idx < MICROBE_COUNT) {
+            float sx = 2.0f / viewportWidth;
+            float sy = 2.0f / viewportHeight;
+            float tx = 2.0f * scrollXPx / viewportWidth - 1.0f;
+            float ty = -1.0f;
+            float px = tx + microbeX[idx] * sx;
+            float py = ty + microbeY[idx] * sy;
+            if (px < -1.0f || px > 1.0f || py < -1.0f || py > 1.0f) {
+                assignMicrobeType(idx);
             }
         }
     }
 
-    /**
-     * 刷新运行时设置
-     * @param nowMs 当前时间（毫秒）
-     */
+    // ==================== 触摸(sub_1378 / motion)====================
+
+    /** 拖动:写一个 motion 槽(0.5s 有效) */
+    void motion(float wx, float wy) {
+        writeMotionSlot(wx, wy);
+    }
+
+    /** 点击:5 个食物撒在 ±35px + 写一个 motion 槽 */
+    void touchTap(float wx, float wy) {
+        for (int k = 0; k < TOUCH_SPAWN_FOOD_COUNT; k++) {
+            int slot = findInvalidFoodSlot();
+            if (slot < 0) break;
+            foodX[slot] = wx + rand(-1.0f, 1.0f) * TOUCH_FOOD_SCATTER;
+            foodY[slot] = wy + rand(-1.0f, 1.0f) * TOUCH_FOOD_SCATTER;
+        }
+        writeMotionSlot(wx, wy);
+    }
+
+    private void writeMotionSlot(float wx, float wy) {
+        int slot = 0;
+        for (int m = 0; m < MOTION_COUNT; m++) {
+            if (motionExpiry[m] <= timeSec) {
+                slot = m;
+                break;
+            }
+        }
+        motionX[slot] = wx;
+        motionY[slot] = wy;
+        motionExpiry[slot] = timeSec + MOTION_VALID_SECONDS;
+    }
+
+    // ==================== 设置 ====================
+
     void refreshRuntimeSettingsIfNeeded(long nowMs) {
         if (lastPrefPollMs != Long.MIN_VALUE && (nowMs - lastPrefPollMs) < PREF_POLL_INTERVAL_MS) {
             return;
@@ -415,7 +444,8 @@ final class MicrobesScene {
             if (GLESWallpaper.getAppContext() == null) {
                 return;
             }
-            SharedPreferences prefs = mPluginPrefs != null ? mPluginPrefs : PreferenceManager.getDefaultSharedPreferences(GLESWallpaper.getAppContext());
+            SharedPreferences prefs = mPluginPrefs != null ? mPluginPrefs
+                    : PreferenceManager.getDefaultSharedPreferences(GLESWallpaper.getAppContext());
             int speedPercent = prefs.getInt("microbes_lifecycle_speed", 100);
             speedPercent = Math.max(50, Math.min(200, speedPercent));
             lifecycleSpeedScale = speedPercent / 100.0f;
@@ -435,263 +465,102 @@ final class MicrobesScene {
         }
     }
 
-    // ---- Touch logic ----
+    // ==================== 内部逻辑 ====================
 
-    void applyMotionTarget(float wx, float wy) {
-        int affected = 0;
-        for (int i = 0; i < MICROBE_COUNT; i++) {
-            float dx = wx - microbeX[i];
-            float dy = wy - microbeY[i];
-            float d2 = dx * dx + dy * dy;
-            if (d2 > MOTION_INFLUENCE_RADIUS2) {
-                continue;
-            }
-            microbeTargetX[i] = wx + rand(-12.0f, 12.0f);
-            microbeTargetY[i] = wy + rand(-12.0f, 12.0f);
-            affected++;
-            if (affected >= MOTION_MAX_AFFECTED) {
-                break;
-            }
-        }
-
-        if (affected == 0) {
-            triggerPulse(wx, wy);
-        }
-    }
-
-    void repelMicrobesOnTap(float wx, float wy) {
-        int bestIndex = -1;
-        float bestD2 = Float.MAX_VALUE;
-        for (int i = 0; i < MICROBE_COUNT; i++) {
-            float dx = microbeX[i] - wx;
-            float dy = microbeY[i] - wy;
-            float d2 = dx * dx + dy * dy;
-            if (d2 < bestD2) {
-                bestD2 = d2;
-                bestIndex = i;
-            }
-            if (d2 < TAP_REPEL_RADIUS2) {
-                float inv = invSqrt(d2 + 8.0f);
-                microbeVx[i] += dx * inv * TAP_REPEL_FORCE;
-                microbeVy[i] += dy * inv * TAP_REPEL_FORCE;
-            }
-        }
-
-        if (bestIndex >= 0) {
-            microbePulseTime[bestIndex] = timeSec;
-            microbeEnergy[bestIndex] = Math.min(1.8f, microbeEnergy[bestIndex] + 0.1f);
-        }
-    }
-
-    void spawnFoodBurst(float wx, float wy) {
-        int start = rng.nextInt(FOOD_COUNT);
-        for (int k = 0; k < TAP_SPAWN_FOOD_COUNT; k++) {
-            int i = (start + k) % FOOD_COUNT;
-            float angle = rand(0.0f, (float) (Math.PI * 2.0));
-            float radius = rand(0.0f, 24.0f);
-            float speed = rand(25.0f, 95.0f);
-
-            foodX[i] = wx + (float) Math.cos(angle) * radius;
-            foodY[i] = wy + (float) Math.sin(angle) * radius;
-            foodPhase[i] = rand(0.0f, 1.0f);
-            foodVx[i] = (float) Math.cos(angle) * speed;
-            foodVy[i] = (float) Math.sin(angle) * speed;
-            wrapFood(i);
-        }
-    }
-
-    // ---- Internal logic methods ----
-
-    private void triggerPulse(float wx, float wy) {
-        float best = Float.MAX_VALUE;
-        int index = -1;
-        for (int i = 0; i < MICROBE_COUNT; i++) {
-            float dx = microbeX[i] - wx;
-            float dy = microbeY[i] - wy;
-            float d2 = dx * dx + dy * dy;
-            if (d2 < best) {
-                best = d2;
-                index = i;
-            }
-        }
-        if (index >= 0) {
-            microbePulseTime[index] = timeSec;
-            microbeEnergy[index] = Math.min(1.8f, microbeEnergy[index] + 0.14f);
-        }
-    }
-
-    private void emitDead(int i) {
-        deadX[deadWriteCursor] = microbeX[i];
-        deadY[deadWriteCursor] = microbeY[i];
-        deadDrift[deadWriteCursor] = rand(0.1f, 1.0f);
-        deadAge[deadWriteCursor] = 0.0f;
-        deadWriteCursor++;
-        if (deadWriteCursor >= DEAD_COUNT) {
-            deadWriteCursor = 0;
-        }
-    }
-
-    private void emitAmbientDead(float startAge) {
-        deadX[deadWriteCursor] = rand(0.0f, worldWidth);
-        deadY[deadWriteCursor] = rand(0.0f, worldHeight);
-        deadDrift[deadWriteCursor] = rand(0.1f, 1.0f);
-        deadAge[deadWriteCursor] = clamp(startAge, 0.0f, DEAD_VISIBLE_AGE_MAX - 0.001f);
-        deadWriteCursor++;
-        if (deadWriteCursor >= DEAD_COUNT) {
-            deadWriteCursor = 0;
-        }
-    }
-
-    private void respawnMicrobe(int i) {
-        microbeX[i] = rand(0.0f, worldWidth);
-        microbeY[i] = rand(0.0f, worldHeight);
-        microbeVx[i] = rand(-30.0f, 30.0f);
-        microbeVy[i] = rand(-30.0f, 30.0f);
-        microbeSize[i] = rand(0.55f, 1.2f);
-        microbeEnergy[i] = rand(0.75f, 1.15f);
-        assignMicrobeColor(i);
-        microbeTargetX[i] = microbeX[i];
-        microbeTargetY[i] = microbeY[i];
-        microbeRoamRetargetTimer[i] = rand(0.4f, 1.6f);
-        microbeRoamPhase[i] = rand(0.0f, (float) (Math.PI * 2.0));
-        microbePulseTime[i] = timeSec;
-    }
-
-    private void assignMicrobeColor(int index) {
+    /** sub_14EC:4 类型(rand(0,4) 取整),颜色/尺寸为解码的原版浮点值 */
+    private void assignMicrobeType(int index) {
         if (originalColorMode) {
-            setOriginalPaletteColor(index, weightedOriginalPaletteIndex());
-            return;
-        }
-        microbeR[index] = rand(0.2f, 1.0f);
-        microbeG[index] = rand(0.2f, 1.0f);
-        microbeB[index] = rand(0.2f, 1.0f);
-    }
-
-    private void assignChildColor(int child, int parent) {
-        if (originalColorMode) {
-            setOriginalPaletteColor(child, nearestOriginalPaletteIndex(parent));
-            return;
-        }
-        microbeR[child] = microbeR[parent] * 0.9f + 0.1f * rand(0.2f, 1.0f);
-        microbeG[child] = microbeG[parent] * 0.9f + 0.1f * rand(0.2f, 1.0f);
-        microbeB[child] = microbeB[parent] * 0.9f + 0.1f * rand(0.2f, 1.0f);
-    }
-
-    private int weightedOriginalPaletteIndex() {
-        float r = rng.nextFloat();
-        if (r < 0.20f) {
-            return 0;
-        }
-        if (r < 0.60f) {
-            return 1;
-        }
-        if (r < 0.80f) {
-            return 2;
-        }
-        return 3;
-    }
-
-    private int nearestOriginalPaletteIndex(int i) {
-        float r = microbeR[i];
-        float g = microbeG[i];
-        float b = microbeB[i];
-        float[][] p = new float[][] {
-                {220.0f / 255.0f, 74.0f / 255.0f, 55.0f / 255.0f},
-                {78.0f / 255.0f, 167.0f / 255.0f, 79.0f / 255.0f},
-                {73.0f / 255.0f, 116.0f / 255.0f, 246.0f / 255.0f},
-                {246.0f / 255.0f, 200.0f / 255.0f, 76.0f / 255.0f}
-        };
-        int best = 0;
-        float bestD = Float.MAX_VALUE;
-        for (int k = 0; k < p.length; k++) {
-            float dr = r - p[k][0];
-            float dg = g - p[k][1];
-            float db = b - p[k][2];
-            float d = dr * dr + dg * dg + db * db;
-            if (d < bestD) {
-                bestD = d;
-                best = k;
+            switch ((int) rand(0.0f, 4.0f)) {
+                case 1:
+                    microbeC0[index] = 0.83203125f;
+                    microbeC1[index] = 0.19531f;
+                    microbeSize[index] = 0.14453f;
+                    break;
+                case 2:
+                    microbeC0[index] = 0.9296875f;
+                    microbeC1[index] = 0.6953125f;
+                    microbeSize[index] = 0.066406f;
+                    break;
+                case 3:
+                    microbeC0[index] = 0.05078125f;
+                    microbeC1[index] = 0.5976525f;
+                    microbeSize[index] = 0.22266f;
+                    break;
+                default:
+                    microbeC0[index] = 0.19921875f;
+                    microbeC1[index] = 0.41015625f;
+                    microbeSize[index] = 0.90625f;
+                    break;
             }
-        }
-        return best;
-    }
-
-    private void setOriginalPaletteColor(int index, int paletteIndex) {
-        if (paletteIndex == 0) {
-            microbeR[index] = 220.0f / 255.0f;
-            microbeG[index] = 74.0f / 255.0f;
-            microbeB[index] = 55.0f / 255.0f;
-        } else if (paletteIndex == 1) {
-            microbeR[index] = 78.0f / 255.0f;
-            microbeG[index] = 167.0f / 255.0f;
-            microbeB[index] = 79.0f / 255.0f;
-        } else if (paletteIndex == 2) {
-            microbeR[index] = 73.0f / 255.0f;
-            microbeG[index] = 116.0f / 255.0f;
-            microbeB[index] = 246.0f / 255.0f;
         } else {
-            microbeR[index] = 246.0f / 255.0f;
-            microbeG[index] = 200.0f / 255.0f;
-            microbeB[index] = 76.0f / 255.0f;
+            // modern:随机配色
+            microbeC0[index] = rand(0.2f, 1.0f);
+            microbeC1[index] = rand(0.2f, 1.0f);
+            microbeSize[index] = rand(0.2f, 1.0f);
         }
     }
 
     private void recolorAllMicrobes() {
         for (int i = 0; i < MICROBE_COUNT; i++) {
-            assignMicrobeColor(i);
+            assignMicrobeType(i);
         }
     }
 
-    private int findReproductionSlot(int parentIndex) {
-        int best = -1;
-        float minEnergy = Float.MAX_VALUE;
+    /** sub_1A90:沿轴向 ±2px 分裂,繁殖能量父子均重置 0.7,子能量 rand(0.5,0.8) */
+    private void reproduce(int parent, int child) {
+        float angle = microbeAngle[parent];
+        float cosA = (float) Math.cos(angle);
+        float sinA = (float) Math.sin(angle);
+        microbeX[child] = microbeX[parent] - SPLIT_OFFSET * cosA;
+        microbeY[child] = microbeY[parent] - SPLIT_OFFSET * sinA;
+        microbeAngle[child] = angle + 3.1416f;
+        microbeBreed[child] = BREED_RESET;
+        microbeEnergy[child] = rand(0.5f, 0.8f);
+        microbeC0[child] = microbeC0[parent];
+        microbeC1[child] = microbeC1[parent];
+        microbeSize[child] = microbeSize[parent];
+        microbeX[parent] += SPLIT_OFFSET * cosA;
+        microbeY[parent] += SPLIT_OFFSET * sinA;
+        microbeBreed[parent] = BREED_RESET;
+    }
+
+    /** 首个 INVALID 微生物槽(x ≤ -9000);无则 -1 */
+    private int findInvalidMicrobeSlot() {
         for (int i = 0; i < MICROBE_COUNT; i++) {
-            if (i == parentIndex) {
-                continue;
+            if (microbeX[i] <= ACTIVE_MIN_X) {
+                return i;
             }
-            if (microbeEnergy[i] < minEnergy) {
-                minEnergy = microbeEnergy[i];
-                best = i;
-            }
-        }
-        if (best >= 0 && minEnergy < 0.18f) {
-            return best;
         }
         return -1;
     }
 
-    private void spawnFood(int i) {
-        foodX[i] = rand(0.0f, worldWidth);
-        foodY[i] = rand(0.0f, worldHeight);
-        foodPhase[i] = rand(0.0f, 1.0f);
-        foodVx[i] = rand(-24.0f, 24.0f);
-        foodVy[i] = rand(-24.0f, 24.0f);
+    /** 首个 INVALID 食物槽;无则 -1 */
+    private int findInvalidFoodSlot() {
+        for (int i = 0; i < FOOD_COUNT; i++) {
+            if (foodX[i] <= ACTIVE_MIN_X) {
+                return i;
+            }
+        }
+        return -1;
     }
 
-    private void wrapFood(int i) {
-        if (foodX[i] < 0.0f) {
-            foodX[i] += worldWidth;
-        } else if (foodX[i] > worldWidth) {
-            foodX[i] -= worldWidth;
+    /** 首个可复用尸体槽(y ≤ -10);无则 0(原版回退首槽) */
+    private int findReusableCorpseSlot() {
+        for (int i = 0; i < DEAD_COUNT; i++) {
+            if (deadY[i] <= CORPSE_REUSE_Y) {
+                return i;
+            }
         }
-        if (foodY[i] < 0.0f) {
-            foodY[i] += worldHeight;
-        } else if (foodY[i] > worldHeight) {
-            foodY[i] -= worldHeight;
-        }
+        return 0;
     }
 
-    // ---- Math utilities ----
+    // ---- 数学工具 ----
 
     float rand(float min, float max) {
         return min + rng.nextFloat() * (max - min);
     }
 
-    float invSqrt(float x) {
-        return 1.0f / (float) Math.sqrt(Math.max(1e-6f, x));
-    }
-
-    float clamp(float x, float min, float max) {
-        return Math.max(min, Math.min(max, x));
+    float rand01() {
+        return rng.nextFloat();
     }
 }
