@@ -3,5 +3,6 @@
   "microbes_motion_activity": "움직임 활발도",
   "microbes_color_mode": "색상 스타일",
   "microbes_color_mode_label_original": "원본",
-  "microbes_color_mode_label_modern": "새"
+  "microbes_color_mode_label_modern": "새",
+  "microbes_count": "미생물 수"
 }

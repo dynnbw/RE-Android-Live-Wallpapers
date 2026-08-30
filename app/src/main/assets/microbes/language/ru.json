@@ -3,5 +3,6 @@
   "microbes_motion_activity": "Активность движения",
   "microbes_color_mode": "Стиль цвета",
   "microbes_color_mode_label_original": "Оригинал",
-  "microbes_color_mode_label_modern": "Новый"
+  "microbes_color_mode_label_modern": "Новый",
+  "microbes_count": "Количество микробов"
 }

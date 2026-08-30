@@ -3,5 +3,6 @@
   "microbes_motion_activity": "Atividade de movimento",
   "microbes_color_mode": "Estilo de cor",
   "microbes_color_mode_label_original": "Clássico",
-  "microbes_color_mode_label_modern": "Novo"
+  "microbes_color_mode_label_modern": "Novo",
+  "microbes_count": "Número de micróbios"
 }
