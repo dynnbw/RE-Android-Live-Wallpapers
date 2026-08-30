@@ -1,0 +1,5 @@
+{
+  "label": "@string/wallpaper_cosmicflow",
+  "plugin": "com.reandroid.wallpaper.cosmicflow.CosmicPlugin",
+  "previewClass": "com.reandroid.wallpaper.cosmicflow.CosmicGL"
+}

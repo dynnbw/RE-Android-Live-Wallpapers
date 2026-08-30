@@ -307,4 +307,5 @@
     <string name="debug_location_invalid">Invalid numbers</string>
     <string name="debug_location_format">Format: lat, lng</string>
     <string name="debug_location_clear">Clear</string>
+    <string name="wallpaper_cosmicflow">Cosmic Flow</string>
 </resources>

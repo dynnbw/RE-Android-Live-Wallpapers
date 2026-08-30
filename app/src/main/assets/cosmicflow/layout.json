@@ -1,0 +1,30 @@
+{
+  "prefs": [
+    {
+      "type": "list",
+      "key": "cosmicflow_theme",
+      "title": "cosmicflow_theme",
+      "default": "silk",
+      "values": [
+        "silk",
+        "turquoise",
+        "emerald",
+        "sapphire",
+        "gold",
+        "ruby",
+        "amethyst",
+        "amber"
+      ],
+      "labels": [
+        "cosmicflow_theme_label_silk",
+        "cosmicflow_theme_label_turquoise",
+        "cosmicflow_theme_label_emerald",
+        "cosmicflow_theme_label_sapphire",
+        "cosmicflow_theme_label_gold",
+        "cosmicflow_theme_label_ruby",
+        "cosmicflow_theme_label_amethyst",
+        "cosmicflow_theme_label_amber"
+      ]
+    }
+  ]
+}

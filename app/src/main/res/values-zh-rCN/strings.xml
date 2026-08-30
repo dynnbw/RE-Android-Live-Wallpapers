@@ -303,4 +303,5 @@
     <string name="debug_location_invalid">无效的坐标</string>
     <string name="debug_location_format">格式: 纬度, 经度</string>
     <string name="debug_location_clear">清除</string>
+    <string name="wallpaper_cosmicflow">宇宙流动</string>
 </resources>

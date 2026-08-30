@@ -265,4 +265,5 @@
     <string name="pref_use_vulkan_title">Vulkan 렌더러</string>
     <string name="pref_use_vulkan_summary">더 나은 성능을 위해 Vulkan 사용 (배경화면 다시 적용)</string>
     <string name="pref_disabled_prefix">[비활성화]</string>
+    <string name="wallpaper_cosmicflow">코스믹 플로우</string>
 </resources>

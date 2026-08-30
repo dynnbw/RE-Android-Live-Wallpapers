@@ -235,4 +235,5 @@
     <string name="pref_use_vulkan_title">Vulkan রেন্ডারার</string>
     <string name="pref_use_vulkan_summary">ভালো পারফরম্যান্সের জন্য Vulkan ব্যবহার করুন (ওয়ালপেপার পুনরায় প্রয়োগ করুন)</string>
     <string name="pref_disabled_prefix">[নিষ্ক্রিয়]</string>
+    <string name="wallpaper_cosmicflow">Cosmic Flow</string>
 </resources>
