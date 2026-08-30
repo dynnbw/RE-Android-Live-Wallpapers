@@ -33,12 +33,14 @@ final class MicrobesScene {
 
     private static final float INVALID_POS = -10000.0f;   // -971227136
     private static final float ACTIVE_MIN_X = -9000.0f;   // x > -9000 视为有效
+    // ---- 原版距离常量(480×800 设备、世界 960×800 基准,逐字保留)----
     private static final float SPEED_LIMIT = 80.0f;
     private static final float INTERACT_DIST2 = 900.0f;   // 30² 互扰距离
     private static final float ATTRACT_DIST2 = 6400.0f;   // 80² 食物/motion 吸引距离
     private static final float BOUNDARY_MARGIN = 90.0f;
     private static final float BOUNDARY_FACTOR = 0.1f;
     private static final float WANDER_PUSH = 20.0f;
+    private static final float CORPSE_REUSE_Y = -200.0f;  // 深埋出屏(精灵放大后 -10 仍可见)
     private static final float ENERGY_DECAY_RATE = 0.0125f;
     private static final float EAT_ENERGY_GAIN_LOW = 0.375f;   // 能量 ≤ 0.25 时进食
     private static final float EAT_ENERGY_GAIN_HIGH = 0.125f;
@@ -49,11 +51,7 @@ final class MicrobesScene {
     private static final float BREED_RESET = 0.7f;
     private static final float FOOD_RESPAWN_INTERVAL = 0.2f;
     private static final float MOTION_VALID_SECONDS = 0.5f;
-    private static final float CORPSE_SINK_RATE = 10.0f;
-    private static final float CORPSE_REUSE_Y = -10.0f;
     private static final float TOUCH_SPAWN_FOOD_COUNT = 5;
-    private static final float TOUCH_FOOD_SCATTER = 35.0f;
-    private static final float SPLIT_OFFSET = 2.0f;
     private static final long PREF_POLL_INTERVAL_MS = 1000L;
 
     static final float TOUCH_DRAG_THRESHOLD_PX = 30.0f;
@@ -85,6 +83,7 @@ final class MicrobesScene {
     final float[] deadY = new float[DEAD_COUNT];
     final float[] deadAngle = new float[DEAD_COUNT];
     final float[] deadBreed = new float[DEAD_COUNT];
+    final boolean[] deadPendingSpawn = new boolean[DEAD_COUNT];   // 尸体移除后刷出替代微生物
 
     // ---- 装饰(12B: x, y, z)----
     final float[] decorX = new float[DECOR_COUNT];
@@ -346,10 +345,16 @@ final class MicrobesScene {
             foodY[f] = y;
         }
 
-        // 7. 尸体下沉:y > -10 → y -= 10·dt
+        // 7. 尸体下沉(速率按屏高比例,与精灵尺寸缩放一致);沉出屏幕后刷出替代微生物
+        float sinkRate = 10.0f * Math.max(1.0f, worldHeight / 800.0f);
         for (int d = 0; d < DEAD_COUNT; d++) {
             if (deadY[d] > CORPSE_REUSE_Y) {
-                deadY[d] -= CORPSE_SINK_RATE * lifeDT;
+                deadY[d] -= sinkRate * lifeDT;
+                if (deadY[d] <= CORPSE_REUSE_Y && deadPendingSpawn[d]) {
+                    // 尸体已完全移除 → 刷出替代微生物(种群守恒)
+                    deadPendingSpawn[d] = false;
+                    spawnReplacementMicrobe();
+                }
             }
         }
 
@@ -377,10 +382,15 @@ final class MicrobesScene {
             }
             if (microbeEnergy[i] < 0.0f) {
                 int corpse = findReusableCorpseSlot();
+                if (deadPendingSpawn[corpse]) {
+                    // 该槽原有尸体被覆盖移除 → 先结算它的重生
+                    spawnReplacementMicrobe();
+                }
                 deadX[corpse] = microbeX[i];
                 deadY[corpse] = microbeY[i];
                 deadAngle[corpse] = microbeAngle[i];
                 deadBreed[corpse] = microbeBreed[i];
+                deadPendingSpawn[corpse] = true;
                 microbeX[i] = INVALID_POS;
             }
         }
@@ -412,8 +422,8 @@ final class MicrobesScene {
         for (int k = 0; k < TOUCH_SPAWN_FOOD_COUNT; k++) {
             int slot = findInvalidFoodSlot();
             if (slot < 0) break;
-            foodX[slot] = wx + rand(-1.0f, 1.0f) * TOUCH_FOOD_SCATTER;
-            foodY[slot] = wy + rand(-1.0f, 1.0f) * TOUCH_FOOD_SCATTER;
+            foodX[slot] = wx + rand(-1.0f, 1.0f) * 35.0f;
+            foodY[slot] = wy + rand(-1.0f, 1.0f) * 35.0f;
         }
         writeMotionSlot(wx, wy);
     }
@@ -533,16 +543,16 @@ final class MicrobesScene {
         float angle = microbeAngle[parent];
         float cosA = (float) Math.cos(angle);
         float sinA = (float) Math.sin(angle);
-        microbeX[child] = microbeX[parent] - SPLIT_OFFSET * cosA;
-        microbeY[child] = microbeY[parent] - SPLIT_OFFSET * sinA;
+        microbeX[child] = microbeX[parent] - 2.0f * cosA;
+        microbeY[child] = microbeY[parent] - 2.0f * sinA;
         microbeAngle[child] = angle + 3.1416f;
         microbeBreed[child] = BREED_RESET;
         microbeEnergy[child] = rand(0.5f, 0.8f);
         microbeC0[child] = microbeC0[parent];
         microbeC1[child] = microbeC1[parent];
         microbeSize[child] = microbeSize[parent];
-        microbeX[parent] += SPLIT_OFFSET * cosA;
-        microbeY[parent] += SPLIT_OFFSET * sinA;
+        microbeX[parent] += 2.0f * cosA;
+        microbeY[parent] += 2.0f * sinA;
         microbeBreed[parent] = BREED_RESET;
     }
 
@@ -574,6 +584,22 @@ final class MicrobesScene {
             }
         }
         return 0;
+    }
+
+    /**
+     * 刷出一只替代微生物(尸体移除后种群守恒):找 INVALID 槽位,按 sub_1594 初始化。
+     * 无空槽(种群已满)则跳过。
+     */
+    private void spawnReplacementMicrobe() {
+        int slot = findInvalidMicrobeSlot();
+        if (slot < 0) return;
+        microbeX[slot] = rand(0.0f, worldWidth);
+        microbeY[slot] = rand(0.0f, worldHeight);
+        microbePhase[slot] = rand01();
+        microbeEnergy[slot] = rand(0.5f, 0.8f);
+        microbeBreed[slot] = rand(0.9f, 1.1f);
+        microbeInterval[slot] = rand(4.0f, 5.0f);
+        assignMicrobeType(slot);
     }
 
     // ---- 数学工具 ----
