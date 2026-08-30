@@ -43,7 +43,6 @@ public class MicrobesGL extends GLESScene {
     private int foodAPosition;
     private int foodUTrans;
     private int foodUTime;
-    private int foodUSizeScale;
 
     private int deadAPos;
     private int deadUTrans;
@@ -227,7 +226,6 @@ public class MicrobesGL extends GLESScene {
         foodAPosition = GLES20.glGetAttribLocation(foodProgram, "aPosition");
         foodUTrans = GLES20.glGetUniformLocation(foodProgram, "uTrans");
         foodUTime = GLES20.glGetUniformLocation(foodProgram, "time");
-        foodUSizeScale = GLES20.glGetUniformLocation(foodProgram, "uSizeScale");
 
         deadAPos = GLES20.glGetAttribLocation(deadProgram, "aPosition");
         deadUTrans = GLES20.glGetUniformLocation(deadProgram, "uTrans");
@@ -291,7 +289,6 @@ public class MicrobesGL extends GLESScene {
         GLES20.glUseProgram(foodProgram);
         GLES20.glUniform4f(foodUTrans, sx, sy, tx, ty);
         GLES20.glUniform1f(foodUTime, mScene.timeSec);
-        GLES20.glUniform1f(foodUSizeScale, sizeScale());
         GLES20.glEnableVertexAttribArray(foodAPosition);
         GLES20.glVertexAttribPointer(foodAPosition, 3, GLES20.GL_FLOAT, false, 3 * 4, foodPosBuffer);
         GLES20.glDrawArrays(GLES20.GL_POINTS, 0, FOOD_COUNT);
