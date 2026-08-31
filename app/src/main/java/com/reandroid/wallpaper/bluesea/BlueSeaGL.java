@@ -189,29 +189,16 @@ public class BlueSeaGL extends GLESScene {
     }
 
     private void drawJellyPlane(int plane, long timeMs) {
-        float scrollOffset = -mScene.mXOffset * mWidth;
-        float factor;
-        if (plane == 2) {
-            factor = (mWidth > 600) ? 0.5f : 1.0f;
-        } else if (plane == 1) {
-            factor = (mWidth > 600) ? 0.8f : 1.5f;
-        } else {
-            factor = (mWidth > 600) ? 1.2f : 2.5f;
-        }
-        float planeOffset = scrollOffset * factor;
-
         for (int i = 0; i < mScene.mJellies.length; i++) {
             BlueSeaScene.JellyState jelly = mScene.mJellies[i];
             if (mScene.getJellyPlane(i) != plane) {
                 continue;
             }
-            float baseX = jelly.x + (jelly.pane * mScene.mWidth);
-            float driftX = mScene.computeDrift(jelly.driftPhaseX, jelly.config.driftDurX, timeMs);
-            float driftY = mScene.computeDrift(jelly.driftPhaseY, jelly.config.driftDurY, timeMs);
+            // 绘制坐标统一走 Scene(与触摸命中同公式,保证桌面滚动/跨页时点按一致)
+            float drawX = mScene.jellyDrawX(jelly, i, timeMs);
+            float drawY = mScene.jellyDrawY(jelly, timeMs);
             float size = jelly.config.size * mScene.mScale;
             float scale = mScene.computeSwimScale(jelly, timeMs);
-            float drawX = baseX + planeOffset + driftX;
-            float drawY = jelly.y + driftY;
 
             if (drawX + size < 0 || drawX - size > mWidth) {
                 continue;

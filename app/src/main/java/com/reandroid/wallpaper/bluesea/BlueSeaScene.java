@@ -102,7 +102,9 @@ final class BlueSeaScene {
 
     void onTouchEvent(MotionEvent event) {
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
-            triggerNearestGlow(event.getX(), event.getY());
+            // 渲染线程 drawFrame(timeMs) 用 System.currentTimeMillis()(GLESWallpaper/GLESPreviewView),
+            // 触摸路径必须用同一时钟,否则 glowStartMs 与绘制时的 elapsed 计算跨时钟导致光晕永远不显示。
+            triggerNearestGlow(event.getX(), event.getY(), System.currentTimeMillis());
         }
     }
 
@@ -148,13 +150,38 @@ final class BlueSeaScene {
 
     // --- Touch handling ---
 
-    void triggerNearestGlow(float x, float y) {
+    /**
+     * 每层视差系数(与 BlueSeaGL 原内联逻辑一致,收进 Scene 供渲染与触摸共用)。
+     * planeOffset = -mXOffset·mWidth·factor。
+     */
+    float planeFactor(int plane) {
+        if (mWidth > 600) {
+            return plane == 2 ? 0.5f : (plane == 1 ? 0.8f : 1.2f);
+        }
+        return plane == 2 ? 1.0f : (plane == 1 ? 1.5f : 2.5f);
+    }
+
+    /** 水母实际绘制 X(与渲染完全同公式):jelly.x + pane·W + 视差偏移 + 漂移 */
+    float jellyDrawX(JellyState jelly, int index, long timeMs) {
+        float scrollOffset = -mXOffset * mWidth;
+        return jelly.x + jelly.pane * mWidth + scrollOffset * planeFactor(getJellyPlane(index))
+                + computeDrift(jelly.driftPhaseX, jelly.config.driftDurX, timeMs);
+    }
+
+    /** 水母实际绘制 Y:jelly.y + 漂移(无滚动偏移) */
+    float jellyDrawY(JellyState jelly, long timeMs) {
+        return jelly.y + computeDrift(jelly.driftPhaseY, jelly.config.driftDurY, timeMs);
+    }
+
+    void triggerNearestGlow(float x, float y, long timeMs) {
         float minDist = Float.MAX_VALUE;
         JellyState nearest = null;
         for (int i = 0; i < JELLY_COUNT; i++) {
             JellyState jelly = mJellies[i];
-            float dx = jelly.x - x;
-            float dy = jelly.y - y;
+            // 命中检测用与渲染相同的屏幕坐标(含 pane 页偏移、视差偏移、漂移),
+            // 否则桌面滚动/跨页时触摸位置与显示位置错位
+            float dx = jellyDrawX(jelly, i, timeMs) - x;
+            float dy = jellyDrawY(jelly, timeMs) - y;
             float dist = dx * dx + dy * dy;
             if (dist < minDist) {
                 minDist = dist;
@@ -162,7 +189,7 @@ final class BlueSeaScene {
             }
         }
         if (nearest != null) {
-            nearest.glowStartMs = mLastTimeMs;
+            nearest.glowStartMs = timeMs;
         }
     }
 
