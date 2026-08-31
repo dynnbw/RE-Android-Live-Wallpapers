@@ -78,12 +78,13 @@ final class MicrobesScene {
     final float[] foodY = new float[FOOD_COUNT];
     final float[] foodPhase = new float[FOOD_COUNT];
 
-    // ---- 尸体(16B: x, y, angle, breed)----
+    // ---- 尸体(16B: x, y, angle, size)----
+    // size = 死亡瞬间的微生物能量(尺寸代理,尸体与死前大小一致)
     final float[] deadX = new float[DEAD_COUNT];
     final float[] deadY = new float[DEAD_COUNT];
     final float[] deadAngle = new float[DEAD_COUNT];
-    final float[] deadBreed = new float[DEAD_COUNT];
-    final boolean[] deadPendingSpawn = new boolean[DEAD_COUNT];   // 尸体移除后刷出替代微生物
+    final float[] deadSize = new float[DEAD_COUNT];
+    final boolean[] deadPendingSpawn = new boolean[DEAD_COUNT];   // 尸体移除后按概率刷出替代微生物
 
     // ---- 装饰(12B: x, y, z)----
     final float[] decorX = new float[DECOR_COUNT];
@@ -351,9 +352,10 @@ final class MicrobesScene {
             if (deadY[d] > CORPSE_REUSE_Y) {
                 deadY[d] -= sinkRate * lifeDT;
                 if (deadY[d] <= CORPSE_REUSE_Y && deadPendingSpawn[d]) {
-                    // 尸体已完全移除 → 刷出替代微生物(种群守恒)
+                    // 尸体已完全移除 → 约 1/4 概率直接刷新,
+                    // 其余留空位给自然繁殖(种群上限满时繁殖不会触发)
                     deadPendingSpawn[d] = false;
-                    spawnReplacementMicrobe();
+                    maybeSpawnReplacement();
                 }
             }
         }
@@ -383,13 +385,14 @@ final class MicrobesScene {
             if (microbeEnergy[i] < 0.0f) {
                 int corpse = findReusableCorpseSlot();
                 if (deadPendingSpawn[corpse]) {
-                    // 该槽原有尸体被覆盖移除 → 先结算它的重生
-                    spawnReplacementMicrobe();
+                    // 该槽原有尸体被覆盖移除 → 按概率结算它的重生
+                    deadPendingSpawn[corpse] = false;
+                    maybeSpawnReplacement();
                 }
                 deadX[corpse] = microbeX[i];
                 deadY[corpse] = microbeY[i];
                 deadAngle[corpse] = microbeAngle[i];
-                deadBreed[corpse] = microbeBreed[i];
+                deadSize[corpse] = microbeEnergy[i];   // 尸体尺寸 = 死前能量(大小一致)
                 deadPendingSpawn[corpse] = true;
                 microbeX[i] = INVALID_POS;
             }
@@ -590,8 +593,15 @@ final class MicrobesScene {
         return 0;
     }
 
+    /** 约 1/4 概率刷出替代微生物(其余留给自然繁殖) */
+    private void maybeSpawnReplacement() {
+        if (rng.nextFloat() < 0.25f) {
+            spawnReplacementMicrobe();
+        }
+    }
+
     /**
-     * 刷出一只替代微生物(尸体移除后种群守恒):找 INVALID 槽位,按 sub_1594 初始化。
+     * 刷出一只替代微生物(尸体移除后按概率补充):找 INVALID 槽位,按 sub_1594 初始化。
      * 无空槽(种群已满)则跳过。
      */
     private void spawnReplacementMicrobe() {

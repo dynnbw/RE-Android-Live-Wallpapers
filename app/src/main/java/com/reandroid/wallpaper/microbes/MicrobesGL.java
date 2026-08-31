@@ -317,13 +317,13 @@ public class MicrobesGL extends GLESScene {
     }
 
     private void drawDead(float sx, float sy, float tx, float ty) {
-        // 原版:80 槽全量绘制(x,y,angle,breed),INVALID 槽 y=-10000 自然出屏
-        // breed 仅作 aPosition.w(点尺寸),按屏高等比预乘
+        // 原版:80 槽全量绘制(x,y,angle,size),INVALID 槽 y=-10000 自然出屏
+        // size = 死前能量(尸体与死前大小一致),按屏高等比预乘
         float sizeScale = sizeScale();
         deadPosBuffer.clear();
         for (int i = 0; i < DEAD_COUNT; i++) {
             deadPosBuffer.put(mScene.deadX[i]).put(mScene.deadY[i])
-                    .put(mScene.deadAngle[i]).put(mScene.deadBreed[i] * sizeScale);
+                    .put(mScene.deadAngle[i]).put(mScene.deadSize[i] * sizeScale);
         }
         deadPosBuffer.position(0);
 
