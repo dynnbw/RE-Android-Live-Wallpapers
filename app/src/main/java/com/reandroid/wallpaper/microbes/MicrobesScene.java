@@ -72,6 +72,7 @@ final class MicrobesScene {
     final float[] microbeVy = new float[MICROBE_MAX];      // +40
     final float[] microbePhase = new float[MICROBE_MAX];   // +44
     final float[] microbeInterval = new float[MICROBE_MAX];// +48 脉冲刷新间隔
+    final float[] microbeHealthySize = new float[MICROBE_MAX];  // 健康期峰值能量(尸体尺寸依据)
 
     // ---- 食物(3 floats)----
     final float[] foodX = new float[FOOD_COUNT];
@@ -136,6 +137,7 @@ final class MicrobesScene {
             microbeX[i] = INVALID_POS;
             microbePhase[i] = rand01();
             microbeEnergy[i] = rand(0.5f, 0.8f);
+            microbeHealthySize[i] = microbeEnergy[i];
             microbeBreed[i] = rand(0.9f, 1.1f);
             microbeInterval[i] = rand(4.0f, 5.0f);
             assignMicrobeType(i);
@@ -313,6 +315,9 @@ final class MicrobesScene {
             microbeVy[i] = vy;
             float energy = microbeEnergy[i] - ENERGY_DECAY_RATE * lifeDT;
             microbeEnergy[i] = energy;
+            if (energy > microbeHealthySize[i]) {
+                microbeHealthySize[i] = energy;   // 健康期峰值,死亡时作尸体尺寸
+            }
             if (energy > HIGH_ENERGY_LEVEL) {
                 microbeEnergy[i] = energy - HIGH_ENERGY_EXTRA_DECAY * lifeDT;
                 microbeBreed[i] += BREED_ACCUMULATE_RATE * lifeDT;
@@ -392,7 +397,8 @@ final class MicrobesScene {
                 deadX[corpse] = microbeX[i];
                 deadY[corpse] = microbeY[i];
                 deadAngle[corpse] = microbeAngle[i];
-                deadSize[corpse] = microbeEnergy[i];   // 尸体尺寸 = 死前能量(大小一致)
+                // 尸体尺寸 = 健康期峰值能量(死亡瞬间能量已 <0,直接用会得到 1px 尸体)
+                deadSize[corpse] = Math.max(0.3f, microbeHealthySize[i]);
                 deadPendingSpawn[corpse] = true;
                 microbeX[i] = INVALID_POS;
             }
@@ -611,6 +617,7 @@ final class MicrobesScene {
         microbeY[slot] = rand(0.0f, worldHeight);
         microbePhase[slot] = rand01();
         microbeEnergy[slot] = rand(0.5f, 0.8f);
+        microbeHealthySize[slot] = microbeEnergy[slot];
         microbeBreed[slot] = rand(0.9f, 1.1f);
         microbeInterval[slot] = rand(4.0f, 5.0f);
         assignMicrobeType(slot);
