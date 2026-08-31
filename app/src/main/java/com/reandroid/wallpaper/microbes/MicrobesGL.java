@@ -252,9 +252,11 @@ public class MicrobesGL extends GLESScene {
         float sizeScale = sizeScale();
         for (int i = 0; i < mScene.microbeCount; i++) {
             microbePosBuffer.put(mScene.microbeX[i]).put(mScene.microbeY[i]).put(mScene.microbeAngle[i]);
-            microbeMiscBuffer.put(mScene.microbeSize[i] * sizeScale).put(mScene.microbeEnergy[i]).put(mScene.microbePulseTs[i]);
-            // 原版 aColor = (c0, c1, size)
-            microbeColorBuffer.put(mScene.microbeC0[i]).put(mScene.microbeC1[i]).put(mScene.microbeSize[i]);
+            // 原版尺寸 = 能量[16](30×energy,进食长大/饥饿缩小);miscInfo.x 预乘屏高比例
+            microbeMiscBuffer.put(mScene.microbeEnergy[i] * sizeScale)
+                    .put(mScene.microbeEnergy[i]).put(mScene.microbePulseTs[i]);
+            // 原版 aColor = (c0, c1, c2) 三通道类型色
+            microbeColorBuffer.put(mScene.microbeC0[i]).put(mScene.microbeC1[i]).put(mScene.microbeC2[i]);
         }
 
         microbePosBuffer.position(0);

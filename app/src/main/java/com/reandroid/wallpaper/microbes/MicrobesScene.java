@@ -67,7 +67,7 @@ final class MicrobesScene {
     final float[] microbePulseTs = new float[MICROBE_MAX]; // +20 脉冲时间戳
     final float[] microbeC0 = new float[MICROBE_MAX];      // +24 aColor.r
     final float[] microbeC1 = new float[MICROBE_MAX];      // +28 aColor.g
-    final float[] microbeSize = new float[MICROBE_MAX];    // +32 aColor.b(原版复用为尺寸)
+    final float[] microbeC2 = new float[MICROBE_MAX];      // +32 aColor.b(类型蓝通道)
     final float[] microbeVx = new float[MICROBE_MAX];      // +36
     final float[] microbeVy = new float[MICROBE_MAX];      // +40
     final float[] microbePhase = new float[MICROBE_MAX];   // +44
@@ -499,36 +499,40 @@ final class MicrobesScene {
         microbeCount = newCount;
     }
 
-    /** sub_14EC:4 类型(rand(0,4) 取整),颜色/尺寸为解码的原版浮点值 */
+    /**
+     * sub_14EC:4 类型(rand(0,4) 取整)。aColor = (c0, c1, c2) 三通道颜色,
+     * 经典四色(鲑鱼橙/黄/绿/蓝)。尺寸与原版一致由能量驱动(30×energy),
+     * 与颜色解耦 —— 每种大小都能出现所有颜色。
+     */
     private void assignMicrobeType(int index) {
         if (originalColorMode) {
             switch ((int) rand(0.0f, 4.0f)) {
-                case 1:
+                case 1:   // 鲑鱼橙
                     microbeC0[index] = 0.83203125f;
                     microbeC1[index] = 0.19531f;
-                    microbeSize[index] = 0.14453f;
+                    microbeC2[index] = 0.14453f;
                     break;
-                case 2:
+                case 2:   // 黄
                     microbeC0[index] = 0.9296875f;
                     microbeC1[index] = 0.6953125f;
-                    microbeSize[index] = 0.066406f;
+                    microbeC2[index] = 0.066406f;
                     break;
-                case 3:
+                case 3:   // 绿
                     microbeC0[index] = 0.05078125f;
                     microbeC1[index] = 0.5976525f;
-                    microbeSize[index] = 0.22266f;
+                    microbeC2[index] = 0.22266f;
                     break;
-                default:
+                default:  // 蓝
                     microbeC0[index] = 0.19921875f;
                     microbeC1[index] = 0.41015625f;
-                    microbeSize[index] = 0.90625f;
+                    microbeC2[index] = 0.90625f;
                     break;
             }
         } else {
             // modern:随机配色
             microbeC0[index] = rand(0.2f, 1.0f);
             microbeC1[index] = rand(0.2f, 1.0f);
-            microbeSize[index] = rand(0.2f, 1.0f);
+            microbeC2[index] = rand(0.2f, 1.0f);
         }
     }
 
@@ -550,7 +554,7 @@ final class MicrobesScene {
         microbeEnergy[child] = rand(0.5f, 0.8f);
         microbeC0[child] = microbeC0[parent];
         microbeC1[child] = microbeC1[parent];
-        microbeSize[child] = microbeSize[parent];
+        microbeC2[child] = microbeC2[parent];
         microbeX[parent] += 2.0f * cosA;
         microbeY[parent] += 2.0f * sinA;
         microbeBreed[parent] = BREED_RESET;
