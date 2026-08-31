@@ -77,8 +77,10 @@ final class NightSkyTrailRenderer {
 
         boolean viewportChanged = viewportWidth != lastViewportWidth || viewportHeight != lastViewportHeight;
         boolean hasGeometry = lineVertexCount > 0 && linePosBuffer != null && lineColorBuffer != null;
+        // 加速时逐帧重建(0 节流):星星每帧以最新 LST 绘制,轨迹必须同频更新,
+        // 否则高速旋转下轨迹头滞后星星(实测 0.1-0.3s)。静止时天空几乎不动,120ms 足够。
         long updateIntervalMs = accelerating
-            ? TRAIL_GEOMETRY_UPDATE_INTERVAL_ACCEL_MS
+            ? 0L
             : TRAIL_GEOMETRY_UPDATE_INTERVAL_MS;
         boolean acceleratingStateChanged = accelerating != lastAccelerating;
         long lookbackDelta = Math.abs(trailLookbackSimMs - (lastTrailLookbackSimMs == Long.MIN_VALUE ? 0L : lastTrailLookbackSimMs));
@@ -154,8 +156,14 @@ final class NightSkyTrailRenderer {
             }
             float baseAlpha = catalog.starBaseAlpha[i];
 
+            // 优化:每星仅 lat/dec 的 sin/cos 预计算一次(原实现每采样 6 trig,现 2 trig)
+            float sinDec = (float) Math.sin(decRad);
+            float cosDec = (float) Math.cos(decRad);
+            float sinLat = (float) Math.sin(latRad);
+            float cosLat = (float) Math.cos(latRad);
             for (int sample = 0; sample <= TRAIL_SEGMENTS; sample++) {
-                if (projectEquatorialToNdc(raRad, decRad, latRad, lstSamples[sample], viewRot, proj)) {
+                if (projectEquatorialToNdcFast(raRad, sinDec, cosDec, sinLat, cosLat,
+                        lstSamples[sample], viewRot, proj)) {
                     sampledX[sample] = tmpClip[0] / tmpClip[3];
                     sampledY[sample] = tmpClip[1] / tmpClip[3];
                     sampledValid[sample] = isFinite(sampledX[sample]) && isFinite(sampledY[sample]);
@@ -220,19 +228,32 @@ final class NightSkyTrailRenderer {
         uploadBuffers(p, c);
     }
 
-    private boolean projectEquatorialToNdc(
+    /** 快速投影:sinDec/cosDec/sinLat/cosLat 已由调用方预计算(每采样仅 2 trig) */
+    private boolean projectEquatorialToNdcFast(
             float raRad,
-            float decRad,
-            float latRad,
+            float sinDec,
+            float cosDec,
+            float sinLat,
+            float cosLat,
             float lstRad,
             float[] viewRot,
             float[] proj
     ) {
-        NightSkyMath.equatorialToHorizon(raRad, decRad, latRad, lstRad, tmpHorizon);
+        float h = lstRad - raRad;
+        float sinH = (float) Math.sin(h);
+        float cosH = (float) Math.cos(h);
 
-        tmpView[0] = tmpHorizon[0] * 5.0f;
-        tmpView[1] = tmpHorizon[1] * 5.0f;
-        tmpView[2] = tmpHorizon[2] * 5.0f;
+        float east = -cosDec * sinH;
+        float north = (sinDec * cosLat) - (cosDec * sinLat * cosH);
+        float up = (sinDec * sinLat) + (cosDec * cosLat * cosH);
+
+        tmpHorizon[0] = east;
+        tmpHorizon[1] = north;
+        tmpHorizon[2] = up;
+
+        tmpView[0] = east * 5.0f;
+        tmpView[1] = north * 5.0f;
+        tmpView[2] = up * 5.0f;
         tmpView[3] = 1.0f;
 
         Matrix.multiplyMV(tmpViewRotated, 0, viewRot, 0, tmpView, 0);

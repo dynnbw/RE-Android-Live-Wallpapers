@@ -43,14 +43,6 @@ final class NightSkyScene {
     NightSkyCatalog catalog;
     FloatBuffer starParamBuffer;
     FloatBuffer starColorBuffer;
-    FloatBuffer visibleStarParamBuffer;
-    FloatBuffer visibleStarColorBuffer;
-    int visibleStarCount;
-
-    final float[] tmpHorizon = new float[3];
-    final float[] tmpView = new float[4];
-    final float[] tmpViewRotated = new float[4];
-    final float[] tmpClip = new float[4];
 
     FloatBuffer sphereUvBuffer;
     int sphereVertexCount;
@@ -123,46 +115,6 @@ final class NightSkyScene {
             locationController.refresh(context, false);
         } catch (Throwable ignored) {
         }
-    }
-
-    void buildVisibleStarBuffers(float latRad, float lstRad, float[] viewRot) {
-        visibleStarCount = 0;
-        if (catalog == null || catalog.starCount <= 0) return;
-        ensureVisibleBufferCapacity(catalog.starCount);
-        visibleStarParamBuffer.clear();
-        visibleStarColorBuffer.clear();
-        for (int i = 0; i < catalog.starCount; i++) {
-            int pp = i * 4;
-            int cc = i * 3;
-            if (!isStarInFrustum(catalog.starParams[pp], catalog.starParams[pp + 1], latRad, lstRad, viewRot)) continue;
-            visibleStarParamBuffer.put(catalog.starParams, pp, 4);
-            visibleStarColorBuffer.put(catalog.starColors, cc, 3);
-            visibleStarCount++;
-        }
-        visibleStarParamBuffer.position(0);
-        visibleStarColorBuffer.position(0);
-    }
-
-    private void ensureVisibleBufferCapacity(int starCapacity) {
-        int pf = Math.max(1, starCapacity) * 4;
-        int cf = Math.max(1, starCapacity) * 3;
-        if (visibleStarParamBuffer == null || visibleStarParamBuffer.capacity() < pf)
-            visibleStarParamBuffer = ByteBuffer.allocateDirect(pf * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
-        if (visibleStarColorBuffer == null || visibleStarColorBuffer.capacity() < cf)
-            visibleStarColorBuffer = ByteBuffer.allocateDirect(cf * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
-    }
-
-    private boolean isStarInFrustum(float raDeg, float decDeg, float latRad, float lstRad, float[] viewRot) {
-        float raRad = (float) (raDeg * NightSkyMath.DEG_TO_RAD);
-        float decRad = (float) (decDeg * NightSkyMath.DEG_TO_RAD);
-        NightSkyMath.equatorialToHorizon(raRad, decRad, latRad, lstRad, tmpHorizon);
-        tmpView[0] = tmpHorizon[0] * 5.0f; tmpView[1] = tmpHorizon[1] * 5.0f; tmpView[2] = tmpHorizon[2] * 5.0f; tmpView[3] = 1.0f;
-        Matrix.multiplyMV(tmpViewRotated, 0, viewRot, 0, tmpView, 0);
-        Matrix.multiplyMV(tmpClip, 0, proj, 0, tmpViewRotated, 0);
-        float w = tmpClip[3];
-        if (w <= 0.0001f) return false;
-        float x = tmpClip[0] / w; float y = tmpClip[1] / w; float z = tmpClip[2] / w;
-        return x >= -1.05f && x <= 1.05f && y >= -1.05f && y <= 1.05f && z >= -1.0f && z <= 1.0f;
     }
 
     void buildSphereGrid(int lonSteps, int latSteps) {

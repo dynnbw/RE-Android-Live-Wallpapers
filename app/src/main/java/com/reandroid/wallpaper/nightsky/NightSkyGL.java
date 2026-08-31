@@ -113,9 +113,6 @@ public class NightSkyGL extends GLESScene {
         mScene.sphereUvBuffer = null;
         mScene.starParamBuffer = null;
         mScene.starColorBuffer = null;
-        mScene.visibleStarParamBuffer = null;
-        mScene.visibleStarColorBuffer = null;
-        mScene.visibleStarCount = 0;
     }
 
     @Override
@@ -179,8 +176,10 @@ public class NightSkyGL extends GLESScene {
 
         GLES20.glEnable(GLES20.GL_BLEND);
         GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE);
-        mScene.buildVisibleStarBuffers(latitudeRad, lstRad, mScene.currentViewRot);
-        drawStars(mScene.visibleStarParamBuffer, mScene.visibleStarColorBuffer, mScene.visibleStarCount,
+        // 星空:参数/颜色缓冲静态(RA/Dec 不变),顶点 shader 完成全部坐标变换。
+        // 不再每帧 CPU 重复计算/剔除(原实现每帧 9000 星 × 6 trig + 2 矩阵乘),
+        // GPU 处理 9000 点精灵开销可忽略,片元仅计算可见星。
+        drawStars(mScene.starParamBuffer, mScene.starColorBuffer, mScene.catalog.starCount,
                 latitudeRad, lstRad, timeSec, mScene.currentViewRot, false);
 
         trailRenderer.draw(mScene.catalog, latitudeRad,
