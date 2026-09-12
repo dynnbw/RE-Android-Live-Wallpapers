@@ -44,6 +44,28 @@ public class DroidGL extends GLESScene implements SensorEventListener {
             "droid/drawable/droid_right_leg.png"
     };
 
+    /**
+     * 纹理图集布局:把 5 张部件贴图拼进一张图,这样每帧所有精灵只需一次 draw call。
+     * 坐标按 v=0 为位图首行(顶部)摆放。
+     */
+    private static final int ATLAS_W = 164;
+    private static final int ATLAS_H = 148;
+    /** 各部件在图集中的像素区间:x0, y0, x1, y1(区间之间留 2px 间隔,避免线性采样互相渗色)。 */
+    private static final int[][] ATLAS_RECTS = {
+            {0, 0, 100, 143},
+            {102, 0, 132, 69},
+            {134, 0, 164, 69},
+            {102, 71, 132, 119},
+            {134, 71, 164, 119}
+    };
+
+    /** 单帧最大精灵数:30 个机器人 × 5 个部件。 */
+    private static final int MAX_SPRITES = 30 * 5;
+    /** 交错顶点数据 (x, y, u, v),每精灵 6 个顶点。 */
+    private static final int FLOATS_PER_VERTEX = 4;
+    private static final int VERTICES_PER_SPRITE = 6;
+    private static final int MAX_BATCH_FLOATS = MAX_SPRITES * VERTICES_PER_SPRITE * FLOATS_PER_VERTEX;
+
     /** 原版默认背景色 rgb(48, 88, 124)。 */
     private static final float BG_R = 48.0f / 255.0f;
     private static final float BG_G = 88.0f / 255.0f;
@@ -51,8 +73,12 @@ public class DroidGL extends GLESScene implements SensorEventListener {
 
     private static final long PREF_POLL_INTERVAL_MS = 1000L;
 
-    /** 性能采样:每 5 秒输出一次帧内耗时构成(定位卡顿用,稳定后可关闭)。 */
-    private static final boolean PERF_LOG = true;
+    /**
+     * 性能采样:每 5 秒输出一次帧内耗时构成(定位卡顿用)。
+     * 经设备实测(30 机器人 / 尺寸 100% / 目标 180fps):physics ≈ 0.4ms,
+     * 帧率被屏幕刷新率限制在 120fps,故默认关闭;需要复测时置 true。
+     */
+    private static final boolean PERF_LOG = false;
     private static final long PERF_LOG_INTERVAL_MS = 5000L;
     private long mPerfLogMs;
     private int mPerfFrames;
@@ -63,12 +89,10 @@ public class DroidGL extends GLESScene implements SensorEventListener {
     private final Context mContext;
     private final DroidScene mScene;
 
-    private FloatBuffer mVertexBuffer;
-    private FloatBuffer mTexBuffer;
+    private FloatBuffer mBatchBuffer;
+    private float[] mBatchScratch;
 
     private final float[] mProjection = new float[16];
-    private final float[] mModel = new float[16];
-    private final float[] mMvp = new float[16];
 
     private int mProgram;
     private int mPositionHandle = -1;
@@ -78,7 +102,9 @@ public class DroidGL extends GLESScene implements SensorEventListener {
     private int mAlphaHandle = -1;
     private int mSamplerHandle = -1;
 
-    private final int[] mTextures = new int[TEX_COUNT];
+    private int mAtlasTexture;
+    /** 位掩码:缺失的部件贴图(见 TEX_* 序号)。 */
+    private int mMissingParts;
 
     private boolean mInitialized;
     private boolean mGlReady;
@@ -119,20 +145,8 @@ public class DroidGL extends GLESScene implements SensorEventListener {
             return;
         }
         mInitialized = true;
-        mVertexBuffer = createFloatBuffer(new float[] {
-                -0.5f, -0.5f,
-                0.5f, -0.5f,
-                -0.5f, 0.5f,
-                0.5f, 0.5f
-        });
-        // 纹理坐标:GL 的 v=0 对应位图首行(即图像顶部),而本场景投影 y 轴向下
-        // (ortho 的 bottom=height, top=0),因此屏幕上方顶点必须取 v=0,否则贴图上下颠倒。
-        mTexBuffer = createFloatBuffer(new float[] {
-                0.0f, 0.0f,
-                1.0f, 0.0f,
-                0.0f, 1.0f,
-                1.0f, 1.0f
-        });
+        mBatchScratch = new float[MAX_BATCH_FLOATS];
+        mBatchBuffer = createFloatBuffer(mBatchScratch);
     }
 
     @Override
@@ -155,11 +169,9 @@ public class DroidGL extends GLESScene implements SensorEventListener {
     @Override
     public void release() {
         unregisterSensors();
-        for (int i = 0; i < TEX_COUNT; i++) {
-            if (mTextures[i] != 0) {
-                GLES20.glDeleteTextures(1, mTextures, i);
-                mTextures[i] = 0;
-            }
+        if (mAtlasTexture != 0) {
+            GLES20.glDeleteTextures(1, new int[] {mAtlasTexture}, 0);
+            mAtlasTexture = 0;
         }
         if (mProgram != 0) {
             GLES20.glDeleteProgram(mProgram);
@@ -256,9 +268,45 @@ public class DroidGL extends GLESScene implements SensorEventListener {
 
     private void drawDroids() {
         List<DroidScene.Droid> droids = mScene.droids();
-        if (droids.isEmpty() || mProgram == 0) {
+        if (droids.isEmpty() || mProgram == 0 || mAtlasTexture == 0) {
             return;
         }
+        int floats = fillBatch(droids);
+        if (floats == 0) {
+            return;
+        }
+
+        GLES20.glUseProgram(mProgram);
+        GLES20.glUniformMatrix4fv(mMvpHandle, 1, false, mProjection, 0);
+        GLES20.glUniform3f(mTintHandle, mTintR, mTintG, mTintB);
+        GLES20.glUniform1f(mAlphaHandle, 1.0f);
+        GLES20.glUniform1i(mSamplerHandle, 0);
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mAtlasTexture);
+
+        mBatchBuffer.position(0);
+        mBatchBuffer.limit(floats);
+        GLES20.glVertexAttribPointer(mPositionHandle, 2, GLES20.GL_FLOAT, false,
+                FLOATS_PER_VERTEX * 4, mBatchBuffer);
+        GLES20.glEnableVertexAttribArray(mPositionHandle);
+        mBatchBuffer.position(2);
+        GLES20.glVertexAttribPointer(mTexCoordHandle, 2, GLES20.GL_FLOAT, false,
+                FLOATS_PER_VERTEX * 4, mBatchBuffer);
+        GLES20.glEnableVertexAttribArray(mTexCoordHandle);
+
+        // 所有精灵一次提交:150 个精灵 × 2 三角形
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, floats / FLOATS_PER_VERTEX);
+
+        GLES20.glDisableVertexAttribArray(mPositionHandle);
+        GLES20.glDisableVertexAttribArray(mTexCoordHandle);
+    }
+
+    /**
+     * 把所有精灵写进交错顶点数组(屏幕坐标 + 图集 UV),返回写入的 float 数。
+     * 顶点直接算在屏幕空间,因此 MVP 只需投影矩阵,逐精灵零 GL 调用。
+     * 顺序与原版 draw() 回调一致:腿 → 躯干 → 手臂。
+     */
+    private int fillBatch(List<DroidScene.Droid> droids) {
         double scale = mScene.sizeScale();
         float bodyW = (float) (DroidScene.SRC_BODY_W * scale);
         float bodyH = (float) (DroidScene.SRC_BODY_H * scale);
@@ -267,65 +315,80 @@ public class DroidGL extends GLESScene implements SensorEventListener {
         float legW = (float) (DroidScene.SRC_LEG_W * scale);
         float legH = (float) (DroidScene.SRC_LEG_H * scale);
 
-        // 程序、常量 uniform、顶点属性每帧只设置一次:
-        // 逐精灵的 GL 状态切换在低端驱动(尤其 ANGLE/Vulkan 转译层)上开销显著。
-        GLES20.glUseProgram(mProgram);
-        GLES20.glUniform3f(mTintHandle, mTintR, mTintG, mTintB);
-        GLES20.glUniform1f(mAlphaHandle, 1.0f);
-        GLES20.glUniform1i(mSamplerHandle, 0);
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-
-        mVertexBuffer.position(0);
-        GLES20.glVertexAttribPointer(mPositionHandle, 2, GLES20.GL_FLOAT, false, 0, mVertexBuffer);
-        GLES20.glEnableVertexAttribArray(mPositionHandle);
-        mTexBuffer.position(0);
-        GLES20.glVertexAttribPointer(mTexCoordHandle, 2, GLES20.GL_FLOAT, false, 0, mTexBuffer);
-        GLES20.glEnableVertexAttribArray(mTexCoordHandle);
-
-        // 绘制顺序必须与原版一致(原版 draw() 的回调顺序为
-        // LeftLeg → RightLeg → Body → LeftArm → RightArm):
-        // 腿在躯干之下、手臂盖在躯干之上。
         double alpha = mScene.interpolationAlpha();
-        int boundTexture = 0;
+        float[] out = mBatchScratch;
+        int p = 0;
+        int maxFloats = out.length - VERTICES_PER_SPRITE * FLOATS_PER_VERTEX;
+
         for (int i = 0; i < droids.size(); i++) {
             DroidScene.Droid droid = droids.get(i);
-            boundTexture = drawPart(TEX_LEFT_LEG, droid.leftLeg, legW, legH, boundTexture, alpha);
-            boundTexture = drawPart(TEX_RIGHT_LEG, droid.rightLeg, legW, legH, boundTexture, alpha);
-            boundTexture = drawPart(TEX_BODY, droid.body, bodyW, bodyH, boundTexture, alpha);
-            boundTexture = drawPart(TEX_LEFT_ARM, droid.leftArm, armW, armH, boundTexture, alpha);
-            boundTexture = drawPart(TEX_RIGHT_ARM, droid.rightArm, armW, armH, boundTexture, alpha);
+            p = writeSprite(out, p, TEX_LEFT_LEG, droid.leftLeg, legW, legH, alpha);
+            p = writeSprite(out, p, TEX_RIGHT_LEG, droid.rightLeg, legW, legH, alpha);
+            p = writeSprite(out, p, TEX_BODY, droid.body, bodyW, bodyH, alpha);
+            p = writeSprite(out, p, TEX_LEFT_ARM, droid.leftArm, armW, armH, alpha);
+            p = writeSprite(out, p, TEX_RIGHT_ARM, droid.rightArm, armW, armH, alpha);
+            if (p > maxFloats) {
+                break;
+            }
         }
 
-        GLES20.glDisableVertexAttribArray(mPositionHandle);
-        GLES20.glDisableVertexAttribArray(mTexCoordHandle);
+        if (p == 0) {
+            return 0;
+        }
+        mBatchBuffer.position(0);
+        mBatchBuffer.put(out, 0, p);
+        return p;
     }
 
-    /** 返回当前绑定的纹理,避免重复绑定。 */
-    private int drawPart(int textureIndex, com.reandroid.wallpaper.droid.physics.Body body,
-            float width, float height, int boundTexture, double alpha) {
-        int texture = mTextures[textureIndex];
-        if (body == null || texture == 0) {
-            return boundTexture;
+    /** 写入一个精灵的 6 个顶点(两个三角形),返回新的写入位置。 */
+    private int writeSprite(float[] out, int p, int textureIndex,
+            com.reandroid.wallpaper.droid.physics.Body body, float width, float height,
+            double alpha) {
+        if (body == null) {
+            return p;
         }
-        // 世界坐标 → 屏幕坐标(y 轴翻转),旋转角同样取反;
+        // 世界坐标 → 屏幕坐标(y 轴翻转),旋转角取反;
         // 位置 / 角度按累加器比例在上一物理步与当前物理步之间插值(30Hz 物理 → 平滑画面)
-        float screenX = (float) body.renderX(alpha) + mWidth * 0.5f;
-        float screenY = mHeight * 0.5f - (float) body.renderY(alpha);
-        float angleDeg = (float) Math.toDegrees(body.renderAngle(alpha));
+        float cx = (float) body.renderX(alpha) + mWidth * 0.5f;
+        float cy = mHeight * 0.5f - (float) body.renderY(alpha);
+        float angle = -(float) body.renderAngle(alpha);
+        float cos = (float) Math.cos(angle);
+        float sin = (float) Math.sin(angle);
+        float hw = width * 0.5f;
+        float hh = height * 0.5f;
 
-        Matrix.setIdentityM(mModel, 0);
-        Matrix.translateM(mModel, 0, screenX, screenY, 0.0f);
-        Matrix.rotateM(mModel, 0, -angleDeg, 0.0f, 0.0f, 1.0f);
-        Matrix.scaleM(mModel, 0, width, height, 1.0f);
-        Matrix.multiplyMM(mMvp, 0, mProjection, 0, mModel, 0);
-        GLES20.glUniformMatrix4fv(mMvpHandle, 1, false, mMvp, 0);
+        int[] rect = ATLAS_RECTS[textureIndex];
+        float u0 = rect[0] / (float) ATLAS_W;
+        float v0 = rect[1] / (float) ATLAS_H;
+        float u1 = rect[2] / (float) ATLAS_W;
+        float v1 = rect[3] / (float) ATLAS_H;
 
-        if (texture != boundTexture) {
-            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture);
-            boundTexture = texture;
-        }
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
-        return boundTexture;
+        // 四角:左上、右上、右下、左下(旋转后)
+        float x0 = cx + (-hw * cos - -hh * sin);
+        float y0 = cy + (-hw * sin + -hh * cos);
+        float x1 = cx + (hw * cos - -hh * sin);
+        float y1 = cy + (hw * sin + -hh * cos);
+        float x2 = cx + (hw * cos - hh * sin);
+        float y2 = cy + (hw * sin + hh * cos);
+        float x3 = cx + (-hw * cos - hh * sin);
+        float y3 = cy + (-hw * sin + hh * cos);
+
+        // 三角形 1:左上、右上、右下;三角形 2:左上、右下、左下
+        p = putVertex(out, p, x0, y0, u0, v0);
+        p = putVertex(out, p, x1, y1, u1, v0);
+        p = putVertex(out, p, x2, y2, u1, v1);
+        p = putVertex(out, p, x0, y0, u0, v0);
+        p = putVertex(out, p, x2, y2, u1, v1);
+        p = putVertex(out, p, x3, y3, u0, v1);
+        return p;
+    }
+
+    private int putVertex(float[] out, int p, float x, float y, float u, float v) {
+        out[p] = x;
+        out[p + 1] = y;
+        out[p + 2] = u;
+        out[p + 3] = v;
+        return p + FLOATS_PER_VERTEX;
     }
 
     // --- GL 资源 ---
@@ -345,20 +408,14 @@ public class DroidGL extends GLESScene implements SensorEventListener {
         mAlphaHandle = GLES20.glGetUniformLocation(mProgram, "uAlpha");
         mSamplerHandle = GLES20.glGetUniformLocation(mProgram, "uTexture");
 
-        boolean missingPart = false;
-        for (int i = 0; i < TEX_COUNT; i++) {
-            mTextures[i] = loadTexture(TEX_PATHS[i]);
-            if (mTextures[i] == 0) {
-                missingPart = true;
-            }
-        }
+        boolean complete = buildAtlas();
         // 皮肤缺少某部件位图时,对应刚体也不创建(与原版 hasLeftArm 等参数一致)
         mScene.setAvailableParts(
-                mTextures[TEX_LEFT_ARM] != 0,
-                mTextures[TEX_RIGHT_ARM] != 0,
-                mTextures[TEX_LEFT_LEG] != 0,
-                mTextures[TEX_RIGHT_LEG] != 0);
-        if (missingPart) {
+                hasPart(TEX_LEFT_ARM),
+                hasPart(TEX_RIGHT_ARM),
+                hasPart(TEX_LEFT_LEG),
+                hasPart(TEX_RIGHT_LEG));
+        if (!complete) {
             Log.w(TAG, "Some droid part textures are missing");
         }
 
@@ -370,12 +427,52 @@ public class DroidGL extends GLESScene implements SensorEventListener {
         mGlReady = true;
     }
 
-    private int loadTexture(String assetPath) {
-        Bitmap bitmap = AssetLoader.decodeBitmap(mContext, assetPath);
-        if (bitmap == null) {
-            Log.e(TAG, "Failed to decode texture: " + assetPath);
-            return 0;
+    /**
+     * 把 5 张部件贴图拼成一张图集并上传,返回是否全部部件都在。
+     * 图集让每帧所有精灵只需一次 draw call(30 个机器人时从 150 次降到 1 次)。
+     *
+     * 这里按像素拷贝而不是用 Canvas:AssetLoader 解出的位图是非预乘的,
+     * Canvas.drawBitmap 会抛 "non-premultiplied bitmap";逐像素拷贝也能保持
+     * 直通 alpha 语义,与逐张上传时的渲染结果完全一致。
+     */
+    private boolean buildAtlas() {
+        Bitmap atlas = Bitmap.createBitmap(ATLAS_W, ATLAS_H, Bitmap.Config.ARGB_8888);
+        atlas.setPremultiplied(false);
+        int[] dst = new int[ATLAS_W * ATLAS_H];
+        boolean complete = true;
+
+        for (int i = 0; i < TEX_COUNT; i++) {
+            Bitmap part = AssetLoader.decodeBitmap(mContext, TEX_PATHS[i]);
+            if (part == null) {
+                Log.e(TAG, "Failed to decode texture: " + TEX_PATHS[i]);
+                complete = false;
+                mMissingParts |= (1 << i);
+                continue;
+            }
+            int w = part.getWidth();
+            int h = part.getHeight();
+            int[] rect = ATLAS_RECTS[i];
+            w = Math.min(w, rect[2] - rect[0]);
+            h = Math.min(h, rect[3] - rect[1]);
+            int[] src = new int[w * h];
+            part.getPixels(src, 0, w, 0, 0, w, h);
+            for (int y = 0; y < h; y++) {
+                System.arraycopy(src, y * w, dst, (rect[1] + y) * ATLAS_W + rect[0], w);
+            }
+            part.recycle();
         }
+
+        atlas.setPixels(dst, 0, ATLAS_W, 0, 0, ATLAS_W, ATLAS_H);
+        mAtlasTexture = uploadTexture(atlas);
+        atlas.recycle();
+        return complete && mAtlasTexture != 0;
+    }
+
+    private boolean hasPart(int index) {
+        return (mMissingParts & (1 << index)) == 0 && mAtlasTexture != 0;
+    }
+
+    private int uploadTexture(Bitmap bitmap) {
         int[] ids = new int[1];
         GLES20.glGenTextures(1, ids, 0);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, ids[0]);
@@ -384,7 +481,6 @@ public class DroidGL extends GLESScene implements SensorEventListener {
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
         GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
-        bitmap.recycle();
         return ids[0];
     }
 
