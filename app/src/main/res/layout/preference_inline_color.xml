@@ -27,12 +27,13 @@
             android:paddingStart="16dp"
             android:paddingTop="14dp"
             android:paddingEnd="16dp"
-            android:paddingBottom="8dp">
+            android:paddingBottom="10dp">
 
             <!-- 标题行:标题 + 十六进制色值 + 预览色块 -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 
@@ -66,6 +67,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"
+                android:paddingTop="14dp"
+                android:paddingBottom="14dp"
                 android:orientation="horizontal">
 
                 <TextView
@@ -96,6 +99,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"
+                android:paddingTop="14dp"
+                android:paddingBottom="14dp"
                 android:orientation="horizontal">
 
                 <TextView
@@ -126,6 +131,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"
+                android:paddingTop="14dp"
+                android:paddingBottom="14dp"
                 android:orientation="horizontal">
 
                 <TextView
