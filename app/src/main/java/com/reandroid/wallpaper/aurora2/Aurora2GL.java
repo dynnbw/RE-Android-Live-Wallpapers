@@ -61,6 +61,11 @@ public class Aurora2GL extends GLESScene {
         mScene.resize(width, height);
     }
 
+    /** 引擎注入插件设置(设置变更时会重新调用,主题等改动即时生效)。 */
+    public void setPluginPrefs(android.content.SharedPreferences prefs) {
+        mScene.setPluginPrefs(prefs);
+    }
+
     @Override
     public void setOffset(float xOffset, float yOffset, int xPixels, int yPixels) {
         mScene.setOffset(xOffset, yOffset);

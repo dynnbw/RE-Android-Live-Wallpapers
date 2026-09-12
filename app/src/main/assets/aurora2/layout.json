@@ -1,3 +1,24 @@
 {
-  "prefs": []
+  "prefs": [
+    {
+      "type": "list",
+      "key": "aurora2_theme",
+      "title": "aurora2_theme",
+      "default": "auto",
+      "values": [
+        "auto",
+        "0",
+        "1",
+        "2",
+        "3"
+      ],
+      "labels": [
+        "aurora2_theme_label_auto",
+        "aurora2_theme_label_0",
+        "aurora2_theme_label_1",
+        "aurora2_theme_label_2",
+        "aurora2_theme_label_3"
+      ]
+    }
+  ]
 }

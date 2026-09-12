@@ -1,6 +1,7 @@
 package com.reandroid.wallpaper.aurora2;
 
 import android.opengl.Matrix;
+import android.content.SharedPreferences;
 import android.view.MotionEvent;
 
 import java.util.Calendar;
@@ -105,7 +106,11 @@ final class Aurora2Scene {
     private boolean mPreview;
     private boolean mVerticalMode;
     private int mResolution;
+    static final String PREF_THEME = "aurora2_theme";
+    static final String VALUE_THEME_AUTO = "auto";
+    private static final int THEME_COUNT = 4;
     private int mThemeId;
+    private SharedPreferences mPrefs;
     private int mCurrentMinuteBucket = -1;
     private int mFrame;
     private int mFadeFrame;
@@ -205,8 +210,36 @@ final class Aurora2Scene {
         updateFade();
     }
 
+    /** 由设置页注入插件设置(引擎在设置变更时会重新注入,主题即时生效)。 */
+    void setPluginPrefs(SharedPreferences prefs) {
+        mPrefs = prefs;
+    }
+
+    /**
+     * 主题来源优先级:设置里手动指定的主题 > 预览固定主题 > 按时钟自动
+     * (原版按刻钟切换 minute/15;设置里选"自动"即回到该行为)。
+     */
+    private int resolveDesiredTheme() {
+        if (mPrefs != null) {
+            String pref = mPrefs.getString(PREF_THEME, VALUE_THEME_AUTO);
+            if (pref != null && !VALUE_THEME_AUTO.equals(pref)) {
+                try {
+                    int theme = Integer.parseInt(pref);
+                    if (theme >= 0 && theme < THEME_COUNT) {
+                        return theme;
+                    }
+                } catch (NumberFormatException ignored) {
+                }
+            }
+        }
+        if (mPreview) {
+            return THEME_COUNT - 1;
+        }
+        return Calendar.getInstance().get(Calendar.MINUTE) / 15;
+    }
+
     private void updateThemeFromClock(boolean immediate) {
-        int desiredTheme = mPreview ? 3 : Calendar.getInstance().get(Calendar.MINUTE) / 15;
+        int desiredTheme = resolveDesiredTheme();
         if (desiredTheme < 0) {
             desiredTheme = 0;
         } else if (desiredTheme > 3) {
