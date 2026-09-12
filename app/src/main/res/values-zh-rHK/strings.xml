@@ -272,4 +272,7 @@
     <string name="pref_disabled_prefix">[已禁用]</string>
     <string name="wallpaper_cosmicflow">宇宙流動</string>
     <string name="wallpaper_droid">墜落的安卓機械人</string>
+    <!-- 壁纸磁贴占位格（反馈入口）：壁纸数量为奇数时补在最后一格 -->
+    <string name="grid_feedback_title">反饋與移植請求</string>
+    <string name="grid_feedback_caption">在 GitHub 提 Issue</string>
 </resources>

@@ -237,4 +237,7 @@
     <string name="pref_disabled_prefix">[無効]</string>
     <string name="wallpaper_cosmicflow">コズミックフロー</string>
     <string name="wallpaper_droid">Shake Them All</string>
+    <!-- 壁纸磁贴占位格（反馈入口）：壁纸数量为奇数时补在最后一格 -->
+    <string name="grid_feedback_title">フィードバック・移植リクエスト</string>
+    <string name="grid_feedback_caption">GitHub で Issue を作成</string>
 </resources>

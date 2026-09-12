@@ -14,6 +14,9 @@
     <!-- 半透明 surface（75% 不透明），用于全屏预览上的设置抽屉 -->
     <color name="md_theme_surface_translucent">#BFF0FFFF</color>
     <color name="md_theme_onSurface">#2F4F4F</color>
+    <!-- 壁纸磁贴占位格（反馈入口）的主题色底与前景：浅色模式下深青底 + 浅字 -->
+    <color name="md_theme_cta_container">#1F5B5B</color>
+    <color name="md_theme_cta_onContainer">#F0FFFF</color>
     <color name="colorPrimary">#2196F3</color>
     <color name="colorPrimaryDark">#1976D2</color>
     <color name="colorAccent">#FF4081</color>

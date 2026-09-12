@@ -9,9 +9,11 @@ import android.graphics.BitmapFactory;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -37,6 +39,7 @@ public class SettingsMainFragment extends PreferenceFragmentCompat {
     private static final int WALLPAPER_GRID_SPAN_COUNT = 2;
     private static final String KEY_OPEN_WALLPAPER_CHOOSER = "pref_open_wallpaper_chooser";
     private static final String KEY_BANNER_CAROUSEL = "pref_banner_carousel";
+    private static final String KEY_GRID_FEEDBACK = "pref_grid_feedback";
     private static final int FULL_WIDTH_SPACING_DP = 4;
     private static final int GRID_EDGE_SPACING_DP = 8;
     private static final int GRID_MIDDLE_SPACING_DP = 8;
@@ -46,6 +49,8 @@ public class SettingsMainFragment extends PreferenceFragmentCompat {
         setPreferencesFromResource(R.xml.prefs_settings, rootKey);
         addDynamicEntries(getPreferenceScreen());
         applyHomeLayouts();
+        // 顺序不能颠倒：applyHomeLayouts 会把所有网格项的布局重设成壁纸磁贴
+        addFeedbackTileIfOdd(getPreferenceScreen());
 
         Preference openChooser = findPreference("pref_open_wallpaper_chooser");
         if (openChooser != null) {
@@ -170,6 +175,47 @@ public class SettingsMainFragment extends PreferenceFragmentCompat {
             if (!isFullWidthPreference(preference)) {
                 preference.setLayoutResource(R.layout.preference_wallpaper_grid_item);
             }
+        }
+    }
+
+    /**
+     * 壁纸数量为奇数时最后一格会落单、右侧留半行空白。补一个同尺寸的占位磁贴填满：
+     * 做成反馈入口（提 issue / 壁纸移植请求），点击打开仓库 issues。
+     * 数量为偶数时该格不存在，网格本来就对称。
+     */
+    private void addFeedbackTileIfOdd(PreferenceScreen screen) {
+        if (screen == null) {
+            return;
+        }
+
+        int gridCount = 0;
+        for (int i = 0; i < screen.getPreferenceCount(); i++) {
+            if (!isFullWidthPreference(screen.getPreference(i))) {
+                gridCount++;
+            }
+        }
+        if (gridCount % WALLPAPER_GRID_SPAN_COUNT == 0) {
+            return;
+        }
+
+        // 用磁贴 Preference：卡片内容层自持水波纹，点击转发给根布局才触发这里的动作
+        Preference feedback = new WallpaperGridPreference(requireContext());
+        feedback.setKey(KEY_GRID_FEEDBACK);
+        feedback.setPersistent(false);
+        feedback.setTitle(getString(R.string.grid_feedback_title));
+        feedback.setLayoutResource(R.layout.preference_wallpaper_grid_cta);
+        feedback.setOnPreferenceClickListener(pref -> {
+            openUrl(getString(R.string.grid_feedback_url));
+            return true;
+        });
+        screen.addPreference(feedback);
+    }
+
+    private void openUrl(String url) {
+        try {
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+        } catch (Exception e) {
+            Toast.makeText(requireContext(), R.string.no_browser_found, Toast.LENGTH_SHORT).show();
         }
     }
 

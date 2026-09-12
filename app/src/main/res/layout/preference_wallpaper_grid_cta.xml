@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 壁纸磁贴占位格：壁纸数量为奇数时补在最后一格，填掉半行空白，
+     同款卡片外壳（尺寸/圆角/阴影与 preference_wallpaper_grid_item 完全一致），
+     但 4:3 图区换成主题色底 + GitHub 图标 + 一行说明，点击去仓库提 issue。
+     图标与文案由布局自带（不走 Preference 的 icon/title 之外的东西）。 -->
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:clickable="true"
+    android:focusable="true">
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/tile_card"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:cardBackgroundColor="@color/md_theme_surface"
+        app:cardCornerRadius="14dp"
+        app:cardElevation="4dp"
+        app:cardUseCompatPadding="true"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <!-- 内容层自身 clickable 承载水波纹；点击在代码中转发给根布局（触发 Preference 动作） -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/tile_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground">
+
+            <!-- 4:3 图区（与壁纸磁贴同比例，保证两列磁贴底边对齐） -->
+            <LinearLayout
+                android:id="@+id/thumb_area"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:background="@color/md_theme_cta_container"
+                android:gravity="center"
+                android:orientation="vertical"
+                app:layout_constraintDimensionRatio="4:3"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <ImageView
+                    android:layout_width="52dp"
+                    android:layout_height="52dp"
+                    android:contentDescription="@null"
+                    android:tint="@color/md_theme_cta_onContainer"
+                    app:srcCompat="@drawable/ic_github" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:gravity="center"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:text="@string/grid_feedback_caption"
+                    android:textColor="@color/md_theme_cta_onContainer"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <!-- 图注（与壁纸磁贴同一套排版） -->
+            <TextView
+                android:id="@android:id/title"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:gravity="center"
+                android:maxLines="1"
+                android:paddingStart="6dp"
+                android:paddingTop="8dp"
+                android:paddingEnd="6dp"
+                android:paddingBottom="9dp"
+                android:textColor="@color/md_theme_onSurface"
+                android:textSize="13sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/thumb_area" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.cardview.widget.CardView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -237,4 +237,7 @@
     <string name="pref_disabled_prefix">[নিষ্ক্রিয়]</string>
     <string name="wallpaper_cosmicflow">Cosmic Flow</string>
     <string name="wallpaper_droid">Shake Them All</string>
+    <!-- 壁纸磁贴占位格（反馈入口）：壁纸数量为奇数时补在最后一格 -->
+    <string name="grid_feedback_title">ফিডব্যাক ও অনুরোধ</string>
+    <string name="grid_feedback_caption">GitHub-এ issue খুলুন</string>
 </resources>
