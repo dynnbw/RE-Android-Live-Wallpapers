@@ -1,0 +1,52 @@
+{
+  "prefs": [
+    {
+      "type": "seekbar",
+      "key": "droid_count",
+      "title": "droid_count",
+      "min": 1,
+      "max": 30,
+      "default": 10
+    },
+    {
+      "type": "seekbar",
+      "key": "droid_size",
+      "title": "droid_size",
+      "min": 20,
+      "max": 100,
+      "default": 50
+    },
+    {
+      "type": "seekbar",
+      "key": "droid_gravity",
+      "title": "droid_gravity",
+      "min": 0,
+      "max": 100,
+      "default": 50
+    },
+    {
+      "type": "seekbar",
+      "key": "droid_shake",
+      "title": "droid_shake",
+      "min": 0,
+      "max": 100,
+      "default": 0
+    },
+    {
+      "type": "seekbar",
+      "key": "droid_touch",
+      "title": "droid_touch",
+      "min": 0,
+      "max": 100,
+      "default": 50
+    },
+    {
+      "type": "seekbar",
+      "key": "droid_light",
+      "title": "droid_light",
+      "min": 0,
+      "max": 100,
+      "default": 0
+    }
+  ]
+}

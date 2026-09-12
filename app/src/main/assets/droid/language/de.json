@@ -1,0 +1,8 @@
+{
+  "droid_count": "Anzahl der Droids",
+  "droid_size": "Größe der Droids",
+  "droid_gravity": "Reaktion auf Schwerkraft",
+  "droid_shake": "Reaktion auf Beschleunigung",
+  "droid_touch": "Reaktion auf Berührung",
+  "droid_light": "Reaktion auf Licht"
+}

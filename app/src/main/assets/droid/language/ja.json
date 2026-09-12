@@ -1,0 +1,8 @@
+{
+  "droid_count": "ドロイドの数",
+  "droid_size": "ドロイドのサイズ",
+  "droid_gravity": "重力への反応",
+  "droid_shake": "加速度への反応",
+  "droid_touch": "タッチへの反応",
+  "droid_light": "光への反応"
+}

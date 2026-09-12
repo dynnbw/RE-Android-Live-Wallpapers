@@ -1,0 +1,8 @@
+{
+  "droid_count": "드로이드 수",
+  "droid_size": "드로이드 크기",
+  "droid_gravity": "중력 반응",
+  "droid_shake": "가속도 반응",
+  "droid_touch": "터치 반응",
+  "droid_light": "빛 반응"
+}

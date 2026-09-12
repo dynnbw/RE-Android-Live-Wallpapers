@@ -1,0 +1,5 @@
+{
+  "label": "@string/wallpaper_droid",
+  "plugin": "com.reandroid.wallpaper.droid.DroidPlugin",
+  "previewClass": "com.reandroid.wallpaper.droid.DroidGL"
+}
