@@ -1,11 +1,12 @@
 {
   "phasebeam_dot_count": "Nombre de particules",
   "phasebeam_recolor_enabled": "Ajuster les couleurs des faisceaux",
-  "phasebeam_hue": "Couleur",
-  "phasebeam_saturation": "Saturation",
   "phasebeam_brightness": "Luminosité",
   "theme": "Theme de couleur",
   "theme_label_phasebeam": "Faisceau de phase (bleu)",
   "theme_label_sunbeam": "Rayon de soleil (chaud)",
-  "theme_label_waterbeam": "Faisceau d'eau (bleu)"
+  "theme_label_waterbeam": "Faisceau d'eau (bleu)",
+  "phasebeam_recolor_color": "Couleur",
+  "phasebeam_saturation": "Saturation",
+  "phasebeam_hue": "Couleur"
 }

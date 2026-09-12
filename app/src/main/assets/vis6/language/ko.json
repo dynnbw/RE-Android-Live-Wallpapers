@@ -1,9 +1,6 @@
 {
   "musicvis_recolor": "다시 칠하기",
   "musicvis_recolor_mode": "다시 칠하기 모드",
-  "musicvis_hue": "색조",
-  "musicvis_saturation": "채도",
-  "musicvis_brightness": "밝기",
   "circle_ring_count": "링 개수",
   "circle_line_width": "선 두께",
   "musicvis_bg_color": "배경 색상",
@@ -15,5 +12,9 @@
   "musicvis_bg_color_label_#2F4F4F": "진한 녹색",
   "musicvis_bg_color_label_#FFE4DE": "분홍",
   "musicvis_bg_color_label_#F0FFFF": "연한 녹색",
-  "musicvis_bg_color_label_#EDDEFF": "연한 보라"
+  "musicvis_bg_color_label_#EDDEFF": "연한 보라",
+  "musicvis_recolor_color": "색상",
+  "musicvis_brightness": "밝기",
+  "musicvis_saturation": "채도",
+  "musicvis_hue": "색조"
 }

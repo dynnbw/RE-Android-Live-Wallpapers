@@ -2,10 +2,11 @@
   "phasebeam_dot_count": "Particle Count",
   "theme": "Color theme",
   "phasebeam_recolor_enabled": "Adjust beam colors",
-  "phasebeam_hue": "Color",
-  "phasebeam_saturation": "Saturation",
   "phasebeam_brightness": "Brightness",
   "theme_label_phasebeam": "Phase Beam (blue)",
   "theme_label_sunbeam": "Sunbeam (warm)",
-  "theme_label_waterbeam": "Water Beam (blue)"
+  "theme_label_waterbeam": "Water Beam (blue)",
+  "phasebeam_recolor_color": "Color",
+  "phasebeam_saturation": "Saturation",
+  "phasebeam_hue": "Color"
 }

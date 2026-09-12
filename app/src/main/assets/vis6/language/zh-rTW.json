@@ -1,9 +1,6 @@
 {
   "musicvis_recolor": "著色模式",
   "musicvis_recolor_mode": "著色模式",
-  "musicvis_hue": "色相",
-  "musicvis_saturation": "飽和度",
-  "musicvis_brightness": "亮度",
   "circle_ring_count": "圓環層數",
   "circle_line_width": "線條寬度",
   "musicvis_bg_color": "背景顏色",
@@ -15,5 +12,9 @@
   "musicvis_bg_color_label_#2F4F4F": "暗綠",
   "musicvis_bg_color_label_#FFE4DE": "粉色",
   "musicvis_bg_color_label_#F0FFFF": "淺綠",
-  "musicvis_bg_color_label_#EDDEFF": "淺紫"
+  "musicvis_bg_color_label_#EDDEFF": "淺紫",
+  "musicvis_recolor_color": "顏色",
+  "musicvis_brightness": "亮度",
+  "musicvis_saturation": "飽和度",
+  "musicvis_hue": "色相"
 }

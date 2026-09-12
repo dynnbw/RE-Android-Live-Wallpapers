@@ -4,5 +4,9 @@
   "droid_gravity": "重力への反応",
   "droid_shake": "加速度への反応",
   "droid_touch": "タッチへの反応",
-  "droid_light": "光への反応"
+  "droid_light": "光への反応",
+  "color_hue": "色相",
+  "color_saturation": "彩度",
+  "color_brightness": "輝度",
+  "droid_bg_color": "背景色"
 }

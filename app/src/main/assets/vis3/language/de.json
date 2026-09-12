@@ -3,9 +3,6 @@
   "musicvis_fft_size": "Auflösung",
   "musicvis_recolor": "Neu einfärben",
   "musicvis_recolor_mode": "Umfärbungsmodus",
-  "musicvis_hue": "Farbton",
-  "musicvis_saturation": "Sättigung",
-  "musicvis_brightness": "Helligkeit",
   "musicvis_bg_color": "Hintergrundfarbe",
   "musicvis_fft_size_label_256": "256",
   "musicvis_fft_size_label_512": "512",
@@ -23,5 +20,9 @@
   "musicvis_idle_mode": "Leerlauf-Animation",
   "musicvis_idle_mode_label_wave": "Welle",
   "musicvis_idle_mode_label_simulate": "Audio simulieren",
-  "musicvis_idle_mode_label_flat": "Flache Linie"
+  "musicvis_idle_mode_label_flat": "Flache Linie",
+  "musicvis_recolor_color": "Farbe",
+  "musicvis_brightness": "Helligkeit",
+  "musicvis_saturation": "Sättigung",
+  "musicvis_hue": "Farbton"
 }

@@ -1,9 +1,6 @@
 {
   "musicvis_recolor": "Перекрашивание",
   "musicvis_recolor_mode": "Режим перекрашивания",
-  "musicvis_hue": "Оттенок",
-  "musicvis_saturation": "Насыщенность",
-  "musicvis_brightness": "Яркость",
   "circle_ring_count": "Количество колец",
   "circle_line_width": "Ширина линии",
   "musicvis_bg_color": "Цвет фона",
@@ -15,5 +12,9 @@
   "musicvis_bg_color_label_#2F4F4F": "Тёмно-зелёный",
   "musicvis_bg_color_label_#FFE4DE": "Розовый",
   "musicvis_bg_color_label_#F0FFFF": "Светло-зелёный",
-  "musicvis_bg_color_label_#EDDEFF": "Светло-фиолетовый"
+  "musicvis_bg_color_label_#EDDEFF": "Светло-фиолетовый",
+  "musicvis_recolor_color": "Цвет",
+  "musicvis_brightness": "Яркость",
+  "musicvis_saturation": "Насыщенность",
+  "musicvis_hue": "Оттенок"
 }

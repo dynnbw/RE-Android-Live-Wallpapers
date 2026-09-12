@@ -4,5 +4,9 @@
   "droid_gravity": "重力感应",
   "droid_shake": "摇晃灵敏度",
   "droid_touch": "触摸力度",
-  "droid_light": "光照→摆臂"
+  "droid_light": "光照→摆臂",
+  "color_hue": "色相",
+  "color_saturation": "饱和度",
+  "color_brightness": "亮度",
+  "droid_bg_color": "背景颜色"
 }

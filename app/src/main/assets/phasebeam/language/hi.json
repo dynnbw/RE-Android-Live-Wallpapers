@@ -1,11 +1,12 @@
 {
   "phasebeam_dot_count": "कण संख्या",
   "phasebeam_recolor_enabled": "बीम रंग समायोजित करें",
-  "phasebeam_hue": "रंग",
-  "phasebeam_saturation": "संतृप्ति",
   "phasebeam_brightness": "चमक",
   "theme": "रंग थीम",
   "theme_label_phasebeam": "फेज बीम (नीला)",
   "theme_label_sunbeam": "सनबीम (गर्म)",
-  "theme_label_waterbeam": "वॉटर बीम (नीला)"
+  "theme_label_waterbeam": "वॉटर बीम (नीला)",
+  "phasebeam_recolor_color": "रंग",
+  "phasebeam_saturation": "संतृप्ति",
+  "phasebeam_hue": "रंग"
 }

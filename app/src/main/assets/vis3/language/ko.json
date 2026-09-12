@@ -3,9 +3,6 @@
   "musicvis_fft_size": "해상도",
   "musicvis_recolor": "다시 칠하기",
   "musicvis_recolor_mode": "다시 칠하기 모드",
-  "musicvis_hue": "색조",
-  "musicvis_saturation": "채도",
-  "musicvis_brightness": "밝기",
   "musicvis_bg_color": "배경 색상",
   "musicvis_fft_size_label_256": "256",
   "musicvis_fft_size_label_512": "512",
@@ -23,5 +20,9 @@
   "musicvis_idle_mode": "유휴 애니메이션",
   "musicvis_idle_mode_label_wave": "파동",
   "musicvis_idle_mode_label_simulate": "오디오 시뮬레이션",
-  "musicvis_idle_mode_label_flat": "평평한 선"
+  "musicvis_idle_mode_label_flat": "평평한 선",
+  "musicvis_recolor_color": "색상",
+  "musicvis_brightness": "밝기",
+  "musicvis_saturation": "채도",
+  "musicvis_hue": "색조"
 }

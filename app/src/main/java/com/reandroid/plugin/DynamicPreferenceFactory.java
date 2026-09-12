@@ -16,7 +16,11 @@ import java.util.Map;
 
 /**
  * Creates AndroidX Preference objects from a plugin's layout.json definition.
- * Supported types: switch, seekbar, list, button.
+ * Supported types: switch, seekbar, list, button, color.
+ *
+ * color 类型:内嵌的取色组件({@link InlineColorPreference},标题 + 色块 + 色调/饱和度/亮度 滑块),
+ * 拖动即时写入 int(ARGB)设置,壁纸实时跟随;default 可写十六进制字符串或整数,
+ * labels 给出滑块标签(个数 2 或 3 决定显示几个滑块)。
  */
 public final class DynamicPreferenceFactory {
 
@@ -68,7 +72,8 @@ public final class DynamicPreferenceFactory {
                 dkDefaults[i] = findDefaultBool(items, disableOnKeys[i], false);
                 if ("seekbar".equals(type)) {
                     p.setLayoutResource(com.reandroid.wallpaper.R.layout.preference_modern_seekbar);
-                } else {
+                } else if (!(p instanceof InlineColorPreference)) {
+                    // 内嵌取色器自带布局,不能被覆盖
                     p.setLayoutResource(com.reandroid.wallpaper.R.layout.preference_modern_item);
                 }
                 addAction.add(p);
@@ -99,7 +104,13 @@ public final class DynamicPreferenceFactory {
                     dependencySatisfied(prefs, fDep, fDk, depDefTrue, dkDefFalse));
 
             // 初始视觉置灰
-            setGrayed(p, dependencySatisfied(prefs, fDep, fDk, depDefTrue, dkDefFalse));
+            boolean satisfied = dependencySatisfied(prefs, fDep, fDk, depDefTrue, dkDefFalse);
+            if (p instanceof InlineColorPreference) {
+                // 内嵌取色器:软禁用内部滑块(不动 setEnabled)
+                ((InlineColorPreference) p).setControlsActive(satisfied);
+            } else {
+                setGrayed(p, satisfied);
+            }
         }
     }
 
@@ -117,6 +128,35 @@ public final class DynamicPreferenceFactory {
         if (dep != null && !dep.isEmpty() && !prefs.getBoolean(dep, depDefTrue)) return false;
         if (dk != null && !dk.isEmpty() && prefs.getBoolean(dk, dkDefFalse)) return false;
         return true;
+    }
+
+    /**
+     * color 类型的滑块标签:labels 数组中的语言键依次对应 色调 / 饱和度 / 亮度。
+     * 未配置时退回内置英文标签(Hue / Saturation / Brightness)。
+     */
+    private static String[] resolveSliderLabels(JSONObject item, JSONObject language) {
+        JSONArray arr = item.optJSONArray("labels");
+        if (arr == null || arr.length() == 0) {
+            return new String[] {"Hue", "Saturation", "Brightness"};
+        }
+        int count = Math.min(3, arr.length());
+        String[] out = new String[count];
+        for (int i = 0; i < count; i++) {
+            out[i] = resolveLang(language, arr.optString(i));
+        }
+        return out;
+    }
+
+    /** color 类型的 default:支持 "#RRGGBB" / "#AARRGGBB" 字符串,或整数。 */
+    private static int colorDefault(JSONObject item, int fallback) {
+        Object raw = item.opt("default");
+        if (raw instanceof Number) {
+            return ((Number) raw).intValue();
+        }
+        if (raw instanceof String) {
+            return ColorPrefs.parseHex((String) raw, fallback);
+        }
+        return fallback;
     }
 
     static boolean findDefaultBool(JSONArray items, String key, boolean fallback) {
@@ -212,6 +252,18 @@ public final class DynamicPreferenceFactory {
                 }
                 lp.setDefaultValue(item.optString("default", ""));
                 return lp;
+            }
+            case "color": {
+                // 内嵌取色组件(标题 + 色块 + 色调/饱和度/亮度 滑块),拖动即时写入设置;
+                // labels 给出滑块标签(取自插件语言文件),个数决定显示 2 个还是 3 个滑块
+                InlineColorPreference cp = new InlineColorPreference(context, prefs,
+                        colorDefault(item, 0xFF000000), resolveSliderLabels(item, language));
+                cp.setKey(key);
+                cp.setTitle(title);
+                if (!summary.isEmpty()) {
+                    cp.setSummary(summary);
+                }
+                return cp;
             }
             case "button": {
                 Preference bp = new Preference(context) {

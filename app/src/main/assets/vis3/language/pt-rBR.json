@@ -3,9 +3,6 @@
   "musicvis_fft_size": "Resolução",
   "musicvis_recolor": "Recolorir",
   "musicvis_recolor_mode": "Modo de recolorir",
-  "musicvis_hue": "Matiz",
-  "musicvis_saturation": "Saturação",
-  "musicvis_brightness": "Brilho",
   "musicvis_bg_color": "Cor de fundo",
   "musicvis_fft_size_label_256": "256",
   "musicvis_fft_size_label_512": "512",
@@ -23,5 +20,9 @@
   "musicvis_idle_mode": "Animação de espera",
   "musicvis_idle_mode_label_wave": "Onda",
   "musicvis_idle_mode_label_simulate": "Simular áudio",
-  "musicvis_idle_mode_label_flat": "Linha plana"
+  "musicvis_idle_mode_label_flat": "Linha plana",
+  "musicvis_recolor_color": "Cor",
+  "musicvis_brightness": "Brilho",
+  "musicvis_saturation": "Saturação",
+  "musicvis_hue": "Matiz"
 }

@@ -1,9 +1,6 @@
 {
   "musicvis_recolor": "Recolorir",
   "musicvis_recolor_mode": "Modo de recolorir",
-  "musicvis_hue": "Matiz",
-  "musicvis_saturation": "Saturação",
-  "musicvis_brightness": "Brilho",
   "circle_ring_count": "Número de anéis",
   "circle_line_width": "Largura da linha",
   "musicvis_bg_color": "Cor de fundo",
@@ -15,5 +12,9 @@
   "musicvis_bg_color_label_#2F4F4F": "Verde escuro",
   "musicvis_bg_color_label_#FFE4DE": "Rosa",
   "musicvis_bg_color_label_#F0FFFF": "Verde claro",
-  "musicvis_bg_color_label_#EDDEFF": "Roxo claro"
+  "musicvis_bg_color_label_#EDDEFF": "Roxo claro",
+  "musicvis_recolor_color": "Cor",
+  "musicvis_brightness": "Brilho",
+  "musicvis_saturation": "Saturação",
+  "musicvis_hue": "Matiz"
 }

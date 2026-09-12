@@ -3,9 +3,6 @@
   "musicvis_fft_size": "রেজোলিউশন",
   "musicvis_recolor": "পুনরায় রঙ করুন",
   "musicvis_recolor_mode": "পুনরায় রঙ করার মোড",
-  "musicvis_hue": "রঙের ছটা",
-  "musicvis_saturation": "সম্পৃক্তি",
-  "musicvis_brightness": "উজ্জ্বলতা",
   "musicvis_bg_color": "পটভূমির রঙ",
   "musicvis_fft_size_label_256": "256",
   "musicvis_fft_size_label_512": "512",
@@ -23,5 +20,9 @@
   "musicvis_idle_mode": "নিষ্ক্রিয় অ্যানিমেশন",
   "musicvis_idle_mode_label_wave": "তরঙ্গ",
   "musicvis_idle_mode_label_simulate": "অডিও অনুকরণ",
-  "musicvis_idle_mode_label_flat": "সমতল রেখা"
+  "musicvis_idle_mode_label_flat": "সমতল রেখা",
+  "musicvis_recolor_color": "রঙ",
+  "musicvis_brightness": "উজ্জ্বলতা",
+  "musicvis_saturation": "সম্পৃক্তি",
+  "musicvis_hue": "রঙের ছটা"
 }

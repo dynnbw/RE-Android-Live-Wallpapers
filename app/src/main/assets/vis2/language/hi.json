@@ -2,9 +2,6 @@
   "musicvis_use_triangle_strip": "विरासत त्रिकोण पट्टी मेष का उपयोग करें",
   "musicvis_recolor": "पुनः रंगना",
   "musicvis_recolor_mode": "पुनः रंगने का तरीका",
-  "musicvis_hue": "वर्ण",
-  "musicvis_saturation": "संतृप्ति",
-  "musicvis_brightness": "चमक",
   "musicvis_bg_color": "पृष्ठभूमि रंग",
   "musicvis_recolor_mode_label_static": "स्थिर",
   "musicvis_recolor_mode_label_dynamic": "ऑडियो-संचालित",
@@ -18,5 +15,9 @@
   "musicvis_idle_mode": "निष्क्रिय एनीमेशन",
   "musicvis_idle_mode_label_wave": "तरंग",
   "musicvis_idle_mode_label_simulate": "ऑडियो अनुकरण",
-  "musicvis_idle_mode_label_flat": "सपाट रेखा"
+  "musicvis_idle_mode_label_flat": "सपाट रेखा",
+  "musicvis_recolor_color": "रंग",
+  "musicvis_brightness": "चमक",
+  "musicvis_saturation": "संतृप्ति",
+  "musicvis_hue": "वर्ण"
 }

@@ -14,6 +14,7 @@ import android.util.Log;
 import android.view.MotionEvent;
 
 import com.reandroid.gles.GLESScene;
+import com.reandroid.plugin.ColorPrefs;
 import com.reandroid.utils.AssetLoader;
 
 import java.nio.ByteBuffer;
@@ -66,10 +67,10 @@ public class DroidGL extends GLESScene implements SensorEventListener {
     private static final int VERTICES_PER_SPRITE = 6;
     private static final int MAX_BATCH_FLOATS = MAX_SPRITES * VERTICES_PER_SPRITE * FLOATS_PER_VERTEX;
 
-    /** 原版默认背景色 rgb(48, 88, 124)。 */
-    private static final float BG_R = 48.0f / 255.0f;
-    private static final float BG_G = 88.0f / 255.0f;
-    private static final float BG_B = 124.0f / 255.0f;
+    /** 背景色(默认原版 rgb(48,88,124),可在设置中用取色器修改)。 */
+    private float mBgR = 48.0f / 255.0f;
+    private float mBgG = 88.0f / 255.0f;
+    private float mBgB = 124.0f / 255.0f;
 
     private static final long PREF_POLL_INTERVAL_MS = 1000L;
 
@@ -218,7 +219,7 @@ public class DroidGL extends GLESScene implements SensorEventListener {
         mScene.update(timeMs);
         long drawStart = System.nanoTime();
 
-        GLES20.glClearColor(BG_R, BG_G, BG_B, 1.0f);
+        GLES20.glClearColor(mBgR, mBgG, mBgB, 1.0f);
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
 
         drawDroids();
@@ -501,7 +502,12 @@ public class DroidGL extends GLESScene implements SensorEventListener {
         if (mPrefs == null) {
             return;
         }
-        int color = mPrefs.getInt(DroidScene.PREF_COLOR, DroidScene.DEFAULT_COLOR);
+        int bgColor = ColorPrefs.getColor(mPrefs, DroidScene.PREF_BG_COLOR, DroidScene.DEFAULT_BG_COLOR);
+        mBgR = ((bgColor >> 16) & 0xFF) / 255.0f;
+        mBgG = ((bgColor >> 8) & 0xFF) / 255.0f;
+        mBgB = (bgColor & 0xFF) / 255.0f;
+
+        int color = ColorPrefs.getColor(mPrefs, DroidScene.PREF_COLOR, DroidScene.DEFAULT_COLOR);
         mTintR = ((color >> 16) & 0xFF) / 255.0f;
         mTintG = ((color >> 8) & 0xFF) / 255.0f;
         mTintB = (color & 0xFF) / 255.0f;

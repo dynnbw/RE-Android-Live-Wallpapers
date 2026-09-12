@@ -4,5 +4,9 @@
   "droid_gravity": "Реакция на гравитацию",
   "droid_shake": "Реакция на ускорение",
   "droid_touch": "Реакция на касание",
-  "droid_light": "Реакция на свет"
+  "droid_light": "Реакция на свет",
+  "color_hue": "Оттенок",
+  "color_saturation": "Насыщенность",
+  "color_brightness": "Яркость",
+  "droid_bg_color": "Цвет фона"
 }

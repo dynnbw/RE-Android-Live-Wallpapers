@@ -3,9 +3,6 @@
   "musicvis_fft_size": "分辨率",
   "musicvis_recolor": "著色模式",
   "musicvis_recolor_mode": "著色模式",
-  "musicvis_hue": "色相",
-  "musicvis_saturation": "飽和度",
-  "musicvis_brightness": "亮度",
   "musicvis_bg_color": "背景顏色",
   "musicvis_fft_size_label_256": "256",
   "musicvis_fft_size_label_512": "512",
@@ -23,5 +20,9 @@
   "musicvis_idle_mode": "閒置動畫",
   "musicvis_idle_mode_label_wave": "波浪",
   "musicvis_idle_mode_label_simulate": "模擬頻譜",
-  "musicvis_idle_mode_label_flat": "靜止直線"
+  "musicvis_idle_mode_label_flat": "靜止直線",
+  "musicvis_recolor_color": "顏色",
+  "musicvis_brightness": "亮度",
+  "musicvis_saturation": "飽和度",
+  "musicvis_hue": "色相"
 }

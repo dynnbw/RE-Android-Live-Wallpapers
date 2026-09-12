@@ -72,6 +72,7 @@ final class DroidScene {
     static final String PREF_TOUCH = "droid_touch";
     static final String PREF_LIGHT = "droid_light";
     static final String PREF_COLOR = "droid_color";
+    static final String PREF_BG_COLOR = "droid_bg_color";
 
     static final int DEFAULT_COUNT = 10;
     static final int DEFAULT_SIZE = 50;
@@ -80,6 +81,8 @@ final class DroidScene {
     static final int DEFAULT_TOUCH = 50;
     static final int DEFAULT_LIGHT = 0;
     static final int DEFAULT_COLOR = 0xFF97C03D;
+    /** 原版默认背景色 rgb(48, 88, 124)。 */
+    static final int DEFAULT_BG_COLOR = 0xFF30587C;
 
     static final int MIN_COUNT = 1;
     static final int MAX_COUNT = 30;

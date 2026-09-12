@@ -1,6 +1,7 @@
 package com.reandroid.wallpaper.musicvis.vis6;
 
 import android.content.Context;
+import com.reandroid.plugin.ColorPrefs;
 import com.reandroid.wallpaper.musicvis.AudioCapture;
 import com.reandroid.wallpaper.musicvis.AudioVisBase;
 import com.reandroid.utils.Mat4;
@@ -100,9 +101,11 @@ final class CircleScene extends AudioVisBase {
     protected void readPrefs(SharedPreferences p) {
         mRecolorEnabled = p.getBoolean("musicvis_recolor", false);
         mRecolorDynamic = "dynamic".equals(p.getString("musicvis_recolor_mode", "static"));
-        if (!mRecolorDynamic) mHue = safeGetInt(p, "musicvis_hue", 0) / 255f;
-        mSaturation = safeGetInt(p, "musicvis_saturation", 255) / 255f;
-        mBrightness = safeGetInt(p, "musicvis_brightness", 255) / 255f;
+        // 取色器取代原来的 色调/饱和度/亮度 三个滑块(默认 #FF0000 = 旧默认值)
+        Color.colorToHSV(ColorPrefs.getColor(p, "musicvis_recolor_color", 0xFFFF0000), mHsvScratch);
+        if (!mRecolorDynamic) mHue = mHsvScratch[0] / 360f;
+        mSaturation = mHsvScratch[1];
+        mBrightness = mHsvScratch[2];
         String hex = p.getString("musicvis_bg_color", "#000000");
         try {
             int c = Color.parseColor(hex);

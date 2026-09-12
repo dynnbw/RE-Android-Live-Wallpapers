@@ -2,10 +2,11 @@
   "phasebeam_dot_count": "粒子数量",
   "theme": "配色主题",
   "phasebeam_recolor_enabled": "调整光束颜色",
-  "phasebeam_hue": "颜色",
-  "phasebeam_saturation": "饱和度",
   "phasebeam_brightness": "亮度",
   "theme_label_phasebeam": "蓝色相位束",
   "theme_label_sunbeam": "暖色日光束",
-  "theme_label_waterbeam": "蓝色水束"
+  "theme_label_waterbeam": "蓝色水束",
+  "phasebeam_recolor_color": "颜色",
+  "phasebeam_saturation": "饱和度",
+  "phasebeam_hue": "颜色"
 }

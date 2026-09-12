@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 
+import com.reandroid.plugin.ColorPrefs;
+
 /**
  * Abstract base for pure-logic music visualization scenes.
  * Contains shared AudioCapture lifecycle, HSL recolor state, and preference utilities.
@@ -34,6 +36,8 @@ public abstract class AudioVisBase {
     public float mSaturation = 1f;
     public float mBrightness = 1f;
     protected int mPrefHue;
+    /** 取色器换算 HSV 的暂存数组(避免每帧分配,子类共用)。 */
+    protected final float[] mHsvScratch = new float[3];
     public final float[] mBgColor = new float[3];
 
     // Shared prefs (injected by engine or read from default source)
@@ -54,12 +58,16 @@ public abstract class AudioVisBase {
         mUseTriangleStrip = p.getBoolean("musicvis_use_triangle_strip", true);
         mRecolorEnabled = p.getBoolean("musicvis_recolor", false);
         mRecolorDynamic = "dynamic".equals(p.getString("musicvis_recolor_mode", "static"));
-        mPrefHue = safeGetInt(p, "musicvis_hue", 0);
+        // 取色器(颜色取代原来的 色调/饱和度/亮度 三个滑块):默认 #FF0000
+        // 恰好等价于旧默认 hue=0 / saturation=1 / brightness=1,未设置该键时行为不变
+        int recolorColor = ColorPrefs.getColor(p, "musicvis_recolor_color", 0xFFFF0000);
+        Color.colorToHSV(recolorColor, mHsvScratch);
+        mPrefHue = Math.round(mHsvScratch[0] / 360f * 255f);
         if (!mRecolorDynamic) {
-            mHue = mPrefHue / 255f;
+            mHue = mHsvScratch[0] / 360f;
         }
-        mSaturation = safeGetInt(p, "musicvis_saturation", 255) / 255f;
-        mBrightness = safeGetInt(p, "musicvis_brightness", 255) / 255f;
+        mSaturation = mHsvScratch[1];
+        mBrightness = mHsvScratch[2];
         String hex = p.getString("musicvis_bg_color", "#000000");
         try {
             int c = Color.parseColor(hex);

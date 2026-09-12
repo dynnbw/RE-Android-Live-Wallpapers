@@ -30,30 +30,15 @@
       "title": "phasebeam_recolor_enabled"
     },
     {
-      "type": "seekbar",
-      "key": "phasebeam_hue",
-      "title": "phasebeam_hue",
-      "default": "0",
-      "min": 0,
-      "max": 255,
-      "dependency": "phasebeam_recolor_enabled"
-    },
-    {
-      "type": "seekbar",
-      "key": "phasebeam_saturation",
-      "title": "phasebeam_saturation",
-      "default": "255",
-      "min": 0,
-      "max": 255,
-      "dependency": "phasebeam_recolor_enabled"
-    },
-    {
-      "type": "seekbar",
-      "key": "phasebeam_brightness",
-      "title": "phasebeam_brightness",
-      "default": "128",
-      "min": 0,
-      "max": 255,
+      "type": "color",
+      "key": "phasebeam_recolor_color",
+      "title": "phasebeam_recolor_color",
+      "default": "#800000",
+      "labels": [
+        "phasebeam_hue",
+        "phasebeam_saturation",
+        "phasebeam_brightness"
+      ],
       "dependency": "phasebeam_recolor_enabled"
     }
   ]

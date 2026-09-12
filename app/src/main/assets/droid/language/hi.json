@@ -4,5 +4,9 @@
   "droid_gravity": "गुरुत्वाकर्षण प्रतिक्रिया",
   "droid_shake": "त्वरण प्रतिक्रिया",
   "droid_touch": "स्पर्श प्रतिक्रिया",
-  "droid_light": "प्रकाश प्रतिक्रिया"
+  "droid_light": "प्रकाश प्रतिक्रिया",
+  "color_hue": "वर्ण",
+  "color_saturation": "संतृप्ति",
+  "color_brightness": "चमक",
+  "droid_bg_color": "पृष्ठभूमि का रंग"
 }

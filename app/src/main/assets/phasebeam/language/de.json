@@ -1,11 +1,12 @@
 {
   "phasebeam_dot_count": "Partikelanzahl",
   "phasebeam_recolor_enabled": "Strahlfarben anpassen",
-  "phasebeam_hue": "Farbe",
-  "phasebeam_saturation": "Sättigung",
   "phasebeam_brightness": "Helligkeit",
   "theme": "Farbthema",
   "theme_label_phasebeam": "Phasenstrahl (blau)",
   "theme_label_sunbeam": "Sonnenstrahl (warm)",
-  "theme_label_waterbeam": "Wasserstrahl (blau)"
+  "theme_label_waterbeam": "Wasserstrahl (blau)",
+  "phasebeam_recolor_color": "Farbe",
+  "phasebeam_saturation": "Sättigung",
+  "phasebeam_hue": "Farbe"
 }

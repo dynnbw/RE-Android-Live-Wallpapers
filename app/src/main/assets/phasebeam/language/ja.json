@@ -2,10 +2,11 @@
   "phasebeam_dot_count": "粒子数",
   "theme": "カラーテーマ",
   "phasebeam_recolor_enabled": "ビームの色を調整",
-  "phasebeam_hue": "色",
-  "phasebeam_saturation": "彩度",
   "phasebeam_brightness": "明るさ",
   "theme_label_phasebeam": "フェーズビーム (青)",
   "theme_label_sunbeam": "サンビーム (暖色)",
-  "theme_label_waterbeam": "ウォータービーム (青)"
+  "theme_label_waterbeam": "ウォータービーム (青)",
+  "phasebeam_recolor_color": "色",
+  "phasebeam_saturation": "彩度",
+  "phasebeam_hue": "色"
 }

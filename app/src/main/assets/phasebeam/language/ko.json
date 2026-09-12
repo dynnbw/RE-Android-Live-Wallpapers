@@ -2,10 +2,11 @@
   "phasebeam_dot_count": "입자 수",
   "theme": "색상 테마",
   "phasebeam_recolor_enabled": "광선 색상 조정",
-  "phasebeam_hue": "색상",
-  "phasebeam_saturation": "채도",
   "phasebeam_brightness": "밝기",
   "theme_label_phasebeam": "위상 빔 (파랑)",
   "theme_label_sunbeam": "햇살 (따뜻함)",
-  "theme_label_waterbeam": "워터 빔 (파랑)"
+  "theme_label_waterbeam": "워터 빔 (파랑)",
+  "phasebeam_recolor_color": "색상",
+  "phasebeam_saturation": "채도",
+  "phasebeam_hue": "색상"
 }

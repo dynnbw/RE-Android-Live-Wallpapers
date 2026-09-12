@@ -2,9 +2,6 @@
   "musicvis_use_triangle_strip": "クラシック版三角形ストリップメッシュを使用",
   "musicvis_recolor": "再着色",
   "musicvis_recolor_mode": "再着色モード",
-  "musicvis_hue": "色相",
-  "musicvis_saturation": "彩度",
-  "musicvis_brightness": "輝度",
   "musicvis_bg_color": "背景色",
   "musicvis_recolor_mode_label_static": "静的",
   "musicvis_recolor_mode_label_dynamic": "オーディオ駆動",
@@ -18,5 +15,9 @@
   "musicvis_idle_mode": "アイドルアニメーション",
   "musicvis_idle_mode_label_wave": "波形",
   "musicvis_idle_mode_label_simulate": "オーディオをシミュレート",
-  "musicvis_idle_mode_label_flat": "フラットライン"
+  "musicvis_idle_mode_label_flat": "フラットライン",
+  "musicvis_recolor_color": "色",
+  "musicvis_brightness": "輝度",
+  "musicvis_saturation": "彩度",
+  "musicvis_hue": "色相"
 }

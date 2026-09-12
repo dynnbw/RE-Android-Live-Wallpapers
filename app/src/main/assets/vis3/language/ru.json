@@ -3,9 +3,6 @@
   "musicvis_fft_size": "Разрешение",
   "musicvis_recolor": "Перекрашивание",
   "musicvis_recolor_mode": "Режим перекрашивания",
-  "musicvis_hue": "Оттенок",
-  "musicvis_saturation": "Насыщенность",
-  "musicvis_brightness": "Яркость",
   "musicvis_bg_color": "Цвет фона",
   "musicvis_fft_size_label_256": "256",
   "musicvis_fft_size_label_512": "512",
@@ -23,5 +20,9 @@
   "musicvis_idle_mode": "Анимация ожидания",
   "musicvis_idle_mode_label_wave": "Волна",
   "musicvis_idle_mode_label_simulate": "Симуляция звука",
-  "musicvis_idle_mode_label_flat": "Плоская линия"
+  "musicvis_idle_mode_label_flat": "Плоская линия",
+  "musicvis_recolor_color": "Цвет",
+  "musicvis_brightness": "Яркость",
+  "musicvis_saturation": "Насыщенность",
+  "musicvis_hue": "Оттенок"
 }

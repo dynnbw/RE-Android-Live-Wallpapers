@@ -2,9 +2,6 @@
   "musicvis_use_triangle_strip": "Utiliser le maillage hérité en bandes de triangles",
   "musicvis_recolor": "Recolorier",
   "musicvis_recolor_mode": "Mode de recolorisation",
-  "musicvis_hue": "Teinte",
-  "musicvis_saturation": "Saturation",
-  "musicvis_brightness": "Luminosité",
   "musicvis_bg_color": "Couleur d'arrière-plan",
   "musicvis_recolor_mode_label_static": "Statique",
   "musicvis_recolor_mode_label_dynamic": "Piloté par audio",
@@ -18,5 +15,9 @@
   "musicvis_idle_mode": "Animation d'inactivité",
   "musicvis_idle_mode_label_wave": "Onde",
   "musicvis_idle_mode_label_simulate": "Simuler l'audio",
-  "musicvis_idle_mode_label_flat": "Ligne plate"
+  "musicvis_idle_mode_label_flat": "Ligne plate",
+  "musicvis_recolor_color": "Couleur",
+  "musicvis_brightness": "Luminosité",
+  "musicvis_saturation": "Saturation",
+  "musicvis_hue": "Teinte"
 }

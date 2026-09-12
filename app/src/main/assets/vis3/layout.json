@@ -47,6 +47,18 @@
       "default": "false"
     },
     {
+      "type": "color",
+      "key": "musicvis_recolor_color",
+      "title": "musicvis_recolor_color",
+      "default": "#FF0000",
+      "labels": [
+        "musicvis_hue",
+        "musicvis_saturation",
+        "musicvis_brightness"
+      ],
+      "dependency": "musicvis_recolor"
+    },
+    {
       "type": "list",
       "key": "musicvis_recolor_mode",
       "title": "musicvis_recolor_mode",
@@ -59,33 +71,6 @@
         "musicvis_recolor_mode_label_static",
         "musicvis_recolor_mode_label_dynamic"
       ],
-      "dependency": "musicvis_recolor"
-    },
-    {
-      "type": "seekbar",
-      "key": "musicvis_hue",
-      "title": "musicvis_hue",
-      "default": "0",
-      "min": 0,
-      "max": 255,
-      "dependency": "musicvis_recolor"
-    },
-    {
-      "type": "seekbar",
-      "key": "musicvis_saturation",
-      "title": "musicvis_saturation",
-      "default": "255",
-      "min": 0,
-      "max": 255,
-      "dependency": "musicvis_recolor"
-    },
-    {
-      "type": "seekbar",
-      "key": "musicvis_brightness",
-      "title": "musicvis_brightness",
-      "default": "255",
-      "min": 0,
-      "max": 255,
       "dependency": "musicvis_recolor"
     },
     {

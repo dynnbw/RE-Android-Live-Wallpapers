@@ -4,5 +4,9 @@
   "droid_gravity": "Reaktion auf Schwerkraft",
   "droid_shake": "Reaktion auf Beschleunigung",
   "droid_touch": "Reaktion auf Berührung",
-  "droid_light": "Reaktion auf Licht"
+  "droid_light": "Reaktion auf Licht",
+  "color_hue": "Farbton",
+  "color_saturation": "Sättigung",
+  "color_brightness": "Helligkeit",
+  "droid_bg_color": "Hintergrundfarbe"
 }

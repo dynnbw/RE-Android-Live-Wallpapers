@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 内嵌取色器设置项:标题 + 十六进制色值 + 预览色块 + 色调/饱和度/亮度 滑块。
+     滑块标签由 layout.json 的 labels 决定(2 个则只显示色调+饱和度);
+     拖动即时写设置,壁纸实时更新。卡片样式与相邻设置项一致。 -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@android:color/transparent"
+    android:paddingStart="4dp"
+    android:paddingEnd="4dp"
+    android:paddingTop="2dp"
+    android:paddingBottom="2dp">
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cardBackgroundColor="@color/md_theme_surface"
+        app:cardCornerRadius="14dp"
+        app:cardElevation="4dp"
+        app:cardUseCompatPadding="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="16dp"
+            android:paddingTop="14dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="8dp">
+
+            <!-- 标题行:标题 + 十六进制色值 + 预览色块 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@android:id/title"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textColor="@color/md_theme_onSurface"
+                    android:textSize="15sp" />
+
+                <TextView
+                    android:id="@+id/color_hex"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="10dp"
+                    android:textColor="@color/md_theme_onSurface"
+                    android:textSize="13sp" />
+
+                <View
+                    android:id="@+id/color_swatch"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp" />
+            </LinearLayout>
+
+            <!-- 滑块 1:色调 -->
+            <LinearLayout
+                android:id="@+id/color_row_1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/color_label_1"
+                    android:layout_width="64dp"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/md_theme_onSurface"
+                    android:textSize="13sp" />
+
+                <SeekBar
+                    android:id="@+id/color_s1"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
+
+                <TextView
+                    android:id="@+id/color_v1"
+                    android:layout_width="38dp"
+                    android:layout_height="wrap_content"
+                    android:gravity="end"
+                    android:textColor="@color/md_theme_onSurface"
+                    android:textSize="13sp" />
+            </LinearLayout>
+
+            <!-- 滑块 2:饱和度 -->
+            <LinearLayout
+                android:id="@+id/color_row_2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/color_label_2"
+                    android:layout_width="64dp"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/md_theme_onSurface"
+                    android:textSize="13sp" />
+
+                <SeekBar
+                    android:id="@+id/color_s2"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
+
+                <TextView
+                    android:id="@+id/color_v2"
+                    android:layout_width="38dp"
+                    android:layout_height="wrap_content"
+                    android:gravity="end"
+                    android:textColor="@color/md_theme_onSurface"
+                    android:textSize="13sp" />
+            </LinearLayout>
+
+            <!-- 滑块 3:亮度(仅当 labels 给出三项时显示) -->
+            <LinearLayout
+                android:id="@+id/color_row_3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/color_label_3"
+                    android:layout_width="64dp"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/md_theme_onSurface"
+                    android:textSize="13sp" />
+
+                <SeekBar
+                    android:id="@+id/color_s3"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
+
+                <TextView
+                    android:id="@+id/color_v3"
+                    android:layout_width="38dp"
+                    android:layout_height="wrap_content"
+                    android:gravity="end"
+                    android:textColor="@color/md_theme_onSurface"
+                    android:textSize="13sp" />
+            </LinearLayout>
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+</FrameLayout>

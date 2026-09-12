@@ -41,6 +41,17 @@
       "default": 50
     },
     {
+      "type": "color",
+      "key": "droid_bg_color",
+      "title": "droid_bg_color",
+      "default": "#30587C",
+      "labels": [
+        "color_hue",
+        "color_saturation",
+        "color_brightness"
+      ]
+    },
+    {
       "type": "seekbar",
       "key": "droid_light",
       "title": "droid_light",

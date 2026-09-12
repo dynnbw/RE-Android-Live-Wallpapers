@@ -4,5 +4,9 @@
   "droid_gravity": "মাধ্যাকর্ষণ প্রতিক্রিয়া",
   "droid_shake": "ত্বরণ প্রতিক্রিয়া",
   "droid_touch": "স্পর্শে প্রতিক্রিয়া",
-  "droid_light": "আলোতে প্রতিক্রিয়া"
+  "droid_light": "আলোতে প্রতিক্রিয়া",
+  "color_hue": "রঙের ছটা",
+  "color_saturation": "সম্পৃক্তি",
+  "color_brightness": "উজ্জ্বলতা",
+  "droid_bg_color": "পটভূমির রঙ"
 }

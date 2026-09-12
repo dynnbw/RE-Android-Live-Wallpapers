@@ -3,8 +3,10 @@ package com.reandroid.wallpaper.phasebeam;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
+import android.graphics.Color;
 import android.util.Log;
 
+import com.reandroid.plugin.ColorPrefs;
 import com.reandroid.utils.MathUtils;
 
 import com.reandroid.wallpaper.R;
@@ -24,9 +26,7 @@ final class PhaseBeamScene {
 
     static final String PREFS_NAME = "phasebeam";
     static final String KEY_ENABLED = "phasebeam_recolor_enabled";
-    static final String KEY_HUE = "phasebeam_hue";
-    static final String KEY_SATURATION = "phasebeam_saturation";
-    static final String KEY_BRIGHTNESS = "phasebeam_brightness";
+    static final String KEY_COLOR = "phasebeam_recolor_color";
     static final String KEY_THEME = "theme";
 
     private int mDotCount = 28;
@@ -45,6 +45,7 @@ final class PhaseBeamScene {
     float mXOffset = 0.5f;
     float mOldOffset = 0.5f;
 
+    private final float[] mHsvScratch = new float[3];
     float mHue = 0.0f;
     float mSaturation = 1.0f;
     float mBrightness = 1.0f;
@@ -167,10 +168,13 @@ final class PhaseBeamScene {
         mTheme = p.getString(KEY_THEME, "phasebeam");
         mSpeedMultiplier = "sunbeam".equals(mTheme) ? 3.0f : 1.0f;
         mRecolorEnabled = p.getBoolean(KEY_ENABLED, resources.getBoolean(R.bool.recolor_enabled));
-        // SeekBar stores int (0–1000); convert to float. Fall back to legacy float values.
-        mHue = readFloatFromIntOrFloat(p, KEY_HUE, 0f, 1f, 0);
-        mSaturation = readFloatFromIntOrFloat(p, KEY_SATURATION, 0f, 1f, 255);
-        mBrightness = readFloatFromIntOrFloat(p, KEY_BRIGHTNESS, 0.5f, 1.5f, 128);
+        // 取色器统一给出 色相 / 饱和度 / 亮度(取代原来的三个滑块)。
+        // shader 里亮度是乘性增益(adjust.z * rgb.r),故把 HSV 的 V 映射到 0.5–1.5:
+        // V = 0.5 → 1.0(中性,等于旧默认值),V = 0/1 → 0.5/1.5。
+        Color.colorToHSV(ColorPrefs.getColor(p, KEY_COLOR, 0xFF800000), mHsvScratch);
+        mHue = mHsvScratch[0] / 360f;
+        mSaturation = mHsvScratch[1];
+        mBrightness = 0.5f + mHsvScratch[2];
         updateAdjust();
     }
 

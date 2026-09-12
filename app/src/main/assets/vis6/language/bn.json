@@ -1,9 +1,6 @@
 {
   "musicvis_recolor": "পুনরায় রঙ করুন",
   "musicvis_recolor_mode": "পুনরায় রঙ করার মোড",
-  "musicvis_hue": "রঙের ছটা",
-  "musicvis_saturation": "সম্পৃক্তি",
-  "musicvis_brightness": "উজ্জ্বলতা",
   "circle_ring_count": "রিংয়ের সংখ্যা",
   "circle_line_width": "লাইনের প্রস্থ",
   "musicvis_bg_color": "পটভূমির রঙ",
@@ -15,5 +12,9 @@
   "musicvis_bg_color_label_#2F4F4F": "গাঢ় সবুজ",
   "musicvis_bg_color_label_#FFE4DE": "গোলাপি",
   "musicvis_bg_color_label_#F0FFFF": "হালকা সবুজ",
-  "musicvis_bg_color_label_#EDDEFF": "হালকা বেগুনি"
+  "musicvis_bg_color_label_#EDDEFF": "হালকা বেগুনি",
+  "musicvis_recolor_color": "রঙ",
+  "musicvis_brightness": "উজ্জ্বলতা",
+  "musicvis_saturation": "সম্পৃক্তি",
+  "musicvis_hue": "রঙের ছটা"
 }

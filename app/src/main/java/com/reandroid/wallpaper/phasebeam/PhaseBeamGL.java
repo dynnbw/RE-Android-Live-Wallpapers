@@ -20,9 +20,7 @@ public class PhaseBeamGL extends GLESScene {
     // 重新导出的常量，供外部使用（设置界面）
     public static final String PREFS_NAME = PhaseBeamScene.PREFS_NAME;
     public static final String KEY_ENABLED = PhaseBeamScene.KEY_ENABLED;
-    public static final String KEY_HUE = PhaseBeamScene.KEY_HUE;
-    public static final String KEY_SATURATION = PhaseBeamScene.KEY_SATURATION;
-    public static final String KEY_BRIGHTNESS = PhaseBeamScene.KEY_BRIGHTNESS;
+    public static final String KEY_COLOR = PhaseBeamScene.KEY_COLOR;
     public static final String KEY_THEME = PhaseBeamScene.KEY_THEME;
 
     // ---- 场景逻辑层（非 GL）----
