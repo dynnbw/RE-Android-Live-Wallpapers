@@ -110,14 +110,19 @@ public class Aurora2GL extends GLESScene {
 
         GLES20.glEnable(GLES20.GL_BLEND);
 
-        // 先绘制底层：shine + background
+        // 与原版 onDrawFrame 逐元素一致的顺序与混合模式:
+        //   shine(覆盖写入) → 极光(SRC_ALPHA,SRC_ALPHA:极光外区域压黑)
+        //   → 背景(SRC_ALPHA,DST_ALPHA:加色叠在极光之上)
+        //   → 闪耀星/流星/树(标准 alpha 混合)
         GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ZERO);
         drawQuad(data.projectionMatrix, data.shine);
+
+        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_SRC_ALPHA);
+        drawAurora(data.projectionMatrix, data.aurora);
 
         GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_DST_ALPHA);
         drawQuad(data.projectionMatrix, data.background);
 
-        // 中层：星星与流星（在背景之上）
         GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
         for (Aurora2Scene.Sprite sprite : data.stars1) {
             drawQuad(data.projectionMatrix, sprite);
@@ -126,13 +131,6 @@ public class Aurora2GL extends GLESScene {
             drawQuad(data.projectionMatrix, sprite);
         }
         drawQuad(data.projectionMatrix, data.shootingStar);
-
-        // 上层：极光（在星星/流星之上）
-        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE);
-        drawAurora(data.projectionMatrix, data.aurora);
-
-        // 前景层
-        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
         drawQuad(data.projectionMatrix, data.tree);
 
         if (data.fadeActive) {
