@@ -51,6 +51,15 @@ public class DroidGL extends GLESScene implements SensorEventListener {
 
     private static final long PREF_POLL_INTERVAL_MS = 1000L;
 
+    /** 性能采样:每 5 秒输出一次帧内耗时构成(定位卡顿用,稳定后可关闭)。 */
+    private static final boolean PERF_LOG = true;
+    private static final long PERF_LOG_INTERVAL_MS = 5000L;
+    private long mPerfLogMs;
+    private int mPerfFrames;
+    private double mPerfPhysicsMs;
+    private double mPerfDrawMs;
+    private long mPerfMaxFrameMs;
+
     private final Context mContext;
     private final DroidScene mScene;
 
@@ -116,11 +125,13 @@ public class DroidGL extends GLESScene implements SensorEventListener {
                 -0.5f, 0.5f,
                 0.5f, 0.5f
         });
+        // 纹理坐标:GL 的 v=0 对应位图首行(即图像顶部),而本场景投影 y 轴向下
+        // (ortho 的 bottom=height, top=0),因此屏幕上方顶点必须取 v=0,否则贴图上下颠倒。
         mTexBuffer = createFloatBuffer(new float[] {
-                0.0f, 1.0f,
-                1.0f, 1.0f,
                 0.0f, 0.0f,
-                1.0f, 0.0f
+                1.0f, 0.0f,
+                0.0f, 1.0f,
+                1.0f, 1.0f
         });
     }
 
@@ -190,19 +201,62 @@ public class DroidGL extends GLESScene implements SensorEventListener {
         }
 
         pollPrefs(timeMs);
+
+        long physicsStart = System.nanoTime();
         mScene.update(timeMs);
+        long drawStart = System.nanoTime();
 
         GLES20.glClearColor(BG_R, BG_G, BG_B, 1.0f);
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
 
         drawDroids();
+        long drawEnd = System.nanoTime();
+
+        logPerf(timeMs, physicsStart, drawStart, drawEnd);
+    }
+
+    private void logPerf(long timeMs, long physicsStart, long drawStart, long drawEnd) {
+        if (!PERF_LOG) {
+            return;
+        }
+        double physicsMs = (drawStart - physicsStart) / 1e6;
+        double drawMs = (drawEnd - drawStart) / 1e6;
+        mPerfFrames++;
+        mPerfPhysicsMs += physicsMs;
+        mPerfDrawMs += drawMs;
+        long frameMs = (drawEnd - physicsStart) / 1_000_000L;
+        if (frameMs > mPerfMaxFrameMs) {
+            mPerfMaxFrameMs = frameMs;
+        }
+        if (mPerfLogMs == 0L) {
+            mPerfLogMs = timeMs;
+            return;
+        }
+        if (timeMs - mPerfLogMs < PERF_LOG_INTERVAL_MS) {
+            return;
+        }
+        // 帧外耗时(swapBuffers / 驱动 / 引擎节拍)需与 ProxyEngineRenderer 的 FrameStats 对照
+        if (mPerfFrames > 0) {
+            Log.i(TAG, String.format(
+                    "perf: fps=%.1f physics=%.2fms draw=%.2fms inFrameMax=%dms droids=%d",
+                    mPerfFrames * 1000.0 / (timeMs - mPerfLogMs),
+                    mPerfPhysicsMs / mPerfFrames,
+                    mPerfDrawMs / mPerfFrames,
+                    mPerfMaxFrameMs,
+                    mScene.droidCount()));
+        }
+        mPerfLogMs = timeMs;
+        mPerfFrames = 0;
+        mPerfPhysicsMs = 0.0;
+        mPerfDrawMs = 0.0;
+        mPerfMaxFrameMs = 0L;
     }
 
     // --- 绘制 ---
 
     private void drawDroids() {
         List<DroidScene.Droid> droids = mScene.droids();
-        if (droids.isEmpty()) {
+        if (droids.isEmpty() || mProgram == 0) {
             return;
         }
         double scale = mScene.sizeScale();
@@ -213,40 +267,13 @@ public class DroidGL extends GLESScene implements SensorEventListener {
         float legW = (float) (DroidScene.SRC_LEG_W * scale);
         float legH = (float) (DroidScene.SRC_LEG_H * scale);
 
-        for (int i = 0; i < droids.size(); i++) {
-            DroidScene.Droid droid = droids.get(i);
-            drawPart(TEX_BODY, droid.body, bodyW, bodyH);
-            drawPart(TEX_LEFT_ARM, droid.leftArm, armW, armH);
-            drawPart(TEX_RIGHT_ARM, droid.rightArm, armW, armH);
-            drawPart(TEX_LEFT_LEG, droid.leftLeg, legW, legH);
-            drawPart(TEX_RIGHT_LEG, droid.rightLeg, legW, legH);
-        }
-    }
-
-    private void drawPart(int textureIndex, com.reandroid.wallpaper.droid.physics.Body body,
-            float width, float height) {
-        if (body == null || mTextures[textureIndex] == 0) {
-            return;
-        }
-        // 世界坐标 → 屏幕坐标(y 轴翻转),旋转角同样取反
-        float screenX = (float) body.x() + mWidth * 0.5f;
-        float screenY = mHeight * 0.5f - (float) body.y();
-        float angleDeg = (float) Math.toDegrees(body.angle());
-
-        Matrix.setIdentityM(mModel, 0);
-        Matrix.translateM(mModel, 0, screenX, screenY, 0.0f);
-        Matrix.rotateM(mModel, 0, -angleDeg, 0.0f, 0.0f, 1.0f);
-        Matrix.scaleM(mModel, 0, width, height, 1.0f);
-        Matrix.multiplyMM(mMvp, 0, mProjection, 0, mModel, 0);
-
+        // 程序、常量 uniform、顶点属性每帧只设置一次:
+        // 逐精灵的 GL 状态切换在低端驱动(尤其 ANGLE/Vulkan 转译层)上开销显著。
         GLES20.glUseProgram(mProgram);
-        GLES20.glUniformMatrix4fv(mMvpHandle, 1, false, mMvp, 0);
         GLES20.glUniform3f(mTintHandle, mTintR, mTintG, mTintB);
         GLES20.glUniform1f(mAlphaHandle, 1.0f);
-
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTextures[textureIndex]);
         GLES20.glUniform1i(mSamplerHandle, 0);
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
 
         mVertexBuffer.position(0);
         GLES20.glVertexAttribPointer(mPositionHandle, 2, GLES20.GL_FLOAT, false, 0, mVertexBuffer);
@@ -255,10 +282,50 @@ public class DroidGL extends GLESScene implements SensorEventListener {
         GLES20.glVertexAttribPointer(mTexCoordHandle, 2, GLES20.GL_FLOAT, false, 0, mTexBuffer);
         GLES20.glEnableVertexAttribArray(mTexCoordHandle);
 
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
+        // 绘制顺序必须与原版一致(原版 draw() 的回调顺序为
+        // LeftLeg → RightLeg → Body → LeftArm → RightArm):
+        // 腿在躯干之下、手臂盖在躯干之上。
+        double alpha = mScene.interpolationAlpha();
+        int boundTexture = 0;
+        for (int i = 0; i < droids.size(); i++) {
+            DroidScene.Droid droid = droids.get(i);
+            boundTexture = drawPart(TEX_LEFT_LEG, droid.leftLeg, legW, legH, boundTexture, alpha);
+            boundTexture = drawPart(TEX_RIGHT_LEG, droid.rightLeg, legW, legH, boundTexture, alpha);
+            boundTexture = drawPart(TEX_BODY, droid.body, bodyW, bodyH, boundTexture, alpha);
+            boundTexture = drawPart(TEX_LEFT_ARM, droid.leftArm, armW, armH, boundTexture, alpha);
+            boundTexture = drawPart(TEX_RIGHT_ARM, droid.rightArm, armW, armH, boundTexture, alpha);
+        }
 
         GLES20.glDisableVertexAttribArray(mPositionHandle);
         GLES20.glDisableVertexAttribArray(mTexCoordHandle);
+    }
+
+    /** 返回当前绑定的纹理,避免重复绑定。 */
+    private int drawPart(int textureIndex, com.reandroid.wallpaper.droid.physics.Body body,
+            float width, float height, int boundTexture, double alpha) {
+        int texture = mTextures[textureIndex];
+        if (body == null || texture == 0) {
+            return boundTexture;
+        }
+        // 世界坐标 → 屏幕坐标(y 轴翻转),旋转角同样取反;
+        // 位置 / 角度按累加器比例在上一物理步与当前物理步之间插值(30Hz 物理 → 平滑画面)
+        float screenX = (float) body.renderX(alpha) + mWidth * 0.5f;
+        float screenY = mHeight * 0.5f - (float) body.renderY(alpha);
+        float angleDeg = (float) Math.toDegrees(body.renderAngle(alpha));
+
+        Matrix.setIdentityM(mModel, 0);
+        Matrix.translateM(mModel, 0, screenX, screenY, 0.0f);
+        Matrix.rotateM(mModel, 0, -angleDeg, 0.0f, 0.0f, 1.0f);
+        Matrix.scaleM(mModel, 0, width, height, 1.0f);
+        Matrix.multiplyMM(mMvp, 0, mProjection, 0, mModel, 0);
+        GLES20.glUniformMatrix4fv(mMvpHandle, 1, false, mMvp, 0);
+
+        if (texture != boundTexture) {
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture);
+            boundTexture = texture;
+        }
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
+        return boundTexture;
     }
 
     // --- GL 资源 ---
@@ -371,16 +438,16 @@ public class DroidGL extends GLESScene implements SensorEventListener {
         Sensor accelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         Sensor magnetic = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
         if (accelerometer != null) {
-            mSensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_GAME);
+            mSensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_UI);
         }
         if (magnetic != null) {
-            mSensorManager.registerListener(this, magnetic, SensorManager.SENSOR_DELAY_GAME);
+            mSensorManager.registerListener(this, magnetic, SensorManager.SENSOR_DELAY_UI);
         }
         mLightSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
         mSensorsRegistered = true;
         mLightRegistered = false;
         if (mLightSensor != null && mLightFactor > 0) {
-            mSensorManager.registerListener(this, mLightSensor, SensorManager.SENSOR_DELAY_GAME);
+            mSensorManager.registerListener(this, mLightSensor, SensorManager.SENSOR_DELAY_UI);
             mLightRegistered = true;
         }
     }
@@ -402,7 +469,7 @@ public class DroidGL extends GLESScene implements SensorEventListener {
             return;
         }
         if (enabled && !mLightRegistered) {
-            mSensorManager.registerListener(this, mLightSensor, SensorManager.SENSOR_DELAY_GAME);
+            mSensorManager.registerListener(this, mLightSensor, SensorManager.SENSOR_DELAY_UI);
             mLightRegistered = true;
         } else if (!enabled && mLightRegistered) {
             mSensorManager.unregisterListener(this, mLightSensor);

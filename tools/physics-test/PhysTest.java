@@ -44,6 +44,9 @@ public final class PhysTest {
         testMultipleDroidsStack();
         testTouchImpulse();
         testLongRunStability();
+        testRenderInterpolation();
+        testAngleInterpolationWraps();
+        testTouchDirectionAllSides();
         System.out.println(failures == 0 ? "ALL TESTS PASSED" : ("FAILURES: " + failures));
         if (failures != 0) {
             System.exit(1);
@@ -282,6 +285,119 @@ public final class PhysTest {
         }
         report("静置后关节漂移不发散 (50s=" + fmt(half) + " 100s=" + fmt(settled) + "px)",
                 settled < 3.0 && settled < half + 2.0);
+    }
+
+    /** 渲染插值:端点为上下两步状态,中点取平均,且随时间单调。 */
+    private static void testRenderInterpolation() {
+        Space space = newSpace();
+        Droid droid = addDroid(space, 1, 0.0, 300.0);
+        for (int i = 0; i < 5; i++) {
+            space.step(DT);
+        }
+        double prevY = droid.body.renderY(0.0);
+        double curY = droid.body.renderY(1.0);
+        double midY = droid.body.renderY(0.5);
+        report("插值端点/中点正确 (prev=" + fmt(prevY) + " mid=" + fmt(midY)
+                        + " cur=" + fmt(curY) + ")",
+                Math.abs(midY - (prevY + curY) * 0.5) < 1e-9 && Math.abs(curY - prevY) > 1e-6);
+
+        boolean monotonic = true;
+        double last = Double.MAX_VALUE;
+        for (int k = 0; k <= 10; k++) {
+            double v = droid.body.renderY(k / 10.0);
+            if (v > last + 1e-9) {
+                monotonic = false;
+            }
+            last = v;
+        }
+        report("插值单调(下落中 y 单调递减)", monotonic);
+
+        double prevX = droid.body.renderX(0.0);
+        double curX = droid.body.renderX(1.0);
+        double midX = droid.body.renderX(0.5);
+        report("X 插值端点/中点正确", Math.abs(midX - (prevX + curX) * 0.5) < 1e-9);
+    }
+
+    /** 角度插值需按最短路径回绕:每步转角超过 π 时不能倒转。 */
+    private static void testAngleInterpolationWraps() {
+        Space space = new Space();
+        Body body = Body.create(1.0, 1.0);
+        body.setPosition(0.0, 0.0);
+        space.addBody(body);
+        // 转速 200 rad/s ≈ 6.67 rad/步(> π),不做回绕处理时插值会向反方向跳
+        space.addConstraint(SimpleMotor.create(space.staticBody(), body, 200.0));
+        for (int i = 0; i < 10; i++) {
+            space.step(DT);
+        }
+        boolean monotonic = true;
+        double last = body.renderAngle(0.0);
+        for (int k = 1; k <= 10; k++) {
+            double v = body.renderAngle(k / 10.0);
+            if (v <= last) {
+                monotonic = false;
+            }
+            last = v;
+        }
+        double sweep = body.renderAngle(1.0) - body.renderAngle(0.0);
+        report("快速自旋时角度插值不回绕 (单步插值跨度=" + fmt(sweep) + " rad, 应 < π)",
+                monotonic && Math.abs(sweep) < Math.PI);
+    }
+
+    /**
+     * 触摸链路端到端:屏幕坐标 → 世界坐标(与 DroidGL.onTouchEvent 同式)→ 径向冲量,
+     * 验证四个方向都是"推离触点"(与 x86 版原版反编译一致)。
+     */
+    private static void testTouchDirectionAllSides() {
+        // 机器人位于世界原点 = 屏幕中心;参数为触点相对机器人的屏幕偏移
+        checkTouchSide("触点在上方 → 机器人向下", 0.0, -120.0, 0.0, -1.0);
+        checkTouchSide("触点在下方 → 机器人向上", 0.0, 120.0, 0.0, 1.0);
+        checkTouchSide("触点在左方 → 机器人向右", -120.0, 0.0, 1.0, 0.0);
+        checkTouchSide("触点在右方 → 机器人向左", 120.0, 0.0, -1.0, 0.0);
+    }
+
+    private static void checkTouchSide(String label, double offsetScreenX, double offsetScreenY,
+            double expectedDx, double expectedDy) {
+        Space space = newSpace();
+        space.setGravity(0.0, 0.0);
+        Droid droid = addDroid(space, 1, 0.0, 0.0);
+
+        // 与 DroidGL.onTouchEvent 同式:worldX = screenX - w/2,worldY = h/2 - screenY
+        double screenX = SCREEN_W * 0.5 + offsetScreenX;
+        double screenY = SCREEN_H * 0.5 + offsetScreenY;
+        double worldX = screenX - SCREEN_W * 0.5;
+        double worldY = SCREEN_H * 0.5 - screenY;
+        applyRadialImpulse(worldX, worldY, 50.0, droid);
+
+        for (int i = 0; i < 15; i++) {
+            space.step(DT);
+        }
+        double movedX = droid.body.x();
+        double movedY = droid.body.y();
+        double alongExpected = movedX * expectedDx + movedY * expectedDy;
+        report(label + " (Δ=" + fmt(movedX) + "," + fmt(movedY) + ")", alongExpected > 2.0);
+    }
+
+    /** 与 DroidScene.applyRadialImpulse 同式(整数截断归一化 + (r/5)*500/dist)。 */
+    private static void applyRadialImpulse(double x, double y, double strength, Droid droid) {
+        double magnitudeBase = (int) (strength / 5.0) * 500.0;
+        double dx = droid.body.x() - x;
+        double dy = droid.body.y() - y;
+        double dist = Math.sqrt(dx * dx + dy * dy);
+        int ax = (int) Math.abs(dx);
+        int ay = (int) Math.abs(dy);
+        double ix;
+        double iy;
+        if (ax > ay) {
+            ix = dx < 0.0 ? -1.0 : 1.0;
+            double ratio = ay / ax;
+            iy = dy < 0.0 ? -ratio : ratio;
+        } else {
+            iy = dy < 0.0 ? -1.0 : 1.0;
+            double ratio = ax / ay;
+            ix = dx < 0.0 ? -ratio : ratio;
+        }
+        double magnitude = magnitudeBase / dist;
+        droid.body.applyImpulse(ix * magnitude, iy * magnitude, 0.0, 0.0);
     }
 
     private static double currentMaxDrift(Droid droid) {

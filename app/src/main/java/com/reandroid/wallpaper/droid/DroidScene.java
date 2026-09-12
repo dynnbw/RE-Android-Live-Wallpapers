@@ -161,9 +161,25 @@ final class DroidScene {
         return droids;
     }
 
+    int droidCount() {
+        return droids.size();
+    }
+
     /** 机器人缩放比例(0.2 ~ 1.0)。 */
     double sizeScale() {
         return currentSize / 100.0;
+    }
+
+    /**
+     * 渲染插值系数:0 = 上一物理步状态,1 = 当前物理步状态。
+     * 物理仍是固定 30Hz(与原版一致),仅让高刷新率下的画面平滑。
+     */
+    double interpolationAlpha() {
+        double alpha = accumulator / FIXED_DT;
+        if (alpha < 0.0) {
+            return 0.0;
+        }
+        return alpha > 1.0 ? 1.0 : alpha;
     }
 
     double touchFactor() {

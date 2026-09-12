@@ -31,6 +31,10 @@ public final class Space {
 
     private final Body staticBody = Body.createStatic();
 
+    /** 复用暂存区:碰撞对每步都要保存旧冲量,不能每次都分配数组(避免 GC 抖动)。 */
+    private final double[] oldJn = new double[Arbiter.MAX_CONTACTS];
+    private final double[] oldJt = new double[Arbiter.MAX_CONTACTS];
+
     private double gravityX;
     private double gravityY;
 
@@ -77,7 +81,9 @@ public final class Space {
 
     public void step(double dt) {
         for (int i = 0; i < bodies.size(); i++) {
-            bodies.get(i).updateVelocity(dt, gravityX, gravityY);
+            Body body = bodies.get(i);
+            body.savePreviousState();
+            body.updateVelocity(dt, gravityX, gravityY);
         }
         for (int i = 0; i < constraints.size(); i++) {
             constraints.get(i).preStep(dt);
@@ -195,8 +201,6 @@ public final class Space {
         }
 
         int oldCount = arbiter.count;
-        double[] oldJn = new double[Arbiter.MAX_CONTACTS];
-        double[] oldJt = new double[Arbiter.MAX_CONTACTS];
         System.arraycopy(arbiter.jn, 0, oldJn, 0, Arbiter.MAX_CONTACTS);
         System.arraycopy(arbiter.jt, 0, oldJt, 0, Arbiter.MAX_CONTACTS);
 

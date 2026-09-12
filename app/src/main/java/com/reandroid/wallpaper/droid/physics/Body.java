@@ -29,6 +29,11 @@ public final class Body {
     double cos = 1.0;
     double sin = 0.0;
 
+    /** 上一物理步的位置 / 角度:供渲染插值使用(物理仍为固定步长)。 */
+    double prevPx;
+    double prevPy;
+    double prevAngle;
+
     Body(double mass, double moment) {
         id = sNextId++;
         this.mass = mass;
@@ -54,12 +59,43 @@ public final class Body {
     public void setPosition(double x, double y) {
         px = x;
         py = y;
+        prevPx = x;
+        prevPy = y;
     }
 
     public void setAngle(double a) {
         angle = a;
+        prevAngle = a;
         cos = Math.cos(a);
         sin = Math.sin(a);
+    }
+
+    /** 物理步进前保存上一步状态,供渲染插值。 */
+    void savePreviousState() {
+        prevPx = px;
+        prevPy = py;
+        prevAngle = angle;
+    }
+
+    /** 插值渲染坐标(alpha:0 = 上一物理步,1 = 当前物理步)。 */
+    public double renderX(double alpha) {
+        return prevPx + (px - prevPx) * alpha;
+    }
+
+    public double renderY(double alpha) {
+        return prevPy + (py - prevPy) * alpha;
+    }
+
+    /** 插值角度:按最短路径回绕,避免快速自旋时插值绕远。 */
+    public double renderAngle(double alpha) {
+        double delta = angle - prevAngle;
+        while (delta > Math.PI) {
+            delta -= Math.PI * 2.0;
+        }
+        while (delta < -Math.PI) {
+            delta += Math.PI * 2.0;
+        }
+        return prevAngle + delta * alpha;
     }
 
     public double x() {
