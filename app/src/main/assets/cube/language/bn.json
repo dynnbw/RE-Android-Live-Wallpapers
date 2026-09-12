@@ -7,5 +7,7 @@
   "cube_shape_label_icosahedron": "আইকোসাহেড্রন",
   "cube_shape_label_stardodecahedron": "স্টার ডোডেকাহেড্রন",
   "cube_shape_label_cuboctahedron": "কিউবোকটাহেড্রন",
-  "cube_shape_label_truncatedcube": "ট্রাঙ্কেটেড কিউব"
+  "cube_shape_label_truncatedcube": "ট্রাঙ্কেটেড কিউব",
+  "cube_touch_rotate": "স্পর্শে ঘোরান",
+  "cube_touch_rotate_summary": "টেনে দেখার কোণ বদলান; ছেড়ে দিলে স্বয়ংক্রিয় ঘূর্ণন আবার শুরু হবে"
 }

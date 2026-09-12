@@ -7,5 +7,7 @@
   "cube_shape_label_icosahedron": "二十面體",
   "cube_shape_label_stardodecahedron": "星形十二面體",
   "cube_shape_label_cuboctahedron": "立方八面體",
-  "cube_shape_label_truncatedcube": "截斷立方體"
+  "cube_shape_label_truncatedcube": "截斷立方體",
+  "cube_touch_rotate": "觸控旋轉視角",
+  "cube_touch_rotate_summary": "滑動改變立體圖形的視角，放手一段時間後恢復自動旋轉"
 }

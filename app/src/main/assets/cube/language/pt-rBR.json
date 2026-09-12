@@ -7,5 +7,7 @@
   "cube_shape_label_icosahedron": "Icosaedro",
   "cube_shape_label_stardodecahedron": "Dodecaedro estrelado",
   "cube_shape_label_cuboctahedron": "Cuboctaedro",
-  "cube_shape_label_truncatedcube": "Cubo truncado"
+  "cube_shape_label_truncatedcube": "Cubo truncado",
+  "cube_touch_rotate": "Girar com o toque",
+  "cube_touch_rotate_summary": "Arraste para mudar o ângulo de visão; ao soltar, a rotação automática volta"
 }

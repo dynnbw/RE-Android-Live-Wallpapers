@@ -25,6 +25,13 @@
         "Cuboctahedron",
         "Truncated Cube"
       ]
+    },
+    {
+      "type": "switch",
+      "key": "cube_touch_rotate",
+      "title": "cube_touch_rotate",
+      "summary": "cube_touch_rotate_summary",
+      "default": false
     }
   ]
 }

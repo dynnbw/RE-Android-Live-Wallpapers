@@ -7,5 +7,7 @@
   "cube_shape_label_icosahedron": "Икосаэдр",
   "cube_shape_label_stardodecahedron": "Звёздчатый додекаэдр",
   "cube_shape_label_cuboctahedron": "Кубооктаэдр",
-  "cube_shape_label_truncatedcube": "Усечённый куб"
+  "cube_shape_label_truncatedcube": "Усечённый куб",
+  "cube_touch_rotate": "Поворот касанием",
+  "cube_touch_rotate_summary": "Проведите, чтобы изменить угол обзора; после отпускания вращение возобновится"
 }

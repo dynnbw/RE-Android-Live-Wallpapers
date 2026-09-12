@@ -7,5 +7,7 @@
   "cube_shape_label_icosahedron": "정이십면체",
   "cube_shape_label_stardodecahedron": "별 정십이면체",
   "cube_shape_label_cuboctahedron": "육팔면체",
-  "cube_shape_label_truncatedcube": "깎은 정육면체"
+  "cube_shape_label_truncatedcube": "깎은 정육면체",
+  "cube_touch_rotate": "터치로 회전",
+  "cube_touch_rotate_summary": "드래그하여 시점을 변경하고, 손을 떼면 자동 회전으로 돌아갑니다"
 }

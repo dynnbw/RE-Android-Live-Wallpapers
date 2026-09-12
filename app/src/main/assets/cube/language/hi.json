@@ -7,5 +7,7 @@
   "cube_shape_label_icosahedron": "आइकोसाहेड्रॉन",
   "cube_shape_label_stardodecahedron": "स्टार डोडेकाहेड्रॉन",
   "cube_shape_label_cuboctahedron": "क्यूबोक्टाहेड्रॉन",
-  "cube_shape_label_truncatedcube": "ट्रंकेटेड क्यूब"
+  "cube_shape_label_truncatedcube": "ट्रंकेटेड क्यूब",
+  "cube_touch_rotate": "स्पर्श से घुमाएँ",
+  "cube_touch_rotate_summary": "खींचकर दृश्य कोण बदलें; छोड़ने पर स्वतः घूर्णन फिर शुरू हो जाएगा"
 }

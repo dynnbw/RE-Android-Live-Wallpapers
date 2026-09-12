@@ -66,7 +66,7 @@ public class CubeGL extends GLESScene {
 
     @Override
     public void start() {
-        mScene.mStartTimeMs = System.currentTimeMillis();
+        mScene.onResume();
     }
 
     @Override

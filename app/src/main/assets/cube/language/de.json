@@ -7,5 +7,7 @@
   "cube_shape_label_icosahedron": "Ikosaeder",
   "cube_shape_label_stardodecahedron": "Sterndodekaeder",
   "cube_shape_label_cuboctahedron": "Kuboktaeder",
-  "cube_shape_label_truncatedcube": "Abgestumpfter Würfel"
+  "cube_shape_label_truncatedcube": "Abgestumpfter Würfel",
+  "cube_touch_rotate": "Drehen per Berührung",
+  "cube_touch_rotate_summary": "Ziehen ändert den Blickwinkel; nach dem Loslassen dreht es sich wieder automatisch"
 }
