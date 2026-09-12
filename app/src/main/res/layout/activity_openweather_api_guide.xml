@@ -233,7 +233,7 @@
                 android:layout_marginTop="24dp"
                 android:text="@string/pref_weather_api_guide_link_text"
                 android:textSize="16sp"
-                android:textColor="@color/md_theme_primary"
+                android:textColor="@color/md_theme_control"
                 android:textStyle="bold"
                 android:clickable="true"
                 android:focusable="true" />
@@ -257,7 +257,7 @@
                     android:padding="16dp"
                     android:text="@string/pref_weather_api_guide_open_web_button"
                     android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-                    android:textColor="?attr/colorPrimary"
+                    android:textColor="@color/md_theme_control"
                     android:textStyle="bold" />
 
             </androidx.cardview.widget.CardView>

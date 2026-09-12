@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- 注意：md_theme_primary 在本配色里是"浅色面"色（浅色模式下与 surface 同色），
+         当作文字色会与背景同色、看不见；文字请用 md_theme_control / md_theme_onSurface -->
     <color name="md_theme_primary">#F0FFFF</color>
     <color name="md_theme_onPrimary">#2F4F4F</color>
     <color name="md_theme_primaryContainer">#F0FFFF</color>
