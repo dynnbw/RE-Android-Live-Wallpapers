@@ -540,57 +540,55 @@ public class NexusGL extends GLESScene {
         }
     }
 
+    /** 配色模式 1-7 的单色(本项目新增,原版没有)。 */
+    private static final float[] SINGLE_COLORS = {
+            0f, 0f, 0f,          // 占位,index 0 不用
+            0.9f, 0.1f, 0.1f,    // 1 红
+            0.1f, 0.9f, 0.1f,    // 2 绿
+            0.1f, 0.1f, 0.9f,    // 3 蓝
+            0.9f, 0.9f, 0.9f,    // 4 白
+            0.3f, 0.9f, 0.9f,    // 5 青
+            0.9f, 0.3f, 0.9f,    // 6 紫
+            0.95f, 0.7f, 0.75f,  // 7 粉
+    };
+
+    /**
+     * 原版 nexus.rs 的 4 色循环(对应 res 的 nexus_colorscheme:
+     * #FF0000 / #009900 / #0066CC / #FFCC00)。
+     */
+    private static final float[] ORIGINAL_COLORS = {
+            1.0f, 0.0f, 0.0f, 0.8f,
+            0.0f, 0.6f, 0.0f, 0.8f,
+            0.0f, 0.4f, 0.8f, 0.8f,
+            1.0f, 0.8f, 0.0f, 0.8f,
+    };
+
+    /** "多彩"模式(本项目新增):8 色循环。 */
+    private static final float[] MULTI_COLORS = {
+            1.0f, 0.0f, 0.0f, 0.8f,   // 红
+            0.0f, 0.8f, 0.0f, 0.8f,   // 绿
+            0.0f, 0.4f, 0.9f, 0.8f,   // 蓝
+            1.0f, 0.8f, 0.0f, 0.8f,   // 黄
+            0.9f, 0.3f, 0.9f, 0.8f,   // 品红
+            0.9f, 0.9f, 0.9f, 0.8f,   // 白
+            0.3f, 0.9f, 0.9f, 0.8f,   // 青
+            0.95f, 0.7f, 0.75f, 0.8f, // 粉
+    };
+
     /**
      * 设置脉冲颜色
-     * @param c 颜色索引（0-3）
+     * @param c 颜色索引(默认模式 0-3,多彩模式 0-7)
      */
     private void setColorForPulse(int c) {
-        if (mScene.mMode == 1) {
-            setColor(0.9f, 0.1f, 0.1f, 0.8f);
+        int mode = mScene.mMode;
+        if (mode >= 1 && mode <= 7) {
+            int i = mode * 3;
+            setColor(SINGLE_COLORS[i], SINGLE_COLORS[i + 1], SINGLE_COLORS[i + 2], 0.8f);
             return;
         }
-        if (mScene.mMode == 2) {
-            setColor(0.1f, 0.9f, 0.1f, 0.8f);
-            return;
-        }
-         if (mScene.mMode == 3) {
-            setColor(0.1f, 0.1f, 0.9f, 0.8f);
-            return;
-        }
-         if (mScene.mMode == 4) {
-            setColor(0.9f, 0.9f, 0.9f, 0.8f);
-            return;
-        }
-         if (mScene.mMode == 5) {
-            setColor(0.3f, 0.9f, 0.9f, 0.8f);
-            return;
-        }
-         if (mScene.mMode == 6) {
-            setColor(0.9f, 0.3f, 0.9f, 0.8f);
-            return;
-        }
-         if (mScene.mMode == 7) {
-            setColor(0.95f, 0.7f, 0.75f, 0.8f);
-            return;
-        }
-        // 根据颜色索引设置RGBA
-        if (c == 0) {
-            setColor(1.0f, 0.0f, 0.0f, 0.8f);
-        } else if (c == 1) {
-            setColor(0.0f, 0.8f, 0.0f, 0.8f);
-        } else if (c == 2) {
-            setColor(0.0f, 0.4f, 0.9f, 0.8f);
-        } else if (c == 3) {
-            setColor(1.0f, 0.8f, 0.0f, 0.8f);
-        }else if (c == 4) {
-            setColor(0.9f, 0.3f, 0.9f, 0.8f);
-        }else if (c == 5) {
-            setColor(0.9f, 0.9f, 0.9f, 0.8f);
-        }else if (c == 6) {
-            setColor(0.3f, 0.9f, 0.9f, 0.8f);
-        }else {
-            setColor(0.95f, 0.7f, 0.75f, 0.8f);
-        }
+        float[] palette = mode == NexusScene.MODE_MULTI ? MULTI_COLORS : ORIGINAL_COLORS;
+        int i = Math.floorMod(c, palette.length / 4) * 4;
+        setColor(palette[i], palette[i + 1], palette[i + 2], palette[i + 3]);
     }
 
     /**

@@ -41,6 +41,10 @@ final class NexusScene {
     // 壁纸显示模式（配色模式）
     int mMode;
 
+    /** 配色模式:0 = 原版 4 色循环(默认);1-7 = 本项目加的单色;8 = 本项目加的 8 色"多彩"。 */
+    static final int MODE_DEFAULT = 0;
+    static final int MODE_MULTI = 8;
+
     // 投影矩阵（正交投影）
     final float[] mProjectionMatrix = new float[16];
 
@@ -86,6 +90,8 @@ final class NexusScene {
         TRAIL_SIZE = s.trailSize;
         MAX_DELAY = s.maxDelay;
         mMode = s.mode;
+        // 默认模式沿用原版的 4 色循环;"多彩"(MODE_MULTI)是 8 色
+        mPulseController.setPaletteSize(s.mode == MODE_MULTI ? 8 : 4);
         mPulseController.ensureCapacity(MAX_PULSES, MAX_EXTRAS);
     }
 

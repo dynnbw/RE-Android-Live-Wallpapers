@@ -22,6 +22,16 @@ class NexusPulseController {
     private Pulse[] pulses;
     private Pulse[] extras;
 
+    /**
+     * 配色循环的颜色数:默认 4(原版 nexus.rs 的 colors[4] 循环),
+     * "多彩"模式为 8。单色模式不受影响(取色不看索引)。
+     */
+    private int mPaletteSize = 4;
+
+    void setPaletteSize(int paletteSize) {
+        mPaletteSize = paletteSize > 0 ? paletteSize : 4;
+    }
+
     void ensureCapacity(int maxPulses, int maxExtras) {
         if (pulses == null || pulses.length != maxPulses) {
             pulses = new Pulse[maxPulses];
@@ -97,7 +107,7 @@ class NexusPulseController {
         }
 
         pulse.startTime = (int) nowMs + (int) rand(maxDelay);
-        pulse.color = (int) rand(7);
+        pulse.color = (int) rand(mPaletteSize);
         pulse.pulseType = pulseType;
         pulse.active = pulseType == PULSE_EXTRA ? 0 : 1;
     }
@@ -108,7 +118,7 @@ class NexusPulseController {
         }
 
         int count = 0;
-        int color = (int) rand(4);
+        int color = (int) rand(mPaletteSize);
         float scale = rand(0.9f, 1.9f);
 
         x = (x / pulseSize) * pulseSize;
@@ -143,7 +153,7 @@ class NexusPulseController {
                 p.active = 1;
                 p.color = color;
                 color++;
-                if (color >= 7) {
+                if (color >= mPaletteSize) {
                     color = 0;
                 }
                 p.startTime = (int) nowMs;
