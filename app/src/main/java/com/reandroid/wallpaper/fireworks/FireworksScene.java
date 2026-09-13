@@ -76,6 +76,12 @@ final class FireworksScene {
     // 随机数生成器（基于当前时间初始化）
     final Random mRandom = new Random(System.currentTimeMillis());
 
+    // updateFireworks 复用的临时向量(避免每组每帧分配 float[2])
+    private final float[] mVec = new float[2];
+    // genTails 专用临时向量。必须与 mVec 分开:上升分支里 genTails 之后还要用 mVec 的旧值
+    // 参与速度积分,共用会被覆盖。
+    private final float[] mTailVec = new float[2];
+
     // 当前上升/炸开组数(由 applySettings 决定,默认等于移植时的原版 2 / 3)
     int mNormalGroups = DEFAULT_COUNT;
     int mExtraGroups = extraGroups(DEFAULT_COUNT);
@@ -233,19 +239,19 @@ final class FireworksScene {
     /**
      * 生成烟花拖尾
      * @param root 主烟花粒子
+     * @param isLeader 是否为组首粒子(上升中那发)。由调用点直接给出,
+     *                 取代原先两次 indexOf 全表扫描 —— 那个扫描在 N=30 时每帧要跑 3000+ 次。
      * @return 生成的拖尾粒子索引（-1=失败，MAX_TAILS=满）
      */
-    int genTails(FireworkParticle root) {
+    int genTails(FireworkParticle root, boolean isLeader) {
         if (root == null) return -1;
-        float[] vec = new float[]{root.dx, root.dy};
-        normalize(vec);
-        float s = (float) Math.sqrt(vec[0] * vec[0] + vec[1] * vec[1]);
+        mTailVec[0] = root.dx;
+        mTailVec[1] = root.dy;
+        normalize(mTailVec);
+        float s = (float) Math.sqrt(mTailVec[0] * mTailVec[0] + mTailVec[1] * mTailVec[1]);
         float life = root.life * 0.8f * (float) Math.sqrt(s);
-        int indexInNormal = indexOf(mNormal, root);
-        int indexInExtras = indexOf(mExtras, root);
         // 组首粒子的拖尾生命值降低
-        if ((indexInNormal != -1 && indexInNormal % STRIDE == 0)
-                || (indexInExtras != -1 && indexInExtras % STRIDE == 0)) {
+        if (isLeader) {
             life *= 0.3f;
         }
         float size = 0.08f * getSize(life);
@@ -433,7 +439,9 @@ final class FireworksScene {
 
         // 计算时间差
         int delta = mNow - p.time;
-        float[] vec = new float[]{p.dx, p.dy};
+        float[] vec = mVec;
+        vec[0] = p.dx;
+        vec[1] = p.dy;
         // 计算空气阻力
         resistance(vec);
 
@@ -450,7 +458,7 @@ final class FireworksScene {
             p.posY = p.posY + (p.dy + (GRAVITY + vec[1]) * delta * SPEED * 0.5f) * delta * SPEED;
             float curPos = p.posY;
             p.ds += (int) Math.abs(curPos - lastPos); // 累计移动距离
-            genTails(p); // 生成拖尾
+            genTails(p, true); // 组首 = 上升中那发
 
             // 更新垂直速度（重力+阻力）
             float lastSpeed = p.dy;
@@ -496,7 +504,7 @@ final class FireworksScene {
                 e.posY = e.posY + (e.dy + (GRAVITY + vec[1]) * delta * SPEED * 0.5f) * delta * SPEED;
                 float curPos = (float) Math.sqrt(e.posX * e.posX + e.posY * e.posY);
                 e.ds += (int) Math.abs(curPos - lastPos);
-                genTails(e); // 生成拖尾
+                genTails(e, false);
 
                 // 更新X方向速度（阻力）
                 float lastSpeed = e.dx;
@@ -582,19 +590,6 @@ final class FireworksScene {
      */
     float randf2(float min, float max) {
         return min + mRandom.nextFloat() * (max - min);
-    }
-
-    /**
-     * 查找粒子在数组中的索引
-     * @param arr 粒子数组
-     * @param target 目标粒子
-     * @return 索引（-1=未找到）
-     */
-    int indexOf(FireworkParticle[] arr, FireworkParticle target) {
-        for (int i = 0; i < arr.length; i++) {
-            if (arr[i] == target) return i;
-        }
-        return -1;
     }
 }
 

@@ -20,6 +20,7 @@ public final class FireworksScaleTest {
         testSlotMapping();
         testBounds();
         testRebuild();
+        testLeaderFlagTailLife();
         if (failures == 0) {
             System.out.println("全部通过");
         } else {
@@ -98,6 +99,39 @@ public final class FireworksScaleTest {
         }
         for (int i = 0; i < scene.mExtras.length; i++) {
             assertTrue("mExtras[" + i + "] 非空", scene.mExtras[i] != null);
+        }
+    }
+
+    /**
+     * 组首判定改为参数传入后,行为必须与原来的 indexOf + index % STRIDE == 0 一致。
+     * 可观测的差异:组首的尾迹生命值会被乘 0.3(原版行为)。
+     */
+    private static void testLeaderFlagTailLife() {
+        float leader = tailLifeFor(true);
+        float child = tailLifeFor(false);
+        assertEquals("组首尾迹生命值 = 普通 × 0.3", child * 0.3f, leader, 1.0E-4f);
+    }
+
+    /** 用同一颗粒子按"组首 / 普通"两种身份生成尾迹,返回落池后的 life。 */
+    private static float tailLifeFor(boolean isLeader) {
+        FireworksScene scene = new FireworksScene(1080, 1920);
+        scene.initialize();
+        FireworkParticle p = new FireworkParticle();
+        p.dx = 0.0f;
+        p.dy = -0.8f;
+        p.life = 1.0f;
+        p.ds = 1000;          // 满足"已移动足够距离"的生成条件
+        p.hasTails = true;
+
+        int index = scene.genTails(p, isLeader);
+        assertTrue("尾迹池应有空位", index >= 0 && index < FireworksScene.MAX_TAILS);
+        return scene.mTails[index].life;
+    }
+
+    private static void assertEquals(String name, float expect, float actual, float eps) {
+        if (Math.abs(expect - actual) > eps) {
+            failures++;
+            System.out.println("失败: " + name + " 期望 " + expect + " 实际 " + actual);
         }
     }
 
