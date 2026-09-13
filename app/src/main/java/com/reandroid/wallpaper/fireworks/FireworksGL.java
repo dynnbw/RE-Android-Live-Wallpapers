@@ -753,8 +753,9 @@ public class FireworksGL extends GLESScene {
         }
         float ux = vx / speed;
         float uy = vy / speed;
-        // 拉长量 = 速度 × 拖尾时长，并限制在粒子直径的 2.5 倍以内
-        float stretch = Math.min(speed * TRAIL_SECONDS, size * 2.5f);
+        // 拉长量 = 速度 × 拖尾时长;上限防止极快的粒子拖成一条线。
+        // 6 倍这个帽子对爆开粒子从不触发(它们最快也才 ~2 倍),只是兜住火箭那种长距离高速的情况。
+        float stretch = Math.min(speed * TRAIL_SECONDS, size * 6.0f);
         float halfLen = (size + stretch) * 0.5f;
         float halfWid = size * 0.5f;
         float nx = -uy;

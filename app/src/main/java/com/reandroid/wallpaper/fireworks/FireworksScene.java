@@ -704,9 +704,15 @@ final class FireworksScene {
     private static final float ROCKET_SPEED_REF = 900.0f;
     /** 垂柳固定金色的色相（同参考实现）。 */
     private static final float WILLOW_HUE = 38.0f;
-    /** 火箭光晕/核心直径（px，基准屏高下）。 */
-    static final float ROCKET_GLOW_SIZE = 15.0f;
-    static final float ROCKET_CORE_SIZE = 5.2f;
+    /**
+     * 火箭光晕/核心直径（px，基准屏高下）。
+     *
+     * <p>不照抄参考实现的 2.6px 半径：本壁纸的原版火箭走的是
+     * {@code getSize(life) ≈ PARTICLE_SIZE × √life ≈ 33px}，照抄参考实现会小 6 倍，
+     * 在高分屏上直接看不见。这里取与原版量级相当的值。
+     */
+    static final float ROCKET_GLOW_SIZE = 60.0f;
+    static final float ROCKET_CORE_SIZE = 22.0f;
 
     /** 增强模式的火箭状态：从起点缓动飞向目标点、抵达即炸。 */
     private static final class Rocket {
