@@ -12,7 +12,7 @@ attribute vec2 aTexCoord;
 
 varying vec3 vWorldPos;
 varying vec3 vNormal;
-varying vec2 vTexCoord;
+varying highp vec2 vTexCoord;
 
 void main() {
   vec4 world = uModel * vec4(aPosition, 1.0);

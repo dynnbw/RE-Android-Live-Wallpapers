@@ -1,6 +1,6 @@
 attribute vec2 aPos;
 attribute vec2 aUv;
-varying vec2 vUv;
+varying highp vec2 vUv;
 
 void main() {
     vUv = aUv;

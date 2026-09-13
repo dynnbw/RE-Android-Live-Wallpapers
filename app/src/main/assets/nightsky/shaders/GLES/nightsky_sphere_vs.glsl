@@ -5,7 +5,7 @@ uniform mat4 uViewRot;
 uniform float uLatitudeRad;
 uniform float uLSTRad;
 
-varying vec2 vUv;
+varying highp vec2 vUv;
 
 const float PI = 3.14159265358979323846;
 

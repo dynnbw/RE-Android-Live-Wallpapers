@@ -7,7 +7,7 @@
 //
 // 这一点很关键：若把光源当成"相机空间的 (0,3,10)"，光就永远在相机背后，
 // 永远只看得到全亮面，晨昏线与城市灯光就整个失效了。
-precision mediump float;
+precision highp float;
 
 uniform sampler2D uDay;
 uniform sampler2D uNight;
@@ -19,7 +19,7 @@ uniform float uUseNight;
 
 varying vec3 vWorldPos;
 varying vec3 vNormal;
-varying vec2 vTexCoord;
+varying highp vec2 vTexCoord;
 
 void main() {
   vec3 n = normalize(vNormal);
