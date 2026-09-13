@@ -133,14 +133,15 @@ public final class EarthSceneTest {
         assertEquals("同一 UTC 时刻换时区结果不变", a, b, 1.0E-3f);
     }
 
-    /** 由"本地距正午毫秒 + 时区偏移"算出太阳直射经度（东经为正）。 */
+    /**
+     * 由"本地距正午毫秒 + 时区偏移"算出太阳直射经度（东经为正）。
+     * 直接问场景要——它内部就是按物理式算的，与网格/光源的几何常量无关，
+     * 所以这个用例不会因为几何标定而变成循环论证。
+     */
     private static float subsolarLon(long localMsSinceNoon, int tzRawOffsetMs) {
         EarthScene s = new EarthScene();
         s.setClock(localMsSinceNoon, tzRawOffsetMs, 1, 0.0);
-        float lon = 75.0f + s.earthAngleY();
-        while (lon > 180.0f) lon -= 360.0f;
-        while (lon < -180.0f) lon += 360.0f;
-        return lon;
+        return s.subsolarLongitude();
     }
 
     /** 星空按恒星日漂移：每天相对地球表面多转约 1°（≈4 分钟）。 */
