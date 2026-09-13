@@ -1,0 +1,10 @@
+{
+  "earth_spin_speed": "Скорость вращения",
+  "earth_spin_speed_summary": "Как быстро вращается Земля; 0 — остановка",
+  "earth_sky": "Звёздное небо",
+  "earth_sky_summary": "Млечный Путь на фоне за Землёй",
+  "earth_clouds": "Облака",
+  "earth_clouds_summary": "Слой облаков над поверхностью",
+  "earth_halo": "Свечение атмосферы",
+  "earth_halo_summary": "Синий ореол по краю Земли"
+}

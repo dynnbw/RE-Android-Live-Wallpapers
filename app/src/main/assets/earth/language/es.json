@@ -1,0 +1,10 @@
+{
+  "earth_spin_speed": "Velocidad de giro",
+  "earth_spin_speed_summary": "Qué tan rápido gira la Tierra; 0 la detiene",
+  "earth_sky": "Campo de estrellas",
+  "earth_sky_summary": "Fondo de la Vía Láctea tras la Tierra",
+  "earth_clouds": "Nubes",
+  "earth_clouds_summary": "Capa de nubes sobre la superficie",
+  "earth_halo": "Halo atmosférico",
+  "earth_halo_summary": "Resplandor azul en el borde de la Tierra"
+}

@@ -1,0 +1,10 @@
+{
+  "earth_spin_speed": "Eigendrehung",
+  "earth_spin_speed_summary": "Wie schnell sich die Erde dreht; 0 stoppt sie",
+  "earth_sky": "Sternenfeld",
+  "earth_sky_summary": "Milchstraßen-Hintergrund hinter der Erde",
+  "earth_clouds": "Wolken",
+  "earth_clouds_summary": "Wolkenschicht über der Oberfläche",
+  "earth_halo": "Atmosphären-Schein",
+  "earth_halo_summary": "Blauer Schein am Rand der Erde"
+}

@@ -1,0 +1,10 @@
+{
+  "earth_spin_speed": "空闲自转速度",
+  "earth_spin_speed_summary": "地球自行旋转的快慢；0 为静止",
+  "earth_sky": "星空背景",
+  "earth_sky_summary": "地球背后的银河星野",
+  "earth_clouds": "云层",
+  "earth_clouds_summary": "在地表上飘移的云层",
+  "earth_halo": "大气光晕",
+  "earth_halo_summary": "地球边缘的蓝色辉光"
+}

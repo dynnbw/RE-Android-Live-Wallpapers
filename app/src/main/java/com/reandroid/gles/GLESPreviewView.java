@@ -221,16 +221,30 @@ public class GLESPreviewView extends SurfaceView implements SurfaceHolder.Callba
         int[] version = new int[2];
         if (!EGL14.eglInitialize(mDisplay, version, 0, version, 1)) return false;
 
-        int[] attribList = {
-                EGL14.EGL_RED_SIZE, 8,
-                EGL14.EGL_GREEN_SIZE, 8,
-                EGL14.EGL_BLUE_SIZE, 8,
-                EGL14.EGL_RENDERABLE_TYPE, EGL14.EGL_OPENGL_ES2_BIT,
-                EGL14.EGL_NONE
-        };
+                // 先申请深度缓冲。三维内容(Earth)需要它来遮挡背面;
+                // 其余场景本来就显式 glDisable(GL_DEPTH_TEST),对它们是惰性的。
+                // 万一没有带深度的配置,退回不带深度的,不能让壁纸直接渲染不出来。
+                int[] withDepth = {
+                        EGL14.EGL_RED_SIZE, 8,
+                        EGL14.EGL_GREEN_SIZE, 8,
+                        EGL14.EGL_BLUE_SIZE, 8,
+                        EGL14.EGL_DEPTH_SIZE, 16,
+                        EGL14.EGL_RENDERABLE_TYPE, EGL14.EGL_OPENGL_ES2_BIT,
+                        EGL14.EGL_NONE
+                };
+                int[] noDepth = {
+                        EGL14.EGL_RED_SIZE, 8,
+                        EGL14.EGL_GREEN_SIZE, 8,
+                        EGL14.EGL_BLUE_SIZE, 8,
+                        EGL14.EGL_RENDERABLE_TYPE, EGL14.EGL_OPENGL_ES2_BIT,
+                        EGL14.EGL_NONE
+                };
         EGLConfig[] configs = new EGLConfig[1];
         int[] numConfig = new int[1];
-        EGL14.eglChooseConfig(mDisplay, attribList, 0, configs, 0, 1, numConfig, 0);
+        EGL14.eglChooseConfig(mDisplay, withDepth, 0, configs, 0, 1, numConfig, 0);
+        if (numConfig[0] == 0) {
+            EGL14.eglChooseConfig(mDisplay, noDepth, 0, configs, 0, 1, numConfig, 0);
+        }
         if (numConfig[0] == 0) return false;
         EGLConfig config = configs[0];
 

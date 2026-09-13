@@ -1,0 +1,34 @@
+{
+  "prefs": [
+    {
+      "type": "seekbar",
+      "key": "earth_spin_speed",
+      "title": "earth_spin_speed",
+      "summary": "earth_spin_speed_summary",
+      "default": 20,
+      "min": 0,
+      "max": 100
+    },
+    {
+      "type": "switch",
+      "key": "earth_sky",
+      "title": "earth_sky",
+      "summary": "earth_sky_summary",
+      "default": true
+    },
+    {
+      "type": "switch",
+      "key": "earth_clouds",
+      "title": "earth_clouds",
+      "summary": "earth_clouds_summary",
+      "default": true
+    },
+    {
+      "type": "switch",
+      "key": "earth_halo",
+      "title": "earth_halo",
+      "summary": "earth_halo_summary",
+      "default": true
+    }
+  ]
+}

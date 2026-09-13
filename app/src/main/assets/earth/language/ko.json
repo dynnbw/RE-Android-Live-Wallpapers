@@ -1,0 +1,10 @@
+{
+  "earth_spin_speed": "자전 속도",
+  "earth_spin_speed_summary": "지구가 스스로 도는 속도. 0이면 정지",
+  "earth_sky": "별밤 배경",
+  "earth_sky_summary": "지구 뒤로 펼쳐진 은하수",
+  "earth_clouds": "구름",
+  "earth_clouds_summary": "지표 위를 흐르는 구름층",
+  "earth_halo": "대기 광휘",
+  "earth_halo_summary": "지구 가장자리의 푸른 빛"
+}

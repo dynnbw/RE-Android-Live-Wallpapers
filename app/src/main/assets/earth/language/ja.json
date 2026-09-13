@@ -1,0 +1,10 @@
+{
+  "earth_spin_speed": "自転速度",
+  "earth_spin_speed_summary": "地球が自ら回る速さ。0 で停止",
+  "earth_sky": "星空",
+  "earth_sky_summary": "地球の後ろに広がる天の川",
+  "earth_clouds": "雲",
+  "earth_clouds_summary": "地表の上を流れる雲の層",
+  "earth_halo": "大気の光輪",
+  "earth_halo_summary": "地球の縁に浮かぶ青い光"
+}

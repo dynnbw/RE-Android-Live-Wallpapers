@@ -1,0 +1,10 @@
+{
+  "earth_spin_speed": "Idle rotation speed",
+  "earth_spin_speed_summary": "How fast the Earth spins on its own; 0 stops it",
+  "earth_sky": "Star field",
+  "earth_sky_summary": "Milky Way backdrop behind the Earth",
+  "earth_clouds": "Clouds",
+  "earth_clouds_summary": "Cloud layer drifting over the surface",
+  "earth_halo": "Atmosphere glow",
+  "earth_halo_summary": "Blue halo around the edge of the Earth"
+}

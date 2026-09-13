@@ -1,0 +1,5 @@
+{
+  "label": "@string/wallpaper_earth",
+  "plugin": "com.reandroid.wallpaper.earth.EarthPlugin",
+  "previewClass": "com.reandroid.wallpaper.earth.EarthGL"
+}
