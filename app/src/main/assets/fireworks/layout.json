@@ -1,6 +1,15 @@
 {
   "prefs": [
     {
+      "type": "seekbar",
+      "key": "pref_fireworks_count",
+      "title": "pref_fireworks_count_title",
+      "summary": "pref_fireworks_count_summary",
+      "default": 2,
+      "min": 1,
+      "max": 30
+    },
+    {
       "type": "switch",
       "key": "pref_fireworks_grass_night",
       "title": "@string/pref_fireworks_grass_night_title",

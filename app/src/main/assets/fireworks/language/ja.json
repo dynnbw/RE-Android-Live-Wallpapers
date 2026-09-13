@@ -1,4 +1,6 @@
 {
   "pref_custom_background": "",
-  "pref_reset_background": ""
+  "pref_reset_background": "",
+  "pref_fireworks_count_title": "花火の数",
+  "pref_fireworks_count_summary": "同時に打ち上がり炸裂する花火の数"
 }

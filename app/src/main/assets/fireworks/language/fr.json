@@ -1,4 +1,6 @@
 {
   "pref_custom_background": "",
-  "pref_reset_background": ""
+  "pref_reset_background": "",
+  "pref_fireworks_count_title": "Nombre de feux d’artifice",
+  "pref_fireworks_count_summary": "Combien de feux d’artifice se lancent et explosent en même temps"
 }

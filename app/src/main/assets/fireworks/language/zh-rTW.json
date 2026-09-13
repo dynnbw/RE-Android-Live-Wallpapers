@@ -1,4 +1,6 @@
 {
   "pref_custom_background": "",
-  "pref_reset_background": ""
+  "pref_reset_background": "",
+  "pref_fireworks_count_title": "煙花數量",
+  "pref_fireworks_count_summary": "同時在飛與同時炸開的煙花數量"
 }

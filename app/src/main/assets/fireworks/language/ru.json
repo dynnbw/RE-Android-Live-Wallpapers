@@ -1,4 +1,6 @@
 {
   "pref_custom_background": "",
-  "pref_reset_background": ""
+  "pref_reset_background": "",
+  "pref_fireworks_count_title": "Количество фейерверков",
+  "pref_fireworks_count_summary": "Сколько фейерверков одновременно взлетает и взрывается"
 }

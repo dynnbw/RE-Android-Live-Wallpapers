@@ -75,6 +75,14 @@ public class FireworksGL extends GLESScene {
     // 草地夜景变种：开启后背景变为恒夜草地（夜空+星星+草遮挡烟花）
     private static final String KEY_GRASS_NIGHT = "pref_fireworks_grass_night";
     private boolean mGrassNightEnabled = false;
+
+    // 烟花数量设置项
+    private static final String KEY_COUNT = "pref_fireworks_count";
+    /** 主线程写、GL 线程读,故为 volatile。 */
+    private volatile int mPrefCount = FireworksScene.DEFAULT_COUNT;
+    // 已应用的设置(只在 GL 线程读写)。初值 -1 保证首帧一定应用一次:
+    // 以数量 10 启动的壁纸必须立刻用 10,不能等到设置变更才生效。
+    private int mAppliedCount = -1;
     private FireworksGrassBackdrop mBackdrop;
     // 草地/星星配置跟随 grass 壁纸设置（每秒轮询 plugin_grass，契约外不注册监听器）
     private long mLastGrassConfigPollMs = 0L;
@@ -107,12 +115,28 @@ public class FireworksGL extends GLESScene {
         mScene = new FireworksScene(width, height);
     }
 
-    /** Called by BasePluginEngine via reflection to inject plugin-isolated prefs. */
+    /**
+     * Called by BasePluginEngine via reflection to inject plugin-isolated prefs.
+     *
+     * <p>本方法在主线程被偏好监听器调用,因此<b>只写 volatile 字段</b>,绝不在这里调用
+     * applySettings —— 那会重建渲染线程正在读的粒子数组(见 applyPendingSettings)。
+     */
     public void setPluginPrefs(android.content.SharedPreferences prefs) {
         mPluginPrefs = prefs;
         if (prefs != null) {
             mGrassNightEnabled = prefs.getBoolean(KEY_GRASS_NIGHT, false);
+            mPrefCount = prefs.getInt(KEY_COUNT, FireworksScene.DEFAULT_COUNT);
         }
+    }
+
+    /**
+     * 把主线程写入的偏好应用到场景。<b>只在 GL 线程调用</b> —— applySettings 会重建粒子数组。
+     */
+    private void applyPendingSettings() {
+        int count = mPrefCount;
+        if (count == mAppliedCount) return;
+        mAppliedCount = count;
+        mScene.applySettings(count, mScene.mTailsEnabled);
     }
 
     /** Returns the custom background URI, checking plugin prefs first. */

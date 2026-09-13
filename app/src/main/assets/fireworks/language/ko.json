@@ -1,4 +1,6 @@
 {
   "pref_custom_background": "",
-  "pref_reset_background": ""
+  "pref_reset_background": "",
+  "pref_fireworks_count_title": "불꽃 개수",
+  "pref_fireworks_count_summary": "동시에 쏘아 올려지고 터지는 불꽃의 개수"
 }
