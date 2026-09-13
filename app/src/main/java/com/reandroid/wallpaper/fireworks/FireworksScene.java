@@ -46,15 +46,6 @@ final class FireworksScene {
         return (normalGroups(count) + extraGroups(count)) * STRIDE;
     }
 
-    // 常规烟花的最大组数
-    static final int MAX_NORMAL = 2;
-    // 额外烟花（点击触发）的最大组数
-    static final int MAX_EXTRAS = 3;
-    // 常规烟花粒子数组长度
-    private static final int NORMAL_FIREWORKS = 150;
-    // 额外烟花粒子数组长度
-    private static final int EXTRAS_FIREWORKS = 225;
-
     // 粒子基础速度
     private static final float SPEED = 0.4f;
     // 速度放大系数
@@ -79,20 +70,24 @@ final class FireworksScene {
     private static final int MAX_DELAY = 10000;
     // 拖尾粒子最大数量
     static final int MAX_TAILS = 500;
-    // 拖尾生成比例阈值
-    private static final float MAX_RATIO = 0.0f;
     // 闪光效果持续时间
     static final int FLARE_DURATION = 200;
 
     // 随机数生成器（基于当前时间初始化）
     final Random mRandom = new Random(System.currentTimeMillis());
 
-    // 常规烟花粒子数组
-    final FireworkParticle[] mNormal = new FireworkParticle[NORMAL_FIREWORKS];
+    // 当前上升/炸开组数(由 applySettings 决定,默认等于移植时的原版 2 / 3)
+    int mNormalGroups = DEFAULT_COUNT;
+    int mExtraGroups = extraGroups(DEFAULT_COUNT);
+    // 尾迹开关:关 = 原版 MAX_RATIO 0.0f(只剩组首粒子固有的白色尾迹),开 = 1.0f
+    boolean mTailsEnabled = false;
+
+    // 常规烟花粒子数组(长度 = mNormalGroups × STRIDE,由 initialize 分配)
+    FireworkParticle[] mNormal;
     // 额外烟花粒子数组（点击触发）
-    final FireworkParticle[] mExtras = new FireworkParticle[EXTRAS_FIREWORKS];
-    // 拖尾粒子数组
-    final TailParticle[] mTails = new TailParticle[MAX_TAILS];
+    FireworkParticle[] mExtras;
+    // 拖尾粒子数组(固定 MAX_TAILS)
+    TailParticle[] mTails;
 
     // 当前系统时间（毫秒）
     int mNow;
@@ -123,36 +118,52 @@ final class FireworksScene {
     }
 
     /**
-     * 初始化粒子系统
-     * 创建粒子实例并初始化默认状态
+     * 初始化粒子系统：按当前组数分配数组并初始化所有粒子。
+     * 设置变更时会再次调用（见 applySettings），空中现有的烟花直接丢弃。
      */
     void initialize() {
         mNow = (int) SystemClock.uptimeMillis();
 
-        // 初始化常规烟花粒子
-        for (int i = 0; i < NORMAL_FIREWORKS; i++) {
-            mNormal[i] = new FireworkParticle();
-        }
-        // 初始化额外烟花粒子
-        for (int i = 0; i < EXTRAS_FIREWORKS; i++) {
-            mExtras[i] = new FireworkParticle();
-        }
-        // 初始化拖尾粒子
+        // 按当前组数分配槽位
+        mNormal = new FireworkParticle[mNormalGroups * STRIDE];
+        mExtras = new FireworkParticle[mExtraGroups * STRIDE];
+        mTails = new TailParticle[MAX_TAILS];
+
+        // 拖尾池逐个建实例并复位
         for (int i = 0; i < MAX_TAILS; i++) {
             mTails[i] = new TailParticle();
             initTails(mTails[i]);
         }
 
         // 初始化默认的常规烟花组
-        for (int i = 0; i < MAX_NORMAL; i++) {
-            int index = i * STRIDE;
-            initFireworks(mNormal, index, PARTICLE_NORMAL);
+        for (int i = 0; i < mNormalGroups; i++) {
+            initFireworks(mNormal, i * STRIDE, PARTICLE_NORMAL);
         }
         // 初始化默认的额外烟花组
-        for (int i = 0; i < MAX_EXTRAS; i++) {
-            int index = i * STRIDE;
-            initFireworks(mExtras, index, PARTICLE_EXTRAS);
+        for (int i = 0; i < mExtraGroups; i++) {
+            initFireworks(mExtras, i * STRIDE, PARTICLE_EXTRAS);
         }
+    }
+
+    /**
+     * 应用设置：组数 / 尾迹开关。有变化时重新分配并重新初始化，空中现有的烟花直接丢弃
+     * （不做跨尺寸迁移，避免索引错位）。
+     *
+     * <p><b>只在 GL 线程调用</b>：本方法会重建数组，而主线程的偏好监听器只写 volatile 字段。
+     *
+     * @return 是否发生了重建
+     */
+    boolean applySettings(int count, boolean tails) {
+        int n = normalGroups(count);
+        int e = extraGroups(count);
+        if (n == mNormalGroups && e == mExtraGroups && tails == mTailsEnabled) {
+            return false;
+        }
+        mNormalGroups = n;
+        mExtraGroups = e;
+        mTailsEnabled = tails;
+        initialize();
+        return true;
     }
 
     /**
@@ -314,7 +325,12 @@ final class FireworksScene {
      * @param type 粒子类型（常规/额外）
      */
     void initFireworks(FireworkParticle[] arr, int index, int type) {
+        // 组首粒子由本方法创建(数组不再预填,省掉一次全量分配)
         FireworkParticle p = arr[index];
+        if (p == null) {
+            p = new FireworkParticle();
+            arr[index] = p;
+        }
         // 随机生成粒子颜色（0.5~1.0的亮度）
         int r = (int) ((randf(0.5f) + 0.5f) * 255.0f);
         int g = (int) ((randf(0.5f) + 0.5f) * 255.0f);
@@ -322,7 +338,8 @@ final class FireworksScene {
         // 随机生成衰减速度
         float fade = randf2(1.0f - FADE_VARIANCE, 1.0f + FADE_VARIANCE) * FADE;
         // 计算生成拖尾的粒子数量
-        int tailsCount = (int) (STRIDE * randf(MAX_RATIO));
+        // 关 = 0.0f(原版行为,只有组首那发有尾迹);开 = 1.0f(原版注释的本意)
+        int tailsCount = (int) (STRIDE * randf(mTailsEnabled ? 1.0f : 0.0f));
         int c = 0;
 
         // 初始化组内所有粒子
@@ -507,11 +524,11 @@ final class FireworksScene {
      */
     void update() {
         // 更新常规烟花
-        for (int i = 0; i < MAX_NORMAL; i++) {
+        for (int i = 0; i < mNormalGroups; i++) {
             updateFireworks(mNormal, i * STRIDE);
         }
         // 更新额外烟花
-        for (int i = 0; i < MAX_EXTRAS; i++) {
+        for (int i = 0; i < mExtraGroups; i++) {
             updateFireworks(mExtras, i * STRIDE);
         }
         // 更新拖尾粒子
@@ -527,7 +544,7 @@ final class FireworksScene {
      */
     void addTap(int x, int y) {
         // 寻找空闲的额外烟花组
-        for (int i = 0; i < MAX_EXTRAS; i++) {
+        for (int i = 0; i < mExtraGroups; i++) {
             int index = i * STRIDE;
             FireworkParticle p = mExtras[index];
             if (p.life < 0.0f) {

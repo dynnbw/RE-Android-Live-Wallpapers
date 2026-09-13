@@ -597,11 +597,11 @@ public class FireworksGL extends GLESScene {
      */
     private void draw(float offsetX) {
         // 绘制常规烟花
-        for (int i = 0; i < MAX_NORMAL; i++) {
+        for (int i = 0; i < mScene.mNormalGroups; i++) {
             drawFireworks(mScene.mNormal, i * STRIDE, offsetX);
         }
         // 绘制额外烟花
-        for (int i = 0; i < MAX_EXTRAS; i++) {
+        for (int i = 0; i < mScene.mExtraGroups; i++) {
             drawFireworks(mScene.mExtras, i * STRIDE, offsetX);
         }
         // 绘制拖尾粒子
