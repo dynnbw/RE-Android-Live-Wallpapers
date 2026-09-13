@@ -65,6 +65,15 @@ final class FireworksShapes {
     /** 粒子直径（px，基准屏高下），由参考实现的半径 ×2 得到。 */
     private static final float[] SIZE_MIN = { 2.6f, 4.2f, 4.0f, 3.0f, 4.4f, 4.2f, 3.2f, 4.0f, 2.0f };
     private static final float[] SIZE_MAX = { 5.0f, 4.2f, 4.0f, 5.2f, 4.4f, 4.2f, 5.2f, 4.0f, 5.6f };
+
+    /**
+     * 粒子直径的放大系数（唯一的手感旋钮，嫌小/嫌大改这里）。
+     *
+     * <p>参考实现画的是<b>硬边圆点</b>（4px 就已经很实），而 star.png 是 32×32 的<b>软边光斑</b>：
+     * 实测只有约 19% 的宽度处于 90% 以上 Alpha、34% 在 50% 以上。
+     * 所以照抄参考实现的直径，亮核只有 1~2px，看上去几乎透明。这里按贴图剖面放大。
+     */
+    private static final float SIZE_SCALE = 5.0f;
     private static final float[] LIGHT_MIN = { 60f, 68f, 70f, 62f, 70f, 72f, 74f, 68f, 60f };
     private static final float[] LIGHT_MAX = { 74f, 68f, 70f, 78f, 70f, 72f, 74f, 68f, 80f };
 
@@ -92,7 +101,7 @@ final class FireworksShapes {
 
     /** 粒子直径 px（基准屏高，需乘 mScale）。 */
     static float size(int shape, Random r) {
-        return SIZE_MIN[shape] + r.nextFloat() * (SIZE_MAX[shape] - SIZE_MIN[shape]);
+        return (SIZE_MIN[shape] + r.nextFloat() * (SIZE_MAX[shape] - SIZE_MIN[shape])) * SIZE_SCALE;
     }
 
     /** 亮度下限/上限（HSL 的 L，百分比）。 */

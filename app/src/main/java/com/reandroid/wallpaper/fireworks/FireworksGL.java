@@ -663,7 +663,9 @@ public class FireworksGL extends GLESScene {
             if (e == null || !e.active || e.life <= 0.0f) continue;
             float t = e.maxLife > 0.0f ? e.life / e.maxLife : 0.0f;
             float a = t > 0.78f ? 1.0f : t / 0.78f;
-            a = (float) Math.pow(a, 0.6) * 0.88f;
+            // 参考实现在这里还乘了 0.88,但它画的是不透明硬边圆点;
+            // 软贴图本身已经衰减过一次,再压就只有"灰"没有"亮"
+            a = (float) Math.pow(a, 0.6);
             if (e.twinkle) {
                 a *= 0.55f + 0.45f * (float) Math.sin(e.life * 45.0f + e.phase);
                 if (a < 0.0f) a = 0.0f;
