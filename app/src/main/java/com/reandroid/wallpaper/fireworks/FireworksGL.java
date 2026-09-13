@@ -635,8 +635,8 @@ public class FireworksGL extends GLESScene {
             float size = mScene.getSize(tail.life);
             putFireworkParticle(root, tail.life, tail.posX - offsetX, tail.posY, size);
         } else if (tail.type == 1) {
-            // 闪光:固定 350 尺寸,纯白、全不透明
-            float size = 350.0f;
+            // 闪光:纯白、全不透明,直径随屏高等比缩放
+            float size = mScene.getFlareSize();
             putParticle(tail.posX - offsetX - size * 0.5f, tail.posY - size * 0.5f,
                     tail.posX - offsetX + size * 0.5f, tail.posY + size * 0.5f,
                     1.0f, 1.0f, 1.0f, 1.0f);

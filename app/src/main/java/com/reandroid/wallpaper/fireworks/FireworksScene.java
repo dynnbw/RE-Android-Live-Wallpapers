@@ -12,8 +12,24 @@ final class FireworksScene {
 
     // 数学常量：圆周率（简化值）
     static final float PI = 3.14159265358f;
+
+    /*
+     * 原版所有长度常量都以「像素」为单位，是按当年 480×800 级别机型定死的。
+     * 搬到高分屏上，火箭只能升到屏高的三分之一、火花也小得看不见 —— 因为它们是常量，
+     * 不随分辨率变化。这里按屏高等比放大（见 mScale），恢复原版的构图比例。
+     *
+     * 下面这些是「原版常量」，实际使用的是构造函数里缩放后的 mXxx 字段。
+     */
+    // 原版基准屏高（480×800 级别）
+    private static final float REFERENCE_HEIGHT = 800.0f;
     // 粒子基础尺寸
     static final float PARTICLE_SIZE = 50.0f;
+    // 闪光位置在主粒子周围的随机散布范围
+    private static final float FLARE_SPREAD = 120.0f;
+    // 闪光（爆炸瞬间的大亮斑）直径
+    private static final float FLARE_SIZE = 350.0f;
+    // 拖尾生成的最小尺寸阈值
+    private static final float TAIL_MIN_SIZE = 3.0f;
 
     // 烟花爆炸时的粒子数量
     private static final int EXPLODE_FIREWORKS = 74;
@@ -106,6 +122,15 @@ final class FireworksScene {
     // 场景高度（用于粒子初始位置计算）
     private int mSceneHeight;
 
+    // 屏高相对原版基准的放大系数（构造时按实际屏高算出）
+    private final float mScale;
+    // 以下为原版常量 × mScale 后的实际使用值
+    private final float mSpeed;
+    private final float mParticleSize;
+    private final float mFlareSpread;
+    private final float mFlareSize;
+    private final float mTailMinSize;
+
     // 触摸事件待处理标记
     boolean mTapPending = false;
     // 触摸X坐标
@@ -121,6 +146,19 @@ final class FireworksScene {
     FireworksScene(int width, int height) {
         mSceneWidth = width;
         mSceneHeight = height;
+        // 尺寸未知(0/负)时退回参考屏高,避免整场烟花缩成 0
+        float refHeight = height > 0 ? height : REFERENCE_HEIGHT;
+        mScale = refHeight / REFERENCE_HEIGHT;
+        mSpeed = SPEED * mScale;
+        mParticleSize = PARTICLE_SIZE * mScale;
+        mFlareSpread = FLARE_SPREAD * mScale;
+        mFlareSize = FLARE_SIZE * mScale;
+        mTailMinSize = TAIL_MIN_SIZE * mScale;
+    }
+
+    /** 闪光直径(已按屏高缩放),供渲染层绘制爆炸瞬间的亮斑。 */
+    float getFlareSize() {
+        return mFlareSize;
     }
 
     /**
@@ -220,7 +258,7 @@ final class FireworksScene {
      * @return 粒子绘制尺寸
      */
     float getSize(float life) {
-        return PARTICLE_SIZE * (float) Math.sqrt(Math.abs(life));
+        return mParticleSize * (float) Math.sqrt(Math.abs(life));
     }
 
     /**
@@ -255,7 +293,7 @@ final class FireworksScene {
             life *= 0.3f;
         }
         float size = 0.08f * getSize(life);
-        boolean draw = size < 3 || root.ds > size;
+        boolean draw = size < mTailMinSize || root.ds > size;
         // 不满足条件则不生成拖尾
         if (!root.hasTails || !draw) return -1;
 
@@ -304,8 +342,8 @@ final class FireworksScene {
     int genFlares(FireworkParticle first) {
         if (first == null) return -1;
         // 随机生成闪光位置（主粒子周围120像素内）
-        float x = randf2(first.posX - 120.0f, first.posX + 120.0f);
-        float y = randf2(first.posY - 120.0f, first.posY + 120.0f);
+        float x = randf2(first.posX - mFlareSpread, first.posX + mFlareSpread);
+        float y = randf2(first.posY - mFlareSpread, first.posY + mFlareSpread);
 
         // 寻找空闲的拖尾粒子
         for (int i = 0; i < MAX_TAILS; i++) {
@@ -359,7 +397,7 @@ final class FireworksScene {
             } else {
                 p.hasTails = false;
             }
-            p.ds = (int) PARTICLE_SIZE;
+            p.ds = (int) mParticleSize;
             p.life = -1.0f;
             p.fade = fade;
             p.type = type;
@@ -455,7 +493,7 @@ final class FireworksScene {
 
             // 更新位置
             float lastPos = p.posY;
-            p.posY = p.posY + (p.dy + (GRAVITY + vec[1]) * delta * SPEED * 0.5f) * delta * SPEED;
+            p.posY = p.posY + (p.dy + (GRAVITY + vec[1]) * delta * mSpeed * 0.5f) * delta * mSpeed;
             float curPos = p.posY;
             p.ds += (int) Math.abs(curPos - lastPos); // 累计移动距离
             genTails(p, true); // 组首 = 上升中那发
@@ -477,7 +515,7 @@ final class FireworksScene {
                 genFlares(p);
             }
             // 更新主粒子位置
-            p.posY = p.posY + (p.dy + (GRAVITY + vec[1]) * delta * SPEED * 0.5f) * delta * SPEED;
+            p.posY = p.posY + (p.dy + (GRAVITY + vec[1]) * delta * mSpeed * 0.5f) * delta * mSpeed;
             // 更新主粒子速度
             p.dy = p.dy + (GRAVITY + vec[1]) * delta;
             p.time = mNow;
@@ -500,8 +538,8 @@ final class FireworksScene {
 
                 // 更新位置
                 float lastPos = (float) Math.sqrt(e.posX * e.posX + e.posY * e.posY);
-                e.posX = e.posX + (e.dx + vec[0] * delta * SPEED * 0.5f) * delta * SPEED;
-                e.posY = e.posY + (e.dy + (GRAVITY + vec[1]) * delta * SPEED * 0.5f) * delta * SPEED;
+                e.posX = e.posX + (e.dx + vec[0] * delta * mSpeed * 0.5f) * delta * mSpeed;
+                e.posY = e.posY + (e.dy + (GRAVITY + vec[1]) * delta * mSpeed * 0.5f) * delta * mSpeed;
                 float curPos = (float) Math.sqrt(e.posX * e.posX + e.posY * e.posY);
                 e.ds += (int) Math.abs(curPos - lastPos);
                 genTails(e, false);
