@@ -31,8 +31,9 @@ import java.util.TimeZone;
  *   <li>相机变换被放在投影矩阵里的写法 → 显式合成为 view / view·model 两个矩阵</li>
  * </ul>
  *
- * <p><b>天空用的是另一个视图矩阵</b>（去掉相机平移与旋转）：原版的拖拽就是转相机，
- * 而地球的自转正来自它；天空若共用同一矩阵会变成"星空在转、地球看着不动"。
+ * <p><b>天空用的是另一个视图矩阵</b>（只去掉相机平移）：星空在无穷远，是真实天空，
+ * 相机转向哪就该看见哪片星；留着相机旋转才有这个观感。若连旋转也去掉，星空就变成
+ * 贴在屏幕上的一张画，拖拽时地球在转、星星纹丝不动（曾如此）。
  */
 public class EarthGL extends GLESScene {
 
@@ -41,8 +42,6 @@ public class EarthGL extends GLESScene {
     private static final String KEY_HALO = "earth_halo";
     private static final String KEY_SKY = "earth_sky";
 
-    /** 原版常量：黄赤交角。 */
-    private static final float UNIVERSE_TILT_DEG = 23.5f;
     private static final float FOV_DEG = 30.0f;
     private static final float NEAR = 0.01f;
     private static final float FAR = 1000.0f;
@@ -518,25 +517,11 @@ public class EarthGL extends GLESScene {
         Matrix.orthoM(mOrtho, 0, 0.0f, mWidth, mHeight, 0.0f, -1.0f, 1.0f);
     }
 
-    /**
-     * 视图矩阵。注意顺序必须与原版一致：
-     * 原版在投影矩阵上依次 {@code glRotatef(23.5)} 再 {@code camera.apply()}，
-     * 而 {@code apply()} 是"先 translate 再依次 rotate"，
-     * 所以合成结果是 {@code Rz(23.5) · T · Rx · Ry · Rz}。
-     */
+    /** 视图矩阵（相机 / 天空）。两者的差别只在相机平移，见 {@link EarthView}。 */
     private void buildView() {
         EarthCamera cam = mScene.activeCamera();
-
-        Matrix.setIdentityM(mView, 0);
-        Matrix.rotateM(mView, 0, UNIVERSE_TILT_DEG, 0.0f, 0.0f, 1.0f);
-        Matrix.translateM(mView, 0, cam.x, cam.y, cam.z);
-        Matrix.rotateM(mView, 0, cam.angleX, 1.0f, 0.0f, 0.0f);
-        Matrix.rotateM(mView, 0, cam.angleY, 0.0f, 1.0f, 0.0f);
-        Matrix.rotateM(mView, 0, cam.angleZ, 0.0f, 0.0f, 1.0f);
-
-        // 天空只保留黄赤交角：去掉相机平移与旋转，星空才不会跟着拖拽一起转
-        Matrix.setIdentityM(mSkyView, 0);
-        Matrix.rotateM(mSkyView, 0, UNIVERSE_TILT_DEG, 0.0f, 0.0f, 1.0f);
+        EarthView.buildCamera(mView, cam);
+        EarthView.buildSky(mSkyView, cam);
     }
 
     private final float[] mSkyModel = new float[16];
