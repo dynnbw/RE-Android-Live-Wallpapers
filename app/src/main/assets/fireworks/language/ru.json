@@ -4,5 +4,11 @@
   "pref_fireworks_count_title": "Количество фейерверков",
   "pref_fireworks_count_summary": "Сколько фейерверков одновременно взлетает и взрывается",
   "pref_fireworks_tails_title": "Шлейфы взрыва",
-  "pref_fireworks_tails_summary": "Разлетающиеся искры оставляют светящиеся шлейфы; выше нагрузка"
+  "pref_fireworks_tails_summary": "Разлетающиеся искры оставляют светящиеся шлейфы; выше нагрузка",
+  "pref_fireworks_palette_title": "Палитра",
+  "pref_fireworks_palette_summary": "Оригинал выбирает каждый канал случайно (тускло); яркая использует насыщенные тона",
+  "pref_fireworks_palette_label_original": "Оригинал",
+  "pref_fireworks_palette_label_vivid": "Яркая",
+  "pref_fireworks_enhanced_title": "Улучшенные взрывы",
+  "pref_fireworks_enhanced_summary": "Девять форм взрыва, ракеты с целью, ореол ракеты и мерцание"
 }

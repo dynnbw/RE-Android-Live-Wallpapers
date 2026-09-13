@@ -4,5 +4,11 @@
   "pref_fireworks_count_title": "Nombre de feux d’artifice",
   "pref_fireworks_count_summary": "Combien de feux d’artifice se lancent et explosent en même temps",
   "pref_fireworks_tails_title": "Traînées d’explosion",
-  "pref_fireworks_tails_summary": "Les étincelles d’explosion laissent des traînées lumineuses ; plus gourmand en performances"
+  "pref_fireworks_tails_summary": "Les étincelles d’explosion laissent des traînées lumineuses ; plus gourmand en performances",
+  "pref_fireworks_palette_title": "Palette de couleurs",
+  "pref_fireworks_palette_summary": "L’original tire chaque canal au hasard (terne) ; vif utilise des teintes saturées",
+  "pref_fireworks_palette_label_original": "Original",
+  "pref_fireworks_palette_label_vivid": "Vif",
+  "pref_fireworks_enhanced_title": "Explosions améliorées",
+  "pref_fireworks_enhanced_summary": "Neuf formes d’explosion, fusées à point cible, halo et scintillement"
 }

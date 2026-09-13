@@ -4,5 +4,11 @@
   "pref_fireworks_count_title": "煙花數量",
   "pref_fireworks_count_summary": "同時在飛與同時炸開的煙花數量",
   "pref_fireworks_tails_title": "爆開拖尾",
-  "pref_fireworks_tails_summary": "炸開的火花拖出光尾，較耗效能"
+  "pref_fireworks_tails_summary": "炸開的火花拖出光尾，較耗效能",
+  "pref_fireworks_palette_title": "配色",
+  "pref_fireworks_palette_summary": "原版每通道獨立隨機（偏灰）；鮮豔用高飽和色相，每發內部協調",
+  "pref_fireworks_palette_label_original": "原版",
+  "pref_fireworks_palette_label_vivid": "鮮豔",
+  "pref_fireworks_enhanced_title": "增強爆開",
+  "pref_fireworks_enhanced_summary": "九種爆開形態、火箭飛向目標點、火箭光暈與星塵閃爍"
 }

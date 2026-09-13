@@ -4,5 +4,11 @@
   "pref_fireworks_count_title": "烟花数量",
   "pref_fireworks_count_summary": "同时在飞与同时炸开的烟花数量",
   "pref_fireworks_tails_title": "爆开拖尾",
-  "pref_fireworks_tails_summary": "炸开的火花拖出光尾，更耗性能"
+  "pref_fireworks_tails_summary": "炸开的火花拖出光尾，更耗性能",
+  "pref_fireworks_palette_title": "配色",
+  "pref_fireworks_palette_summary": "原版每通道独立随机（偏灰）；鲜艳用高饱和色相，每发内部协调",
+  "pref_fireworks_palette_label_original": "原版",
+  "pref_fireworks_palette_label_vivid": "鲜艳",
+  "pref_fireworks_enhanced_title": "增强爆开",
+  "pref_fireworks_enhanced_summary": "九种爆开形态、火箭飞向目标点、火箭光晕与星尘闪烁"
 }

@@ -4,5 +4,11 @@
   "pref_fireworks_count_title": "Fireworks count",
   "pref_fireworks_count_summary": "How many fireworks launch and burst at the same time",
   "pref_fireworks_tails_title": "Burst trails",
-  "pref_fireworks_tails_summary": "Bursting sparks leave glowing trails; costs more performance"
+  "pref_fireworks_tails_summary": "Bursting sparks leave glowing trails; costs more performance",
+  "pref_fireworks_palette_title": "Colour palette",
+  "pref_fireworks_palette_summary": "Original picks each channel at random (muted); vivid uses saturated hues",
+  "pref_fireworks_palette_label_original": "Original",
+  "pref_fireworks_palette_label_vivid": "Vivid",
+  "pref_fireworks_enhanced_title": "Enhanced bursts",
+  "pref_fireworks_enhanced_summary": "Nine burst shapes, rockets that fly to a target, rocket glow and twinkling sparks"
 }

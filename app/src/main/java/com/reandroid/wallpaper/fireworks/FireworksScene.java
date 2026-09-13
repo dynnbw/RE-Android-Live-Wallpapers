@@ -131,6 +131,27 @@ final class FireworksScene {
     private final float mFlareSize;
     private final float mTailMinSize;
 
+    /*
+     * ---- 增强模式（pref_fireworks_enhanced）----
+     * 关闭时（默认）完全走原版那条更新路径，一行不改；打开才走下面这套形态/实时单位物理。
+     * 两条路径并存是刻意的：可回退必须以"逐像素等于原版"为准，而不是"参数退化到近似"。
+     */
+    // 主开关
+    boolean mEnhanced = false;
+    // 鲜艳配色（HSV）；关 = 原版每通道随机 RGB
+    boolean mVivid = false;
+
+    // 增强模式的火箭（目标点缓动）。按组槽位索引：常规组 i → i，额外组 j → MAX_COUNT + j
+    private Rocket[] mRockets;
+    // 增强模式每帧的秒数（夹到 [0, 0.05]，防止切后台回来一帧飞出去）
+    private float mDeltaSec;
+    // 上一帧的 mNow，用于算 mDeltaSec
+    private int mPrevNow;
+    // fillVelocity 的输出缓冲，避免每粒子分配
+    private final float[] mShapeVel = new float[2];
+    // 逐粒子上色用的临时缓冲
+    private final float[] mHsl = new float[3];
+
     // 触摸事件待处理标记
     boolean mTapPending = false;
     // 触摸X坐标
@@ -161,12 +182,26 @@ final class FireworksScene {
         return mFlareSize;
     }
 
+    /** 增强模式火箭的橙色外辉直径(已按屏高缩放)。 */
+    float getRocketGlowSize() {
+        return ROCKET_GLOW_SIZE * mScale;
+    }
+
+    /** 增强模式火箭的白色核心直径(已按屏高缩放)。 */
+    float getRocketCoreSize() {
+        return ROCKET_CORE_SIZE * mScale;
+    }
+
     /**
      * 初始化粒子系统：按当前组数分配数组并初始化所有粒子。
      * 设置变更时会再次调用（见 applySettings），空中现有的烟花直接丢弃。
      */
     void initialize() {
         mNow = (int) SystemClock.uptimeMillis();
+        // 首帧不该有一个巨大的 dt
+        mPrevNow = mNow;
+        mDeltaSec = 0.0f;
+        mRockets = null;
 
         // 按当前组数分配槽位
         mNormal = new FireworkParticle[mNormalGroups * STRIDE];
@@ -197,15 +232,20 @@ final class FireworksScene {
      *
      * @return 是否发生了重建
      */
-    boolean applySettings(int count, boolean tails) {
+    boolean applySettings(int count, boolean tails, boolean enhanced, boolean vivid) {
         int n = normalGroups(count);
         int e = extraGroups(count);
-        if (n == mNormalGroups && e == mExtraGroups && tails == mTailsEnabled) {
+        if (n == mNormalGroups && e == mExtraGroups && tails == mTailsEnabled
+                && enhanced == mEnhanced && vivid == mVivid) {
             return false;
         }
         mNormalGroups = n;
         mExtraGroups = e;
         mTailsEnabled = tails;
+        // 模式切换必须重建:增强模式下 life 的单位是秒,原版是 0~1,
+        // 半空中改模式会让同一颗粒子的 life 被两套含义解读
+        mEnhanced = enhanced;
+        mVivid = vivid;
         initialize();
         return true;
     }
@@ -375,10 +415,24 @@ final class FireworksScene {
             p = new FireworkParticle();
             arr[index] = p;
         }
-        // 随机生成粒子颜色（0.5~1.0的亮度）
-        int r = (int) ((randf(0.5f) + 0.5f) * 255.0f);
-        int g = (int) ((randf(0.5f) + 0.5f) * 255.0f);
-        int b = (int) ((randf(0.5f) + 0.5f) * 255.0f);
+        // 粒子颜色：原版 = 每通道独立随机 127~255（得到的是粉彩/浑浊色）；
+        // 鲜艳配色 = HSV 定基色相 + 高饱和，成组协调。增强模式的爆开粒子会在此基础上逐粒子偏移。
+        int r;
+        int g;
+        int b;
+        float baseHue;
+        if (mVivid) {
+            baseHue = HUE_BASE[mRandom.nextInt(HUE_BASE.length)];
+            hslToRgb(baseHue, randf2(60.0f, 78.0f), mHsl);
+            r = (int) (mHsl[0] * 255.0f);
+            g = (int) (mHsl[1] * 255.0f);
+            b = (int) (mHsl[2] * 255.0f);
+        } else {
+            baseHue = 0.0f;
+            r = (int) ((randf(0.5f) + 0.5f) * 255.0f);
+            g = (int) ((randf(0.5f) + 0.5f) * 255.0f);
+            b = (int) ((randf(0.5f) + 0.5f) * 255.0f);
+        }
         // 随机生成衰减速度
         float fade = randf2(1.0f - FADE_VARIANCE, 1.0f + FADE_VARIANCE) * FADE;
         // 计算生成拖尾的粒子数量
@@ -404,6 +458,7 @@ final class FireworksScene {
             p.r = r;
             p.g = g;
             p.b = b;
+            p.hue = baseHue;
             // 随机初始位置（屏幕宽度2倍范围内）
             p.posX = (int) randf(mSceneWidth * 2.0f);
             p.posY = (int) mSceneHeight; // 初始在屏幕底部
@@ -569,6 +624,23 @@ final class FireworksScene {
      * 遍历所有粒子组和拖尾粒子，执行物理计算
      */
     void update() {
+        if (mEnhanced) {
+            // 增强模式:实时单位物理 + 目标点缓动,原版那条路径完全不参与
+            mDeltaSec = (mNow - mPrevNow) / 1000.0f;
+            if (mDeltaSec < 0.0f) mDeltaSec = 0.0f;
+            if (mDeltaSec > 0.05f) mDeltaSec = 0.05f;   // 切后台回来不跳帧
+            mPrevNow = mNow;
+            for (int i = 0; i < mNormalGroups; i++) {
+                updateGroupEnhanced(mNormal, i * STRIDE, i);
+            }
+            for (int i = 0; i < mExtraGroups; i++) {
+                updateGroupEnhanced(mExtras, i * STRIDE, MAX_COUNT + i);
+            }
+            for (int i = 0; i < MAX_TAILS; i++) {
+                updateTails(mTails[i]);
+            }
+            return;
+        }
         // 更新常规烟花
         for (int i = 0; i < mNormalGroups; i++) {
             updateFireworks(mNormal, i * STRIDE);
@@ -597,6 +669,15 @@ final class FireworksScene {
                 // 初始化烟花组
                 initFireworks(mExtras, index, PARTICLE_EXTRAS);
                 p = mExtras[index];
+                if (mEnhanced) {
+                    // 增强模式:点击点即目标点,火箭从屏幕底部飞过去,抵达才炸
+                    p.posX = x;
+                    p.posY = y;
+                    p.life = 1.0f;
+                    p.active = true;
+                    launchRocket(mExtras, index, MAX_COUNT + i, x, y, true);
+                    break;
+                }
                 // 设置触摸位置为发射位置
                 p.posX = x;
                 p.posY = y;
@@ -609,6 +690,209 @@ final class FireworksScene {
                 break;
             }
         }
+    }
+
+    /* ==================== 增强模式实现 ==================== */
+
+    /** 鲜艳配色的基色相（度）。 */
+    private static final float[] HUE_BASE = { 0f, 15f, 35f, 50f, 168f, 192f, 215f, 265f, 300f, 330f };
+    /** 自动发射的火箭时长（秒）。 */
+    private static final float ROCKET_DUR_AUTO = 3.0f;
+    /** 点击发射的时长下限/上限（秒）与距离基数（基准屏高下的 px/s）。 */
+    private static final float ROCKET_DUR_MIN = 0.5f;
+    private static final float ROCKET_DUR_MAX = 1.25f;
+    private static final float ROCKET_SPEED_REF = 900.0f;
+    /** 垂柳固定金色的色相（同参考实现）。 */
+    private static final float WILLOW_HUE = 38.0f;
+    /** 火箭光晕/核心直径（px，基准屏高下）。 */
+    static final float ROCKET_GLOW_SIZE = 15.0f;
+    static final float ROCKET_CORE_SIZE = 5.2f;
+
+    /** 增强模式的火箭状态：从起点缓动飞向目标点、抵达即炸。 */
+    private static final class Rocket {
+        float sx, sy;   // 起点
+        float tx, ty;   // 目标
+        float t;        // 已飞行秒数
+        float dur;      // 总时长（秒）
+    }
+
+    private Rocket[] rockets() {
+        if (mRockets == null) {
+            mRockets = new Rocket[MAX_COUNT + extraGroups(MAX_COUNT)];
+        }
+        return mRockets;
+    }
+
+    /**
+     * 设定一发火箭：从屏幕底部缓动飞向 (tx, ty)，抵达即炸。
+     * 同时把组首粒子摆到起点（渲染层照旧只认粒子的 posX/posY）。
+     */
+    private void launchRocket(FireworkParticle[] arr, int index, int slot,
+                              float tx, float ty, boolean isTap) {
+        FireworkParticle p = arr[index];
+        Rocket r = rockets()[slot];
+        if (r == null) {
+            r = new Rocket();
+            mRockets[slot] = r;
+        }
+        r.tx = tx;
+        r.ty = ty;
+        r.sy = mSceneHeight + 12.0f;
+        r.t = 0.0f;
+        if (isTap) {
+            // 起点在点击点附近；时长随距离，全程速度大致恒定
+            r.sx = clamp(tx + randf2(-70.0f, 70.0f), 18.0f, mSceneWidth - 18.0f);
+            float d = (float) Math.hypot(tx - r.sx, ty - r.sy);
+            r.dur = clamp(d / (ROCKET_SPEED_REF * mScale), ROCKET_DUR_MIN, ROCKET_DUR_MAX);
+        } else {
+            r.sx = randf2(mSceneWidth * 0.12f, mSceneWidth * 0.88f);
+            r.dur = ROCKET_DUR_AUTO;
+        }
+        p.posX = r.sx;
+        p.posY = r.sy;
+        p.life = 1.0f;
+        p.active = true;
+        p.time = mNow;
+    }
+
+    /** 自动发射：起点在底部、目标落在屏高的 8%~38%（构图天然与分辨率无关）。 */
+    private void launchRocketAuto(FireworkParticle[] arr, int index, int slot) {
+        launchRocket(arr, index, slot,
+                randf2(mSceneWidth * 0.08f, mSceneWidth * 0.92f),
+                randf2(mSceneHeight * 0.08f, mSceneHeight * 0.38f),
+                false);
+    }
+
+    /** 增强模式下单组的推进：上升走缓动，爆开走实时单位积分。 */
+    private void updateGroupEnhanced(FireworkParticle[] arr, int index, int slot) {
+        FireworkParticle p = arr[index];
+        if (p == null) return;
+        float dt = mDeltaSec;
+
+        if (p.active) {
+            // 还没到发射时刻（initFireworks 用 p.time 做了随机延迟）
+            if (p.time > mNow) return;
+            Rocket r = rockets()[slot];
+            if (r == null) {
+                launchRocketAuto(arr, index, slot);
+                return;
+            }
+            r.t += dt;
+            float u = r.dur > 0.0f ? Math.min(r.t / r.dur, 1.0f) : 1.0f;
+            // 先快后慢，像真的升空
+            float e = 1.0f - (float) Math.pow(1.0f - u, 2.2);
+            p.posX = r.sx + (r.tx - r.sx) * e;
+            p.posY = r.sy + (r.ty - r.sy) * e;
+            if (u >= 1.0f) {
+                explodeEnhanced(arr, index);
+            }
+            return;
+        }
+
+        // 爆开阶段：整组寿命由组首计时，耗尽则重新 armed
+        if (p.life < 0.0f) return;
+        p.life -= dt;
+        updateBurstChildren(arr, index, dt);
+        if (p.life < 0.0f) {
+            initFireworks(arr, index, p.type);
+            rockets()[slot] = null;
+        }
+    }
+
+    /** 爆开粒子的推进：指数阻尼 + 重力，单位是 px/s。 */
+    private void updateBurstChildren(FireworkParticle[] arr, int index, float dt) {
+        for (int i = 0; i < EXPLODE_FIREWORKS; i++) {
+            FireworkParticle e = arr[index + i + 1];
+            if (!e.active) continue;
+            e.life -= dt;
+            if (e.life <= 0.0f) {
+                e.active = false;
+                continue;
+            }
+            e.dy += e.grav * dt;
+            float d = (float) Math.exp(-e.damp * dt);
+            e.dx *= d;
+            e.dy *= d;
+            e.posX += e.dx * dt;
+            e.posY += e.dy * dt;
+        }
+    }
+
+    /** 按形态生成整组爆开粒子。 */
+    private void explodeEnhanced(FireworkParticle[] arr, int index) {
+        FireworkParticle p = arr[index];
+        p.active = false;
+        p.time = mNow;
+
+        int shape = FireworksShapes.pickShape(mRandom);
+        // 垂柳恒为金色，其余沿用本组基色（initFireworks 里按配色模式定好）
+        float baseHue = FireworksShapes.fixedGold(shape) ? WILLOW_HUE : p.hue;
+        float groupLife = 0.0f;
+
+        for (int i = 0; i < EXPLODE_FIREWORKS; i++) {
+            FireworkParticle e = arr[index + i + 1];
+            FireworksShapes.fillVelocity(shape, i, EXPLODE_FIREWORKS, mRandom, mShapeVel);
+            e.active = true;
+            e.posX = p.posX;
+            e.posY = p.posY;
+            // 速度与重力按屏高等比缩放；阻尼(1/s)与寿命(s)是速率/时间量，不缩放
+            e.dx = mShapeVel[0] * mScale;
+            e.dy = mShapeVel[1] * mScale;
+            e.grav = FireworksShapes.gravity(shape) * mScale;
+            e.damp = FireworksShapes.damping(shape);
+            e.maxLife = FireworksShapes.life(shape, mRandom);
+            e.life = e.maxLife;
+            e.size = FireworksShapes.size(shape, mRandom) * mScale;
+            e.twinkle = FireworksShapes.twinkles(shape);
+            e.phase = mRandom.nextFloat() * 6.2831855f;
+            e.time = mNow;
+            if (e.maxLife > groupLife) groupLife = e.maxLife;
+
+            if (mVivid) {
+                float hue = baseHue
+                        + FireworksShapes.hueOffset(shape, i, EXPLODE_FIREWORKS)
+                        + FireworksShapes.hueStep(shape, i)
+                        + randf2(-12.0f, 12.0f);
+                hslToRgb(hue, FireworksShapes.light(shape, mRandom), mHsl);
+                e.r = (int) (mHsl[0] * 255.0f);
+                e.g = (int) (mHsl[1] * 255.0f);
+                e.b = (int) (mHsl[2] * 255.0f);
+            }
+            // 非鲜艳配色则沿用 initFireworks 给整组定的原版随机 RGB
+        }
+
+        p.life = groupLife;
+        p.maxLife = groupLife;
+        // 爆炸瞬间的白色亮斑（复用原版的闪光机制）
+        genFlares(p);
+    }
+
+    /** HSL → RGB(0~1)。饱和度固定 1.0，亮度按百分数给（同参考实现）。 */
+    private void hslToRgb(float h, float lightPercent, float[] out) {
+        float l = lightPercent / 100.0f;
+        float c = 1.0f - Math.abs(2.0f * l - 1.0f);
+        float hp = (h % 360.0f) / 60.0f;
+        if (hp < 0.0f) hp += 6.0f;
+        float x = c * (1.0f - Math.abs(hp % 2.0f - 1.0f));
+        float r1;
+        float g1;
+        float b1;
+        if (hp < 1.0f)      { r1 = c; g1 = x; b1 = 0.0f; }
+        else if (hp < 2.0f) { r1 = x; g1 = c; b1 = 0.0f; }
+        else if (hp < 3.0f) { r1 = 0.0f; g1 = c; b1 = x; }
+        else if (hp < 4.0f) { r1 = 0.0f; g1 = x; b1 = c; }
+        else if (hp < 5.0f) { r1 = x; g1 = 0.0f; b1 = c; }
+        else                { r1 = c; g1 = 0.0f; b1 = x; }
+        float m = l - c * 0.5f;
+        out[0] = r1 + m;
+        out[1] = g1 + m;
+        out[2] = b1 + m;
+    }
+
+    private static float clamp(float v, float min, float max) {
+        if (v < min) return min;
+        if (v > max) return max;
+        return v;
     }
 
     /**
@@ -644,12 +928,21 @@ class FireworkParticle {
     int r;              // 颜色R通道值
     int g;              // 颜色G通道值
     int b;              // 颜色B通道值
-    float life;         // 粒子生命值（0~1，0为消亡）
+    float life;         // 粒子生命值（原版模式 0~1；增强模式为剩余秒数）
     float fade;         // 粒子衰减速度
     float posX;         // X坐标
     float posY;         // Y坐标
     float dx;           // X方向速度
     float dy;           // Y方向速度
+
+    // ---- 以下仅增强模式使用（见 FireworksScene.mEnhanced）----
+    float maxLife;      // 总寿命(秒)，用于算渲染用的 life/maxLife
+    float grav;         // 重力 px/s²（已乘屏高比例）
+    float damp;         // 指数阻尼 1/s
+    float size;         // 基准直径 px（已乘屏高比例）
+    float hue;          // 基色相（度），鲜艳配色用
+    float phase;        // 闪烁相位
+    boolean twinkle;    // 是否闪烁（仅星尘形态）
 }
 
 /**

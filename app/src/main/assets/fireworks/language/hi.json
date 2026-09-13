@@ -4,5 +4,11 @@
   "pref_fireworks_count_title": "आतिशबाज़ी की संख्या",
   "pref_fireworks_count_summary": "एक साथ कितनी आतिशबाज़ियाँ छूटती और फूटती हैं",
   "pref_fireworks_tails_title": "फूटने पर पीछे की लकीरें",
-  "pref_fireworks_tails_summary": "फूटती चिंगारियाँ चमकती लकीरें छोड़ती हैं; प्रदर्शन पर अधिक असर"
+  "pref_fireworks_tails_summary": "फूटती चिंगारियाँ चमकती लकीरें छोड़ती हैं; प्रदर्शन पर अधिक असर",
+  "pref_fireworks_palette_title": "रंग पैलेट",
+  "pref_fireworks_palette_summary": "मूल हर चैनल को अलग-अलग यादृच्छिक चुनता है (फीका); जीवंत संतृप्त रंग लेता है",
+  "pref_fireworks_palette_label_original": "मूल",
+  "pref_fireworks_palette_label_vivid": "जीवंत",
+  "pref_fireworks_enhanced_title": "उन्नत विस्फोट",
+  "pref_fireworks_enhanced_summary": "नौ विस्फोट आकार, लक्ष्य की ओर उड़ते रॉकेट, रॉकेट प्रभामंडल और टिमटिमाहट"
 }

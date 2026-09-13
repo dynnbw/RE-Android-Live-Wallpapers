@@ -4,5 +4,11 @@
   "pref_fireworks_count_title": "আতশবাজির সংখ্যা",
   "pref_fireworks_count_summary": "একসাথে কতগুলো আতশবাজি ছোড়া হয় ও ফোটে",
   "pref_fireworks_tails_title": "ফোটার পরের লেজ",
-  "pref_fireworks_tails_summary": "ফোটা স্ফুলিঙ্গ জ্বলজ্বলে লেজ রেখে যায়; পারফরম্যান্সে বেশি বোঝা"
+  "pref_fireworks_tails_summary": "ফোটা স্ফুলিঙ্গ জ্বলজ্বলে লেজ রেখে যায়; পারফরম্যান্সে বেশি বোঝা",
+  "pref_fireworks_palette_title": "রঙের প্যালেট",
+  "pref_fireworks_palette_summary": "মূলটি প্রতিটি চ্যানেল আলাদাভাবে এলোমেলো নেয় (ম্লান); উজ্জ্বল স্যাচুরেটেড রং ব্যবহার করে",
+  "pref_fireworks_palette_label_original": "মূল",
+  "pref_fireworks_palette_label_vivid": "উজ্জ্বল",
+  "pref_fireworks_enhanced_title": "উন্নত বিস্ফোরণ",
+  "pref_fireworks_enhanced_summary": "নয়টি বিস্ফোরণ আকৃতি, লক্ষ্যের দিকে ওড়া রকেট, রকেটের আভা ও ঝিকিমিকি"
 }

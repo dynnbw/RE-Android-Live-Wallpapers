@@ -69,7 +69,7 @@ public final class FireworksScaleTest {
         assertEquals("尾迹池大小不变", FireworksScene.MAX_TAILS, scene.mTails.length);
 
         // 放到上限:数组随组数放大
-        assertTrue("首次变更应重建", scene.applySettings(FireworksScene.MAX_COUNT, false));
+        assertTrue("首次变更应重建", scene.applySettings(FireworksScene.MAX_COUNT, false, false, false));
         assertEquals("上限上升槽位", 2250, scene.mNormal.length);
         assertEquals("上限炸开槽位", 3375, scene.mExtras.length);
         assertEquals("上限总槽位", 5625, FireworksScene.slots(FireworksScene.MAX_COUNT));
@@ -80,7 +80,7 @@ public final class FireworksScaleTest {
         }
 
         // 调小:数组收缩,遍历上界跟着收缩,不越界
-        scene.applySettings(1, false);
+        scene.applySettings(1, false, false, false);
         assertEquals("调小后上升槽位", 1 * FireworksScene.STRIDE, scene.mNormal.length);
         assertEquals("调小后炸开槽位", 2 * FireworksScene.STRIDE, scene.mExtras.length);
         for (int i = 0; i < 60; i++) {
@@ -91,7 +91,7 @@ public final class FireworksScaleTest {
         scene.update();
 
         // 无变化时不应重建
-        assertFalse("相同设置不重建", scene.applySettings(1, false));
+        assertFalse("相同设置不重建", scene.applySettings(1, false, false, false));
 
         // 数组已按新组数重新填满(没有 null 槽位)
         for (int i = 0; i < scene.mNormal.length; i++) {

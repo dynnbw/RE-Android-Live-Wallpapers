@@ -85,10 +85,19 @@ public class FireworksGL extends GLESScene {
     private static final String KEY_TAILS = "pref_fireworks_tails";
     /** 主线程写、GL 线程读,故为 volatile。 */
     private volatile boolean mPrefTails = true;
+    // 增强模式主开关(默认关 = 完全原版行为),以及鲜艳配色
+    private static final String KEY_ENHANCED = "pref_fireworks_enhanced";
+    private static final String KEY_PALETTE = "pref_fireworks_palette";
+    private static final String PALETTE_VIVID = "vivid";
+    /** 主线程写、GL 线程读,故为 volatile。 */
+    private volatile boolean mPrefEnhanced = false;
+    private volatile boolean mPrefVivid = false;
     // 已应用的设置(只在 GL 线程读写)。初值 -1 保证首帧一定应用一次:
     // 以数量 10 启动的壁纸必须立刻用 10,不能等到设置变更才生效。
     private int mAppliedCount = -1;
     private boolean mAppliedTails = false;
+    private boolean mAppliedEnhanced = false;
+    private boolean mAppliedVivid = false;
     private FireworksGrassBackdrop mBackdrop;
     // 草地/星星配置跟随 grass 壁纸设置（每秒轮询 plugin_grass，契约外不注册监听器）
     private long mLastGrassConfigPollMs = 0L;
@@ -133,6 +142,8 @@ public class FireworksGL extends GLESScene {
             mGrassNightEnabled = prefs.getBoolean(KEY_GRASS_NIGHT, false);
             mPrefCount = prefs.getInt(KEY_COUNT, FireworksScene.DEFAULT_COUNT);
             mPrefTails = prefs.getBoolean(KEY_TAILS, true);
+            mPrefEnhanced = prefs.getBoolean(KEY_ENHANCED, false);
+            mPrefVivid = PALETTE_VIVID.equals(prefs.getString(KEY_PALETTE, "original"));
         }
     }
 
@@ -142,10 +153,17 @@ public class FireworksGL extends GLESScene {
     private void applyPendingSettings() {
         int count = mPrefCount;
         boolean tails = mPrefTails;
-        if (count == mAppliedCount && tails == mAppliedTails) return;
+        boolean enhanced = mPrefEnhanced;
+        boolean vivid = mPrefVivid;
+        if (count == mAppliedCount && tails == mAppliedTails
+                && enhanced == mAppliedEnhanced && vivid == mAppliedVivid) {
+            return;
+        }
         mAppliedCount = count;
         mAppliedTails = tails;
-        mScene.applySettings(count, tails);
+        mAppliedEnhanced = enhanced;
+        mAppliedVivid = vivid;
+        mScene.applySettings(count, tails, enhanced, vivid);
     }
 
     /** Returns the custom background URI, checking plugin prefs first. */
@@ -609,6 +627,10 @@ public class FireworksGL extends GLESScene {
      * @param offsetX X轴偏移量
      */
     private void drawFireworks(FireworkParticle[] arr, int index, float offsetX) {
+        if (mScene.mEnhanced) {
+            drawFireworksEnhanced(arr, index, offsetX);
+            return;
+        }
         for (int i = 0; i < STRIDE; i++) {
             FireworkParticle p = arr[index + i];
             int delta = mScene.mNow - p.time;
@@ -618,6 +640,43 @@ public class FireworksGL extends GLESScene {
                 putFireworkParticle(p, p.life, p.posX - offsetX, p.posY, size);
             }
         }
+    }
+
+    /**
+     * 增强模式的粒子绘制：组首是"橙色外辉 + 白色核心"的火箭，
+     * 其余是实时单位的小火花（alpha 走 life/maxLife 曲线，星尘带闪烁）。
+     */
+    private void drawFireworksEnhanced(FireworkParticle[] arr, int index, float offsetX) {
+        FireworkParticle leader = arr[index];
+        if (leader != null && leader.active) {
+            float x = leader.posX - offsetX;
+            float y = leader.posY;
+            float glow = mScene.getRocketGlowSize();
+            putParticle(x - glow * 0.5f, y - glow * 0.5f, x + glow * 0.5f, y + glow * 0.5f,
+                    1.0f, 0.686f, 0.275f, 0.32f);
+            float core = mScene.getRocketCoreSize();
+            putParticle(x - core * 0.5f, y - core * 0.5f, x + core * 0.5f, y + core * 0.5f,
+                    1.0f, 1.0f, 1.0f, 1.0f);
+        }
+        for (int i = 1; i < STRIDE; i++) {
+            FireworkParticle e = arr[index + i];
+            if (e == null || !e.active || e.life <= 0.0f) continue;
+            float t = e.maxLife > 0.0f ? e.life / e.maxLife : 0.0f;
+            float a = t > 0.78f ? 1.0f : t / 0.78f;
+            a = (float) Math.pow(a, 0.6) * 0.88f;
+            if (e.twinkle) {
+                a *= 0.55f + 0.45f * (float) Math.sin(e.life * 45.0f + e.phase);
+                if (a < 0.0f) a = 0.0f;
+            }
+            if (a <= 0.0f) continue;
+            putFireworkParticleRaw(e, e.posX - offsetX, e.posY, e.size, a);
+        }
+    }
+
+    /** 增强模式:粒子尺寸/透明度都由调用方算好,这里只写顶点。 */
+    private void putFireworkParticleRaw(FireworkParticle p, float x, float y, float size, float a) {
+        putParticle(x - size * 0.5f, y - size * 0.5f, x + size * 0.5f, y + size * 0.5f,
+                p.r / 255.0f, p.g / 255.0f, p.b / 255.0f, a);
     }
 
     /**

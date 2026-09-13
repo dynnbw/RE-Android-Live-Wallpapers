@@ -4,5 +4,11 @@
   "pref_fireworks_count_title": "Anzahl der Feuerwerke",
   "pref_fireworks_count_summary": "Wie viele Feuerwerke gleichzeitig starten und explodieren",
   "pref_fireworks_tails_title": "Schweife beim Zerplatzen",
-  "pref_fireworks_tails_summary": "Zerplatzende Funken hinterlassen leuchtende Schweife; kostet mehr Leistung"
+  "pref_fireworks_tails_summary": "Zerplatzende Funken hinterlassen leuchtende Schweife; kostet mehr Leistung",
+  "pref_fireworks_palette_title": "Farbpalette",
+  "pref_fireworks_palette_summary": "Original wählt jeden Kanal zufällig (gedämpft); lebendig nutzt gesättigte Farbtöne",
+  "pref_fireworks_palette_label_original": "Original",
+  "pref_fireworks_palette_label_vivid": "Leuchtend",
+  "pref_fireworks_enhanced_title": "Erweiterte Explosionen",
+  "pref_fireworks_enhanced_summary": "Neun Explosionsformen, Raketen mit Zielpunkt, Leuchtspur und Funkeln"
 }

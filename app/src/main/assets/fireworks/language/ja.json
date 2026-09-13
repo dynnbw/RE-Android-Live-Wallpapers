@@ -4,5 +4,11 @@
   "pref_fireworks_count_title": "花火の数",
   "pref_fireworks_count_summary": "同時に打ち上がり炸裂する花火の数",
   "pref_fireworks_tails_title": "炸裂の軌跡",
-  "pref_fireworks_tails_summary": "炸裂した火花が光の尾を引きます。性能への負荷が増えます"
+  "pref_fireworks_tails_summary": "炸裂した火花が光の尾を引きます。性能への負荷が増えます",
+  "pref_fireworks_palette_title": "配色",
+  "pref_fireworks_palette_summary": "オリジナルは各チャンネルを個別にランダム（くすみがち）。鮮やかは高彩度の色相",
+  "pref_fireworks_palette_label_original": "オリジナル",
+  "pref_fireworks_palette_label_vivid": "鮮やか",
+  "pref_fireworks_enhanced_title": "強化炸裂",
+  "pref_fireworks_enhanced_summary": "9 種類の炸裂形状、目標点へ飛ぶロケット、ロケットの光輪と星のまたたき"
 }

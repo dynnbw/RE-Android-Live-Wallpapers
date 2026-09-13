@@ -17,6 +17,25 @@
       "default": true
     },
     {
+      "type": "list",
+      "key": "pref_fireworks_palette",
+      "title": "pref_fireworks_palette_title",
+      "summary": "pref_fireworks_palette_summary",
+      "default": "original",
+      "values": ["original", "vivid"],
+      "labels": [
+        "pref_fireworks_palette_label_original",
+        "pref_fireworks_palette_label_vivid"
+      ]
+    },
+    {
+      "type": "switch",
+      "key": "pref_fireworks_enhanced",
+      "title": "pref_fireworks_enhanced_title",
+      "summary": "pref_fireworks_enhanced_summary",
+      "default": false
+    },
+    {
       "type": "switch",
       "key": "pref_fireworks_grass_night",
       "title": "@string/pref_fireworks_grass_night_title",

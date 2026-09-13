@@ -4,5 +4,11 @@
   "pref_fireworks_count_title": "Cantidad de fuegos artificiales",
   "pref_fireworks_count_summary": "Cuántos fuegos artificiales se lanzan y estallan a la vez",
   "pref_fireworks_tails_title": "Estelas de la explosión",
-  "pref_fireworks_tails_summary": "Las chispas de la explosión dejan estelas luminosas; consume más rendimiento"
+  "pref_fireworks_tails_summary": "Las chispas de la explosión dejan estelas luminosas; consume más rendimiento",
+  "pref_fireworks_palette_title": "Paleta de color",
+  "pref_fireworks_palette_summary": "El original elige cada canal al azar (apagado); vívido usa tonos saturados",
+  "pref_fireworks_palette_label_original": "Original",
+  "pref_fireworks_palette_label_vivid": "Vívido",
+  "pref_fireworks_enhanced_title": "Explosiones mejoradas",
+  "pref_fireworks_enhanced_summary": "Nueve formas de explosión, cohetes con punto de destino, halo y centelleo"
 }

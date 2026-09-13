@@ -4,5 +4,11 @@
   "pref_fireworks_count_title": "Quantidade de fogos",
   "pref_fireworks_count_summary": "Quantos fogos são lançados e explodem ao mesmo tempo",
   "pref_fireworks_tails_title": "Rastros da explosão",
-  "pref_fireworks_tails_summary": "As faíscas da explosão deixam rastros brilhantes; consome mais desempenho"
+  "pref_fireworks_tails_summary": "As faíscas da explosão deixam rastros brilhantes; consome mais desempenho",
+  "pref_fireworks_palette_title": "Paleta de cores",
+  "pref_fireworks_palette_summary": "O original escolhe cada canal ao acaso (opaco); vívido usa tons saturados",
+  "pref_fireworks_palette_label_original": "Original",
+  "pref_fireworks_palette_label_vivid": "Vívido",
+  "pref_fireworks_enhanced_title": "Explosões aprimoradas",
+  "pref_fireworks_enhanced_summary": "Nove formas de explosão, foguetes com ponto de destino, halo e cintilância"
 }
