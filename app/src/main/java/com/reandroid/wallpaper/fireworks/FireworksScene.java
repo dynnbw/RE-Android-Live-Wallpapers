@@ -122,13 +122,17 @@ final class FireworksScene {
     // 场景高度（用于粒子初始位置计算）
     private int mSceneHeight;
 
-    // 屏高相对原版基准的放大系数（构造时按实际屏高算出）
+    // 屏高相对原版基准的放大系数（构造时按实际屏高算出）。用于纵向距离：火箭上升、点击发射时长
     private final float mScale;
+    /*
+     * min(宽,高) 相对原版基准的放大系数。爆开是**径向对称**的，可见尺度受窄边限制，
+     * 而现代手机是 20:9 这种长屏 —— 用屏高做基准会把爆开吹到屏宽的两倍，
+     * 满屏只看得见零散粒子、看不出任何形状。增强模式的爆开半径/粒子尺寸都用它。
+     */
+    private final float mBurstScale;
     // 以下为原版常量 × mScale 后的实际使用值
     private final float mSpeed;
     private final float mParticleSize;
-    private final float mFlareSpread;
-    private final float mFlareSize;
     private final float mTailMinSize;
 
     /*
@@ -170,26 +174,35 @@ final class FireworksScene {
         // 尺寸未知(0/负)时退回参考屏高,避免整场烟花缩成 0
         float refHeight = height > 0 ? height : REFERENCE_HEIGHT;
         mScale = refHeight / REFERENCE_HEIGHT;
+        int shortSide = Math.min(width > 0 ? width : (int) REFERENCE_HEIGHT,
+                height > 0 ? height : (int) REFERENCE_HEIGHT);
+        mBurstScale = shortSide / REFERENCE_HEIGHT;
         mSpeed = SPEED * mScale;
         mParticleSize = PARTICLE_SIZE * mScale;
-        mFlareSpread = FLARE_SPREAD * mScale;
-        mFlareSize = FLARE_SIZE * mScale;
         mTailMinSize = TAIL_MIN_SIZE * mScale;
     }
 
-    /** 闪光直径(已按屏高缩放),供渲染层绘制爆炸瞬间的亮斑。 */
+    /**
+     * 闪光直径(已缩放),供渲染层绘制爆炸瞬间的亮斑。
+     * 增强模式的爆开按窄边缩放,闪光必须跟着,否则 350px 的亮斑会盖过整个爆开。
+     */
     float getFlareSize() {
-        return mFlareSize;
+        return FLARE_SIZE * burstOrHeightScale();
+    }
+
+    /** 当前模式该用哪个缩放基准:增强模式的爆开是径向对称的,按窄边;原版那条按屏高。 */
+    private float burstOrHeightScale() {
+        return mEnhanced ? mBurstScale : mScale;
     }
 
     /** 增强模式火箭的橙色外辉直径(已按屏高缩放)。 */
     float getRocketGlowSize() {
-        return ROCKET_GLOW_SIZE * mScale;
+        return ROCKET_GLOW_SIZE * mBurstScale;
     }
 
     /** 增强模式火箭的白色核心直径(已按屏高缩放)。 */
     float getRocketCoreSize() {
-        return ROCKET_CORE_SIZE * mScale;
+        return ROCKET_CORE_SIZE * mBurstScale;
     }
 
     /**
@@ -382,8 +395,9 @@ final class FireworksScene {
     int genFlares(FireworkParticle first) {
         if (first == null) return -1;
         // 随机生成闪光位置（主粒子周围120像素内）
-        float x = randf2(first.posX - mFlareSpread, first.posX + mFlareSpread);
-        float y = randf2(first.posY - mFlareSpread, first.posY + mFlareSpread);
+        float spread = FLARE_SPREAD * burstOrHeightScale();
+        float x = randf2(first.posX - spread, first.posX + spread);
+        float y = randf2(first.posY - spread, first.posY + spread);
 
         // 寻找空闲的拖尾粒子
         for (int i = 0; i < MAX_TAILS; i++) {
@@ -849,13 +863,13 @@ final class FireworksScene {
             e.posX = p.posX;
             e.posY = p.posY;
             // 速度与重力按屏高等比缩放；阻尼(1/s)与寿命(s)是速率/时间量，不缩放
-            e.dx = mShapeVel[0] * mScale;
-            e.dy = mShapeVel[1] * mScale;
-            e.grav = FireworksShapes.gravity(shape) * mScale;
+            e.dx = mShapeVel[0] * mBurstScale;
+            e.dy = mShapeVel[1] * mBurstScale;
+            e.grav = FireworksShapes.gravity(shape) * mBurstScale;
             e.damp = FireworksShapes.damping(shape);
             e.maxLife = FireworksShapes.life(shape, mRandom);
             e.life = e.maxLife;
-            e.size = FireworksShapes.size(shape, mRandom) * mScale;
+            e.size = FireworksShapes.size(shape, mRandom) * mBurstScale;
             e.twinkle = FireworksShapes.twinkles(shape);
             e.phase = mRandom.nextFloat() * 6.2831855f;
             e.time = mNow;

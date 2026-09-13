@@ -73,7 +73,7 @@ final class FireworksShapes {
      * 实测只有约 19% 的宽度处于 90% 以上 Alpha、34% 在 50% 以上。
      * 所以照抄参考实现的直径，亮核只有 1~2px，看上去几乎透明。这里按贴图剖面放大。
      */
-    private static final float SIZE_SCALE = 5.0f;
+    private static final float SIZE_SCALE = 9.0f;
     private static final float[] LIGHT_MIN = { 60f, 68f, 70f, 62f, 70f, 72f, 74f, 68f, 60f };
     private static final float[] LIGHT_MAX = { 74f, 68f, 70f, 78f, 70f, 72f, 74f, 68f, 80f };
 
