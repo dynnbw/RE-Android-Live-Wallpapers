@@ -16,6 +16,7 @@ import com.reandroid.gles.GLESScene;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+import java.nio.ShortBuffer;
 
 import static com.reandroid.wallpaper.fireworks.FireworksScene.*;
 
@@ -78,6 +79,28 @@ public class FireworksGL extends GLESScene {
     // 草地/星星配置跟随 grass 壁纸设置（每秒轮询 plugin_grass，契约外不注册监听器）
     private long mLastGrassConfigPollMs = 0L;
 
+    // ---- 粒子批量化 ----
+    // 每顶点 8 个 float:x, y, u, v, r, g, b, a
+    private static final int PARTICLE_FLOATS = 8;
+    private static final int VERTS_PER_PARTICLE = 4;
+    private static final int INDICES_PER_PARTICLE = 6;
+    // 上限 = 场景最大槽位 + 尾迹池 = (30+45)×75 + 500 = 6125
+    private static final int MAX_PARTICLES = 6125;
+
+    // 批量粒子的着色器程序(与背景程序分开,背景那条路径与其 uniform 特例完全不动)
+    private int mParticleProgram;
+    private int mParticlePositionHandle;
+    private int mParticleTexHandle;
+    private int mParticleColorHandle;
+    private int mParticleMatrixHandle;
+    private int mParticleSamplerHandle;
+
+    // 交错顶点缓冲与预生成索引缓冲
+    private FloatBuffer mParticleBuffer;
+    private ShortBuffer mParticleIndexBuffer;
+    // 本帧已写入的粒子数
+    private int mParticleCount;
+
     public FireworksGL(int width, int height, Context context) {
         super(width, height);
         mContext = context;
@@ -125,6 +148,11 @@ public class FireworksGL extends GLESScene {
         if (mProgram != 0) {
             GLES20.glDeleteProgram(mProgram);
             mProgram = 0;
+        }
+
+        if (mParticleProgram != 0) {
+            GLES20.glDeleteProgram(mParticleProgram);
+            mParticleProgram = 0;
         }
 
         if (mBackdrop != null) {
@@ -369,6 +397,40 @@ public class FireworksGL extends GLESScene {
         if (starBmp != null) {
             mTexStar = loadTexture(starBmp, true);
         }
+
+        // 批量粒子的着色器程序
+        String pvs = AssetLoader.readText(mContext, "fireworks/shaders/GLES/fireworks_particle_vs.glsl");
+        String pfs = AssetLoader.readText(mContext, "fireworks/shaders/GLES/fireworks_particle_fs.glsl");
+        mParticleProgram = createProgram(pvs, pfs);
+        mParticlePositionHandle = GLES20.glGetAttribLocation(mParticleProgram, "aPosition");
+        mParticleTexHandle = GLES20.glGetAttribLocation(mParticleProgram, "aTexCoord");
+        mParticleColorHandle = GLES20.glGetAttribLocation(mParticleProgram, "aColor");
+        mParticleMatrixHandle = GLES20.glGetUniformLocation(mParticleProgram, "uMVPMatrix");
+        mParticleSamplerHandle = GLES20.glGetUniformLocation(mParticleProgram, "uSampler");
+
+        initParticleBatch();
+    }
+
+    /**
+     * 一次性分配交错顶点缓冲,并按最大粒子数预生成索引缓冲。
+     * 索引按 0,1,2, 0,2,3 顺序展开 —— 与 drawRect 的 TRIANGLE_FAN 覆盖同样两个三角形,
+     * 且顺序展开意味着"画前 N 颗粒子"只需改 drawElements 的 count。
+     */
+    private void initParticleBatch() {
+        int maxVerts = MAX_PARTICLES * VERTS_PER_PARTICLE;
+        mParticleBuffer = ByteBuffer.allocateDirect(maxVerts * PARTICLE_FLOATS * 4)
+                .order(ByteOrder.nativeOrder()).asFloatBuffer();
+
+        ShortBuffer indices = ByteBuffer
+                .allocateDirect(MAX_PARTICLES * INDICES_PER_PARTICLE * 2)
+                .order(ByteOrder.nativeOrder()).asShortBuffer();
+        for (int p = 0; p < MAX_PARTICLES; p++) {
+            short base = (short) (p * VERTS_PER_PARTICLE);
+            indices.put(base).put((short) (base + 1)).put((short) (base + 2));
+            indices.put(base).put((short) (base + 2)).put((short) (base + 3));
+        }
+        indices.position(0);
+        mParticleIndexBuffer = indices;
     }
 
     /**
@@ -488,42 +550,6 @@ public class FireworksGL extends GLESScene {
     }
 
     /**
-     * 设置粒子颜色（兼容旧方法）
-     * @param fireworks 粒子实例
-     * @param life 粒子生命值
-     */
-    private void setColor(FireworkParticle fireworks, float life) {
-        float r = fireworks.r / 255.0f;
-        float g = fireworks.g / 255.0f;
-        float b = fireworks.b / 255.0f;
-        float a = (float) Math.sqrt(Math.abs(life));
-        GLES20.glUniform1f(mAlphaHandle, a);
-        GLES20.glUniform3f(mColorHandle, r, g, b);
-    }
-
-    /**
-     * 设置粒子绘制颜色和透明度
-     * @param fireworks 粒子实例（null则使用白色）
-     * @param life 粒子生命值
-     */
-    private void setParticleColor(FireworkParticle fireworks, float life) {
-        float r = 1.0f;
-        float g = 1.0f;
-        float b = 1.0f;
-        // 使用粒子自身颜色（如果不为空）
-        if (fireworks != null) {
-            r = fireworks.r / 255.0f;
-            g = fireworks.g / 255.0f;
-            b = fireworks.b / 255.0f;
-        }
-        // 透明度关联生命值（平方根映射，让衰减更自然）
-        float a = (float) Math.sqrt(Math.abs(life));
-        // 设置着色器统一变量
-        GLES20.glUniform1f(mAlphaHandle, a);
-        GLES20.glUniform3f(mColorHandle, r, g, b);
-    }
-
-    /**
      * 绘制背景
      * 绘制双背景以实现滚动无缝衔接
      * @param width 屏幕宽度
@@ -552,12 +578,8 @@ public class FireworksGL extends GLESScene {
             int delta = mScene.mNow - p.time;
             // 仅绘制激活且时间差为正的粒子
             if (p.active && delta >= 0) {
-                setParticleColor(p, p.life);
                 float size = mScene.getSize(p.life);
-                float x = p.posX - offsetX;
-                float y = p.posY;
-                // 绘制粒子（中心对齐）
-                drawRect(mTexStar, x - size * 0.5f, y - size * 0.5f, x + size * 0.5f, y + size * 0.5f);
+                putFireworkParticle(p, p.life, p.posX - offsetX, p.posY, size);
             }
         }
     }
@@ -573,29 +595,96 @@ public class FireworksGL extends GLESScene {
         if (tail.life < 0.0f) return;
 
         if (tail.type == 0) {
-            // 绘制普通拖尾
+            // 普通拖尾
             float size = mScene.getSize(tail.life);
-            float x = tail.posX - offsetX;
-            float y = tail.posY;
-            setParticleColor(root, tail.life);
-            drawRect(mTexStar, x - size * 0.5f, y - size * 0.5f, x + size * 0.5f, y + size * 0.5f);
+            putFireworkParticle(root, tail.life, tail.posX - offsetX, tail.posY, size);
         } else if (tail.type == 1) {
-            // 绘制闪光效果
+            // 闪光:固定 350 尺寸,纯白、全不透明
             float size = 350.0f;
-            float x = tail.posX - offsetX;
-            float y = tail.posY;
-            setParticleColor(null, 1.0f);
-            drawRect(mTexStar, x - size * 0.5f, y - size * 0.5f, x + size * 0.5f, y + size * 0.5f);
+            putParticle(tail.posX - offsetX - size * 0.5f, tail.posY - size * 0.5f,
+                    tail.posX - offsetX + size * 0.5f, tail.posY + size * 0.5f,
+                    1.0f, 1.0f, 1.0f, 1.0f);
             // 闪光绘制后重置拖尾
             mScene.initTails(tail);
         }
     }
 
+    /** 开始一帧的粒子批次。 */
+    private void beginParticles() {
+        mParticleBuffer.clear();
+        mParticleCount = 0;
+    }
+
     /**
-     * 绘制所有可见元素
+     * 往批次里追加一颗粒子(4 顶点 6 索引)。顶点与 UV 顺序和 drawRect 完全一致。
+     */
+    private void putParticle(float x0, float y0, float x1, float y1,
+                             float r, float g, float b, float a) {
+        if (mParticleCount >= MAX_PARTICLES) {
+            // 上限已按场景最大配置算出,正常不会触发;留作防御
+            return;
+        }
+        mParticleBuffer.put(x0).put(y0).put(0.0f).put(0.0f).put(r).put(g).put(b).put(a);
+        mParticleBuffer.put(x0).put(y1).put(0.0f).put(1.0f).put(r).put(g).put(b).put(a);
+        mParticleBuffer.put(x1).put(y1).put(1.0f).put(1.0f).put(r).put(g).put(b).put(a);
+        mParticleBuffer.put(x1).put(y0).put(1.0f).put(0.0f).put(r).put(g).put(b).put(a);
+        mParticleCount++;
+    }
+
+    /**
+     * 追加一颗"烟花粒子"(带自身颜色,透明度走 sqrt(|life|),与旧的 setParticleColor 一致)。
+     */
+    private void putFireworkParticle(FireworkParticle p, float life,
+                                     float x, float y, float size) {
+        float a = (float) Math.sqrt(Math.abs(life));
+        float r = p != null ? p.r / 255.0f : 1.0f;
+        float g = p != null ? p.g / 255.0f : 1.0f;
+        float b = p != null ? p.b / 255.0f : 1.0f;
+        putParticle(x - size * 0.5f, y - size * 0.5f, x + size * 0.5f, y + size * 0.5f,
+                r, g, b, a);
+    }
+
+    /** 一次 draw call 提交本帧所有粒子。 */
+    private void flushParticles() {
+        if (mParticleCount == 0) return;
+
+        GLES20.glUseProgram(mParticleProgram);
+        GLES20.glUniformMatrix4fv(mParticleMatrixHandle, 1, false, mProjectionMatrix, 0);
+
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTexStar);
+        GLES20.glUniform1i(mParticleSamplerHandle, 0);
+
+        int stride = PARTICLE_FLOATS * 4;
+        mParticleBuffer.position(0);
+        GLES20.glEnableVertexAttribArray(mParticlePositionHandle);
+        GLES20.glVertexAttribPointer(mParticlePositionHandle, 2, GLES20.GL_FLOAT,
+                false, stride, mParticleBuffer);
+        mParticleBuffer.position(2);
+        GLES20.glEnableVertexAttribArray(mParticleTexHandle);
+        GLES20.glVertexAttribPointer(mParticleTexHandle, 2, GLES20.GL_FLOAT,
+                false, stride, mParticleBuffer);
+        mParticleBuffer.position(4);
+        GLES20.glEnableVertexAttribArray(mParticleColorHandle);
+        GLES20.glVertexAttribPointer(mParticleColorHandle, 4, GLES20.GL_FLOAT,
+                false, stride, mParticleBuffer);
+
+        mParticleIndexBuffer.position(0);
+        GLES20.glDrawElements(GLES20.GL_TRIANGLES, mParticleCount * INDICES_PER_PARTICLE,
+                GLES20.GL_UNSIGNED_SHORT, mParticleIndexBuffer);
+
+        GLES20.glDisableVertexAttribArray(mParticlePositionHandle);
+        GLES20.glDisableVertexAttribArray(mParticleTexHandle);
+        GLES20.glDisableVertexAttribArray(mParticleColorHandle);
+    }
+
+    /**
+     * 绘制所有可见粒子:按原绘制顺序写入同一批次,最后一次性提交。
+     * 顺序不变 = 同一批次内仍按提交顺序光栅化,叠加结果与逐次绘制一致。
      * @param offsetX X轴偏移量
      */
     private void draw(float offsetX) {
+        beginParticles();
         // 绘制常规烟花
         for (int i = 0; i < mScene.mNormalGroups; i++) {
             drawFireworks(mScene.mNormal, i * STRIDE, offsetX);
@@ -608,6 +697,7 @@ public class FireworksGL extends GLESScene {
         for (int i = 0; i < MAX_TAILS; i++) {
             drawTails(mScene.mTails[i], offsetX);
         }
+        flushParticles();
     }
 
     /**
