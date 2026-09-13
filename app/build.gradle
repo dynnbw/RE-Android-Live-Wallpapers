@@ -18,6 +18,36 @@ def appVersionName = versionProps.getProperty('APP_VERSION_NAME', '1.0') as Stri
 
 def requestedTasks = gradle.startParameter.taskNames.collect { it.toLowerCase() }
 def isDebugVersionBuildRequested = requestedTasks.any { it.contains('debug') } && !requestedTasks.any { it.contains('release') }
+
+/**
+ * 隐藏壁纸（assets/<id>/info.json 里 "hidden": true）不编入正式发布包。
+ *
+ * 列表从 info.json 自动推导，不写死名字 —— 以后再把某个壁纸标记为隐藏，
+ * 不需要改构建脚本，它就会自动从正式包里消失。
+ *
+ * debug 构建仍然保留，方便继续开发这些壁纸。
+ */
+def hiddenAssetDirs = []
+file('src/main/assets').listFiles()?.each { dir ->
+    if (!dir.isDirectory()) return
+    def info = new File(dir, 'info.json')
+    if (!info.exists()) return
+    try {
+        if (new groovy.json.JsonSlurper().parseText(info.text).hidden == true) {
+            hiddenAssetDirs << dir.name
+        }
+    } catch (Exception ignored) {
+        // 解析失败就当它不是隐藏壁纸，不因为一个坏 json 影响构建
+    }
+}
+
+// 同时请求 debug 与 release 时（例如 `./gradlew assemble`）只能二选一，
+// 这里按正式包处理并明确告知，避免 debug 少素材时一头雾水。
+if (requestedTasks.any { it.contains('release') } && requestedTasks.any { it.contains('debug') }) {
+    println("[assets] 本次构建同时包含 debug 与 release，按正式包处理，" +
+            "隐藏壁纸不编入：" + hiddenAssetDirs +
+            "  仅需 debug 时请单独执行 assembleDebug")
+}
 def debugTimestamp = new Date().format('yyyy.MM.dd.HH.mm', TimeZone.getTimeZone('Asia/Shanghai'))
 def resolvedAppVersionName = isDebugVersionBuildRequested
     ? "DeBug${debugTimestamp}"
@@ -61,6 +91,21 @@ android {
             jniLibs.srcDirs = ['src/main/jniLibs']
             shaders.srcDirs = ['src/main/shaders']
         }
+    }
+
+    androidResources {
+        /*
+         * 为什么用全局设置而不是按变体：AGP 8.7 的 Variant.androidResources
+         * 没有暴露 ignoreAssetsPattern（实测报 MissingPropertyException），只能全局设。
+         *
+         * 判定取"纯 debug 构建才保留"，其余一律过滤 —— 失败方向要安全：
+         * 万一判断错，宁可 debug 包少两个开发用壁纸，也不能让隐藏素材漏进正式包。
+         *
+         * <default> 是 AAPT 的占位符（内置默认忽略规则），后面直接写目录名即为"忽略"。
+         */
+        ignoreAssetsPattern = (isDebugVersionBuildRequested || hiddenAssetDirs.isEmpty())
+                ? '<default>'
+                : ('<default>:' + hiddenAssetDirs.join(':'))
     }
 
     defaultConfig {
