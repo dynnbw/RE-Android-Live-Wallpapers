@@ -322,6 +322,11 @@ public abstract class GLESWallpaper extends WallpaperService {
                     return;
                 }
                 EGLConfig config = configs[0];
+                {
+                    int[] depthBits = new int[1];
+                    EGL14.eglGetConfigAttrib(display, config, EGL14.EGL_DEPTH_SIZE, depthBits, 0);
+                    android.util.Log.i("EarthEGL", "GLESWallpaper.java 深度位数 = " + depthBits[0]);
+                }
 
                 int[] attrib_list = {EGL14.EGL_CONTEXT_CLIENT_VERSION, 2, EGL14.EGL_NONE};
                 context = EGL14.eglCreateContext(display, config, EGL14.EGL_NO_CONTEXT, attrib_list, 0);

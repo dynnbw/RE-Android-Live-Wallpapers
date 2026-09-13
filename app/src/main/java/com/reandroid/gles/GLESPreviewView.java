@@ -247,6 +247,11 @@ public class GLESPreviewView extends SurfaceView implements SurfaceHolder.Callba
         }
         if (numConfig[0] == 0) return false;
         EGLConfig config = configs[0];
+        {
+            int[] depthBits = new int[1];
+            EGL14.eglGetConfigAttrib(mDisplay, config, EGL14.EGL_DEPTH_SIZE, depthBits, 0);
+            android.util.Log.i("EarthEGL", "GLESPreviewView.java 深度位数 = " + depthBits[0]);
+        }
 
         int[] contextAttribs = {EGL14.EGL_CONTEXT_CLIENT_VERSION, 2, EGL14.EGL_NONE};
         mContext = EGL14.eglCreateContext(mDisplay, config, EGL14.EGL_NO_CONTEXT, contextAttribs, 0);

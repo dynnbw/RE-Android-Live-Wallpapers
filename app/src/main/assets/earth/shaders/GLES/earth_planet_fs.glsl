@@ -26,13 +26,18 @@ void main() {
   vec3 l = normalize(uLightPosWorld - vWorldPos);
   float nl = dot(n, l);
 
-  vec4 dayTex = texture2D(uDay, vTexCoord);
+  // 网格的 UV 与标准等距圆柱贴图之间**差了 180° 经度**（不是镜像）：
+  // 直接采样会把大陆放到地球的另一面 —— 表现为"该亮的地方亮的是别的大陆"，
+  // 例如下午四点时亚洲却是夜里。U 平移 0.5 即可（右半边采样到左半边）。
+  vec2 uv = vec2(fract(vTexCoord.x + 0.5), vTexCoord.y);
+
+  vec4 dayTex = texture2D(uDay, uv);
   vec3 dayCol = dayTex.rgb * (uAmbient + (1.0 - uAmbient) * max(nl, 0.0)) + uChannelDelta;
 
   vec3 col = dayCol;
   if (uUseNight > 0.5) {
     // 城市灯光是自发光，不参与光照调制；晨昏线用 smoothstep 柔化
-    vec3 nightCol = texture2D(uNight, vTexCoord).rgb * uNightGain;
+    vec3 nightCol = texture2D(uNight, uv).rgb * uNightGain;
     col = mix(nightCol, dayCol, smoothstep(-0.15, 0.25, nl));
   }
   gl_FragColor = vec4(col, dayTex.a);

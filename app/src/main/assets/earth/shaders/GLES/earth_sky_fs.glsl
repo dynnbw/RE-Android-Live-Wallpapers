@@ -6,5 +6,6 @@ uniform sampler2D uSampler;
 varying vec2 vTexCoord;
 
 void main() {
-  gl_FragColor = texture2D(uSampler, vTexCoord);
+  // 与 planet 用同一套网格，UV 同样偏 180° 经度，保持一致
+  gl_FragColor = texture2D(uSampler, vec2(fract(vTexCoord.x + 0.5), vTexCoord.y));
 }

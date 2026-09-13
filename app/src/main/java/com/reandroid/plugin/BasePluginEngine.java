@@ -269,6 +269,9 @@ public abstract class BasePluginEngine implements WallpaperEngine {
             Log.e(TAG, "eglChooseConfig failed");
             return false;
         }
+        int[] depthBits = new int[1];
+        EGL14.eglGetConfigAttrib(mDisplay, configs[0], EGL14.EGL_DEPTH_SIZE, depthBits, 0);
+        Log.i(TAG, "EGL 配置深度位数 = " + depthBits[0]);
         int[] ctxAttribs = {EGL14.EGL_CONTEXT_CLIENT_VERSION, 2, EGL14.EGL_NONE};
         mEglContext = EGL14.eglCreateContext(mDisplay, configs[0], EGL14.EGL_NO_CONTEXT, ctxAttribs, 0);
         if (mEglContext == EGL14.EGL_NO_CONTEXT) return false;
