@@ -598,6 +598,10 @@ public class EarthGL extends GLESScene {
         mTexHaloCloseup = loadTexture("earth/drawable/halo_closeup.png");
         mTexSky = loadTexture("earth/drawable/sky.jpg");
 
+        int[] maxTex = new int[1];
+        GLES20.glGetIntegerv(GLES20.GL_MAX_TEXTURE_SIZE, maxTex, 0);
+        android.util.Log.i("EarthTex", "GL_MAX_TEXTURE_SIZE = " + maxTex[0]);
+
         String extensions = GLES20.glGetString(GLES20.GL_EXTENSIONS);
         mNpotMipmaps = extensions != null && extensions.contains("GL_OES_texture_npot");
 
@@ -651,11 +655,18 @@ public class EarthGL extends GLESScene {
      * 正好与原版一致（原版设的就是 CLAMP_TO_EDGE）。
      */
     private int loadTexture(String assetPath) {
-        Bitmap bmp = AssetLoader.decodeBitmap(mContext, assetPath);
-        if (bmp == null) {
-            android.util.Log.w("EarthGL", "纹理缺失: " + assetPath);
+        Bitmap bmp;
+        try {
+            bmp = AssetLoader.decodeBitmap(mContext, assetPath);
+        } catch (Throwable t) {
+            android.util.Log.e("EarthTex", assetPath + " 解码失败: " + t);
             return 0;
         }
+        if (bmp == null) {
+            android.util.Log.w("EarthTex", assetPath + " 解码返回 null");
+            return 0;
+        }
+        android.util.Log.i("EarthTex", assetPath + " 解码 " + bmp.getWidth() + "x" + bmp.getHeight());
         int[] tex = new int[1];
         GLES20.glGenTextures(1, tex, 0);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, tex[0]);
