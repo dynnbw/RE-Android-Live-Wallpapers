@@ -18,10 +18,6 @@ final class EarthScene {
     static final int CAMERA_CLOSEUP = 1;
     static final int CAMERA_CORNER = 2;
 
-    /**
-     * 原版的时区/时间初值。名字沿用原版常量（原版把 TIME 拼错成了 YIME）。
-     */
-    static final float INITIAL_TIME_ZONE_OFFSET = -75.0f;
     /** 每毫秒转多少度 = 360 / 86400000。 */
     static final float DEGREES_PER_MS = 4.1666667E-6f;
 
@@ -33,6 +29,21 @@ final class EarthScene {
      * 相对地球表面才是"每恒星日转一圈"。
      */
     static final float SIDEREAL_DEG_PER_DAY = 360.9856f;
+
+    /**
+     * 网格 UV + 光源位置共同决定的几何常量。
+     *
+     * <p>关系是 **直射经度 = MESH_LON_OFFSET_DEG − earthAngleY**（斜率 −1 是绕 Y 轴旋转的必然结果，
+     * 不是拟合出来的）。这个常量由实机观测标定，两个数据点：
+     * <ul>
+     *   <li>earthAngleY = 342° → 实测直射经度 145°E（马达加斯加显示凌晨 5~6 点）</li>
+     *   <li>earthAngleY = 252° → 实测直射经度 235°E（北美被照亮）</li>
+     * </ul>
+     * 两点连线的斜率为 −1、截距 127，与纯旋转的几何一致。
+     *
+     * <p>注意符号：写成 `+` 偏移会整体错 6 小时，必须用 `−`。
+     */
+    static final float MESH_LON_OFFSET_DEG = 127.0f;
 
     /** 云层自转：0.008333334 度/秒，一天正好 720°。 */
     static final float CLOUDS_ROTATION_FACTOR = 0.008333334f;
@@ -60,6 +71,8 @@ final class EarthScene {
 
     // 地球自转角（由时钟推出）
     private float mEarthAngleY;
+    // 太阳直射经度（东经为正），只由 UTC 决定
+    private float mSubsolarLon;
     /*
      * 云层自转：累加的是"经过的秒数"而不是角度本身。
      * 每帧 `angle += rate*dt` 会让 float 误差随帧数累积（实测 10 小时偏 0.05°，
@@ -115,22 +128,29 @@ final class EarthScene {
      */
     void setClock(long msSinceNoon, int tzRawOffsetMs, int dayOfYear, double daysSinceEpoch) {
         /*
-         * 原版写的是 `-75 - (tz.getRawOffset() + 本地距正午毫秒) * degPerMs`。
-         * 这里有个**时区被算了两遍**的错误：msSinceNoon 取自本地时间，再加一次时区偏移，
-         * 等于 `utcMs + 2*tz`。对 UTC+8 就是多算了 16 小时 —— 直射经度会偏出上百度的，
-         * 实测把印度的下午算成了夜里。
+         * 先算"太阳直射经度"，它**只由 UTC 时间决定**：
+         *   UTC 正午 → 0°（格林尼治），之后每小时西移 15°，正午之前在东经。
          *
-         * 正确项是"UTC 相对正午的毫秒"。而原版那个常量 -75 恰好让 UTC 正午时直射经度为 0°，
-         * 说明作者本来就是这么打算的，只是把 utcMs 错写成了 tz + localMs。
+         * 原版写的是 `-75 - (tz.getRawOffset() + 本地距正午毫秒) * degPerMs`：
+         * msSinceNoon 取自本地时间却又加了一次时区偏移，等于 `utcMs + 2*tz`，
+         * **时区被算了两遍**（UTC+8 就多算 16 小时）。这里改成只用 UTC。
          */
         long utcMsSinceNoon = msSinceNoon - tzRawOffsetMs;
-        float deg = INITIAL_TIME_ZONE_OFFSET - utcMsSinceNoon * DEGREES_PER_MS;
-        mEarthAngleY = wrap(deg);
+        mSubsolarLon = wrapSigned(-(utcMsSinceNoon / 3600000.0f) * 15.0f);
+
+        // 再由直射经度反推地球自转角。符号必须是减：绕 Y 轴旋转下，角度与经度是反向的
+        // （写成加会整体差 6 小时，实测踩过）。
+        mEarthAngleY = wrap(MESH_LON_OFFSET_DEG - mSubsolarLon);
 
         setMoonAngle(dayOfYear * MOON_DEGREES_PER_DAY);
 
         // 星空：与地球同向，但按恒星日（略快），于是每天西移约 1°（≈4 分钟）
         mSkyAngleY = wrap((float) (-daysSinceEpoch * SIDEREAL_DEG_PER_DAY));
+    }
+
+    /** 太阳直射经度（东经为正）。只由 UTC 时间决定，与时区无关。 */
+    float subsolarLongitude() {
+        return mSubsolarLon;
     }
 
     /** 星空自转角（含恒星日漂移）。 */
@@ -195,6 +215,14 @@ final class EarthScene {
     private static float wrap(float deg) {
         deg %= 360.0f;
         if (deg < 0.0f) deg += 360.0f;
+        return deg;
+    }
+
+    /** 归一到 (-180, 180]，用于经度。 */
+    private static float wrapSigned(float deg) {
+        deg %= 360.0f;
+        if (deg > 180.0f) deg -= 360.0f;
+        if (deg <= -180.0f) deg += 360.0f;
         return deg;
     }
 }
