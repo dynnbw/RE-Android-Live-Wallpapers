@@ -19,6 +19,33 @@ final class FireworksScene {
     private static final int EXPLODE_FIREWORKS = 74;
     // 每组烟花的粒子步长（每组总粒子数）
     static final int STRIDE = 75;
+
+    // 数量设置项的范围与默认值（默认 2 与移植时的原版 MAX_NORMAL 一致）
+    static final int MIN_COUNT = 1;
+    static final int MAX_COUNT = 30;
+    static final int DEFAULT_COUNT = 2;
+
+    /**
+     * 上升烟花组数 = N（夹到 [MIN_COUNT, MAX_COUNT]）。
+     */
+    static int normalGroups(int count) {
+        if (count < MIN_COUNT) return MIN_COUNT;
+        if (count > MAX_COUNT) return MAX_COUNT;
+        return count;
+    }
+
+    /**
+     * 炸开烟花组数 = round(N × 1.5)，保住原版的 2:3 比例（原版 MAX_NORMAL=2 / MAX_EXTRAS=3）。
+     */
+    static int extraGroups(int count) {
+        return Math.round(normalGroups(count) * 1.5f);
+    }
+
+    /** 粒子槽位总数（含每组的 STRIDE 个粒子）。 */
+    static int slots(int count) {
+        return (normalGroups(count) + extraGroups(count)) * STRIDE;
+    }
+
     // 常规烟花的最大组数
     static final int MAX_NORMAL = 2;
     // 额外烟花（点击触发）的最大组数
