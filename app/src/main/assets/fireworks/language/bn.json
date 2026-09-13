@@ -2,5 +2,7 @@
   "pref_custom_background": "",
   "pref_reset_background": "",
   "pref_fireworks_count_title": "আতশবাজির সংখ্যা",
-  "pref_fireworks_count_summary": "একসাথে কতগুলো আতশবাজি ছোড়া হয় ও ফোটে"
+  "pref_fireworks_count_summary": "একসাথে কতগুলো আতশবাজি ছোড়া হয় ও ফোটে",
+  "pref_fireworks_tails_title": "ফোটার পরের লেজ",
+  "pref_fireworks_tails_summary": "ফোটা স্ফুলিঙ্গ জ্বলজ্বলে লেজ রেখে যায়; পারফরম্যান্সে বেশি বোঝা"
 }

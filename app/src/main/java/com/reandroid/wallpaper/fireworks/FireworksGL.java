@@ -80,9 +80,15 @@ public class FireworksGL extends GLESScene {
     private static final String KEY_COUNT = "pref_fireworks_count";
     /** 主线程写、GL 线程读,故为 volatile。 */
     private volatile int mPrefCount = FireworksScene.DEFAULT_COUNT;
+    // 爆开粒子拖尾开关。默认开:原版 MAX_RATIO 恒为 0,爆开粒子是没有尾迹的,
+    // 打开是本次的明确诉求(仅组首那发上升时的白色尾迹是原版固有行为,不受此开关影响)。
+    private static final String KEY_TAILS = "pref_fireworks_tails";
+    /** 主线程写、GL 线程读,故为 volatile。 */
+    private volatile boolean mPrefTails = true;
     // 已应用的设置(只在 GL 线程读写)。初值 -1 保证首帧一定应用一次:
     // 以数量 10 启动的壁纸必须立刻用 10,不能等到设置变更才生效。
     private int mAppliedCount = -1;
+    private boolean mAppliedTails = false;
     private FireworksGrassBackdrop mBackdrop;
     // 草地/星星配置跟随 grass 壁纸设置（每秒轮询 plugin_grass，契约外不注册监听器）
     private long mLastGrassConfigPollMs = 0L;
@@ -126,6 +132,7 @@ public class FireworksGL extends GLESScene {
         if (prefs != null) {
             mGrassNightEnabled = prefs.getBoolean(KEY_GRASS_NIGHT, false);
             mPrefCount = prefs.getInt(KEY_COUNT, FireworksScene.DEFAULT_COUNT);
+            mPrefTails = prefs.getBoolean(KEY_TAILS, true);
         }
     }
 
@@ -134,9 +141,11 @@ public class FireworksGL extends GLESScene {
      */
     private void applyPendingSettings() {
         int count = mPrefCount;
-        if (count == mAppliedCount) return;
+        boolean tails = mPrefTails;
+        if (count == mAppliedCount && tails == mAppliedTails) return;
         mAppliedCount = count;
-        mScene.applySettings(count, mScene.mTailsEnabled);
+        mAppliedTails = tails;
+        mScene.applySettings(count, tails);
     }
 
     /** Returns the custom background URI, checking plugin prefs first. */
@@ -258,6 +267,9 @@ public class FireworksGL extends GLESScene {
             if (mContext == null) return;
             initGL();
         }
+
+        // 应用主线程写入的数量/尾迹设置(有变化时会重建粒子数组,必须在 GL 线程做)
+        applyPendingSettings();
 
         // 更新当前时间
         mScene.mNow = (int) SystemClock.uptimeMillis();

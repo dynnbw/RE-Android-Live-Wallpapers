@@ -11,6 +11,13 @@
     },
     {
       "type": "switch",
+      "key": "pref_fireworks_tails",
+      "title": "pref_fireworks_tails_title",
+      "summary": "pref_fireworks_tails_summary",
+      "default": true
+    },
+    {
+      "type": "switch",
       "key": "pref_fireworks_grass_night",
       "title": "@string/pref_fireworks_grass_night_title",
       "summary": "@string/pref_fireworks_grass_night_summary",

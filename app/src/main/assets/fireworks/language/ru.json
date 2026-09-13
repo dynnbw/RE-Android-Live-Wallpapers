@@ -2,5 +2,7 @@
   "pref_custom_background": "",
   "pref_reset_background": "",
   "pref_fireworks_count_title": "Количество фейерверков",
-  "pref_fireworks_count_summary": "Сколько фейерверков одновременно взлетает и взрывается"
+  "pref_fireworks_count_summary": "Сколько фейерверков одновременно взлетает и взрывается",
+  "pref_fireworks_tails_title": "Шлейфы взрыва",
+  "pref_fireworks_tails_summary": "Разлетающиеся искры оставляют светящиеся шлейфы; выше нагрузка"
 }

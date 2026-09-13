@@ -2,5 +2,7 @@
   "pref_custom_background": "",
   "pref_reset_background": "",
   "pref_fireworks_count_title": "Fireworks count",
-  "pref_fireworks_count_summary": "How many fireworks launch and burst at the same time"
+  "pref_fireworks_count_summary": "How many fireworks launch and burst at the same time",
+  "pref_fireworks_tails_title": "Burst trails",
+  "pref_fireworks_tails_summary": "Bursting sparks leave glowing trails; costs more performance"
 }

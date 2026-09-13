@@ -2,5 +2,7 @@
   "pref_custom_background": "",
   "pref_reset_background": "",
   "pref_fireworks_count_title": "आतिशबाज़ी की संख्या",
-  "pref_fireworks_count_summary": "एक साथ कितनी आतिशबाज़ियाँ छूटती और फूटती हैं"
+  "pref_fireworks_count_summary": "एक साथ कितनी आतिशबाज़ियाँ छूटती और फूटती हैं",
+  "pref_fireworks_tails_title": "फूटने पर पीछे की लकीरें",
+  "pref_fireworks_tails_summary": "फूटती चिंगारियाँ चमकती लकीरें छोड़ती हैं; प्रदर्शन पर अधिक असर"
 }

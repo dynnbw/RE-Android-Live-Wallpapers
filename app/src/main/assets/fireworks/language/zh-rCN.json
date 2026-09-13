@@ -2,5 +2,7 @@
   "pref_custom_background": "",
   "pref_reset_background": "",
   "pref_fireworks_count_title": "烟花数量",
-  "pref_fireworks_count_summary": "同时在飞与同时炸开的烟花数量"
+  "pref_fireworks_count_summary": "同时在飞与同时炸开的烟花数量",
+  "pref_fireworks_tails_title": "爆开拖尾",
+  "pref_fireworks_tails_summary": "炸开的火花拖出光尾，更耗性能"
 }

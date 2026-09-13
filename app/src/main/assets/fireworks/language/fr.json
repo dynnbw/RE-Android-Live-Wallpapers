@@ -2,5 +2,7 @@
   "pref_custom_background": "",
   "pref_reset_background": "",
   "pref_fireworks_count_title": "Nombre de feux d’artifice",
-  "pref_fireworks_count_summary": "Combien de feux d’artifice se lancent et explosent en même temps"
+  "pref_fireworks_count_summary": "Combien de feux d’artifice se lancent et explosent en même temps",
+  "pref_fireworks_tails_title": "Traînées d’explosion",
+  "pref_fireworks_tails_summary": "Les étincelles d’explosion laissent des traînées lumineuses ; plus gourmand en performances"
 }

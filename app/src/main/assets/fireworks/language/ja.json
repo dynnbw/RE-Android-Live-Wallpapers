@@ -2,5 +2,7 @@
   "pref_custom_background": "",
   "pref_reset_background": "",
   "pref_fireworks_count_title": "花火の数",
-  "pref_fireworks_count_summary": "同時に打ち上がり炸裂する花火の数"
+  "pref_fireworks_count_summary": "同時に打ち上がり炸裂する花火の数",
+  "pref_fireworks_tails_title": "炸裂の軌跡",
+  "pref_fireworks_tails_summary": "炸裂した火花が光の尾を引きます。性能への負荷が増えます"
 }
