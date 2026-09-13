@@ -781,8 +781,15 @@ final class FireworksScene {
             float u = r.dur > 0.0f ? Math.min(r.t / r.dur, 1.0f) : 1.0f;
             // 先快后慢，像真的升空
             float e = 1.0f - (float) Math.pow(1.0f - u, 2.2);
+            float prevX = p.posX;
+            float prevY = p.posY;
             p.posX = r.sx + (r.tx - r.sx) * e;
             p.posY = r.sy + (r.ty - r.sy) * e;
+            // 由位移反推瞬时速度(px/s),供渲染层把火箭画成一道光尾
+            if (dt > 0.0f) {
+                p.dx = (p.posX - prevX) / dt;
+                p.dy = (p.posY - prevY) / dt;
+            }
             if (u >= 1.0f) {
                 explodeEnhanced(arr, index);
             }

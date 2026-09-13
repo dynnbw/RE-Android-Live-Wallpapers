@@ -105,6 +105,8 @@ public class FireworksGL extends GLESScene {
     // ---- 粒子批量化 ----
     // 每顶点 8 个 float:x, y, u, v, r, g, b, a
     private static final int PARTICLE_FLOATS = 8;
+    /** 增强模式光尾的等效曝光时长(秒):拉长量 = 速度 × 它。嫌尾短/尾长改这里。 */
+    private static final float TRAIL_SECONDS = 0.12f;
     private static final int VERTS_PER_PARTICLE = 4;
     private static final int INDICES_PER_PARTICLE = 6;
     // 上限 = 场景最大槽位 + 尾迹池 = (30+45)×75 + 500 = 6125
@@ -654,9 +656,8 @@ public class FireworksGL extends GLESScene {
             float glow = mScene.getRocketGlowSize();
             putParticle(x - glow * 0.5f, y - glow * 0.5f, x + glow * 0.5f, y + glow * 0.5f,
                     1.0f, 0.686f, 0.275f, 0.32f);
-            float core = mScene.getRocketCoreSize();
-            putParticle(x - core * 0.5f, y - core * 0.5f, x + core * 0.5f, y + core * 0.5f,
-                    1.0f, 1.0f, 1.0f, 1.0f);
+            // 核心同样沿速度拉长 → 上升的火箭是一道彗尾
+            putStreak(leader, x, y, mScene.getRocketCoreSize(), 1.0f);
         }
         for (int i = 1; i < STRIDE; i++) {
             FireworkParticle e = arr[index + i];
@@ -671,14 +672,8 @@ public class FireworksGL extends GLESScene {
                 if (a < 0.0f) a = 0.0f;
             }
             if (a <= 0.0f) continue;
-            putFireworkParticleRaw(e, e.posX - offsetX, e.posY, e.size, a);
+            putStreak(e, e.posX - offsetX, e.posY, e.size, a);
         }
-    }
-
-    /** 增强模式:粒子尺寸/透明度都由调用方算好,这里只写顶点。 */
-    private void putFireworkParticleRaw(FireworkParticle p, float x, float y, float size, float a) {
-        putParticle(x - size * 0.5f, y - size * 0.5f, x + size * 0.5f, y + size * 0.5f,
-                p.r / 255.0f, p.g / 255.0f, p.b / 255.0f, a);
     }
 
     /**
@@ -717,15 +712,62 @@ public class FireworksGL extends GLESScene {
      */
     private void putParticle(float x0, float y0, float x1, float y1,
                              float r, float g, float b, float a) {
+        // 轴对齐四边形就是"沿 y"的特例,和拉伸四边形共用同一条写入路径
+        putQuadCorners(x0, y0, x0, y1, x1, y1, x1, y0, r, g, b, a);
+    }
+
+    /**
+     * 写一个任意四边形的粒子（顶点按周长顺序，UV 的 u 轴沿"尾→头"方向）。
+     * 供轴对齐的普通粒子和沿速度拉伸的光尾共用。
+     */
+    private void putQuadCorners(float x0, float y0, float x1, float y1,
+                                float x2, float y2, float x3, float y3,
+                                float r, float g, float b, float a) {
         if (mParticleCount >= MAX_PARTICLES) {
             // 上限已按场景最大配置算出,正常不会触发;留作防御
             return;
         }
         mParticleBuffer.put(x0).put(y0).put(0.0f).put(0.0f).put(r).put(g).put(b).put(a);
-        mParticleBuffer.put(x0).put(y1).put(0.0f).put(1.0f).put(r).put(g).put(b).put(a);
-        mParticleBuffer.put(x1).put(y1).put(1.0f).put(1.0f).put(r).put(g).put(b).put(a);
-        mParticleBuffer.put(x1).put(y0).put(1.0f).put(0.0f).put(r).put(g).put(b).put(a);
+        mParticleBuffer.put(x1).put(y1).put(0.0f).put(1.0f).put(r).put(g).put(b).put(a);
+        mParticleBuffer.put(x2).put(y2).put(1.0f).put(1.0f).put(r).put(g).put(b).put(a);
+        mParticleBuffer.put(x3).put(y3).put(1.0f).put(0.0f).put(r).put(g).put(b).put(a);
         mParticleCount++;
+    }
+
+    /**
+     * 增强模式的光尾：把粒子沿<b>速度方向</b>拉长。
+     *
+     * <p>拉长量正比于速度，所以刚炸开时光尾最长、减速后自然收成一个点 —— 不需要额外的
+     * 尾迹粒子池（那套的时间单位是为原版调的，且 500 个槽位分给上千颗粒子只会得到稀疏亮点）。
+     * 代价是零：仍是一颗一个四边形、一次 draw call。
+     */
+    private void putStreak(FireworkParticle p, float x, float y, float size, float a) {
+        float vx = p.dx;
+        float vy = p.dy;
+        float speed = (float) Math.hypot(vx, vy);
+        if (!mScene.mTailsEnabled || speed < 1.0f) {
+            putParticle(x - size * 0.5f, y - size * 0.5f,
+                    x + size * 0.5f, y + size * 0.5f,
+                    p.r / 255.0f, p.g / 255.0f, p.b / 255.0f, a);
+            return;
+        }
+        float ux = vx / speed;
+        float uy = vy / speed;
+        // 拉长量 = 速度 × 拖尾时长，并限制在粒子直径的 2.5 倍以内
+        float stretch = Math.min(speed * TRAIL_SECONDS, size * 2.5f);
+        float halfLen = (size + stretch) * 0.5f;
+        float halfWid = size * 0.5f;
+        float nx = -uy;
+        float ny = ux;
+        float r = p.r / 255.0f;
+        float g = p.g / 255.0f;
+        float b = p.b / 255.0f;
+        putQuadCorners(
+                x - ux * halfLen - nx * halfWid, y - uy * halfLen - ny * halfWid,
+                x - ux * halfLen + nx * halfWid, y - uy * halfLen + ny * halfWid,
+                x + ux * halfLen + nx * halfWid, y + uy * halfLen + ny * halfWid,
+                x + ux * halfLen - nx * halfWid, y + uy * halfLen - ny * halfWid,
+                r, g, b, a);
     }
 
     /**
