@@ -73,7 +73,14 @@ final class SceneData {
     LegacyParticle[] legacyExtras;
     LegacyParticle[] legacyNormalNight;
     LegacyParticle[] legacyExtrasNight;
-    float legacyTransition;
+    /**
+     * 传统粒子的可见度。蒲公英白天出、萤火虫夜里出，各自再乘一个天气放行系数。
+     *
+     * <p>拆成两个而不是留一个 {@code legacyTransition} 单值：那个是双向交叉淡入
+     * （蒲公英 = 1 − t、萤火虫 = t），只乘一个系数的话，压掉萤火虫会把蒲公英反推亮。
+     */
+    float legacyDandelionVisibility;
+    float legacyFireflyVisibility;
     long legacyNow;
 
     float timeFraction, dawn, morning, afternoon, dusk;

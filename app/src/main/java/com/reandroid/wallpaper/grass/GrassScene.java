@@ -148,7 +148,7 @@ final class GrassScene {
     private boolean mLegacyFireflyEnabled = false;
     int legacyDirection = 0;
     long legacyBlowTime = 0, legacyNow = 0;
-    // 双套粒子常驻：蒲公英（白天）+ 萤火虫（夜晚），按 legacyTransition（夜空权重）
+    // 双套粒子常驻：蒲公英（白天）+ 萤火虫（夜晚），可见度 = 日夜权重 × 天气放行
     // 交叉淡入淡出。原版在日夜边界硬切换类型并整体重建，粒子突兀出现/消失。
     LegacyParticle[] legacyNormal = new LegacyParticle[LEGACY_MAX_NORMAL];
     LegacyParticle[] legacyExtras = new LegacyParticle[LEGACY_MAX_EXTRAS];
@@ -491,8 +491,10 @@ final class GrassScene {
         mSceneData.legacyExtras = legacyExtras;
         mSceneData.legacyNormalNight = legacyNormalNight;
         mSceneData.legacyExtrasNight = legacyExtrasNight;
-        // 传统粒子的日夜权重：只跟日夜走，不叠天气（传统粒子是另一套开关，先不动）
-        mSceneData.legacyTransition = nightWeight;
+        // 传统粒子（另一套开关）同样叠天气：阵雨/雷暴/雪天不该有蒲公英和萤火虫。
+        // 放行系数与上面现代粒子用的是同一个，两者行为自然一致。
+        mSceneData.legacyDandelionVisibility = (1.0f - nightWeight) * mDandelionWeatherGate;
+        mSceneData.legacyFireflyVisibility = nightWeight * mFireflyWeatherGate;
         mSceneData.legacyNow = legacyNow;
         mSceneData.timeFraction = timeFrac;
         mSceneData.dawn = mDayNightSystem.getDawn();

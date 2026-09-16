@@ -339,7 +339,7 @@ final class GrassRenderDataBuilder {
             return reusableBuffer;
         }
         float alphaMultiplier = legacyTargetType == LEGACY_TYPE_DANDELION
-                ? (1.0f - sd.legacyTransition) : sd.legacyTransition;
+                ? sd.legacyDandelionVisibility : sd.legacyFireflyVisibility;
 
         int required = (LEGACY_MAX_NORMAL + LEGACY_MAX_EXTRAS) * 30;
         float[] out = reusableBuffer;

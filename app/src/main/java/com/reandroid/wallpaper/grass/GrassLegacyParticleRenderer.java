@@ -32,9 +32,9 @@ final class GrassLegacyParticleRenderer {
         clearBatchCounts();
 
         long animNowMs = sd.legacyNow;
-        // 双套粒子按夜空权重交叉淡入淡出（蒲公英白天、萤火虫夜晚）
-        mDandelionAlpha = 1.0f - sd.legacyTransition;
-        mFireflyAlpha = sd.legacyTransition;
+        // 双套粒子各自的可见度（蒲公英白天、萤火虫夜晚，均已叠天气放行）
+        mDandelionAlpha = sd.legacyDandelionVisibility;
+        mFireflyAlpha = sd.legacyFireflyVisibility;
 
         drawParticleSet(sd.legacyNormal, LEGACY_TYPE_DANDELION, false, animNowMs, width, height);
         drawParticleSet(sd.legacyExtras, LEGACY_TYPE_DANDELION, true, animNowMs, width, height);

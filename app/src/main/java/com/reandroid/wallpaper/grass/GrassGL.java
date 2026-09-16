@@ -190,8 +190,8 @@ public class GrassGL extends GLESScene {
     private final float[] mQuadVerts = new float[16];
     private final float[][] mLegacyBatchVertices = new float[LEGACY_BATCH_GROUP_COUNT][];
     private final int[] mLegacyBatchFloatCounts = new int[LEGACY_BATCH_GROUP_COUNT];
-    private float mLegacyDandelionAlpha = 1.0f; // 交叉淡入淡出：蒲公英 = 1 - transition
-    private float mLegacyFireflyAlpha = 0.0f;   // 萤火虫 = transition
+    private float mLegacyDandelionAlpha = 1.0f; // 来自 sd.legacyDandelionVisibility
+    private float mLegacyFireflyAlpha = 0.0f;   // 来自 sd.legacyFireflyVisibility
 
     // Performance and diagnostics
     private static final long PERF_SYNC_INTERVAL_MS = 1000L;
@@ -942,12 +942,12 @@ public class GrassGL extends GLESScene {
 
         long animNowMs = sd.legacyNow;
         if (dandelionPass) {
-            mLegacyDandelionAlpha = 1.0f - sd.legacyTransition;
+            mLegacyDandelionAlpha = sd.legacyDandelionVisibility;
             drawLegacyParticleSet(sd.legacyNormal, LEGACY_TYPE_DANDELION, false, animNowMs);
             drawLegacyParticleSet(sd.legacyExtras, LEGACY_TYPE_DANDELION, true, animNowMs);
             flushLegacyDandelionBatches();
         } else {
-            mLegacyFireflyAlpha = sd.legacyTransition;
+            mLegacyFireflyAlpha = sd.legacyFireflyVisibility;
             drawLegacyParticleSet(sd.legacyNormalNight, LEGACY_TYPE_FIREFLY, false, animNowMs);
             drawLegacyParticleSet(sd.legacyExtrasNight, LEGACY_TYPE_FIREFLY, true, animNowMs);
             flushLegacyFireflyBatches();
