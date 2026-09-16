@@ -109,8 +109,18 @@ final class GrassScene {
     /** 天气切换时粒子淡入淡出的时长（秒）。 */
     private static final float WEATHER_PARTICLE_FADE_SEC = 1.2f;
 
-    /** 天气色调的淡入淡出系数（0~1）。见 {@link #update}。 */
+    /** 天气色调的淡入淡出系数（0~1）。见 {@link #updateParticleVisibility}。 */
     private float mWeatherToneGate;
+
+    /*
+     * 本帧的可见度，由 updateParticleVisibility 算出，后面两个步骤（推进粒子位置、发布
+     * SceneData）都要用。拆方法之前它们是 update() 里的局部变量，跨方法就得提成字段。
+     */
+    private float mDandelionVisibility;
+    private float mFireflyVisibility;
+    private float mStarVisibility;
+    /** 夜空权重（不含天气遮蔽），天气色调与传统粒子都用它。 */
+    private float mNightWeight;
 
     /** 天气色调淡入淡出的时长（秒）。比粒子慢一些 —— 整片天空换色本来就该更缓。 */
     private static final float WEATHER_TONE_FADE_SEC = 2.0f;
@@ -312,27 +322,58 @@ final class GrassScene {
 
         updateSettingsFromPrefs();
 
+        float dt = advanceClock(animNowMs);
+        updateSky();
+        applyWeatherToSky();
+        boolean bladeAnglesDirty = updateWindAndBlades(dt);
+        updateParticleVisibility(dt);
+        updateParticlePositions(dt, animNowMs);
+        publishSceneData(dt, animNowMs, bladeAnglesDirty);
+
+        // 本帧的脏标记已被渲染器消费，清掉，等下一帧重新置位
+        mBladeIndexRebuildNeeded = false;
+        mGrassGeometryDirty = false;
+    }
+
+    /**
+     * 本帧的天文结果：时刻、亮度、昼夜。
+     *
+     * <p>包成一个类是因为这三个值要穿过下面好几个步骤；散成三个字段会让"它们是一组"这件事
+     * 看不出来。复用同一个实例，不产生每帧分配。
+     */
+    private static final class SkyState {
+        float timeFrac;
+        float brightness;
+        boolean isNight;
+    }
+
+    private final SkyState mSky = new SkyState();
+
+    /** 推进时钟，返回本帧秒数。首帧没有上一帧，给个 16ms 的估值；长卡顿夹到 50ms。 */
+    private float advanceClock(long animNowMs) {
         float dt = 0.016f;
         if (mLastAnimTimeMs > 0) {
             dt = (animNowMs - mLastAnimTimeMs) / 1000.0f;
             dt = clamp(dt, 0.0f, 0.05f);
         }
         mLastAnimTimeMs = animNowMs;
+        return dt;
+    }
 
+    /** 算本帧的天文状态（时刻 / 亮度 / 昼夜），顺带更新日、月与日食。 */
+    private void updateSky() {
         long nowMs = System.currentTimeMillis();
         if (mDayNightSystem.getLastSunUpdateMs() == 0L || (nowMs - mDayNightSystem.getLastSunUpdateMs()) > 3600000L) {
             mDayNightSystem.updateSunTimes(nowMs);
         }
 
-        float timeFrac = mDayNightSystem.timeFraction(mIsPreview, mUseAccurateSun);
-        float newB;
-        boolean isNight;
+        mSky.timeFrac = mDayNightSystem.timeFraction(mIsPreview, mUseAccurateSun);
 
         if (mUseAccurateSun) {
             mDayNightSystem.updateAccurateWeights(nowMs);
             float[] accurate = mDayNightSystem.getAccurateWeights();
-            newB = clamp(accurate[3] + 0.6f * (accurate[1] + accurate[2]), 0.0f, 1.0f);
-            isNight = mDayNightSystem.getLastSunAltitude() < 0.0;
+            mSky.brightness = clamp(accurate[3] + 0.6f * (accurate[1] + accurate[2]), 0.0f, 1.0f);
+            mSky.isNight = mDayNightSystem.getLastSunAltitude() < 0.0;
 
             // Compute moon data once, reuse for sun/moon/eclipse rendering
             mCalendar.setTimeZone(mDayNightSystem.getTimeZone());
@@ -353,14 +394,19 @@ final class GrassScene {
                 mSceneData.moonVisible = false;
             }
         } else {
-            newB = mDayNightSystem.computeSimpleNewB(timeFrac);
-            isNight = (timeFrac < mDayNightSystem.getDawn() || timeFrac > mDayNightSystem.getDusk());
+            mSky.brightness = mDayNightSystem.computeSimpleNewB(mSky.timeFrac);
+            mSky.isNight = (mSky.timeFrac < mDayNightSystem.getDawn()
+                    || mSky.timeFrac > mDayNightSystem.getDusk());
             mSceneData.hasSunData = false;
             mSceneData.hasSolarEclipseOcclusion = false;
             mSceneData.moonVisible = false;
         }
+    }
 
-        newB = clamp(newB * GrassWeatherSystem.brightnessMultiplier(mWeatherCondition), 0.0f, 1.0f);
+    /** 天气对整体亮度与日月光晕的影响，叠在 {@link #updateSky} 算出的基准亮度上。 */
+    private void applyWeatherToSky() {
+        mSky.brightness = clamp(
+                mSky.brightness * GrassWeatherSystem.brightnessMultiplier(mWeatherCondition), 0.0f, 1.0f);
         if (mSceneData.hasSunData) {
             mSceneData.sunAlpha = clamp(mSceneData.sunAlpha * GrassWeatherSystem.sunAlphaScale(mWeatherCondition),
                 0.0f, 1.0f);
@@ -372,9 +418,15 @@ final class GrassScene {
                 mSceneData.moonBrightness * GrassWeatherSystem.moonBrightnessScale(mWeatherCondition),
                 0.0f, 1.0f);
         }
+    }
 
-        // Update blade angles using noise
-        float dayNightWind = GrassWeatherSystem.windDayNightScale(mWeatherCondition, isNight);
+    /**
+     * 推进风相位并重算草叶角度。
+     *
+     * @return 草叶角度是否变化到需要重建几何
+     */
+    private boolean updateWindAndBlades(float dt) {
+        float dayNightWind = GrassWeatherSystem.windDayNightScale(mWeatherCondition, mSky.isNight);
         float windTimeScale = GrassWeatherSystem.windTimeScale(mWeatherCondition) * dayNightWind;
         /*
          * 相位对时间积分，不是拿开机时间乘倍率。
@@ -395,7 +447,11 @@ final class GrassScene {
         if (mSceneData.grassGeometryDirty) {
             mBladeSystem.markAnglesRendered();
         }
+        return bladeAnglesDirty;
+    }
 
+    /** 算本帧各类粒子的可见度，并把天气放行做成淡入淡出（不能硬切）。 */
+    private void updateParticleVisibility(float dt) {
         boolean allowDandelion = GrassWeatherSystem.allowsDandelion(mWeatherCondition);
         boolean allowFirefly = GrassWeatherSystem.allowsFirefly(mWeatherCondition);
         /*
@@ -409,17 +465,16 @@ final class GrassScene {
                 mDandelionWeatherGate, allowDandelion, dt, WEATHER_PARTICLE_FADE_SEC);
         mFireflyWeatherGate = GrassWeatherSystem.fadeGate(
                 mFireflyWeatherGate, allowFirefly, dt, WEATHER_PARTICLE_FADE_SEC);
-        float dandelionVisibility = (mDandelionEnabled ? computeDandelionVisibility(timeFrac) : 0.0f)
+        mDandelionVisibility = (mDandelionEnabled ? computeDandelionVisibility(mSky.timeFrac) : 0.0f)
                 * mDandelionWeatherGate;
-        float fireflyVisibility = (mFireflyEnabled ? computeFireflyVisibility(timeFrac) : 0.0f)
+        mFireflyVisibility = (mFireflyEnabled ? computeFireflyVisibility(mSky.timeFrac) : 0.0f)
                 * mFireflyWeatherGate;
-        float nightWeight = computeStarVisibility(timeFrac);
+        mNightWeight = computeStarVisibility(mSky.timeFrac);
         /*
          * 星空还要再被天气压一道：阴雨夜里不该满天星。
          * 太阳/月亮早有对应的 scale，星星这一层之前漏了，于是任何天气的夜空都长一样。
          */
-        float starVisibility = nightWeight
-                * GrassWeatherSystem.starVisibilityScale(mWeatherCondition);
+        mStarVisibility = mNightWeight * GrassWeatherSystem.starVisibilityScale(mWeatherCondition);
 
         /*
          * 天气色调的开关同样要淡入淡出，不能硬切。
@@ -430,22 +485,26 @@ final class GrassScene {
          */
         mWeatherToneGate = GrassWeatherSystem.fadeGate(mWeatherToneGate,
                 GrassWeatherSystem.hasSkyTone(mWeatherCondition), dt, WEATHER_TONE_FADE_SEC);
-        mSceneData.dayWeight = 1.0f - nightWeight;
+        mSceneData.dayWeight = 1.0f - mNightWeight;
         mSceneData.weatherToneAlpha = mSceneData.dayWeight * mWeatherToneGate;
+    }
 
-        // Update particle positions（传统优先：传统开关开启时现代粒子不再更新）
-        if (!mLegacyDandelionEnabled && dandelionVisibility > 0.001f && mDandelions != null) {
+    /** 推进粒子位置（传统优先：传统开关开启时现代粒子不再更新）。 */
+    private void updateParticlePositions(float dt, long animNowMs) {
+        if (!mLegacyDandelionEnabled && mDandelionVisibility > 0.001f && mDandelions != null) {
             GrassParticleSystem.updateDandelionPositions(mRandom, mDandelions, dt,
                     mDandelionSpeedScale, mWidth, mHeight);
         }
-        if (!mLegacyFireflyEnabled && fireflyVisibility > 0.001f && mFireflies != null) {
+        if (!mLegacyFireflyEnabled && mFireflyVisibility > 0.001f && mFireflies != null) {
             GrassParticleSystem.updateFireflyPositions(mFireflies, dt, mWidth, mHeight);
         }
         if (mLegacyDandelionEnabled || mLegacyFireflyEnabled) {
             updateLegacyState(animNowMs);
         }
+    }
 
-        // Populate SceneData
+    /** 把本帧的一切灌进 SceneData，交给渲染层。这一段只有赋值，没有逻辑。 */
+    private void publishSceneData(float dt, long animNowMs, boolean bladeAnglesDirty) {
         mSceneData.grassEnabled = mGrassEnabled;
         mSceneData.nightInvert = mNightInvert;
         mSceneData.nightDesaturateGrass = mNightDesaturateGrass;
@@ -460,11 +519,11 @@ final class GrassScene {
         mSceneData.grassTintH = mGrassTintH;
         mSceneData.grassTintS = mGrassTintS;
         mSceneData.grassTintV = mGrassTintV;
-        mSceneData.dandelionEnabled = dandelionVisibility > 0.001f;
-        mSceneData.fireflyEnabled = fireflyVisibility > 0.001f;
-        mSceneData.dandelionVisibility = dandelionVisibility;
-        mSceneData.fireflyVisibility = fireflyVisibility;
-        mSceneData.starVisibility = starVisibility;
+        mSceneData.dandelionEnabled = mDandelionVisibility > 0.001f;
+        mSceneData.fireflyEnabled = mFireflyVisibility > 0.001f;
+        mSceneData.dandelionVisibility = mDandelionVisibility;
+        mSceneData.fireflyVisibility = mFireflyVisibility;
+        mSceneData.starVisibility = mStarVisibility;
         mSceneData.legacyDandelionEnabled = mLegacyDandelionEnabled;
         mSceneData.legacyFireflyEnabled = mLegacyFireflyEnabled;
         mSceneData.blades = mBladeSystem.getBlades();
@@ -475,17 +534,17 @@ final class GrassScene {
         mSceneData.legacyNormalNight = legacyNormalNight;
         mSceneData.legacyExtrasNight = legacyExtrasNight;
         // 传统粒子（另一套开关）同样叠天气：阵雨/雷暴/雪天不该有蒲公英和萤火虫。
-        // 放行系数与上面现代粒子用的是同一个，两者行为自然一致。
-        mSceneData.legacyDandelionVisibility = (1.0f - nightWeight) * mDandelionWeatherGate;
-        mSceneData.legacyFireflyVisibility = nightWeight * mFireflyWeatherGate;
+        // 放行系数与现代粒子用的是同一个，两者行为自然一致。
+        mSceneData.legacyDandelionVisibility = (1.0f - mNightWeight) * mDandelionWeatherGate;
+        mSceneData.legacyFireflyVisibility = mNightWeight * mFireflyWeatherGate;
         mSceneData.legacyNow = legacyNow;
-        mSceneData.timeFraction = timeFrac;
+        mSceneData.timeFraction = mSky.timeFrac;
         mSceneData.dawn = mDayNightSystem.getDawn();
         mSceneData.morning = mDayNightSystem.getMorning();
         mSceneData.afternoon = mDayNightSystem.getAfternoon();
         mSceneData.dusk = mDayNightSystem.getDusk();
-        mSceneData.newB = newB;
-        mSceneData.isNight = isNight;
+        mSceneData.newB = mSky.brightness;
+        mSceneData.isNight = mSky.isNight;
         mSceneData.weatherCondition = mWeatherCondition;
         System.arraycopy(mDayNightSystem.getAccurateWeights(), 0, mSceneData.accurateWeights, 0, 4);
         mSceneData.solarEclipseWeight = mSolarEclipseWeight;
@@ -495,8 +554,6 @@ final class GrassScene {
         mSceneData.animNowMs = animNowMs;
         mSceneData.bladeIndexRebuildNeeded = mBladeIndexRebuildNeeded;
         mSceneData.grassGeometryDirty = mGrassGeometryDirty || bladeAnglesDirty;
-        mBladeIndexRebuildNeeded = false;
-        mGrassGeometryDirty = false;
     }
 
     // ---- Private update helpers ----
