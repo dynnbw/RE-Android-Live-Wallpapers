@@ -9,7 +9,6 @@ import android.view.Surface;
 import com.reandroid.vulkan.VKSurfaceView;
 
 class GrassVKSurfaceView extends VKSurfaceView<GrassScene> {
-    private static final int VERTEX_STRIDE = 8;
 
     private short[] mCachedIndices = new short[0];
     private final NightStarsLayer mNightStars = new NightStarsLayer();

@@ -165,23 +165,6 @@ final class GrassScene {
     // Cached SceneData (reused to avoid allocations)
     private final SceneData mSceneData = new SceneData();
 
-    // Vulkan transient buffers (reused to avoid per-frame allocations)
-    private final float[] mVKSkyParams = new float[6];
-    private final float[] mVKMoonParams = new float[12];
-    private float[] mVKGrassVertices = new float[0];
-    private int mVKGrassFloatCount = 0;
-    private final float[] mVKSunVerts = new float[30];
-    private int mVKSunFloatCount = 0;
-    private final float[] mVKMoonVerts = new float[30];
-    private int mVKMoonFloatCount = 0;
-    private float[] mVKDandelionVerts = new float[0];
-    private int mVKDandelionFloatCount = 0;
-    private float[] mVKFireflyVerts = new float[0];
-    private int mVKFireflyFloatCount = 0;
-    private float[] mVKFireflyFlareVerts = new float[0];
-    private int mVKFireflyFlareFloatCount = 0;
-    private int mVKTempSpriteFloatCount = 0;
-
     // ---- Constructor ----
     GrassScene(int width, int height) {
         mWidth = width;

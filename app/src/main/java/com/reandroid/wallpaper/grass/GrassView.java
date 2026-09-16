@@ -30,7 +30,6 @@ import javax.microedition.khronos.opengles.GL10;
  * 草地壁纸 GL 视图（适配 WallpaperService）
  */
 public class GrassView extends GLSurfaceView implements GLSurfaceView.Renderer {
-    private static final String TAG = "GrassView";
     private GLESScene mGrassGL;
     private long mLastFrameTime;
 

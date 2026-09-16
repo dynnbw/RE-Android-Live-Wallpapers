@@ -82,7 +82,6 @@ public class GrassGL extends GLESScene {
             setBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
         }
     };
-    private GrassLegacyParticleRenderer mLegacyParticleRenderer;
 
     private final GrassStarRenderer.RenderOps mStarRenderOps = new GrassStarRenderer.RenderOps() {
         @Override
@@ -222,7 +221,6 @@ public class GrassGL extends GLESScene {
         super(width, height);
         mContext = context;
         mScene = new GrassScene(width, height);
-        mLegacyParticleRenderer = new GrassLegacyParticleRenderer(mScene, mSpriteRenderer);
         mBackgroundRenderer.setViewport(width, height);
         mWeatherRenderer.setViewport(width, height);
         mStarRenderer.setViewport(width, height);
@@ -300,7 +298,6 @@ public class GrassGL extends GLESScene {
     public void resize(int width, int height) {
         super.resize(width, height);
         mScene.resize(width, height);
-        mLegacyParticleRenderer = new GrassLegacyParticleRenderer(mScene, mSpriteRenderer);
         mBackgroundRenderer.setViewport(width, height);
         mWeatherRenderer.setViewport(width, height);
         mStarRenderer.setViewport(width, height);
