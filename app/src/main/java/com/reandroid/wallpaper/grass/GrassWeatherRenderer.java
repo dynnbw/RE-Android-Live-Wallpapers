@@ -22,7 +22,13 @@ final class GrassWeatherRenderer {
     private static final int RAIN_BATCH_GROUP_COUNT = 3;
     private static final int SNOW_BATCH_GROUP_COUNT = 4;
     private static final int CLOUD_BATCH_GROUP_COUNT = 4;
-    private static final int FLOATS_PER_VERTEX = 4;
+    /**
+     * 顶点格式：x, y, u, v, a —— 与 GrassRenderDataBuilder 产出的一致（两个渲染器共用）。
+     *
+     * <p>天气这几层整批透明度统一，所以逐顶点 a 一律写 1，透明度走 drawBatch 的 uniform。
+     * 逐顶点那份留给粒子/星空。
+     */
+    private static final int FLOATS_PER_VERTEX = 5;
     private static final int FLOATS_PER_QUAD = 6 * FLOATS_PER_VERTEX;
 
     interface TextureLoader {
@@ -546,6 +552,7 @@ final class GrassWeatherRenderer {
         out[cursor++] = y;
         out[cursor++] = u;
         out[cursor++] = v;
+        out[cursor++] = 1.0f;   // 逐顶点 alpha：本层不用，整批透明度走 uniform
         return cursor;
     }
 

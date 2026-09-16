@@ -61,7 +61,7 @@ public class GrassGL extends GLESScene {
     private static final int LEGACY_BATCH_GROUP_FIREFLY1_START = 1;
     private static final int LEGACY_BATCH_GROUP_FIREFLY2_START = LEGACY_BATCH_GROUP_FIREFLY1_START + LEGACY_FIREFLY_ALPHA_BIN_COUNT;
     private static final int LEGACY_BATCH_GROUP_COUNT = LEGACY_BATCH_GROUP_FIREFLY2_START + LEGACY_FIREFLY_ALPHA_BIN_COUNT;
-    private static final int LEGACY_FLOATS_PER_VERTEX = 4;
+    private static final int LEGACY_FLOATS_PER_VERTEX = 5;
     private static final int LEGACY_FLOATS_PER_QUAD = 6 * LEGACY_FLOATS_PER_VERTEX;
 
     // ---- 场景逻辑层（非 GL）----
@@ -104,6 +104,7 @@ public class GrassGL extends GLESScene {
     private int mBgMatrixHandle;
     private int mBgAlphaHandle;
     private int mBgTintHandle;
+    private int mBgVertexAlphaHandle;
     private int mBgSamplerHandle;
 
     // Sky program handles
@@ -427,8 +428,11 @@ public class GrassGL extends GLESScene {
          * GrassBackgroundRenderer.setAlpha 每次绘制前设回白色。两者覆盖了全部绘制路径。
          */
         mBgTintHandle = GLES20.glGetUniformLocation(mBackgroundProgram, "uTint");
+        // 精灵的逐顶点 alpha（见 grass_bg_vs.glsl）；粒子/星空/天气精灵与 VK 共用同一套顶点
+        mBgVertexAlphaHandle = GLES20.glGetAttribLocation(mBackgroundProgram, "aAlpha");
         mSpriteRenderer.setProgramHandles(mBgPositionHandle, mBgTexHandle, mBgSamplerHandle, mBgAlphaHandle);
         mSpriteRenderer.setTintHandle(mBgTintHandle);
+        mSpriteRenderer.setVertexAlphaHandle(mBgVertexAlphaHandle);
         mBackgroundRenderer.setBackgroundProgramHandles(mBgPositionHandle, mBgTexHandle, mBgSamplerHandle, mBgAlphaHandle);
         mBackgroundRenderer.setBackgroundTintHandle(mBgTintHandle);
         mWeatherRenderer.setBackgroundMatrixHandle(mBgMatrixHandle);
@@ -1108,6 +1112,7 @@ public class GrassGL extends GLESScene {
         out[cursor++] = y;
         out[cursor++] = u;
         out[cursor++] = v;
+        out[cursor++] = 1.0f;   // 逐顶点 alpha：传统粒子按 alpha 桶走 uniform
         return cursor;
     }
 

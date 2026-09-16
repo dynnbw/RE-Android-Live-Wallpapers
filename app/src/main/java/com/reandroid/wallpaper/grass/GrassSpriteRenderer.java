@@ -7,11 +7,23 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
 final class GrassSpriteRenderer {
+    /**
+     * 精灵顶点格式：x, y, u, v, a —— 每顶点一个 alpha。
+     *
+     * <p>逐顶点 alpha 是给"每个顶点透明度不同"的几何用的（粒子、星空、天气精灵都由
+     * GrassRenderDataBuilder 产出这种格式，GLES 与 Vulkan 共用）。需要整批统一透明度的
+     * 调用（{@link #drawSprite}/{@link #drawRect} 等）会把 a 写成 1，
+     * 透明度仍走 uAlpha uniform —— 两者在片元里相乘。
+     */
+    private static final int FLOATS_PER_VERTEX = 5;
+    private static final int VERTEX_STRIDE_BYTES = FLOATS_PER_VERTEX * 4;
+
     private int positionHandle = -1;
     private int texHandle = -1;
     private int samplerHandle = -1;
     private int alphaHandle = -1;
     private int tintHandle = -1;
+    private int vertexAlphaHandle = -1;
 
     /**
      * 染色（uTint）。默认白色即原样输出，用来把白色的云在夜里压暗。
@@ -30,7 +42,7 @@ final class GrassSpriteRenderer {
 
     private FloatBuffer spriteBuffer;
     private FloatBuffer batchBuffer;
-    private final float[] quadVerts = new float[16];
+    private final float[] quadVerts = new float[4 * FLOATS_PER_VERTEX];
 
     void setProgramHandles(int positionHandle, int texHandle, int samplerHandle, int alphaHandle) {
         this.positionHandle = positionHandle;
@@ -41,6 +53,10 @@ final class GrassSpriteRenderer {
 
     void setTintHandle(int tintHandle) {
         this.tintHandle = tintHandle;
+    }
+
+    void setVertexAlphaHandle(int vertexAlphaHandle) {
+        this.vertexAlphaHandle = vertexAlphaHandle;
     }
 
     void setTint(float r, float g, float b) {
@@ -93,9 +109,12 @@ final class GrassSpriteRenderer {
     }
 
     void drawBatch(int texture, float[] vertices, int floatCount, float alpha) {
-        if (vertices == null || floatCount <= 0 || (floatCount % 4) != 0) {
+        if (vertices == null || floatCount <= 0 || (floatCount % FLOATS_PER_VERTEX) != 0) {
             return;
         }
+        // 注意不要在这里把 vertexAlphaHandle 也算进"句柄缺失"：万一某个驱动把 aAlpha 优化掉
+        // （location = -1），那样会导致整批不画。通用顶点属性的默认值是 (0,0,0,1)，
+        // 不启用该数组时 aAlpha 就是 1，对"整批统一透明度"的调用方恰好是正确的。
         if (positionHandle < 0 || texHandle < 0 || samplerHandle < 0 || alphaHandle < 0) {
             return;
         }
@@ -105,20 +124,24 @@ final class GrassSpriteRenderer {
         batchBuffer.put(vertices, 0, floatCount).position(0);
 
         GLES20.glEnableVertexAttribArray(positionHandle);
-        GLES20.glVertexAttribPointer(positionHandle, 2, GLES20.GL_FLOAT, false, 16, batchBuffer);
+        GLES20.glVertexAttribPointer(positionHandle, 2, GLES20.GL_FLOAT, false, VERTEX_STRIDE_BYTES, batchBuffer);
         batchBuffer.position(2);
         GLES20.glEnableVertexAttribArray(texHandle);
-        GLES20.glVertexAttribPointer(texHandle, 2, GLES20.GL_FLOAT, false, 16, batchBuffer);
+        GLES20.glVertexAttribPointer(texHandle, 2, GLES20.GL_FLOAT, false, VERTEX_STRIDE_BYTES, batchBuffer);
+        batchBuffer.position(4);
+        GLES20.glEnableVertexAttribArray(vertexAlphaHandle);
+        GLES20.glVertexAttribPointer(vertexAlphaHandle, 1, GLES20.GL_FLOAT, false, VERTEX_STRIDE_BYTES, batchBuffer);
 
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture);
         GLES20.glUniform1i(samplerHandle, 0);
         GLES20.glUniform1f(alphaHandle, alpha);
         uploadTint();
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, floatCount / 4);
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, floatCount / FLOATS_PER_VERTEX);
 
         GLES20.glDisableVertexAttribArray(positionHandle);
         GLES20.glDisableVertexAttribArray(texHandle);
+        GLES20.glDisableVertexAttribArray(vertexAlphaHandle);
     }
 
     private void appendSpriteQuadVertices(
@@ -128,33 +151,40 @@ final class GrassSpriteRenderer {
             float u2, float v2, float u3, float v3) {
         ensureBuffer();
         int cursor = 0;
-        cursor = putSpriteVertex(cursor, x0, y0, u0, v0);
-        cursor = putSpriteVertex(cursor, x1, y1, u1, v1);
-        cursor = putSpriteVertex(cursor, x2, y2, u2, v2);
-        putSpriteVertex(cursor, x3, y3, u3, v3);
+        cursor = putSpriteVertex(cursor, x0, y0, u0, v0, 1.0f);
+        cursor = putSpriteVertex(cursor, x1, y1, u1, v1, 1.0f);
+        cursor = putSpriteVertex(cursor, x2, y2, u2, v2, 1.0f);
+        putSpriteVertex(cursor, x3, y3, u3, v3, 1.0f);
 
         spriteBuffer.clear();
         spriteBuffer.put(quadVerts).position(0);
     }
 
-    private int putSpriteVertex(int cursor, float x, float y, float u, float v) {
+    private int putSpriteVertex(int cursor, float x, float y, float u, float v, float a) {
         quadVerts[cursor++] = x;
         quadVerts[cursor++] = y;
         quadVerts[cursor++] = u;
         quadVerts[cursor++] = v;
+        quadVerts[cursor++] = a;
         return cursor;
     }
 
     private void flush(int texture, float alpha) {
+        // 注意不要在这里把 vertexAlphaHandle 也算进"句柄缺失"：万一某个驱动把 aAlpha 优化掉
+        // （location = -1），那样会导致整批不画。通用顶点属性的默认值是 (0,0,0,1)，
+        // 不启用该数组时 aAlpha 就是 1，对"整批统一透明度"的调用方恰好是正确的。
         if (positionHandle < 0 || texHandle < 0 || samplerHandle < 0 || alphaHandle < 0) {
             return;
         }
 
         GLES20.glEnableVertexAttribArray(positionHandle);
-        GLES20.glVertexAttribPointer(positionHandle, 2, GLES20.GL_FLOAT, false, 16, spriteBuffer);
+        GLES20.glVertexAttribPointer(positionHandle, 2, GLES20.GL_FLOAT, false, VERTEX_STRIDE_BYTES, spriteBuffer);
         spriteBuffer.position(2);
         GLES20.glEnableVertexAttribArray(texHandle);
-        GLES20.glVertexAttribPointer(texHandle, 2, GLES20.GL_FLOAT, false, 16, spriteBuffer);
+        GLES20.glVertexAttribPointer(texHandle, 2, GLES20.GL_FLOAT, false, VERTEX_STRIDE_BYTES, spriteBuffer);
+        spriteBuffer.position(4);
+        GLES20.glEnableVertexAttribArray(vertexAlphaHandle);
+        GLES20.glVertexAttribPointer(vertexAlphaHandle, 1, GLES20.GL_FLOAT, false, VERTEX_STRIDE_BYTES, spriteBuffer);
 
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture);
@@ -165,6 +195,7 @@ final class GrassSpriteRenderer {
 
         GLES20.glDisableVertexAttribArray(positionHandle);
         GLES20.glDisableVertexAttribArray(texHandle);
+        GLES20.glDisableVertexAttribArray(vertexAlphaHandle);
     }
 
     private void uploadTint() {
@@ -175,7 +206,7 @@ final class GrassSpriteRenderer {
 
     private void ensureBuffer() {
         if (spriteBuffer == null) {
-            spriteBuffer = ByteBuffer.allocateDirect(4 * 4 * 4)
+            spriteBuffer = ByteBuffer.allocateDirect(4 * VERTEX_STRIDE_BYTES)
                     .order(ByteOrder.nativeOrder())
                     .asFloatBuffer();
         }

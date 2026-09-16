@@ -6,7 +6,8 @@ uniform float uAlpha;
 // GrassSpriteRenderer must reset it to white itself.
 uniform vec3 uTint;
 varying vec2 vTexCoord;
+varying float vAlpha;
 void main() {
   vec4 c = texture2D(uSampler, vTexCoord);
-  gl_FragColor = vec4(c.rgb * uTint, c.a * uAlpha);
+  gl_FragColor = vec4(c.rgb * uTint, c.a * vAlpha * uAlpha);
 }

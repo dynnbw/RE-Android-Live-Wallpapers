@@ -13,7 +13,8 @@ final class GrassStarRenderer {
     private static final int STAR_TEXTURE_GROUP_COUNT = 4;
     private static final int STAR_ALPHA_BIN_COUNT = 8;
     private static final int STAR_BATCH_GROUP_COUNT = STAR_TEXTURE_GROUP_COUNT * STAR_ALPHA_BIN_COUNT;
-    private static final int FLOATS_PER_VERTEX = 4;
+    /** 顶点格式 x,y,u,v,a，与 GrassRenderDataBuilder 一致；星空按 alpha 分桶，逐顶点 a 写 1。 */
+    private static final int FLOATS_PER_VERTEX = 5;
     private static final int FLOATS_PER_STAR = 6 * FLOATS_PER_VERTEX;
 
     private final NightStarsLayer nightStarsLayer = new NightStarsLayer();
@@ -175,6 +176,7 @@ final class GrassStarRenderer {
         out[cursor++] = y;
         out[cursor++] = u;
         out[cursor++] = v;
+        out[cursor++] = 1.0f;   // 逐顶点 alpha：星空按桶走 uniform
         return cursor;
     }
 
