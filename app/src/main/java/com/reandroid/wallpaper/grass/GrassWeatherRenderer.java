@@ -51,6 +51,27 @@ final class GrassWeatherRenderer {
     private float density = 1.0f;
     private int bgMatrixHandle = -1;
 
+    /**
+     * 原版的目标屏宽（dp）。云贴图来自 {@code drawable-mdpi}，原版按 320dp 宽的机型设计
+     * —— 不论是 320×480 的 mdpi 机还是 480×800 的 hdpi 机，dp 宽都是 320。
+     */
+    private static final float REFERENCE_WIDTH_DP = 320.0f;
+
+    /**
+     * 云的缩放系数：复刻原版的**构图比例**，而不是物理尺寸。
+     *
+     * <p>原版是 {@code BitmapFactory.decodeResource}，它内部会设 {@code inDensity=160}、
+     * {@code inTargetDensity=设备 dpi}，所以云在原版里是 256dp。在**同一台机器上**按
+     * {@code density} 缩放是对的 —— 但资源是照 320dp 屏宽设计的：256dp 的云在原版屏上占
+     * 80% 屏宽，到 393dp 的现代屏上只剩 65%，整个构图等比缩水（与烟花那次同一个根因）。
+     * 这里改成按屏宽还原原版比例。
+     *
+     * <p>不按屏高：云是横向铺开的，用屏高当基准会让云比屏幕还宽。
+     */
+    private float cloudScale() {
+        return width > 0 ? width / REFERENCE_WIDTH_DP : 1.0f;
+    }
+
     private int texWeatherRain1;
     private int texWeatherRain2;
     private int texWeatherRain3;
@@ -326,19 +347,30 @@ final class GrassWeatherRenderer {
         int cond = condition.ordinal();
         float tSec = animNowMs / 1000.0f;
         clearBatchCounts(cloudBatchFloatCounts);
+        float k = cloudScale();
         for (int i = 0; i < cloudCount; i++) {
             int texIdx = cloudTexIndexForWeather(condition, i);
             int texture = cloudTexForIndex(texIdx);
             if (texture == 0) continue;
-            float cloudW = CLOUD_MDPI_W[texIdx] * density;
-            float cloudH = CLOUD_MDPI_H[texIdx] * density;
-            float speed = 8.0f * (1.0f + hash01((long) (i * 7 + cond * 31)));
-            float cycleLen = cloudW + width;
-            float phase = hash01((long) (i * 13 + cond * 17 + 1000)) * cycleLen;
-            float xPos = (phase + speed * tSec) % cycleLen - cloudW;
+            float cloudW = CLOUD_MDPI_W[texIdx] * k;
+            float cloudH = CLOUD_MDPI_H[texIdx] * k;
+            /*
+             * 速度跟着长度一起缩（原版的速度是写死的 8.0 px/s，不随屏幕走）。
+             * 两者同比例 → 距离等比、横穿一次的时间不变，保持原版"多少秒飘过一朵"的节奏。
+             * 烟花那次也是同一个做法：只缩长度量和速度，耗时不变。
+             */
+            float speed = 8.0f * (1.0f + hash01((long) (i * 7 + cond * 31))) * k;
+            /*
+             * 位置用 double 算。animNowMs 是开机以来的毫秒（开机一小时就是 3.6e6），
+             * 乘上速度后是 1e8 量级，float 在这个量级只剩十几的精度，取模后会抖。
+             * 原版用的就是 double（mSpeed 是 double，(j - mStartTime) 是 long）。
+             */
+            double cycleLen = cloudW + width;
+            double phase = hash01((long) (i * 13 + cond * 17 + 1000)) * cycleLen;
+            double xPos = (phase + (double) speed * tSec) % cycleLen - cloudW;
             float yOff = hash01((long) (i * 11 + cond * 7 + 2000)) * (cloudH / 2.0f) - cloudH / 4.0f;
             appendQuadToGroup(cloudBatchVertices, cloudBatchFloatCounts, texIdx,
-                    xPos, yOff, xPos + cloudW, yOff + cloudH,
+                    (float) xPos, yOff, (float) xPos + cloudW, yOff + cloudH,
                     0.0f, 0.0f, 1.0f, 1.0f);
         }
         for (int i = 0; i < CLOUD_BATCH_GROUP_COUNT; i++) {
