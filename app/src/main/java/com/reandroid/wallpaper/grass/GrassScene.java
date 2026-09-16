@@ -859,20 +859,6 @@ final class GrassScene {
         syncBladeBuffersFromSystem(true);
     }
 
-    private void computeBladeBufferCounts() {
-        syncBladeBuffersFromSystem(false);
-    }
-
-    private void updateBlades() {
-        mBladeSystem.setViewport(mWidth, mHeight);
-        mBladeSystem.updateBladePositionsForViewport();
-        syncBladeBuffersFromSystem(false);
-    }
-
-    private void createBlade(Blade blade) {
-        // Moved to GrassBladeSystem.
-    }
-
     // ---- Dandelion / Firefly methods ----
 
     private void initDandelions() {
@@ -994,10 +980,6 @@ final class GrassScene {
     }
 
     // ---- Noise ----
-
-    private void initNoise() {
-        mWindField.init(mRandom);
-    }
 
     // ---- Math utilities ----
 
