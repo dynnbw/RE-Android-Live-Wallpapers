@@ -25,7 +25,10 @@ void main() {
   // Whole-disc rotation about the centre. Sampling at R(rot)*uv rotates the
   // rendered disc by -rot, and because uv is what the lighting below works
   // in, the terminator turns with the surface instead of staying upright.
-  float rot = radians(uRotation);
+  // Negated because this pass' quad puts v=0 at the top while the Vulkan one
+  // puts v=1 there, so the same rotation formula comes out mirrored. Done this
+  // way around so the two renderers agree; the angle itself is unchanged.
+  float rot = radians(-uRotation);
   float cr = cos(rot);
   float sr = sin(rot);
   uv = vec2(uv.x * cr - uv.y * sr, uv.x * sr + uv.y * cr);

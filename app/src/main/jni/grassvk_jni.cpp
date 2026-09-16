@@ -62,7 +62,16 @@ enum PipelineType {
     PIPELINE_GRASS = 1,
     PIPELINE_SPRITE = 2,
     PIPELINE_MOON = 3,
+    // Same shaders, layouts and vertex input as PIPELINE_MOON -- only the blend
+    // state differs, for the daytime moon. Vulkan pipelines bake their blend
+    // state in, so this has to be a separate pipeline rather than a switch.
+    PIPELINE_MOON_DAY = 4,
 };
+
+/** Both moon variants share every piece of pipeline state except blending. */
+static bool isMoonPipeline(PipelineType type) {
+    return type == PIPELINE_MOON || type == PIPELINE_MOON_DAY;
+}
 
 // ---- helper: one GPU texture ----
 struct GpuTexture {
@@ -91,6 +100,7 @@ public:
     bool isSceneReadyLocked() const {
         return skyPipeline_ != VK_NULL_HANDLE && grassPipeline_ != VK_NULL_HANDLE
             && spritePipeline_ != VK_NULL_HANDLE && moonPipeline_ != VK_NULL_HANDLE
+            && moonDayPipeline_ != VK_NULL_HANDLE
             && skyDescriptorSet_ != VK_NULL_HANDLE
             && grassDescriptorSet_ != VK_NULL_HANDLE
             && spriteDescriptorSets_[0] != VK_NULL_HANDLE
@@ -659,11 +669,12 @@ public:
         grassPipeline_ = createGraphicsPipelineLocked(gVert,    gFrag,    grassPipelineLayout_,  PIPELINE_GRASS);
         spritePipeline_ = createGraphicsPipelineLocked(sVert,    sFrag,    spritePipelineLayout_, PIPELINE_SPRITE);
         moonPipeline_ = createGraphicsPipelineLocked(mVert,    mFrag,    moonPipelineLayout_, PIPELINE_MOON);
+        moonDayPipeline_ = createGraphicsPipelineLocked(mVert, mFrag,    moonPipelineLayout_, PIPELINE_MOON_DAY);
 
         cleanup();
         return skyPipeline_ != VK_NULL_HANDLE && grassPipeline_ != VK_NULL_HANDLE
             && spritePipeline_ != VK_NULL_HANDLE
-            && moonPipeline_ != VK_NULL_HANDLE;
+            && moonPipeline_ != VK_NULL_HANDLE && moonDayPipeline_ != VK_NULL_HANDLE;
     }
 
     void destroyPipelinesLocked() {
@@ -671,6 +682,7 @@ public:
         if (grassPipeline_ != VK_NULL_HANDLE) { vkDestroyPipeline(device_, grassPipeline_, nullptr); grassPipeline_ = VK_NULL_HANDLE; }
         if (spritePipeline_ != VK_NULL_HANDLE) { vkDestroyPipeline(device_, spritePipeline_, nullptr); spritePipeline_ = VK_NULL_HANDLE; }
         if (moonPipeline_ != VK_NULL_HANDLE) { vkDestroyPipeline(device_, moonPipeline_, nullptr); moonPipeline_ = VK_NULL_HANDLE; }
+        if (moonDayPipeline_ != VK_NULL_HANDLE) { vkDestroyPipeline(device_, moonDayPipeline_, nullptr); moonDayPipeline_ = VK_NULL_HANDLE; }
         if (skyPipelineLayout_   != VK_NULL_HANDLE) { vkDestroyPipelineLayout(device_, skyPipelineLayout_,   nullptr); skyPipelineLayout_   = VK_NULL_HANDLE; }
         if (grassPipelineLayout_ != VK_NULL_HANDLE) { vkDestroyPipelineLayout(device_, grassPipelineLayout_, nullptr); grassPipelineLayout_ = VK_NULL_HANDLE; }
         if (spritePipelineLayout_ != VK_NULL_HANDLE) { vkDestroyPipelineLayout(device_, spritePipelineLayout_, nullptr); spritePipelineLayout_ = VK_NULL_HANDLE; }
@@ -683,7 +695,7 @@ public:
             dsl = skyDescriptorSetLayout_;
         } else if (type == PIPELINE_SPRITE) {
             dsl = spriteDescriptorSetLayout_;
-        } else if (type == PIPELINE_MOON) {
+        } else if (isMoonPipeline(type)) {
             dsl = moonDescriptorSetLayout_;
         }
 
@@ -692,7 +704,7 @@ public:
         pcRange.offset     = 0;
         if (type == PIPELINE_SKY) {
             pcRange.size = static_cast<uint32_t>(sizeof(SkyPushConstants));
-        } else if (type == PIPELINE_MOON) {
+        } else if (isMoonPipeline(type)) {
             pcRange.size = static_cast<uint32_t>(sizeof(MoonPushConstants));
         } else {
             pcRange.size = static_cast<uint32_t>(sizeof(GrassPushConstants));
@@ -750,7 +762,7 @@ public:
             vis.pVertexBindingDescriptions      = &binding;
             vis.vertexAttributeDescriptionCount = 3;
             vis.pVertexAttributeDescriptions    = attrs;
-        } else if (type == PIPELINE_SPRITE || type == PIPELINE_MOON) {
+        } else if (type == PIPELINE_SPRITE || isMoonPipeline(type)) {
             binding.binding = 0;
             binding.stride = sizeof(SpriteVertex);
             binding.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
@@ -799,7 +811,18 @@ public:
         VkPipelineColorBlendAttachmentState cba{};
         cba.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT
                            | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-        if (type == PIPELINE_GRASS || type == PIPELINE_SPRITE || type == PIPELINE_MOON) {
+        if (type == PIPELINE_MOON_DAY) {
+            // Mirrors the GLES side's glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_COLOR)
+            // for the daytime moon: the disc is blended against the blue sky
+            // instead of being composited over it, so it reads as washed out.
+            cba.blendEnable         = VK_TRUE;
+            cba.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
+            cba.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR;
+            cba.colorBlendOp        = VK_BLEND_OP_ADD;
+            cba.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+            cba.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR;
+            cba.alphaBlendOp        = VK_BLEND_OP_ADD;
+        } else if (type == PIPELINE_GRASS || type == PIPELINE_SPRITE || type == PIPELINE_MOON) {
             cba.blendEnable         = VK_TRUE;
             cba.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
             cba.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
@@ -1421,7 +1444,10 @@ public:
         if (moonPipeline_ != VK_NULL_HANDLE && moonPipelineLayout_ != VK_NULL_HANDLE
                 && moonDescriptorSet_ != VK_NULL_HANDLE && moonVertexBuffer_ != VK_NULL_HANDLE
                 && moonCount > 0) {
-            vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, moonPipeline_);
+            // p0.w is the isDaytime flag the shader also uses
+            const bool moonIsDay = moonPC.p0[3] > 0.5f;
+            vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                    moonIsDay ? moonDayPipeline_ : moonPipeline_);
             vkCmdPushConstants(cb, moonPipelineLayout_,
                     VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                     0, sizeof(MoonPushConstants), &moonPC);
@@ -1492,6 +1518,7 @@ public:
     VkPipeline       grassPipeline_       = VK_NULL_HANDLE;
     VkPipeline       spritePipeline_      = VK_NULL_HANDLE;
     VkPipeline       moonPipeline_        = VK_NULL_HANDLE;
+    VkPipeline       moonDayPipeline_     = VK_NULL_HANDLE;
 
     // Sky descriptor set (5 textures)
     VkDescriptorSetLayout skyDescriptorSetLayout_ = VK_NULL_HANDLE;
