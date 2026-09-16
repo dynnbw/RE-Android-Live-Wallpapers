@@ -294,25 +294,9 @@ final class GrassWeatherRenderer {
          * 原先那句 `if (sd.isNight) return;` 会让日出那一刻天空瞬间换色。
          */
         float alpha = sd.weatherToneAlpha;
-        if (alpha <= 0.001f) {
+        if (alpha <= 0.001f || !GrassWeatherSystem.hasSkyTone(sd.weatherCondition)) {
             return;
         }
-        switch (sd.weatherCondition) {
-            case D1_CLEAR:
-                return;
-            case D2_CLOUDY:
-            case D3_DREARY:
-            case D4_FOG:
-            case D5_RAIN_SHOWERS:
-            case D6_THUNDERSTORMS:
-            case D7_FLURRIES_SNOW:
-            case D8_ICE_COLD:
-            case D9_SLEET:
-                break;
-            default:
-                return;
-        }
-
         if (texWeatherTone == 0) {
             return;
         }

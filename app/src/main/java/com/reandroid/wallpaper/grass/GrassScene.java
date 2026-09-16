@@ -446,7 +446,7 @@ final class GrassScene {
          * 现在拆成两段平滑的乘积：白天权重（本来就跟着日出日落连续变化）+ 天气开关的淡入淡出。
          */
         mWeatherToneGate = GrassWeatherSystem.fadeGate(mWeatherToneGate,
-                mWeatherCondition != WeatherCondition.D1_CLEAR, dt, WEATHER_TONE_FADE_SEC);
+                GrassWeatherSystem.hasSkyTone(mWeatherCondition), dt, WEATHER_TONE_FADE_SEC);
         mSceneData.dayWeight = 1.0f - nightWeight;
         mSceneData.weatherToneAlpha = mSceneData.dayWeight * mWeatherToneGate;
 

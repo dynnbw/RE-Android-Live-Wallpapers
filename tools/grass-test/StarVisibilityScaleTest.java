@@ -65,33 +65,55 @@ public final class StarVisibilityScaleTest {
             }
         }
 
-        // ---- 3. 云画得越多，压得越低 ----
-        // 判据取"同云量里最宽松的那个"随云量单调不增 —— 同一云量内部的差异是天气性质
-        // (雾比多云挡得多)造成的，不参与这条排序。
-        int prevCount = -1;
-        float prevMax = Float.MAX_VALUE;
-        for (int count : new int[]{2, 8, 12}) {
-            float maxScale = -1.0f;
-            StringBuilder group = new StringBuilder();
-            for (WeatherCondition c : all) {
-                if (cloudCount(c) != count) continue;
-                float s = GrassWeatherSystem.starVisibilityScale(c);
-                maxScale = Math.max(maxScale, s);
-                group.append(' ').append(c).append('=').append(s);
-            }
-            System.out.println("云 " + count + " 片:" + group + "  最宽松=" + maxScale);
-            if (maxScale > prevMax) {
+        // ---- 3. 语义排序 ----
+        // 曾经这里断言的是"渲染层云画得越多、星星压得越低"，但多云(D2)调到 0.60 之后那条
+        // 不再成立 —— 多云画 8 片却比只画 2 片的飘雪留得多，这是刻意的：多云的天本身还是晴的。
+        // 换成语义上必须成立的几条。
+        assertLess("阴沉应比多云更遮天",
+                GrassWeatherSystem.starVisibilityScale(WeatherCondition.D3_DREARY),
+                GrassWeatherSystem.starVisibilityScale(WeatherCondition.D2_CLOUDY));
+
+        // 多云是除晴天外**最不遮天**的：多云只是天上多几朵云，天本身还是晴的。
+        // 这条同时兜住"把多云调回 0.30"——那时飘雪(0.45)会反超它。
+        float d2 = GrassWeatherSystem.starVisibilityScale(WeatherCondition.D2_CLOUDY);
+        for (WeatherCondition c : all) {
+            if (c == WeatherCondition.D1_CLEAR || c == WeatherCondition.D2_CLOUDY) continue;
+            float s = GrassWeatherSystem.starVisibilityScale(c);
+            if (s >= d2) {
                 failures++;
-                System.out.println("失败: 云 " + count + " 片(" + maxScale
-                        + ")比云 " + prevCount + " 片(" + prevMax + ")还宽松");
+                System.out.println("失败: " + c + "(" + s + ")不该比多云(" + d2 + ")更不遮天");
             }
-            prevCount = count;
-            prevMax = maxScale;
         }
 
-        // ---- 4. 每个天气都必须在这张表里有明确取值(没有落进 default 的漏网之鱼) ----
+        float min = Float.MAX_VALUE;
+        WeatherCondition argMin = null;
         for (WeatherCondition c : all) {
-            if (cloudCount(c) == 0 && c != WeatherCondition.D1_CLEAR) {
+            if (c == WeatherCondition.D1_CLEAR) continue;
+            float s = GrassWeatherSystem.starVisibilityScale(c);
+            if (s < min) { min = s; argMin = c; }
+        }
+        if (argMin != WeatherCondition.D6_THUNDERSTORMS) {
+            failures++;
+            System.out.println("失败: 最遮天的应是雷暴，实际是 " + argMin + "(" + min + ")");
+        }
+
+        // ---- 4. 只有阴沉及以下才叠天空色调 ----
+        assertTrue("晴天不应叠天空色调",
+                !GrassWeatherSystem.hasSkyTone(WeatherCondition.D1_CLEAR));
+        assertTrue("多云不应叠天空色调",
+                !GrassWeatherSystem.hasSkyTone(WeatherCondition.D2_CLOUDY));
+        for (WeatherCondition c : all) {
+            if (c == WeatherCondition.D1_CLEAR || c == WeatherCondition.D2_CLOUDY) continue;
+            if (!GrassWeatherSystem.hasSkyTone(c)) {
+                failures++;
+                System.out.println("失败: " + c + " 应该叠天空色调");
+            }
+        }
+
+        // ---- 5. 云量表与天气表必须一一对应(没有落进 default 的漏网之鱼) ----
+        for (WeatherCondition c : all) {
+            if (c == WeatherCondition.D1_CLEAR) continue;
+            if (cloudCount(c) == 0) {
                 failures++;
                 System.out.println("失败: " + c + " 没有出现在渲染层的云量表里");
             }
@@ -105,6 +127,20 @@ public final class StarVisibilityScaleTest {
         if (Math.abs(expect - actual) > 1.0E-6f) {
             failures++;
             System.out.println("失败: " + name + " 期望 " + expect + " 实际 " + actual);
+        }
+    }
+
+    private static void assertTrue(String name, boolean cond) {
+        if (!cond) {
+            failures++;
+            System.out.println("失败: " + name);
+        }
+    }
+
+    private static void assertLess(String name, float a, float b) {
+        if (!(a < b)) {
+            failures++;
+            System.out.println("失败: " + name + " —— " + a + " 不小于 " + b);
         }
     }
 }
