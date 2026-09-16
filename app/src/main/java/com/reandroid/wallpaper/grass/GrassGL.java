@@ -41,12 +41,6 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 
-import static com.reandroid.wallpaper.grass.GrassConstants.HALF_TESSELATION;
-import static com.reandroid.wallpaper.grass.GrassConstants.LEGACY_INTERVAL_VARIANCE;
-import static com.reandroid.wallpaper.grass.GrassConstants.LEGACY_MAX_FLARE;
-import static com.reandroid.wallpaper.grass.GrassConstants.LEGACY_MAX_INTERVAL;
-import static com.reandroid.wallpaper.grass.GrassConstants.LEGACY_TYPE_DANDELION;
-import static com.reandroid.wallpaper.grass.GrassConstants.LEGACY_TYPE_FIREFLY;
 import static com.reandroid.wallpaper.grass.GrassConstants.SUN_PHOTOSPHERE_SCALE;
 import com.reandroid.utils.MathUtils;
 
@@ -56,13 +50,6 @@ import com.reandroid.utils.MathUtils;
 public class GrassGL extends GLESScene {
 
     private static final String TAG = "GrassGL";
-    private static final int LEGACY_FIREFLY_ALPHA_BIN_COUNT = 8;
-    private static final int LEGACY_BATCH_GROUP_DANDELION = 0;
-    private static final int LEGACY_BATCH_GROUP_FIREFLY1_START = 1;
-    private static final int LEGACY_BATCH_GROUP_FIREFLY2_START = LEGACY_BATCH_GROUP_FIREFLY1_START + LEGACY_FIREFLY_ALPHA_BIN_COUNT;
-    private static final int LEGACY_BATCH_GROUP_COUNT = LEGACY_BATCH_GROUP_FIREFLY2_START + LEGACY_FIREFLY_ALPHA_BIN_COUNT;
-    private static final int LEGACY_FLOATS_PER_VERTEX = 5;
-    private static final int LEGACY_FLOATS_PER_QUAD = 6 * LEGACY_FLOATS_PER_VERTEX;
 
     // ---- 场景逻辑层（非 GL）----
     private final Context mContext;
@@ -181,10 +168,6 @@ public class GrassGL extends GLESScene {
     private ShortBuffer mGrassIndexBuffer;
     private FloatBuffer mMoonBuffer;
     private final float[] mQuadVerts = new float[16];
-    private final float[][] mLegacyBatchVertices = new float[LEGACY_BATCH_GROUP_COUNT][];
-    private final int[] mLegacyBatchFloatCounts = new int[LEGACY_BATCH_GROUP_COUNT];
-    private float mLegacyDandelionAlpha = 1.0f; // 来自 sd.legacyDandelionVisibility
-    private float mLegacyFireflyAlpha = 0.0f;   // 来自 sd.legacyFireflyVisibility
 
     // Performance and diagnostics
     private static final long PERF_SYNC_INTERVAL_MS = 1000L;
@@ -897,30 +880,35 @@ public class GrassGL extends GLESScene {
         setBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
         GLES20.glUniformMatrix4fv(mBgMatrixHandle, 1, false, sd.projectionMatrix, 0);
 
-        // 蒲公英：传统开关优先，否则现代粒子
-        if (sd.legacyDandelionEnabled) {
-            drawLegacyParticles(sd, true);
-        } else if (sd.dandelionVisibility > 0.001f && sd.dandelionEnabled
-                && mTexDandelion != 0 && sd.dandelions != null) {
-            for (Dandelion d : sd.dandelions) {
-                float sway = (float) Math.sin(d.swayPhase + sd.animNowMs * 0.001f * d.swaySpeed) * 6.0f;
-                mSpriteRenderer.drawSprite(mTexDandelion, d.x, d.y + sway, d.size,
-                        0.9f * sd.dandelionVisibility, true, d.rotationDeg);
-            }
+        /*
+         * 几何全部由 GrassRenderDataBuilder 产出，与 Vulkan 共用同一份 —— 这里只管
+         * 挑贴图和发起绘制。builder 内部已经处理了"传统开关优先，否则现代粒子"，
+         * 所以不需要在这边分支。
+         *
+         * 注意 uniform alpha 一律传 1：逐顶点 alpha 由 builder 烘进顶点里，
+         * 再乘一次就会双重衰减。
+         */
+        GrassRenderDataBuilder b = mScene.mRenderDataBuilder;
+        final int stride = GrassRenderDataBuilder.FLOATS_PER_SPRITE_VERTEX;
+
+        float[] dandelion = b.buildDandelionSpriteVertices(sd);
+        int dandelionFloats = b.getDandelionVertexCount() * stride;
+        if (mTexDandelion != 0 && dandelionFloats > 0) {
+            mSpriteRenderer.drawBatch(mTexDandelion, dandelion, dandelionFloats, 1.0f);
         }
 
-        // 萤火虫：传统开关优先，否则现代粒子
-        if (sd.legacyFireflyEnabled) {
-            drawLegacyParticles(sd, false);
-        } else if (sd.fireflyVisibility > 0.001f && sd.fireflyEnabled
-                && mTexFirefly != 0 && sd.fireflies != null) {
-            float time = sd.animNowMs * 0.001f;
-            for (Firefly f : sd.fireflies) {
-                float flicker = 0.5f + 0.5f * (float) Math.sin(f.phase + time * f.flickerSpeed);
-                float alpha = (0.2f + 0.8f * flicker) * sd.fireflyVisibility;
-                float size = f.size * (0.8f + 0.4f * flicker);
-                mSpriteRenderer.drawSprite(mTexFirefly, f.x, f.y, size, alpha, false, 0.0f);
-            }
+        // 传统萤火虫分两张贴图（本体 / 闪光），现代萤火虫只有一张
+        float[] firefly = b.buildFireflySpriteVertices(sd);
+        int fireflyFloats = b.getFireflyVertexCount() * stride;
+        int fireflyTexture = sd.legacyFireflyEnabled ? mTexFirefly1 : mTexFirefly;
+        if (fireflyTexture != 0 && fireflyFloats > 0) {
+            mSpriteRenderer.drawBatch(fireflyTexture, firefly, fireflyFloats, 1.0f);
+        }
+
+        float[] flare = b.buildFireflyFlareSpriteVertices(sd);
+        int flareFloats = b.getFireflyFlareVertexCount() * stride;
+        if (mTexFirefly2 != 0 && flareFloats > 0) {
+            mSpriteRenderer.drawBatch(mTexFirefly2, flare, flareFloats, 1.0f);
         }
     }
 
@@ -929,222 +917,9 @@ public class GrassGL extends GLESScene {
                 mWeatherIntegration.isWeatherEnabled(), mBackgroundRenderOps, mSpriteRenderer);
     }
 
-    private void drawWeatherTone(SceneData sd) {
-        // moved to GrassWeatherRenderer
-    }
-
     private void drawWeatherBackground(SceneData sd) {
         mWeatherRenderer.drawWeatherBackground(sd,
                 mWeatherIntegration.isWeatherEnabled(), mBackgroundRenderOps, mSpriteRenderer);
-    }
-
-    /** 按类型绘制原版粒子（dandelionPass=true 画蒲公英，false 画萤火虫）。 */
-    private void drawLegacyParticles(SceneData sd, boolean dandelionPass) {
-        useProgram(mBackgroundProgram);
-        setBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
-        GLES20.glUniformMatrix4fv(mBgMatrixHandle, 1, false, sd.projectionMatrix, 0);
-
-        clearLegacyBatchCounts();
-
-        long animNowMs = sd.legacyNow;
-        if (dandelionPass) {
-            mLegacyDandelionAlpha = sd.legacyDandelionVisibility;
-            drawLegacyParticleSet(sd.legacyNormal, LEGACY_TYPE_DANDELION, false, animNowMs);
-            drawLegacyParticleSet(sd.legacyExtras, LEGACY_TYPE_DANDELION, true, animNowMs);
-            flushLegacyDandelionBatches();
-        } else {
-            mLegacyFireflyAlpha = sd.legacyFireflyVisibility;
-            drawLegacyParticleSet(sd.legacyNormalNight, LEGACY_TYPE_FIREFLY, false, animNowMs);
-            drawLegacyParticleSet(sd.legacyExtrasNight, LEGACY_TYPE_FIREFLY, true, animNowMs);
-            flushLegacyFireflyBatches();
-        }
-    }
-
-    private void drawLegacyParticleSet(LegacyParticle[] particles, int legacyType,
-            boolean isExtras, long animNowMs) {
-        if (particles == null) {
-            return;
-        }
-
-        for (int i = 0; i < particles.length; i++) {
-            LegacyParticle p = particles[i];
-            if (p == null || !p.active) continue;
-            long delta = animNowMs - p.startTime;
-            if (delta < 0L) continue;
-            boolean outOfBounds = isLegacyParticleOutOfBounds(p, legacyType);
-            if (outOfBounds) {
-                LegacyParticle np = mScene.createLegacyParticle(legacyType);
-                np.active = !isExtras; // extras 飞走后重置为空闲，等待下一次点击（原版 addTap 循环）
-                particles[i] = np;
-                p = np;
-                delta = animNowMs - p.startTime;
-                if (delta < 0L) continue;
-            }
-            if ((p.stayEndTime - animNowMs) <= 0L) {
-                if (legacyType == LEGACY_TYPE_DANDELION) {
-                    mScene.flyLegacyDandelion(p, false);
-                } else {
-                    mScene.flyLegacyFirefly(p, false);
-                }
-            }
-            p.startTime = animNowMs;
-            drawLegacyParticle(p, legacyType, i + (isExtras ? 100 : 0), isExtras, animNowMs);
-        }
-    }
-
-    private boolean isLegacyParticleOutOfBounds(LegacyParticle p, int legacyType) {
-        if (legacyType == LEGACY_TYPE_DANDELION) {
-            return p.originX < 0 || p.originX > mWidth * 2 || p.originY < 0 || p.originY > mHeight;
-        } else {
-            return p.originX < 0 || p.originX > mWidth * 2 || p.originY < 0;
-        }
-    }
-
-    private void drawLegacyParticle(LegacyParticle p, int legacyType, int index,
-            boolean isExtras, long animNowMs) {
-        if (legacyType == LEGACY_TYPE_FIREFLY) {
-            long interval = p.flareEndTime - p.silentEndTime;
-            if (animNowMs >= p.flareEndTime && interval > 0L) {
-                p.silentEndTime = animNowMs
-                        + (long) ((1.0 + (Math.random() * 2 - 1) * LEGACY_INTERVAL_VARIANCE)
-                        * LEGACY_MAX_INTERVAL);
-            } else if (animNowMs >= p.silentEndTime && interval < 0L) {
-                p.flareEndTime = animNowMs + LEGACY_MAX_FLARE;
-            }
-            int tex = (animNowMs < p.flareEndTime) ? mTexFirefly2 : mTexFirefly1;
-            float flicker = 0.5f + 0.5f * (float) Math.sin((animNowMs + index * 1234) * 0.002);
-            float alpha = 0.2f + 0.8f * flicker;
-            float size = (isExtras ? 48.0f : 72.0f) * (0.8f + 0.4f * flicker);
-            int alphaBin = alphaBinForLegacy(alpha);
-            int group = (tex == mTexFirefly2)
-                    ? (LEGACY_BATCH_GROUP_FIREFLY2_START + alphaBin)
-                    : (LEGACY_BATCH_GROUP_FIREFLY1_START + alphaBin);
-            appendLegacySpriteQuad(group, p.originX, p.originY, size, false, 0.0f);
-        } else {
-            float size = isExtras ? 64.0f : 96.0f;
-            appendLegacySpriteQuad(LEGACY_BATCH_GROUP_DANDELION, p.originX, p.originY, size, true, p.angle);
-        }
-    }
-
-    private void clearLegacyBatchCounts() {
-        for (int i = 0; i < mLegacyBatchFloatCounts.length; i++) {
-            mLegacyBatchFloatCounts[i] = 0;
-        }
-    }
-
-    private void flushLegacyDandelionBatches() {
-        if (mTexDandelion != 0 && mLegacyBatchFloatCounts[LEGACY_BATCH_GROUP_DANDELION] > 0
-                && mLegacyDandelionAlpha > 0.01f) {
-            mSpriteRenderer.drawBatch(
-                    mTexDandelion,
-                    mLegacyBatchVertices[LEGACY_BATCH_GROUP_DANDELION],
-                    mLegacyBatchFloatCounts[LEGACY_BATCH_GROUP_DANDELION],
-                    0.9f * mLegacyDandelionAlpha);
-        }
-    }
-
-    private void flushLegacyFireflyBatches() {
-        if (mTexFirefly1 != 0 && mLegacyFireflyAlpha > 0.01f) {
-            for (int bin = 0; bin < LEGACY_FIREFLY_ALPHA_BIN_COUNT; bin++) {
-                int group = LEGACY_BATCH_GROUP_FIREFLY1_START + bin;
-                int floatCount = mLegacyBatchFloatCounts[group];
-                if (floatCount <= 0) {
-                    continue;
-                }
-                mSpriteRenderer.drawBatch(mTexFirefly1, mLegacyBatchVertices[group], floatCount,
-                        alphaForLegacyBin(bin) * mLegacyFireflyAlpha);
-            }
-        }
-
-        if (mTexFirefly2 != 0 && mLegacyFireflyAlpha > 0.01f) {
-            for (int bin = 0; bin < LEGACY_FIREFLY_ALPHA_BIN_COUNT; bin++) {
-                int group = LEGACY_BATCH_GROUP_FIREFLY2_START + bin;
-                int floatCount = mLegacyBatchFloatCounts[group];
-                if (floatCount <= 0) {
-                    continue;
-                }
-                mSpriteRenderer.drawBatch(mTexFirefly2, mLegacyBatchVertices[group], floatCount,
-                        alphaForLegacyBin(bin) * mLegacyFireflyAlpha);
-            }
-        }
-    }
-
-    private int alphaBinForLegacy(float alpha) {
-        int idx = (int) (alpha * (LEGACY_FIREFLY_ALPHA_BIN_COUNT - 1) + 0.5f);
-        if (idx < 0) {
-            return 0;
-        }
-        if (idx >= LEGACY_FIREFLY_ALPHA_BIN_COUNT) {
-            return LEGACY_FIREFLY_ALPHA_BIN_COUNT - 1;
-        }
-        return idx;
-    }
-
-    private float alphaForLegacyBin(int alphaBin) {
-        if (LEGACY_FIREFLY_ALPHA_BIN_COUNT <= 1) {
-            return 1.0f;
-        }
-        return alphaBin / (float) (LEGACY_FIREFLY_ALPHA_BIN_COUNT - 1);
-    }
-
-    private void appendLegacySpriteQuad(int group, float cx, float cy, float size, boolean flipV, float rotationDeg) {
-        ensureLegacyGroupCapacity(group, LEGACY_FLOATS_PER_QUAD);
-        float[] out = mLegacyBatchVertices[group];
-        int cursor = mLegacyBatchFloatCounts[group];
-
-        float half = size * 0.5f;
-        float rad = (float) Math.toRadians(rotationDeg);
-        float cos = (float) Math.cos(rad);
-        float sin = (float) Math.sin(rad);
-
-        float x0 = (-half * cos) - (-half * sin) + cx;
-        float y0 = (-half * sin) + (-half * cos) + cy;
-        float x1 = (-half * cos) - (half * sin) + cx;
-        float y1 = (-half * sin) + (half * cos) + cy;
-        float x2 = (half * cos) - (half * sin) + cx;
-        float y2 = (half * sin) + (half * cos) + cy;
-        float x3 = (half * cos) - (-half * sin) + cx;
-        float y3 = (half * sin) + (-half * cos) + cy;
-
-        float v0 = flipV ? 0.0f : 1.0f;
-        float v1 = flipV ? 1.0f : 0.0f;
-
-        cursor = putLegacyBatchVertex(out, cursor, x0, y0, 0.0f, v0);
-        cursor = putLegacyBatchVertex(out, cursor, x1, y1, 0.0f, v1);
-        cursor = putLegacyBatchVertex(out, cursor, x2, y2, 1.0f, v1);
-        cursor = putLegacyBatchVertex(out, cursor, x0, y0, 0.0f, v0);
-        cursor = putLegacyBatchVertex(out, cursor, x2, y2, 1.0f, v1);
-        cursor = putLegacyBatchVertex(out, cursor, x3, y3, 1.0f, v0);
-
-        mLegacyBatchFloatCounts[group] = cursor;
-    }
-
-    private int putLegacyBatchVertex(float[] out, int cursor, float x, float y, float u, float v) {
-        out[cursor++] = x;
-        out[cursor++] = y;
-        out[cursor++] = u;
-        out[cursor++] = v;
-        out[cursor++] = 1.0f;   // 逐顶点 alpha：传统粒子按 alpha 桶走 uniform
-        return cursor;
-    }
-
-    private void ensureLegacyGroupCapacity(int group, int appendFloats) {
-        int required = mLegacyBatchFloatCounts[group] + appendFloats;
-        float[] current = mLegacyBatchVertices[group];
-        if (current != null && current.length >= required) {
-            return;
-        }
-
-        int newSize = current == null ? 2048 : current.length;
-        while (newSize < required) {
-            newSize *= 2;
-        }
-
-        float[] expanded = new float[newSize];
-        if (current != null && mLegacyBatchFloatCounts[group] > 0) {
-            System.arraycopy(current, 0, expanded, 0, mLegacyBatchFloatCounts[group]);
-        }
-        mLegacyBatchVertices[group] = expanded;
     }
 
     private void syncPerfSettingsIfNeeded(long nowMs) {

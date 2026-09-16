@@ -212,7 +212,7 @@ final class GrassRenderDataBuilder {
     }
 
     int getSunVertexCount() {
-        return mVKSunFloatCount / 5;
+        return mVKSunFloatCount / FLOATS_PER_SPRITE_VERTEX;
     }
 
     float[] buildMoonSpriteVertices(SceneData sd) {
@@ -231,7 +231,7 @@ final class GrassRenderDataBuilder {
     }
 
     int getMoonVertexCount() {
-        return mVKMoonFloatCount / 5;
+        return mVKMoonFloatCount / FLOATS_PER_SPRITE_VERTEX;
     }
 
     float[] buildDandelionSpriteVertices(SceneData sd) {
@@ -267,7 +267,7 @@ final class GrassRenderDataBuilder {
     }
 
     int getDandelionVertexCount() {
-        return mVKDandelionFloatCount / 5;
+        return mVKDandelionFloatCount / FLOATS_PER_SPRITE_VERTEX;
     }
 
     float[] buildFireflySpriteVertices(SceneData sd) {
@@ -305,7 +305,7 @@ final class GrassRenderDataBuilder {
     }
 
     int getFireflyVertexCount() {
-        return mVKFireflyFloatCount / 5;
+        return mVKFireflyFloatCount / FLOATS_PER_SPRITE_VERTEX;
     }
 
     float[] buildFireflyFlareSpriteVertices(SceneData sd) {
@@ -313,14 +313,22 @@ final class GrassRenderDataBuilder {
             mVKFireflyFlareFloatCount = 0;
             return mVKFireflyFlareVerts;
         }
+        /*
+         * updateState 传 false —— 状态（重生/越界/重新起飞/flare 计时）已经由同一帧的
+         * buildFireflySpriteVertices 更新过了。
+         *
+         * 原来这里也传 true，而 VK 每帧两个都调，于是萤火虫状态每帧被推进两次：
+         * flare 计时走双倍、越界重生判断也做两遍。GLES 那边只更新一次，两个渲染器
+         * 因此表现不一致 —— 以"一次"为准。
+         */
         mVKFireflyFlareVerts = buildLegacySpriteVertices(sd, LEGACY_TYPE_FIREFLY,
-                true, true, true, mVKFireflyFlareVerts);
+                true, true, false, mVKFireflyFlareVerts);
         mVKFireflyFlareFloatCount = mVKTempSpriteFloatCount;
         return mVKFireflyFlareVerts;
     }
 
     int getFireflyFlareVertexCount() {
-        return mVKFireflyFlareFloatCount / 5;
+        return mVKFireflyFlareFloatCount / FLOATS_PER_SPRITE_VERTEX;
     }
 
     private float[] buildLegacySpriteVertices(SceneData sd, int legacyTargetType,
@@ -537,7 +545,7 @@ final class GrassRenderDataBuilder {
 
     private int appendSpriteQuadVertices(float[] out, int cursor,
             float cx, float cy, float size, float alpha, boolean flipV, float rotationDeg) {
-        if (cursor + 30 > out.length) return out.length + 1;
+        if (cursor + 6 * FLOATS_PER_SPRITE_VERTEX > out.length) return out.length + 1;
 
         float half = size * 0.5f;
         float rad = (float) Math.toRadians(rotationDeg);
@@ -565,8 +573,11 @@ final class GrassRenderDataBuilder {
         return cursor;
     }
 
+    /** 精灵顶点格式：x, y, u, v, a。GLES 与 Vulkan 共用同一套。 */
+    static final int FLOATS_PER_SPRITE_VERTEX = 5;
+
     private int putSpriteVertex(float[] out, int cursor, float x, float y, float u, float v, float a) {
-        if (cursor + 5 > out.length) return out.length + 1;
+        if (cursor + FLOATS_PER_SPRITE_VERTEX > out.length) return out.length + 1;
         out[cursor++] = x;
         out[cursor++] = y;
         out[cursor++] = u;
