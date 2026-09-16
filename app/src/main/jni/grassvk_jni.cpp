@@ -227,6 +227,17 @@ public:
         }
         if (!isReadyLocked()) return;
 
+        /*
+         * 必须先等上一帧画完，再往映射缓冲里写。
+         *
+         * 下面所有 upload*Locked 都是 memcpy 进**持久映射**的顶点缓冲，而这些缓冲正是
+         * 上一帧提交的命令缓冲要读的。两者之间只有一个 inFlightFence_，原先却在全部上传
+         * 之后才 vkWaitForFences —— 于是 CPU 可以在 GPU 还在读的时候把数据覆盖掉。
+         * 表现就是夜间星空撕裂/闪烁：白天的星星批次为空（starVisibility=0，直接跳过上传），
+         * 撞不上；夜里每帧上万顶点，撞上就看得见。
+         */
+        vkWaitForFences(device_, 1, &inFlightFence_, VK_TRUE, UINT64_MAX);
+
         // --- upload grass geometry ---
         const uint32_t vertexCount = static_cast<uint32_t>(
                 std::min<int>(grassVertCount, static_cast<int>(kMaxGrassVertices)));
@@ -319,8 +330,7 @@ public:
         }
 
         // --- acquire image ---
-        vkWaitForFences(device_, 1, &inFlightFence_, VK_TRUE, UINT64_MAX);
-
+        // （上面已经等过 inFlightFence_，这里不再重复）
         uint32_t imageIndex = 0;
         VkResult acquire = vkAcquireNextImageKHR(device_, swapchain_, UINT64_MAX,
                 imageAvailableSemaphore_, VK_NULL_HANDLE, &imageIndex);
