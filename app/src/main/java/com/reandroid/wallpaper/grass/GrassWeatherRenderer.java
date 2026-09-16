@@ -91,6 +91,11 @@ final class GrassWeatherRenderer {
     private int texWeatherFlash;
     private int texWeatherTone;
 
+    /** 本帧的云染色，由 {@link #drawWeatherOverlays} 从 {@code sd.dayWeight} 算出。 */
+    private float cloudTintR = 1.0f;
+    private float cloudTintG = 1.0f;
+    private float cloudTintB = 1.0f;
+
     private long thunderNextStartMs;
     private long thunderActiveStartMs;
     private int thunderTextureIndex;
@@ -190,6 +195,13 @@ final class GrassWeatherRenderer {
         ops.setAlphaBlend();
         GLES20.glUniformMatrix4fv(bgMatrixHandle, 1, false, sd.projectionMatrix, 0);
 
+        // 云要按昼夜染色：白天是白的，夜里压暗。只有云用（雨雪雾不染），
+        // 所以由 drawCloudLayer 自己设、自己还原。
+        float day = sd.dayWeight;
+        cloudTintR = GrassWeatherSystem.cloudTint(GrassWeatherSystem.NIGHT_CLOUD_R, day);
+        cloudTintG = GrassWeatherSystem.cloudTint(GrassWeatherSystem.NIGHT_CLOUD_G, day);
+        cloudTintB = GrassWeatherSystem.cloudTint(GrassWeatherSystem.NIGHT_CLOUD_B, day);
+
         switch (sd.weatherCondition) {
             case D2_CLOUDY:
                 if (!frontPass) {
@@ -267,7 +279,12 @@ final class GrassWeatherRenderer {
     }
 
     private void drawWeatherTone(SceneData sd, GrassSpriteRenderer spriteRenderer) {
-        if (sd.isNight) {
+        /*
+         * 透明度由场景算好（白天权重 × 天气开关的淡入淡出），这里不再自己判断昼夜 ——
+         * 原先那句 `if (sd.isNight) return;` 会让日出那一刻天空瞬间换色。
+         */
+        float alpha = sd.weatherToneAlpha;
+        if (alpha <= 0.001f) {
             return;
         }
         switch (sd.weatherCondition) {
@@ -294,7 +311,7 @@ final class GrassWeatherRenderer {
                 0.0f, -32.0f, width, height + 32.0f,
                 0.0f, 0.0f,
                 1.0f, 1.0f,
-                1.0f);
+                alpha);
     }
 
     private void drawFogLayer(WeatherCondition condition, GrassSpriteRenderer spriteRenderer) {
@@ -373,6 +390,13 @@ final class GrassWeatherRenderer {
                     (float) xPos, yOff, (float) xPos + cloudW, yOff + cloudH,
                     0.0f, 0.0f, 1.0f, 1.0f);
         }
+        /*
+         * 云不按昼夜调透明度 —— 原版 {@code Cloud.draw} 是
+         * {@code canvas.drawBitmap(mBitmap, null, mRect, null)}，paint 传 null，就是不额外
+         * 改透明度。贴图自己平均 alpha 只有 78~119/255，本来就是柔云；夜里再乘 0.30 会让它
+         * 几乎看不见，星空直接透出来。夜色改用染色表达（见 cloudTint*）。
+         */
+        spriteRenderer.setTint(cloudTintR, cloudTintG, cloudTintB);
         for (int i = 0; i < CLOUD_BATCH_GROUP_COUNT; i++) {
             int floatCount = cloudBatchFloatCounts[i];
             if (floatCount <= 0) {
@@ -382,16 +406,10 @@ final class GrassWeatherRenderer {
             if (texture == 0) {
                 continue;
             }
-            /*
-             * 云不按昼夜调透明度。
-             *
-             * 原版 {@code Cloud.draw} 是 {@code canvas.drawBitmap(mBitmap, null, mRect, null)} ——
-             * paint 传 null，就是"不额外改透明度"，昼夜一样。贴图自己平均 alpha 只有
-             * 78~119/255，已经是柔和的云；夜里再乘 0.30 会让它几乎看不见，星空直接透出来，
-             * 于是"什么天气的夜空都长一样"。
-             */
             spriteRenderer.drawBatch(texture, cloudBatchVertices[i], floatCount, 1.0f);
         }
+        // uTint 是 program 级状态：用完必须还原，否则后面的雨/雪/雾/粒子会被一起染黑。
+        spriteRenderer.setTintWhite();
     }
 
     private void drawRainLayer(long animNowMs, int count, boolean frontPass, GrassSpriteRenderer spriteRenderer) {

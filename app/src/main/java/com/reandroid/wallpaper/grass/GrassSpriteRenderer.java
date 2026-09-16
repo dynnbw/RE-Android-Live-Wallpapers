@@ -11,6 +11,22 @@ final class GrassSpriteRenderer {
     private int texHandle = -1;
     private int samplerHandle = -1;
     private int alphaHandle = -1;
+    private int tintHandle = -1;
+
+    /**
+     * 染色（uTint）。默认白色即原样输出，用来把白色的云在夜里压暗。
+     *
+     * <p>{@code uTint} 是 **program 级**状态，不是每次绘制自带的，所以：
+     * <ul>
+     *   <li>这里每次绘制都会上传当前值 —— 改完必须显式 {@link #setTintWhite} 改回来，
+     *       否则后续绘制（雨、雪、雾、粒子）会一起被染黑；</li>
+     *   <li>{@link GrassBackgroundRenderer} 是唯一不走本类、直接画背景的，
+     *       它自己会把 uTint 设回白色。</li>
+     * </ul>
+     */
+    private float tintR = 1.0f;
+    private float tintG = 1.0f;
+    private float tintB = 1.0f;
 
     private FloatBuffer spriteBuffer;
     private FloatBuffer batchBuffer;
@@ -21,6 +37,20 @@ final class GrassSpriteRenderer {
         this.texHandle = texHandle;
         this.samplerHandle = samplerHandle;
         this.alphaHandle = alphaHandle;
+    }
+
+    void setTintHandle(int tintHandle) {
+        this.tintHandle = tintHandle;
+    }
+
+    void setTint(float r, float g, float b) {
+        tintR = r;
+        tintG = g;
+        tintB = b;
+    }
+
+    void setTintWhite() {
+        setTint(1.0f, 1.0f, 1.0f);
     }
 
     void drawSprite(int texture, float cx, float cy, float size, float alpha, boolean flipV, float rotationDeg) {
@@ -84,6 +114,7 @@ final class GrassSpriteRenderer {
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture);
         GLES20.glUniform1i(samplerHandle, 0);
         GLES20.glUniform1f(alphaHandle, alpha);
+        uploadTint();
         GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, floatCount / 4);
 
         GLES20.glDisableVertexAttribArray(positionHandle);
@@ -129,10 +160,17 @@ final class GrassSpriteRenderer {
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture);
         GLES20.glUniform1i(samplerHandle, 0);
         GLES20.glUniform1f(alphaHandle, alpha);
+        uploadTint();
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, 4);
 
         GLES20.glDisableVertexAttribArray(positionHandle);
         GLES20.glDisableVertexAttribArray(texHandle);
+    }
+
+    private void uploadTint() {
+        if (tintHandle >= 0) {
+            GLES20.glUniform3f(tintHandle, tintR, tintG, tintB);
+        }
     }
 
     private void ensureBuffer() {

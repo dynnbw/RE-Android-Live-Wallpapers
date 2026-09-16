@@ -111,6 +111,7 @@ public class GrassGL extends GLESScene {
     private int mBgTexHandle;
     private int mBgMatrixHandle;
     private int mBgAlphaHandle;
+    private int mBgTintHandle;
     private int mBgSamplerHandle;
 
     // Sky program handles
@@ -429,8 +430,17 @@ public class GrassGL extends GLESScene {
         mBgMatrixHandle = GLES20.glGetUniformLocation(mBackgroundProgram, "uMVPMatrix");
         mBgAlphaHandle = GLES20.glGetUniformLocation(mBackgroundProgram, "uAlpha");
         mBgSamplerHandle = GLES20.glGetUniformLocation(mBackgroundProgram, "uSampler");
+        /*
+         * uTint 是 program 级状态，这里不设初值 —— createProgram 留在父类，链接后当前绑定的
+         * 是哪个程序并不明确，而 useProgram 又带 mCurrentProgram 缓存，一次性设值不可靠。
+         * 改为每个绘制方自己保证：GrassSpriteRenderer 每次绘制都上传，
+         * GrassBackgroundRenderer.setAlpha 每次绘制前设回白色。两者覆盖了全部绘制路径。
+         */
+        mBgTintHandle = GLES20.glGetUniformLocation(mBackgroundProgram, "uTint");
         mSpriteRenderer.setProgramHandles(mBgPositionHandle, mBgTexHandle, mBgSamplerHandle, mBgAlphaHandle);
+        mSpriteRenderer.setTintHandle(mBgTintHandle);
         mBackgroundRenderer.setBackgroundProgramHandles(mBgPositionHandle, mBgTexHandle, mBgSamplerHandle, mBgAlphaHandle);
+        mBackgroundRenderer.setBackgroundTintHandle(mBgTintHandle);
         mWeatherRenderer.setBackgroundMatrixHandle(mBgMatrixHandle);
         mStarRenderer.setBackgroundMatrixHandle(mBgMatrixHandle);
     }

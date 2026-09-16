@@ -21,6 +21,7 @@ final class GrassBackgroundRenderer {
     private int bgTexHandle = -1;
     private int bgSamplerHandle = -1;
     private int bgAlphaHandle = -1;
+    private int bgTintHandle = -1;
 
     private int skyPositionHandle = -1;
     private int skyTexHandle = -1;
@@ -52,6 +53,10 @@ final class GrassBackgroundRenderer {
         this.bgTexHandle = bgTexHandle;
         this.bgSamplerHandle = bgSamplerHandle;
         this.bgAlphaHandle = bgAlphaHandle;
+    }
+
+    void setBackgroundTintHandle(int bgTintHandle) {
+        this.bgTintHandle = bgTintHandle;
     }
 
     void setSkyProgramHandles(
@@ -177,8 +182,19 @@ final class GrassBackgroundRenderer {
         GLES20.glDisableVertexAttribArray(skyTexHandle);
     }
 
+    /**
+     * 背景的每层天空都走这里。
+     *
+     * <p>顺带把 uTint 设回白色：本类是唯一不经过 {@link GrassSpriteRenderer}、直接用背景
+     * 程序画的地方，而 uTint 是 program 级状态 —— 不设回白色就会继承上一帧云留下的暗色。
+     * 只在 {@link #drawBackground}（背景程序）里调用；{@link #drawAccurateBackground}
+     * 用的是天空程序，那个着色器没有 uTint，也就不会被染色影响。
+     */
     private void setAlpha(float alpha) {
         GLES20.glUniform1f(bgAlphaHandle, alpha);
+        if (bgTintHandle >= 0) {
+            GLES20.glUniform3f(bgTintHandle, 1.0f, 1.0f, 1.0f);
+        }
     }
 
     private void drawNight(boolean nightInvert) {

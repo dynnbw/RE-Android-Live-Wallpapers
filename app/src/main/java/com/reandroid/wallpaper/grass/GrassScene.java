@@ -109,6 +109,12 @@ final class GrassScene {
     /** 天气切换时粒子淡入淡出的时长（秒）。 */
     private static final float WEATHER_PARTICLE_FADE_SEC = 1.2f;
 
+    /** 天气色调的淡入淡出系数（0~1）。见 {@link #update}。 */
+    private float mWeatherToneGate;
+
+    /** 天气色调淡入淡出的时长（秒）。比粒子慢一些 —— 整片天空换色本来就该更缓。 */
+    private static final float WEATHER_TONE_FADE_SEC = 2.0f;
+
     /**
      * 风相位，也就是 {@code turbulencef2} 的 y 参数。
      *
@@ -431,6 +437,18 @@ final class GrassScene {
          */
         float starVisibility = nightWeight
                 * GrassWeatherSystem.starVisibilityScale(mWeatherCondition);
+
+        /*
+         * 天气色调的开关同样要淡入淡出，不能硬切。
+         *
+         * 原来这一层写在渲染器里，是一句 `if (sd.isNight) return;` —— 于是日出那一刻天空
+         * 从夜色直接跳到"夜色 + 蓝灰色调"，看上去就是夜晚突然变成白天。天气切换时也一样硬。
+         * 现在拆成两段平滑的乘积：白天权重（本来就跟着日出日落连续变化）+ 天气开关的淡入淡出。
+         */
+        mWeatherToneGate = GrassWeatherSystem.fadeGate(mWeatherToneGate,
+                mWeatherCondition != WeatherCondition.D1_CLEAR, dt, WEATHER_TONE_FADE_SEC);
+        mSceneData.dayWeight = 1.0f - nightWeight;
+        mSceneData.weatherToneAlpha = mSceneData.dayWeight * mWeatherToneGate;
 
         // Update particle positions（传统优先：传统开关开启时现代粒子不再更新）
         if (!mLegacyDandelionEnabled && dandelionVisibility > 0.001f && mDandelions != null) {

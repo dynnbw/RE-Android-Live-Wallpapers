@@ -199,6 +199,32 @@ final class GrassWeatherSystem {
         }
     }
 
+    /**
+     * 夜里云被压到的颜色（白天是纯白）。
+     *
+     * <p>云贴图本身是白的（可见像素 RGB 约 215,217,223），而夜里没有光源 —— 那就该是暗的。
+     * 偏蓝一点点，好和夜空(#000A20 → #1956B0)同调。
+     *
+     * <p><b>不要</b>退回成"降透明度假装看不见"。那正是原来的做法（夜里 cloudAlpha 乘 0.30），
+     * 结果是云几乎消失、星空直接透出来，什么天气的夜空都长一样。云要完整画出来，只是变暗。
+     *
+     * <p>也不要压到 0：纯黑的云在天空上是个洞。实测这些值下云比夜空稍暗，读起来是剪影。
+     */
+    static final float NIGHT_CLOUD_R = 0.10f;
+    static final float NIGHT_CLOUD_G = 0.11f;
+    static final float NIGHT_CLOUD_B = 0.14f;
+
+    /**
+     * 云染色的单通道取值：夜里用 {@link #NIGHT_CLOUD_R} 等，白天回到 1（纯白）。
+     *
+     * @param nightValue 夜间的通道值
+     * @param dayWeight  白天权重，0 是深夜、1 是白天（取自 SceneData.dayWeight）
+     */
+    static float cloudTint(float nightValue, float dayWeight) {
+        float t = dayWeight < 0.0f ? 0.0f : (dayWeight > 1.0f ? 1.0f : dayWeight);
+        return nightValue + (1.0f - nightValue) * t;
+    }
+
     static float moonBrightnessScale(WeatherCondition condition) {
         switch (condition) {
             case D3_DREARY: return 0.84f;

@@ -84,6 +84,16 @@ final class SceneData {
     float starVisibility;
     WeatherCondition weatherCondition;
 
+    /** 白天权重 = 1 − 夜空权重。跟着日出日落平滑变化，0 是深夜、1 是白天。 */
+    float dayWeight;
+    /**
+     * 天气色调（{@code texWeatherTone}）的透明度。
+     *
+     * <p>= 白天权重 × 天气开关的淡入淡出。晴天为 0。**不要**改成"夜里直接不画"的硬判断
+     * —— 那样日出那一刻整片天空会瞬间换色。
+     */
+    float weatherToneAlpha;
+
     final float[] accurateWeights = new float[4];
     float solarEclipseWeight;
     double lastSunAltitude;
