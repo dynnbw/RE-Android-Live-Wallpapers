@@ -22,6 +22,8 @@ final class GrassBackgroundRenderer {
     private int bgSamplerHandle = -1;
     private int bgAlphaHandle = -1;
     private int bgTintHandle = -1;
+    /** 背景程序的逐顶点 alpha 属性——本类画的是整块天空，恒定写 1。 */
+    private int bgVertexAlphaHandle = -1;
 
     private int skyPositionHandle = -1;
     private int skyTexHandle = -1;
@@ -40,7 +42,7 @@ final class GrassBackgroundRenderer {
     private FloatBuffer bgQuadBuffer;
     private FloatBuffer skyQuadBuffer;
     private boolean skyQuadDirty = true;
-    private final float[] quadVerts = new float[16];
+    private final float[] quadVerts = new float[20];
 
     void setViewport(int width, int height) {
         this.width = width;
@@ -57,6 +59,10 @@ final class GrassBackgroundRenderer {
 
     void setBackgroundTintHandle(int bgTintHandle) {
         this.bgTintHandle = bgTintHandle;
+    }
+
+    void setBackgroundVertexAlphaHandle(int bgVertexAlphaHandle) {
+        this.bgVertexAlphaHandle = bgVertexAlphaHandle;
     }
 
     void setSkyProgramHandles(
@@ -236,33 +242,32 @@ final class GrassBackgroundRenderer {
             float x2, float y2, float u2, float v2,
             float x3, float y3, float u3, float v3) {
         if (bgQuadBuffer == null) {
-            bgQuadBuffer = ByteBuffer.allocateDirect(4 * 4 * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
+            bgQuadBuffer = ByteBuffer.allocateDirect(4 * 5 * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
         }
 
-        quadVerts[0] = x0;
-        quadVerts[1] = y0;
-        quadVerts[2] = u0;
-        quadVerts[3] = v0;
-        quadVerts[4] = x1;
-        quadVerts[5] = y1;
-        quadVerts[6] = u1;
-        quadVerts[7] = v1;
-        quadVerts[8] = x2;
-        quadVerts[9] = y2;
-        quadVerts[10] = u2;
-        quadVerts[11] = v2;
-        quadVerts[12] = x3;
-        quadVerts[13] = y3;
-        quadVerts[14] = u3;
-        quadVerts[15] = v3;
+        /*
+         * 顶点是 x,y,u,v,a 五个 float。这里的 a 必须显式写 1：
+         * 着色器里 float 属性取的是通用属性的 x 分量，而数组没启用时通用默认值是
+         * (0,0,0,1) —— 读出来是 0 不是 1，天空会整块变透明。
+         */
+        int c = 0;
+        quadVerts[c++] = x0; quadVerts[c++] = y0; quadVerts[c++] = u0; quadVerts[c++] = v0; quadVerts[c++] = 1.0f;
+        quadVerts[c++] = x1; quadVerts[c++] = y1; quadVerts[c++] = u1; quadVerts[c++] = v1; quadVerts[c++] = 1.0f;
+        quadVerts[c++] = x2; quadVerts[c++] = y2; quadVerts[c++] = u2; quadVerts[c++] = v2; quadVerts[c++] = 1.0f;
+        quadVerts[c++] = x3; quadVerts[c++] = y3; quadVerts[c++] = u3; quadVerts[c++] = v3; quadVerts[c] = 1.0f;
 
         bgQuadBuffer.clear();
         bgQuadBuffer.put(quadVerts).position(0);
         GLES20.glEnableVertexAttribArray(bgPositionHandle);
-        GLES20.glVertexAttribPointer(bgPositionHandle, 2, GLES20.GL_FLOAT, false, 16, bgQuadBuffer);
+        GLES20.glVertexAttribPointer(bgPositionHandle, 2, GLES20.GL_FLOAT, false, 20, bgQuadBuffer);
         bgQuadBuffer.position(2);
         GLES20.glEnableVertexAttribArray(bgTexHandle);
-        GLES20.glVertexAttribPointer(bgTexHandle, 2, GLES20.GL_FLOAT, false, 16, bgQuadBuffer);
+        GLES20.glVertexAttribPointer(bgTexHandle, 2, GLES20.GL_FLOAT, false, 20, bgQuadBuffer);
+        if (bgVertexAlphaHandle >= 0) {
+            bgQuadBuffer.position(4);
+            GLES20.glEnableVertexAttribArray(bgVertexAlphaHandle);
+            GLES20.glVertexAttribPointer(bgVertexAlphaHandle, 1, GLES20.GL_FLOAT, false, 20, bgQuadBuffer);
+        }
 
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture);
@@ -271,5 +276,8 @@ final class GrassBackgroundRenderer {
 
         GLES20.glDisableVertexAttribArray(bgPositionHandle);
         GLES20.glDisableVertexAttribArray(bgTexHandle);
+        if (bgVertexAlphaHandle >= 0) {
+            GLES20.glDisableVertexAttribArray(bgVertexAlphaHandle);
+        }
     }
 }

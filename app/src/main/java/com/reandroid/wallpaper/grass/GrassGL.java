@@ -430,11 +430,23 @@ public class GrassGL extends GLESScene {
         mBgTintHandle = GLES20.glGetUniformLocation(mBackgroundProgram, "uTint");
         // 精灵的逐顶点 alpha（见 grass_bg_vs.glsl）；粒子/星空/天气精灵与 VK 共用同一套顶点
         mBgVertexAlphaHandle = GLES20.glGetAttribLocation(mBackgroundProgram, "aAlpha");
+        /*
+         * 把这个属性的**通用值**设成 1。
+         *
+         * 着色器里 float 属性取的是通用属性的 x 分量，而通用值默认是 (0,0,0,1) ——
+         * 读出来是 0。于是任何"没启用该数组、也没写 a"的绘制都会整块变透明。
+         * 背景天空就踩过这个坑（改完四层天空全没了）。设成 1 之后，忘了写 a 的代价从
+         * "看不见"变成"看得见"，这类错误不会再静默发生。
+         */
+        if (mBgVertexAlphaHandle >= 0) {
+            GLES20.glVertexAttrib1f(mBgVertexAlphaHandle, 1.0f);
+        }
         mSpriteRenderer.setProgramHandles(mBgPositionHandle, mBgTexHandle, mBgSamplerHandle, mBgAlphaHandle);
         mSpriteRenderer.setTintHandle(mBgTintHandle);
         mSpriteRenderer.setVertexAlphaHandle(mBgVertexAlphaHandle);
         mBackgroundRenderer.setBackgroundProgramHandles(mBgPositionHandle, mBgTexHandle, mBgSamplerHandle, mBgAlphaHandle);
         mBackgroundRenderer.setBackgroundTintHandle(mBgTintHandle);
+        mBackgroundRenderer.setBackgroundVertexAlphaHandle(mBgVertexAlphaHandle);
         mWeatherRenderer.setBackgroundMatrixHandle(mBgMatrixHandle);
         mStarRenderer.setBackgroundMatrixHandle(mBgMatrixHandle);
     }
