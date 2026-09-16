@@ -163,11 +163,16 @@ final class GrassWeatherIntegration {
         if (!previewWeatherActive) {
             return;
         }
-        if (previewWeatherNextMs == 0L) {
-            previewWeatherNextMs = timeMs + 3000L;
-            return;
-        }
-        if (timeMs < previewWeatherNextMs) {
+        /*
+         * nextMs 为 0 表示"还没排过期"，这时要**直接落下去推进一档**，而不是只排期就返回。
+         *
+         * 原实现是 `nextMs = now + 3000; return;`，于是开关打开后先停在 D1_CLEAR
+         * （晴天，画面与关闭时完全一样）整整 3 秒，看上去就像"天气没生效" ——
+         * 这才是当年要靠重建预览来救的那个现象，其实只要让第一档立刻发生就够了。
+         *
+         * 已经排过期（nextMs != 0）时仍按 3 秒一档走，不要每次都抢拍。
+         */
+        if (previewWeatherNextMs != 0L && timeMs < previewWeatherNextMs) {
             return;
         }
 
