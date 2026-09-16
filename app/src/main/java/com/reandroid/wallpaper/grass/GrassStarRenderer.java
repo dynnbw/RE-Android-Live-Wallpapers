@@ -3,21 +3,25 @@ package com.reandroid.wallpaper.grass;
 import android.content.SharedPreferences;
 import android.opengl.GLES20;
 
+/**
+ * 夜空星星的 GLES 渲染。
+ *
+ * <p>批次构建不在这里 —— 它和 Vulkan 共用 {@link GrassRenderDataBuilder#buildStarBatches}。
+ * 本类只负责挑贴图和发起绘制。原先这里另有一份完整实现，还额外按 alpha 分了 8 个桶
+ * （每次绘制只能有一个统一 alpha），于是 4 组贴图要画 32 次。顶点格式支持逐顶点 alpha 之后，
+ * 那份分桶既没必要也不如逐顶点精确，已经删掉，现在是 4 次绘制。
+ */
 final class GrassStarRenderer {
 
     void setPluginPrefs(SharedPreferences prefs) {
         nightStarsLayer.setPluginPrefs(prefs);
     }
 
-
-    private static final int STAR_TEXTURE_GROUP_COUNT = 4;
-    private static final int STAR_ALPHA_BIN_COUNT = 8;
-    private static final int STAR_BATCH_GROUP_COUNT = STAR_TEXTURE_GROUP_COUNT * STAR_ALPHA_BIN_COUNT;
-    /** 顶点格式 x,y,u,v,a，与 GrassRenderDataBuilder 一致；星空按 alpha 分桶，逐顶点 a 写 1。 */
-    private static final int FLOATS_PER_VERTEX = 5;
-    private static final int FLOATS_PER_STAR = 6 * FLOATS_PER_VERTEX;
-
     private final NightStarsLayer nightStarsLayer = new NightStarsLayer();
+
+    private GrassRenderDataBuilder renderDataBuilder;
+    private final GrassRenderDataBuilder.StarBatches starBatches =
+            new GrassRenderDataBuilder.StarBatches();
 
     private int width;
     private int height;
@@ -28,9 +32,6 @@ final class GrassStarRenderer {
     private int texStarCool;
     private int texStarYellow;
 
-    private final float[][] starBatchVertices = new float[STAR_BATCH_GROUP_COUNT][];
-    private final int[] starBatchFloatCounts = new int[STAR_BATCH_GROUP_COUNT];
-
     void setViewport(int width, int height) {
         this.width = width;
         this.height = height;
@@ -38,6 +39,10 @@ final class GrassStarRenderer {
 
     void setBackgroundMatrixHandle(int bgMatrixHandle) {
         this.bgMatrixHandle = bgMatrixHandle;
+    }
+
+    void setRenderDataBuilder(GrassRenderDataBuilder renderDataBuilder) {
+        this.renderDataBuilder = renderDataBuilder;
     }
 
     void loadTextures(SolidColorTextureFactory solidColorFactory) {
@@ -57,7 +62,7 @@ final class GrassStarRenderer {
     }
 
     void drawNightStars(SceneData sd, GrassSpriteRenderer spriteRenderer, RenderOps renderOps) {
-        if (sd.starVisibility <= 0.001f || texStarWhite == 0) {
+        if (sd.starVisibility <= 0.001f || texStarWhite == 0 || renderDataBuilder == null) {
             return;
         }
 
@@ -65,137 +70,22 @@ final class GrassStarRenderer {
         renderOps.setAlphaBlend();
         GLES20.glUniformMatrix4fv(bgMatrixHandle, 1, false, sd.projectionMatrix, 0);
 
-        clearBatchCounters();
-        nightStarsLayer.draw(sd.animNowMs, width, height, new NightStarsLayer.SpriteDrawer() {
-            @Override
-            public void draw(int tintType, float cx, float cy, float size, float alpha, float shift) {
-                float finalAlpha = alpha * sd.starVisibility;
-                if (finalAlpha <= 0.001f) {
-                    return;
-                }
-                int textureGroup = textureGroupForTint(tintType, shift);
-                int alphaBin = alphaBinFor(finalAlpha);
-                int group = (textureGroup * STAR_ALPHA_BIN_COUNT) + alphaBin;
-                appendStarQuad(group, cx, cy, size);
-            }
-        });
+        GrassRenderDataBuilder.StarBatches stars = renderDataBuilder.buildStarBatches(
+                nightStarsLayer, sd, width, height, starBatches);
 
-        for (int textureGroup = 0; textureGroup < STAR_TEXTURE_GROUP_COUNT; textureGroup++) {
-            int texture = textureForGroup(textureGroup);
-            for (int alphaBin = 0; alphaBin < STAR_ALPHA_BIN_COUNT; alphaBin++) {
-                int group = (textureGroup * STAR_ALPHA_BIN_COUNT) + alphaBin;
-                int floatCount = starBatchFloatCounts[group];
-                if (floatCount <= 0) {
-                    continue;
-                }
-                spriteRenderer.drawBatch(texture, starBatchVertices[group], floatCount, alphaForBin(alphaBin));
-            }
-        }
+        drawStarGroup(spriteRenderer, texStarWhite, stars.white, stars.whiteCount);
+        drawStarGroup(spriteRenderer, texStarWarm, stars.warm, stars.warmCount);
+        drawStarGroup(spriteRenderer, texStarCool, stars.cool, stars.coolCount);
+        drawStarGroup(spriteRenderer, texStarYellow, stars.yellow, stars.yellowCount);
     }
 
-    private int textureGroupForTint(int tintType, float shift) {
-        switch (tintType) {
-            case NightStarsLayer.STAR_TINT_RED:
-                return shift > 0.6f ? 1 : 3;
-            case NightStarsLayer.STAR_TINT_BLUE:
-                return shift > 0.45f ? 2 : 0;
-            case NightStarsLayer.STAR_TINT_YELLOW:
-                return shift > 0.35f ? 3 : 0;
-            case NightStarsLayer.STAR_TINT_WHITE:
-            default:
-                return 0;
-        }
-    }
-
-    private int textureForGroup(int group) {
-        switch (group) {
-            case 1:
-                return texStarWarm;
-            case 2:
-                return texStarCool;
-            case 3:
-                return texStarYellow;
-            case 0:
-            default:
-                return texStarWhite;
-        }
-    }
-
-    private void clearBatchCounters() {
-        for (int i = 0; i < starBatchFloatCounts.length; i++) {
-            starBatchFloatCounts[i] = 0;
-        }
-    }
-
-    private int alphaBinFor(float alpha) {
-        int idx = (int) (alpha * (STAR_ALPHA_BIN_COUNT - 1) + 0.5f);
-        if (idx < 0) {
-            return 0;
-        }
-        if (idx >= STAR_ALPHA_BIN_COUNT) {
-            return STAR_ALPHA_BIN_COUNT - 1;
-        }
-        return idx;
-    }
-
-    private float alphaForBin(int alphaBin) {
-        if (STAR_ALPHA_BIN_COUNT <= 1) {
-            return 1.0f;
-        }
-        return alphaBin / (float) (STAR_ALPHA_BIN_COUNT - 1);
-    }
-
-    private void appendStarQuad(int group, float cx, float cy, float size) {
-        ensureGroupCapacity(group, FLOATS_PER_STAR);
-        float[] out = starBatchVertices[group];
-        int cursor = starBatchFloatCounts[group];
-
-        float half = size * 0.5f;
-        float x0 = cx - half;
-        float y0 = cy - half;
-        float x1 = cx - half;
-        float y1 = cy + half;
-        float x2 = cx + half;
-        float y2 = cy + half;
-        float x3 = cx + half;
-        float y3 = cy - half;
-
-        cursor = putVertex(out, cursor, x0, y0, 0.0f, 1.0f);
-        cursor = putVertex(out, cursor, x1, y1, 0.0f, 0.0f);
-        cursor = putVertex(out, cursor, x2, y2, 1.0f, 0.0f);
-
-        cursor = putVertex(out, cursor, x0, y0, 0.0f, 1.0f);
-        cursor = putVertex(out, cursor, x2, y2, 1.0f, 0.0f);
-        cursor = putVertex(out, cursor, x3, y3, 1.0f, 1.0f);
-
-        starBatchFloatCounts[group] = cursor;
-    }
-
-    private int putVertex(float[] out, int cursor, float x, float y, float u, float v) {
-        out[cursor++] = x;
-        out[cursor++] = y;
-        out[cursor++] = u;
-        out[cursor++] = v;
-        out[cursor++] = 1.0f;   // 逐顶点 alpha：星空按桶走 uniform
-        return cursor;
-    }
-
-    private void ensureGroupCapacity(int group, int appendFloatCount) {
-        int required = starBatchFloatCounts[group] + appendFloatCount;
-        float[] current = starBatchVertices[group];
-        if (current != null && current.length >= required) {
+    private static void drawStarGroup(GrassSpriteRenderer spriteRenderer,
+            int texture, float[] vertices, int vertexCount) {
+        if (texture == 0 || vertexCount <= 0) {
             return;
         }
-
-        int newSize = current == null ? 4096 : current.length;
-        while (newSize < required) {
-            newSize *= 2;
-        }
-
-        float[] expanded = new float[newSize];
-        if (current != null && starBatchFloatCounts[group] > 0) {
-            System.arraycopy(current, 0, expanded, 0, starBatchFloatCounts[group]);
-        }
-        starBatchVertices[group] = expanded;
+        // uniform alpha 传 1：透明度已经逐顶点烘好了
+        spriteRenderer.drawBatch(texture, vertices,
+                vertexCount * GrassRenderDataBuilder.FLOATS_PER_SPRITE_VERTEX, 1.0f);
     }
 }

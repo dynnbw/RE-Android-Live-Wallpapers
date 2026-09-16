@@ -432,6 +432,7 @@ public class GrassGL extends GLESScene {
         mBackgroundRenderer.setBackgroundVertexAlphaHandle(mBgVertexAlphaHandle);
         mWeatherRenderer.setBackgroundMatrixHandle(mBgMatrixHandle);
         mStarRenderer.setBackgroundMatrixHandle(mBgMatrixHandle);
+        mStarRenderer.setRenderDataBuilder(mScene.mRenderDataBuilder);
     }
 
     private void createSkyProgram() {

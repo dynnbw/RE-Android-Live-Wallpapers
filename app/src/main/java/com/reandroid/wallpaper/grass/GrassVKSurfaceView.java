@@ -12,7 +12,7 @@ class GrassVKSurfaceView extends VKSurfaceView<GrassScene> {
 
     private short[] mCachedIndices = new short[0];
     private final NightStarsLayer mNightStars = new NightStarsLayer();
-    private final GrassVKNative.StarBatches mStarBatches = new GrassVKNative.StarBatches();
+    private final GrassRenderDataBuilder.StarBatches mStarBatches = new GrassRenderDataBuilder.StarBatches();
 
     GrassVKSurfaceView(Context context) {
         super(context);
@@ -85,7 +85,7 @@ class GrassVKSurfaceView extends VKSurfaceView<GrassScene> {
         float[] moonVerts = mScene.mRenderDataBuilder.buildMoonSpriteVertices(sd);
         float[] moonParams = mScene.mRenderDataBuilder.buildMoonParams(sd);
 
-        GrassVKNative.StarBatches stars = GrassVKNative.buildStarBatches(mNightStars, sd, mWidth, mHeight, mStarBatches);
+        GrassRenderDataBuilder.StarBatches stars = mScene.mRenderDataBuilder.buildStarBatches(mNightStars, sd, mWidth, mHeight, mStarBatches);
 
         GrassVKNative.nRenderFrame(mRendererHandle,
                 sky, sd.projectionMatrix,
