@@ -100,6 +100,16 @@ final class GrassScene {
     private boolean mFireflyEnabled = false;
 
     /**
+     * 天气对粒子的放行系数（0~1，淡入淡出）。见 {@link #update} —— 天气的放行是 0/1 的
+     * 硬开关，直接乘上去会让粒子在切到阵雨/雷暴的那一帧凭空消失。
+     */
+    private float mDandelionWeatherGate = 1.0f;
+    private float mFireflyWeatherGate = 1.0f;
+
+    /** 天气切换时粒子淡入淡出的时长（秒）。 */
+    private static final float WEATHER_PARTICLE_FADE_SEC = 1.2f;
+
+    /**
      * 风相位，也就是 {@code turbulencef2} 的 y 参数。
      *
      * <p>它是按当前倍率对时间**积分**出来的，不是拿开机时间乘倍率（见 {@link #update}）。
@@ -399,10 +409,21 @@ final class GrassScene {
 
         boolean allowDandelion = GrassWeatherSystem.allowsDandelion(mWeatherCondition);
         boolean allowFirefly = GrassWeatherSystem.allowsFirefly(mWeatherCondition);
-        float dandelionVisibility = (mDandelionEnabled && allowDandelion)
-                ? computeDandelionVisibility(timeFrac) : 0.0f;
-        float fireflyVisibility = (mFireflyEnabled && allowFirefly)
-                ? computeFireflyVisibility(timeFrac) : 0.0f;
+        /*
+         * 天气的放行要淡入淡出，不能硬切。
+         *
+         * 原来是把 allowDandelion/allowFirefly 直接并用在可见度上，于是切到阵雨/雷暴的
+         * 那一帧蒲公英与萤火虫凭空消失，切回来又凭空出现。日夜那一层本来就是平滑的
+         * （computeStarVisibility 的权重曲线），硬切只来自天气。
+         */
+        mDandelionWeatherGate = GrassWeatherSystem.fadeGate(
+                mDandelionWeatherGate, allowDandelion, dt, WEATHER_PARTICLE_FADE_SEC);
+        mFireflyWeatherGate = GrassWeatherSystem.fadeGate(
+                mFireflyWeatherGate, allowFirefly, dt, WEATHER_PARTICLE_FADE_SEC);
+        float dandelionVisibility = (mDandelionEnabled ? computeDandelionVisibility(timeFrac) : 0.0f)
+                * mDandelionWeatherGate;
+        float fireflyVisibility = (mFireflyEnabled ? computeFireflyVisibility(timeFrac) : 0.0f)
+                * mFireflyWeatherGate;
         float starVisibility = computeStarVisibility(timeFrac);
 
         // Update particle positions（传统优先：传统开关开启时现代粒子不再更新）

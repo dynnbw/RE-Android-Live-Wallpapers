@@ -106,6 +106,36 @@ final class GrassWeatherSystem {
         }
     }
 
+    /**
+     * 天气放行的淡入淡出。
+     *
+     * <p>{@link #allowsDandelion} / {@link #allowsFirefly} 是 0/1 的硬开关。直接把它们
+     * 乘进可见度，粒子就会在切到阵雨/雷暴的那一帧凭空消失（切回来又凭空出现）——
+     * 与风相位瞬移是同一类毛病。这里改成按固定时长线性逼近。
+     *
+     * <p>步长按 {@code dt} 折算，所以淡入淡出时长与帧率无关。
+     *
+     * @param current     当前值
+     * @param allowed     目标是否为 1（否则为 0）
+     * @param dt          本帧秒数
+     * @param fadeSeconds 从 0 走到 1 所需的时长；非正数表示不淡、直接到位
+     * @return 新值，落在 [0,1]
+     */
+    static float fadeGate(float current, boolean allowed, float dt, float fadeSeconds) {
+        float target = allowed ? 1.0f : 0.0f;
+        if (fadeSeconds <= 0.0f) {
+            return target;
+        }
+        float step = Math.max(0.0f, dt) / fadeSeconds;
+        if (current < target) {
+            return Math.min(target, current + step);
+        }
+        if (current > target) {
+            return Math.max(target, current - step);
+        }
+        return current;
+    }
+
     static float sunAlphaScale(WeatherCondition condition) {
         switch (condition) {
             case D3_DREARY: return 0.72f;
