@@ -33,11 +33,11 @@ final class GrassWeatherIntegration {
     private final AtomicReference<WeatherState> pendingWeatherState = new AtomicReference<>();
     private final AtomicBoolean clearWeatherStatePending = new AtomicBoolean();
 
+    /** 预览里的天气轮播（纯逻辑，见该类说明）。 */
+    private final PreviewWeatherCycle mPreviewCycle = new PreviewWeatherCycle();
+
     private boolean weatherEnabled = true;
     private boolean weatherRunning;
-    private boolean previewWeatherActive;
-    private int previewWeatherIndex;
-    private long previewWeatherNextMs;
 
     void setPluginPrefs(SharedPreferences p) {
         mPluginPrefs = p;
@@ -60,9 +60,7 @@ final class GrassWeatherIntegration {
 
         weatherRunning = false;
         clearWeatherStatePending.set(true);
-        previewWeatherActive = false;
-        previewWeatherIndex = 0;
-        previewWeatherNextMs = 0L;
+        mPreviewCycle.stop();
 
         if (isPreview && weatherEnabled) {
             initPreviewWeatherCycle();
@@ -74,8 +72,7 @@ final class GrassWeatherIntegration {
             weatherManager.stop();
         }
         weatherRunning = false;
-        previewWeatherActive = false;
-        previewWeatherNextMs = 0L;
+        mPreviewCycle.stop();
     }
 
     void release() {
@@ -83,13 +80,16 @@ final class GrassWeatherIntegration {
             weatherManager.release();
         }
         weatherRunning = false;
-        previewWeatherActive = false;
-        previewWeatherNextMs = 0L;
+        mPreviewCycle.stop();
     }
 
     FrameUpdate update(long timeMs, boolean isPreview) {
         if (isPreview && weatherEnabled) {
-            updatePreviewWeatherCycle(timeMs);
+            WeatherCondition next = mPreviewCycle.advance(timeMs);
+            if (next != null) {
+                pendingWeatherState.set(new WeatherState(next, computePreviewIsNight(),
+                        0.0f, 0.0f, 0L, 0L, 0L));
+            }
         }
 
         // Atomically consume the pending weather state (get + clear in one operation)
@@ -111,8 +111,7 @@ final class GrassWeatherIntegration {
                 clearWeatherStatePending.set(true);
                 pendingWeatherState.set(null);
                 weatherState = null;
-                previewWeatherActive = false;
-                previewWeatherNextMs = 0L;
+                mPreviewCycle.stop();
             } else if (isPreview) {
                 initPreviewWeatherCycle();
                 weatherState = pendingWeatherState.getAndSet(null);
@@ -151,54 +150,8 @@ final class GrassWeatherIntegration {
     }
 
     private void initPreviewWeatherCycle() {
-        previewWeatherActive = true;
-        previewWeatherIndex = 0;
-        previewWeatherNextMs = 0L;
-        boolean isNight = computePreviewIsNight();
-        pendingWeatherState.set(new WeatherState(WeatherCondition.D1_CLEAR, isNight,
+        mPreviewCycle.reset();
+        pendingWeatherState.set(new WeatherState(mPreviewCycle.current(), computePreviewIsNight(),
                 0.0f, 0.0f, 0L, 0L, 0L));
-    }
-
-    private void updatePreviewWeatherCycle(long timeMs) {
-        if (!previewWeatherActive) {
-            return;
-        }
-        /*
-         * nextMs 为 0 表示"还没排过期"，这时要**直接落下去推进一档**，而不是只排期就返回。
-         *
-         * 原实现是 `nextMs = now + 3000; return;`，于是开关打开后先停在 D1_CLEAR
-         * （晴天，画面与关闭时完全一样）整整 3 秒，看上去就像"天气没生效" ——
-         * 这才是当年要靠重建预览来救的那个现象，其实只要让第一档立刻发生就够了。
-         *
-         * 已经排过期（nextMs != 0）时仍按 3 秒一档走，不要每次都抢拍。
-         */
-        if (previewWeatherNextMs != 0L && timeMs < previewWeatherNextMs) {
-            return;
-        }
-
-        WeatherCondition[] order = {
-                WeatherCondition.D1_CLEAR,
-                WeatherCondition.D2_CLOUDY,
-                WeatherCondition.D3_DREARY,
-                WeatherCondition.D4_FOG,
-                WeatherCondition.D5_RAIN_SHOWERS,
-                WeatherCondition.D6_THUNDERSTORMS,
-                WeatherCondition.D7_FLURRIES_SNOW,
-                WeatherCondition.D8_ICE_COLD,
-                WeatherCondition.D9_SLEET
-        };
-
-        boolean isNight = computePreviewIsNight();
-        if (previewWeatherIndex >= order.length - 1) {
-            previewWeatherIndex = 0;
-            previewWeatherActive = false;
-            pendingWeatherState.set(new WeatherState(order[0], isNight,
-                    0.0f, 0.0f, 0L, 0L, 0L));
-        } else {
-            previewWeatherIndex++;
-            pendingWeatherState.set(new WeatherState(order[previewWeatherIndex], isNight,
-                    0.0f, 0.0f, 0L, 0L, 0L));
-            previewWeatherNextMs = timeMs + 3000L;
-        }
     }
 }
