@@ -99,6 +99,29 @@ final class GrassScene {
     private boolean mDandelionEnabled = false;
     private boolean mFireflyEnabled = false;
 
+    /**
+     * 风相位，也就是 {@code turbulencef2} 的 y 参数。
+     *
+     * <p>它是按当前倍率对时间**积分**出来的，不是拿开机时间乘倍率（见 {@link #update}）。
+     * 积分式的相位在天气/日夜切换时是连续的，只有"转速"变化。
+     */
+    private float mWindPhase;
+
+    /** 风相位每秒推进量（即原式里 uptimeMillis 的系数 0.00004/ms）。 */
+    private static final float WIND_PHASE_PER_SEC = 0.04f;
+
+    /**
+     * 噪声场在 y 上的周期。
+     *
+     * <p>{@code noisef2} 内部对 y 取 {@code & 0xff}，而 {@code turbulencef2} 最高取到
+     * 八度 f=4，三者(256/128/64)的最小公倍数就是 256。实测（tools/grass-test）：
+     * 取模后的回绕帧变化 6.9E-4，比普通帧的 4.0E-3 还小，看不出接缝。
+     *
+     * <p>取模还有个副作用是好的：相位始终停在 [0,256)，而 {@code noisef2} 里
+     * {@code t = f*y + 4096} 的 float 精度随 y 增大而变差，不取模跑上几天摆动会量化。
+     */
+    private static final float WIND_PHASE_PERIOD = 256.0f;
+
     // Weather-driven runtime overrides
     private WeatherCondition mWeatherCondition = WeatherCondition.D1_CLEAR;
     private boolean mHasWeatherNightOverride = false;
@@ -353,9 +376,20 @@ final class GrassScene {
 
         // Update blade angles using noise
         float dayNightWind = GrassWeatherSystem.windDayNightScale(mWeatherCondition, isNight);
-        float noiseNow = SystemClock.uptimeMillis() * 0.00004f
-            * GrassWeatherSystem.windTimeScale(mWeatherCondition) * dayNightWind;
-        boolean bladeAnglesDirty = mBladeSystem.updateBladeAngles(noiseNow,
+        float windTimeScale = GrassWeatherSystem.windTimeScale(mWeatherCondition) * dayNightWind;
+        /*
+         * 相位对时间积分，不是拿开机时间乘倍率。
+         *
+         * 原式 `SystemClock.uptimeMillis() * 0.00004f * scale` 在 scale 变化的瞬间会让
+         * 相位整体瞬移 uptime × 0.00004 × Δscale —— 开机一小时就是 144 × Δscale 个单位
+         * （晴朗→雷暴 Δ=0.9，即瞬移 130）。相位一变，每根草采样到的噪声值同时换掉，
+         * 整片草闪到另一个姿态：天气每 3 秒切一次时最明显，日夜切换走同一个式子
+         * （dayNightWind 1.0 → 0.9~0.94）所以也会跳。
+         *
+         * 积分式在切换时只有"转速"变化，相位连续，草是平滑地加快/减慢而不是跳。
+         */
+        mWindPhase = (mWindPhase + dt * WIND_PHASE_PER_SEC * windTimeScale) % WIND_PHASE_PERIOD;
+        boolean bladeAnglesDirty = mBladeSystem.updateBladeAngles(mWindPhase,
             GrassWeatherSystem.windAmplitudeScale(mWeatherCondition) * dayNightWind);
         // 上一帧的脏标记已被渲染器消费（几何已重建）：记录当前角度作为
         // 新一轮脏判定基准。避免高 FPS 下每帧增量跌破阈值导致草停止摆动。
