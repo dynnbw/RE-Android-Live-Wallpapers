@@ -1,11 +1,11 @@
 /*
- * GrassWeatherSystem.cloudTint 的约束测试 —— 纯 JVM:
+ * GrassWeatherSystem.weatherSpriteTint 的约束测试 —— 纯 JVM:
  *
  *   javac -d /tmp/tinttest \
  *         app/src/main/java/com/reandroid/weather/WeatherCondition.java \
  *         app/src/main/java/com/reandroid/wallpaper/grass/GrassWeatherSystem.java \
- *         tools/grass-test/CloudTintTest.java
- *   java -cp /tmp/tinttest com.reandroid.wallpaper.grass.CloudTintTest
+ *         tools/grass-test/WeatherSpriteTintTest.java
+ *   java -cp /tmp/tinttest com.reandroid.wallpaper.grass.WeatherSpriteTintTest
  *
  * 这里要钉住的是**两种做错的方式**:
  *   1. 夜里染色接近 1 —— 等于没染，云在夜里还是白的（原版就是这样）；
@@ -17,15 +17,15 @@
  */
 package com.reandroid.wallpaper.grass;
 
-public final class CloudTintTest {
+public final class WeatherSpriteTintTest {
 
     private static int failures = 0;
 
     public static void main(String[] args) {
         float[] night = {
-                GrassWeatherSystem.NIGHT_CLOUD_R,
-                GrassWeatherSystem.NIGHT_CLOUD_G,
-                GrassWeatherSystem.NIGHT_CLOUD_B,
+                GrassWeatherSystem.NIGHT_WEATHER_R,
+                GrassWeatherSystem.NIGHT_WEATHER_G,
+                GrassWeatherSystem.NIGHT_WEATHER_B,
         };
         String[] names = {"R", "G", "B"};
 
@@ -45,7 +45,7 @@ public final class CloudTintTest {
 
         // ---- 2. 白天必须恰好是纯白（云贴图原样输出） ----
         for (int c = 0; c < 3; c++) {
-            float v = GrassWeatherSystem.cloudTint(night[c], 1.0f);
+            float v = GrassWeatherSystem.weatherSpriteTint(night[c], 1.0f);
             if (Math.abs(v - 1.0f) > 1.0E-6f) {
                 failures++;
                 System.out.println("失败: 白天 " + names[c] + " 应为 1，实际 " + v);
@@ -54,7 +54,7 @@ public final class CloudTintTest {
 
         // ---- 3. 深夜取夜间值 ----
         for (int c = 0; c < 3; c++) {
-            float v = GrassWeatherSystem.cloudTint(night[c], 0.0f);
+            float v = GrassWeatherSystem.weatherSpriteTint(night[c], 0.0f);
             if (Math.abs(v - night[c]) > 1.0E-6f) {
                 failures++;
                 System.out.println("失败: 深夜 " + names[c] + " 应为 " + night[c] + "，实际 " + v);
@@ -66,7 +66,7 @@ public final class CloudTintTest {
             float prev = -1.0f;
             for (int i = 0; i <= 100; i++) {
                 float t = i / 100.0f;
-                float v = GrassWeatherSystem.cloudTint(night[c], t);
+                float v = GrassWeatherSystem.weatherSpriteTint(night[c], t);
                 if (v < prev) {
                     failures++;
                     System.out.println("失败: " + names[c] + " 在 dayWeight=" + t + " 处回落");
@@ -82,11 +82,11 @@ public final class CloudTintTest {
         }
 
         // ---- 5. 权重越界要被夹住，不能外插 ----
-        if (Math.abs(GrassWeatherSystem.cloudTint(0.1f, -5.0f) - 0.1f) > 1.0E-6f) {
+        if (Math.abs(GrassWeatherSystem.weatherSpriteTint(0.1f, -5.0f) - 0.1f) > 1.0E-6f) {
             failures++;
             System.out.println("失败: dayWeight < 0 应夹到深夜值");
         }
-        if (Math.abs(GrassWeatherSystem.cloudTint(0.1f, 5.0f) - 1.0f) > 1.0E-6f) {
+        if (Math.abs(GrassWeatherSystem.weatherSpriteTint(0.1f, 5.0f) - 1.0f) > 1.0E-6f) {
             failures++;
             System.out.println("失败: dayWeight > 1 应夹到纯白");
         }

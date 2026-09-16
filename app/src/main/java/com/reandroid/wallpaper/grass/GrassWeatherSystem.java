@@ -200,27 +200,29 @@ final class GrassWeatherSystem {
     }
 
     /**
-     * 夜里云被压到的颜色（白天是纯白）。
+     * 夜里那些**反光**的天气精灵被压到的颜色（白天是纯白）：云、雾、雨、雪。
      *
-     * <p>云贴图本身是白的（可见像素 RGB 约 215,217,223），而夜里没有光源 —— 那就该是暗的。
-     * 偏蓝一点点，好和夜空(#000A20 → #1956B0)同调。
+     * <p>它们的贴图都是亮色（云 215,217,223；雾和雪 255,255,255；雨 187,219,255），而夜里
+     * 没有光源 —— 那就该是暗的。偏蓝一点点，好和夜空(#000A20 → #1956B0)同调。
      *
-     * <p><b>不要</b>退回成"降透明度假装看不见"。那正是原来的做法（夜里 cloudAlpha 乘 0.30），
-     * 结果是云几乎消失、星空直接透出来，什么天气的夜空都长一样。云要完整画出来，只是变暗。
+     * <p><b>闪电不参与</b>：它是自发光，夜里照样亮（见 GrassWeatherRenderer 里的单独处理）。
+     *
+     * <p><b>不要</b>退回成"降透明度假装看不见"。那正是原来的做法（夜里云乘 0.30 alpha），
+     * 结果是云几乎消失、星空直接透出来，什么天气的夜空都长一样。要完整画出来，只是变暗。
      *
      * <p>也不要压到 0：纯黑的云在天空上是个洞。实测这些值下云比夜空稍暗，读起来是剪影。
      */
-    static final float NIGHT_CLOUD_R = 0.10f;
-    static final float NIGHT_CLOUD_G = 0.11f;
-    static final float NIGHT_CLOUD_B = 0.14f;
+    static final float NIGHT_WEATHER_R = 0.10f;
+    static final float NIGHT_WEATHER_G = 0.11f;
+    static final float NIGHT_WEATHER_B = 0.14f;
 
     /**
-     * 云染色的单通道取值：夜里用 {@link #NIGHT_CLOUD_R} 等，白天回到 1（纯白）。
+     * 天气精灵染色的单通道取值：夜里用 {@link #NIGHT_WEATHER_R} 等，白天回到 1（纯白）。
      *
      * @param nightValue 夜间的通道值
      * @param dayWeight  白天权重，0 是深夜、1 是白天（取自 SceneData.dayWeight）
      */
-    static float cloudTint(float nightValue, float dayWeight) {
+    static float weatherSpriteTint(float nightValue, float dayWeight) {
         float t = dayWeight < 0.0f ? 0.0f : (dayWeight > 1.0f ? 1.0f : dayWeight);
         return nightValue + (1.0f - nightValue) * t;
     }
