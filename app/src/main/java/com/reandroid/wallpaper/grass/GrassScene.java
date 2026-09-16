@@ -424,7 +424,13 @@ final class GrassScene {
                 * mDandelionWeatherGate;
         float fireflyVisibility = (mFireflyEnabled ? computeFireflyVisibility(timeFrac) : 0.0f)
                 * mFireflyWeatherGate;
-        float starVisibility = computeStarVisibility(timeFrac);
+        float nightWeight = computeStarVisibility(timeFrac);
+        /*
+         * 星空还要再被天气压一道：阴雨夜里不该满天星。
+         * 太阳/月亮早有对应的 scale，星星这一层之前漏了，于是任何天气的夜空都长一样。
+         */
+        float starVisibility = nightWeight
+                * GrassWeatherSystem.starVisibilityScale(mWeatherCondition);
 
         // Update particle positions（传统优先：传统开关开启时现代粒子不再更新）
         if (!mLegacyDandelionEnabled && dandelionVisibility > 0.001f && mDandelions != null) {
@@ -467,7 +473,8 @@ final class GrassScene {
         mSceneData.legacyExtras = legacyExtras;
         mSceneData.legacyNormalNight = legacyNormalNight;
         mSceneData.legacyExtrasNight = legacyExtrasNight;
-        mSceneData.legacyTransition = starVisibility; // 与星星同一夜空权重曲线
+        // 传统粒子的日夜权重：只跟日夜走，不叠天气（传统粒子是另一套开关，先不动）
+        mSceneData.legacyTransition = nightWeight;
         mSceneData.legacyNow = legacyNow;
         mSceneData.timeFraction = timeFrac;
         mSceneData.dawn = mDayNightSystem.getDawn();

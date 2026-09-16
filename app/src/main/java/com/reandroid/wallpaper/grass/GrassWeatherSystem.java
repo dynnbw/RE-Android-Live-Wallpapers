@@ -168,6 +168,37 @@ final class GrassWeatherSystem {
         }
     }
 
+    /**
+     * 星空被天气遮蔽的程度。
+     *
+     * <p>太阳和月亮早就有对应的 scale，星星这一层漏了 —— 于是阴雨夜里星星照旧满天，
+     * 与"云层挡天"这件事自相矛盾。
+     *
+     * <p>数值是眼调的，但排序有依据：跟着渲染层实际画几片云走
+     * （{@code GrassWeatherRenderer.drawCloudLayer} 的 cloudCount）——
+     * 飘雪(D7)只画 2 片，所以留得最多；多云/雾/冰冷画 8 片；阴沉/阵雨/雷暴/冻雨画 12 片，
+     * 压得最狠。星星比日月暗得多，所以这里的衰减比 {@link #sunAlphaScale} 陡得多。
+     *
+     * <p>原版是画完星星再无条件把云盖上去（{@code bwlw.drawFrame}：夜里
+     * {@code setShader(mShaderNight)} → {@code drawStars} → {@code drawClouds}），
+     * 靠云的覆盖度挡星星。我们这里改成直接按天气压可见度，覆盖度不全时也挡得住。
+     */
+    static float starVisibilityScale(WeatherCondition condition) {
+        switch (condition) {
+            case D7_FLURRIES_SNOW: return 0.45f;
+            case D2_CLOUDY: return 0.30f;
+            case D8_ICE_COLD: return 0.20f;
+            case D3_DREARY: return 0.12f;
+            case D4_FOG: return 0.10f;
+            case D5_RAIN_SHOWERS: return 0.10f;
+            case D9_SLEET: return 0.10f;
+            case D6_THUNDERSTORMS: return 0.04f;
+            case D1_CLEAR:
+            default:
+                return 1.0f;
+        }
+    }
+
     static float moonBrightnessScale(WeatherCondition condition) {
         switch (condition) {
             case D3_DREARY: return 0.84f;

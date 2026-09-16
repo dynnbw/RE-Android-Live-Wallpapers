@@ -172,31 +172,31 @@ final class GrassWeatherRenderer {
         switch (sd.weatherCondition) {
             case D2_CLOUDY:
                 if (!frontPass) {
-                    drawCloudLayer(sd.weatherCondition, sd.animNowMs, 8, sd.isNight, spriteRenderer);
+                    drawCloudLayer(sd.weatherCondition, sd.animNowMs, 8, spriteRenderer);
                 }
                 break;
             case D3_DREARY:
                 if (!frontPass) {
-                    drawCloudLayer(sd.weatherCondition, sd.animNowMs, 12, sd.isNight, spriteRenderer);
+                    drawCloudLayer(sd.weatherCondition, sd.animNowMs, 12, spriteRenderer);
                 }
                 break;
             case D4_FOG:
                 if (!frontPass) {
-                    drawCloudLayer(sd.weatherCondition, sd.animNowMs, 8, sd.isNight, spriteRenderer);
+                    drawCloudLayer(sd.weatherCondition, sd.animNowMs, 8, spriteRenderer);
                 } else {
                     drawFogLayer(sd.weatherCondition, spriteRenderer);
                 }
                 break;
             case D5_RAIN_SHOWERS:
                 if (!frontPass) {
-                    drawCloudLayer(sd.weatherCondition, sd.animNowMs, 12, sd.isNight, spriteRenderer);
+                    drawCloudLayer(sd.weatherCondition, sd.animNowMs, 12, spriteRenderer);
                 }
                 drawRainLayer(sd.animNowMs, resolveRainCount(false), frontPass, spriteRenderer);
                 break;
             case D6_THUNDERSTORMS:
                 if (!frontPass) {
                     thunderFlashAlpha = drawLightningSweep(sd.animNowMs, spriteRenderer);
-                    drawCloudLayer(sd.weatherCondition, sd.animNowMs, 12, sd.isNight, spriteRenderer);
+                    drawCloudLayer(sd.weatherCondition, sd.animNowMs, 12, spriteRenderer);
                 }
                 drawRainLayer(sd.animNowMs, resolveRainCount(true), frontPass, spriteRenderer);
                 if (frontPass && thunderFlashAlpha > 0.0f && texWeatherFlash != 0) {
@@ -207,19 +207,19 @@ final class GrassWeatherRenderer {
                 break;
             case D7_FLURRIES_SNOW:
                 if (!frontPass) {
-                    drawCloudLayer(sd.weatherCondition, sd.animNowMs, 2, sd.isNight, spriteRenderer);
+                    drawCloudLayer(sd.weatherCondition, sd.animNowMs, 2, spriteRenderer);
                 }
                 drawSnowLayer(sd.animNowMs, resolveSnowCount(false), frontPass, spriteRenderer);
                 break;
             case D8_ICE_COLD:
                 if (!frontPass) {
-                    drawCloudLayer(sd.weatherCondition, sd.animNowMs, 8, sd.isNight, spriteRenderer);
+                    drawCloudLayer(sd.weatherCondition, sd.animNowMs, 8, spriteRenderer);
                 }
                 drawSnowLayer(sd.animNowMs, resolveSnowCount(true), frontPass, spriteRenderer);
                 break;
             case D9_SLEET:
                 if (!frontPass) {
-                    drawCloudLayer(sd.weatherCondition, sd.animNowMs, 12, sd.isNight, spriteRenderer);
+                    drawCloudLayer(sd.weatherCondition, sd.animNowMs, 12, spriteRenderer);
                 }
                 drawRainLayer(sd.animNowMs, resolveRainCount(true), frontPass, spriteRenderer);
                 drawSnowLayer(sd.animNowMs, resolveSnowCount(false), frontPass, spriteRenderer);
@@ -322,10 +322,9 @@ final class GrassWeatherRenderer {
     }
 
     private void drawCloudLayer(WeatherCondition condition, long animNowMs, int cloudCount,
-            boolean isNight, GrassSpriteRenderer spriteRenderer) {
+            GrassSpriteRenderer spriteRenderer) {
         int cond = condition.ordinal();
         float tSec = animNowMs / 1000.0f;
-        float cloudAlpha = isNight ? 0.30f : 1.0f;
         clearBatchCounts(cloudBatchFloatCounts);
         for (int i = 0; i < cloudCount; i++) {
             int texIdx = cloudTexIndexForWeather(condition, i);
@@ -351,7 +350,15 @@ final class GrassWeatherRenderer {
             if (texture == 0) {
                 continue;
             }
-            spriteRenderer.drawBatch(texture, cloudBatchVertices[i], floatCount, cloudAlpha);
+            /*
+             * 云不按昼夜调透明度。
+             *
+             * 原版 {@code Cloud.draw} 是 {@code canvas.drawBitmap(mBitmap, null, mRect, null)} ——
+             * paint 传 null，就是"不额外改透明度"，昼夜一样。贴图自己平均 alpha 只有
+             * 78~119/255，已经是柔和的云；夜里再乘 0.30 会让它几乎看不见，星空直接透出来，
+             * 于是"什么天气的夜空都长一样"。
+             */
+            spriteRenderer.drawBatch(texture, cloudBatchVertices[i], floatCount, 1.0f);
         }
     }
 
