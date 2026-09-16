@@ -30,7 +30,7 @@ final class GrassRenderDataBuilder {
     private int[] bladeSizes = new int[0];
 
     private final float[] mVKSkyParams = new float[6];
-    private final float[] mVKMoonParams = new float[12];
+    private final float[] mVKMoonParams = new float[16];
 
     private float[] mVKGrassVertices = new float[0];
     private int mVKGrassFloatCount;
@@ -98,6 +98,7 @@ final class GrassRenderDataBuilder {
         }
 
         out[0] = sd.moonPhaseAngle;
+        out[12] = sd.moonRotationDeg;   // p3.x：整体旋转角
         out[1] = sd.moonBrightness;
         out[2] = sd.moonAlpha;
         out[3] = sd.moonIsDaytime ? 1.0f : 0.0f;

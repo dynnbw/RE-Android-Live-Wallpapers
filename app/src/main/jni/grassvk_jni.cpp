@@ -49,7 +49,12 @@ struct MoonPushConstants {
     float p0[4];
     float p1[4];
     float p2[4];
+    // x = disc rotation in degrees (parallactic angle). The whole moon turns --
+    // surface texture and terminator together, not just the phase mask.
+    float p3[4];
 };
+static_assert(sizeof(MoonPushConstants) == 128,
+        "MoonPushConstants must fit the guaranteed 128-byte push constant minimum");
 
 // ---- pipeline types ----
 enum PipelineType {
@@ -325,6 +330,10 @@ public:
                 moonPC.p2[1] = mp[9];
                 moonPC.p2[2] = mp[10];
                 moonPC.p2[3] = mp[11];
+                moonPC.p3[0] = mp[12];
+                moonPC.p3[1] = mp[13];
+                moonPC.p3[2] = mp[14];
+                moonPC.p3[3] = mp[15];
                 env->ReleaseFloatArrayElements(moonParamsArr, mp, JNI_ABORT);
             }
         }

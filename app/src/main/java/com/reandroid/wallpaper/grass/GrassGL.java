@@ -124,6 +124,7 @@ public class GrassGL extends GLESScene {
     private int mMoonSamplerBaseHandle;
     private int mMoonSamplerMaskHandle;
     private int mMoonPhaseHandle;
+    private int mMoonRotationHandle;
     private int mMoonBrightnessHandle;
     private int mMoonAlphaHandle;
     private int mMoonIsDaytimeHandle;
@@ -490,6 +491,7 @@ public class GrassGL extends GLESScene {
         mMoonSamplerBaseHandle = GLES20.glGetUniformLocation(mMoonProgram, "uMoonBase");
         mMoonSamplerMaskHandle = GLES20.glGetUniformLocation(mMoonProgram, "uMoonMask");
         mMoonPhaseHandle = GLES20.glGetUniformLocation(mMoonProgram, "uPhaseAngle");
+        mMoonRotationHandle = GLES20.glGetUniformLocation(mMoonProgram, "uRotation");
         mMoonBrightnessHandle = GLES20.glGetUniformLocation(mMoonProgram, "uBrightness");
         mMoonAlphaHandle = GLES20.glGetUniformLocation(mMoonProgram, "uMoonAlpha");
         mMoonIsDaytimeHandle = GLES20.glGetUniformLocation(mMoonProgram, "uIsDaytime");
@@ -791,6 +793,7 @@ public class GrassGL extends GLESScene {
         }
         GLES20.glUniformMatrix4fv(mMoonMatrixHandle, 1, false, sd.projectionMatrix, 0);
         GLES20.glUniform1f(mMoonPhaseHandle, sd.moonPhaseAngle);
+        GLES20.glUniform1f(mMoonRotationHandle, sd.moonRotationDeg);
         GLES20.glUniform1f(mMoonBrightnessHandle, sd.moonBrightness);
         GLES20.glUniform1f(mMoonAlphaHandle, sd.moonAlpha);
         GLES20.glUniform1i(mMoonIsDaytimeHandle, sd.moonIsDaytime ? 1 : 0);

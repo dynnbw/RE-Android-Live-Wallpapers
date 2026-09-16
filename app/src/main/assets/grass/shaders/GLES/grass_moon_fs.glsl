@@ -2,6 +2,9 @@ precision mediump float;
 uniform sampler2D uMoonBase;
 uniform sampler2D uMoonMask;
 uniform float uPhaseAngle;
+// Disc rotation in degrees (parallactic angle). Rotates the WHOLE moon --
+// both the surface texture and the terminator -- not just the phase mask.
+uniform float uRotation;
 uniform float uBrightness;
 uniform float uMoonAlpha;
 uniform int uIsDaytime;
@@ -18,7 +21,17 @@ uniform float uSolarOcclusion;
 varying vec2 vTexCoord;
 void main() {
   vec2 uv = vTexCoord * 2.0 - 1.0;
-  float mask = texture2D(uMoonMask, vTexCoord).a;
+
+  // Whole-disc rotation about the centre. Sampling at R(rot)*uv rotates the
+  // rendered disc by -rot, and because uv is what the lighting below works
+  // in, the terminator turns with the surface instead of staying upright.
+  float rot = radians(uRotation);
+  float cr = cos(rot);
+  float sr = sin(rot);
+  uv = vec2(uv.x * cr - uv.y * sr, uv.x * sr + uv.y * cr);
+  vec2 discUv = uv * 0.5 + 0.5;
+
+  float mask = texture2D(uMoonMask, discUv).a;
   float circle = smoothstep(1.0, 0.97, length(uv));
   float alphaMask = mask * circle;
   if (alphaMask <= 0.001) discard;
@@ -28,7 +41,7 @@ void main() {
     return;
   }
 
-  vec4 base = texture2D(uMoonBase, vTexCoord);
+  vec4 base = texture2D(uMoonBase, discUv);
 
   float phaseRad = radians(uPhaseAngle);
   float dir = (sin(phaseRad) >= 0.0) ? 1.0 : -1.0;

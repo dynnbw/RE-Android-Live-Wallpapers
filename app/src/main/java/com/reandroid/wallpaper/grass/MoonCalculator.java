@@ -25,6 +25,7 @@ final class MoonCalculator {
         final double moonAltitudeDeg;      // 月球高度（度）
         final double moonAzimuthDeg;       // 月球方位角（度）
         final double moonHourAngleDeg;     // 月球时角（度）
+        final double parallacticAngleDeg;  // 地平纬角（度，月面相对屏幕该转多少）
         final double moonLongitudeLocalDeg;// 本地时间月球黄经（度）
         final double moonLatitudeLocalDeg; // 本地时间月球黄纬（度）
         final double sunAltitudeDeg;       // 太阳高度（度，用于日夜判定）
@@ -40,6 +41,7 @@ final class MoonCalculator {
          * @param moonAltitudeDeg 本地月球高度
          * @param moonAzimuthDeg 本地月球方位角
          * @param moonHourAngleDeg 本地月球时角
+         * @param parallacticAngleDeg 地平纬角（度）
          * @param moonLongitudeLocalDeg 本地月球黄经
          * @param moonLatitudeLocalDeg 本地月球黄纬
          * @param sunAltitudeDeg 本地太阳高度
@@ -49,12 +51,14 @@ final class MoonCalculator {
          * @param moonLatitudeUtcDeg UTC月球黄纬
          */
         MoonData(double moonAltitudeDeg, double moonAzimuthDeg, double moonHourAngleDeg,
+                  double parallacticAngleDeg,
                   double moonLongitudeLocalDeg, double moonLatitudeLocalDeg, double sunAltitudeDeg,
                   double sunAzimuthDeg,
                  double phaseAngleUtcDeg, double moonLongitudeUtcDeg, double moonLatitudeUtcDeg) {
             this.moonAltitudeDeg = moonAltitudeDeg;
             this.moonAzimuthDeg = moonAzimuthDeg;
             this.moonHourAngleDeg = moonHourAngleDeg;
+            this.parallacticAngleDeg = parallacticAngleDeg;
             this.moonLongitudeLocalDeg = moonLongitudeLocalDeg;
             this.moonLatitudeLocalDeg = moonLatitudeLocalDeg;
             this.sunAltitudeDeg = sunAltitudeDeg;
@@ -99,6 +103,7 @@ final class MoonCalculator {
         // 本地恒星时 + 月球/太阳高度/方位（决定月亮是否在本地天空出现）
         double lstLocal = localSiderealTime(jdLocal, lonDeg);
         double moonHourAngle = normalizeDegrees180(lstLocal - moonRaLocal);
+        double parallacticAngle = parallacticAngleDeg(latDeg, moonDecLocal, moonHourAngle);
         double moonAlt = altitudeDeg(latDeg, moonDecLocal, moonHourAngle);
         double moonAz = azimuthDeg(latDeg, moonDecLocal, moonHourAngle);
         double sunHourAngle = normalizeDegrees180(lstLocal - sunRaLocal);
@@ -123,7 +128,7 @@ final class MoonCalculator {
 
         // ========== 3. 返回双基准月球数据 ==========
         return new MoonData(
-                moonAlt, moonAz, moonHourAngle,
+                moonAlt, moonAz, moonHourAngle, parallacticAngle,
             moonLonLocal, moonLatLocal, sunAlt, sunAz,
                 phaseAngleUtc, moonLonUtc, moonLatUtc
         );
@@ -235,6 +240,29 @@ final class MoonCalculator {
      * @param hourAngleDeg 天体时角（度）
      * @return 高度角（度）
      */
+    /**
+     * 地平纬角（parallactic angle）：天球"北"方向与观察者"上"方向之间的夹角。
+     *
+     * <pre>q = atan2( sin H, tan φ·cos δ − sin δ·cos H )</pre>
+     *
+     * <p>它正好就是"月面相对屏幕要转多少"：天体的朝向在天空里是固定的，观察者的"上"
+     * 却随纬度与时刻变，两者之差就是这个角。几个能自查的点：
+     * <ul>
+     *   <li>过中天（H=0）且天体在天顶以南 → q=0，月牙竖直；</li>
+     *   <li>天体在天顶以北（热带常见）→ q=180°，整个月亮倒过来；</li>
+     *   <li>接近地平线时 |q| 最大，月牙横躺；</li>
+     *   <li>南北半球符号相反。</li>
+     * </ul>
+     */
+    static double parallacticAngleDeg(double latDeg, double decDeg, double hourAngleDeg) {
+        double phi = Math.toRadians(latDeg);
+        double dec = Math.toRadians(decDeg);
+        double h = Math.toRadians(hourAngleDeg);
+        double y = Math.sin(h);
+        double x = Math.tan(phi) * Math.cos(dec) - Math.sin(dec) * Math.cos(h);
+        return Math.toDegrees(Math.atan2(y, x));
+    }
+
     private static double altitudeDeg(double latDeg, double decDeg, double hourAngleDeg) {
         double lat = Math.toRadians(latDeg);
         double dec = Math.toRadians(decDeg);

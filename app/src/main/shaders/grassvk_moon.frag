@@ -11,17 +11,28 @@ layout(push_constant) uniform MoonPushConstants {
     vec4 p0; // x=phaseDeg y=brightness z=moonAlpha w=isDaytime
     vec4 p1; // x=contrast y=saturation z=blueTint w=eclipseType
     vec4 p2; // x=eclipseFraction y=eclipsePhase z=shadowOffsetX w=shadowOffsetY
+    vec4 p3; // x=discRotationDegrees (parallactic angle)
 } uPush;
 
 void main() {
     vec2 uv = vTexCoord * 2.0 - 1.0;
+
+    // Whole-disc rotation about the centre. Sampling at R(rot)*uv rotates the
+    // rendered disc by -rot, and since the lighting below works in uv, the
+    // terminator turns with the surface rather than staying upright.
+    float rot = radians(uPush.p3.x);
+    float cr = cos(rot);
+    float sr = sin(rot);
+    uv = vec2(uv.x * cr - uv.y * sr, uv.x * sr + uv.y * cr);
+    vec2 discUv = uv * 0.5 + 0.5;
+
     float circle = smoothstep(1.0, 0.97, length(uv));
     float alphaMask = circle * vAlpha;
     if (alphaMask <= 0.001) {
         discard;
     }
 
-    vec4 base = texture(uMoonBase, vTexCoord);
+    vec4 base = texture(uMoonBase, discUv);
 
     float phaseRad = radians(uPush.p0.x);
     float dir = (sin(phaseRad) >= 0.0) ? 1.0 : -1.0;

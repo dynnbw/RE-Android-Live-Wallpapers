@@ -651,6 +651,7 @@ final class GrassScene {
 
         mSceneData.moonVisible = true;
         mSceneData.moonPhaseAngle = (float) data.phaseAngleUtcDeg;
+        mSceneData.moonRotationDeg = (float) data.parallacticAngleDeg;
         mSceneData.moonX = moonX;
         mSceneData.moonY = moonY;
         mSceneData.moonSize = size;

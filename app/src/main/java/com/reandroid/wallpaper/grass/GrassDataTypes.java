@@ -114,6 +114,13 @@ final class SceneData {
 
     boolean moonVisible;
     float moonPhaseAngle, moonX, moonY, moonSize;
+    /**
+     * 月面相对屏幕的旋转角（度）。来自地平纬角 —— 月亮的朝向在天空里是固定的，
+     * 观察者的"上"随纬度与时刻变，两者之差就是要转的角度。
+     *
+     * <p>注意是**整体**旋转：月面纹理和明暗终止线一起转，不是只转终止线。
+     */
+    float moonRotationDeg;
     boolean moonIsDaytime;
     float moonBrightness, moonAlpha, moonContrast, moonSaturation, moonBlueTint;
     MoonEclipse moonEclipse;
