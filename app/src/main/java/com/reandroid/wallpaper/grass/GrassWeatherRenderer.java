@@ -29,16 +29,6 @@ final class GrassWeatherRenderer {
         int load(String assetPath, boolean repeat, boolean mipmap);
     }
 
-    interface SolidColorTextureFactory {
-        int create(byte r, byte g, byte b, byte a);
-    }
-
-    interface RenderOps {
-        void useBackgroundProgram();
-
-        void setAlphaBlend();
-    }
-
     private static final float[] CLOUD_MDPI_W = {256f, 256f, 256f, 276f};
     private static final float[] CLOUD_MDPI_H = {180f, 163f, 198f, 170f};
     private static final float FOG1_H_OVER_W = 95f / 280f;

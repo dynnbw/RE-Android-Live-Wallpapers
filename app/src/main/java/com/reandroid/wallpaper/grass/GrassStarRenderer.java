@@ -16,16 +16,6 @@ final class GrassStarRenderer {
     private static final int FLOATS_PER_VERTEX = 4;
     private static final int FLOATS_PER_STAR = 6 * FLOATS_PER_VERTEX;
 
-    interface SolidColorTextureFactory {
-        int create(byte r, byte g, byte b, byte a);
-    }
-
-    interface RenderOps {
-        void useBackgroundProgram();
-
-        void setAlphaBlend();
-    }
-
     private final NightStarsLayer nightStarsLayer = new NightStarsLayer();
 
     private int width;

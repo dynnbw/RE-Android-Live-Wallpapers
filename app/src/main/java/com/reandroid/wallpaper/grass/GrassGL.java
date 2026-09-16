@@ -71,19 +71,12 @@ public class GrassGL extends GLESScene {
     private final GrassBackgroundRenderer mBackgroundRenderer = new GrassBackgroundRenderer();
     private final GrassWeatherRenderer mWeatherRenderer = new GrassWeatherRenderer();
     private final GrassStarRenderer mStarRenderer = new GrassStarRenderer();
-    private final GrassWeatherRenderer.RenderOps mWeatherRenderOps = new GrassWeatherRenderer.RenderOps() {
-        @Override
-        public void useBackgroundProgram() {
-            useProgram(mBackgroundProgram);
-        }
 
-        @Override
-        public void setAlphaBlend() {
-            setBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
-        }
-    };
-
-    private final GrassStarRenderer.RenderOps mStarRenderOps = new GrassStarRenderer.RenderOps() {
+    /*
+     * 天气渲染器与星空渲染器要的是同一件事（绑背景 program + 常规 alpha 混合），
+     * 原先各写了一个内容相同的匿名实现，合并成一个共用。
+     */
+    private final RenderOps mBackgroundRenderOps = new RenderOps() {
         @Override
         public void useBackgroundProgram() {
             useProgram(mBackgroundProgram);
@@ -375,7 +368,7 @@ public class GrassGL extends GLESScene {
             }
         }
 
-        mStarRenderer.drawNightStars(sd, mSpriteRenderer, mStarRenderOps);
+        mStarRenderer.drawNightStars(sd, mSpriteRenderer, mBackgroundRenderOps);
         drawMoon(sd);
         drawWeatherOverlays(sd, false);
 
@@ -917,7 +910,7 @@ public class GrassGL extends GLESScene {
 
     private void drawWeatherOverlays(SceneData sd, boolean frontPass) {
         mWeatherRenderer.drawWeatherOverlays(sd, frontPass,
-                mWeatherIntegration.isWeatherEnabled(), mWeatherRenderOps, mSpriteRenderer);
+                mWeatherIntegration.isWeatherEnabled(), mBackgroundRenderOps, mSpriteRenderer);
     }
 
     private void drawWeatherTone(SceneData sd) {
@@ -926,7 +919,7 @@ public class GrassGL extends GLESScene {
 
     private void drawWeatherBackground(SceneData sd) {
         mWeatherRenderer.drawWeatherBackground(sd,
-                mWeatherIntegration.isWeatherEnabled(), mWeatherRenderOps, mSpriteRenderer);
+                mWeatherIntegration.isWeatherEnabled(), mBackgroundRenderOps, mSpriteRenderer);
     }
 
     /** 按类型绘制原版粒子（dandelionPass=true 画蒲公英，false 画萤火虫）。 */
