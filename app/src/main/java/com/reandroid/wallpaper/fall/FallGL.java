@@ -276,9 +276,15 @@ public class FallGL extends GLESScene {
             drawLeaf(leaf, sceneData);
         }
 
-        int glError = GLES20.glGetError();
-        if (glError != GLES20.GL_NO_ERROR) {
-            Log.w(TAG, "drawFrame中GL错误: " + glError);
+        /*
+         * glGetError 是同步查询，可能强制冲刷管线、把帧时间拉长，所以只在诊断模式下做。
+         * 原来每帧无条件调用。
+         */
+        if (mAnrDiagEnabled) {
+            int glError = GLES20.glGetError();
+            if (glError != GLES20.GL_NO_ERROR) {
+                Log.w(TAG, "drawFrame中GL错误: " + glError);
+            }
         }
 
         long frameCost = SystemClock.uptimeMillis() - frameStart;

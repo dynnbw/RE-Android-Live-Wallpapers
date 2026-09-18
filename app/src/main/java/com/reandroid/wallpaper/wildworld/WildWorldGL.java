@@ -375,11 +375,4 @@ public class WildWorldGL extends GLESScene {
         return tex[0];
     }
 
-    /**
-     * 创建着色器程序
-     */
-
-    /**
-     * 加载单个着色器
-     */
 }

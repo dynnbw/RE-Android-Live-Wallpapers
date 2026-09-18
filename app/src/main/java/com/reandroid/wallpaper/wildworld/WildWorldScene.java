@@ -214,7 +214,7 @@ final class WildWorldScene {
             return DENSITY_240X400;
         }
         if (mScreenWidth > 320 || mScreenHeight > 480) {
-            return (mScreenWidth > 480 || mScreenHeight > 800) ? DENSITY_480X800 : DENSITY_480X800;
+            return DENSITY_480X800;   // 两支原本就是同一个值，所有现代设备都落这一档
         }
         return DENSITY_320X480;
     }

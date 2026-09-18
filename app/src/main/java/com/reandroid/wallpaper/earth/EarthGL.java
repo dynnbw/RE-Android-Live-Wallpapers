@@ -304,7 +304,7 @@ public class EarthGL extends GLESScene {
             Matrix.rotateM(mSkyModel, 0, mScene.skyAngleY(), 0.0f, 1.0f, 0.0f);
             Matrix.scaleM(mSkyModel, 0, SKY_SCALE, SKY_SCALE, SKY_SCALE);
             Matrix.multiplyMM(mSkyMV, 0, mSkyView, 0, mSkyModel, 0);
-            drawGlobe(mSkyProgram, mSkyProj, mSkyModelView, mSkyPos, mSkyTex, mTexSky, false);
+            drawGlobe(mSkyProgram, mSkyProj, mSkyModelView, mSkyPos, mSkyTex, mTexSky);
         }
 
         // ② 球体层
@@ -327,24 +327,24 @@ public class EarthGL extends GLESScene {
         // 地球（不透明）
         GLES20.glDisable(GLES20.GL_BLEND);
         drawSphere(mTexEarthDay, mTexEarthNight, EarthScene.EARTH_SCALE,
-                mScene.earthAngleY(), true, delta, true);
+                mScene.earthAngleY(), true, delta);
 
         // 云层 / 高光（加色）
         GLES20.glEnable(GLES20.GL_BLEND);
         GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE);
         if (mPrefClouds) {
             drawSphere(mTexClouds, mTexClouds, EarthScene.CLOUDS_SCALE,
-                    mScene.cloudAngleY(), false, null, true);
+                    mScene.cloudAngleY(), false, null);
         }
         if (!closeup && mTexSpecular != 0) {
             drawSphere(mTexSpecular, mTexSpecular, EarthScene.SPECULAR_SCALE,
-                    EarthScene.SPECULAR_ANGLE_Y, false, null, true);
+                    EarthScene.SPECULAR_ANGLE_Y, false, null);
         }
         GLES20.glDisable(GLES20.GL_BLEND);
 
         // 月球（不透明）
         drawSphere(mTexMoon, mTexMoon, EarthScene.MOON_SCALE,
-                mScene.moonAngleY(), false, null, true, mScene.moonX(), mScene.moonZ());
+                mScene.moonAngleY(), false, null, mScene.moonX(), mScene.moonZ());
 
         // ③ 光晕：屏幕空间叠加，画在最后
         if (mPrefHalo) {
@@ -354,12 +354,12 @@ public class EarthGL extends GLESScene {
 
     /** 画一层球体。 */
     private void drawSphere(int dayTex, int nightTex, float scale, float angleY,
-                            boolean useNight, float[] channelDelta, boolean hasNormals) {
-        drawSphere(dayTex, nightTex, scale, angleY, useNight, channelDelta, hasNormals, 0.0f, 0.0f);
+                            boolean useNight, float[] channelDelta) {
+        drawSphere(dayTex, nightTex, scale, angleY, useNight, channelDelta, 0.0f, 0.0f);
     }
 
     private void drawSphere(int dayTex, int nightTex, float scale, float angleY,
-                            boolean useNight, float[] channelDelta, boolean hasNormals,
+                            boolean useNight, float[] channelDelta,
                             float posX, float posZ) {
         if (mGlobeFailed || dayTex == 0) return;
 
@@ -413,7 +413,7 @@ public class EarthGL extends GLESScene {
 
     /** 画天空球（只用位置与 UV）。 */
     private void drawGlobe(int program, int uProj, int uModelView, int aPos, int aTex,
-                           int texture, boolean unused) {
+                           int texture) {
         GLES20.glUseProgram(program);
         GLES20.glUniformMatrix4fv(uProj, 1, false, mProj, 0);
         GLES20.glUniformMatrix4fv(uModelView, 1, false, mSkyMV, 0);
