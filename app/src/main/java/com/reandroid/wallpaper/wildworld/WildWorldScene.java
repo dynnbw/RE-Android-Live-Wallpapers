@@ -32,11 +32,6 @@ final class WildWorldScene {
     private static final float DINOSAUR2_DISTANCE = 0.75f;
     static final int FIREBALL_COUNT = 6;
 
-    private static final int DENSITY_240X320 = 1;
-    private static final int DENSITY_240X400 = 2;
-    private static final int DENSITY_320X480 = 3;
-    private static final int DENSITY_480X800 = 4;
-
     // ---- 内部数据类 ----
 
     /**
@@ -124,7 +119,6 @@ final class WildWorldScene {
 
     // 动画参数
     int mBgSpeed;
-    int mDensity;
     int mAnimation;
     int mDayNight;
     int mDayAndNightSpeed;
@@ -201,7 +195,6 @@ final class WildWorldScene {
     void initState(int width, int height) {
         mScreenWidth = Math.min(width, height);
         mScreenHeight = Math.max(width, height);
-        mDensity = 0;
         mAnimation = 1;
         mDayNight = 1;
         mGenTime = 0;
@@ -217,243 +210,70 @@ final class WildWorldScene {
             mFireballs[i].steps = 0;
         }
 
-        setDensity(getDensity());
+        applyMetrics();
     }
 
     /**
-     * 获取屏幕密度类型
+     * 画面基准尺寸。原实现按四档分辨率（240x320 / 240x400 / 320x480 / 480x800）
+     * 各写一整套参数（共约 200 行，只有数字不同），但那是 2010 年代机型的档位：
+     * 现代设备 min(w,h) 必然 > 320，**全部落 480x800 那一档**，其余三档是死代码。
+     * 这里只保留 480x800 作为唯一基准，参数值一字未改。
      */
-    private int getDensity() {
-        if (mScreenWidth <= 240 && mScreenHeight <= 320) {
-            return DENSITY_240X320;
-        }
-        if (mScreenWidth <= 240 && mScreenHeight <= 400) {
-            return DENSITY_240X400;
-        }
-        if (mScreenWidth > 320 || mScreenHeight > 480) {
-            return DENSITY_480X800;   // 两支原本就是同一个值，所有现代设备都落这一档
-        }
-        return DENSITY_320X480;
-    }
+    private static final float BASE_WIDTH = 480.0f;
+    private static final float BASE_HEIGHT = 800.0f;
 
-    /**
-     * 根据密度类型设置动画参数
-     */
-    private void setDensity(int den) {
-        mDensity = den == 0 ? DENSITY_480X800 : den;
+    private void applyMetrics() {
+        mScaleX = mScreenWidth / BASE_WIDTH;
+        mScaleY = mScreenHeight / BASE_HEIGHT;
 
-        float baseW;
-        float baseH;
-        if (mDensity == DENSITY_240X320) {
-            baseW = 240.0f;
-            baseH = 320.0f;
-        } else if (mDensity == DENSITY_240X400) {
-            baseW = 240.0f;
-            baseH = 400.0f;
-        } else if (mDensity == DENSITY_320X480) {
-            baseW = 320.0f;
-            baseH = 480.0f;
-        } else {
-            baseW = 480.0f;
-            baseH = 800.0f;
-        }
+        mBgSpeed = 36;
+        mDayAndNightSpeed = 24;
+        mFireballBaseSpeed = 100;
+        mFireballW = Math.round(60 * mScaleX);
+        mFireballH = Math.round(100 * mScaleY);
 
-        mScaleX = mScreenWidth / baseW;
-        mScaleY = mScreenHeight / baseH;
+        initLayer(mDay, 0, 0, mScreenWidth, 565, 565, 35);
+        initLayer(mNight, 0, -560 - 40, mScreenWidth, 560, -40, 40);
 
-        if (mDensity == DENSITY_240X320) {
-            mBgSpeed = 24;
-            mDayAndNightSpeed = 16;
-            mFireballBaseSpeed = 80;
-            mFireballW = Math.round(32 * mScaleX);
-            mFireballH = Math.round(40 * mScaleY);
+        initLayer(mVcnLayer, 0, 333, mScreenWidth, 175, 333 + 175, 20);
+        mVcnMouseOffx = Math.round(124 * mScaleX);
+        mVcnMouseW = Math.round(150 * mScaleX);
 
-            initLayer(mDay, 0, 0, mScreenWidth, 222, 222, 14);
-            initLayer(mNight, 0, -222 - 15, mScreenWidth, 222, -15, 15);
+        initLayer(mLayer4, 0, 506, mScreenWidth, 25, 506 + 25, 15);
+        initLayer(mLayer3, 0, 525, mScreenWidth, 18, 525 + 18, 45);
+        initLayer(mLayer2, 0, 550, mScreenWidth, 32, 550 + 32, 95);
+        initLayer(mLayer1, 0, 595, mScreenWidth, 80, 595 + 80, 128);
 
-            initLayer(mVcnLayer, 0, 121, mScreenWidth, 79, 121 + 79, 7);
-            mVcnMouseOffx = Math.round(48 * mScaleX);
-            mVcnMouseW = Math.round(80 * mScaleX);
+        mPterosaur.x = -270 * mScaleX;
+        mPterosaur.y = (215 * mScaleY) * 0.5f;
+        mPterosaurW = Math.round(270 * mScaleX);
+        mPterosaurH = Math.round(215 * mScaleY);
+        mPterosaur.scale = 1.0f;
+        mPterosaurSpeed = 64;
 
-            initLayer(mLayer4, 0, 197, mScreenWidth, 12, 197 + 12, 6);
-            initLayer(mLayer3, 0, 206, mScreenWidth, 9, 206 + 9, 19);
-            initLayer(mLayer2, 0, 213, mScreenWidth, 17, 213 + 17, 40);
-            initLayer(mLayer1, 0, 227, mScreenWidth, 38, 227 + 38, 55);
+        mDinosaur[UP].distance = DINOSAUR1_DISTANCE;
+        mDinosaur[UP].x = mScreenWidth;
+        mDinosaur[UP].y = (225 + 426 * (1 - 0.8f)) * mScaleY;
+        mDinosaur[UP].w = 426 * 0.8f * mScaleX;
+        mDinosaur[UP].h = 390 * 0.8f * mScaleY;
+        mDinosaur[DOWN].distance = DINOSAUR2_DISTANCE;
+        mDinosaur[DOWN].x = mScreenWidth * 1.5f;
+        mDinosaur[DOWN].y = (256 + 426 * (1 - 0.9f)) * mScaleY;
+        mDinosaur[DOWN].w = 426 * 0.9f * mScaleX;
+        mDinosaur[DOWN].h = 390 * 0.9f * mScaleY;
+        mDinosaurSpeedX = 32;
+        mDinosaurSpeedY = 8;
 
-            mPterosaur.x = -100 * mScaleX;
-            mPterosaur.y = (72 * mScaleY) * 0.5f;
-            mPterosaurW = Math.round(100 * mScaleX);
-            mPterosaurH = Math.round(72 * mScaleY);
-            mPterosaur.scale = 1.0f;
-            mPterosaurSpeed = 48;
+        mSunLeft = Math.round(320 * mScaleX);
+        mSunRight = Math.round(480 * mScaleX);
+        mSunTop = Math.round(60 * mScaleY);
+        mSunBottom = Math.round(240 * mScaleY);
 
-            mDinosaur[UP].distance = DINOSAUR1_DISTANCE;
-            mDinosaur[UP].x = mScreenWidth;
-            mDinosaur[UP].y = (94 + 178 * (1 - 0.8f)) * mScaleY;
-            mDinosaur[UP].w = 178 * 0.8f * mScaleX;
-            mDinosaur[UP].h = 149 * 0.8f * mScaleY;
-            mDinosaur[DOWN].distance = DINOSAUR2_DISTANCE;
-            mDinosaur[DOWN].x = mScreenWidth * 1.5f;
-            mDinosaur[DOWN].y = (102 + 178 * (1 - 0.9f)) * mScaleY;
-            mDinosaur[DOWN].w = 178 * 0.9f * mScaleX;
-            mDinosaur[DOWN].h = 149 * 0.9f * mScaleY;
-            mDinosaurSpeedX = 26;
-            mDinosaurSpeedY = 6;
-
-            mSunLeft = Math.round(160 * mScaleX);
-            mSunRight = Math.round(240 * mScaleX);
-            mSunTop = Math.round(40 * mScaleY);
-            mSunBottom = Math.round(160 * mScaleY);
-
-            mMoonLeft = Math.round(20 * mScaleX);
-            mMoonRight = Math.round(120 * mScaleX);
-            mMoonTop = Math.round(60 * mScaleY);
-            mMoonBottom = Math.round(160 * mScaleY);
-        } else if (mDensity == DENSITY_240X400) {
-            mBgSpeed = 24;
-            mDayAndNightSpeed = 16;
-            mFireballBaseSpeed = 80;
-            mFireballW = Math.round(32 * mScaleX);
-            mFireballH = Math.round(40 * mScaleY);
-
-            initLayer(mDay, 0, 0, mScreenWidth, 288, 288, 18);
-            initLayer(mNight, 0, -288 - 18, mScreenWidth, 288, -18, 18);
-
-            initLayer(mVcnLayer, 0, 177, mScreenWidth, 81, 177 + 81, 14);
-            mVcnMouseOffx = Math.round(48 * mScaleX);
-            mVcnMouseW = Math.round(80 * mScaleX);
-
-            initLayer(mLayer4, 0, 260, mScreenWidth, 13, 260 + 13, 15);
-            initLayer(mLayer3, 0, 270, mScreenWidth, 10, 270 + 10, 26);
-            initLayer(mLayer2, 0, 282, mScreenWidth, 16, 282 + 16, 49);
-            initLayer(mLayer1, 0, 296, mScreenWidth, 39, 296 + 39, 65);
-
-            mPterosaur.x = -134 * mScaleX;
-            mPterosaur.y = (96 * mScaleY) * 0.5f;
-            mPterosaurW = Math.round(134 * mScaleX);
-            mPterosaurH = Math.round(96 * mScaleY);
-            mPterosaur.scale = 1.0f;
-            mPterosaurSpeed = 48;
-
-            mDinosaur[UP].distance = DINOSAUR1_DISTANCE;
-            mDinosaur[UP].x = mScreenWidth;
-            mDinosaur[UP].y = (138 + 213 * (1 - 0.8f)) * mScaleY;
-            mDinosaur[UP].w = 213 * 0.8f * mScaleX;
-            mDinosaur[UP].h = 178 * 0.8f * mScaleY;
-            mDinosaur[DOWN].distance = DINOSAUR2_DISTANCE;
-            mDinosaur[DOWN].x = mScreenWidth * 1.5f;
-            mDinosaur[DOWN].y = (145 + 213 * (1 - 0.9f)) * mScaleY;
-            mDinosaur[DOWN].w = 213 * 0.9f * mScaleX;
-            mDinosaur[DOWN].h = 178 * 0.9f * mScaleY;
-            mDinosaurSpeedX = 28;
-            mDinosaurSpeedY = 6;
-
-            mSunLeft = Math.round(160 * mScaleX);
-            mSunRight = Math.round(240 * mScaleX);
-            mSunTop = Math.round(40 * mScaleY);
-            mSunBottom = Math.round(160 * mScaleY);
-
-            mMoonLeft = Math.round(20 * mScaleX);
-            mMoonRight = Math.round(120 * mScaleX);
-            mMoonTop = Math.round(60 * mScaleY);
-            mMoonBottom = Math.round(160 * mScaleY);
-        } else if (mDensity == DENSITY_320X480) {
-            mBgSpeed = 30;
-            mDayAndNightSpeed = 20;
-            mFireballBaseSpeed = 90;
-            mFireballW = Math.round(40 * mScaleX);
-            mFireballH = Math.round(60 * mScaleY);
-
-            initLayer(mDay, 0, 0, mScreenWidth, 339, 339, 21);
-            initLayer(mNight, 0, -335 - 25, mScreenWidth, 335, -25, 25);
-
-            initLayer(mVcnLayer, 0, 206, mScreenWidth, 104, 206 + 104, 11);
-            mVcnMouseOffx = Math.round(78 * mScaleX);
-            mVcnMouseW = Math.round(100 * mScaleX);
-
-            initLayer(mLayer4, 0, 304, mScreenWidth, 15, 304 + 15, 9);
-            initLayer(mLayer3, 0, 315, mScreenWidth, 11, 315 + 11, 27);
-            initLayer(mLayer2, 0, 329, mScreenWidth, 19, 329 + 19, 57);
-            initLayer(mLayer1, 0, 355, mScreenWidth, 48, 355 + 48, 76);
-
-            mPterosaur.x = -179 * mScaleX;
-            mPterosaur.y = (128 * mScaleY) * 0.5f;
-            mPterosaurW = Math.round(179 * mScaleX);
-            mPterosaurH = Math.round(128 * mScaleY);
-            mPterosaur.scale = 1.0f;
-            mPterosaurSpeed = 64;
-
-            mDinosaur[UP].distance = DINOSAUR1_DISTANCE;
-            mDinosaur[UP].x = mScreenWidth;
-            mDinosaur[UP].y = (125 + 284 * (1 - 0.8f)) * mScaleY;
-            mDinosaur[UP].w = 284 * 0.8f * mScaleX;
-            mDinosaur[UP].h = 238 * 0.8f * mScaleY;
-            mDinosaur[DOWN].distance = DINOSAUR2_DISTANCE;
-            mDinosaur[DOWN].x = mScreenWidth * 1.5f;
-            mDinosaur[DOWN].y = (145 + 284 * (1 - 0.9f)) * mScaleY;
-            mDinosaur[DOWN].w = 284 * 0.9f * mScaleX;
-            mDinosaur[DOWN].h = 238 * 0.9f * mScaleY;
-            mDinosaurSpeedX = 32;
-            mDinosaurSpeedY = 8;
-
-            mSunLeft = Math.round(220 * mScaleX);
-            mSunRight = Math.round(320 * mScaleX);
-            mSunTop = Math.round(40 * mScaleY);
-            mSunBottom = Math.round(160 * mScaleY);
-
-            mMoonLeft = Math.round(30 * mScaleX);
-            mMoonRight = Math.round(130 * mScaleX);
-            mMoonTop = Math.round(80 * mScaleY);
-            mMoonBottom = Math.round(180 * mScaleY);
-        } else {
-            mBgSpeed = 36;
-            mDayAndNightSpeed = 24;
-            mFireballBaseSpeed = 100;
-            mFireballW = Math.round(60 * mScaleX);
-            mFireballH = Math.round(100 * mScaleY);
-
-            initLayer(mDay, 0, 0, mScreenWidth, 565, 565, 35);
-            initLayer(mNight, 0, -560 - 40, mScreenWidth, 560, -40, 40);
-
-            initLayer(mVcnLayer, 0, 333, mScreenWidth, 175, 333 + 175, 20);
-            mVcnMouseOffx = Math.round(124 * mScaleX);
-            mVcnMouseW = Math.round(150 * mScaleX);
-
-            initLayer(mLayer4, 0, 506, mScreenWidth, 25, 506 + 25, 15);
-            initLayer(mLayer3, 0, 525, mScreenWidth, 18, 525 + 18, 45);
-            initLayer(mLayer2, 0, 550, mScreenWidth, 32, 550 + 32, 95);
-            initLayer(mLayer1, 0, 595, mScreenWidth, 80, 595 + 80, 128);
-
-            mPterosaur.x = -270 * mScaleX;
-            mPterosaur.y = (215 * mScaleY) * 0.5f;
-            mPterosaurW = Math.round(270 * mScaleX);
-            mPterosaurH = Math.round(215 * mScaleY);
-            mPterosaur.scale = 1.0f;
-            mPterosaurSpeed = 64;
-
-            mDinosaur[UP].distance = DINOSAUR1_DISTANCE;
-            mDinosaur[UP].x = mScreenWidth;
-            mDinosaur[UP].y = (225 + 426 * (1 - 0.8f)) * mScaleY;
-            mDinosaur[UP].w = 426 * 0.8f * mScaleX;
-            mDinosaur[UP].h = 390 * 0.8f * mScaleY;
-            mDinosaur[DOWN].distance = DINOSAUR2_DISTANCE;
-            mDinosaur[DOWN].x = mScreenWidth * 1.5f;
-            mDinosaur[DOWN].y = (256 + 426 * (1 - 0.9f)) * mScaleY;
-            mDinosaur[DOWN].w = 426 * 0.9f * mScaleX;
-            mDinosaur[DOWN].h = 390 * 0.9f * mScaleY;
-            mDinosaurSpeedX = 32;
-            mDinosaurSpeedY = 8;
-
-            mSunLeft = Math.round(320 * mScaleX);
-            mSunRight = Math.round(480 * mScaleX);
-            mSunTop = Math.round(60 * mScaleY);
-            mSunBottom = Math.round(240 * mScaleY);
-
-            mMoonLeft = Math.round(40 * mScaleX);
-            mMoonRight = Math.round(200 * mScaleX);
-            mMoonTop = Math.round(100 * mScaleY);
-            mMoonBottom = Math.round(300 * mScaleY);
-        }
+        mMoonLeft = Math.round(40 * mScaleX);
+        mMoonRight = Math.round(200 * mScaleX);
+        mMoonTop = Math.round(100 * mScaleY);
+        mMoonBottom = Math.round(300 * mScaleY);
+    
     }
 
     /**
