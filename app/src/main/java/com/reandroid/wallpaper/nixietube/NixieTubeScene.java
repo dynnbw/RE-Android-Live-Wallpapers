@@ -149,7 +149,6 @@ final class NixieTubeScene {
 
     // ---- Mode implementations ----
 
-    private final Calendar mCalendar = Calendar.getInstance();
 
     private void updateTimeMode(long timeMs) {
         long sec = (timeMs / 1000) % 86400;

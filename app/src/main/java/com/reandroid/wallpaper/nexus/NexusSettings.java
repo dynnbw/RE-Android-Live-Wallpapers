@@ -12,9 +12,6 @@ final class NexusSettings {
     private static final int DEFAULT_MAX_EXTRAS = 40;
     private static final int DEFAULT_PULSE_SIZE = 14;
     private static final int DEFAULT_GLOW_SIZE = 64;
-    private static final float DEFAULT_SPEED = 0.2f;
-    private static final float DEFAULT_SPEED_DELTA_MIN = 0.7f;
-    private static final float DEFAULT_SPEED_DELTA_MAX = 1.7f;
     private static final int DEFAULT_TRAIL_SIZE = 40;
     private static final int DEFAULT_MAX_DELAY = 2000;
 

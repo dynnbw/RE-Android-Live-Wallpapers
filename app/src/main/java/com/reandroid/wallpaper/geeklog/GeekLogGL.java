@@ -30,9 +30,6 @@ public class GeekLogGL extends GLESScene {
     // （左上角槽位为字符 0x00，char 码 0x00-0xFF 按行列顺序排列）
     private static final int ATLAS_COLS = 16;
     private static final int ATLAS_ROWS = 16;
-    private static final int SLOT_PX = 16;
-    private static final int ATLAS_W = ATLAS_COLS * SLOT_PX;
-    private static final int ATLAS_H = ATLAS_ROWS * SLOT_PX;
 
     /** 主色主题（0=green 1=amber 2=cyan 3=white），与 layout.json 的 values 顺序一致 */
     static final float[][] THEME_COLORS = {

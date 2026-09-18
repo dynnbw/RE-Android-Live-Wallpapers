@@ -26,7 +26,6 @@ import java.nio.ShortBuffer;
  */
 public class CosmicGL extends GLESScene {
 
-    private static final String TAG = "CosmicGL";
 
     // 流场网格(原版 Config.FLOW_MESH_SIZE = 100)
     private static final short FLOW_MESH_SIZE = 100;

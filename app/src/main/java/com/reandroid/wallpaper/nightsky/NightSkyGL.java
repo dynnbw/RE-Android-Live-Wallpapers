@@ -16,7 +16,6 @@ import com.reandroid.gles.GLESWallpaper;
 import com.reandroid.utils.MathUtils;
 
 public class NightSkyGL extends GLESScene {
-    private static final long TRAIL_LOOKBACK_SCALE = 5L;
     private static final long TRAIL_LOOKBACK_MAX_MS = 90L * 60L * 1000L;
     private static final float TRAIL_SPEED_LENGTH_BOOST_MAX = 4.0f;
 

@@ -67,7 +67,6 @@ public class MusicVisManyGL extends GLESScene {
     private float[] mQuadUvs;
 
     private final float[] mMvp = new float[16];
-    private final float[] mTmp = new float[16];
 
     public MusicVisManyGL(int width, int height, Context context) {
         super(width, height);
@@ -326,12 +325,6 @@ public class MusicVisManyGL extends GLESScene {
         GLES20.glUseProgram(mQuadProgram);
         GLES20.glUniformMatrix4fv(mQuadMvpLoc, 1, false, mMvp, 0);
         GLES20.glUniform1i(mQuadSamplerLoc, 0);
-    }
-
-    private void setLineMvp(float[] model) {
-        Matrix.multiplyMM(mMvp, 0, mScene.mProj, 0, model, 0);
-        GLES20.glUseProgram(mLineProgram);
-        GLES20.glUniformMatrix4fv(mLineMvpLoc, 1, false, mMvp, 0);
     }
 
     private void drawQuad(int texId, float x1, float y1, float z1, float x2, float y2, float z2) {

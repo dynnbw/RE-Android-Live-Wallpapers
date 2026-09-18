@@ -24,7 +24,6 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
 public class WindmillGL extends GLESScene {
-    private static final String TAG = "WindmillGL";
 
     private final Context mContext;
     // ---- 场景逻辑层（非 GL）----

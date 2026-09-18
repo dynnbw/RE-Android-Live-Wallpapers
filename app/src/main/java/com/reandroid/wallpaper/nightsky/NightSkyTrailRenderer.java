@@ -13,7 +13,6 @@ final class NightSkyTrailRenderer {
     private static final int TRAIL_SEGMENTS = 8;
     private static final float MIN_TRAIL_BRIGHTNESS = 0.0f;
     private static final int MAX_TRAIL_STARS = 5000;
-    private static final long TRAIL_GEOMETRY_UPDATE_INTERVAL_ACCEL_MS = 33L;
     private static final long TRAIL_GEOMETRY_UPDATE_INTERVAL_MS = 120L;
     private static final float[] SEG_FADE_START = buildFadeLut(0.82f);
     private static final float[] SEG_FADE_END = buildFadeLut(0.62f);

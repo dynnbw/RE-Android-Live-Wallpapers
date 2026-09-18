@@ -22,7 +22,6 @@ public class Aurora1GL extends GLESScene {
     private final Context mContext;
     private final Aurora1Scene mScene;
     private final float[] mModelMatrix = new float[16];
-    private final float[] mMvpMatrix = new float[16];
     private final float[] mTempMatrix = new float[16];
 
     private boolean mGlInitialized;

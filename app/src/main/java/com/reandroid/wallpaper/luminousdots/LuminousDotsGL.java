@@ -105,7 +105,6 @@ public class LuminousDotsGL extends GLESScene {
     private final float[] mProjMatrix = new float[16];
 
     private boolean mGLInit;
-    private int mLastScaleLevel = -1;
 
     public LuminousDotsGL(int width, int height, Context context) {
         super(width, height);

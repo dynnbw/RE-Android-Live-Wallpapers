@@ -30,7 +30,6 @@ final class CosmicScene {
     };
 
     // Config(原版 Config.java)
-    private static final float BASE_ANIMATION_SPEED = 0.6f;
     private static final float MAX_DELTA_FRAME_TIME = 83.333336f;   // 12 FPS
     private static final float MIDDLE_DELTA_FRAME_TIME = 50.0f;     // 20 FPS
     private static final float MIN_DELTA_FRAME_TIME = 33.333332f;   // 30 FPS

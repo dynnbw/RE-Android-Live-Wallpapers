@@ -4,18 +4,12 @@ import java.util.ArrayList;
 class IntervalManager {
     private static final int REF_WIDTH = 720;
     private static final int REF_HEIGHT = 1280;
-    private final float MOVE_X = -4.5f;
-    private final float MOVE_Y = -8.1f;
-    private final float INTERVAL = 1.8f;
-    private final float MARGIN = 0.1f;
     private float mIntervalX = 1.8f;
     private float mIntervalY = 1.8f;
     private float mMarginX = 0.1f;
     private float mMarginY = 0.1f;
     private float mMoveX = -4.5f;
     private float mMoveY = -8.1f;
-    private final int mDevideX = 5;
-    private final int mDevideY = 9;
     private ArrayList<IntervalVO> mList = null;
     private ArrayList<IntervalVO> mNotOccupiedList = null;
 

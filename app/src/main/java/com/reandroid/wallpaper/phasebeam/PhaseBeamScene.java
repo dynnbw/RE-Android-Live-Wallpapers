@@ -22,7 +22,6 @@ import java.util.Random;
  * 负责粒子动画、HSL 色彩调整、背景网格数据管理。
  */
 final class PhaseBeamScene {
-    private static final String TAG = "PhaseBeamScene";
 
     static final String PREFS_NAME = "phasebeam";
     static final String KEY_ENABLED = "phasebeam_recolor_enabled";
@@ -176,19 +175,6 @@ final class PhaseBeamScene {
         mSaturation = mHsvScratch[1];
         mBrightness = 0.5f + mHsvScratch[2];
         updateAdjust();
-    }
-
-    /** Reads a float from int (SeekBar) or legacy float value, converting int to range. */
-    private static float readFloatFromIntOrFloat(SharedPreferences p, String key,
-                                                  float min, float max, int defaultProgress) {
-        try {
-            if (p.contains(key)) {
-                // Try as int first (SeekBar), then float (legacy)
-                try { return min + (max - min) * p.getInt(key, defaultProgress) / 255f; }
-                catch (ClassCastException e) { return p.getFloat(key, min); }
-            }
-        } catch (Exception e) { Log.w(TAG, "Failed to read preference: " + key, e); }
-        return min + (max - min) * defaultProgress / 255f;
     }
 
     void updateAdjust() {

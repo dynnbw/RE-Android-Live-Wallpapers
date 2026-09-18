@@ -48,7 +48,6 @@ public class PluginSettingsFragment extends PreferenceFragmentCompat
 
     private static final String ARG_PLUGIN_ID = "plugin_id";
     private static final String KEY_CUSTOM_BG_URI = "pref_custom_background_uri";
-    private boolean mRebuilding;
     private PreviewHost mHost;
     private ActivityResultLauncher<String> mImagePickerLauncher;
 

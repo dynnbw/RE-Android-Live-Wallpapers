@@ -164,10 +164,4 @@ public class MusicVisCircleGL extends GLESScene {
     }
 
 
-    private int loadShader(int t, String s) {
-        int sh = GLES20.glCreateShader(t);
-        GLES20.glShaderSource(sh, s);
-        GLES20.glCompileShader(sh);
-        return sh;
-    }
 }
