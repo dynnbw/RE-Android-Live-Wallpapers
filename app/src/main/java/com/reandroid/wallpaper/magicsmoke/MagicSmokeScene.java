@@ -36,6 +36,9 @@ final class MagicSmokeScene {
     }
 
     static final int DEFAULT_PRESET = 16;
+    /** 预先转成字符串：`String.valueOf(DEFAULT_PRESET)` 写在 getString 的默认值里，
+     *  每次调用都会新建一个 String —— 而 updatePresetIfNeeded() 是每帧调的。 */
+    private static final String DEFAULT_PRESET_STR = String.valueOf(DEFAULT_PRESET);
     static final Preset[] PRESETS = {
         //       mode    back      low       high      alpha mask  rot   swap  premul
         new Preset(1,  0x000000, 0x000000, 0xffffff, 2.0f, 0x0f, true,  false, false),
@@ -108,8 +111,8 @@ final class MagicSmokeScene {
      * 初始化预设（从 SharedPreferences 加载）
      */
     void init() {
-        mCurrentPreset = parsePreset(mPluginPrefs == null ? String.valueOf(DEFAULT_PRESET)
-                : mPluginPrefs.getString("preset", String.valueOf(DEFAULT_PRESET)));
+        mCurrentPreset = parsePreset(mPluginPrefs == null ? DEFAULT_PRESET_STR
+                : mPluginPrefs.getString("preset", DEFAULT_PRESET_STR));
     }
 
     /**
@@ -171,7 +174,7 @@ final class MagicSmokeScene {
         if (mPluginPrefs == null) {
             return false;
         }
-        int preset = parsePreset(mPluginPrefs.getString("preset", String.valueOf(DEFAULT_PRESET)));
+        int preset = parsePreset(mPluginPrefs.getString("preset", DEFAULT_PRESET_STR));
         if (preset != mCurrentPreset) {
             mCurrentPreset = preset;
             return true;

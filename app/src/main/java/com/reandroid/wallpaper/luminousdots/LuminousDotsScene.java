@@ -686,7 +686,11 @@ final class LuminousDotsScene {
     private final Random mRandom = new Random();
 
     // Scene data output
-    SceneData mData;
+    /**
+     * 复用同一个实例。update() 每帧把全部字段重写一遍，GL 在同帧内读完就丢，
+     * 没有跨帧持有 —— 所以不必每帧 new（原先就是这样，一帧一个对象）。
+     */
+    private final SceneData mData = new SceneData();
 
     // Animation state
     long mSystemTimer;
@@ -964,8 +968,7 @@ final class LuminousDotsScene {
             updateMotionAlpha(g.vertices, nowMs, 1);
         }
 
-        // Pack data for GL
-        mData = new SceneData();
+        // Pack data for GL（复用 mData，见字段说明）
         mData.verticesUp = mVerticesUp;
         mData.verticesDown = mVerticesDown;
         mData.indices = mIndices;
