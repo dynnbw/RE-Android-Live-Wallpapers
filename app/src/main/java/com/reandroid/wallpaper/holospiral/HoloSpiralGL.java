@@ -27,8 +27,6 @@ import android.util.Log;
 import com.reandroid.utils.AssetLoader;
 import com.reandroid.gles.GLESScene;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
 public class HoloSpiralGL extends GLESScene {
@@ -37,32 +35,10 @@ public class HoloSpiralGL extends GLESScene {
     private static final float NEAR_PLANE = 1.0f;
     private static final float FAR_PLANE = 55.0f;
 
-    // ---- User-configurable parameters (initialized from SharedPreferences) ----
-    private int mNumInnerPoints = 100;
-    private float mInnerSpiralDepth = 50.0f;
-    private float mInnerRadius = 5.0f;
-    private float mInnerSeparationDeg = 23.0f;
-    private int mNumOuterPoints = 50;
-    private float mOuterSpiralDepth = 30.0f;
-    private float mOuterRadius = 10.0f;
-    private float mOuterSeparationDeg = 23.0f;
-    private float mFov = 60.0f;
-    private float mSpiralRotateSpeed = 15.0f;
-    private float mInnerRotateSpeed = 1.5f;
-    private float mOuterRotateSpeed = 0.5f;
-    private float mMaxPointSize = 75.0f;
-    private int mInnerColorPrimary = 0xB30000FF;
-    private int mInnerColorSecondary = 0xD2A633FF;
-    private int mOuterColor = 0xDC267894;
-    private int mBgColorTop = 0xFF08001A;
-    private int mBgColorBottom = 0xFF1A1A53;
+    private static final int STRIDE_BYTES = HoloSpiralScene.FLOATS_PER_VERTEX * 4;
 
-    private static final int FLOATS_PER_VERTEX = 7;
-    private static final int STRIDE_BYTES = FLOATS_PER_VERTEX * 4;
-
-    // ---- Prefs ----
-    private SharedPreferences mPluginPrefs;
-    private boolean mGeometryDirty;
+    // ---- 场景逻辑层（非 GL）：参数、配色、几何数据、旋转角 ----
+    private final HoloSpiralScene mScene = new HoloSpiralScene();
 
     private int mProgramBackground;
     private int mProgramGeometry;
@@ -92,9 +68,6 @@ public class HoloSpiralGL extends GLESScene {
     private final float[] mMvp = new float[16];
 
     private float mXOffset;
-    private float mInnerRotateAngle;
-    private float mOuterRotateAngle;
-    private long mLastTimeMs;
     private boolean mInitialized;
 
     public HoloSpiralGL(Context context, int width, int height) {
@@ -104,60 +77,7 @@ public class HoloSpiralGL extends GLESScene {
 
     /** Called by BasePluginEngine via reflection to inject plugin-isolated prefs. */
     public void setPluginPrefs(SharedPreferences prefs) {
-        mPluginPrefs = prefs;
-        readParamsFromPrefs();
-    }
-
-    private void readParamsFromPrefs() {
-        if (mPluginPrefs == null) return;
-        SharedPreferences p = mPluginPrefs;
-        String scheme = p.getString("holospiral_color_scheme", "default");
-
-        mNumInnerPoints = p.getInt("holospiral_inner_points", 100);
-        mNumOuterPoints = p.getInt("holospiral_outer_points", 50);
-        mMaxPointSize = p.getInt("holospiral_point_size", 75);
-        mInnerRadius = p.getInt("holospiral_inner_radius", 5);
-        mOuterRadius = p.getInt("holospiral_outer_radius", 10);
-        mFov = p.getInt("holospiral_fov", 60);
-        mSpiralRotateSpeed = p.getInt("holospiral_rotate_speed", 15);
-        mInnerSeparationDeg = 23.0f;
-        mOuterSeparationDeg = 23.0f;
-        mInnerSpiralDepth = 50.0f;
-        mOuterSpiralDepth = 30.0f;
-        mInnerRotateSpeed = 1.5f;
-        mOuterRotateSpeed = 0.5f;
-
-        applyColorScheme(scheme);
-        mGeometryDirty = true;
-    }
-
-    private void applyColorScheme(String scheme) {
-        switch (scheme) {
-            case "purple":
-                mInnerColorPrimary = 0xB36600FF; mInnerColorSecondary = 0xD2CC33FF;
-                mOuterColor = 0xDC8B00FF; mBgColorTop = 0xFF0D001A; mBgColorBottom = 0xFF1A0A3A;
-                break;
-            case "red":
-                mInnerColorPrimary = 0xB3FF3300; mInnerColorSecondary = 0xD2FFAA33;
-                mOuterColor = 0xDCFF6633; mBgColorTop = 0xFF1A0008; mBgColorBottom = 0xFF3A0A1A;
-                break;
-            case "green":
-                mInnerColorPrimary = 0xB300FF44; mInnerColorSecondary = 0xD233FFAA;
-                mOuterColor = 0xDC26FF78; mBgColorTop = 0xFF001A08; mBgColorBottom = 0xFF0A3A1A;
-                break;
-            case "gold":
-                mInnerColorPrimary = 0xB3FFAA00; mInnerColorSecondary = 0xD2FFDD66;
-                mOuterColor = 0xDCFFCC33; mBgColorTop = 0xFF1A1000; mBgColorBottom = 0xFF3A2A0A;
-                break;
-            case "ice":
-                mInnerColorPrimary = 0xB300CCFF; mInnerColorSecondary = 0xD266EEFF;
-                mOuterColor = 0xDC44CCFF; mBgColorTop = 0xFF00101A; mBgColorBottom = 0xFF0A2030;
-                break;
-            default: // "default"
-                mInnerColorPrimary = 0xB30000FF; mInnerColorSecondary = 0xD2A633FF;
-                mOuterColor = 0xDC267894; mBgColorTop = 0xFF08001A; mBgColorBottom = 0xFF1A1A53;
-                break;
-        }
+        mScene.setPluginPrefs(prefs);
     }
 
     @Override
@@ -171,7 +91,6 @@ public class HoloSpiralGL extends GLESScene {
         }
         mInitialized = true;
 
-        readParamsFromPrefs();
         createPrograms();
         getHandles();
         createGeometry();
@@ -181,7 +100,7 @@ public class HoloSpiralGL extends GLESScene {
         GLES20.glDisable(GLES20.GL_DEPTH_TEST);
         GLES20.glDisable(GLES20.GL_CULL_FACE);
 
-        mLastTimeMs = 0L;
+        mScene.resetAnimation();
         resize(mWidth, mHeight);
     }
 
@@ -189,7 +108,7 @@ public class HoloSpiralGL extends GLESScene {
     public void resize(int width, int height) {
         super.resize(width, height);
         float aspect = width > 0 && height > 0 ? (float) width / (float) height : 1.0f;
-        Matrix.perspectiveM(mProjection, 0, mFov, aspect, NEAR_PLANE, FAR_PLANE);
+        Matrix.perspectiveM(mProjection, 0, mScene.fov, aspect, NEAR_PLANE, FAR_PLANE);
     }
 
     @Override
@@ -197,12 +116,10 @@ public class HoloSpiralGL extends GLESScene {
         if (!mInitialized) {
             return;
         }
-        if (mGeometryDirty) {
-            mGeometryDirty = false;
-            readParamsFromPrefs();
+        if (mScene.consumeGeometryDirty()) {
             createGeometry();
         }
-        float dt = updateTime(timeMs);
+        float dt = mScene.tickTime(timeMs);
 
         drawBackground();
         drawGeometry(dt);
@@ -215,7 +132,6 @@ public class HoloSpiralGL extends GLESScene {
 
     @Override
     public void release() {
-        mPluginPrefs = null;
         if (mPointTextureId != 0) {
             int[] textures = {mPointTextureId};
             GLES20.glDeleteTextures(1, textures, 0);
@@ -242,8 +158,6 @@ public class HoloSpiralGL extends GLESScene {
         mProgramGeometry = createProgram(geoVs, geoFs);
     }
 
-
-
     private void getHandles() {
         mBgPositionHandle = GLES20.glGetAttribLocation(mProgramBackground, "aPosition");
         mBgColorHandle = GLES20.glGetAttribLocation(mProgramBackground, "aColor");
@@ -257,11 +171,13 @@ public class HoloSpiralGL extends GLESScene {
     }
 
     private void createGeometry() {
-        mBackgroundBuffer = buildBackgroundBuffer();
-        mInnerBuffer = buildSpiralBuffer(mNumInnerPoints, mInnerSpiralDepth, mInnerRadius,
-                mInnerSeparationDeg, mInnerColorPrimary, mInnerColorSecondary);
-        mOuterBuffer = buildSpiralBuffer(mNumOuterPoints, mOuterSpiralDepth, mOuterRadius,
-                mOuterSeparationDeg, mOuterColor, mOuterColor);
+        mBackgroundBuffer = createFloatBuffer(mScene.buildBackgroundData());
+        mInnerBuffer = createFloatBuffer(mScene.buildSpiralData(mScene.numInnerPoints,
+                HoloSpiralScene.INNER_SPIRAL_DEPTH, mScene.innerRadius,
+                HoloSpiralScene.SEPARATION_DEG, mScene.innerColorPrimary, mScene.innerColorSecondary));
+        mOuterBuffer = createFloatBuffer(mScene.buildSpiralData(mScene.numOuterPoints,
+                HoloSpiralScene.OUTER_SPIRAL_DEPTH, mScene.outerRadius,
+                HoloSpiralScene.SEPARATION_DEG, mScene.outerColor, mScene.outerColor));
     }
 
     private void createTexture() {
@@ -287,19 +203,6 @@ public class HoloSpiralGL extends GLESScene {
         Matrix.translateM(mBaseModelView, 0, -3.0f, -5.0f, -18.0f);
         Matrix.rotateM(mBaseModelView, 0, 20.0f, 0.0f, 1.0f, 0.0f);
         Matrix.rotateM(mBaseModelView, 0, -10.0f, 1.0f, 0.0f, 0.0f);
-
-        mInnerRotateAngle = 0.0f;
-        mOuterRotateAngle = 0.0f;
-    }
-
-    private float updateTime(long timeMs) {
-        if (mLastTimeMs == 0L) {
-            mLastTimeMs = timeMs;
-            return 0.0f;
-        }
-        float dt = (timeMs - mLastTimeMs) * 0.001f;
-        mLastTimeMs = timeMs;
-        return dt;
     }
 
     private void drawBackground() {
@@ -328,7 +231,7 @@ public class HoloSpiralGL extends GLESScene {
         GLES20.glEnable(GLES20.GL_BLEND);
         GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
 
-        GLES20.glUniform1f(mGeoMaxPointSizeHandle, mMaxPointSize);
+        GLES20.glUniform1f(mGeoMaxPointSizeHandle, mScene.maxPointSize);
         GLES20.glUniform1f(mGeoFarPlaneHandle, FAR_PLANE);
 
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
@@ -337,13 +240,13 @@ public class HoloSpiralGL extends GLESScene {
 
         Matrix.setIdentityM(mModelView, 0);
         System.arraycopy(mBaseModelView, 0, mModelView, 0, mBaseModelView.length);
-        Matrix.rotateM(mModelView, 0, mXOffset * -mSpiralRotateSpeed, 0.0f, 1.0f, 0.0f);
+        Matrix.rotateM(mModelView, 0, mXOffset * -mScene.spiralRotateSpeed, 0.0f, 1.0f, 0.0f);
 
-        drawSpiral(mOuterBuffer, mNumOuterPoints, -mOuterRotateAngle);
-        drawSpiral(mInnerBuffer, mNumInnerPoints, mInnerRotateAngle);
+        drawSpiral(mOuterBuffer, mScene.numOuterPoints, -mScene.getOuterRotateAngle());
+        drawSpiral(mInnerBuffer, mScene.numInnerPoints, mScene.getInnerRotateAngle());
 
-        mOuterRotateAngle = modulo360(mOuterRotateAngle + (dt * mOuterRotateSpeed));
-        mInnerRotateAngle = modulo360(mInnerRotateAngle + (dt * mInnerRotateSpeed));
+        // 先按当前角度画、画完再推进（与原实现同序，提前推进会让相位差一帧）
+        mScene.advanceRotateAngles(dt);
     }
 
     private void drawSpiral(FloatBuffer buffer, int count, float rotationZ) {
@@ -366,68 +269,4 @@ public class HoloSpiralGL extends GLESScene {
         GLES20.glDisableVertexAttribArray(mGeoColorHandle);
     }
 
-    private FloatBuffer buildBackgroundBuffer() {
-        float[] blue = convertColor(mBgColorTop);
-        float[] black = convertColor(mBgColorBottom);
-
-        float[] data = new float[] {
-            -1.0f,  1.0f, 0.0f, blue[0],  blue[1],  blue[2],  blue[3],
-            -1.0f, -1.0f, 0.0f, black[0], black[1], black[2], black[3],
-             1.0f,  1.0f, 0.0f, blue[0],  blue[1],  blue[2],  blue[3],
-             1.0f, -1.0f, 0.0f, black[0], black[1], black[2], black[3]
-        };
-        return createFloatBuffer(data);
-    }
-
-    private FloatBuffer buildSpiralBuffer(int count, float depth, float radius,
-            float separationDegrees, int primaryColor, int secondaryColor) {
-        float[] primary = convertColor(primaryColor);
-        float[] secondary = convertColor(secondaryColor);
-
-        float separationRads = (separationDegrees / 360.0f) * 2.0f * (float) Math.PI;
-        float halfDepth = depth / 2.0f;
-        float radians = 0.0f;
-
-        float[] data = new float[count * FLOATS_PER_VERTEX];
-        int idx = 0;
-
-        for (int i = 0; i < count; i++) {
-            float percentage = (float) i / (float) count;
-            float x = radius * (float) Math.cos(radians);
-            float y = radius * (float) Math.sin(radians);
-            float z = (percentage * depth) - halfDepth;
-
-            float r = (float) Math.sin(radians / 2.0f);
-            float colorR = primary[0] + ((secondary[0] - primary[0]) * r);
-            float colorG = primary[1] + ((secondary[1] - primary[1]) * r);
-            float colorB = primary[2] + ((secondary[2] - primary[2]) * r);
-            float colorA = primary[3] + ((secondary[3] - primary[3]) * r);
-
-            data[idx++] = x;
-            data[idx++] = y;
-            data[idx++] = z;
-            data[idx++] = colorR;
-            data[idx++] = colorG;
-            data[idx++] = colorB;
-            data[idx++] = colorA;
-
-            radians += separationRads;
-        }
-
-        return createFloatBuffer(data);
-    }
-
-
-    private float[] convertColor(int argb) {
-        float a = ((argb >> 24) & 0xff) / 255.0f;
-        float r = ((argb >> 16) & 0xff) / 255.0f;
-        float g = ((argb >> 8) & 0xff) / 255.0f;
-        float b = (argb & 0xff) / 255.0f;
-        return new float[] {r, g, b, a};
-    }
-
-    private float modulo360(float value) {
-        int multiplier = (int) (value * (1.0f / 360.0f));
-        return value - (multiplier * 360.0f);
-    }
 }
