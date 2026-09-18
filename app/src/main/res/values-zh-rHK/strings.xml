@@ -43,8 +43,8 @@
     <string name="wallpaper_nightsky">夜空</string>
     <string name="wallpaper_microbes">微生物</string>
 
-    <!-- Wallpaper showing Galaxy 4 -->
-    <string name="wallpaper_galaxy4">星系4</string>
+    <!-- Wallpaper showing Black Hole -->
+    <string name="wallpaper_galaxy4">黑洞</string>
 
     <!-- Wallpaper showing phase beam -->
     <string name="wallpaper_phasebeam">鐳光</string>
@@ -123,7 +123,7 @@
 
     <!-- Galaxy 壁紙偏好設置 -->
 
-    <!-- Galaxy 4 壁紙偏好設置 -->
+    <!-- Black Hole 壁紙偏好設置 -->
 
     <!-- 全局幀數設置 -->
     <string name="pref_global_frame_rate">全局幀數</string>
@@ -274,6 +274,16 @@
     <string name="pref_disabled_prefix">[已禁用]</string>
     <string name="wallpaper_cosmicflow">宇宙流動</string>
     <string name="wallpaper_droid">墜落的安卓機械人</string>
+
+    <!-- Luminous dots wallpaper -->
+    <string name="wallpaper_luminousdots">光點</string>
+
+    <!-- Nixie tube wallpaper -->
+    <string name="wallpaper_nixietube">輝光管</string>
+    <string name="wallpaper_nixietube_desc">輝光管陣列：預設為優雅桌面時鐘，音訊響起時變身分貝儀</string>
+
+    <!-- GeekLog wallpaper -->
+    <string name="wallpaper_geeklog">極客日誌</string>
     <!-- 壁纸磁贴占位格（反馈入口）：壁纸数量为奇数时补在最后一格 -->
     <string name="grid_feedback_title">反饋與移植請求</string>
     <string name="grid_feedback_caption">在 GitHub 提 Issue</string>

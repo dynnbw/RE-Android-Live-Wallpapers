@@ -7,7 +7,7 @@ import com.reandroid.plugin.WallpaperPlugin;
 import com.reandroid.plugin.WallpaperPluginHost;
 
 /**
- * Noise Field wallpaper as a plugin.
+ * Bubbles wallpaper as a plugin.
  * Wraps existing NoiseFieldGL into the plugin interface.
  */
 public class NoiseFieldPlugin implements WallpaperPlugin {
@@ -19,7 +19,7 @@ public class NoiseFieldPlugin implements WallpaperPlugin {
 
     @Override
     public String getDisplayName(Context context) {
-        return "Noise Field";
+        return "Bubbles";
     }
 
     @Override

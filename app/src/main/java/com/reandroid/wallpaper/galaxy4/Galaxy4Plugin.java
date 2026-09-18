@@ -7,7 +7,7 @@ import com.reandroid.plugin.WallpaperPlugin;
 import com.reandroid.plugin.WallpaperPluginHost;
 
 /**
- * Galaxy 4 wallpaper as a plugin.
+ * Black Hole wallpaper as a plugin.
  * Wraps existing Galaxy4GL into the plugin interface.
  */
 public class Galaxy4Plugin implements WallpaperPlugin {
@@ -19,7 +19,7 @@ public class Galaxy4Plugin implements WallpaperPlugin {
 
     @Override
     public String getDisplayName(Context context) {
-        return "Galaxy 4";
+        return "Black Hole";
     }
 
     @Override

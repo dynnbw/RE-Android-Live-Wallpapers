@@ -47,9 +47,9 @@
     <string name="wallpaper_microbes">Microbes</string>
     <string name="wallpaper_galaxy_vk">Galaxy Vulkan</string>
 
-    <!-- Wallpaper showing Galaxy 4 -->
+    <!-- Wallpaper showing Black Hole -->
 
-    <string name="wallpaper_galaxy4">Galaxy 4</string>
+    <string name="wallpaper_galaxy4">Black Hole</string>
 
     <!-- Wallpaper showing leaves floating on water -->
     <string name="wallpaper_fall">Water Leaves</string>
@@ -77,7 +77,7 @@
     <string name="wallpaper_nexus">Nexus</string>
 
     <!-- Wallpaper showing noise field -->
-    <string name="wallpaper_noisefield">Noise Field</string>
+    <string name="wallpaper_noisefield">Bubbles</string>
     <string name="wallpaper_nebula">Nebula</string>
 
     <!-- Music visualization wallpapers -->
@@ -184,7 +184,7 @@
 
     <!-- Galaxy wallpaper preferences -->
 
-    <!-- Galaxy 4 wallpaper preferences -->
+    <!-- Black Hole wallpaper preferences -->
 
     <!-- Phase Beam wallpaper -->
     <string name="wallpaper_phasebeam">Phase Beam</string>

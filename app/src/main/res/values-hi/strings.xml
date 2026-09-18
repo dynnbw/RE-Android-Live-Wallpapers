@@ -28,7 +28,7 @@
     <string name="wallpaper_galaxy_vk">आकाशगंगा वल्कन</string>
 
     <!-- आकाशगंगा 4 वॉलपेपर -->
-    <string name="wallpaper_galaxy4">आकाशगंगा 4</string>
+    <string name="wallpaper_galaxy4">ब्लैक होल</string>
 
     <!-- पानी पर तैरते पत्तों वाला वॉलपेपर -->
     <string name="wallpaper_fall">जल पत्ते</string>
@@ -56,7 +56,7 @@
     <string name="wallpaper_nexus">नेक्सस</string>
 
     <!-- शोर क्षेत्र वॉलपेपर -->
-    <string name="wallpaper_noisefield">शोर क्षेत्र</string>
+    <string name="wallpaper_noisefield">बबल</string>
     <string name="wallpaper_nebula">निहारिका</string>
 
     <!-- संगीत दृश्यावली वॉलपेपर -->
@@ -242,6 +242,16 @@
     <string name="pref_disabled_prefix">[अक्षम]</string>
     <string name="wallpaper_cosmicflow">Cosmic Flow</string>
     <string name="wallpaper_droid">Shake Them All</string>
+
+    <!-- Luminous dots wallpaper -->
+    <string name="wallpaper_luminousdots">चमकीले बिंदु</string>
+
+    <!-- Nixie tube wallpaper -->
+    <string name="wallpaper_nixietube">निक्सी ट्यूब</string>
+    <string name="wallpaper_nixietube_desc">ग्लो-ट्यूब डिस्प्ले: डिफ़ॉल्ट रूप से सुंदर घड़ी, ऑडियो चलने पर VU मीटर</string>
+
+    <!-- GeekLog wallpaper -->
+    <string name="wallpaper_geeklog">गीक लॉग</string>
     <!-- 壁纸磁贴占位格（反馈入口）：壁纸数量为奇数时补在最后一格 -->
     <string name="grid_feedback_title">फ़ीडबैक और अनुरोध</string>
     <string name="grid_feedback_caption">GitHub पर issue बनाएँ</string>

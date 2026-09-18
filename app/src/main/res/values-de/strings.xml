@@ -29,9 +29,9 @@
     <string name="wallpaper_microbes">Mikroben</string>
     <string name="wallpaper_galaxy_vk">Galaxie Vulkan</string>
 
-    <!-- Wallpaper showing Galaxy 4 -->
+    <!-- Wallpaper showing Black Hole -->
 
-    <string name="wallpaper_galaxy4">Galaxie 4</string>
+    <string name="wallpaper_galaxy4">Schwarzes Loch</string>
 
     <!-- Wallpaper showing leaves floating on water -->
     <string name="wallpaper_fall">Wasserblätter</string>
@@ -59,7 +59,7 @@
     <string name="wallpaper_nexus">Nexus</string>
 
     <!-- Wallpaper showing noise field -->
-    <string name="wallpaper_noisefield">Rauschfeld</string>
+    <string name="wallpaper_noisefield">Blasen</string>
     <string name="wallpaper_nebula">Nebel</string>
 
     <!-- Music visualization wallpapers -->
@@ -161,7 +161,7 @@
 
     <!-- Galaxy wallpaper preferences -->
 
-    <!-- Galaxy 4 wallpaper preferences -->
+    <!-- Black Hole wallpaper preferences -->
 
     <!-- Phase Beam wallpaper -->
     <string name="wallpaper_phasebeam">Phasenstrahl</string>
@@ -254,6 +254,16 @@
     <string name="pref_disabled_prefix">[Deaktiviert]</string>
     <string name="wallpaper_cosmicflow">Cosmic Flow</string>
     <string name="wallpaper_droid">Shake Them All</string>
+
+    <!-- Luminous dots wallpaper -->
+    <string name="wallpaper_luminousdots">Leuchtende Punkte</string>
+
+    <!-- Nixie tube wallpaper -->
+    <string name="wallpaper_nixietube">Nixie-Röhre</string>
+    <string name="wallpaper_nixietube_desc">Glow-Tube-Anzeige: standardmäßig eine elegante Uhr, bei Audiowiedergabe ein VU-Meter</string>
+
+    <!-- GeekLog wallpaper -->
+    <string name="wallpaper_geeklog">Geek-Log</string>
     <!-- 壁纸磁贴占位格（反馈入口）：壁纸数量为奇数时补在最后一格 -->
     <string name="grid_feedback_title">Feedback &amp; Portierungswünsche</string>
     <string name="grid_feedback_caption">Issue auf GitHub öffnen</string>

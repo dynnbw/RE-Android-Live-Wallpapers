@@ -28,7 +28,7 @@
     <string name="wallpaper_galaxy_vk">Galaxie Vulkan</string>
 
     <!-- Fond d’écran Galaxie 4 -->
-    <string name="wallpaper_galaxy4">Galaxie 4</string>
+    <string name="wallpaper_galaxy4">Trou noir</string>
 
     <!-- Fond d’écran feuilles flottant sur l’eau -->
     <string name="wallpaper_fall">Feuilles d’eau</string>
@@ -56,7 +56,7 @@
     <string name="wallpaper_nexus">Nexus</string>
 
     <!-- Fond d’écran champ de bruit -->
-    <string name="wallpaper_noisefield">Champ de bruit</string>
+    <string name="wallpaper_noisefield">Bulles</string>
     <string name="wallpaper_nebula">Nébuleuse</string>
 
     <!-- Fonds d’écran de visualisation musicale -->
@@ -239,6 +239,16 @@
     <string name="pref_disabled_prefix">[Désactivé]</string>
     <string name="wallpaper_cosmicflow">Cosmic Flow</string>
     <string name="wallpaper_droid">Shake Them All</string>
+
+    <!-- Luminous dots wallpaper -->
+    <string name="wallpaper_luminousdots">Points lumineux</string>
+
+    <!-- Nixie tube wallpaper -->
+    <string name="wallpaper_nixietube">Tube Nixie</string>
+    <string name="wallpaper_nixietube_desc">Affichage à tube lumineux : horloge élégante par défaut, vumètre pendant la lecture audio</string>
+
+    <!-- GeekLog wallpaper -->
+    <string name="wallpaper_geeklog">Journal geek</string>
     <!-- 壁纸磁贴占位格（反馈入口）：壁纸数量为奇数时补在最后一格 -->
     <string name="grid_feedback_title">Retours et demandes de portage</string>
     <string name="grid_feedback_caption">Ouvrir un ticket sur GitHub</string>

@@ -28,7 +28,7 @@
     <string name="wallpaper_galaxy_vk">Галактика Vulkan</string>
 
     <!-- Обои Галактика 4 -->
-    <string name="wallpaper_galaxy4">Галактика 4</string>
+    <string name="wallpaper_galaxy4">Чёрная дыра</string>
 
     <!-- Обои с листьями на воде -->
     <string name="wallpaper_fall">Водяные листья</string>
@@ -56,7 +56,7 @@
     <string name="wallpaper_nexus">Нейроны</string>
 
     <!-- Обои Шумовое поле -->
-    <string name="wallpaper_noisefield">Шумовое поле</string>
+    <string name="wallpaper_noisefield">Пузыри</string>
     <string name="wallpaper_nebula">Туманность</string>
 
     <!-- Обои музыкальной визуализации -->
@@ -239,6 +239,16 @@
     <string name="pref_disabled_prefix">[Отключено]</string>
     <string name="wallpaper_cosmicflow">Космический поток</string>
     <string name="wallpaper_droid">Shake Them All</string>
+
+    <!-- Luminous dots wallpaper -->
+    <string name="wallpaper_luminousdots">Блестящие точки</string>
+
+    <!-- Nixie tube wallpaper -->
+    <string name="wallpaper_nixietube">Никси-лампа</string>
+    <string name="wallpaper_nixietube_desc">Газоразрядный индикатор: по умолчанию изящные часы, при воспроизведении звука — VU-метр</string>
+
+    <!-- GeekLog wallpaper -->
+    <string name="wallpaper_geeklog">Гик-лог</string>
     <!-- 壁纸磁贴占位格（反馈入口）：壁纸数量为奇数时补在最后一格 -->
     <string name="grid_feedback_title">Отзывы и запросы</string>
     <string name="grid_feedback_caption">Создать issue на GitHub</string>

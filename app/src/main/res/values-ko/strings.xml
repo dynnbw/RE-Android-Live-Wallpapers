@@ -36,7 +36,7 @@
     <string name="wallpaper_nightsky">밤하늘</string>
     <string name="wallpaper_microbes">미생물</string>
 
-    <string name="wallpaper_galaxy4">은하수 4</string>
+    <string name="wallpaper_galaxy4">블랙홀</string>
 
     <string name="wallpaper_phasebeam">레이저 광선</string>
 
@@ -99,7 +99,7 @@
 
     <!-- Galaxy preferences -->
 
-    <!-- Galaxy 4 preferences -->
+    <!-- Black Hole preferences -->
 
     <!-- Global settings -->
     <string name="pref_global_frame_rate">전역 프레임 수</string>
@@ -269,6 +269,16 @@
     <string name="pref_disabled_prefix">[비활성화]</string>
     <string name="wallpaper_cosmicflow">코스믹 플로우</string>
     <string name="wallpaper_droid">Shake Them All</string>
+
+    <!-- Luminous dots wallpaper -->
+    <string name="wallpaper_luminousdots">빛나는 도트</string>
+
+    <!-- Nixie tube wallpaper -->
+    <string name="wallpaper_nixietube">닉시관</string>
+    <string name="wallpaper_nixietube_desc">발광관 표시: 기본은 우아한 시계, 오디오 재생 시 VU 미터</string>
+
+    <!-- GeekLog wallpaper -->
+    <string name="wallpaper_geeklog">긱 로그</string>
     <!-- 壁纸磁贴占位格（反馈入口）：壁纸数量为奇数时补在最后一格 -->
     <string name="grid_feedback_title">피드백 및 이식 요청</string>
     <string name="grid_feedback_caption">GitHub에서 이슈 생성</string>

@@ -6,18 +6,18 @@
     <string name="app_name">REAndroid ライブ壁紙</string>
 
     <!-- Wallpapers -->
-    <string name="wallpaper_walkaround">透視</string>
+    <string name="wallpaper_walkaround">シースルー</string>
 
     <string name="wallpaper_flsorescence">蛍光</string>
 
-    <string name="wallpaper_grass">空と草原</string>
-    <string name="wallpaper_grass_vk">空と草原 Vulkan</string>
+    <string name="wallpaper_grass">草原</string>
+    <string name="wallpaper_grass_vk">草原 Vulkan</string>
 
     <string name="wallpaper_galaxy">銀河</string>
     <string name="wallpaper_nightsky">夜空</string>
     <string name="wallpaper_microbes">微生物</string>
 
-    <string name="wallpaper_galaxy4">銀河 4</string>
+    <string name="wallpaper_galaxy4">ブラックホール</string>
 
     <string name="wallpaper_phasebeam">パルスビーム</string>
 
@@ -38,12 +38,12 @@
 
     <string name="wallpaper_deepsea">深海</string>
 
-    <string name="wallpaper_clock">極地時計</string>
+    <string name="wallpaper_clock">ポーラークロック</string>
 
     <string name="wallpaper_aurora1">オーロラ</string>
     <string name="wallpaper_aurora2">オーロラ 2</string>
 
-    <string name="wallpaper_nexus">交差する光の幕</string>
+    <string name="wallpaper_nexus">ネクサス</string>
 
     <string name="wallpaper_noisefield">泡</string>
 
@@ -80,7 +80,7 @@
 
     <!-- Galaxy preferences -->
 
-    <!-- Galaxy 4 preferences -->
+    <!-- Black Hole preferences -->
 
     <!-- Global settings -->
     <string name="pref_global_frame_rate">全体フレームレート</string>
@@ -239,6 +239,16 @@
     <string name="pref_disabled_prefix">[無効]</string>
     <string name="wallpaper_cosmicflow">コズミックフロー</string>
     <string name="wallpaper_droid">Shake Them All</string>
+
+    <!-- Luminous dots wallpaper -->
+    <string name="wallpaper_luminousdots">光の粒</string>
+
+    <!-- Nixie tube wallpaper -->
+    <string name="wallpaper_nixietube">ニキシー管</string>
+    <string name="wallpaper_nixietube_desc">ニキシー管ディスプレイ：通常はエレガントな時計、音声再生時は VU メーター</string>
+
+    <!-- GeekLog wallpaper -->
+    <string name="wallpaper_geeklog">ギークログ</string>
     <!-- 壁纸磁贴占位格（反馈入口）：壁纸数量为奇数时补在最后一格 -->
     <string name="grid_feedback_title">フィードバック・移植リクエスト</string>
     <string name="grid_feedback_caption">GitHub で Issue を作成</string>

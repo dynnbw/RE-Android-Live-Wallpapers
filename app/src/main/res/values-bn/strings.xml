@@ -28,7 +28,7 @@
     <string name="wallpaper_galaxy_vk">গ্যালাক্সি ভালকান</string>
 
     <!-- গ্যালাক্সি ৪ ওয়ালপেপার -->
-    <string name="wallpaper_galaxy4">গ্যালাক্সি ৪</string>
+    <string name="wallpaper_galaxy4">ব্ল্যাক হোল</string>
 
     <!-- জলে ভাসমান পাতার ওয়ালপেপার -->
     <string name="wallpaper_fall">জলপাতা</string>
@@ -56,7 +56,7 @@
     <string name="wallpaper_nexus">নেক্সাস</string>
 
     <!-- নয়েজ ফিল্ড ওয়ালপেপার -->
-    <string name="wallpaper_noisefield">নয়েজ ফিল্ড</string>
+    <string name="wallpaper_noisefield">বুদবুদ</string>
     <string name="wallpaper_nebula">নীহারিকা</string>
 
     <!-- মিউজিক ভিজুয়ালাইজেশন ওয়ালপেপার -->
@@ -239,6 +239,16 @@
     <string name="pref_disabled_prefix">[নিষ্ক্রিয়]</string>
     <string name="wallpaper_cosmicflow">Cosmic Flow</string>
     <string name="wallpaper_droid">Shake Them All</string>
+
+    <!-- Luminous dots wallpaper -->
+    <string name="wallpaper_luminousdots">আলোকিত বিন্দু</string>
+
+    <!-- Nixie tube wallpaper -->
+    <string name="wallpaper_nixietube">নিক্সি টিউব</string>
+    <string name="wallpaper_nixietube_desc">গ্লো-টিউব ডিসপ্লে: ডিফল্টে এলিগ্যান্ট ঘড়ি, অডিও বাজলে VU মিটার</string>
+
+    <!-- GeekLog wallpaper -->
+    <string name="wallpaper_geeklog">গিক লগ</string>
     <!-- 壁纸磁贴占位格（反馈入口）：壁纸数量为奇数时补在最后一格 -->
     <string name="grid_feedback_title">ফিডব্যাক ও অনুরোধ</string>
     <string name="grid_feedback_caption">GitHub-এ issue খুলুন</string>
