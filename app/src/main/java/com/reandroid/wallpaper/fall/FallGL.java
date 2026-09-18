@@ -31,6 +31,7 @@ import android.view.MotionEvent;
 
 import com.reandroid.utils.MathUtils;
 import com.reandroid.utils.AssetLoader;
+import com.reandroid.utils.SkyField;
 import com.reandroid.gles.GLESScene;
 import com.reandroid.settings.WallpaperSettings;
 
@@ -55,7 +56,8 @@ public class FallGL extends GLESScene {
     // Water shader uniforms
     private int mWMatrixHandle;
     private int mWAlphaHandle;
-    private int mWSamplerHandle;
+    private int mWMaskHandle;
+    private int mWSkyHandle;
     private int mWColorHandle;
     private int mWPositionHandle;
     private int mWTexCoordHandle;
@@ -69,7 +71,10 @@ public class FallGL extends GLESScene {
     private int mWDropHandle;
     private int mWDropCountHandle;
     private int[] mLeafTextures;
-    private int mRiverbedTexture;
+    /** 河床的树：单通道遮罩（白=天空 黑=树）。 */
+    private int mMaskTexture;
+    /** 河床的天空：由 pond_sky_fields.txt 生成的 24x64 竖直色带。 */
+    private int mSkyTexture;
     private FloatBuffer mWaterMeshVertexBuffer;
     private FloatBuffer mWaterMeshTexCoordBuffer;
     private FloatBuffer mLeafQuadVertexBuffer;
@@ -130,10 +135,11 @@ public class FallGL extends GLESScene {
             mLeafTextures = null;
         }
 
-        if (mRiverbedTexture != 0) {
-            int[] tex = new int[] { mRiverbedTexture };
-            GLES20.glDeleteTextures(1, tex, 0);
-            mRiverbedTexture = 0;
+        if (mMaskTexture != 0 || mSkyTexture != 0) {
+            int[] tex = new int[] { mMaskTexture, mSkyTexture };
+            GLES20.glDeleteTextures(2, tex, 0);
+            mMaskTexture = 0;
+            mSkyTexture = 0;
         }
 
         if (mProgram != 0) {
@@ -184,10 +190,19 @@ public class FallGL extends GLESScene {
         }
         // ensureResources() already set mLeafTextureCount from prefs — don't override
         try {
-            mRiverbedTexture = loadTexture("fall/drawable/pond.jpg");
+            mMaskTexture = loadMaskTexture("fall/drawable/pond_mask.png");
+            mSkyTexture = createPondSkyTexture();
         } catch (Exception e) {
             Log.e(TAG, "GL线程加载河床纹理失败", e);
-            mRiverbedTexture = createPlaceholderTexture(256, 256, Color.parseColor("#4A6FA5"));
+            mMaskTexture = 0;
+            mSkyTexture = 0;
+        }
+        // 任一缺失都会让水面变成未定义采样，各自退回占位（全白遮罩 = 整屏天空）
+        if (mMaskTexture == 0) {
+            mMaskTexture = createSolidMaskTexture();
+        }
+        if (mSkyTexture == 0) {
+            mSkyTexture = createPlaceholderTexture(256, 256, Color.parseColor("#4A6FA5"));
         }
     }
 
@@ -354,8 +369,11 @@ public class FallGL extends GLESScene {
         }
 
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mRiverbedTexture);
-        GLES20.glUniform1i(mWSamplerHandle, 0);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mMaskTexture);
+        GLES20.glUniform1i(mWMaskHandle, 0);
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE1);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mSkyTexture);
+        GLES20.glUniform1i(mWSkyHandle, 1);
 
         int indexCount = sceneData.getWaterMeshIndexCount();
         if (indexCount > 0) {
@@ -498,7 +516,7 @@ public class FallGL extends GLESScene {
         int maxDrops = WallpaperSettings.getFallMaxDrops(80);
         String template = AssetLoader.readText(mContext, "fall/shaders/GLES/fall_water_vs.glsl");
         String vertexShader = template.replace("$DROP_SIZE", String.valueOf(maxDrops));
-        String fragmentShader = AssetLoader.readText(mContext, "fall/shaders/GLES/fall_fs.glsl");
+        String fragmentShader = AssetLoader.readText(mContext, "fall/shaders/GLES/fall_water_fs.glsl");
         int vs = compileShader(GLES20.GL_VERTEX_SHADER, vertexShader);
         int fs = compileShader(GLES20.GL_FRAGMENT_SHADER, fragmentShader);
         if (vs == 0 || fs == 0) {
@@ -523,7 +541,8 @@ public class FallGL extends GLESScene {
         mWTexCoordHandle     = GLES20.glGetAttribLocation(mWaterProgram, "aTexCoord");
         mWMatrixHandle       = GLES20.glGetUniformLocation(mWaterProgram, "uMVPMatrix");
         mWAlphaHandle        = GLES20.glGetUniformLocation(mWaterProgram, "uAlpha");
-        mWSamplerHandle      = GLES20.glGetUniformLocation(mWaterProgram, "uSampler");
+        mWMaskHandle         = GLES20.glGetUniformLocation(mWaterProgram, "uMask");
+        mWSkyHandle          = GLES20.glGetUniformLocation(mWaterProgram, "uSky");
         mWColorHandle        = GLES20.glGetUniformLocation(mWaterProgram, "uColor");
         mWGlHeightHandle     = GLES20.glGetUniformLocation(mWaterProgram, "u_glHeight");
         mWBgScaleHandle      = GLES20.glGetUniformLocation(mWaterProgram, "u_bgScale");
@@ -556,6 +575,58 @@ public class FallGL extends GLESScene {
         GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
         bitmap.recycle();
         return texture[0];
+    }
+
+    /**
+     * 把白底黑图的河床遮罩上传成单通道纹理（GL_ALPHA）。
+     * 解码与条带化的细节见 {@link AssetLoader#decodeMask}。
+     */
+    private int loadMaskTexture(String assetPath) {
+        AssetLoader.Mask mask = AssetLoader.decodeMask(mContext, assetPath);
+        if (mask == null || mask.pixels.length == 0) {
+            return 0;
+        }
+
+        ByteBuffer buf = ByteBuffer.allocateDirect(mask.pixels.length).order(ByteOrder.nativeOrder());
+        buf.put(mask.pixels).position(0);
+
+        int[] tex = new int[1];
+        GLES20.glGenTextures(1, tex, 0);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, tex[0]);
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
+        GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_ALPHA, mask.width, mask.height, 0,
+                GLES20.GL_ALPHA, GLES20.GL_UNSIGNED_BYTE, buf);
+        return tex[0];
+    }
+
+    /** 1×1 全白遮罩：贴图缺失时的退路，效果是整屏天空。 */
+    private int createSolidMaskTexture() {
+        int[] tex = new int[1];
+        GLES20.glGenTextures(1, tex, 0);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, tex[0]);
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
+        ByteBuffer buf = ByteBuffer.allocateDirect(1).order(ByteOrder.nativeOrder());
+        buf.put((byte) 255).position(0);
+        GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_ALPHA, 1, 1, 0,
+                GLES20.GL_ALPHA, GLES20.GL_UNSIGNED_BYTE, buf);
+        return tex[0];
+    }
+
+    /** 从 pond_sky_fields.txt 的 SKY_FIELD_DUSK 段生成 24×64 的竖直天空色带。 */
+    private int createPondSkyTexture() {
+        String text = AssetLoader.readText(mContext, "fall/data/pond_sky_fields.txt");
+        int[][] field = SkyField.parseSection(text, "SKY_FIELD_DUSK");
+        if (field == null) {
+            Log.e(TAG, "天空色场解析失败");
+            return 0;
+        }
+        return SkyField.createTexture(field, false);
     }
 
     private int createPlaceholderTexture(int width, int height, int color) {

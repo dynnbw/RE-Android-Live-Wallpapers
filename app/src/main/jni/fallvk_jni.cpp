@@ -33,6 +33,11 @@ struct TextureResource {
     VkSampler sampler = VK_NULL_HANDLE;
     uint32_t width = 0;
     uint32_t height = 0;
+    // 河床遮罩是单通道（R8_UNORM），其余贴图是 RGBA8 —— 格式随资源走，
+    // 好让同一条上传路径伺候两者，遮罩的显存因此只有四通道的四分之一。
+    VkFormat format = VK_FORMAT_R8G8B8A8_UNORM;
+    uint32_t bytesPerPixel = 4;
+    uint32_t descriptorBinding = 0;
     std::vector<uint8_t> pendingPixels;
     uint32_t pendingWidth = 0;
     uint32_t pendingHeight = 0;
@@ -71,6 +76,7 @@ public:
         return bgPipeline_ != VK_NULL_HANDLE && leafPipeline_ != VK_NULL_HANDLE
             && bgDescriptorSet_ != VK_NULL_HANDLE && leafDescriptorSet_ != VK_NULL_HANDLE
             && bgTexture_.imageView != VK_NULL_HANDLE && bgTexture_.sampler != VK_NULL_HANDLE
+            && skyTexture_.imageView != VK_NULL_HANDLE && skyTexture_.sampler != VK_NULL_HANDLE
             && leafTexture_.imageView != VK_NULL_HANDLE && leafTexture_.sampler != VK_NULL_HANDLE
             && waterVertexBuffer_ != VK_NULL_HANDLE && waterIndexBuffer_ != VK_NULL_HANDLE;
     }
@@ -78,6 +84,7 @@ public:
     bool onDeviceCreated() {
         if (!createDescriptorResourcesLocked()) return false;
         if (!ensureTextureLocked(bgTexture_, bgDescriptorSet_)) return false;
+        if (!ensureTextureLocked(skyTexture_, bgDescriptorSet_)) return false;
         return ensureTextureLocked(leafTexture_, leafDescriptorSet_);
     }
 
@@ -87,6 +94,7 @@ public:
 
     void destroyTexturesLocked() {
         destroyTextureLocked(bgTexture_);
+        destroyTextureLocked(skyTexture_);
         destroyTextureLocked(leafTexture_);
         destroyWaterBuffersLocked();
         destroyDropUboLocked();
@@ -158,11 +166,30 @@ public:
         }
     }
 
-    void setBackgroundTexture(JNIEnv* env, jintArray argbPixels, jint width, jint height) {
+    /** 河床遮罩：单通道 R8，binding 0（水面着色器的 uMaskTex）。 */
+    void setMaskTexture(JNIEnv* env, jbyteArray mask, jint width, jint height) {
         std::lock_guard<std::mutex> lock(mutex_);
-        storePendingTextureLocked(env, argbPixels, width, height, bgTexture_);
+        bgTexture_.format = VK_FORMAT_R8_UNORM;
+        bgTexture_.bytesPerPixel = 1;
+        bgTexture_.descriptorBinding = 0;
+        // 格式变了就得重建，否则会沿用上一次的 RGBA8 镜像
+        destroyTextureLocked(bgTexture_);
+        storePendingMaskLocked(env, mask, width, height, bgTexture_);
         if (device_ != VK_NULL_HANDLE) {
             ensureTextureLocked(bgTexture_, bgDescriptorSet_);
+        }
+    }
+
+    /** 天空色带：24x64 RGBA，binding 2（水面着色器的 uSkyTex）。 */
+    void setSkyTexture(JNIEnv* env, jintArray argbPixels, jint width, jint height) {
+        std::lock_guard<std::mutex> lock(mutex_);
+        skyTexture_.format = VK_FORMAT_R8G8B8A8_UNORM;
+        skyTexture_.bytesPerPixel = 4;
+        skyTexture_.descriptorBinding = 2;
+        destroyTextureLocked(skyTexture_);
+        storePendingTextureLocked(env, argbPixels, width, height, skyTexture_);
+        if (device_ != VK_NULL_HANDLE) {
+            ensureTextureLocked(skyTexture_, bgDescriptorSet_);
         }
     }
 
@@ -539,7 +566,8 @@ public:
 
         // Binding 0: background texture sampler
         // Binding 1: drop uniform buffer
-        VkDescriptorSetLayoutBinding bindings[2]{};
+        // Binding 2: sky gradient sampler
+        VkDescriptorSetLayoutBinding bindings[3]{};
         bindings[0].binding = 0;
         bindings[0].descriptorCount = 1;
         bindings[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -550,9 +578,14 @@ public:
         bindings[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
         bindings[1].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
+        bindings[2].binding = 2;
+        bindings[2].descriptorCount = 1;
+        bindings[2].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        bindings[2].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
         VkDescriptorSetLayoutCreateInfo layoutInfo{};
         layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-        layoutInfo.bindingCount = 2;
+        layoutInfo.bindingCount = 3;
         layoutInfo.pBindings = bindings;
         if (vkCreateDescriptorSetLayout(device_, &layoutInfo, nullptr, &bgDescriptorSetLayout_) != VK_SUCCESS) {
             return false;
@@ -560,7 +593,7 @@ public:
 
         VkDescriptorPoolSize poolSizes[2]{};
         poolSizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        poolSizes[0].descriptorCount = 1;
+        poolSizes[0].descriptorCount = 2;
         poolSizes[1].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
         poolSizes[1].descriptorCount = 1;
         VkDescriptorPoolCreateInfo poolInfo{};
@@ -594,14 +627,15 @@ public:
     }
 
     bool uploadTextureLocked(TextureResource& texture, VkDescriptorSet descriptorSet,
-            const uint8_t* rgbaPixels, uint32_t width, uint32_t height) {
-        if (rgbaPixels == nullptr || width == 0 || height == 0) {
+            const uint8_t* pixels, uint32_t width, uint32_t height) {
+        if (pixels == nullptr || width == 0 || height == 0) {
             return false;
         }
 
         destroyTextureLocked(texture);
 
-        const VkDeviceSize imageSize = static_cast<VkDeviceSize>(width) * height * 4u;
+        const uint32_t bpp = texture.bytesPerPixel;
+        const VkDeviceSize imageSize = static_cast<VkDeviceSize>(width) * height * bpp;
 
         VkBuffer stagingBuffer = VK_NULL_HANDLE;
         VkDeviceMemory stagingMemory = VK_NULL_HANDLE;
@@ -634,7 +668,7 @@ public:
             vkDestroyBuffer(device_, stagingBuffer, nullptr);
             return false;
         }
-        std::memcpy(mapped, rgbaPixels, static_cast<size_t>(imageSize));
+        std::memcpy(mapped, pixels, static_cast<size_t>(imageSize));
         vkUnmapMemory(device_, stagingMemory);
 
         VkImageCreateInfo imageInfo{};
@@ -643,7 +677,7 @@ public:
         imageInfo.extent = {width, height, 1};
         imageInfo.mipLevels = 1;
         imageInfo.arrayLayers = 1;
-        imageInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
+        imageInfo.format = texture.format;
         imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
         imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         imageInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
@@ -704,7 +738,7 @@ public:
         viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
         viewInfo.image = texture.image;
         viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-        viewInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
+        viewInfo.format = texture.format;
         viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         viewInfo.subresourceRange.levelCount = 1;
         viewInfo.subresourceRange.layerCount = 1;
@@ -732,7 +766,7 @@ public:
         VkWriteDescriptorSet write{};
         write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
         write.dstSet = descriptorSet;
-        write.dstBinding = 0;
+        write.dstBinding = texture.descriptorBinding;
         write.descriptorCount = 1;
         write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
         write.pImageInfo = &imageDesc;
@@ -768,6 +802,30 @@ public:
         std::memcpy(texture.pendingPixels.data(), pixels, pixelCountSize * 4u);
 
         env->ReleaseIntArrayElements(argbPixels, pixels, JNI_ABORT);
+    }
+
+    void storePendingMaskLocked(JNIEnv* env, jbyteArray mask, jint width, jint height, TextureResource& texture) {
+        if (mask == nullptr || width <= 0 || height <= 0) {
+            return;
+        }
+        const jsize byteCount = env->GetArrayLength(mask);
+        const int64_t expected = static_cast<int64_t>(width) * static_cast<int64_t>(height);
+        if (byteCount <= 0 || expected > byteCount) {
+            return;
+        }
+
+        jbyte* bytes = env->GetByteArrayElements(mask, nullptr);
+        if (bytes == nullptr) {
+            return;
+        }
+
+        texture.pendingWidth = static_cast<uint32_t>(width);
+        texture.pendingHeight = static_cast<uint32_t>(height);
+        const size_t pixelCountSize = static_cast<size_t>(expected);
+        texture.pendingPixels.resize(pixelCountSize);
+        std::memcpy(texture.pendingPixels.data(), bytes, pixelCountSize);
+
+        env->ReleaseByteArrayElements(mask, bytes, JNI_ABORT);
     }
 
     void destroyTextureLocked(TextureResource& texture) {
@@ -1212,7 +1270,8 @@ public:
     VkDescriptorSet bgDescriptorSet_ = VK_NULL_HANDLE;
     VkDescriptorSet leafDescriptorSet_ = VK_NULL_HANDLE;
 
-    TextureResource bgTexture_;
+    TextureResource bgTexture_;    // 河床遮罩（R8，binding 0）
+    TextureResource skyTexture_;   // 天空色带（RGBA8，binding 2）
     TextureResource leafTexture_;
 
     VkBuffer waterVertexBuffer_ = VK_NULL_HANDLE;
@@ -1303,11 +1362,20 @@ Java_com_reandroid_wallpaper_fall_FallVKNative_nRenderFrame(
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_com_reandroid_wallpaper_fall_FallVKNative_nSetBackgroundTexture(
+Java_com_reandroid_wallpaper_fall_FallVKNative_nSetMaskTexture(
+        JNIEnv* env, jclass, jlong handle, jbyteArray mask, jint width, jint height) {
+    auto* renderer = asRenderer(handle);
+    if (renderer != nullptr) {
+        renderer->setMaskTexture(env, mask, width, height);
+    }
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_com_reandroid_wallpaper_fall_FallVKNative_nSetSkyTexture(
         JNIEnv* env, jclass, jlong handle, jintArray argbPixels, jint width, jint height) {
     auto* renderer = asRenderer(handle);
     if (renderer != nullptr) {
-        renderer->setBackgroundTexture(env, argbPixels, width, height);
+        renderer->setSkyTexture(env, argbPixels, width, height);
     }
 }
 

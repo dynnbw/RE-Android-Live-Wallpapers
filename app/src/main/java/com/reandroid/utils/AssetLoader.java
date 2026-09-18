@@ -59,6 +59,58 @@ public final class AssetLoader {
         }
     }
 
+    /** 一张单通道遮罩：白底黑图取红通道后的逐像素字节。 */
+    public static final class Mask {
+        public final byte[] pixels;
+        public final int width;
+        public final int height;
+
+        Mask(byte[] pixels, int width, int height) {
+            this.pixels = pixels;
+            this.width = width;
+            this.height = height;
+        }
+    }
+
+    /**
+     * 把一张白底黑图的遮罩解码成逐像素的单通道字节（取红通道）。
+     *
+     * <p>逐条带取像素而不是整张 {@code getPixels}：4096² 的 ARGB 数组是 64 MB，
+     * 分条带的话峰值只有一份带子。解码用 RGB_565 把位图本身也砍一半 ——
+     * 遮罩是灰阶的，5 位红通道（步长 8）足够表达 16 级以上的灰阶。
+     *
+     * @return 解码失败返回 null
+     */
+    public static Mask decodeMask(Context context, String assetPath) {
+        BitmapFactory.Options opts = new BitmapFactory.Options();
+        opts.inPreferredConfig = Bitmap.Config.RGB_565;
+        Bitmap bitmap = decodeBitmapWithOptions(context, assetPath, opts);
+        if (bitmap == null) {
+            return null;
+        }
+
+        final int width = bitmap.getWidth();
+        final int height = bitmap.getHeight();
+        if (width <= 0 || height <= 0) {
+            bitmap.recycle();
+            return null;
+        }
+
+        final int strip = Math.max(1, Math.min(height, 256));
+        final int[] row = new int[width * strip];
+        final byte[] mask = new byte[width * height];
+        for (int y = 0; y < height; y += strip) {
+            final int rows = Math.min(strip, height - y);
+            bitmap.getPixels(row, 0, width, 0, y, width, rows);
+            final int base = y * width;
+            for (int i = 0; i < width * rows; i++) {
+                mask[base + i] = (byte) ((row[i] >> 16) & 0xFF);
+            }
+        }
+        bitmap.recycle();
+        return new Mask(mask, width, height);
+    }
+
     public static byte[] readBytes(Context context, String assetPath) {
         try (InputStream input = context.getAssets().open(assetPath)) {
             ByteArrayOutputStream output = new ByteArrayOutputStream();
