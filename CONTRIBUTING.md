@@ -112,9 +112,11 @@ assets/{id}/
 ├── language/          设置项翻译,13 个文件(bn de default es fr hi ja ko pt-rBR ru zh-rCN zh-rHK zh-rTW)
 ├── drawable/          纹理图片
 ├── shaders/GLES/      GLSL ES 2.0 着色器(顶点 + 片段)
-├── icon.png           壁纸图标(正方形 PNG,预览网格使用)
+├── icon.png           壁纸图标(正方形,预览网格使用)
 └── data/              可选:CSV 网格/顶点数据
 ```
+
+> 图标两种后缀都支持:加载器按 `icon.png` → `icon.jpg` 依次尝试,都没有才用占位图。现有壁纸里多数是 `icon.jpg`。
 
 `info.json` 示例:
 
@@ -122,15 +124,25 @@ assets/{id}/
 {
   "label": "@string/wallpaper_silk",
   "plugin": "com.reandroid.wallpaper.silk.SilkPlugin",
+  "pluginVk": "com.reandroid.wallpaper.silk.SilkVKPlugin",
   "previewClass": "com.reandroid.wallpaper.silk.SilkGL",
-  "permissions": ["RECORD_AUDIO"]
+  "permissions": ["RECORD_AUDIO"],
+  "hidden": false
 }
 ```
 
-- `label`:壁纸名称,引用 `res/values-*/strings.xml`
-- `plugin`:插件类全限定名(必填,自动发现入口)
-- `previewClass`:设置页顶部实时预览用的 GLESScene 子类
-- `permissions`:运行时请求的权限(需在 AndroidManifest 中已声明)
+| 字段 | 用途 |
+| --- | --- |
+| `label` | 壁纸名称,引用 `res/values-*/strings.xml` |
+| `plugin` | 插件类全限定名(必填,自动发现入口) |
+| `pluginVk` | Vulkan 变体的插件类;有它设置页才会出现「使用 Vulkan」开关 |
+| `previewClass` | 设置页顶部实时预览用的 GLESScene 子类 |
+| `permissions` | 运行时请求的权限(需在 AndroidManifest 中已声明) |
+| `hidden` | `true` 时不在设置列表显示,**且构建正式包时不编入**(见下方说明) |
+| `fragment` | 走旧版设置页(不配 `plugin` 时使用) |
+| `useLegacySettings` | `true` 时该壁纸不使用动态偏好界面 |
+
+**`hidden` 与打包**:标了 `"hidden": true` 的壁纸,`assembleRelease` 时整份资产不会被编入 APK(由 [app/build.gradle](app/build.gradle) 解析各 `info.json` 自动推导,无需改构建脚本);`assembleDebug` 仍会保留,方便继续开发。判定取「纯 debug 构建才保留」,失败方向是安全的。同时请求 debug 与 release(如 `./gradlew assemble`)时按正式包处理并打印提示。
 
 ### 2. Java 层 `app/src/main/java/com/reandroid/wallpaper/{id}/`
 
@@ -165,9 +177,13 @@ assets/{id}/
 
 ### Scene/GL 分离(强制)
 
-- **Scene**:纯逻辑,`import android.opengl.*` 一律禁止。动画数学、参数表、状态、prefs 全部在此,便于单测和预览复用。
+- **Scene**:纯逻辑,动画数学、参数表、状态、prefs 全部在此,便于单测和预览复用。**判据是"能不能在 JVM 上单独编译运行"**,不是"有没有 import android"。
 - **GL**:仅做渲染。`onCreate` 只做非 GL 初始化(GL 上下文可能未就绪且会被调用两次);着色器/program/VBO/纹理在 **GL 线程首次 drawFrame** 惰性创建。
 - 参考模式:`silk/SilkScene + SilkGL`、`musicvis/WaveScene + MusicVisWaveGL`。
+
+**关于 `android.opengl.Matrix`**:它有 `orthoM` / `multiplyMM` / `rotateM` 这类纯矩阵运算,不碰 GL 状态,**现有 10 个 Scene 都在用它构造投影矩阵**。用它不算破坏"不碰 GL"这条,但**会让该 Scene 无法在 JVM 上跑**(它是 Android 类,测试时得造替身)——也就是牺牲了这条规则本来要换来的可测性。
+
+所以:新写的 Scene 优先把矩阵留给 GL 层;确实要用时,清楚自己在放弃什么。想给 Scene 写 JVM 测试的话,矩阵构造留在 GL 侧会让事情简单很多(`tools/` 下的测试就是靠挑"不依赖 Android 类"的 Scene 才跑起来的)。
 
 ### 性能纪律
 
@@ -191,7 +207,15 @@ public void setPluginPrefs(SharedPreferences prefs) { ... }
 
 ### layout.json
 
-支持三种偏好控件:switch / list / seekbar(支持 `dependency` 条件显示)。每个条目的 `title` 就是语言文件里的**键名**;list 的标签按 `{key}_label_{value}` 解析(缺失时回落到 `labels` 数组)。
+支持五种偏好控件(支持 `dependency` 条件显示)。每个条目的 `title` 就是语言文件里的**键名**;list 的标签按 `{key}_label_{value}` 解析(缺失时回落到 `labels` 数组)。
+
+| type | 控件 | 说明 |
+| --- | --- | --- |
+| `switch` | 开关 | 布尔值 |
+| `seekbar` | 滑块 | `min` / `max` / `default` |
+| `list` | 下拉选择 | `values` + `labels`,标签键为 `{key}_label_{value}` |
+| `color` | 内嵌取色器 | 色块 + 色调/饱和度/亮度滑块,拖动即时写入。`labels` 给滑块标签,**个数决定显示 2 个还是 3 个滑块** |
+| `button` | 按钮 | 不存值;`action` 为 `pickBackground` / `resetBackground`(自定义背景选图与重置) |
 
 ```json
 {
@@ -203,6 +227,8 @@ public void setPluginPrefs(SharedPreferences prefs) { ... }
   "labels": ["musicvis_idle_mode_label_wave", "musicvis_idle_mode_label_simulate", "musicvis_idle_mode_label_flat"]
 }
 ```
+
+`color` 与 `button` 的写法可参考 [grass/layout.json](app/src/main/assets/grass/layout.json) 与 [fireworks/layout.json](app/src/main/assets/fireworks/layout.json)。
 
 ### 语言文件
 
