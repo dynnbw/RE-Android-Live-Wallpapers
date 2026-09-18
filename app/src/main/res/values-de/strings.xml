@@ -67,6 +67,7 @@
     <string name="wallpaper_vis3">Spektrum</string>
     <string name="wallpaper_vis4">VU-Meter</string>
     <string name="wallpaper_vis5">Mehrere</string>
+    <string name="wallpaper_vis6">Kreisförmiges Spektrum</string>
 
     <!-- Polar clock: title of settings activity -->
     <string name="clock_settings">Einstellungen der Polaruhr</string>

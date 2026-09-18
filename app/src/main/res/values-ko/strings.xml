@@ -73,6 +73,7 @@
     <string name="wallpaper_vis3">주파수 스펙트럼</string>
     <string name="wallpaper_vis4">볼륨 미터</string>
     <string name="wallpaper_vis5">다중 시각화</string>
+    <string name="wallpaper_vis6">원형 스펙트럼</string>
 
     <!-- Polar clock -->
     <string name="clock_settings">극지 시계 설정</string>

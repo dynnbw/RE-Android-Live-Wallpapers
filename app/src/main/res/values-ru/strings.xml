@@ -64,6 +64,7 @@
     <string name="wallpaper_vis3">Спектр</string>
     <string name="wallpaper_vis4">VU-метр</string>
     <string name="wallpaper_vis5">Множественный</string>
+    <string name="wallpaper_vis6">Круговой спектр</string>
 
     <!-- Настройки полярных часов -->
     <string name="clock_settings">Настройки полярных часов</string>

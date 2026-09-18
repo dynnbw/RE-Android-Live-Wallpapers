@@ -66,6 +66,7 @@
     <string name="wallpaper_vis3">Espectro</string>
     <string name="wallpaper_vis4">Medidor VU</string>
     <string name="wallpaper_vis5">Múltiplos</string>
+    <string name="wallpaper_vis6">Espectro circular</string>
 
     <!-- Relógio polar: título da atividade de configurações -->
     <string name="clock_settings">Configurações do Relógio Polar</string>

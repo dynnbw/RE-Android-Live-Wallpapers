@@ -64,6 +64,7 @@
     <string name="wallpaper_vis3">স্পেকট্রাম</string>
     <string name="wallpaper_vis4">ভিইউ মিটার</string>
     <string name="wallpaper_vis5">একাধিক</string>
+    <string name="wallpaper_vis6">বৃত্তাকার স্পেকট্রাম</string>
 
     <!-- পোলার ঘড়ি: সেটিংস অ্যাক্টিভিটির শিরোনাম -->
     <string name="clock_settings">পোলার ঘড়ি সেটিংস</string>

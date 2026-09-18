@@ -64,6 +64,7 @@
     <string name="wallpaper_vis3">Spectre</string>
     <string name="wallpaper_vis4">VU-mètre</string>
     <string name="wallpaper_vis5">Multitude</string>
+    <string name="wallpaper_vis6">Spectre circulaire</string>
 
     <!-- Horloge polaire : titre de l’activité des paramètres -->
     <string name="clock_settings">Paramètres de l’horloge polaire</string>

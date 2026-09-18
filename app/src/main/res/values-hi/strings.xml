@@ -64,6 +64,7 @@
     <string name="wallpaper_vis3">स्पेक्ट्रम</string>
     <string name="wallpaper_vis4">वीयू मीटर</string>
     <string name="wallpaper_vis5">एकाधिक</string>
+    <string name="wallpaper_vis6">वृत्ताकार स्पेक्ट्रम</string>
 
     <!-- ध्रुवीय घड़ी: सेटिंग्स गतिविधि का शीर्षक -->
     <string name="clock_settings">ध्रुवीय घड़ी सेटिंग्स</string>

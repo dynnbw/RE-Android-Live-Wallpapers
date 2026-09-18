@@ -54,6 +54,7 @@
     <string name="wallpaper_vis3">スペクトル</string>
     <string name="wallpaper_vis4">音量計</string>
     <string name="wallpaper_vis5">マルチビジュアライズ</string>
+    <string name="wallpaper_vis6">円形スペクトル</string>
 
     <!-- Polar clock -->
     <string name="clock_settings">極地時計の設定</string>
