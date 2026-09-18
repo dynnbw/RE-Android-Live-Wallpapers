@@ -94,6 +94,8 @@ public class PolarClockGL extends GLESScene {
     private final float[] mProjectionMatrix = new float[16];
     private final float[] mModelMatrix = new float[16];
     private final float[] mMvpMatrix = new float[16];
+    /** colorToRgba 每帧至少调一次（清屏色），颜色 scratch 复用。 */
+    private final float[] mRgbaScratch = new float[4];
 
     /**
      * 构造函数，初始化渲染场景的宽高
@@ -225,7 +227,7 @@ public class PolarClockGL extends GLESScene {
         // 设置GL视口并清空画布（使用当前调色板的背景色）
         GLES20.glViewport(0, 0, mWidth, mHeight);
         int bg = mPalette.getBackgroundColor();
-        float[] bgColor = colorToRgba(bg);
+        float[] bgColor = colorToRgba(bg, mRgbaScratch);
         GLES20.glClearColor(bgColor[0], bgColor[1], bgColor[2], bgColor[3]);
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
 
@@ -417,22 +419,22 @@ public class PolarClockGL extends GLESScene {
      * @param color ARGB格式的颜色值
      */
     private void setColor(int color) {
-        float[] rgba = colorToRgba(color);
+        float[] rgba = colorToRgba(color, mRgbaScratch);
         GLES20.glUniform4f(mColorHandle, rgba[0], rgba[1], rgba[2], rgba[3]);
     }
 
     /**
      * 将ARGB整数颜色转换为GL所需的RGBA浮点数组（0~1范围）
      * @param color ARGB格式的颜色值
-     * @return 浮点数组 [R, G, B, A]
+     * @param out   输出缓冲，长度 4；由调用方提供以免每帧分配
+     * @return 传入的 out，便于链式取值
      */
-    private float[] colorToRgba(int color) {
-        return new float[] {
-                ((color >> 16) & 0xFF) / 255.0f,  // 红色通道
-                ((color >> 8) & 0xFF) / 255.0f,   // 绿色通道
-                (color & 0xFF) / 255.0f,          // 蓝色通道
-                ((color >> 24) & 0xFF) / 255.0f   // Alpha通道
-        };
+    private float[] colorToRgba(int color, float[] out) {
+        out[0] = ((color >> 16) & 0xFF) / 255.0f;  // 红色通道
+        out[1] = ((color >> 8) & 0xFF) / 255.0f;   // 绿色通道
+        out[2] = (color & 0xFF) / 255.0f;          // 蓝色通道
+        out[3] = ((color >> 24) & 0xFF) / 255.0f;  // Alpha通道
+        return out;
     }
 
     /**

@@ -103,6 +103,10 @@ public class LuminousDotsGL extends GLESScene {
 
     // Projection
     private final float[] mProjMatrix = new float[16];
+    // 两处 MVP 临时数组都是各自方法内的纯 scratch（renderPass / glow 循环），
+    // 分开两个字段是为了将来有人把它们嵌套调用时也不会互相踩。
+    private final float[] mRenderPassMvp = new float[16];
+    private final float[] mGlowMvp = new float[16];
 
     private boolean mGLInit;
 
@@ -378,7 +382,7 @@ public class LuminousDotsGL extends GLESScene {
             }
 
             float[] rot = LuminousDotsScene.ROTATE_TYPE[LuminousDotsScene.ROTATE_IDX[data.rotIdxGlow][0]];
-            float[] mvp = new float[16];
+            float[] mvp = mGlowMvp;
             // Glow uses rotate→scale with NO translate (matching original Glow.draw())
             LuminousDotsScene.buildMVPGlow(mvp, mProjMatrix, mHeight, data.mScale, rot, data.camPx, data.camPy);
 
@@ -395,7 +399,7 @@ public class LuminousDotsGL extends GLESScene {
         if (vertices == null || indices == null) return;
 
         float[] rot = LuminousDotsScene.ROTATE_TYPE[LuminousDotsScene.ROTATE_IDX[rotIdx][0]];
-        float[] mvp = new float[16];
+        float[] mvp = mRenderPassMvp;
         LuminousDotsScene.buildMVP(mvp, mProjMatrix, mHeight, tx, ty, tz, data.mScale, rot, data.camPx, data.camPy);
 
         bindVertexAttribs(vertices);

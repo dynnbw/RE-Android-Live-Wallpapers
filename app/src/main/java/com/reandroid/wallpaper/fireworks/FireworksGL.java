@@ -61,6 +61,17 @@ public class FireworksGL extends GLESScene {
     private FloatBuffer mQuadBuffer;
     // 投影矩阵（正交投影）
     private final float[] mProjectionMatrix = new float[16];
+    /**
+     * drawRect 的顶点模板：z 与 uv 固定，每帧只有 4 个角点的 x/y 会变。
+     * drawRect 每帧调用次数与烟花/图层数量同阶，模板复用避免每次重新分配。
+     */
+    private static final float[] QUAD_TEMPLATE = {
+            0f, 0f, 0.0f, 0.0f,
+            0f, 0f, 0.0f, 1.0f,
+            0f, 0f, 1.0f, 1.0f,
+            0f, 0f, 1.0f, 0.0f
+    };
+    private final float[] mQuadVerts = QUAD_TEMPLATE.clone();
 
     // X轴偏移量（适配壁纸滚动）
     private float mXOffset = 0.0f;
@@ -850,12 +861,11 @@ public class FireworksGL extends GLESScene {
      */
     private void drawRect(int texture, float x0, float y0, float x1, float y1) {
         // 构建四边形顶点数据（XY坐标 + 纹理坐标）
-        float[] verts = new float[] {
-                x0, y0, 0.0f, 0.0f,
-                x0, y1, 0.0f, 1.0f,
-                x1, y1, 1.0f, 1.0f,
-                x1, y0, 1.0f, 0.0f
-        };
+        float[] verts = mQuadVerts;
+        verts[0] = x0; verts[1] = y0;
+        verts[4] = x0; verts[5] = y1;
+        verts[8] = x1; verts[9] = y1;
+        verts[12] = x1; verts[13] = y0;
 
         // 填充顶点缓冲
         mQuadBuffer.clear();

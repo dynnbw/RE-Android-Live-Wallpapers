@@ -47,6 +47,10 @@ public class WalkAroundGL extends GLESScene {
 
     private final float[] mMvp = new float[16];
     private final float[] mTexMatrix = new float[16];
+    // drawFrame / buildTexMatrix 每帧走一次，这三处原先每帧新分配
+    private final float[] mFinalTexMatrix = new float[16];
+    private final float[] mMirrorMatrix = new float[16];
+    private final float[] mMirrorTemp = new float[16];
 
     private boolean mUseFront = false;
     private boolean mMirrorFront = true;
@@ -120,7 +124,7 @@ public class WalkAroundGL extends GLESScene {
             return;
         }
 
-        float[] tex = new float[16];
+        float[] tex = mFinalTexMatrix;
         buildTexMatrix(tex);
 
         GLES20.glUseProgram(mProgram);
@@ -342,11 +346,11 @@ public class WalkAroundGL extends GLESScene {
         // Use SurfaceTexture's matrix plus optional mirror; avoid double-rotating.
 
         if (mUseFront && mMirrorFront) {
-            float[] mirror = new float[16];
+            float[] mirror = mMirrorMatrix;
             Matrix.setIdentityM(mirror, 0);
             Matrix.translateM(mirror, 0, 1f, 0f, 0f);
             Matrix.scaleM(mirror, 0, -1f, 1f, 1f);
-            float[] temp = new float[16];
+            float[] temp = mMirrorTemp;
             // Apply mirror BEFORE the SurfaceTexture transform (texMatrix * mirror)
             // so the horizontal flip stays horizontal after rotation
             Matrix.multiplyMM(temp, 0, out, 0, mirror, 0);

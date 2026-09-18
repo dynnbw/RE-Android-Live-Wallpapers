@@ -49,6 +49,17 @@ public class Galaxy4GL extends GLESScene {
     private FloatBuffer mBgStarBuffer;
     private FloatBuffer mStaticStarBuffer;
     private FloatBuffer mBgQuadBuffer;
+    /**
+     * 背景四边形模板：uv 固定，只有 4 个角点的 x/y 随视口缩放变化。
+     * 原先每帧重新构造数组。
+     */
+    private static final float[] BG_QUAD_TEMPLATE = {
+            0f, 0f, 0, 1,
+            0f, 0f, 1, 1,
+            0f, 0f, 0, 0,
+            0f, 0f, 1, 0,
+    };
+    private final float[] mBgQuadVerts = BG_QUAD_TEMPLATE.clone();
     private final float[] mIdentityMatrix = new float[16];
     private final Context mContext;
     private final Galaxy4Scene mScene;
@@ -336,12 +347,11 @@ public class Galaxy4GL extends GLESScene {
         float maxDim = Math.max(mWidth, mHeight);
         float scaleX = maxDim / (float) mWidth;
         float scaleY = maxDim / (float) mHeight;
-        float[] vertices = {
-            -scaleX, -scaleY, 0, 1,
-             scaleX, -scaleY, 1, 1,
-            -scaleX,  scaleY, 0, 0,
-             scaleX,  scaleY, 1, 0,
-        };
+        float[] vertices = mBgQuadVerts;
+        vertices[0] = -scaleX; vertices[1] = -scaleY;
+        vertices[4] = scaleX;  vertices[5] = -scaleY;
+        vertices[8] = -scaleX; vertices[9] = scaleY;
+        vertices[12] = scaleX; vertices[13] = scaleY;
         if (mBgQuadBuffer == null || mBgQuadBuffer.capacity() < vertices.length) {
             mBgQuadBuffer = createFloatBuffer(vertices);
         } else {

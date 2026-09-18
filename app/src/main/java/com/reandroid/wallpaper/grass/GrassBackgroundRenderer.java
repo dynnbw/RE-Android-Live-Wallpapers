@@ -43,6 +43,8 @@ final class GrassBackgroundRenderer {
     private FloatBuffer skyQuadBuffer;
     private boolean skyQuadDirty = true;
     private final float[] quadVerts = new float[20];
+    /** computeSimpleSkyWeights 的输出缓冲：每帧算一次，别每帧新建。 */
+    private final float[] skyWeights = new float[4];
 
     void setViewport(int width, int height) {
         this.width = width;
@@ -104,7 +106,7 @@ final class GrassBackgroundRenderer {
 
     void drawBackground(SceneData sd) {
         // Compute sky blend weights once, shared with Vulkan path via SceneData
-        float[] w = new float[4];
+        float[] w = skyWeights;
         SceneData.computeSimpleSkyWeights(sd.timeFraction, sd.dawn, sd.morning, sd.afternoon, sd.dusk, w);
         float wNight = w[0], wSunrise = w[1], wSunset = w[2], wSky = w[3];
 

@@ -73,10 +73,24 @@ public class FallGL extends GLESScene {
     private FloatBuffer mWaterMeshVertexBuffer;
     private FloatBuffer mWaterMeshTexCoordBuffer;
     private FloatBuffer mLeafQuadVertexBuffer;
+    /**
+     * 叶片四边形的顶点模板（见 drawQuad）：z 恒为 0，uv 固定，
+     * 每帧只有 4 个角点的 x/y 会变，所以模板只需要作一次，
+     * 调用时改写那 8 个槽位即可，不必每次重新构造整个数组。
+     */
+    private static final float[] LEAF_QUAD_TEMPLATE = {
+            0f, 0f, 0f, 0.0f, 0.0f,
+            0f, 0f, 0f, 1.0f, 0.0f,
+            0f, 0f, 0f, 1.0f, 1.0f,
+            0f, 0f, 0f, 0.0f, 1.0f
+    };
+    private final float[] mLeafQuadVertices = LEAF_QUAD_TEMPLATE.clone();
     private ShortBuffer mWaterIndexBuffer;
     private final float[] mModelMatrix = new float[16];
     private final float[] mViewMatrix = new float[16];
     private final float[] mMVPMatrix = new float[16];
+    /** drawLeafQuad 的临时矩阵：每片叶子用两次，不能每帧新分配。 */
+    private final float[] mLeafMvMatrix = new float[16];
     private boolean mGLInitialized = false;
     private int mFrameCount = 0;
     private final FallScene mScene;
@@ -399,7 +413,7 @@ public class FallGL extends GLESScene {
         Matrix.rotateM(mModelMatrix, 0, rotation, 0, 0, 1);
         Matrix.scaleM(mModelMatrix, 0, scale, scale, 1);
 
-        float[] mvMatrix = new float[16];
+        float[] mvMatrix = mLeafMvMatrix;
         Matrix.multiplyMM(mvMatrix, 0, sceneData.getViewMatrix(), 0, mModelMatrix, 0);
         Matrix.multiplyMM(mMVPMatrix, 0, sceneData.getProjectionMatrix(), 0, mvMatrix, 0);
 
@@ -409,12 +423,11 @@ public class FallGL extends GLESScene {
 
     private void drawQuad(float left, float top, float right, float bottom, int texture, float alpha,
             boolean silhouette) {
-        float[] vertices = {
-                left, bottom, 0, 0.0f, 0.0f,
-                right, bottom, 0, 1.0f, 0.0f,
-                right, top, 0, 1.0f, 1.0f,
-                left, top, 0, 0.0f, 1.0f
-        };
+        float[] vertices = mLeafQuadVertices;
+        vertices[0] = left;   vertices[1] = bottom;
+        vertices[5] = right;  vertices[6] = bottom;
+        vertices[10] = right; vertices[11] = top;
+        vertices[15] = left;  vertices[16] = top;
 
         if (mLeafQuadVertexBuffer == null || mLeafQuadVertexBuffer.capacity() != vertices.length) {
             mLeafQuadVertexBuffer = createFloatBuffer(vertices);

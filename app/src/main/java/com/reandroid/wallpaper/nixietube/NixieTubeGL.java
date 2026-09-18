@@ -55,6 +55,8 @@ public class NixieTubeGL extends GLESScene {
     private int mAtlasTexture;
     private FloatBuffer[] mTubeBuffers;
     private final float[] mMvpMatrix = new float[16];
+    /** buildTubeBuffer 每帧每根管子调一次，顶点数组复用。 */
+    private final float[] mTubeVerts = new float[20];
     private boolean mGlReady;
     private float mScale = 1.0f;
 
@@ -224,12 +226,11 @@ public class NixieTubeGL extends GLESScene {
         float u1 = u0 + UV_CELL_W;
         float v1 = v0 + UV_CELL_H;         // bottom of quad → bottom of atlas cell
 
-        float[] verts = {
-            x0, y0, 0, u0, v0,   // top-left
-            x1, y0, 0, u1, v0,   // top-right
-            x1, y1, 0, u1, v1,   // bottom-right
-            x0, y1, 0, u0, v1,   // bottom-left
-        };
+        float[] verts = mTubeVerts;
+        verts[0] = x0;  verts[1] = y0;  verts[2] = 0;  verts[3] = u0;  verts[4] = v0;   // top-left
+        verts[5] = x1;  verts[6] = y0;  verts[7] = 0;  verts[8] = u1;  verts[9] = v0;   // top-right
+        verts[10] = x1; verts[11] = y1; verts[12] = 0; verts[13] = u1; verts[14] = v1;  // bottom-right
+        verts[15] = x0; verts[16] = y1; verts[17] = 0; verts[18] = u0; verts[19] = v1;  // bottom-left
 
         FloatBuffer buf = mTubeBuffers[i];
         buf.clear();

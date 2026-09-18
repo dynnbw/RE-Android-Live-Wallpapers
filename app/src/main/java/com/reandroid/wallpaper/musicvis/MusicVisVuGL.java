@@ -40,6 +40,8 @@ public class MusicVisVuGL extends GLESScene {
 
     private final float[] mMvp = new float[16];
     private final float[] mModel = new float[16];
+    /** drawQuadInternal 的顶点 scratch：每个四边形都会被调用，不能每次新建。 */
+    private final float[] mQuadPositions = new float[12];
 
     public MusicVisVuGL(int width, int height, Context context) {
         super(width, height);
@@ -144,12 +146,11 @@ public class MusicVisVuGL extends GLESScene {
     }
 
     private void drawQuadInternal(int texId, float x1, float y1, float z1, float x2, float y2, float z2, boolean texCoords) {
-        float[] positions = new float[] {
-                x1, y1, z1,
-                x2, y1, z1,
-                x1, y2, z2,
-                x2, y2, z2
-        };
+        float[] positions = mQuadPositions;
+        positions[0] = x1; positions[1] = y1; positions[2] = z1;
+        positions[3] = x2; positions[4] = y1; positions[5] = z1;
+        positions[6] = x1; positions[7] = y2; positions[8] = z2;
+        positions[9] = x2; positions[10] = y2; positions[11] = z2;
         float[] uvs = mQuadUvs;
         mPosBuffer.position(0);
         mPosBuffer.put(positions).position(0);

@@ -57,6 +57,17 @@ public class WildWorldGL extends GLESScene {
     // 顶点缓冲 / 投影矩阵
     private FloatBuffer mQuadBuffer;
     private final float[] mProjectionMatrix = new float[16];
+    /**
+     * drawRect 的顶点模板：z 与 uv 固定，每帧只有 4 个角点的 x/y 会变。
+     * drawRect 每帧要调几十次，模板复用避免每次重新分配整个数组。
+     */
+    private static final float[] QUAD_TEMPLATE = {
+            0f, 0f, 0.0f, 0.0f,
+            0f, 0f, 0.0f, 1.0f,
+            0f, 0f, 1.0f, 1.0f,
+            0f, 0f, 1.0f, 0.0f
+    };
+    private final float[] mQuadVerts = QUAD_TEMPLATE.clone();
 
     // ---- 构造方法 ----
 
@@ -280,12 +291,11 @@ public class WildWorldGL extends GLESScene {
      * 绘制矩形（核心绘制方法）
      */
     private void drawRect(int texture, float x0, float y0, float x1, float y1) {
-        float[] verts = new float[] {
-                x0, y0, 0.0f, 0.0f,
-                x0, y1, 0.0f, 1.0f,
-                x1, y1, 1.0f, 1.0f,
-                x1, y0, 1.0f, 0.0f
-        };
+        float[] verts = mQuadVerts;
+        verts[0] = x0; verts[1] = y0;
+        verts[4] = x0; verts[5] = y1;
+        verts[8] = x1; verts[9] = y1;
+        verts[12] = x1; verts[13] = y0;
 
         mQuadBuffer.clear();
         mQuadBuffer.put(verts).position(0);

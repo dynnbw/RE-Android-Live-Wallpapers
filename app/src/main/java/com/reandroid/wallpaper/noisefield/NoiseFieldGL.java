@@ -59,6 +59,9 @@ public class NoiseFieldGL extends GLESScene {
     private float mScaleSize = 1.0f;
     private float mSizeMultiplier = 1.0f;
     private final float[] mMvp = new float[16];
+    // updateMvp 每帧调一次，投影与临时矩阵都用字段复用
+    private final float[] mProjMatrix = new float[16];
+    private final float[] mTempMatrix = new float[16];
     private boolean mInitialized;
 
     private float[] mBgPositions;
@@ -261,8 +264,8 @@ public class NoiseFieldGL extends GLESScene {
     }
 
     private void updateMvp() {
-        float[] proj = new float[16];
-        float[] tmp = new float[16];
+        float[] proj = mProjMatrix;
+        float[] tmp = mTempMatrix;
 
         if (mWidth > mHeight) {
             float aspect = (float) mWidth / (float) mHeight;

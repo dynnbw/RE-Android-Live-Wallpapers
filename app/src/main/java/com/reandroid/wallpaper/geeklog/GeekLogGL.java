@@ -43,6 +43,9 @@ public class GeekLogGL extends GLESScene {
 
     private static final int FLOATS_PER_VERTEX = 7; // x, y, u, v, r, g, b
 
+    /** buildVertices 里每行算一次的暗色（前缀字符用），原先每行都新建数组。 */
+    private final float[] mDimColor = new float[3];
+
     private final Context mContext;
     private final GeekLogScene mScene = new GeekLogScene();
     private SharedPreferences mPluginPrefs;
@@ -239,9 +242,10 @@ public class GeekLogGL extends GLESScene {
             float alpha = 1f - r / (float) Math.max(1, shown - 1) * 0.6f;
 
             float[] lineColor = colorFor(e.level);
-            float[] dimColor = {
-                lineColor[0] * 0.6f, lineColor[1] * 0.6f, lineColor[2] * 0.6f
-            };
+            float[] dimColor = mDimColor;
+            dimColor[0] = lineColor[0] * 0.6f;
+            dimColor[1] = lineColor[1] * 0.6f;
+            dimColor[2] = lineColor[2] * 0.6f;
 
             String text = e.text;
             int len = Math.min(text.length(), mCols);

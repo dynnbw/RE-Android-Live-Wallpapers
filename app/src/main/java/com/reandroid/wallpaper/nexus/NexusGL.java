@@ -66,6 +66,8 @@ public class NexusGL extends GLESScene {
     private final float[] mColor = new float[4];
     // 预分配顶点数组，drawTexturedRect 复用
     private final float[] mRectVertices = new float[16];
+    /** buildBackgroundUv 的输出：每帧算一次，复用同一个数组（调用方立刻拷进缓冲）。 */
+    private final float[] mBackgroundUv = new float[8];
 
     // 背景管理器（含GL纹理操作）
     private final NexusBackgroundManager mBackgroundManager = new NexusBackgroundManager();
@@ -348,6 +350,7 @@ public class NexusGL extends GLESScene {
         drawTexturedRect(mTexBackground, 0f, 0f, right, bottom, bgUv, mMVPMatrix);
     }
 
+    /** 结果写进 {@link #mBackgroundUv} 并返回（调用方只读取，见 drawTexturedRect）。 */
     private float[] buildBackgroundUv(float drawWidth, float drawHeight) {
         float viewAspect = drawHeight > 0f ? drawWidth / drawHeight : 1f;
         float bgAspect = mBackgroundManager.getBackgroundAspect() > 0f
@@ -371,12 +374,12 @@ public class NexusGL extends GLESScene {
             u1 = 1f - pad;
         }
 
-        return new float[] {
-                u0, v0,
-                u1, v0,
-                u0, v1,
-                u1, v1
-        };
+        float[] uv = mBackgroundUv;
+        uv[0] = u0; uv[1] = v0;
+        uv[2] = u1; uv[3] = v0;
+        uv[4] = u0; uv[5] = v1;
+        uv[6] = u1; uv[7] = v1;
+        return uv;
     }
 
     /**

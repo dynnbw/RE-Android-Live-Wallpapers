@@ -53,6 +53,13 @@ public class GalaxyGL extends GLESScene {
     private FloatBuffer mParticlePositionBuffer;
     private FloatBuffer mParticleColorBuffer;
     private FloatBuffer mBgVertexBuffer;
+    /** 全屏背景四边形：整块都是常量，原先每帧重新构造一次数组。 */
+    private static final float[] BG_VERTICES = {
+        -1, -1, 0, 1,
+         1, -1, 1, 1,
+        -1,  1, 0, 0,
+         1,  1, 1, 0
+    };
     private FloatBuffer mLightQuadBuffer;
     private final float[] mLightQuadVerts = new float[20];
     private final GalaxyScene mScene;
@@ -315,12 +322,7 @@ public class GalaxyGL extends GLESScene {
     private void drawBackground() {
         GLES20.glUseProgram(mBgProgram);
 
-        float[] vertices = {
-            -1, -1, 0, 1,
-             1, -1, 1, 1,
-            -1,  1, 0, 0,
-             1,  1, 1, 0
-        };
+        float[] vertices = BG_VERTICES;
 
         if (mBgVertexBuffer == null || mBgVertexBuffer.capacity() != vertices.length) {
             mBgVertexBuffer = createFloatBuffer(vertices);
