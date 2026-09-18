@@ -200,10 +200,14 @@ public class PluginSettingsFragment extends PreferenceFragmentCompat
     public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
         GLESScene scene = mHost != null ? mHost.getScene() : null;
         if (scene != null) {
+            Context ctx = requireContext();
             try {
                 java.lang.reflect.Method m = scene.getClass()
                         .getMethod("setPluginPrefs", SharedPreferences.class);
                 m.invoke(scene, prefs);
+                // 同时补一次跨插件读取能力（合成类壁纸需要；普通壁纸没有这个方法，静默跳过）
+                PluginPrefsInjector.injectProvider(scene,
+                        pluginId -> ctx.getSharedPreferences("plugin_" + pluginId, Context.MODE_PRIVATE));
             } catch (Exception e) {
                 Log.w("PluginSettingsFragment", "Failed to inject prefs into preview, refreshing scene", e);
                 if (mHost != null) mHost.refreshPreview();

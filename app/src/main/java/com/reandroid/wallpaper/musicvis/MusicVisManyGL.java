@@ -94,6 +94,11 @@ public class MusicVisManyGL extends GLESScene {
         mScene.setPluginPrefs(p);
     }
 
+    /** 跨插件读取能力（vis5 要读 vis2 / vis3 的设置），由宿主注入。 */
+    public void setPluginPrefsProvider(com.reandroid.plugin.PluginPrefsProvider provider) {
+        mScene.setPluginPrefsProvider(provider);
+    }
+
     @Override
     protected void onCreate() {}
 

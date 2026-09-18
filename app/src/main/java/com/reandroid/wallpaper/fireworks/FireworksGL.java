@@ -82,6 +82,8 @@ public class FireworksGL extends GLESScene {
      * @param height 渲染高度
      */
     private android.content.SharedPreferences mPluginPrefs;
+    /** 跨插件读取能力，由宿主注入（草地夜景背景要读 grass 的设置）。 */
+    private com.reandroid.plugin.PluginPrefsProvider mPluginPrefsProvider;
 
     // 草地夜景变种：开启后背景变为恒夜草地（夜空+星星+草遮挡烟花）
     private static final String KEY_GRASS_NIGHT = "pref_fireworks_grass_night";
@@ -149,6 +151,11 @@ public class FireworksGL extends GLESScene {
      * <p>本方法在主线程被偏好监听器调用,因此<b>只写 volatile 字段</b>,绝不在这里调用
      * applySettings —— 那会重建渲染线程正在读的粒子数组(见 applyPendingSettings)。
      */
+    /** 跨插件读取能力（草地夜景背景要读 grass 的设置），由宿主注入。 */
+    public void setPluginPrefsProvider(com.reandroid.plugin.PluginPrefsProvider provider) {
+        mPluginPrefsProvider = provider;
+    }
+
     public void setPluginPrefs(android.content.SharedPreferences prefs) {
         mPluginPrefs = prefs;
         if (prefs != null) {
@@ -392,14 +399,18 @@ public class FireworksGL extends GLESScene {
     }
 
     /**
-     * 读取 grass 壁纸的草/星星配置（plugin_grass），映射语义与 GrassScene 一致：
-     * 高/宽/硬度为百分比/100，范围分别夹在 0.1-10、0.1-10、0.3-10。
+     * 读取 **grass 壁纸**的草/星星配置，用于把草地夜景背景画得和它一致。
+     * 映射语义与 GrassScene 一致：高/宽/硬度为百分比/100，范围分别夹在 0.1-10、0.1-10、0.3-10。
+     *
+     * <p>设置必须来自 grass 自己那一份，而注入的 {@code setPluginPrefs} 只给得到 fireworks
+     * 这一份，所以跨插件读取由宿主经 {@link com.reandroid.plugin.PluginPrefsProvider} 注入，
+     * 这里不自己去碰存储层（同类：ManyScene 读 vis2 / vis3）。
      */
     private void pollGrassConfig() {
-        if (mBackdrop == null || mContext == null) return;
+        if (mBackdrop == null || mPluginPrefsProvider == null) return;
         try {
-            android.content.SharedPreferences p =
-                    mContext.getSharedPreferences("plugin_grass", android.content.Context.MODE_PRIVATE);
+            android.content.SharedPreferences p = mPluginPrefsProvider.forPlugin("grass");
+            if (p == null) return;
             int bladeCount = p.getInt("pref_grass_count", 200);
             float heightScale = MathUtils.clamp(p.getInt("pref_grass_height", 100) / 100.0f, 0.1f, 10.0f);
             float widthScale = MathUtils.clamp(p.getInt("pref_grass_width", 100) / 100.0f, 0.1f, 10.0f);

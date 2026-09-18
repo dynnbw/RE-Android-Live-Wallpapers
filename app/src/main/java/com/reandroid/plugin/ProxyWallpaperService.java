@@ -333,7 +333,12 @@ public class ProxyWallpaperService extends WallpaperService {
 
         @Override
         public SharedPreferences getSharedPreferences() {
-            return mContext.getSharedPreferences("plugin_" + mPluginId, Context.MODE_PRIVATE);
+            return getSharedPreferences(mPluginId);
+        }
+
+        @Override
+        public SharedPreferences getSharedPreferences(String pluginId) {
+            return mContext.getSharedPreferences("plugin_" + pluginId, Context.MODE_PRIVATE);
         }
 
         @Override

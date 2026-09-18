@@ -167,18 +167,11 @@ public abstract class BasePluginEngine implements WallpaperEngine {
         }
     }
 
-    /** Injects plugin SharedPreferences into the scene via reflection. */
+    /** Injects plugin SharedPreferences (and cross-plugin access) into the scene via reflection. */
     protected void tryInjectPrefs(GLESScene scene) {
         if (mHost == null || scene == null) return;
-        try {
-            java.lang.reflect.Method m = scene.getClass()
-                    .getMethod("setPluginPrefs", android.content.SharedPreferences.class);
-            m.invoke(scene, mHost.getSharedPreferences());
-        } catch (NoSuchMethodException e) {
-            Log.i(TAG, scene.getClass().getSimpleName() + " has no setPluginPrefs — using default prefs source");
-        } catch (Exception e) {
-            Log.w(TAG, "Failed to inject prefs into " + scene.getClass().getSimpleName(), e);
-        }
+        PluginPrefsInjector.inject(scene, mHost.getSharedPreferences(),
+                pluginId -> mHost.getSharedPreferences(pluginId));
     }
 
     @Override

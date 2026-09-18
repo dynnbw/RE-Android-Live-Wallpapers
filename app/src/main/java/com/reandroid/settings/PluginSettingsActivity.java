@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.reandroid.gles.GLESPreviewView;
 import com.reandroid.gles.GLESScene;
+import com.reandroid.plugin.PluginPrefsInjector;
 import com.reandroid.plugin.PluginResources;
 import com.reandroid.plugin.PluginSettingsFragment;
 import com.reandroid.plugin.ProxyWallpaperService;
@@ -207,12 +208,8 @@ public class PluginSettingsActivity extends AppCompatActivity
     }
 
     private void injectPluginPrefs(GLESScene scene) {
-        try {
-            java.lang.reflect.Method m = scene.getClass()
-                    .getMethod("setPluginPrefs", SharedPreferences.class);
-            m.invoke(scene, getSharedPreferences("plugin_" + mPluginId, Context.MODE_PRIVATE));
-        } catch (Exception e) {
-            Log.w(TAG, "Failed to inject prefs into preview scene", e);
-        }
+        PluginPrefsInjector.inject(scene,
+                getSharedPreferences("plugin_" + mPluginId, Context.MODE_PRIVATE),
+                pluginId -> getSharedPreferences("plugin_" + pluginId, Context.MODE_PRIVATE));
     }
 }

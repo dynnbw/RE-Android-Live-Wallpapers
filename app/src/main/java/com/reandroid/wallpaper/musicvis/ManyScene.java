@@ -2,6 +2,7 @@ package com.reandroid.wallpaper.musicvis;
 
 import android.content.Context;
 import com.reandroid.utils.Mat4;
+import com.reandroid.plugin.PluginPrefsProvider;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 
@@ -55,6 +56,7 @@ final class ManyScene {
     boolean mHasPrefInit = false;
     private int mFrameCount;
     private SharedPreferences mPluginPrefs;
+    private PluginPrefsProvider mPluginPrefsProvider;
 
     // HSL recolor state — synced from vis2 (PCM) and vis3 (FFT) prefs
     boolean mRecolorPCM, mRecolorFFT;
@@ -102,6 +104,11 @@ final class ManyScene {
         mPluginPrefs = p;
     }
 
+    /** 跨插件读取能力，由宿主注入（vis5 要读 vis2 / vis3 的设置）。 */
+    void setPluginPrefsProvider(PluginPrefsProvider provider) {
+        mPluginPrefsProvider = provider;
+    }
+
     void setOffset(float xOffset, float yOffset, int xPixels, int yPixels) {
         mRotate = (xOffset - 0.5f) * 90f;
     }
@@ -128,9 +135,10 @@ final class ManyScene {
     // ---- render mode ----
 
     void updateRenderMode() {
-        SharedPreferences p = mPluginPrefs != null ? mPluginPrefs
-                : androidx.preference.PreferenceManager.getDefaultSharedPreferences(
-                        mWave.mContext);
+        SharedPreferences p = mPluginPrefs;
+        if (p == null) {
+            return;
+        }
         boolean pref = p.getBoolean("musicvis_use_triangle_strip", true);
         if (!mHasPrefInit || pref != mUseTriangleStrip) {
             mUseTriangleStrip = pref;
@@ -181,18 +189,15 @@ final class ManyScene {
         mFftSize = mWaveFFT.mFftSize;
     }
 
-    /** Try plugin pref name first, then legacy name as fallback. */
+    /**
+     * 读取 vis2 / vis3 自己的设置。
+     *
+     * vis5 是把 vis2 与 vis3 的画面合成在一起显示的，必须拿到它们各自的设置才能
+     * 模仿其观感，而注入的 {@code setPluginPrefs} 只给得到 vis5 自己那一份。
+     * 所以跨插件读取由宿主经 {@link PluginPrefsProvider} 注入，Scene 不自己去碰存储层。
+     */
     private SharedPreferences getPluginPrefs(String pluginId) {
-        Context ctx = mWave.mContext;
-        SharedPreferences p = ctx.getSharedPreferences("plugin_" + pluginId, Context.MODE_PRIVATE);
-        if (p.getAll().isEmpty()) {
-            // Legacy prefs: "musicvis2_prefs" or "musicvis3_prefs"
-            String num = pluginId.equals("vis2") ? "2" : "3";
-            String legacy = "musicvis" + num + "_prefs";
-            SharedPreferences lp = ctx.getSharedPreferences(legacy, Context.MODE_PRIVATE);
-            if (!lp.getAll().isEmpty()) return lp;
-        }
-        return p;
+        return mPluginPrefsProvider != null ? mPluginPrefsProvider.forPlugin(pluginId) : null;
     }
 
     // ---- auto rotation ----
