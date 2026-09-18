@@ -186,6 +186,9 @@ assets/{id}/
 - **Scene**:纯逻辑,动画数学、参数表、状态、prefs 全部在此,便于单测和预览复用。**判据是"能不能在 JVM 上单独编译运行"**,不是"有没有 import android"。
 - **GL**:仅做渲染。`onCreate` 只做非 GL 初始化(GL 上下文可能未就绪且会被调用两次);着色器/program/VBO/纹理在 **GL 线程首次 drawFrame** 惰性创建。
 - 参考模式:`silk/SilkScene + SilkGL`、`musicvis/WaveScene + MusicVisWaveGL`。
+- **什么时候不拆**:看的是「逻辑是否与平台脱钩」。若非 GL 那部分本身就是平台 API 的管道
+  (例如 `walkaround` 的 Camera 调用),搬进 Scene 也跑不了 JVM 测试,拆分收益为零 ——
+  别为了凑够 4 个类而拆,那只是把文件分开放。
 
 **关于 `android.opengl.Matrix`**:它有 `orthoM` / `multiplyMM` / `rotateM` 这类纯矩阵运算,不碰 GL 状态,**现有 10 个 Scene 都在用它构造投影矩阵**。用它不算破坏"不碰 GL"这条,但**会让该 Scene 无法在 JVM 上跑**(它是 Android 类,测试时得造替身)——也就是牺牲了这条规则本来要换来的可测性。
 
@@ -194,18 +197,47 @@ assets/{id}/
 ### 性能纪律
 
 - 每帧**零分配**:顶点/颜色缓冲预分配复用,`glBufferSubData` 更新,不 new 数组。
+  注意 `arr.clone()` 和隐式初始化 `float[] v = {…}` 同样每次分配,只搜 `new` 会漏掉。
 - 动画按真实 `dt`(帧间隔)推进,钳制上限(如 0.1s)防止卡顿后跳帧;支持用户速度倍率时在 Scene 层统一乘。
-- 纹理注意解码参数:`GL_ONE` 预乘混合时须 `inPremultiplied = true` 解码,否则泛白。
+  **帧率是用户可设的全局项**(`global_frame_rate`,默认 60),所以「每帧加一个固定量」是个坑:
+  用户把它从 60 调到 30,动画就慢一半、调到 120 就快一倍。想既保留原观感又与帧率无关,
+  就乘 `dt * 60`(60fps 下系数为 1,逐帧与原实现一致)。
+- **纹理解码**统一走 `AssetLoader`,它显式设 `inPremultiplied = false`(为消除透明纹理的黑边)。
+  **别看到 `glBlendFunc(GL_ONE, ...)` 就以为"漏了预乘解码"**:本项目着色器输出的是
+  **直通 alpha**(模拟 GLES 1.x 的 `GL_MODULATE`,RGB 不乘 alpha),`GL_ONE` 在这里不是预乘混合。
+  **按"补上 inPremultiplied"去改,会把画面弄泛白。**
 - GLES 2.0 无 `#version` 控制流宏,注意 `pow(x, 2.0)` 对负底数是 **NaN**(现代驱动行为,旧驱动优化为 `x*x` 反而正常)——用 `x*x` 或防护分支。
 
 ### 设置读取
 
-设置由引擎注入,Scene **不要自己 `getSharedPreferences`**(预览场景无注入路径):
+**先分清设置该存在哪**:壁纸自己的设置存 `plugin_{id}`;应用级设置(天气 API、调试开关、
+帧率、MIUI 提示标记…)存**应用默认 prefs**。不要写错地方。
+
+设置由引擎注入,Scene **不要自己 `getSharedPreferences`**:
 
 ```java
 public void setPluginPrefs(SharedPreferences prefs) { ... }
 // 内部:读 key → 字段,默认值兜底;设置变更由宿主实时重新注入
 ```
+
+三条容易踩的:
+
+1. **注入的目标是 `info.json` 里的 `previewClass`,不是 Scene 本身。** 多数壁纸的
+   `previewClass` 是 GL 类,由它转发给 Scene;vis2/vis3 的 `previewClass` 直接指向 Scene,
+   所以那两个 Scene 的 `setPluginPrefs` 必须是 `public`。新增壁纸照 GL 类转发写即可。
+
+2. **不要写 `mPluginPrefs != null ? mPluginPrefs : getSharedPreferences(...)` 这种兜底。**
+   `createScene()` 之后紧接着就是 `tryInjectPrefs()`,而 `init()/start()` 是之后在渲染线程
+   延迟执行的 —— 注入**总是**先发生,兜底永远走不到;而它读的旧文件名多半早已没有写入方。
+   一旦哪天真的被走到,它会**静默**返回默认值,用户设置全部失效且不报错 —— 比没有兜底更糟。
+
+3. **要读别的壁纸的设置**(只有合成类壁纸需要:vis5 把 vis2/vis3 的画面合在一起显示、
+   fireworks 的草地夜景背景要模仿 grass),实现 `setPluginPrefsProvider(PluginPrefsProvider)`,
+   由宿主注入,**不要自己按 `plugin_<id>` 直读**。
+
+> 另有一个**共享静态注入点**容易漏看:`WallpaperSettings.setSharedPreferences(...)`
+> 由 `BaseVKPluginEngine` 设置,`WallpaperSettings.getXxx()` 优先读它。
+> 判断"某个设置到底会不会生效"时,不能只看直接的 `setPluginPrefs` 调用。
 
 ---
 
@@ -257,6 +289,9 @@ public void setPluginPrefs(SharedPreferences prefs) { ... }
 改动完成后逐项确认:
 
 - [ ] `./gradlew assembleDebug` 通过,无新增警告
+- [ ] 动了 Scene 逻辑的,跑一遍对应的 JVM 测试:`tools/<名字>-test/` 下每个测试的
+      文件头注释里写着它的 `javac` / `java` 命令(Scene 不依赖 Android 类才跑得起来,
+      见 [代码约定](#代码约定))。没有对应测试时,优先补一个 —— 这正是 Scene/GL 分离换来的东西
 - [ ] 设置列表出现新壁纸(图标 + 本地化名称)
 - [ ] 设置页顶部预览正常渲染;改设置**实时生效**、不重启
 - [ ] 应用到壁纸后运行正常;反复切换壁纸/开关无 GL 报错(注意 logcat 的 EGL/GL 错误)
