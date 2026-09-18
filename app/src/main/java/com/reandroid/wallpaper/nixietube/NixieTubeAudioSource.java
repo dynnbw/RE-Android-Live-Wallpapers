@@ -40,20 +40,34 @@ final class NixieTubeAudioSource {
     }
 
     void stop() {
+        /*
+         * 顺序很关键：先把卡在 native 调用里的线程解开 → 再等它退出 → 最后才 release。
+         *
+         * 原来是先 release 再 join。而采集线程的循环条件是 `mRunning && mVisualizer != null`，
+         * 循环体紧接着就调 getWaveForm —— release 之后它仍可能通过条件判断，
+         * 拿着已释放的对象去调 native 方法。更糟的是线程若正卡在 getWaveForm/read 里，
+         * join 会超时，release 照样发生在它还用着的时候。
+         * setEnabled(false) 与 AudioRecord.stop() 正是用来解开这两个阻塞调用的。
+         */
         mRunning = false;
+
         if (mVisualizer != null) {
             try { mVisualizer.setEnabled(false); } catch (Exception ignored) {}
-            mVisualizer.release();
-            mVisualizer = null;
         }
         if (mAudioRecord != null) {
             try { mAudioRecord.stop(); } catch (Exception ignored) {}
-            mAudioRecord.release();
-            mAudioRecord = null;
         }
         if (mMicThread != null) {
             try { mMicThread.join(500); } catch (InterruptedException ignored) {}
             mMicThread = null;
+        }
+        if (mVisualizer != null) {
+            mVisualizer.release();
+            mVisualizer = null;
+        }
+        if (mAudioRecord != null) {
+            mAudioRecord.release();
+            mAudioRecord = null;
         }
     }
 

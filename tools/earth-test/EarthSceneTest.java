@@ -27,6 +27,7 @@ public final class EarthSceneTest {
         testGlobeUvMatchesOriginal();
         testSubsolarLongitude();
         testSiderealDrift();
+        testSkyAnglePrecision();
         testCloudRotation();
         testMoonOrbit();
         testCamerasDistinct();
@@ -154,6 +155,32 @@ public final class EarthSceneTest {
         float drift = Math.abs(day1 - day0);
         if (drift > 180.0f) drift = 360.0f - drift;
         assertEquals("一天漂移角度", 0.9856f, drift, 0.01f);
+    }
+
+    /**
+     * 星空角度必须按 double 精度算出来。
+     *
+     * daysSinceEpoch≈2e4 时 -days*360.9856 ≈ 7.2e6，float 的 ULP 约 0.5° ——
+     * 先在 float 里算再 wrap 的话，星空会被量化成半度一跳。这条用远期的天数
+     * （第 20000 天）把它逼出来。
+     */
+    private static void testSkyAnglePrecision() {
+        double days = 20000.0;
+        double exact = (-days * EarthScene.SIDEREAL_DEG_PER_DAY) % 360.0;
+        if (exact < 0.0) exact += 360.0;
+
+        EarthScene s = new EarthScene();
+        s.setClock(0L, 0, 1, days);
+        assertEquals("第 20000 天的星空角度", (float) exact, s.skyAngleY(), 1.0E-3f);
+
+        // 兑明一下量化误差有多大：float 直接算会偏出多少
+        float naive = (float) (-days * EarthScene.SIDEREAL_DEG_PER_DAY);
+        float naiveWrapped = naive % 360.0f;
+        if (naiveWrapped < 0.0f) naiveWrapped += 360.0f;
+        float drift = Math.abs(naiveWrapped - (float) exact);
+        if (drift > 180.0f) drift = 360.0f - drift;
+        System.out.println("第 20000 天：float 直算偏差 " + drift + "°（应远大于容差，否则这条测试没意义）");
+        assertTrue("float 直算应确实偏出容差(否则测试无效)", drift > 0.01f);
     }
 
     /**

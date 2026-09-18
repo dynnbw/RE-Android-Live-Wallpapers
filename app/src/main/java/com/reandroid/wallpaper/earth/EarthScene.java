@@ -145,7 +145,13 @@ final class EarthScene {
         setMoonAngle(dayOfYear * MOON_DEGREES_PER_DAY);
 
         // 星空：与地球同向，但按恒星日（略快），于是每天西移约 1°（≈4 分钟）
-        mSkyAngleY = wrap((float) (-daysSinceEpoch * SIDEREAL_DEG_PER_DAY));
+        /*
+         * 先在 double 里取模、再转 float。
+         *
+         * daysSinceEpoch≈2e4，乘上 360.9856 ≈ 7.2e6 —— float 在这个量级的 ULP 约 0.5°，
+         * 直接转等于把星空量化成半度一跳（长跑时肉眼可见地"顿"）。
+         */
+        mSkyAngleY = (float) wrap(-daysSinceEpoch * SIDEREAL_DEG_PER_DAY);
     }
 
     /** 太阳直射经度（东经为正）。只由 UTC 时间决定，与时区无关。 */
@@ -213,8 +219,13 @@ final class EarthScene {
     }
 
     private static float wrap(float deg) {
-        deg %= 360.0f;
-        if (deg < 0.0f) deg += 360.0f;
+        return (float) wrap((double) deg);
+    }
+
+    /** 归一到 [0, 360)。角度量大时（如恒星日累计）要在 double 里取模，见 setClock。 */
+    private static double wrap(double deg) {
+        deg %= 360.0;
+        if (deg < 0.0) deg += 360.0;
         return deg;
     }
 
