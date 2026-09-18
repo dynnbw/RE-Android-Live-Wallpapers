@@ -2,7 +2,7 @@
 
 感谢你愿意为 **Reborn Android Live Wallpapers** 贡献代码
 本指南面向**外部贡献者**,覆盖从环境搭建到提交 Pull Request 的完整流程
-架构细节见 [README.md 开发文档](README.md#开发文档)本指南不再重复
+架构细节见 [ARCHITECTURE.md](ARCHITECTURE.md)本指南不再重复
 
 ---
 
@@ -24,24 +24,7 @@
 
 ## 环境与构建
 
-| 组件 | 版本 |
-| --- | --- |
-| Android Studio | 最新稳定版 |
-| JDK | 21 |
-| Android Gradle Plugin / Gradle | 8.7.3 / 8.10 |
-| Android SDK | Platform 35 |
-| Android NDK | 25.2.9519653(固定,仅 Vulkan 壁纸需要) |
-| minSdk / targetSdk | 24 / 35 |
-
-```bash
-# Debug 包
-./gradlew assembleDebug
-
-# Release 包(自动递增版本号)
-./gradlew assembleRelease
-```
-
-Vulkan 壁纸需要 4 个 ABI(`arm64-v8a` / `armeabi-v7a` / `x86_64` / `x86`),native 代码走 [Android.mk](app/src/main/jni/Android.mk)(ndk-build,`preBuild` 阶段自动触发)。**只改 GLES 壁纸不需要 NDK。**
+工具链版本与构建命令见 [ARCHITECTURE.md 构建配置](ARCHITECTURE.md#构建配置)，这里不重复。**只改 GLES 壁纸不需要 NDK。**
 
 `app/src/main/jniLibs/` 下的 16 个 `.so`(4 个 Vulkan 壁纸 × 4 个 ABI)**是刻意纳入版本库的**,不是误提交的构建产物——这样没装 NDK 的贡献者也能直接构建。
 
@@ -64,11 +47,11 @@ app/src/main/
 │   ├── settings/        设置 UI(动态偏好渲染)
 │   ├── weather/         天气数据层
 │   └── wallpaper/       所有壁纸,每壁纸一个子包
-├── assets/{wallpaper}/  每壁纸独立资产(30+ 个)
+├── assets/{wallpaper}/  每壁纸独立资产(35 个)
 └── res/values*/         壁纸名称字符串(13 种语言)
 ```
 
-**插件模型**:应用启动时自动枚举 `assets/*/info.json` 注册壁纸,三层接口:
+**插件模型**:应用启动时自动枚举 `assets/*/info.json` 注册壁纸。从**壁纸作者**的角度看是三层接口(框架侧的接口全集与调度细节见 [ARCHITECTURE.md 核心架构](ARCHITECTURE.md#核心架构)):
 
 1. **Plugin** — `WallpaperPlugin`:元数据(`getId` / `getDisplayName`),入口(`createEngine`)
 2. **Engine** — `BasePluginEngine`:壁纸服务生命周期,唯一抽象方法 `createScene(width, height, context)`
@@ -124,29 +107,7 @@ assets/{id}/
 
 > 图标两种后缀都支持:加载器按 `icon.png` → `icon.jpg` 依次尝试,都没有才用占位图。现有壁纸里多数是 `icon.jpg`。
 
-`info.json` 示例:
-
-```json
-{
-  "label": "@string/wallpaper_silk",
-  "plugin": "com.reandroid.wallpaper.silk.SilkPlugin",
-  "pluginVk": "com.reandroid.wallpaper.silk.SilkVKPlugin",
-  "previewClass": "com.reandroid.wallpaper.silk.SilkGL",
-  "permissions": ["RECORD_AUDIO"],
-  "hidden": false
-}
-```
-
-| 字段 | 用途 |
-| --- | --- |
-| `label` | 壁纸名称,引用 `res/values-*/strings.xml` |
-| `plugin` | 插件类全限定名(必填,自动发现入口) |
-| `pluginVk` | Vulkan 变体的插件类;有它设置页才会出现「使用 Vulkan」开关 |
-| `previewClass` | 设置页顶部实时预览用的 GLESScene 子类 |
-| `permissions` | 运行时请求的权限(需在 AndroidManifest 中已声明) |
-| `hidden` | `true` 时不在设置列表显示,**且构建正式包时不编入**(见下方说明) |
-| `fragment` | 走旧版设置页(不配 `plugin` 时使用) |
-| `useLegacySettings` | `true` 时该壁纸不使用动态偏好界面 |
+`info.json` 的**字段表与用法**见 [ARCHITECTURE.md 的 info.json Schema](ARCHITECTURE.md#infojson-schema)。
 
 **`hidden` 与打包**:标了 `"hidden": true` 的壁纸,`assembleRelease` 时整份资产不会被编入 APK(由 [app/build.gradle](app/build.gradle) 解析各 `info.json` 自动推导,无需改构建脚本);`assembleDebug` 仍会保留,方便继续开发。判定取「纯 debug 构建才保留」,失败方向是安全的。同时请求 debug 与 release(如 `./gradlew assemble`)时按正式包处理并打印提示。
 
@@ -247,13 +208,10 @@ public void setPluginPrefs(SharedPreferences prefs) { ... }
 
 支持五种偏好控件(支持 `dependency` 条件显示)。每个条目的 `title` 就是语言文件里的**键名**;list 的标签按 `{key}_label_{value}` 解析(缺失时回落到 `labels` 数组)。
 
-| type | 控件 | 说明 |
-| --- | --- | --- |
-| `switch` | 开关 | 布尔值 |
-| `seekbar` | 滑块 | `min` / `max` / `default` |
-| `list` | 下拉选择 | `values` + `labels`,标签键为 `{key}_label_{value}` |
-| `color` | 内嵌取色器 | 色块 + 色调/饱和度/亮度滑块,拖动即时写入。`labels` 给滑块标签,**个数决定显示 2 个还是 3 个滑块** |
-| `button` | 按钮 | 不存值;`action` 为 `pickBackground` / `resetBackground`(自定义背景选图与重置) |
+控件的**字段表**见 [ARCHITECTURE.md 的 layout.json Schema](ARCHITECTURE.md#layoutjson-schema)。两条表里没写的:
+
+- `color` 的 `labels` 给的是滑块标签,**个数决定显示 2 个还是 3 个滑块**
+- `button` **不存值**,靠 `action` 触发行为
 
 ```json
 {
