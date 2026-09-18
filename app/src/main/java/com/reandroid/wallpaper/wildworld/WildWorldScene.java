@@ -11,7 +11,8 @@ final class WildWorldScene {
 
     // ---- 常量 ----
 
-    private static final float MIN_DT = 0.2f;
+    /** 单帧 dt 上限（秒）。原来叫 MIN_DT，但它做的是 clamping 到最大值。 */
+    private static final float MAX_DT = 0.2f;
     static final long DINO_DT = 1000;
     static final long PTERO_DT = 2400;
     private static final long GEN_TIME = 4000;
@@ -100,6 +101,12 @@ final class WildWorldScene {
     // 图层数组（上下两层）
     final Layer[] mDay = new Layer[]{new Layer(), new Layer()};
     final Layer[] mNight = new Layer[]{new Layer(), new Layer()};
+    /**
+     * 最远的一层背景。名字 `VCN` 来自原版 MediaTek RenderScript
+     * （`wildworld.rs` 里的 `VCN_DISTANCE` / `VCNLAYER_*`），**不是笔误，别改**：
+     * 它画的是 `ww_layer5.png`，即资产那边的「第 5 层」。
+     * 五层的距离 0.95 / 0.9 / 0.8 / 0.7 / 0.6 递减 = 由远及近，绘制顺序也是由远及近。
+     */
     final Layer[] mVcnLayer = new Layer[]{new Layer(), new Layer()};
     final Layer[] mLayer4 = new Layer[]{new Layer(), new Layer()};
     final Layer[] mLayer3 = new Layer[]{new Layer(), new Layer()};
@@ -166,12 +173,22 @@ final class WildWorldScene {
 
     // ---- 构造方法 ----
 
+    /**
+     * 背景图层与各自的视差距离（离屏幕越"远"的层走得越慢），下标一一对应。
+     * 顺序就是绘制顺序。
+     */
+    private final Layer[][] mBgLayers;
+    private static final float[] BG_LAYER_DISTANCES = {
+            VCN_DISTANCE, LAYER4_DISTANCE, LAYER3_DISTANCE, LAYER2_DISTANCE, LAYER1_DISTANCE
+    };
+
     WildWorldScene() {
         mFireballs = new Fireball[FIREBALL_COUNT];
         for (int i = 0; i < FIREBALL_COUNT; i++) {
             mFireballs[i] = new Fireball();
             mFireballs[i].steps = 0;
         }
+        mBgLayers = new Layer[][]{mVcnLayer, mLayer4, mLayer3, mLayer2, mLayer1};
     }
 
     // ---- 初始化 ----
@@ -468,7 +485,7 @@ final class WildWorldScene {
             mOldTime = mCurTime;
         }
         mDT = (float)(mCurTime - mOldTime) / 1000.0f;
-        if (mDT > MIN_DT) mDT = MIN_DT;
+        if (mDT > MAX_DT) mDT = MAX_DT;
         mOldTime = mCurTime;
 
         // 处理待执行的触摸事件
@@ -546,30 +563,15 @@ final class WildWorldScene {
      * 更新背景图层滚动位置
      */
     private void updateLayers() {
-        float vcnStep = mBgSpeed * mDT * (1 - VCN_DISTANCE);
-        mVcnLayer[UP].x += vcnStep;
-        mVcnLayer[DOWN].x += vcnStep;
-        if (mVcnLayer[UP].x + mXOffset >= mScreenWidth) mVcnLayer[UP].x = -mXOffset;
-
-        float l4Step = mBgSpeed * mDT * (1 - LAYER4_DISTANCE);
-        mLayer4[UP].x += l4Step;
-        mLayer4[DOWN].x += l4Step;
-        if (mLayer4[UP].x + mXOffset >= mScreenWidth) mLayer4[UP].x = -mXOffset;
-
-        float l3Step = mBgSpeed * mDT * (1 - LAYER3_DISTANCE);
-        mLayer3[UP].x += l3Step;
-        mLayer3[DOWN].x += l3Step;
-        if (mLayer3[UP].x + mXOffset >= mScreenWidth) mLayer3[UP].x = -mXOffset;
-
-        float l2Step = mBgSpeed * mDT * (1 - LAYER2_DISTANCE);
-        mLayer2[UP].x += l2Step;
-        mLayer2[DOWN].x += l2Step;
-        if (mLayer2[UP].x + mXOffset >= mScreenWidth) mLayer2[UP].x = -mXOffset;
-
-        float l1Step = mBgSpeed * mDT * (1 - LAYER1_DISTANCE);
-        mLayer1[UP].x += l1Step;
-        mLayer1[DOWN].x += l1Step;
-        if (mLayer1[UP].x + mXOffset >= mScreenWidth) mLayer1[UP].x = -mXOffset;
+        // 五层原本是同一段代码抄五遍，只有「哪个数组 + 哪个距离」不同。
+        // 注意回卷只动 [UP] 那一半：[DOWN] 从不重置，这是原行为，不动它。
+        for (int i = 0; i < mBgLayers.length; i++) {
+            Layer[] pair = mBgLayers[i];
+            float step = mBgSpeed * mDT * (1 - BG_LAYER_DISTANCES[i]);
+            pair[UP].x += step;
+            pair[DOWN].x += step;
+            if (pair[UP].x + mXOffset >= mScreenWidth) pair[UP].x = -mXOffset;
+        }
     }
 
     /**
