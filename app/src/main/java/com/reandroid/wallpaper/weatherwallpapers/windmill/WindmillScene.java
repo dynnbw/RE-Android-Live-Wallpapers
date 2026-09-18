@@ -4,14 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.opengl.Matrix;
 
-import androidx.preference.PreferenceManager;
-
 import com.reandroid.wallpaper.weatherwallpapers.AnimationController;
-import com.reandroid.wallpaper.weatherwallpapers.CloudRenderer;
-import com.reandroid.wallpaper.weatherwallpapers.FogIceRenderer;
-import com.reandroid.wallpaper.weatherwallpapers.PrecipitationRenderer;
-import com.reandroid.wallpaper.weatherwallpapers.SkyRenderer;
-import com.reandroid.wallpaper.weatherwallpapers.ThunderRenderer;
 import com.reandroid.wallpaper.weatherwallpapers.WeatherFlagManager;
 import com.reandroid.wallpaper.weatherwallpapers.WeatherStateManager;
 import com.reandroid.weather.WeatherCondition;
@@ -51,10 +44,8 @@ final class WindmillScene {
     }
 
     void onCreate(Context appContext) {
-        SharedPreferences prefs = mPluginPrefs != null ? mPluginPrefs
-                : appContext != null ? PreferenceManager.getDefaultSharedPreferences(appContext)
-                : null;
-        mWeatherStateManager = new WeatherStateManager(appContext, prefs);
+        // 只认注入的设置（原来未注入时退到应用默认 prefs，会把日出日落缓存写到错误的文件里）
+        mWeatherStateManager = new WeatherStateManager(appContext, mPluginPrefs);
     }
 
     void start(boolean isPreview) {

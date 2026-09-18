@@ -3,9 +3,6 @@ package com.reandroid.wallpaper.grass;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-import androidx.preference.PreferenceManager;
-
-import com.reandroid.settings.WallpaperSettings;
 import com.reandroid.weather.WeatherCondition;
 import com.reandroid.weather.WeatherManager;
 import com.reandroid.weather.WeatherState;
@@ -45,7 +42,9 @@ final class GrassWeatherIntegration {
 
     void onCreate(Context appContext) {
         if (appContext != null && weatherManager == null) {
-            prefs = mPluginPrefs != null ? mPluginPrefs : PreferenceManager.getDefaultSharedPreferences(appContext);
+            // 只认注入的设置。原来在未注入时会退到应用默认 prefs 去读
+            // pref_grass_weather_enabled —— 那是本壁纸自己的键，不该出现在默认 prefs 里。
+            prefs = mPluginPrefs;
             weatherManager = new WeatherManager(appContext, this::onWeatherUpdated);
         }
     }

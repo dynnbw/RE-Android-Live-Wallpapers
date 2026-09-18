@@ -1,6 +1,5 @@
 package com.reandroid.wallpaper.magicsmoke;
 
-import android.content.Context;
 import android.content.SharedPreferences;
 
 /**
@@ -76,12 +75,9 @@ final class MagicSmokeScene {
     long mLastTime;
 
     // Preferences
-    private final Context mContext;
-    private SharedPreferences mPrefs;
     private SharedPreferences mPluginPrefs;
 
-    MagicSmokeScene(Context context) {
-        mContext = context;
+    MagicSmokeScene() {
 
         // Initialize animation state
         for (int i = 0; i < 5; i++) {
@@ -112,12 +108,8 @@ final class MagicSmokeScene {
      * 初始化预设（从 SharedPreferences 加载）
      */
     void init() {
-        if (mPluginPrefs != null) {
-            mPrefs = mPluginPrefs;
-        } else {
-            mPrefs = mContext.getSharedPreferences("magicsmoke", Context.MODE_PRIVATE);
-        }
-        mCurrentPreset = parsePreset(mPrefs.getString("preset", String.valueOf(DEFAULT_PRESET)));
+        mCurrentPreset = parsePreset(mPluginPrefs == null ? String.valueOf(DEFAULT_PRESET)
+                : mPluginPrefs.getString("preset", String.valueOf(DEFAULT_PRESET)));
     }
 
     /**
@@ -176,10 +168,10 @@ final class MagicSmokeScene {
      * @return true 如果预设已更改
      */
     boolean updatePresetIfNeeded() {
-        if (mPrefs == null) {
+        if (mPluginPrefs == null) {
             return false;
         }
-        int preset = parsePreset(mPrefs.getString("preset", String.valueOf(DEFAULT_PRESET)));
+        int preset = parsePreset(mPluginPrefs.getString("preset", String.valueOf(DEFAULT_PRESET)));
         if (preset != mCurrentPreset) {
             mCurrentPreset = preset;
             return true;

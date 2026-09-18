@@ -57,7 +57,7 @@ public class SilkGL extends GLESScene {
     public SilkGL(int width, int height, Context context) {
         super(width, height);
         mContext = context;
-        mScene = new SilkScene(context);
+        mScene = new SilkScene();
 
         // Background quad: positions (-1,1),(1,1),(1,-1),(-1,-1), UV (0,0),(1,0),(1,1),(0,1)
         mQuadPos = createFloatBuffer(new float[]{
@@ -79,7 +79,6 @@ public class SilkGL extends GLESScene {
     @Override
     protected void onCreate() {
         if (mContext == null) return;
-        mScene.ensurePrefs();
         mScene.reloadPrefs();
     }
 

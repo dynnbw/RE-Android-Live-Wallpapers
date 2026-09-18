@@ -58,7 +58,7 @@ public class MagicSmokeGL extends GLESScene {
     public MagicSmokeGL(Context context, int width, int height) {
         super(width, height);
         mContext = context;
-        mScene = new MagicSmokeScene(context);
+        mScene = new MagicSmokeScene();
     }
 
     /** Plugin path: inject host-provided prefs into the scene. */
@@ -129,8 +129,6 @@ public class MagicSmokeGL extends GLESScene {
 
         Log.d(TAG, "Shader programs created successfully");
     }
-
-
 
     private void getUniformLocations() {
         // 5-texture program

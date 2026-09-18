@@ -21,9 +21,6 @@ import android.content.SharedPreferences;
 import android.opengl.Matrix;
 import android.util.Log;
 
-import androidx.preference.PreferenceManager;
-
-import com.reandroid.utils.AssetLoader;
 import com.reandroid.utils.MathUtils;
 import java.util.Random;
 
@@ -38,9 +35,9 @@ final class Galaxy4Scene {
         loadParticleCountsFromPreferences();
     }
 
+    /** 只返回注入的设置；未注入时为 null，调用点各自判空。 */
     private SharedPreferences getPrefs() {
-        if (mPluginPrefs != null) return mPluginPrefs;
-        return PreferenceManager.getDefaultSharedPreferences(getAppContext());
+        return mPluginPrefs;
     }
 
     private static final int DEFAULT_BG_STAR_COUNT = 11000;
@@ -146,27 +143,15 @@ final class Galaxy4Scene {
             return;
         }
 
-        Context appContext = getAppContext();
-        SharedPreferences defaultPrefs = getPrefs();
-        SharedPreferences legacyPrefs = appContext.getSharedPreferences("wallpaper_settings", Context.MODE_PRIVATE);
-
-        if (defaultPrefs.contains("galaxy4_bg_star_count")) {
-            mBgStarCount = defaultPrefs.getInt("galaxy4_bg_star_count", DEFAULT_BG_STAR_COUNT);
-        } else {
-            mBgStarCount = legacyPrefs.getInt("galaxy4_bg_star_count", DEFAULT_BG_STAR_COUNT);
-            if (legacyPrefs.contains("galaxy4_bg_star_count")) {
-                defaultPrefs.edit().putInt("galaxy4_bg_star_count", mBgStarCount).apply();
-            }
+        SharedPreferences prefs = getPrefs();
+        if (prefs == null) {
+            return;
         }
 
-        if (defaultPrefs.contains("galaxy4_space_cloud_count")) {
-            mSpaceCloudCount = defaultPrefs.getInt("galaxy4_space_cloud_count", DEFAULT_SPACE_CLOUD_COUNT);
-        } else {
-            mSpaceCloudCount = legacyPrefs.getInt("galaxy4_space_cloud_count", DEFAULT_SPACE_CLOUD_COUNT);
-            if (legacyPrefs.contains("galaxy4_space_cloud_count")) {
-                defaultPrefs.edit().putInt("galaxy4_space_cloud_count", mSpaceCloudCount).apply();
-            }
-        }
+        // 原来这里还有一段「当前 prefs 没有该键 → 从旧的 "wallpaper_settings" 取值 → 写回」
+        // 的迁移逻辑，已移除：其他壁纸都没有这个回退（详见 GalaxyScene 同处的说明）。
+        mBgStarCount = prefs.getInt("galaxy4_bg_star_count", DEFAULT_BG_STAR_COUNT);
+        mSpaceCloudCount = prefs.getInt("galaxy4_space_cloud_count", DEFAULT_SPACE_CLOUD_COUNT);
 
         mBgStarCount = MathUtils.clamp(mBgStarCount, MIN_BG_STAR_COUNT, MAX_BG_STAR_COUNT);
         mSpaceCloudCount = MathUtils.clamp(mSpaceCloudCount, MIN_SPACE_CLOUD_COUNT, MAX_SPACE_CLOUD_COUNT);
@@ -186,6 +171,9 @@ final class Galaxy4Scene {
         mLastSettingsSyncTime = now;
 
         SharedPreferences defaultPrefs = getPrefs();
+        if (defaultPrefs == null) {
+            return;
+        }
         int prefBgStarCount = MathUtils.clamp(defaultPrefs.getInt("galaxy4_bg_star_count", mBgStarCount),
                 MIN_BG_STAR_COUNT, MAX_BG_STAR_COUNT);
         int prefSpaceCloudCount = MathUtils.clamp(defaultPrefs.getInt("galaxy4_space_cloud_count", mSpaceCloudCount),
@@ -333,17 +321,12 @@ final class Galaxy4Scene {
         return maxStart + (maxStart - maxStop) * ((value - minStart) / (minStop - minStart));
     }
 
-
     private void persistInt(String key, int value) {
-        if (mContext == null) {
+        SharedPreferences prefs = getPrefs();
+        if (prefs == null) {
             return;
         }
-        getPrefs().edit().putInt(key, value).apply();
-    }
-
-    private Context getAppContext() {
-        Context appContext = mContext.getApplicationContext();
-        return appContext != null ? appContext : mContext;
+        prefs.edit().putInt(key, value).apply();
     }
 
     static final class SceneData {

@@ -103,14 +103,11 @@ public final class WaveScene extends AudioVisBase {
 
     @Override
     public void start() {
-        SharedPreferences p;
+        // 重启时重新套用注入的设置。原来这里在未注入时会去读 musicvis2_prefs /
+        // musicvis3_prefs —— 那是插件架构之前的旧文件名，注入既然总会发生，那条路走不到。
         if (mPluginPrefs != null) {
-            p = mPluginPrefs;
-        } else {
-            String pn = (mMode == Mode.PCM) ? "musicvis2_prefs" : "musicvis3_prefs";
-            p = mContext.getSharedPreferences(pn, Context.MODE_PRIVATE);
+            readPrefs(mPluginPrefs);
         }
-        readPrefs(p);
 
         int type = getAudioType();
         int size = getAudioCaptureSize();

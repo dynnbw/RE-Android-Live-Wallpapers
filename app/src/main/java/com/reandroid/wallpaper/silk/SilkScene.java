@@ -1,6 +1,5 @@
 package com.reandroid.wallpaper.silk;
 
-import android.content.Context;
 import android.content.SharedPreferences;
 
 /**
@@ -154,25 +153,12 @@ final class SilkScene {
 
     // ==================== Prefs ====================
 
-    private final Context mContext;
-    private SharedPreferences mPrefs;
     private SharedPreferences mPluginPrefs;
     String mTheme = THEME_SILK;
     float mSpeedMultiplier = 1f;
 
-    SilkScene(Context context) {
-        mContext = context;
-    }
-
-    void ensurePrefs() {
-        if (mPluginPrefs != null) return;
-        if (mPrefs == null && mContext != null) {
-            mPrefs = mContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        }
-    }
-
     SharedPreferences getPrefs() {
-        return mPluginPrefs != null ? mPluginPrefs : mPrefs;
+        return mPluginPrefs;
     }
 
     void setPluginPrefs(SharedPreferences prefs) {

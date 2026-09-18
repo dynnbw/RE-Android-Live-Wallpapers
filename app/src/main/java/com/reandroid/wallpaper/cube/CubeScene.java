@@ -31,7 +31,6 @@ final class CubeScene {
     private static final float FLING_EPSILON = 0.01f;
 
     private final Context mContext;
-    private SharedPreferences mPrefs;
     private SharedPreferences mPluginPrefs;
 
     // 初值是空数组而不是 null：loadShape 失败时也保持空数组，
@@ -89,15 +88,17 @@ final class CubeScene {
         mStartTimeMs = System.currentTimeMillis();
     }
 
+    /**
+     * 只在 setPluginPrefs 之后调用；设置一律由引擎注入，Scene 不自己去读。
+     * （这里原来还有一条 `getSharedPreferences("cube")` 的兜底，但注入打在 CubeGL 上、
+     * 且从不失败，所以那条路径永远走不到 —— 而它读的旧文件名现在也没有任何写入方。）
+     */
     void ensurePrefs() {
-        if (mPluginPrefs == null && mPrefs == null && mContext != null) {
-            mPrefs = mContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        }
         refreshFlags();
     }
 
     SharedPreferences getPrefs() {
-        return mPluginPrefs != null ? mPluginPrefs : mPrefs;
+        return mPluginPrefs;
     }
 
     public void setPluginPrefs(SharedPreferences prefs) {

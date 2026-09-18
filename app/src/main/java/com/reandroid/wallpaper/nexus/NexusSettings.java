@@ -1,11 +1,8 @@
 package com.reandroid.wallpaper.nexus;
 
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.util.Log;
-
-import androidx.preference.PreferenceManager;
 
 final class NexusSettings {
     private static final int DEFAULT_MAX_PULSES = 20;
@@ -57,10 +54,8 @@ final class NexusSettings {
     }
 
     static NexusSettings load(Resources resources, SharedPreferences pluginPrefs) {
-        Context ctx = com.reandroid.gles.GLESWallpaper.getAppContext();
-        SharedPreferences prefs = pluginPrefs != null
-                ? pluginPrefs
-                : (ctx != null ? PreferenceManager.getDefaultSharedPreferences(ctx) : null);
+        // 只认注入的设置；getInt / getFloat 等辅助方法都已判空，传 null 会返回各自默认值
+        SharedPreferences prefs = pluginPrefs;
 
         int maxPulses = getInt(prefs, "nexus_max_pulses", DEFAULT_MAX_PULSES);
         int maxExtras = getInt(prefs, "nexus_max_extras", DEFAULT_MAX_EXTRAS);

@@ -2,8 +2,6 @@ package com.reandroid.wallpaper.microbes;
 
 import android.content.SharedPreferences;
 
-import androidx.preference.PreferenceManager;
-
 import com.reandroid.gles.GLESWallpaper;
 
 import java.util.Random;
@@ -462,8 +460,10 @@ final class MicrobesScene {
             if (GLESWallpaper.getAppContext() == null) {
                 return;
             }
-            SharedPreferences prefs = mPluginPrefs != null ? mPluginPrefs
-                    : PreferenceManager.getDefaultSharedPreferences(GLESWallpaper.getAppContext());
+            SharedPreferences prefs = mPluginPrefs;
+            if (prefs == null) {
+                return;
+            }
             int speedPercent = prefs.getInt("microbes_lifecycle_speed", 100);
             speedPercent = Math.max(50, Math.min(200, speedPercent));
             lifecycleSpeedScale = speedPercent / 100.0f;

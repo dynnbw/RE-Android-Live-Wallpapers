@@ -49,18 +49,13 @@ public class PhaseBeamGL extends GLESScene {
     public PhaseBeamGL(int width, int height, Context context) {
         super(width, height);
         mContext = context.getApplicationContext();
-        mScene = new PhaseBeamScene(context);
+        mScene = new PhaseBeamScene();
     }
 
     @Override
     protected void onCreate() {
         if (mResources == null) return;
         mScene.init(mResources);
-    }
-
-    @Override
-    public void start() {
-        mScene.ensurePrefs();
     }
 
     @Override
@@ -294,6 +289,5 @@ public class PhaseBeamGL extends GLESScene {
         bitmap.recycle();
         return textureId;
     }
-
 
 }

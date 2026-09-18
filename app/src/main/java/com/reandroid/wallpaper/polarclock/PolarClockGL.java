@@ -43,7 +43,6 @@ import static org.xmlpull.v1.XmlPullParser.START_TAG;
  * 负责时钟的GL初始化、绘制逻辑、偏好设置读取、调色板加载等
  */
 public class PolarClockGL extends GLESScene {
-    static final String SHARED_PREFS_NAME = "polar_clock_settings";
     static final String PREF_SHOW_SECONDS = "show_seconds";
     static final String PREF_VARIABLE_LINE_WIDTH = "variable_line_width";
     static final String PREF_PALETTE = "palette";
@@ -71,7 +70,6 @@ public class PolarClockGL extends GLESScene {
     private ClockPalette mPalette;
 
     // 共享偏好设置实例，用于读取时钟配置
-    private SharedPreferences mPrefs;
     private SharedPreferences mPluginPrefs;
     // 是否显示秒环
     private boolean mShowSeconds = true;
@@ -132,16 +130,10 @@ public class PolarClockGL extends GLESScene {
             mPalette = CyclingClockPalette.getFallback();
         }
 
-        // 获取应用上下文，读取共享偏好设置
-        Context ctx = GLESWallpaper.getAppContext();
-        if (ctx != null) {
-            if (mPluginPrefs != null) {
-                mPrefs = mPluginPrefs;
-            } else {
-                mPrefs = ctx.getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE);
-            }
-            // 初始化偏好设置对应的变量
-            reloadFromPrefs(mPrefs);
+        // 初始化偏好设置对应的变量。设置一律由引擎注入（原来未注入时会去读
+        // "polar_clock_settings" —— 那是插件架构之前的旧文件名，现在没有写入方）
+        if (mPluginPrefs != null) {
+            reloadFromPrefs(mPluginPrefs);
         }
 
         // 初始化日历，设置为当前时区和当前时间
@@ -160,8 +152,8 @@ public class PolarClockGL extends GLESScene {
      */
     @Override
     public void start() {
-        if (mPrefs != null) {
-            reloadFromPrefs(mPrefs);
+        if (mPluginPrefs != null) {
+            reloadFromPrefs(mPluginPrefs);
         }
     }
 

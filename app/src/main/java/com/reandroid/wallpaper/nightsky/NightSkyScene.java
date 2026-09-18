@@ -6,8 +6,6 @@ import android.opengl.Matrix;
 import android.view.Surface;
 import android.view.WindowManager;
 
-import androidx.preference.PreferenceManager;
-
 import com.reandroid.gles.GLESWallpaper;
 
 import java.nio.ByteBuffer;
@@ -91,7 +89,8 @@ final class NightSkyScene {
         try {
             Context context = GLESWallpaper.getAppContext();
             if (context == null) return;
-            SharedPreferences prefs = mPluginPrefs != null ? mPluginPrefs : PreferenceManager.getDefaultSharedPreferences(context);
+            SharedPreferences prefs = mPluginPrefs;
+            if (prefs == null) return;
             int focalMm = prefs.getInt(PREF_CAMERA_FOCAL_MM, DEFAULT_CAMERA_FOCAL_MM);
             focalMm = Math.max(MIN_CAMERA_FOCAL_MM, Math.min(MAX_CAMERA_FOCAL_MM, focalMm));
             float newFov = focalMmToFovDeg(focalMm);

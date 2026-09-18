@@ -21,8 +21,6 @@ import android.content.SharedPreferences;
 import android.opengl.Matrix;
 import android.util.Log;
 
-import androidx.preference.PreferenceManager;
-
 import com.reandroid.utils.MathUtils;
 import java.util.Random;
 
@@ -38,10 +36,9 @@ final class GalaxyScene {
         loadSettingsFromPreferences();
     }
 
+    /** 只返回注入的设置；未注入时为 null，调用点各自判空。 */
     private SharedPreferences getPrefs() {
-        if (mPluginPrefs != null) return mPluginPrefs;
-        Context appContext = getAppContext();
-        return PreferenceManager.getDefaultSharedPreferences(appContext);
+        return mPluginPrefs;
     }
 
     private static final int DEFAULT_PARTICLE_COUNT = 12000;
@@ -432,38 +429,16 @@ final class GalaxyScene {
         if (mContext == null) {
             return;
         }
-        Context appContext = getAppContext();
-        SharedPreferences defaultPrefs = getPrefs();
-        SharedPreferences legacyPrefs = appContext.getSharedPreferences("wallpaper_settings", Context.MODE_PRIVATE);
-
-        if (defaultPrefs.contains("galaxy_particle_count")) {
-            mParticleCount = defaultPrefs.getInt("galaxy_particle_count", DEFAULT_PARTICLE_COUNT);
-        } else {
-            mParticleCount = legacyPrefs.getInt("galaxy_particle_count", DEFAULT_PARTICLE_COUNT);
-            if (legacyPrefs.contains("galaxy_particle_count")) {
-                defaultPrefs.edit().putInt("galaxy_particle_count", mParticleCount).apply();
-            }
+        SharedPreferences prefs = getPrefs();
+        if (prefs == null) {
+            return;
         }
 
-        if (defaultPrefs.contains("galaxy_particle_alpha")) {
-            mParticleAlphaPercent = defaultPrefs.getInt("galaxy_particle_alpha", DEFAULT_PARTICLE_ALPHA_PERCENT);
-        } else {
-            mParticleAlphaPercent = legacyPrefs.getInt("galaxy_particle_alpha", DEFAULT_PARTICLE_ALPHA_PERCENT);
-            if (legacyPrefs.contains("galaxy_particle_alpha")) {
-                defaultPrefs.edit().putInt("galaxy_particle_alpha", mParticleAlphaPercent).apply();
-            }
-        }
+        mParticleCount = prefs.getInt("galaxy_particle_count", DEFAULT_PARTICLE_COUNT);
+        mParticleAlphaPercent = prefs.getInt("galaxy_particle_alpha", DEFAULT_PARTICLE_ALPHA_PERCENT);
+        mUsePreciseCalculation = prefs.getBoolean("galaxy_precise_calc", false);
 
-        if (defaultPrefs.contains("galaxy_precise_calc")) {
-            mUsePreciseCalculation = defaultPrefs.getBoolean("galaxy_precise_calc", false);
-        } else {
-            mUsePreciseCalculation = legacyPrefs.getBoolean("galaxy_precise_calc", false);
-            if (legacyPrefs.contains("galaxy_precise_calc")) {
-                defaultPrefs.edit().putBoolean("galaxy_precise_calc", mUsePreciseCalculation).apply();
-            }
-        }
-
-        loadPreciseShapeSettings(defaultPrefs, legacyPrefs);
+        loadPreciseShapeSettings(prefs);
         mParticleCount = MathUtils.clamp(mParticleCount, MIN_PARTICLE_COUNT, MAX_PARTICLE_COUNT);
         mParticleAlphaPercent = MathUtils.clamp(mParticleAlphaPercent, MIN_PARTICLE_ALPHA_PERCENT, MAX_PARTICLE_ALPHA_PERCENT);
         mSceneData.particleAlphaMultiplier = mParticleAlphaPercent / 100.0f;
@@ -473,77 +448,34 @@ final class GalaxyScene {
         requestParticleRebuild();
     }
 
-    private void loadPreciseShapeSettings(SharedPreferences defaultPrefs, SharedPreferences legacyPrefs) {
-        SharedPreferences.Editor migrateEditor = defaultPrefs.edit();
-
-        mArmCount = MathUtils.clamp(readIntWithLegacy(defaultPrefs, legacyPrefs, KEY_ARM_COUNT,
-                DEFAULT_ARM_COUNT, migrateEditor), MIN_ARM_COUNT, MAX_ARM_COUNT);
-        mArmOffset = MathUtils.clamp(readScaledFloatWithLegacy(defaultPrefs, legacyPrefs, KEY_ARM_OFFSET,
-                DEFAULT_ARM_OFFSET, 1000.0f, migrateEditor), MIN_ARM_OFFSET, MAX_ARM_OFFSET);
-        mPitchAngleDeg = MathUtils.clamp(readScaledFloatWithLegacy(defaultPrefs, legacyPrefs, KEY_PITCH_ANGLE_DEG,
-                DEFAULT_PITCH_ANGLE_DEG, 10.0f, migrateEditor), MIN_PITCH_ANGLE_DEG, MAX_PITCH_ANGLE_DEG);
-        mForbiddenRadiusKpc = MathUtils.clamp(readScaledFloatWithLegacy(defaultPrefs, legacyPrefs, KEY_FORBIDDEN_RADIUS,
-                DEFAULT_FORBIDDEN_RADIUS_KPC, 100.0f, migrateEditor), MIN_FORBIDDEN_RADIUS_KPC,
-                MAX_FORBIDDEN_RADIUS_KPC);
-        mPreciseInnerScatter = MathUtils.clamp(readScaledFloatWithLegacy(defaultPrefs, legacyPrefs, KEY_INNER_SCATTER,
-                DEFAULT_PRECISE_INNER_SCATTER, 100.0f, migrateEditor), MIN_SCATTER, MAX_SCATTER);
-        mPreciseOuterScatter = MathUtils.clamp(readScaledFloatWithLegacy(defaultPrefs, legacyPrefs, KEY_OUTER_SCATTER,
-                DEFAULT_PRECISE_OUTER_SCATTER, 100.0f, migrateEditor), MIN_SCATTER, MAX_SCATTER);
-        mPreciseTurbulence = MathUtils.clamp(readScaledFloatWithLegacy(defaultPrefs, legacyPrefs, KEY_TURBULENCE,
-                DEFAULT_PRECISE_TURBULENCE, 100.0f, migrateEditor), MIN_TURBULENCE, MAX_TURBULENCE);
-        mEllipseRatio = MathUtils.clamp(readScaledFloatWithLegacy(defaultPrefs, legacyPrefs, KEY_ELLIPSE_RATIO,
-                DEFAULT_ELLIPSE_RATIO, 1000.0f, migrateEditor), MIN_ELLIPSE_RATIO, MAX_ELLIPSE_RATIO);
-        mEllipseTwist = MathUtils.clamp(readEllipseTwistWithLegacy(defaultPrefs, legacyPrefs, migrateEditor),
+    /**
+     * 读取精确形状参数。原来这里还有一套「当前 prefs 没有该键 → 从旧的
+     * "wallpaper_settings" 取值 → 再写回当前 prefs」的迁移逻辑（含三个辅助方法），
+     * 已整体移除：其他壁纸都没有这个回退，Galaxy 单独留着只会让读设置的行为不一致。
+     * 缩放读写的方式（整型存、除以 scale 取）保持不变。
+     */
+    private void loadPreciseShapeSettings(SharedPreferences prefs) {
+        mArmCount = MathUtils.clamp(prefs.getInt(KEY_ARM_COUNT, DEFAULT_ARM_COUNT), MIN_ARM_COUNT, MAX_ARM_COUNT);
+        mArmOffset = MathUtils.clamp(prefs.getInt(KEY_ARM_OFFSET,
+                Math.round(DEFAULT_ARM_OFFSET * 1000.0f)) / 1000.0f, MIN_ARM_OFFSET, MAX_ARM_OFFSET);
+        mPitchAngleDeg = MathUtils.clamp(prefs.getInt(KEY_PITCH_ANGLE_DEG,
+                Math.round(DEFAULT_PITCH_ANGLE_DEG * 10.0f)) / 10.0f, MIN_PITCH_ANGLE_DEG, MAX_PITCH_ANGLE_DEG);
+        mForbiddenRadiusKpc = MathUtils.clamp(prefs.getInt(KEY_FORBIDDEN_RADIUS,
+                Math.round(DEFAULT_FORBIDDEN_RADIUS_KPC * 100.0f)) / 100.0f,
+                MIN_FORBIDDEN_RADIUS_KPC, MAX_FORBIDDEN_RADIUS_KPC);
+        mPreciseInnerScatter = MathUtils.clamp(prefs.getInt(KEY_INNER_SCATTER,
+                Math.round(DEFAULT_PRECISE_INNER_SCATTER * 100.0f)) / 100.0f, MIN_SCATTER, MAX_SCATTER);
+        mPreciseOuterScatter = MathUtils.clamp(prefs.getInt(KEY_OUTER_SCATTER,
+                Math.round(DEFAULT_PRECISE_OUTER_SCATTER * 100.0f)) / 100.0f, MIN_SCATTER, MAX_SCATTER);
+        mPreciseTurbulence = MathUtils.clamp(prefs.getInt(KEY_TURBULENCE,
+                Math.round(DEFAULT_PRECISE_TURBULENCE * 100.0f)) / 100.0f, MIN_TURBULENCE, MAX_TURBULENCE);
+        mEllipseRatio = MathUtils.clamp(prefs.getInt(KEY_ELLIPSE_RATIO,
+                Math.round(DEFAULT_ELLIPSE_RATIO * 1000.0f)) / 1000.0f, MIN_ELLIPSE_RATIO, MAX_ELLIPSE_RATIO);
+        mEllipseTwist = MathUtils.clamp(
+                decodeEllipseTwist(prefs.getInt(KEY_ELLIPSE_TWIST, encodeEllipseTwist(DEFAULT_ELLIPSE_TWIST))),
                 MIN_ELLIPSE_TWIST, MAX_ELLIPSE_TWIST);
 
         mPitchAngleRad = mPitchAngleDeg * PI / 180.0f;
-        migrateEditor.apply();
-    }
-
-    private int readIntWithLegacy(SharedPreferences defaultPrefs, SharedPreferences legacyPrefs,
-            String key, int fallback, SharedPreferences.Editor migrateEditor) {
-        if (defaultPrefs.contains(key)) {
-            return defaultPrefs.getInt(key, fallback);
-        }
-        if (legacyPrefs.contains(key)) {
-            int value = legacyPrefs.getInt(key, fallback);
-            migrateEditor.putInt(key, value);
-            return value;
-        }
-        return fallback;
-    }
-
-    private float readScaledFloatWithLegacy(SharedPreferences defaultPrefs, SharedPreferences legacyPrefs,
-            String key, float fallback, float scale, SharedPreferences.Editor migrateEditor) {
-        if (defaultPrefs.contains(key)) {
-            return defaultPrefs.getInt(key, Math.round(fallback * scale)) / scale;
-        }
-        if (legacyPrefs.contains(key)) {
-            Object legacyValue = legacyPrefs.getAll().get(key);
-            float legacyFloat = legacyValue instanceof Number
-                    ? ((Number) legacyValue).floatValue()
-                    : fallback;
-            migrateEditor.putInt(key, Math.round(legacyFloat * scale));
-            return legacyFloat;
-        }
-        return fallback;
-    }
-
-    private float readEllipseTwistWithLegacy(SharedPreferences defaultPrefs, SharedPreferences legacyPrefs,
-            SharedPreferences.Editor migrateEditor) {
-        if (defaultPrefs.contains(KEY_ELLIPSE_TWIST)) {
-            int raw = defaultPrefs.getInt(KEY_ELLIPSE_TWIST, encodeEllipseTwist(DEFAULT_ELLIPSE_TWIST));
-            return decodeEllipseTwist(raw);
-        }
-        if (legacyPrefs.contains(KEY_ELLIPSE_TWIST)) {
-            Object legacyValue = legacyPrefs.getAll().get(KEY_ELLIPSE_TWIST);
-            float legacyFloat = legacyValue instanceof Number
-                    ? ((Number) legacyValue).floatValue()
-                    : DEFAULT_ELLIPSE_TWIST;
-            migrateEditor.putInt(KEY_ELLIPSE_TWIST, encodeEllipseTwist(legacyFloat));
-            return legacyFloat;
-        }
-        return DEFAULT_ELLIPSE_TWIST;
     }
 
     private void syncSettingsFromPreferencesIfNeeded(long now) {
@@ -556,6 +488,9 @@ final class GalaxyScene {
         mLastSettingsSyncTime = now;
 
         SharedPreferences defaultPrefs = getPrefs();
+        if (defaultPrefs == null) {
+            return;
+        }
         int prefParticleCount = MathUtils.clamp(defaultPrefs.getInt("galaxy_particle_count", mParticleCount),
                 MIN_PARTICLE_COUNT, MAX_PARTICLE_COUNT);
         int prefParticleAlpha = MathUtils.clamp(defaultPrefs.getInt("galaxy_particle_alpha", mParticleAlphaPercent),
@@ -721,7 +656,6 @@ final class GalaxyScene {
         return maxStart + (maxStart - maxStop) * ((value - minStart) / (minStop - minStart));
     }
 
-
     private int encodeEllipseTwist(float twist) {
         return Math.round(MathUtils.clamp(twist, MIN_ELLIPSE_TWIST, MAX_ELLIPSE_TWIST) * 1000.0f)
                 + ELLIPSE_TWIST_STORAGE_OFFSET;
@@ -735,26 +669,23 @@ final class GalaxyScene {
     }
 
     private void persistInt(String key, int value) {
-        if (mContext == null) {
+        SharedPreferences prefs = getPrefs();
+        if (prefs == null) {
             return;
         }
-        getPrefs().edit().putInt(key, value).apply();
+        prefs.edit().putInt(key, value).apply();
     }
 
     private void persistBoolean(String key, boolean value) {
-        if (mContext == null) {
+        SharedPreferences prefs = getPrefs();
+        if (prefs == null) {
             return;
         }
-        getPrefs().edit().putBoolean(key, value).apply();
+        prefs.edit().putBoolean(key, value).apply();
     }
 
     private void persistScaledFloat(String key, float value, float scale) {
         persistInt(key, Math.round(value * scale));
-    }
-
-    private Context getAppContext() {
-        Context appContext = mContext.getApplicationContext();
-        return appContext != null ? appContext : mContext;
     }
 
     static final class SceneData {

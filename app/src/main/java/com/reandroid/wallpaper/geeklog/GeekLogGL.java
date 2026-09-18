@@ -318,9 +318,9 @@ public class GeekLogGL extends GLESScene {
 
     // ---- 初始化辅助 ----
 
+    /** 只返回注入的设置；调用点已判空（见 readPrefs）。 */
     private SharedPreferences prefs() {
-        return mPluginPrefs != null ? mPluginPrefs
-                : mContext.getSharedPreferences("plugin_geeklog", Context.MODE_PRIVATE);
+        return mPluginPrefs;
     }
 
     private void readPrefs() {

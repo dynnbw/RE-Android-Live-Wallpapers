@@ -76,13 +76,10 @@ final class CircleScene extends AudioVisBase {
             mAudioCapture = new AudioCapture(AudioCapture.TYPE_FFT, 512);
         }
         mAudioCapture.start();
-        SharedPreferences p;
+        // 设置一律由引擎注入（原兜底读的 "musicvis6_prefs" 是插件架构之前的旧名字）
         if (mPluginPrefs != null) {
-            p = mPluginPrefs;
-        } else {
-            p = mContext.getSharedPreferences("musicvis6_prefs", Context.MODE_PRIVATE);
+            readPrefs(mPluginPrefs);
         }
-        readPrefs(p);
     }
 
     @Override

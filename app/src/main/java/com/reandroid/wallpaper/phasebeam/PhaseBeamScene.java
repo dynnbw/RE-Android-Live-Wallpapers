@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Color;
-import android.util.Log;
 
 import com.reandroid.plugin.ColorPrefs;
 import com.reandroid.utils.MathUtils;
@@ -36,8 +35,6 @@ final class PhaseBeamScene {
     private static final float YZ_PARTICLE_SPEED = 0.00011f;
     private static final float YZ_BEAM_SPEED = 0.000080f;
 
-    private final Context mContext;
-    private SharedPreferences mPrefs;
     private SharedPreferences mPluginPrefs;
 
     float mScaleSize = 1.0f;
@@ -93,8 +90,7 @@ final class PhaseBeamScene {
 
     private final Random mRandom = new Random();
 
-    PhaseBeamScene(Context context) {
-        mContext = context;
+    PhaseBeamScene() {
         allocateArrays();
     }
 
@@ -103,7 +99,6 @@ final class PhaseBeamScene {
      * @param resources 资源管理器
      */
     void init(Resources resources) {
-        ensurePrefs();
         mScaleSize = resources.getDisplayMetrics().densityDpi / 240.0f;
         mCanScroll = resources.getBoolean(R.bool.scrolling_enabled);
         readPrefs(resources);
@@ -122,15 +117,8 @@ final class PhaseBeamScene {
         mDirtyTexture = true;
     }
 
-    void ensurePrefs() {
-        if (mPluginPrefs != null) return;
-        if (mPrefs == null && mContext != null) {
-            mPrefs = mContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        }
-    }
-
     SharedPreferences getPrefs() {
-        return mPluginPrefs != null ? mPluginPrefs : mPrefs;
+        return mPluginPrefs;
     }
 
     public void setPluginPrefs(SharedPreferences prefs) {

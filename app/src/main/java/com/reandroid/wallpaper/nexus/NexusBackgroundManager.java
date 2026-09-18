@@ -9,8 +9,6 @@ import android.opengl.GLES20;
 import android.opengl.GLUtils;
 import android.util.Log;
 
-import androidx.preference.PreferenceManager;
-
 import com.reandroid.utils.AssetLoader;
 
 final class NexusBackgroundManager {
@@ -43,9 +41,11 @@ final class NexusBackgroundManager {
             return currentTexture;
         }
 
-        SharedPreferences prefs = mPluginPrefs != null ? mPluginPrefs
-                : PreferenceManager.getDefaultSharedPreferences(context);
-        String preset = prefs.getString("nexus_background_preset", "pyramid_background");
+        // 只认注入的设置；未注入时用缺省 preset，而不是去读应用默认 prefs
+        SharedPreferences prefs = mPluginPrefs;
+        String preset = prefs != null
+                ? prefs.getString("nexus_background_preset", "pyramid_background")
+                : "pyramid_background";
         String customUri = getCustomBackgroundUri(context);
 
         boolean useCustom = customUri != null;
@@ -97,9 +97,10 @@ final class NexusBackgroundManager {
             }
         }
 
-        SharedPreferences prefs = mPluginPrefs != null ? mPluginPrefs
-                : PreferenceManager.getDefaultSharedPreferences(context);
-        String preset = prefs.getString("nexus_background_preset", "pyramid_background");
+        SharedPreferences prefs = mPluginPrefs;
+        String preset = prefs != null
+                ? prefs.getString("nexus_background_preset", "pyramid_background")
+                : "pyramid_background";
         lastBackgroundPreset = preset;
         return loadBackgroundAssetTexture(context, resolvePresetAssetPath(preset));
     }

@@ -17,7 +17,6 @@ import java.io.InputStream;
 final class DeepSeaScene {
 
     DeepSeaContainer mContainer;
-    private SharedPreferences mPrefs;
     private SharedPreferences mPluginPrefs;
     Bitmap mCachedBackground;
 
@@ -49,15 +48,7 @@ final class DeepSeaScene {
             mContainer.setBackgroundImagePath(getCachePath(context));
         }
 
-        if (mPrefs == null) {
-            if (mPluginPrefs != null) {
-                mPrefs = mPluginPrefs;
-            } else {
-                mPrefs = context.getSharedPreferences(DeepSeaGL.PREFS_NAME, Context.MODE_PRIVATE);
-            }
-        }
-
-        applyAllPreferences(mPrefs);
+        applyAllPreferences(mPluginPrefs);
     }
 
     void release() {
@@ -65,7 +56,6 @@ final class DeepSeaScene {
             mContainer.remove();
             mContainer = null;
         }
-        mPrefs = null;
         recycleCachedBackground();
     }
 

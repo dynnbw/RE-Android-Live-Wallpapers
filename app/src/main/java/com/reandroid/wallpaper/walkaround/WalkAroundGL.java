@@ -12,14 +12,11 @@ import android.view.Surface;
 import android.view.WindowManager;
 
 import androidx.core.content.ContextCompat;
-import androidx.preference.PreferenceManager;
 
 import com.reandroid.utils.AssetLoader;
 import com.reandroid.gles.GLESScene;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.util.List;
 
@@ -187,7 +184,8 @@ public class WalkAroundGL extends GLESScene {
     }
 
     private void updatePrefs() {
-        SharedPreferences prefs = mPluginPrefs != null ? mPluginPrefs : PreferenceManager.getDefaultSharedPreferences(mContext);
+        SharedPreferences prefs = mPluginPrefs;
+        if (prefs == null) return;
         boolean useFront = prefs.getBoolean("walkaround_use_front", false);
         boolean mirrorFront = prefs.getBoolean("walkaround_mirror_front", true);
         if (!mHasPrefInit || useFront != mUseFront || mirrorFront != mMirrorFront) {
@@ -370,6 +368,5 @@ public class WalkAroundGL extends GLESScene {
         GLES20.glTexParameteri(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
         return id;
     }
-
 
 }
