@@ -1,5 +1,7 @@
 # 架构文档
 
+>  **语言**：[English](ARCHITECTURE-en.md)
+
 > 本文是 [README](README.md) 开发文档的展开。用户向的安装、配置与常见问题见 README；
 > 贡献代码要遵守的约定见 [CONTRIBUTING.md](CONTRIBUTING.md)。
 

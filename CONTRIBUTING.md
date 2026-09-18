@@ -1,5 +1,7 @@
 # 贡献指南
 
+>  **语言**：[English](CONTRIBUTING-en.md)
+
 感谢你愿意为 **Reborn Android Live Wallpapers** 贡献代码
 本指南面向**外部贡献者**,覆盖从环境搭建到提交 Pull Request 的完整流程
 架构细节见 [ARCHITECTURE.md](ARCHITECTURE.md)本指南不再重复

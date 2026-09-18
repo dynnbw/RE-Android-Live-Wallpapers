@@ -1,5 +1,7 @@
 # Architecture
 
+>  **Language**: [简体中文](ARCHITECTURE.md)
+
 > This is the expanded developer documentation from the [README](README-en.md).
 > For installation, configuration and FAQ see the README; for the rules to follow when
 > contributing see [CONTRIBUTING.md](CONTRIBUTING.md) (Chinese).
