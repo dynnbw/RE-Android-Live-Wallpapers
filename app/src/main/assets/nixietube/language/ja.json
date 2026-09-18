@@ -1,0 +1,8 @@
+{
+  "nixie_audio_enabled": "オーディオ連動",
+  "nixie_audio_source": "オーディオ入力",
+  "nixie_audio_source_label_0": "システム音声",
+  "nixie_audio_source_label_1": "マイク",
+  "nixie_threshold_db": "トリガーしきい値（dBFS）",
+  "nixie_decay_speed": "減衰速度"
+}

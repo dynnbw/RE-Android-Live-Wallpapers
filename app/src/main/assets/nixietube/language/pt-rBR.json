@@ -1,0 +1,8 @@
+{
+  "nixie_audio_enabled": "Reativo ao áudio",
+  "nixie_audio_source": "Fonte de áudio",
+  "nixie_audio_source_label_0": "Áudio do sistema",
+  "nixie_audio_source_label_1": "Microfone",
+  "nixie_threshold_db": "Limite de disparo (dBFS)",
+  "nixie_decay_speed": "Velocidade de decaimento"
+}

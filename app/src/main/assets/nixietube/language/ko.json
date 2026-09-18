@@ -1,0 +1,8 @@
+{
+  "nixie_audio_enabled": "오디오 반응",
+  "nixie_audio_source": "오디오 소스",
+  "nixie_audio_source_label_0": "시스템 오디오",
+  "nixie_audio_source_label_1": "마이크",
+  "nixie_threshold_db": "트리거 임계값 (dBFS)",
+  "nixie_decay_speed": "감쇠 속도"
+}

@@ -1,0 +1,8 @@
+{
+  "nixie_audio_enabled": "Реакция на звук",
+  "nixie_audio_source": "Источник звука",
+  "nixie_audio_source_label_0": "Системный звук",
+  "nixie_audio_source_label_1": "Микрофон",
+  "nixie_threshold_db": "Порог срабатывания (dBFS)",
+  "nixie_decay_speed": "Скорость затухания"
+}

@@ -1,0 +1,8 @@
+{
+  "nixie_audio_enabled": "音頻反應",
+  "nixie_audio_source": "音頻來源",
+  "nixie_audio_source_label_0": "系統音頻",
+  "nixie_audio_source_label_1": "麥克風",
+  "nixie_threshold_db": "觸發閾值（dBFS）",
+  "nixie_decay_speed": "衰減速度"
+}

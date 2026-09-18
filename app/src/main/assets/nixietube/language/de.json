@@ -1,0 +1,8 @@
+{
+  "nixie_audio_enabled": "Audio-reaktiv",
+  "nixie_audio_source": "Audioquelle",
+  "nixie_audio_source_label_0": "Systemaudio",
+  "nixie_audio_source_label_1": "Mikrofon",
+  "nixie_threshold_db": "Auslöseschwelle (dBFS)",
+  "nixie_decay_speed": "Abklinggeschwindigkeit"
+}
