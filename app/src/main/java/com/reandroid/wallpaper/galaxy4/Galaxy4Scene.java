@@ -69,6 +69,8 @@ final class Galaxy4Scene {
     private boolean mParticleBuffersDirty = true;
     private boolean mDynamicParticlesDirty = false;
     private boolean mSkipParticleAdvanceOnNextUpdate = true;
+    /** 上一帧的时间戳，用来算帧尺度（见 consumeFrameScale）。 */
+    private long mLastFrameMs;
 
     Galaxy4Scene(int width, int height, Context context) {
         mWidth = width;
@@ -79,6 +81,10 @@ final class Galaxy4Scene {
 
     void update(long timeMs) {
         syncSettingsFromPreferencesIfNeeded(timeMs);
+
+        // 先算帧尺度再走后面的分支：早退的分支不更新 mLastFrameMs 的话，
+        // 下一次就会把两帧的时间一次补上，云和星星会跳一下。
+        float frameScale = consumeFrameScale(timeMs);
 
         if (mParticleDataDirty || mSceneData.spaceClouds == null) {
             rebuildParticleData();
@@ -91,8 +97,29 @@ final class Galaxy4Scene {
             return;
         }
 
-        advanceParticles();
+        advanceParticles(frameScale);
         mDynamicParticlesDirty = true;
+    }
+
+    /**
+     * 本帧相当于多少个「60fps 帧」。与 GalaxyScene 的同名方法同理：
+     * 云与星空的推进原本是每帧加一个固定量，转速会跟着用户设置的帧率走
+     * （`global_frame_rate`，默认 60），调到 30 或 120 时快慢就变了。
+     * 60fps 下本尺度为 1，与原观感逐帧一致。
+     */
+    private float consumeFrameScale(long timeMs) {
+        if (mLastFrameMs == 0L) {
+            mLastFrameMs = timeMs;
+            return 0f;
+        }
+        float dt = (timeMs - mLastFrameMs) * 0.001f;
+        mLastFrameMs = timeMs;
+        if (dt < 0f) {
+            dt = 0f;
+        } else if (dt > 0.1f) {
+            dt = 0.1f;
+        }
+        return dt * 60f;
     }
 
     void resize(int width, int height) {
@@ -291,9 +318,9 @@ final class Galaxy4Scene {
         Matrix.translateM(mSceneData.mvpMatrix, 0, rotMatrix, 0, 0, 0, 1);
     }
 
-    private void advanceParticles() {
-        float cloudDelta = -0.065f * mRotationSpeedMultiplier;
-        float starDelta = -0.007f * mRotationSpeedMultiplier;
+    private void advanceParticles(float frameScale) {
+        float cloudDelta = -0.065f * mRotationSpeedMultiplier * frameScale;
+        float starDelta = -0.007f * mRotationSpeedMultiplier * frameScale;
         for (int i = 0; i < mSpaceCloudCount; i++) {
             mSceneData.spaceClouds[i * 3] += cloudDelta;
         }

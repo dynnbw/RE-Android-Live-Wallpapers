@@ -129,6 +129,8 @@ final class GalaxyScene {
     private volatile boolean mParticleBuffersDirty = true;
     private volatile boolean mParticlePositionsDirty = false;
     private boolean mSkipParticleAdvanceOnNextUpdate = true;
+    /** 上一帧的时间戳，用来算帧尺度（见 consumeFrameScale）。 */
+    private long mLastFrameMs;
 
     GalaxyScene(int width, int height, Context context) {
         mWidth = width;
@@ -139,6 +141,10 @@ final class GalaxyScene {
 
     void update(long timeMs) {
         syncSettingsFromPreferencesIfNeeded(timeMs);
+
+        // 先算帧尺度再走后面的分支：早退的分支不更新 mLastFrameMs 的话，
+        // 下一次就会把两帧的时间一次补上，粒子会跳一下。
+        float frameScale = consumeFrameScale(timeMs);
 
         if (mParticleDataDirty || mSceneData.particlePositions == null) {
             rebuildParticleData();
@@ -151,8 +157,33 @@ final class GalaxyScene {
             return;
         }
 
-        updateParticles();
+        updateParticles(frameScale);
         mParticlePositionsDirty = true;
+    }
+
+    /**
+     * 本帧相当于多少个「60fps 帧」。
+     *
+     * <p>粒子的推进原本是每帧加一个固定量，于是**转速跟着帧率走** ——
+     * 而帧率是用户可设的全局项（`global_frame_rate`，默认 60），
+     * 调到 30 或 120 时星系的旋转速度就跟着减半/翻倍。
+     * 乘上本尺度后转速只由时间决定；60fps 下尺度为 1，与原观感逐帧一致。
+     *
+     * <p>首帧返回 0（没有上一帧可减）；dt 上限 0.1s，防止卡顿或切后台回来时跳一大步。
+     */
+    private float consumeFrameScale(long timeMs) {
+        if (mLastFrameMs == 0L) {
+            mLastFrameMs = timeMs;
+            return 0f;
+        }
+        float dt = (timeMs - mLastFrameMs) * 0.001f;
+        mLastFrameMs = timeMs;
+        if (dt < 0f) {
+            dt = 0f;
+        } else if (dt > 0.1f) {
+            dt = 0.1f;
+        }
+        return dt * 60f;
     }
 
     SceneData getSceneData() {
@@ -395,12 +426,12 @@ final class GalaxyScene {
         Matrix.multiplyMM(mProjMatrix, 0, mTmpMatrixB, 0, mTmpMatrixA, 0);
     }
 
-    private void updateParticles() {
+    private void updateParticles(float frameScale) {
         if (mSceneData.particlePositions == null || mSceneData.particleSpeeds == null) {
             return;
         }
         for (int i = 0; i < mParticleCount; i++) {
-            mSceneData.particlePositions[i * 3] += mSceneData.particleSpeeds[i];
+            mSceneData.particlePositions[i * 3] += mSceneData.particleSpeeds[i] * frameScale;
         }
     }
 
