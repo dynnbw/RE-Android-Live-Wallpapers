@@ -103,6 +103,7 @@ final class MagicSmokeScene {
      * Plugin path: use host-provided prefs instead of hardcoded "magicsmoke" name.
      */
     void setPluginPrefs(SharedPreferences p) {
+        if (p == null) return;   // 注入方可能拿到 null，原来会直接 NPE
         mPluginPrefs = p;
         mSpeedMultiplier = p.getInt("magicsmoke_speed", 100) / 100.0f;
     }

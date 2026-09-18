@@ -232,6 +232,7 @@ public class NoiseFieldGL extends GLESScene {
     }
 
     private void drawDots() {
+        if (mDotTexture == 0) return;   // 纹理没就绪时绑 0 会采样到未定义内容
         GLES20.glUseProgram(mDotProgram);
         GLES20.glUniformMatrix4fv(mDotMvpLoc, 1, false, mMvp, 0);
         GLES20.glUniform1f(mDotScaleLoc, mScaleSize * mSizeMultiplier);

@@ -34,11 +34,13 @@ final class CubeScene {
     private SharedPreferences mPrefs;
     private SharedPreferences mPluginPrefs;
 
-    ThreeDPoint[] mOriginalPoints;
-    ThreeDPoint[] mRotatedPoints;
-    ThreeDLine[] mLines;
-    float[] mProjectedX;
-    float[] mProjectedY;
+    // 初值是空数组而不是 null：loadShape 失败时也保持空数组，
+    // 于是 rotateAndProject / drawLines 不需要额外的空值判断。
+    ThreeDPoint[] mOriginalPoints = new ThreeDPoint[0];
+    ThreeDPoint[] mRotatedPoints = new ThreeDPoint[0];
+    ThreeDLine[] mLines = new ThreeDLine[0];
+    float[] mProjectedX = new float[0];
+    float[] mProjectedY = new float[0];
 
     float mXOffset = 0.5f;
     float mScaleSize = 1.0f;
@@ -128,9 +130,29 @@ final class CubeScene {
         mDragging = false;
     }
 
+    /**
+     * 载入形状。资源缺失或 CSV 格式不对时**不抛异常**，退化成空形状。
+     *
+     * <p>调用点在 {@code CubeGL.onCreate()} 里，异常抛出去等于整个壁纸起不来。
+     * 五个数组都置空（长度 0），下游的 rotateAndProject / drawLines 照常跑，只是画不出东西。
+     * mShapeName 只在成功后记下，失败后还允许重试。
+     */
     void loadShape(String shapeName) {
         if (shapeName == null || shapeName.equals(mShapeName)) return;
-        mShapeName = shapeName;
+        try {
+            loadShapeOrThrow(shapeName);
+            mShapeName = shapeName;
+        } catch (Exception e) {
+            android.util.Log.w("CubeScene", "Failed to load cube shape: " + shapeName, e);
+            mOriginalPoints = new ThreeDPoint[0];
+            mRotatedPoints = new ThreeDPoint[0];
+            mProjectedX = new float[0];
+            mProjectedY = new float[0];
+            mLines = new ThreeDLine[0];
+        }
+    }
+
+    private void loadShapeOrThrow(String shapeName) {
 
         String[] p = com.reandroid.utils.AssetLoader.readText(mContext,
                 "cube/data/cube_" + shapeName + "_points.csv").trim().split("\\s+");

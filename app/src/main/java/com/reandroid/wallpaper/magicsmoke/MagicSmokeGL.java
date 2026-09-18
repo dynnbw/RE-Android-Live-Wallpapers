@@ -393,11 +393,13 @@ public class MagicSmokeGL extends GLESScene {
     }
 
     private void deleteTextures() {
-        if (mTextures[0] != 0) {
-            GLES20.glDeleteTextures(5, mTextures, 0);
-            for (int i = 0; i < mTextures.length; i++) {
-                mTextures[i] = 0;
-            }
+        /*
+         * 无条件删。原来以 mTextures[0] != 0 为前提，若第 0 张加载失败而其余成功，
+         * 整批都不会被删除（泄漏）。名字为 0 的条目 GL 会静默忽略，所以无条件调用是安全的。
+         */
+        GLES20.glDeleteTextures(mTextures.length, mTextures, 0);
+        for (int i = 0; i < mTextures.length; i++) {
+            mTextures[i] = 0;
         }
     }
 }

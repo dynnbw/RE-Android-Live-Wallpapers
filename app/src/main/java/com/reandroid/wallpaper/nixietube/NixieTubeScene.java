@@ -78,7 +78,12 @@ final class NixieTubeScene {
     private void readPrefs() {
         if (mPrefs == null) return;
         mAudioThresholdDb = mPrefs.getInt("nixie_threshold_db", -50);
-        mAudioSource = Integer.parseInt(mPrefs.getString("nixie_audio_source", "0"));
+        // prefs 被外部写入非数字（备份恢复、手改）时 parseInt 会抛，直接用默认值
+        try {
+            mAudioSource = Integer.parseInt(mPrefs.getString("nixie_audio_source", "0"));
+        } catch (NumberFormatException e) {
+            mAudioSource = 0;
+        }
         mAudioEnabled = mPrefs.getBoolean("nixie_audio_enabled", true);
     }
 
