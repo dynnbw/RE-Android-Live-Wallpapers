@@ -43,23 +43,10 @@ import static org.xmlpull.v1.XmlPullParser.START_TAG;
  * 负责时钟的GL初始化、绘制逻辑、偏好设置读取、调色板加载等
  */
 public class PolarClockGL extends GLESScene {
-    static final String PREF_SHOW_SECONDS = "show_seconds";
-    static final String PREF_VARIABLE_LINE_WIDTH = "variable_line_width";
-    static final String PREF_PALETTE = "palette";
 
     private static final String TAG = "PolarClockGL";
 
     private final Context mContext;
-
-    // 时钟环的厚度常量（单位：像素）
-    private static final float SMALL_RING_THICKNESS = 8.0f;    // 小环厚度
-    private static final float MEDIUM_RING_THICKNESS = 16.0f;  // 中环厚度
-    private static final float LARGE_RING_THICKNESS = 32.0f;   // 大环厚度
-    private static final float DEFAULT_RING_THICKNESS = 24.0f; // 默认环厚度
-
-    // 时钟环之间的间隙常量（单位：像素）
-    private static final float SMALL_GAP = 14.0f;  // 小间隙
-    private static final float LARGE_GAP = 38.0f;  // 大间隙
 
     // 时钟环端点圆弧的分段数（越多越平滑）
     private static final int CAP_SEGMENTS = 16;
@@ -69,12 +56,11 @@ public class PolarClockGL extends GLESScene {
     // 当前使用的调色板
     private ClockPalette mPalette;
 
+    // ---- 场景逻辑层（非 GL）：环的布局与角度 ----
+    private final PolarClockScene mScene = new PolarClockScene();
+
     // 共享偏好设置实例，用于读取时钟配置
     private SharedPreferences mPluginPrefs;
-    // 是否显示秒环
-    private boolean mShowSeconds = true;
-    // 是否启用可变线宽（不同环使用不同厚度）
-    private boolean mVariableLineWidth = true;
 
     // 用于获取当前时间的日历实例
     private Time mCalendar;
@@ -253,56 +239,36 @@ public class PolarClockGL extends GLESScene {
         mCalendar.set(timeMs);
         mCalendar.normalize(false);
 
-        // 计算时钟环的基础尺寸
-        float size = Math.min(mWidth, mHeight) * 0.5f - DEFAULT_RING_THICKNESS;
-        float lastRingThickness = DEFAULT_RING_THICKNESS;
+        // 日期字段交给 Scene 去算角度与半径：它不能碰 android.text.format.Time，
+        // 所以由这边取出字段填进去。
+        PolarClockScene.DateFields d = mScene.dateFields();
+        d.second = mCalendar.second;
+        d.minute = mCalendar.minute;
+        d.hour = mCalendar.hour;
+        d.monthDay = mCalendar.monthDay;
+        d.maxMonthDay = mCalendar.getActualMaximum(Time.MONTH_DAY);
+        d.month = mCalendar.month;
 
-        // 1. 绘制秒环（如果启用）
-        if (mShowSeconds) {
-            float angle = (float) (timeMs % 60000L) / 60000.0f; // 秒角度（0~1）
-            setColor(mPalette.getSecondColor(angle));          // 设置秒环颜色
-            // 可变线宽模式下使用小环厚度
-            if (mVariableLineWidth) {
-                lastRingThickness = SMALL_RING_THICKNESS;
-            }
-            drawRingArc(size, lastRingThickness, angle);        // 绘制秒环圆弧
+        mScene.layout(mWidth, mHeight, timeMs);
+        for (int i = 0; i < mScene.ringCount(); i++) {
+            PolarClockScene.Ring ring = mScene.ringAt(i);
+            setColor(colorForRing(ring));
+            drawRingArc(ring.radius, ring.thickness, ring.angle);
         }
+    }
 
-        // 2. 绘制分环
-        size -= (SMALL_GAP + lastRingThickness);                // 调整分环半径（减去秒环的厚度和间隙）
-        float angleMinutes = ((mCalendar.minute * 60.0f + mCalendar.second) % 3600) / 3600.0f;
-        setColor(mPalette.getMinuteColor(angleMinutes));
-        if (mVariableLineWidth) {
-            lastRingThickness = MEDIUM_RING_THICKNESS;
+    /**
+     * 环 → 颜色。查询留在 GL 侧：调色板类用了 {@code android.graphics.Color} 与
+     * XmlResourceParser，不是纯类，进不了 Scene。
+     */
+    private int colorForRing(PolarClockScene.Ring ring) {
+        switch (ring.id) {
+            case PolarClockScene.RING_MINUTES: return mPalette.getMinuteColor(ring.angle);
+            case PolarClockScene.RING_HOURS:   return mPalette.getHourColor(ring.angle);
+            case PolarClockScene.RING_DAYS:    return mPalette.getDayColor(ring.angle);
+            case PolarClockScene.RING_MONTHS:  return mPalette.getMonthColor(ring.angle);
+            default:                           return mPalette.getSecondColor(ring.angle);
         }
-        drawRingArc(size, lastRingThickness, angleMinutes);
-
-        // 3. 绘制小时环
-        size -= (SMALL_GAP + lastRingThickness);
-        float angleHours = ((mCalendar.hour * 60.0f + mCalendar.minute) % 1440) / 1440.0f;
-        setColor(mPalette.getHourColor(angleHours));
-        if (mVariableLineWidth) {
-            lastRingThickness = LARGE_RING_THICKNESS;
-        }
-        drawRingArc(size, lastRingThickness, angleHours);
-
-        // 4. 绘制日期环
-        size -= (LARGE_GAP + lastRingThickness);
-        float angleDays = (mCalendar.monthDay - 1) / (float) (mCalendar.getActualMaximum(Time.MONTH_DAY) - 1);
-        setColor(mPalette.getDayColor(angleDays));
-        if (mVariableLineWidth) {
-            lastRingThickness = MEDIUM_RING_THICKNESS;
-        }
-        drawRingArc(size, lastRingThickness, angleDays);
-
-        // 5. 绘制月份环
-        size -= (SMALL_GAP + lastRingThickness);
-        float angleMonths = (mCalendar.month) / 11.0f; // 月份0~11，转为0~1的比例
-        setColor(mPalette.getMonthColor(angleMonths));
-        if (mVariableLineWidth) {
-            lastRingThickness = LARGE_RING_THICKNESS;
-        }
-        drawRingArc(size, lastRingThickness, angleMonths);
     }
 
     /**
@@ -310,17 +276,14 @@ public class PolarClockGL extends GLESScene {
      * @param prefs 共享偏好实例
      */
     private void reloadFromPrefs(SharedPreferences prefs) {
+        if (prefs == null) return;
         // 如果调色板未加载，先加载
         if (mPalettes.isEmpty()) {
             loadPalettes();
         }
-        // 更新“显示秒环”设置
-        mShowSeconds = prefs.getBoolean(PREF_SHOW_SECONDS, true);
-        // 更新“可变线宽”设置
-        mVariableLineWidth = prefs.getBoolean(PREF_VARIABLE_LINE_WIDTH, true);
-        // 更新“调色板”设置
-        String paletteId = prefs.getString(PREF_PALETTE, "");
-        ClockPalette pal = mPalettes.get(paletteId);
+        // 显示秒环 / 可变线宽 / 调色板 id 由 Scene 读取
+        mScene.setPluginPrefs(prefs);
+        ClockPalette pal = mPalettes.get(mScene.paletteId);
         if (pal != null) {
             mPalette = pal;
         } else if (mPalette == null) {
