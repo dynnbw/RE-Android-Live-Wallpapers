@@ -190,9 +190,13 @@ final class SilkScene {
 
     /**
      * Advance animation state and fill vertex arrays (exact port of CSilk::fillVertexArray).
-     * dtEff is the clamped frame delta (seconds) already scaled by the speed preference.
+     *
+     * dt is the clamped frame delta in seconds. The speed preference is applied here rather
+     * than by the caller, so the Scene owns its whole time base -- a caller that pre-scaled dt
+     * would make the speed setting untestable without going through the GL layer.
      */
-    void update(float dtEff) {
+    void update(float dt) {
+        float dtEff = dt * mSpeedMultiplier;
         for (int r = 0; r < RIBBON_COUNT; r++) {
             RibbonConfig c = RIBBONS[r];
             float[] pos = mPositions[r];

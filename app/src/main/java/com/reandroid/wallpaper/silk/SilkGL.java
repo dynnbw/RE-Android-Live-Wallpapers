@@ -202,8 +202,8 @@ public class SilkGL extends GLESScene {
 
         float dt = mLastFrameMs == 0 ? 0.016f : (timeMs - mLastFrameMs) / 1000f;
         mLastFrameMs = timeMs;
-        float dtEff = Math.min(dt, 0.1f) * mScene.mSpeedMultiplier;
-        mScene.update(dtEff);
+        // 只钳制上限；速度倍率由 Scene 自己乘（见 SilkScene.update）
+        mScene.update(Math.min(dt, 0.1f));
 
         // Theme changed in prefs → reload textures on the GL thread
         if (!mScene.mTheme.equals(mLoadedTheme)) {
