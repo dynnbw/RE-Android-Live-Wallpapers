@@ -153,8 +153,11 @@ public class NoiseFieldGL extends GLESScene {
         updateParticleBuffers();
     }
 
+    /** 编译失败过就不再重试：否则每帧都要重读 assets、重编 4 个着色器。 */
+    private boolean mGLFailed;
+
     private void initGLIfNeeded() {
-        if (mInitialized || mResources == null) return;
+        if (mInitialized || mGLFailed || mResources == null) return;
 
         GLES20.glClearColor(0f, 0f, 0f, 1f);
         GLES20.glDisable(GLES20.GL_DEPTH_TEST);
@@ -169,6 +172,7 @@ public class NoiseFieldGL extends GLESScene {
         mDotProgram = createProgram(dotVs, dotFs);
         if (mBgProgram == 0 || mDotProgram == 0) {
             Log.e(TAG, "Shader program creation failed");
+            mGLFailed = true;   // 记下来，别每帧重试
             return;
         }
 
