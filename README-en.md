@@ -241,9 +241,11 @@ Located at `assets/{pluginId}/info.json`:
 | `label` | ✓ | Wallpaper display name (can reference `@string/`) |
 | `plugin` | ✓ | GLES plugin fully-qualified class name |
 | `pluginVk` | | Vulkan plugin fully-qualified class name (when present, VK toggle appears in settings) |
-| `previewClass` | | GL class for real-time preview in settings (recommended for better UX) |
+| `previewClass` | | Class for the real-time preview in settings — a GL class, or a Scene class (vis2/vis3 point straight at their Scene) |
 | `permissions` | | Runtime permission list, API constant names |
-| `useLegacySettings` | | `true` to use a standalone settings Activity (PolarClock only) |
+| `hidden` | | `true` hides it from the settings list, and `assembleRelease` leaves the assets out of the APK |
+| `fragment` | | Fragment class for the legacy settings screen (used when `plugin` is absent) |
+| `useLegacySettings` | | `true` skips the plugin settings path and uses `fragment` instead. **No wallpaper sets this today** (PolarClock did once, and has since moved to the plugin path) |
 
 ### layout.json Schema
 
@@ -271,7 +273,7 @@ Located at `assets/{pluginId}/layout.json`:
 
 | Field | Applies To | Description |
 | --- | --- | --- |
-| `type` | All | `switch` / `seekbar` / `list` / `button` |
+| `type` | All | `switch` / `seekbar` / `list` / `color` / `button` |
 | `key` | All | SharedPreferences key name |
 | `title` | All | Language JSON lookup key |
 | `summary` | All | Language JSON lookup key (optional) |
@@ -307,16 +309,16 @@ com.reandroid
 
 ```mermaid
 graph TD
-    WS[ProxyWallpaperService<br/>Single entry point, 30 wallpapers]
+    WS[ProxyWallpaperService<br/>Single entry point, 35 wallpapers]
 
-    WS -->|26 pure GLES| GLW[BasePluginEngine<br/>+ GLESScene]
-    WS -->|3 VK toggle| VKW[BaseVKPluginEngine<br/>+ VK Native]
+    WS -->|31 pure GLES| GLW[BasePluginEngine<br/>+ GLESScene]
+    WS -->|4 VK toggle| VKW[BaseVKPluginEngine<br/>+ VK Native]
 
     GLW -->|creates| GLS[GLESScene]
-    GLS -->|21| SPLIT[Scene/GL separation<br/>Scene pure logic + GL pure render]
-    GLS -->|3| MONO[GL monolithic<br/>HoloSpiral, PolarClock, WalkAround]
+    GLS -->|29| SPLIT[Scene/GL separation<br/>Scene pure logic + GL pure render]
+    GLS -->|1| MONO[GL monolithic<br/>WalkAround]
     GLS -->|4 Scene| MV[MusicVis Scene<br/>Wave, Vu, Many, Circle]
-    GLS -->|5 GL| MVGL[MusicVis GL<br/>WaveGL, VuGL, ManyGL, CircleGL]
+    GLS -->|4 GL| MVGL[MusicVis GL<br/>WaveGL, VuGL, ManyGL, CircleGL]
 
     VKW -->|reuses| REUSE[Scene classes from<br/>same-name GL wallpaper]
     VKW -->|JNI| NATIVE[NDK C++ Vulkan render]
@@ -324,11 +326,11 @@ graph TD
 
 ### Scene/GL Separation Pattern
 
-21 wallpapers adopt Scene (pure logic) + GL (pure rendering) separation:
+Almost every wallpaper uses Scene (pure logic) + GL (pure rendering) separation — 33 Scene classes today. The one that does not is `walkaround`: its logic is Camera API plumbing, so moving it into a Scene would still not run on the JVM:
 
 - **Scene class**: `package-private final class`, handles physics, animation state, entity management — zero Android/GL imports
 - **GL class**: `public class extends GLESScene`, handles shader compilation, texture loading, draw calls — no business logic
-- **Mat4**: Pure Java matrix math (`orthoM`, `frustumM`, `translateM`, `rotateM`, `multiplyMM`), replaces `android.opengl.Matrix` — this is the key that allows Scene classes to maintain zero Android dependencies
+- **Mat4**: Pure Java matrix math (`orthoM`, `frustumM`, `translateM`, `rotateM`, `multiplyMM`) — the same operations as `android.opengl.Matrix` but **not an Android class**, so a Scene that uses it compiles and runs on the JVM for unit tests. Five files use Mat4 today; **ten Scene classes still use `android.opengl.Matrix`** and therefore cannot run on the JVM. Prefer Mat4 in new Scenes
 
 ```mermaid
 flowchart LR
@@ -346,11 +348,11 @@ flowchart LR
     SCENE -- getSceneData<br/>immutable snapshot --> GL
 ```
 
-21 Scene/GL separated wallpapers: Aurora1, Aurora2, BlueSea, Cube, DeepSea, Fall, Fireworks, Forest, Galaxy, Galaxy4, GeekLog, Grass, MagicSmoke, Microbes, Nexus, NightSky, NoiseField, Ocean, PhaseBeam, WildWorld, Windmill
+29 Scene/GL separated wallpapers: Aurora1, Aurora2, BlueSea, CosmicFlow, Cube, DeepSea, Droid, Earth, Fall, Fireworks, Forest, Galaxy, Galaxy4, GeekLog, Grass, HoloSpiral, LuminousDots, MagicSmoke, Microbes, Nexus, NightSky, NixieTube, NoiseField, Ocean, PhaseBeam, PolarClock, Silk, WildWorld, Windmill
 
 4 MusicVis Scene classes shared by 5 plugins: WaveScene (vis2 FFT + vis3 PCM), VuScene (vis4), ManyScene (vis5 → WaveScene + VuScene combo), CircleScene (vis6)
 
-3 GL monolithic wallpapers: HoloSpiral (spiral math), PolarClock (palette system), WalkAround (camera passthrough — no extractable logic)
+1 GL monolithic wallpaper: WalkAround (camera passthrough — no extractable logic)
 
 ### Preference Injection
 
@@ -493,9 +495,9 @@ app/src/main/
 │   ├── settings/          Settings UI
 │   ├── weather/           Weather data layer
 │   ├── update/            Update system
-│   └── wallpaper/         All wallpapers (35 Plugin + 35 Engine + 27 Scene + 30 GL)
+│   └── wallpaper/         All wallpapers (Plugin + Engine + GL each, most also a Scene)
 ├── assets/
-│   ├── {wallpaper}/        Per-wallpaper asset directories (30 total)
+│   ├── {wallpaper}/        Per-wallpaper asset directories (35 total)
 │   │   ├── drawable/        Texture images
 │   │   ├── shaders/GLES/    GLSL shaders
 │   │   ├── data/            CSV mesh/vertex data
@@ -508,11 +510,11 @@ app/src/main/
 │   ├── xml/               5 XML config files
 │   ├── values/            Strings (13 languages) / themes / config.xml
 │   ├── values-night/      Dark theme
-│   ├── layout/            Settings page layouts (8 files)
+│   ├── layout/            Settings page layouts
 │   ├── drawable/          Weather icons / launcher icons
-│   └── menu/              2 menu files
-├── jni/                   Vulkan NDK C++ source (4 files + Android.mk)
-├── jniLibs/               Vulkan prebuilt .so (4 architectures × 3 = 12 files)
+│   └── menu/              Menus
+├── jni/                   Vulkan NDK C++ source + Android.mk
+├── jniLibs/               Vulkan prebuilt .so (4 wallpapers × 4 architectures = 16)
 └── shaders/               Vulkan GLSL shader sources (compiled to SPIR-V at build time)
 ```
 

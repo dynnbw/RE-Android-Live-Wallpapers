@@ -233,9 +233,11 @@ WallpaperPluginHost      → 宿主机服务：getSharedPreferences() / getConte
 | `label` | ✔ | 壁纸显示名称（可 `@string/` 引用） |
 | `plugin` | ✔ | GLES 插件类全限定名 |
 | `pluginVk` | | Vulkan 插件类全限定名（有此字段时设置页显示 VK 开关） |
-| `previewClass` | | 设置页实时预览的 GL 类（建议填写，提升体验） |
+| `previewClass` | | 设置页实时预览的 GL 类，也可以是 Scene 类（vis2/vis3 就是直接指向 Scene） |
 | `permissions` | | 运行时权限列表，API 常量名 |
-| `useLegacySettings` | | `true` 时使用独立设置 Activity（仅 PolarClock） |
+| `hidden` | | `true` 时不在设置列表显示，且 `assembleRelease` 不把该资产编入 APK |
+| `fragment` | | 旧版设置页的 Fragment 类（不配 `plugin` 时使用） |
+| `useLegacySettings` | | `true` 时不走插件设置路径，改用 `fragment`。**当前没有壁纸使用**（PolarClock 早年用过，已迁到插件路径） |
 
 ### layout.json Schema
 
@@ -263,7 +265,7 @@ WallpaperPluginHost      → 宿主机服务：getSharedPreferences() / getConte
 
 | 字段 | 适用类型 | 说明 |
 | --- | --- | --- |
-| `type` | 全部 | `switch` / `seekbar` / `list` / `button` |
+| `type` | 全部 | `switch` / `seekbar` / `list` / `color` / `button` |
 | `key` | 全部 | SharedPreferences 键名 |
 | `title` | 全部 | language JSON lookup key |
 | `summary` | 全部 | language JSON lookup key（可选） |
@@ -299,16 +301,16 @@ com.reandroid
 
 ```mermaid
 graph TD
-    WS[ProxyWallpaperService<br/>单一入口 30 壁纸]
+    WS[ProxyWallpaperService<br/>单一入口 35 壁纸]
 
-    WS -->|26 个纯 GLES| GLW[BasePluginEngine<br/>+ GLESScene]
+    WS -->|31 个纯 GLES| GLW[BasePluginEngine<br/>+ GLESScene]
     WS -->|4 个 toggle VK| VKW[BaseVKPluginEngine<br/>+ VK Native]
 
     GLW -->|创建| GLS[GLESScene]
-    GLS -->|21 个| SPLIT[Scene/GL 分离<br/>Scene 纯逻辑 + GL 纯渲染]
-    GLS -->|3 个| MONO[GL 单体<br/>HoloSpiral, PolarClock, WalkAround]
+    GLS -->|29 个| SPLIT[Scene/GL 分离<br/>Scene 纯逻辑 + GL 纯渲染]
+    GLS -->|1 个| MONO[GL 单体<br/>WalkAround]
     GLS -->|4 个 Scene| MV[MusicVis Scene<br/>Wave, Vu, Many, Circle]
-    GLS -->|5 个 GL| MVGL[MusicVis GL<br/>WaveGL, VuGL, ManyGL, CircleGL]
+    GLS -->|4 个 GL| MVGL[MusicVis GL<br/>WaveGL, VuGL, ManyGL, CircleGL]
 
     VKW -->|复用| REUSE[同名 GL 壁纸的 Scene 类]
     VKW -->|JNI| NATIVE[NDK C++ Vulkan 渲染]
@@ -316,11 +318,11 @@ graph TD
 
 ### Scene/GL 分离模式
 
-21 个壁纸采用 Scene（纯逻辑）+ GL（纯渲染）分离：
+绝大多数壁纸采用 Scene（纯逻辑）+ GL（纯渲染）分离，现有 33 个 Scene 类（唯一没有独立 Scene 的是 `walkaround`，它的逻辑本身就是 Camera API 管道，拆出去也跑不了 JVM 测试）：
 
 - **Scene 类**：`package-private final class`，负责物理模拟、动画状态、实体管理，零 Android/GL 导入
 - **GL 类**：`public class extends GLESScene`，负责 shader 编译、纹理加载、绘制调用，不包含业务逻辑
-- **Mat4**：纯 Java 矩阵运算（`orthoM`、`frustumM`、`translateM`、`rotateM`、`multiplyMM`），替代 `android.opengl.Matrix`，使 Scene 类保持零 Android 依赖
+- **Mat4**：纯 Java 矩阵运算（`orthoM`、`frustumM`、`translateM`、`rotateM`、`multiplyMM`），作用与 `android.opengl.Matrix` 相同但**不是 Android 类** —— 用它的 Scene 可以在 JVM 上直接编译运行、写单元测试。目前 5 个文件用 Mat4，**另有 10 个 Scene 仍在用 `android.opengl.Matrix`**（它们因此无法在 JVM 上跑）。新写的 Scene 建议用 Mat4
 
 ```mermaid
 flowchart LR
@@ -338,11 +340,11 @@ flowchart LR
     SCENE -- getSceneData<br/>不可变数据快照 --> GL
 ```
 
-21 个 Scene/GL 分离壁纸：Aurora1、Aurora2、BlueSea、Cube、DeepSea、Fall、Fireworks、Forest、Galaxy、Galaxy4、GeekLog、Grass、MagicSmoke、Microbes、Nexus、NightSky、NoiseField、Ocean、PhaseBeam、WildWorld、Windmill
+29 个 Scene/GL 分离壁纸：Aurora1、Aurora2、BlueSea、CosmicFlow、Cube、DeepSea、Droid、Earth、Fall、Fireworks、Forest、Galaxy、Galaxy4、GeekLog、Grass、HoloSpiral、LuminousDots、MagicSmoke、Microbes、Nexus、NightSky、NixieTube、NoiseField、Ocean、PhaseBeam、PolarClock、Silk、WildWorld、Windmill
 
 4 个 MusicVis Scene 类供 5 个插件共享：WaveScene（vis2 FFT + vis3 PCM）、VuScene（vis4）、ManyScene（vis5 → WaveScene + VuScene 组合）、CircleScene（vis6）
 
-3 个 GL 单体壁纸：HoloSpiral（螺旋数学）、PolarClock（调色板系统）、WalkAround（相机直通 — 无可提取逻辑）
+1 个 GL 单体壁纸：WalkAround（相机直通 — 无可提取逻辑）
 
 ### 预置注入
 
@@ -485,9 +487,9 @@ app/src/main/
 │   ├── settings/          设置 UI
 │   ├── weather/           天气数据层
 │   ├── update/            更新系统
-│   └── wallpaper/         所有壁纸（35 Plugin + 35 Engine + 27 Scene + 30 GL）
+│   └── wallpaper/         所有壁纸（每壁纸 Plugin + Engine + GL，多数另有 Scene）
 ├── assets/
-│   ├── {wallpaper}/        每个壁纸独立资产（30 个）
+│   ├── {wallpaper}/        每个壁纸独立资产（35 个）
 │   │   ├── drawable/        纹理图片
 │   │   ├── shaders/GLES/    GLSL 着色器
 │   │   ├── data/            CSV 网格/顶点数据
@@ -500,11 +502,11 @@ app/src/main/
 │   ├── xml/               5 个 XML 配置
 │   ├── values/            字符串（13 种语言）/ 主题 / config.xml
 │   ├── values-night/      暗色主题
-│   ├── layout/            设置页布局（8 个）
+│   ├── layout/            设置页布局
 │   ├── drawable/          天气图标 / 启动图标
-│   └── menu/              2 个菜单
-├── jni/                   Vulkan NDK C++ 源码（4 个文件 + Android.mk）
-├── jniLibs/               Vulkan 预编译 .so（4 架构 × 3 = 12 个）
+│   └── menu/              菜单
+├── jni/                   Vulkan NDK C++ 源码 + Android.mk
+├── jniLibs/               Vulkan 预编译 .so（4 壁纸 × 4 架构 = 16 个）
 └── shaders/               Vulkan GLSL 着色器源码（构建时编译为 SPIR-V）
 ```
 
