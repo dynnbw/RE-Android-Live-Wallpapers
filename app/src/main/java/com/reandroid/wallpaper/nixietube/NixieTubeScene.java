@@ -83,8 +83,14 @@ final class NixieTubeScene {
     }
 
     void startAudio() {
+        /*
+         * 先停再判断。原来 `if (!mAudioEnabled) return;` 写在 stopAudio() 前面，
+         * 于是用户在设置里关掉音频开关时，readPrefs() 把 mAudioEnabled 读成 false 之后
+         * startAudio() 直接返回 —— 之前那个 AudioSource 没人停，后台继续录音。
+         * 开启时行为不变（依然是先停再起，用来换音源/拿权限）。
+         */
+        stopAudio();
         if (!mAudioEnabled) return;
-        stopAudio(); // restart to pick up source changes or permission grants
         mAudioSourceObj = new NixieTubeAudioSource(this::onAudioLevel, mAudioSource);
         mAudioSourceObj.start();
     }

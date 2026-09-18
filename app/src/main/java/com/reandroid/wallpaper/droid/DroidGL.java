@@ -336,6 +336,12 @@ public class DroidGL extends GLESScene implements SensorEventListener {
         if (p == 0) {
             return 0;
         }
+        /*
+         * 先恢复 limit 再写。绘制那边设过 limit(floats)，而 put 的长度受 remaining
+         * (= limit - position) 限制 —— 精灵数比上一帧多时就会 BufferOverflowException。
+         * 缓冲容量等于 mBatchScratch.length，而 p 有 maxFloats 兜着，永远装得下。
+         */
+        mBatchBuffer.limit(mBatchBuffer.capacity());
         mBatchBuffer.position(0);
         mBatchBuffer.put(out, 0, p);
         return p;

@@ -519,7 +519,15 @@ final class FallScene {
         // Update drop state (spread/ampE decay)
         for (Drop drop : mWaterDrops) {
             drop.spread += 30.0f * mDeltaTime;
-            drop.ampE = drop.ampS / drop.spread;
+            /*
+             * spread 仍为 0 说明这一帧没有任何时间流逝（同一毫秒内被 update 两次），
+             * 直接除会得到 Infinity 并作为顶点数据进入 shader —— 水面会消失或花屏。
+             * 这种情况下保留上一帧的 ampE（新生成的 drop 是 0，也就是先不放波纹），
+             * spread 一涨起来就照常。
+             */
+            if (drop.spread > 0.0f) {
+                drop.ampE = drop.ampS / drop.spread;
+            }
         }
 
         // Pack all active drops for GPU: (x, y, ampE, spread) per drop, no artificial limit
