@@ -23,13 +23,12 @@ final class NexusBackgroundManager {
         mPluginPrefs = prefs;
     }
 
-    private String getCustomBackgroundUri(Context context) {
-        if (mPluginPrefs != null) {
-            String uri = mPluginPrefs.getString("pref_custom_background_uri", null);
-            if (uri != null && !uri.isEmpty()) return uri;
-        }
-        return context.getSharedPreferences("wallpaper_prefs", 0)
-                .getString("nexus_custom_background_uri", null);
+    private String getCustomBackgroundUri() {
+        if (mPluginPrefs == null) return null;
+        String uri = mPluginPrefs.getString("pref_custom_background_uri", null);
+        // 原来还会回退到 "wallpaper_prefs" 里的旧键 nexus_custom_background_uri，
+        // 已移除：那个文件里只剩 MIUI 的一个标记，这个键没有任何写入方。
+        return (uri != null && !uri.isEmpty()) ? uri : null;
     }
 
     int loadInitialTexture(Context context) {
@@ -46,7 +45,7 @@ final class NexusBackgroundManager {
         String preset = prefs != null
                 ? prefs.getString("nexus_background_preset", "pyramid_background")
                 : "pyramid_background";
-        String customUri = getCustomBackgroundUri(context);
+        String customUri = getCustomBackgroundUri();
 
         boolean useCustom = customUri != null;
         boolean changed;
@@ -88,7 +87,7 @@ final class NexusBackgroundManager {
             return 0;
         }
 
-        String customUri = getCustomBackgroundUri(context);
+        String customUri = getCustomBackgroundUri();
         if (customUri != null) {
             int tex = loadCustomBackgroundTexture(context, customUri);
             if (tex != 0) {

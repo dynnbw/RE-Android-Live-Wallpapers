@@ -188,12 +188,11 @@ public class FireworksGL extends GLESScene {
 
     /** Returns the custom background URI, checking plugin prefs first. */
     private String getCustomBackgroundUri() {
-        String key = "fireworks_custom_background_uri";
-        if (mPluginPrefs != null) {
-            String uri = mPluginPrefs.getString("pref_custom_background_uri", null);
-            if (uri != null && !uri.isEmpty()) return uri;
-        }
-        return mContext.getSharedPreferences("wallpaper_prefs", 0).getString(key, null);
+        if (mPluginPrefs == null) return null;
+        String uri = mPluginPrefs.getString("pref_custom_background_uri", null);
+        // 原来还会回退到 "wallpaper_prefs" 里的旧键 fireworks_custom_background_uri，
+        // 已移除：那个文件里只剩 MIUI 的一个标记，这个键没有任何写入方。
+        return (uri != null && !uri.isEmpty()) ? uri : null;
     }
 
     /**

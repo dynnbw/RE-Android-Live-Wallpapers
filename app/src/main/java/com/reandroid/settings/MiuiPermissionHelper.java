@@ -5,16 +5,22 @@ import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.provider.Settings;
+import android.util.Log;
 import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
+import androidx.preference.PreferenceManager;
 
 import com.reandroid.wallpaper.R;
 
 public final class MiuiPermissionHelper {
-    private static final String PREFS_NAME = "wallpaper_prefs";
+    private static final String TAG = "MiuiPermissionHelper";
+
+    /** 旧位置：独立的 "wallpaper_prefs"，只在迁移时读一次，随后删除。 */
+    private static final String LEGACY_PREFS_NAME = "wallpaper_prefs";
     private static final String KEY_DIALOG_SHOWN = "miui_permission_dialog_shown";
 
     private MiuiPermissionHelper() {}
@@ -48,14 +54,46 @@ public final class MiuiPermissionHelper {
         } catch (Exception e) { return def; }
     }
 
+    /**
+     * 存在应用默认 prefs（与天气 API、调试开关同一份），不再单开一个文件。
+     * 见 {@link #migrateLegacyFlag} 对旧位置的迁移。
+     */
+    private static SharedPreferences prefs(Context context) {
+        return PreferenceManager.getDefaultSharedPreferences(context);
+    }
+
     private static boolean hasShownDialog(Context context) {
-        return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-                .getBoolean(KEY_DIALOG_SHOWN, false);
+        SharedPreferences prefs = prefs(context);
+        if (prefs.contains(KEY_DIALOG_SHOWN)) {
+            return prefs.getBoolean(KEY_DIALOG_SHOWN, false);
+        }
+        return migrateLegacyFlag(context, prefs);
+    }
+
+    /**
+     * 把旧 "wallpaper_prefs" 里的标记搬到默认 prefs，然后删掉旧文件，
+     * 避免两个来源并存（这个文件里本来也只有这一个键）。
+     */
+    private static boolean migrateLegacyFlag(Context context, SharedPreferences prefs) {
+        boolean shown = false;
+        try {
+            SharedPreferences legacy =
+                    context.getSharedPreferences(LEGACY_PREFS_NAME, Context.MODE_PRIVATE);
+            shown = legacy.getBoolean(KEY_DIALOG_SHOWN, false);
+            if (shown) {
+                prefs.edit().putBoolean(KEY_DIALOG_SHOWN, true).apply();
+            }
+            if (legacy.contains(KEY_DIALOG_SHOWN)) {
+                context.deleteSharedPreferences(LEGACY_PREFS_NAME);
+            }
+        } catch (Exception e) {
+            Log.w(TAG, "迁移旧 wallpaper_prefs 失败，按未弹过处理", e);
+        }
+        return shown;
     }
 
     private static void markDialogShown(Context context) {
-        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-                .edit().putBoolean(KEY_DIALOG_SHOWN, true).apply();
+        prefs(context).edit().putBoolean(KEY_DIALOG_SHOWN, true).apply();
     }
 
     private static void showPermissionDialog(Fragment fragment, Class<?> wallpaperClass) {
