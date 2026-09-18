@@ -4,8 +4,8 @@ uniform float uTime;
 uniform float uOpacity;
 uniform float uLineAlpha;
 
-varying vec2 vUv;
-varying vec2 vSunPos;
+varying highp vec2 vUv;
+varying highp vec2 vSunPos;
 
 #define PI 3.1415926
 

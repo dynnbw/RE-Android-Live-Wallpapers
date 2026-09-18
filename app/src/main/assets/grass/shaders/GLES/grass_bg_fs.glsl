@@ -5,7 +5,7 @@ uniform float uAlpha;
 // textures at night. Program-level state -- any draw that bypasses
 // GrassSpriteRenderer must reset it to white itself.
 uniform vec3 uTint;
-varying vec2 vTexCoord;
+varying highp vec2 vTexCoord;
 varying float vAlpha;
 void main() {
   vec4 c = texture2D(uSampler, vTexCoord);

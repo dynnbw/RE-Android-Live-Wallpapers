@@ -5,8 +5,8 @@ uniform vec2 uSunPos;
 attribute vec2 aPosition;
 attribute vec2 aTexCoord;
 
-varying vec2 vUv;
-varying vec2 vSunPos;
+varying highp vec2 vUv;
+varying highp vec2 vSunPos;
 
 void main() {
   gl_Position = uMVPMatrix * vec4(aPosition, 0.0, 1.0);

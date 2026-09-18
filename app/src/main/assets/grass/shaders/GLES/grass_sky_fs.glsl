@@ -10,7 +10,7 @@ uniform float uWeightSunset;
 uniform float uWeightSky;
 uniform float uWeightSolarEclipse;
 uniform float uNightInvert;
-varying vec2 vTexCoord;
+varying highp vec2 vTexCoord;
 void main() {
   vec2 nightUV = mix(vTexCoord, vec2(vTexCoord.x, 1.0 - vTexCoord.y), uNightInvert);
   vec4 night = texture2D(uTexNight, nightUV);

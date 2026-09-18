@@ -18,7 +18,7 @@ uniform vec2 uShadowOffset;
 uniform vec3 uShadowColor;
 uniform vec3 uPenumbraColor;
 uniform float uSolarOcclusion;
-varying vec2 vTexCoord;
+varying highp vec2 vTexCoord;
 void main() {
   vec2 uv = vTexCoord * 2.0 - 1.0;
 

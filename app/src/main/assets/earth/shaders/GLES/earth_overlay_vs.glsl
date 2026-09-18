@@ -5,7 +5,7 @@ uniform mat4 uOrtho;
 attribute vec2 aPosition;
 attribute vec2 aTexCoord;
 
-varying vec2 vTexCoord;
+varying highp vec2 vTexCoord;
 
 void main() {
   vTexCoord = aTexCoord;

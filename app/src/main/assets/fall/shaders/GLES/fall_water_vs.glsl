@@ -9,7 +9,7 @@ uniform float u_rotate;
 uniform vec4 u_drop[$DROP_SIZE];
 uniform float u_dropCount;
 attribute vec4 aPosition;
-varying vec2 vTexCoord;
+varying highp vec2 vTexCoord;
 
 vec2 addDrop(vec4 d, vec2 ripplePos, float dxMul) {
     vec2 delta = vec2((d.x - ripplePos.x) * dxMul, d.y - ripplePos.y);
