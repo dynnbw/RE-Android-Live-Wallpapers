@@ -148,8 +148,9 @@ final class NoiseFieldScene {
                 mDotAlpha[i] = mDotAlphaStart[i];
             }
 
-            float touchDist = (float) Math.sqrt(Math.pow(mTouchX - mDotPositions[idx], 2)
-                    + Math.pow(mTouchY - mDotPositions[idx + 1], 2));
+            float ddx = mTouchX - mDotPositions[idx];
+            float ddy = mTouchY - mDotPositions[idx + 1];
+            float touchDist = (float) Math.sqrt(ddx * ddx + ddy * ddy);
 
             float noiseval = noisef2(mDotPositions[idx], mDotPositions[idx + 1]);
             if (mTouchDown || mTouchInfluence > 0.0f) {
@@ -182,8 +183,8 @@ final class NoiseFieldScene {
             float dist = (float) Math.sqrt(mDotPositions[idx] * mDotPositions[idx]
                     + mDotPositions[idx + 1] * mDotPositions[idx + 1]);
             if (dist < 0.95f) {
-                dist = 0;
-                mDotAlphaStart[i] *= (1 - dist);
+                // 圆内不做衰减。原来这里是 `dist = 0; mDotAlphaStart[i] *= (1 - dist);`，
+                // 等于乘以 1，两行都没有任何效果。
             } else {
                 dist = dist - 0.95f;
                 if (mDotAlphaStart[i] < 1.0f) {

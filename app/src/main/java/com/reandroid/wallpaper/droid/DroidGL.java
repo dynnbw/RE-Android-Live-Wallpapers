@@ -180,6 +180,13 @@ public class DroidGL extends GLESScene implements SensorEventListener {
         }
         mGlReady = false;
         mInitialized = false;
+        /*
+         * 这几个标志必须一起清掉。mMissingParts 是 |= 累积的，重复 init 时
+         * 会把上一次"缺了哪块"的位保留下来，于是那些部位永远显示不出来。
+         */
+        mMissingParts = 0;
+        mHasAccel = false;
+        mHasMag = false;
     }
 
     public void setPluginPrefs(SharedPreferences prefs) {

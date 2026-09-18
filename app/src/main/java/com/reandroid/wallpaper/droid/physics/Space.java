@@ -189,9 +189,8 @@ public final class Space {
             first = sb;
             second = sa;
         }
-        long key = first.id < second.id
-                ? ((long) first.id << 32) | (second.id & 0xffffffffL)
-                : ((long) second.id << 32) | (first.id & 0xffffffffL);
+        // 上面已保证 first.id <= second.id，两个分支结果相同，取一个即可
+        long key = ((long) first.id << 32) | (second.id & 0xffffffffL);
 
         Arbiter arbiter = arbiterMap.get(key);
         if (arbiter == null) {
