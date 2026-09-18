@@ -43,6 +43,12 @@
 
 Vulkan 壁纸需要 4 个 ABI(`arm64-v8a` / `armeabi-v7a` / `x86_64` / `x86`),native 代码走 [Android.mk](app/src/main/jni/Android.mk)(ndk-build,`preBuild` 阶段自动触发)。**只改 GLES 壁纸不需要 NDK。**
 
+`app/src/main/jniLibs/` 下的 16 个 `.so`(4 个 Vulkan 壁纸 × 4 个 ABI)**是刻意纳入版本库的**,不是误提交的构建产物——这样没装 NDK 的贡献者也能直接构建。
+
+注意 ndk-build 的输出目录就是这里(见 [app/build.gradle](app/build.gradle) 里 `NDK_LIBS_OUT=../jniLibs`),所以**重新编译 native 代码会直接改写这些被跟踪的文件**。
+
+> ⚠️ 一个例外要记住:`./gradlew clean` 会**删掉整个 `jniLibs/`**(`clean` 任务里显式 delete),此时 `git status` 会显示这 16 个文件被删除。这是正常的,下一次构建会原样重新生成——**不要把那批删除提交上去**。
+
 安装到设备:`adb install -r app/build/outputs/apk/debug/app-debug.apk`
 
 ---
@@ -242,6 +248,7 @@ public void setPluginPrefs(SharedPreferences prefs) { ... }
 
 - **提交信息**:Conventional Commits 前缀(`feat` / `fix` / `refactor` / `docs` / `delete` …),使用英文,参考近期历史风格。
 - 提交前确认 `git diff` 只含本次改动;不提交构建产物与本地脚本。
+  **唯一的例外是 `app/src/main/jniLibs/*.so`**——那是刻意纳入版本库的预编译 native 库,理由与注意事项见[环境与构建](#环境与构建),不要当成本地构建产物清理掉。
 
 ---
 
