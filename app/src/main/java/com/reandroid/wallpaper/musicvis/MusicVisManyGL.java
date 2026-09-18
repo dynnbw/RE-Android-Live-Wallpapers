@@ -67,6 +67,22 @@ public class MusicVisManyGL extends GLESScene {
     private float[] mQuadUvs;
 
     private final float[] mMvp = new float[16];
+    // drawFrame 每帧构造 base 再复制两份（原先是 base.clone()，同样每帧 3 次分配）
+    private final float[] mBaseMatrix = new float[16];
+    private final float[] mReflectMatrix = new float[16];
+    private final float[] mNormalMatrix = new float[16];
+    // drawQuad / drawQuadXZ 都是叶子方法，不会互相嵌套，共用一个 scratch
+    private final float[] mQuadPositions = new float[12];
+    // 下面六个原先都是 baseMatrix.clone()。调用链是
+    // drawFrame → drawVizLayer → {drawVU, drawWave}，以及 drawFrame → drawReflectPlane，
+    // 都是不重入的叶子路径，所以每个 clone 换成各自的字段即可。
+    // drawVU 里 model 在 needleModel/eraseModel 之后还要再用一次，故三者必须是不同的数组。
+    private final float[] mVizLayerMatrix = new float[16];
+    private final float[] mVuModelMatrix = new float[16];
+    private final float[] mVuNeedleMatrix = new float[16];
+    private final float[] mVuEraseMatrix = new float[16];
+    private final float[] mWaveModelMatrix = new float[16];
+    private final float[] mReflectPlaneMatrix = new float[16];
 
     public MusicVisManyGL(int width, int height, Context context) {
         super(width, height);
@@ -126,20 +142,22 @@ public class MusicVisManyGL extends GLESScene {
         GLES20.glEnable(GLES20.GL_BLEND);
         GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
 
-        float[] base = new float[16];
+        float[] base = mBaseMatrix;
         Matrix.setIdentityM(base, 0);
         Matrix.translateM(base, 0, 0f, 1.0f, 0f); // camera height offset
         Matrix.rotateM(base, 0, s.mTilt, 1f, 0f, 0f);
         Matrix.rotateM(base, 0, s.mAutoRotation + s.mRotate, 0f, 1f, 0f);
 
-        float[] reflect = base.clone();
+        float[] reflect = mReflectMatrix;
+        System.arraycopy(base, 0, reflect, 0, 16);
         Matrix.translateM(reflect, 0, 0f, -1f, 0f);
         Matrix.scaleM(reflect, 0, 1f, -1f, 1f);
         drawVizLayer(reflect);
 
         drawReflectPlane(reflect);
 
-        float[] normal = base.clone();
+        float[] normal = mNormalMatrix;
+        System.arraycopy(base, 0, normal, 0, 16);
         drawVizLayer(normal);
 
         s.endFrame();
@@ -220,7 +238,8 @@ public class MusicVisManyGL extends GLESScene {
     // ---- rendering helpers ----
 
     private void drawVizLayer(float[] baseMatrix) {
-        float[] layer = baseMatrix.clone();
+        float[] layer = mVizLayerMatrix;
+        System.arraycopy(baseMatrix, 0, layer, 0, 16);
         int waveIdx = 0;
         for (int i = 0; i < 6; i++) {
             if ((i & 1) == 1) {
@@ -235,7 +254,8 @@ public class MusicVisManyGL extends GLESScene {
     private void drawVU(float[] baseMatrix) {
         ManyScene s = mScene;
         float scale = 0.0041f;
-        float[] model = baseMatrix.clone();
+        float[] model = mVuModelMatrix;
+        System.arraycopy(baseMatrix, 0, model, 0, 16);
         Matrix.scaleM(model, 0, scale, scale, scale);
 
         setMvp(model);
@@ -244,14 +264,16 @@ public class MusicVisManyGL extends GLESScene {
         int peakTex = s.mNeedle.mPeak > 0 ? mTexPeakOn : mTexPeakOff;
         drawQuad(peakTex, 140f, 70f, 600f, 196f, 128f, 600f);
 
-        float[] needleModel = baseMatrix.clone();
+        float[] needleModel = mVuNeedleMatrix;
+        System.arraycopy(baseMatrix, 0, needleModel, 0, 16);
         Matrix.translateM(needleModel, 0, 0f, -57f * scale, 0f);
         Matrix.rotateM(needleModel, 0, s.mNeedle.mAngle - 90f, 0f, 0f, 1f);
         Matrix.scaleM(needleModel, 0, scale, scale, scale);
         setMvp(needleModel);
         drawQuad(mTexNeedle, -44f, -102f + 57f, 600f, 44f, 160f + 57f, 600f);
 
-        float[] eraseModel = baseMatrix.clone();
+        float[] eraseModel = mVuEraseMatrix;
+        System.arraycopy(baseMatrix, 0, eraseModel, 0, 16);
         Matrix.scaleM(eraseModel, 0, scale, scale, scale);
         setMvp(eraseModel);
         drawQuad(mTexBlack, -100f, -105f, 600f, 100f, -55f, 600f);
@@ -267,7 +289,8 @@ public class MusicVisManyGL extends GLESScene {
         FloatBuffer posBuf = useFFT ? mLinePosBufferFFT : mLinePosBuffer;
         FloatBuffer texBuf = useFFT ? mLineTexBufferFFT : mLineTexBuffer;
 
-        float[] model = baseMatrix.clone();
+        float[] model = mWaveModelMatrix;
+        System.arraycopy(baseMatrix, 0, model, 0, 16);
         Matrix.scaleM(model, 0, 0.008f, 0.008f / 2048f, 0.008f);
         Matrix.translateM(model, 0, 0f, 81920f, 350f);
 
@@ -315,7 +338,8 @@ public class MusicVisManyGL extends GLESScene {
     }
 
     private void drawReflectPlane(float[] baseMatrix) {
-        float[] model = baseMatrix.clone();
+        float[] model = mReflectPlaneMatrix;
+        System.arraycopy(baseMatrix, 0, model, 0, 16);
         setMvp(model);
         drawQuadXZ(mTexAlbum, -1500f, 1500f, mScene.mFloorY, -1500f, 1500f);
     }
@@ -328,12 +352,11 @@ public class MusicVisManyGL extends GLESScene {
     }
 
     private void drawQuad(int texId, float x1, float y1, float z1, float x2, float y2, float z2) {
-        float[] positions = new float[] {
-                x1, y1, z1,
-                x2, y1, z1,
-                x1, y2, z2,
-                x2, y2, z2
-        };
+        float[] positions = mQuadPositions;
+        positions[0] = x1; positions[1] = y1; positions[2] = z1;
+        positions[3] = x2; positions[4] = y1; positions[5] = z1;
+        positions[6] = x1; positions[7] = y2; positions[8] = z2;
+        positions[9] = x2; positions[10] = y2; positions[11] = z2;
         float[] uvs = mQuadUvs;
         mPosBuffer.position(0);
         mPosBuffer.put(positions).position(0);
@@ -353,12 +376,11 @@ public class MusicVisManyGL extends GLESScene {
     }
 
     private void drawQuadXZ(int texId, float x1, float x2, float y, float z1, float z2) {
-        float[] positions = new float[] {
-                x1, y, z1,
-                x2, y, z1,
-                x1, y, z2,
-                x2, y, z2
-        };
+        float[] positions = mQuadPositions;
+        positions[0] = x1; positions[1] = y; positions[2] = z1;
+        positions[3] = x2; positions[4] = y; positions[5] = z1;
+        positions[6] = x1; positions[7] = y; positions[8] = z2;
+        positions[9] = x2; positions[10] = y; positions[11] = z2;
         float[] uvs = mQuadUvs;
         mPosBuffer.position(0);
         mPosBuffer.put(positions).position(0);
