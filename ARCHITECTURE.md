@@ -123,7 +123,7 @@ com.reandroid
 │                   PreviewPreference / WallpaperSettings / MiuiPermissionHelper
 ├── weather/        WeatherManager / WeatherCondition / WeatherState
 ├── update/         UpdateHelper / UpdateChecker / UpdateDownloader / VersionInfo
-└── wallpaper/      35 Plugin + 35 Engine + 27 Scene + 30 GL（按子包划分）
+└── wallpaper/      每壁纸一组 Plugin / Engine / GL，多数另有 Scene（按子包划分）
     ├── weatherwallpapers/  Ocean / Windmill
     ├── musicvis/           5 个音乐可视化插件，共享 Scene/GL/资产
     └── ......

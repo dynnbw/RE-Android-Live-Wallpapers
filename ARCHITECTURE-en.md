@@ -4,7 +4,7 @@
 
 > This is the expanded developer documentation from the [README](README-en.md).
 > For installation, configuration and FAQ see the README; for the rules to follow when
-> contributing see [CONTRIBUTING.md](CONTRIBUTING.md) (Chinese).
+> contributing see [CONTRIBUTING-en.md](CONTRIBUTING-en.md).
 
 ## Core Architecture
 
@@ -124,7 +124,7 @@ com.reandroid
 │                   PreviewPreference / WallpaperSettings / MiuiPermissionHelper
 ├── weather/        WeatherManager / WeatherCondition / WeatherState
 ├── update/         UpdateHelper / UpdateChecker / UpdateDownloader / VersionInfo
-└── wallpaper/      35 Plugin + 35 Engine + 27 Scene + 30 GL (grouped by subpackage)
+└── wallpaper/      One Plugin / Engine / GL per wallpaper, most also a Scene (grouped by subpackage)
     ├── weatherwallpapers/  Ocean / Windmill
     ├── musicvis/           5 music visualization plugins, shared Scene/GL/assets
     └── ......

@@ -16,7 +16,7 @@
 
 >  **Language**：[简体中文](README.md)
 
-> **Quick Navigation**: [User Guide](#user-guide) · [Installation](#installation) · [Weather Setup](#weather-setup) · [Music Visualization](#music-visualization) · [Permissions](#permissions) · [Performance Reference](#performance-reference) · [FAQ](#faq) 　|　 [Developer Docs](ARCHITECTURE-en.md) · [Contributing](CONTRIBUTING.md)
+> **Quick Navigation**: [User Guide](#user-guide) · [Installation](#installation) · [Weather Setup](#weather-setup) · [Music Visualization](#music-visualization) · [Permissions](#permissions) · [Performance Reference](#performance-reference) · [FAQ](#faq) 　|　 [Developer Docs](ARCHITECTURE-en.md) · [Contributing](CONTRIBUTING-en.md)
 
 ---
 
@@ -44,7 +44,7 @@ Method 3: Long-press home screen → Wallpapers → find "REAndroid Live Wallpap
 
 ## Wallpaper List
 
-**30** wallpapers total, with **4** (Galaxy, Galaxy4, Grass, Fall) offering an additional Vulkan backend
+**33** wallpapers total (2 more are hidden and do not appear in the app's list), with **4** (Galaxy, Galaxy4, Grass, Fall) offering an additional Vulkan backend
 
 | Wallpaper | Type | VK | Description |
 | --- | --- | --- | --- |
@@ -71,6 +71,9 @@ Method 3: Long-press home screen → Wallpapers → find "REAndroid Live Wallpap
 | Aurora2 | Aurora | | Northern lights v2, more brilliant colors |
 | Fireworks | Effects | | Firework particles, tap to launch |
 | LuminousDots | Effects | | Luminous particle field |
+| CosmicFlow | Effects | | Grey ripple background with a GPU noise flow field, 8 colour themes |
+| Silk | Effects | | Flowing silk ribbons, 3 colour themes |
+| Droid | Effects | | Android robots in parts, driven by gravity, acceleration and touch (listed in the app as "Shake Them All") |
 | PolarClock | Clock | | Polar clock, three palette styles |
 | NixieTube | Clock | | Nixie tube clock, audio-reactive |
 | vis2 | Music | | Audio spectrum visualization — FFT waveform |
@@ -185,7 +188,7 @@ Architecture, render paths, the Vulkan and MusicVis implementations, and the
 authoritative version of each schema now live in **[ARCHITECTURE-en.md](ARCHITECTURE-en.md)**.
 
 For how to contribute — code conventions, settings access, i18n, verification
-checklist, commit rules — see [CONTRIBUTING.md](CONTRIBUTING.md) (Chinese).
+checklist, commit rules — see [CONTRIBUTING-en.md](CONTRIBUTING-en.md).
 
 ## License
 

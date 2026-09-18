@@ -393,7 +393,7 @@ Confirm each of these once your change is in place:
 ## After the PR
 
 - When adding a wallpaper or a feature, update the wallpaper list table and count in
-  [README.md](README.md) as part of the PR.
+  [README-en.md](README-en.md) as part of the PR.
 - Cutting a release, bumping the version and updating the changelog are the maintainer's
   job; contributors do not need to handle them.
 
