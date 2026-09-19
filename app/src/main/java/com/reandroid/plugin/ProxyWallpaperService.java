@@ -85,18 +85,22 @@ public class ProxyWallpaperService extends WallpaperService {
                 if (mEngine != null) {
                     mEngine.onCreate(getSurfaceHolder());
                     mEngine.setPreview(isPreview());
+                    // 画布当前的 frame 才是权威，拿不到再退回上次记录的尺寸
                     int initW = mLastWidth, initH = mLastHeight;
                     boolean fromFrame = false;
-                    if (initW <= 0 || initH <= 0) {
-                        android.graphics.Rect frame = getSurfaceHolder().getSurfaceFrame();
+                    android.graphics.Rect frame = getSurfaceHolder().getSurfaceFrame();
+                    if (frame.width() > 0 && frame.height() > 0) {
                         initW = frame.width();
                         initH = frame.height();
                         fromFrame = true;
                     }
                     Log.d(TAG, "createEngine onSurfaceChanged: " + initW + "x" + initH
-                            + " (fromCache=" + !fromFrame + ")");
+                            + " (fromFrame=" + fromFrame + ")");
                     if (initW > 0 && initH > 0) {
                         mEngine.onSurfaceChanged(getSurfaceHolder(), mLastFormat, initW, initH);
+                    } else {
+                        // 引擎自己有兜底（BasePluginEngine 会用保存的 holder 补发），别静默跳过
+                        Log.w(TAG, "createEngine: 拿不到有效的画布尺寸，交给引擎自愈");
                     }
                 }
             } catch (Exception e) {
@@ -123,7 +127,14 @@ public class ProxyWallpaperService extends WallpaperService {
                 }
                 mRenderThread = null;
             }
-            mLastWidth = mLastHeight = 0;
+            /*
+             * 不在这里清零 mLastWidth/mLastHeight：切换壁纸时 surface 根本没换，
+             * 系统不会再发一次 onSurfaceChanged，而 createEngine() 靠这两个值决定
+             * 要不要通知新引擎尺寸。清掉之后若 getSurfaceFrame() 也拿不到有效尺寸
+             * （切换瞬间很常见），新引擎就永远收不到尺寸通知，EGL 建不起来，画面会
+             * 一直停在上一个壁纸的最后一帧。保留旧值最多让新引擎先用错一次尺寸，
+             * 随后系统回调会纠正；拿不到尺寸则完全画不出来，代价不对称。
+             */
             if (mEngine != null) {
                 mEngine.onDestroy();
                 mEngine.release();

@@ -9,7 +9,10 @@ import android.opengl.EGLContext;
 import android.opengl.EGLDisplay;
 import android.opengl.EGLSurface;
 import android.opengl.GLES20;
+import android.graphics.Rect;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.Surface;
@@ -95,10 +98,42 @@ public abstract class BasePluginEngine implements WallpaperEngine {
     protected abstract GLESScene createScene(int width, int height, Context context);
 
     @Override
-    public void onCreate(SurfaceHolder holder) {}
+    public void onCreate(SurfaceHolder holder) {
+        mHolder = holder;
+    }
+
+    /**
+     * 兜底：EGL 还没建起来时，用保存的 SurfaceHolder 让主线程补发一次 onSurfaceChanged。
+     *
+     * <p>存在的理由：引擎创建时若拿不到画布尺寸（切换壁纸的瞬间常见），
+     * ProxyEngine 就不会通知尺寸；而切换壁纸时 surface 没有变化，系统也不会再回调，
+     * 于是 EGL 永远建不起来，画面一直停在上一个壁纸的最后一帧。
+     * 补发走主线程，和系统回调同一个线程，避免与 onSurfaceChanged 竞态。
+     */
+    private void scheduleSurfaceRecovery() {
+        if (mRecoveryPosted) return;
+        final SurfaceHolder holder = mHolder;
+        if (holder == null) return;
+        Surface surface = holder.getSurface();
+        if (surface == null || !surface.isValid()) return;
+
+        mRecoveryPosted = true;
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                mRecoveryPosted = false;
+                if (mEglCreated) return;
+                Rect frame = holder.getSurfaceFrame();
+                if (frame.width() <= 0 || frame.height() <= 0) return;
+                Log.w(TAG, "EGL 未建立，补发 onSurfaceChanged " + frame.width() + "x" + frame.height());
+                onSurfaceChanged(holder, 0, frame.width(), frame.height());
+            }
+        });
+    }
 
     @Override
     public void onDestroy() {
+        mHolder = null;
         if (mHost != null) {
             try {
                 mHost.getSharedPreferences().unregisterOnSharedPreferenceChangeListener(mPrefsListener);
@@ -135,6 +170,10 @@ public abstract class BasePluginEngine implements WallpaperEngine {
     }
 
     private Surface mCurrentSurface;
+
+    /** onCreate 收到的 holder，仅用于 EGL 没建起来时补发尺寸（见 scheduleSurfaceRecovery）。 */
+    private SurfaceHolder mHolder;
+    private volatile boolean mRecoveryPosted;
 
     @Override
     public void onSurfaceChanged(SurfaceHolder holder, int format, int width, int height) {
@@ -234,7 +273,11 @@ public abstract class BasePluginEngine implements WallpaperEngine {
 
     @Override
     public void drawFrame(long timeMs) {
-        if (!mEglCreated) { Log.w(TAG, "drawFrame skipped: EGL not created"); return; }
+        if (!mEglCreated) {
+            scheduleSurfaceRecovery();
+            Log.w(TAG, "drawFrame skipped: EGL not created");
+            return;
+        }
         if (mScene == null) { Log.w(TAG, "drawFrame skipped: scene is null"); return; }
 
         /*
