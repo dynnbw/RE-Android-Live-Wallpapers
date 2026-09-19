@@ -48,10 +48,12 @@ final class FallScene {
         int leafTextureIndex;
         boolean rippled;
 
-        void init(Random random, int leafTexCount, boolean startAboveWater) {
+        void init(Random random, int leafTexCount, boolean startAboveWater, float glHeight) {
             leafTextureIndex = random.nextInt(Math.max(1, leafTexCount));
+            // x 的参考空间恒为 ±1（正交投影的 left/right 不随屏幕变），所以 ±2 是对的；
+            // y 会随屏幕变（glHeight = 2*h/w），必须用真值。
             x = (random.nextFloat() - 0.5f) * 4.0f;
-            y = (random.nextFloat() - 0.5f) * 3.333f;
+            y = (random.nextFloat() - 0.5f) * glHeight;
             scale = 0.4f + random.nextFloat() * 0.1f;
             angle = random.nextFloat() * 360.0f;
             spin = (random.nextFloat() - 0.5f) * 0.016f;
@@ -144,6 +146,12 @@ final class FallScene {
     private int mRotate = 0;
     private int mMeshWidth;
     private int mMeshHeight;
+    /**
+     * 可见高度（正交投影的上下跨度）。resize() 里按 2*h/w 重算。
+     *
+     * <p>默认值 3.333 是 480×800 竖屏的取值，沿用 AOSP 里那个占位常量 ——
+     * 它只在 resize() 之前被读到，作用是不让初值为 0，**不是可以照抄的目标值**。
+     */
     private float mGlHeight = 3.333f;
     private float mBackgroundScale = 0.75f;
     private Drop[] mDrops;
@@ -173,6 +181,12 @@ final class FallScene {
     private float mFallSpeedMultiplier = 1.0f;
 
     float getLeafSizeMultiplier() { return mLeafSizeMultiplier; }
+
+    /**
+     * 实际会用到的叶子贴图数（绿叶开 20、关 14，见 prepareNonGLResources）。
+     * GL 侧据此只加载需要的那几张，别把用不到的也传上显存。
+     */
+    int getLeafTextureCount() { return mLeafTextureCount; }
 
     /** Plugin path: use host-provided prefs instead of WallpaperSettings. */
     void setPluginPrefs(SharedPreferences prefs) {
@@ -318,7 +332,7 @@ final class FallScene {
         mSceneData.leaves = new Leaf[mLeafCount];
         for (int i = 0; i < mLeafCount; i++) {
             mSceneData.leaves[i] = new Leaf();
-            mSceneData.leaves[i].init(mRandom, mLeafTextureCount, false);
+            mSceneData.leaves[i].init(mRandom, mLeafTextureCount, false, mGlHeight);
         }
 
         mDrops = new Drop[DEFAULT_RANDOM_DROPS];
@@ -452,7 +466,7 @@ final class FallScene {
             mSceneData.leaves = new Leaf[mLeafCount];
             for (int i = 0; i < mLeafCount; i++) {
                 mSceneData.leaves[i] = new Leaf();
-                mSceneData.leaves[i].init(mRandom, mLeafTextureCount, false);
+                mSceneData.leaves[i].init(mRandom, mLeafTextureCount, false, mGlHeight);
             }
         }
 
@@ -472,7 +486,7 @@ final class FallScene {
                 float screenBottom = -mGlHeight / 2.0f - margin;
                 float screenTop = mGlHeight / 2.0f + margin;
                 if (leaf.y < screenBottom || leaf.y > screenTop) {
-                    leaf.init(mRandom, mLeafTextureCount, true);
+                    leaf.init(mRandom, mLeafTextureCount, true, mGlHeight);
                 }
             } else {
                 leaf.altitude -= 0.15f * mDeltaTime;

@@ -44,6 +44,8 @@ public class FallGL extends GLESScene {
     private static final String TAG = "FallGL";
     private static final long PERF_SYNC_INTERVAL_MS = 1000L;
     private static final long ANR_FRAME_THRESHOLD_MS = 200L;
+    /** assets/fall/drawable/ 下 leaves_N.png 的文件数（绿叶全开时用满）。 */
+    private static final int LEAF_TEXTURE_FILES = 20;
 
     private int mProgram;       // leaf shader
     private int mWaterProgram;  // water shader (GPU ripple)
@@ -645,8 +647,9 @@ public class FallGL extends GLESScene {
     }
 
     private int[] loadLeafTextures() {
-        // Always load all 20 leaf textures; mLeafTextureCount controls which ones are used
-        int leafCount = 20;
+        // 只加载场景真正会用到的那几张：绿叶关掉时是 14，多传 6 张 512² 会白占约 8 MB 显存
+        // （含 mipmap）。getLeafTextureCount() 在 ensureResources() 里就已按 prefs 定好。
+        int leafCount = MathUtils.clamp(mScene.getLeafTextureCount(), 1, LEAF_TEXTURE_FILES);
         int[] textures = new int[leafCount];
         for (int i = 0; i < leafCount; i++) {
             textures[i] = loadLeafTexture("fall/drawable/leaves_" + i + ".png");
