@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
+import androidx.preference.PreferenceGroup;
 import androidx.preference.SeekBarPreference;
 import androidx.preference.SwitchPreferenceCompat;
 
@@ -34,7 +35,60 @@ public final class DynamicPreferenceFactory {
      * visibly disabled; the change-listener still blocks value writes.
      */
     private static final float GRAY_ALPHA = 0.4f;
-    private static final java.util.WeakHashMap<Preference, Boolean> sGrayedStates =
+
+    /**
+     * 依赖绑定：记录这一项依赖哪个键、默认值是什么、当前是否满足。
+     *
+     * <p>这几个参数原先只在构建的 Pass 2 里用一次就丢掉，于是父项变化后没有任何办法
+     * 只重算受影响的子项 —— 只能把整块动态区拆掉重建（重建会重读 layout.json、
+     * 丢掉滚动位置和焦点）。留下它们之后 {@link #refreshDependents} 就能做增量刷新。
+     */
+    private static final class DependencyState {
+        final String dependency;
+        final String disableOn;
+        final boolean depDefaultTrue;
+        final boolean dkDefaultFalse;
+        boolean satisfied = true;
+
+        DependencyState(String dependency, String disableOn,
+                        boolean depDefaultTrue, boolean dkDefaultFalse) {
+            this.dependency = dependency;
+            this.disableOn = disableOn;
+            this.depDefaultTrue = depDefaultTrue;
+            this.dkDefaultFalse = dkDefaultFalse;
+        }
+
+        /** 这个 key 是否是本项的依赖父项。 */
+        boolean dependsOn(String key) {
+            return key.equals(dependency) || key.equals(disableOn);
+        }
+
+        void evaluate(SharedPreferences prefs) {
+            satisfied = dependencySatisfied(prefs, dependency, disableOn, depDefaultTrue, dkDefaultFalse);
+        }
+    }
+
+    /** 键是控件实例本身；控件被重建丢弃后条目可被回收，所以用 WeakHashMap。 */
+    private static final java.util.WeakHashMap<Preference, DependencyState> sDepStates =
+            new java.util.WeakHashMap<>();
+
+    /**
+     * 控件的值规格：key 与默认值。用于在不重建的前提下把值从 prefs 重读一遍。
+     *
+     * <p>重建动态区时每个控件都会重新构造、重读一次 prefs，所以"值被别的东西改了"
+     * 能顺带刷对；只算依赖关系的增量刷新会漏掉这一维。
+     */
+    private static final class ValueSpec {
+        final String key;
+        final Object defaultValue;
+
+        ValueSpec(String key, Object defaultValue) {
+            this.key = key;
+            this.defaultValue = defaultValue;
+        }
+    }
+
+    private static final java.util.WeakHashMap<Preference, ValueSpec> sValueSpecs =
             new java.util.WeakHashMap<>();
 
     /**
@@ -94,23 +148,131 @@ public final class DynamicPreferenceFactory {
             boolean hasDk = dk != null && !dk.isEmpty();
             if (!hasDep && !hasDk) continue;
 
-            final String fDep = dep;
-            final String fDk = dk;
-            final boolean depDefTrue = depDefaults[i];
-            final boolean dkDefFalse = dkDefaults[i];
+            // 记录绑定，供父项变化时增量刷新（原先用完即弃，只能靠整块重建）
+            final DependencyState state = new DependencyState(dep, dk, depDefaults[i], dkDefaults[i]);
+            state.evaluate(prefs);
+            sDepStates.put(p, state);
 
-            // 值拦截（软禁用）
-            p.setOnPreferenceChangeListener((pref, newValue) ->
-                    dependencySatisfied(prefs, fDep, fDk, depDefTrue, dkDefFalse));
+            // 值拦截（软禁用）：返回 false 时框架不会写入这个值
+            p.setOnPreferenceChangeListener((pref, newValue) -> {
+                state.evaluate(prefs);
+                return state.satisfied;
+            });
 
             // 初始视觉置灰
-            boolean satisfied = dependencySatisfied(prefs, fDep, fDk, depDefTrue, dkDefFalse);
-            if (p instanceof InlineColorPreference) {
-                // 内嵌取色器:软禁用内部滑块(不动 setEnabled)
-                ((InlineColorPreference) p).setControlsActive(satisfied);
-            } else {
-                setGrayed(p, satisfied);
+            applyDependencyVisual(p, state.satisfied);
+        }
+    }
+
+    private static void registerValue(Preference pref, String key, Object defaultValue) {
+        sValueSpecs.put(pref, new ValueSpec(key, defaultValue));
+    }
+
+    /**
+     * 把 key 对应的那个控件的值从 prefs 重读一遍 —— "整块重建"另一半的增量版。
+     *
+     * <p>重建时每个控件都会重新构造，顺手把值也重读了，所以"值被别的东西改了"
+     * 能顺带刷对；只重算依赖关系的增量刷新会漏掉这一维。这里补上。
+     *
+     * @return 是否刷新了
+     */
+    public static boolean refreshValue(PreferenceGroup root, SharedPreferences prefs,
+                                       String changedKey) {
+        if (root == null || prefs == null || changedKey == null) return false;
+        boolean touched = false;
+        for (int i = 0; i < root.getPreferenceCount(); i++) {
+            Preference p = root.getPreference(i);
+            if (p instanceof PreferenceGroup) {
+                if (refreshValue((PreferenceGroup) p, prefs, changedKey)) {
+                    touched = true;
+                }
+                continue;
             }
+            ValueSpec spec = sValueSpecs.get(p);
+            if (spec == null || !spec.key.equals(changedKey)) continue;
+            if (applyValueFromPrefs(p, spec, prefs)) touched = true;
+        }
+        return touched;
+    }
+
+    /** 按控件类型把 prefs 里的值写回控件。写不进去就保持原样，不抛。 */
+    private static boolean applyValueFromPrefs(Preference p, ValueSpec spec, SharedPreferences prefs) {
+        Object stored = prefs.getAll().get(spec.key);
+        if (stored == null) stored = spec.defaultValue;
+
+        if (p instanceof SwitchPreferenceCompat) {
+            boolean on = stored instanceof Boolean
+                    ? (Boolean) stored : Boolean.parseBoolean(String.valueOf(stored));
+            SwitchPreferenceCompat sp = (SwitchPreferenceCompat) p;
+            if (sp.isChecked() != on) sp.setChecked(on);
+            return true;
+        }
+        if (p instanceof SeekBarPreference) {
+            int v = stored instanceof Number
+                    ? ((Number) stored).intValue() : parseOrDefault(stored, (Integer) spec.defaultValue);
+            SeekBarPreference sp = (SeekBarPreference) p;
+            if (sp.getValue() != v) sp.setValue(v);
+            return true;
+        }
+        if (p instanceof ListPreference) {
+            String v = String.valueOf(stored);
+            ListPreference lp = (ListPreference) p;
+            if (!v.equals(lp.getValue())) lp.setValue(v);
+            return true;
+        }
+        if (p instanceof InlineColorPreference) {
+            // 它 setPersistent(false) 自己管 prefs，onBindViewHolder 里会重读颜色，
+            // 所以这里只要触发一次重绑就够了。
+            ((InlineColorPreference) p).refreshFromPrefs();
+            return true;
+        }
+        return false;
+    }
+
+    private static int parseOrDefault(Object stored, Integer fallback) {
+        try {
+            return Integer.parseInt(String.valueOf(stored));
+        } catch (NumberFormatException e) {
+            return fallback != null ? fallback : 0;
+        }
+    }
+
+    /**
+     * 某个 prefs key 变化后，只重算依赖它的那几项 —— 取代"整块重建动态区"。
+     *
+     * <p>父项→子项的关系原先只在构建时用一次，父项自己没有监听器，所以子项的置灰
+     * 状态只能靠拆掉整块重建来纠正。这里按 key 精确匹配，只碰受影响的控件。
+     *
+     * @return 是否刷新了至少一项
+     */
+    public static boolean refreshDependents(PreferenceGroup root, SharedPreferences prefs,
+                                            String changedKey) {
+        if (root == null || prefs == null || changedKey == null) return false;
+        boolean touched = false;
+        for (int i = 0; i < root.getPreferenceCount(); i++) {
+            Preference p = root.getPreference(i);
+            if (p instanceof PreferenceGroup) {
+                if (refreshDependents((PreferenceGroup) p, prefs, changedKey)) {
+                    touched = true;
+                }
+                continue;
+            }
+            DependencyState state = sDepStates.get(p);
+            if (state == null || !state.dependsOn(changedKey)) continue;
+            state.evaluate(prefs);
+            applyDependencyVisual(p, state.satisfied);
+            touched = true;
+        }
+        return touched;
+    }
+
+    /** 应用依赖视觉：内嵌取色器走自己的软禁用途径，其余靠 setGrayed 的 alpha。 */
+    private static void applyDependencyVisual(Preference pref, boolean satisfied) {
+        if (pref instanceof InlineColorPreference) {
+            // 内嵌取色器:软禁用内部滑块(不动 setEnabled)
+            ((InlineColorPreference) pref).setControlsActive(satisfied);
+        } else {
+            setGrayed(pref, satisfied);
         }
     }
 
@@ -118,7 +280,10 @@ public final class DynamicPreferenceFactory {
      *  setSelectable() 触发 notifyChanged() 重绑（onBindViewHolder 应用 alpha），
      *  并让整行不可点击；避免 setEnabled(false) 的 ANGLE 驱动崩溃。 */
     private static void setGrayed(Preference pref, boolean satisfied) {
-        sGrayedStates.put(pref, !satisfied);
+        DependencyState state = sDepStates.get(pref);
+        if (state != null) {
+            state.satisfied = satisfied;
+        }
         pref.setSelectable(satisfied);
     }
 
@@ -200,7 +365,9 @@ public final class DynamicPreferenceFactory {
                 sp.setKey(key);
                 sp.setTitle(title);
                 if (!summary.isEmpty()) sp.setSummary(summary);
-                sp.setDefaultValue(item.optBoolean("default", false));
+                boolean defaultOn = item.optBoolean("default", false);
+                sp.setDefaultValue(defaultOn);
+                registerValue(sp, key, defaultOn);
                 return sp;
             }
             case "seekbar": {
@@ -216,8 +383,10 @@ public final class DynamicPreferenceFactory {
                 if (!summary.isEmpty()) sp.setSummary(summary);
                 sp.setMin(item.optInt("min", 0));
                 sp.setMax(item.optInt("max", 100));
-                sp.setDefaultValue(item.optInt("default", 50));
+                int defaultValue = item.optInt("default", 50);
+                sp.setDefaultValue(defaultValue);
                 sp.setShowSeekBarValue(true);
+                registerValue(sp, key, defaultValue);
                 return sp;
             }
             case "list": {
@@ -250,7 +419,9 @@ public final class DynamicPreferenceFactory {
                     lp.setEntryValues(v);
                     lp.setEntries(l);
                 }
-                lp.setDefaultValue(item.optString("default", ""));
+                String defaultEntry = item.optString("default", "");
+                lp.setDefaultValue(defaultEntry);
+                registerValue(lp, key, defaultEntry);
                 return lp;
             }
             case "color": {
@@ -263,6 +434,7 @@ public final class DynamicPreferenceFactory {
                 if (!summary.isEmpty()) {
                     cp.setSummary(summary);
                 }
+                registerValue(cp, key, colorDefault(item, 0xFF000000));
                 return cp;
             }
             case "button": {
@@ -285,8 +457,8 @@ public final class DynamicPreferenceFactory {
 
     /** Alpha for the grayed-out visual state of a soft-disabled preference. */
     private static float grayAlpha(Preference pref) {
-        Boolean grayed = sGrayedStates.get(pref);
-        return (grayed != null && grayed) ? GRAY_ALPHA : 1.0f;
+        DependencyState state = sDepStates.get(pref);
+        return (state != null && !state.satisfied) ? GRAY_ALPHA : 1.0f;
     }
 
     /** Apply gray-out alpha in onBindViewHolder of the anonymous preference subclasses. */

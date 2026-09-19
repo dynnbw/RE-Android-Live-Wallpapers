@@ -135,7 +135,6 @@ public class PluginSettingsFragment extends PreferenceFragmentCompat
         // Dynamic preferences from layout.json
         JSONObject layout = PluginResources.loadLayout(ctx, pluginId);
         if (layout != null) {
-            collectDependencyParentKeys(layout);
             JSONObject language = PluginResources.loadLanguageForLocale(ctx, pluginId);
             DynamicPreferenceFactory.buildPreferences(ctx, prefs, layout,
                     screen::addPreference, language);
@@ -151,22 +150,7 @@ public class PluginSettingsFragment extends PreferenceFragmentCompat
         }
     }
 
-    /** 被 dependency/disableOn 引用的父项 key 集合（变化时触发动态区重建）。 */
-    private final java.util.Set<String> mDependencyParentKeys = new java.util.HashSet<>();
     private Preference mResetPref;
-
-    private void collectDependencyParentKeys(JSONObject layout) {
-        JSONArray items = layout.optJSONArray("prefs");
-        if (items == null) return;
-        for (int i = 0; i < items.length(); i++) {
-            JSONObject item = items.optJSONObject(i);
-            if (item == null) continue;
-            String dep = item.optString("dependency", null);
-            if (dep != null && !dep.isEmpty()) mDependencyParentKeys.add(dep);
-            String dk = item.optString("disableOn", null);
-            if (dk != null && !dk.isEmpty()) mDependencyParentKeys.add(dk);
-        }
-    }
 
     /** 重建动态偏好区（重置按钮与依赖变化共用）。 */
     private void rebuildDynamicSection() {
@@ -213,9 +197,13 @@ public class PluginSettingsFragment extends PreferenceFragmentCompat
                 if (mHost != null) mHost.refreshPreview();
             }
         }
-        // 依赖父项变化 → 重建动态区，置灰状态视觉必然正确（全量重绑）
-        if (key != null && mDependencyParentKeys.contains(key)) {
-            rebuildDynamicSection();
+        // 一个 key 变化后刷新受影响的行 —— 这是原来"整块重建动态区"所做的事，分两半做增量：
+        //   值：在 prefs 里改了值的那个控件重新读一次（重建时每个控件都会重读）
+        //   依赖：依赖这个 key 的控件重算置灰
+        // 原先只有被 dependency/disableOn 点名的 key 才会走到重建，其它副作用照样丢失。
+        if (key != null) {
+            DynamicPreferenceFactory.refreshValue(getPreferenceScreen(), prefs, key);
+            DynamicPreferenceFactory.refreshDependents(getPreferenceScreen(), prefs, key);
         }
     }
 

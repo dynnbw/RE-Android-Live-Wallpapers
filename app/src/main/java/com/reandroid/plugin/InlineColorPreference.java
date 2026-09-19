@@ -61,6 +61,17 @@ public class InlineColorPreference extends Preference {
         setPersistent(false); // 自行写入 prefs,不走 Preference 的持久化
     }
 
+    /**
+     * 从 prefs 重读颜色并刷新显示。
+     *
+     * <p>本控件 setPersistent(false)、自己读写 prefs，颜色是在 onBindViewHolder 里读的，
+     * 所以重绑一次就会显示最新值。设置页在外部改动该 key 后调用它
+     * （notifyChanged 是 protected，只能由本类暴露）。
+     */
+    public void refreshFromPrefs() {
+        notifyChanged();
+    }
+
     /** 由设置工厂依据依赖条件调用。 */
     public void setControlsActive(boolean active) {
         if (mActive == active) {
