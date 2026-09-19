@@ -49,7 +49,21 @@ public abstract class BasePluginEngine implements WallpaperEngine {
     // 保证场景 GL 初始化始终在 EGL 上下文 current 的线程上执行。
     private volatile boolean mSceneStartPending;
 
+    /**
+     * 画布尺寸。**只有渲染线程会写**，主线程只读（日志用）。
+     *
+     * <p>这里曾经由 onSurfaceChanged 在主线程直接赋值并调用 mScene.resize()，
+     * 而 resize() 会原地改写投影矩阵、重新分配水面网格数组 —— 渲染线程同时正在读它们。
+     * 读到撕裂的矩阵或半更新的数组时，画面会被拉伸变形并在一处被截断，而且只在
+     * "加载期间尺寸恰好变化"时偶发。现在尺寸变化只发布到下面这对字段，由渲染线程取走。
+     */
     protected int mWidth = 256, mHeight = 256;
+
+    /** 主线程发布的待处理尺寸；成对读写，渲染线程在 drawFrame 开头取走。 */
+    private final Object mResizeLock = new Object();
+    private int mRequestedWidth = 256, mRequestedHeight = 256;
+    private boolean mResizePending;
+
     private boolean mPreview;
 
     /**
@@ -134,14 +148,23 @@ public abstract class BasePluginEngine implements WallpaperEngine {
                 + " eglCreated=" + mEglCreated + " surfChanged=" + (mCurrentSurface != surface)
                 + " oldSize=" + mWidth + "x" + mHeight);
 
+        /*
+         * 只发布尺寸，不在这里动场景：mScene.resize() 会改写投影矩阵并重建水面网格，
+         * 必须留在渲染线程执行，否则会与 drawFrame 竞态（表现为画面被拉伸和截断）。
+         */
+        boolean sizeChanged;
+        synchronized (mResizeLock) {
+            sizeChanged = mRequestedWidth != width || mRequestedHeight != height;
+            mRequestedWidth = width;
+            mRequestedHeight = height;
+            mResizePending = true;
+        }
+
         // Skip if nothing actually changed
-        if (mEglCreated && mCurrentSurface == surface && mWidth == width && mHeight == height) {
+        if (mEglCreated && mCurrentSurface == surface && !sizeChanged) {
             Log.d(TAG, "onSurfaceChanged: skipped (nothing changed)");
             return;
         }
-
-        mWidth = width;
-        mHeight = height;
 
         // Recreate EGL if surface changed
         if (mCurrentSurface != surface) {
@@ -154,7 +177,7 @@ public abstract class BasePluginEngine implements WallpaperEngine {
             mEglCurrent = false;
             mSceneInitPending = false;
             if (mEglCreated) {
-                mScene = createScene(mWidth, mHeight, mContext);
+                mScene = createScene(width, height, mContext);
                 // Defer init() until drawFrame — EGL must be current for GL calls in onCreate()
                 mPendingSurface = surface;
                 mPendingResources = mContext.getResources();
@@ -162,8 +185,27 @@ public abstract class BasePluginEngine implements WallpaperEngine {
                 mSceneInitPending = true;
                 tryInjectPrefs(mScene);
             }
-        } else if (mScene != null) {
-            mScene.resize(width, height);
+        }
+        // 尺寸变化不在这里应用 —— drawFrame 会取走 mResizePending 再 resize
+    }
+
+    /**
+     * 取走主线程发布的尺寸变化（渲染线程调用）。
+     *
+     * @return 是否发生了尺寸变化；为 true 时 mWidth/mHeight 已更新
+     */
+    private boolean consumePendingResize() {
+        synchronized (mResizeLock) {
+            if (!mResizePending) {
+                return false;
+            }
+            mResizePending = false;
+            if (mWidth == mRequestedWidth && mHeight == mRequestedHeight) {
+                return false;
+            }
+            mWidth = mRequestedWidth;
+            mHeight = mRequestedHeight;
+            return true;
         }
     }
 
@@ -195,6 +237,12 @@ public abstract class BasePluginEngine implements WallpaperEngine {
         if (!mEglCreated) { Log.w(TAG, "drawFrame skipped: EGL not created"); return; }
         if (mScene == null) { Log.w(TAG, "drawFrame skipped: scene is null"); return; }
 
+        /*
+         * 尺寸变化在这里取走并应用 —— 场景数据(投影矩阵、水面网格)由渲染线程独占，
+         * 主线程只发布不落笔，免得 drawFrame 读到撕裂的矩阵或半更新的数组。
+         */
+        final boolean resized = consumePendingResize();
+
         if (!mEglCurrent) {
             mEglCurrent = EGL14.eglMakeCurrent(mDisplay, mEglSurface, mEglSurface, mEglContext);
             if (!mEglCurrent) {
@@ -217,6 +265,10 @@ public abstract class BasePluginEngine implements WallpaperEngine {
             mScene.start();
             mSceneStartPending = false;
             Log.d(TAG, "Scene started: " + mScene.getClass().getSimpleName());
+        } else if (resized) {
+            // EGL 已 current、尺寸变了 —— 与上面那条路径互斥，不会重复 resize
+            Log.d(TAG, "Applying pending resize: " + mWidth + "x" + mHeight);
+            mScene.resize(mWidth, mHeight);
         }
 
         // 可见性恢复触发的 start() 在渲染线程执行（EGL 上下文已 current）
