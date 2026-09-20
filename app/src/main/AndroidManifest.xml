@@ -6,6 +6,14 @@
 
     <uses-feature android:name="android.software.live_wallpaper" />
 
+    <!--
+      全部壁纸都用 OpenGL ES 3 着色器（#version 300 es），不再支持 ES 2。
+      声明成硬性要求，应用商店据此过滤掉不支持 ES3 的设备 —— 否则装上也是黑屏。
+    -->
+    <uses-feature
+        android:glEsVersion="0x00030000"
+        android:required="true" />
+
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
