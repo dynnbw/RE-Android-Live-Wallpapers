@@ -101,7 +101,7 @@ Submissions that do not are rejected outright, without discussion:
    APK with no bytecode and no way to run is not a valid contribution.
 3. **Porting means rewriting** — this project's approach to old wallpapers is to **rewrite
    the code from the original visual behaviour**, migrating the obsolete OpenGL ES 1.0 /
-   Canvas / RenderScript pipeline to Vulkan / OpenGL ES 2.0. Heavily obfuscated build
+   Canvas / RenderScript pipeline to Vulkan / OpenGL ES 3.0. Heavily obfuscated build
    output and outdated `.so` libraries cannot be used directly; the reverse-engineering cost
    is disproportionate and such submissions are not accepted.
 4. **Respect the project's plans** — the maintainer plans the project around their own
@@ -149,7 +149,7 @@ assets/{id}/
 ├── layout.json        Dynamic preference UI definition
 ├── language/          Settings translations, 13 files (bn de default es fr hi ja ko pt-rBR ru zh-rCN zh-rHK zh-rTW)
 ├── drawable/          Texture images
-├── shaders/GLES/      GLSL ES 2.0 shaders (vertex + fragment)
+├── shaders/GLES/      GLSL ES 3.0 shaders (vertex + fragment)
 ├── icon.png           Wallpaper icon (square, used in the preview grid)
 └── data/              Optional: CSV mesh / vertex data
 ```
@@ -247,9 +247,12 @@ that do not depend on Android classes).
   this project's shaders output **straight alpha** (they emulate GLES 1.x `GL_MODULATE` — RGB
   is not multiplied by alpha), so `GL_ONE` there is not premultiplied blending. **"Fixing"
   it by adding `inPremultiplied` will wash the picture out.**
-- GLES 2.0 has no `#version` preprocessor control flow, and `pow(x, 2.0)` is **NaN** for a
-  negative base (that is modern driver behaviour; older drivers optimised it to `x*x` and
-  happened to be fine) — use `x*x` or guard the branch.
+- `pow(x, 2.0)` is **NaN** for a negative base (that is modern driver behaviour; older
+  drivers optimised it to `x*x` and happened to be fine) — use `x*x` or guard the branch.
+- **Shaders are always `#version 300 es`**, using `in`/`out`/`texture()` and a declared output
+  variable. The ES2-era `attribute`/`varying`/`texture2D`/`gl_FragColor` were removed in 300 es.
+  Note that `#version 300 es` and `#version 100` **cannot be linked into the same program**, so
+  upgrading one pass means changing its vertex and fragment shaders together.
 
 ### Reading settings
 

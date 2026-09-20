@@ -352,6 +352,7 @@ app/src/main/
 - Android SDK Platform 35
 - Android NDK 25.2.9519653（项目固定版本）
 - compileSdk 35 / minSdk 24 / targetSdk 35
+- **需要 OpenGL ES 3.0**：全部着色器是 `#version 300 es`，上下文一律申请 ES3、无 ES2 回退；`AndroidManifest.xml` 里用 `<uses-feature android:glEsVersion="0x00030000" android:required="true">` 声明，应用商店据此过滤设备
 
 ### 构建
 

@@ -11,7 +11,7 @@
   <img alt="Wallpapers" src="https://img.shields.io/badge/壁纸总数-35-3DDC84?style=flat-square&color=green"/>
  <img alt="Wallpapers" src="https://img.shields.io/github/downloads/dynnbw/RE-Android-Live-Wallpapers/total?logo=github&logoColor=white&label=资源下载数&color=green"/>
 
-<font color=#98FB98>Android 动态壁纸合集，将 AOSP / MediaTek 经典壁纸从 RenderScript 移植到 OpenGL ES 2.0 和 Vulkan，在新时代 Android 上继续运行。</font>
+<font color=#98FB98>Android 动态壁纸合集，将 AOSP / MediaTek 经典壁纸从 RenderScript 移植到 OpenGL ES 3.0 和 Vulkan，在新时代 Android 上继续运行。</font>
 
 >  **语言**：[English](README-en.md)
 

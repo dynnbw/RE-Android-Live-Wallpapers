@@ -353,6 +353,7 @@ app/src/main/
 - Android SDK Platform 35
 - Android NDK 25.2.9519653 (project-fixed version)
 - compileSdk 35 / minSdk 24 / targetSdk 35
+- **Requires OpenGL ES 3.0**: every shader is `#version 300 es`, the context is always requested as ES3 with no ES2 fallback, and `AndroidManifest.xml` declares `<uses-feature android:glEsVersion="0x00030000" android:required="true">` so the store filters devices accordingly
 
 ### Build
 

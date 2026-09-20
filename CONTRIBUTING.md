@@ -69,7 +69,7 @@ app/src/main/
 
 1. **来源明确可验证** — 壁纸必须有清晰出处(原始 APK / 源码 / 提供壁纸来源，精确到手机型号、系统版本),能被维护者验证。来源模糊、无法鉴定的资源不予接受。**本项目只移植 AOSP、各大手机厂商、各 ROM 自带的壁纸,且限定在 Android 2~5 时代的老旧壁纸**(需要从过时的 OpenGL ES 1.0 / Canvas / RenderScript 渲染管线迁移的那些);较新的壁纸不在移植范围内。
 2. **素材完整可运行** — 提交的素材必须完整:含字节码(odex / dex 等，如果有odex需要提供系统/system/framework/)。孤立的壳 APK(缺字节码、无法运行)不构成有效贡献。
-3. **移植 = 代码重写** — 本项目对老旧壁纸的做法是**基于原始视觉效果重写代码**,将过时的 OpenGL ES 1.0 / Canvas / RenderScript渲染管线迁移至 Vulkan / OpenGL ES 2.0。混淆严重的编译产物与过时的 .so 库不能直接利用,逆向成本不成比例,不予接受。
+3. **移植 = 代码重写** — 本项目对老旧壁纸的做法是**基于原始视觉效果重写代码**,将过时的 OpenGL ES 1.0 / Canvas / RenderScript渲染管线迁移至 Vulkan / OpenGL ES 3.0。混淆严重的编译产物与过时的 .so 库不能直接利用,逆向成本不成比例,不予接受。
 4. **尊重项目规划** — 维护者按自身兴趣与节奏规划项目。不接受批量壁纸清单式投喂;是否移植、何时移植由维护者评估决定,外部提议不能设定议程或催促进度。
 5. **沟通边界** — 多次提交不符标准资源的,此后仅接受针对**已有壁纸**的具体 [问题反馈](#问题反馈bug-报告);新的资源提议不再讨论。
 
@@ -102,7 +102,7 @@ assets/{id}/
 ├── layout.json        动态偏好界面定义
 ├── language/          设置项翻译,13 个文件(bn de default es fr hi ja ko pt-rBR ru zh-rCN zh-rHK zh-rTW)
 ├── drawable/          纹理图片
-├── shaders/GLES/      GLSL ES 2.0 着色器(顶点 + 片段)
+├── shaders/GLES/      GLSL ES 3.0 着色器(顶点 + 片段)
 ├── icon.png           壁纸图标(正方形,预览网格使用)
 └── data/              可选:CSV 网格/顶点数据
 ```
@@ -169,7 +169,8 @@ assets/{id}/
   **别看到 `glBlendFunc(GL_ONE, ...)` 就以为"漏了预乘解码"**:本项目着色器输出的是
   **直通 alpha**(模拟 GLES 1.x 的 `GL_MODULATE`,RGB 不乘 alpha),`GL_ONE` 在这里不是预乘混合。
   **按"补上 inPremultiplied"去改,会把画面弄泛白。**
-- GLES 2.0 无 `#version` 控制流宏,注意 `pow(x, 2.0)` 对负底数是 **NaN**(现代驱动行为,旧驱动优化为 `x*x` 反而正常)——用 `x*x` 或防护分支。
+- 注意 `pow(x, 2.0)` 对负底数是 **NaN**(现代驱动行为,旧驱动优化为 `x*x` 反而正常)——用 `x*x` 或防护分支。
+- **着色器一律 `#version 300 es`**,关键字用 `in`/`out`/`texture()`/自声明的输出变量。ES2 时代的 `attribute`/`varying`/`texture2D`/`gl_FragColor` 在 300 es 下已移除。注意 `#version 300 es` 与 `#version 100` **不能在同一个 program 里链接**,升级某个 pass 时顶点与片段必须一起改。
 
 ### 设置读取
 

@@ -12,7 +12,7 @@
    <img alt="Wallpapers" src="https://img.shields.io/github/downloads/dynnbw/RE-Android-Live-Wallpapers/total?logo=github&logoColor=white&label=Release%20downloads&color=green"/>
 </p>
 
-<font color=#98FB98>An Android live wallpaper collection that ports classic AOSP / MediaTek wallpapers from RenderScript to OpenGL ES 2.0 and Vulkan, allowing them to run on modern Android versions.</font>
+<font color=#98FB98>An Android live wallpaper collection that ports classic AOSP / MediaTek wallpapers from RenderScript to OpenGL ES 3.0 and Vulkan, allowing them to run on modern Android versions.</font>
 
 >  **Language**：[简体中文](README.md)
 
