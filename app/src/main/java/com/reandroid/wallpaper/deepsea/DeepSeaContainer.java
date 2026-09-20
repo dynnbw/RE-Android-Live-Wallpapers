@@ -3,7 +3,7 @@ package com.reandroid.wallpaper.deepsea;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 import android.opengl.Matrix;
 import android.os.SystemClock;
 import android.view.Display;
@@ -311,14 +311,14 @@ class DeepSeaContainer {
     }
 
     public void screenOn() {
-        GLES20.glClearColor(0.0f, 0.0f, 0.0f, 0.5f);
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
+        GLES30.glClearColor(0.0f, 0.0f, 0.0f, 0.5f);
+        GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT | GLES30.GL_DEPTH_BUFFER_BIT);
         setNumberOfUnit(this.mUnitNumberVal);
     }
 
     public void screenOff() {
-        GLES20.glClearColor(0.0f, 0.0f, 0.0f, 0.5f);
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
+        GLES30.glClearColor(0.0f, 0.0f, 0.0f, 0.5f);
+        GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT | GLES30.GL_DEPTH_BUFFER_BIT);
     }
 
     void setNumberOfUnit(int unitCount) {
@@ -407,7 +407,7 @@ class DeepSeaContainer {
             this.mWaterDropsInJellyfish2.initShader();
             this.mBlurEffect.initShader();
             this.mBlurEffect2.initShader();
-            GLES20.glClearColor(0.0f, 0.0f, 0.0f, 0.5f);
+            GLES30.glClearColor(0.0f, 0.0f, 0.0f, 0.5f);
             this.mIsInitShader = true;
         }
     }
@@ -418,9 +418,9 @@ class DeepSeaContainer {
             this.mTempBackImageCount++;
             return;
         }
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
-        GLES20.glEnable(3042);
-        GLES20.glBlendFunc(770, 1);
+        GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT | GLES30.GL_DEPTH_BUFFER_BIT);
+        GLES30.glEnable(3042);
+        GLES30.glBlendFunc(770, 1);
         if (this.mIsBackgroundChanged) {
             changeBackground();
             this.mIsBackgroundChanged = false;
@@ -710,7 +710,7 @@ class DeepSeaContainer {
         }
         this.mBatteryTime = 0;
         this.mIsSendedReceiver = false;
-        GLES20.glViewport(GLES20.GL_POINTS, 0, width, height);
+        GLES30.glViewport(GLES30.GL_POINTS, 0, width, height);
         DeepSeaSettings.setScale(width, height);
         float aspectRatio = (float) width / (float) height;
         float negativeAspectRatio = -aspectRatio;

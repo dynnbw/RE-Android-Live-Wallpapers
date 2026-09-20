@@ -1,6 +1,6 @@
 package com.reandroid.wallpaper.nightsky;
 
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 import android.opengl.Matrix;
 
 import com.reandroid.utils.MathUtils;
@@ -43,8 +43,8 @@ final class NightSkyTrailRenderer {
     void init(int program) {
         this.program = program;
         if (program != 0) {
-            aPos = GLES20.glGetAttribLocation(program, "aPos");
-            aColor = GLES20.glGetAttribLocation(program, "aColor");
+            aPos = GLES30.glGetAttribLocation(program, "aPos");
+            aColor = GLES30.glGetAttribLocation(program, "aColor");
         } else {
             aPos = -1;
             aColor = -1;
@@ -101,23 +101,23 @@ final class NightSkyTrailRenderer {
             return;
         }
 
-        GLES20.glUseProgram(program);
-        GLES20.glEnable(GLES20.GL_BLEND);
+        GLES30.glUseProgram(program);
+        GLES30.glEnable(GLES30.GL_BLEND);
         // Trail fragment shader outputs premultiplied RGB (rgb * a), so use ONE, ONE.
-        GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE);
+        GLES30.glBlendFunc(GLES30.GL_ONE, GLES30.GL_ONE);
 
         linePosBuffer.position(0);
         lineColorBuffer.position(0);
-        GLES20.glEnableVertexAttribArray(aPos);
-        GLES20.glVertexAttribPointer(aPos, 2, GLES20.GL_FLOAT, false, 2 * 4, linePosBuffer);
-        GLES20.glEnableVertexAttribArray(aColor);
-        GLES20.glVertexAttribPointer(aColor, 4, GLES20.GL_FLOAT, false, 4 * 4, lineColorBuffer);
+        GLES30.glEnableVertexAttribArray(aPos);
+        GLES30.glVertexAttribPointer(aPos, 2, GLES30.GL_FLOAT, false, 2 * 4, linePosBuffer);
+        GLES30.glEnableVertexAttribArray(aColor);
+        GLES30.glVertexAttribPointer(aColor, 4, GLES30.GL_FLOAT, false, 4 * 4, lineColorBuffer);
 
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, lineVertexCount);
+        GLES30.glDrawArrays(GLES30.GL_TRIANGLES, 0, lineVertexCount);
 
-        GLES20.glDisableVertexAttribArray(aPos);
-        GLES20.glDisableVertexAttribArray(aColor);
-        GLES20.glDisable(GLES20.GL_BLEND);
+        GLES30.glDisableVertexAttribArray(aPos);
+        GLES30.glDisableVertexAttribArray(aColor);
+        GLES30.glDisable(GLES30.GL_BLEND);
     }
 
     private void buildTrailLines(

@@ -5,7 +5,7 @@ import android.content.SharedPreferences;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.opengl.GLES11Ext;
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 import android.opengl.Matrix;
 import android.os.Build;
 import android.view.Surface;
@@ -84,12 +84,12 @@ public class WalkAroundGL extends GLESScene {
     public void release() {
         releaseCamera();
         if (mProgram != 0) {
-            GLES20.glDeleteProgram(mProgram);
+            GLES30.glDeleteProgram(mProgram);
             mProgram = 0;
         }
         if (mOesTexId != 0) {
             int[] tex = new int[] { mOesTexId };
-            GLES20.glDeleteTextures(1, tex, 0);
+            GLES30.glDeleteTextures(1, tex, 0);
             mOesTexId = 0;
         }
     }
@@ -108,9 +108,9 @@ public class WalkAroundGL extends GLESScene {
         updatePrefs();
         ensureCamera();
 
-        GLES20.glClearColor(0f, 0f, 0f, 1f);
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
-        GLES20.glViewport(0, 0, mWidth, mHeight);
+        GLES30.glClearColor(0f, 0f, 0f, 1f);
+        GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT);
+        GLES30.glViewport(0, 0, mWidth, mHeight);
 
         if (mSurfaceTexture == null) return;
 
@@ -124,23 +124,23 @@ public class WalkAroundGL extends GLESScene {
         float[] tex = mFinalTexMatrix;
         buildTexMatrix(tex);
 
-        GLES20.glUseProgram(mProgram);
-        GLES20.glUniformMatrix4fv(mMvpLoc, 1, false, mMvp, 0);
-        GLES20.glUniformMatrix4fv(mTexMatrixLoc, 1, false, tex, 0);
-        GLES20.glUniform1i(mSamplerLoc, 0);
+        GLES30.glUseProgram(mProgram);
+        GLES30.glUniformMatrix4fv(mMvpLoc, 1, false, mMvp, 0);
+        GLES30.glUniformMatrix4fv(mTexMatrixLoc, 1, false, tex, 0);
+        GLES30.glUniform1i(mSamplerLoc, 0);
 
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, mOesTexId);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
+        GLES30.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, mOesTexId);
 
-        GLES20.glEnableVertexAttribArray(mPosLoc);
-        GLES20.glEnableVertexAttribArray(mTexLoc);
-        GLES20.glVertexAttribPointer(mPosLoc, 2, GLES20.GL_FLOAT, false, 0, mPosBuffer);
-        GLES20.glVertexAttribPointer(mTexLoc, 2, GLES20.GL_FLOAT, false, 0, mTexBuffer);
+        GLES30.glEnableVertexAttribArray(mPosLoc);
+        GLES30.glEnableVertexAttribArray(mTexLoc);
+        GLES30.glVertexAttribPointer(mPosLoc, 2, GLES30.GL_FLOAT, false, 0, mPosBuffer);
+        GLES30.glVertexAttribPointer(mTexLoc, 2, GLES30.GL_FLOAT, false, 0, mTexBuffer);
 
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
+        GLES30.glDrawArrays(GLES30.GL_TRIANGLE_STRIP, 0, 4);
 
-        GLES20.glDisableVertexAttribArray(mPosLoc);
-        GLES20.glDisableVertexAttribArray(mTexLoc);
+        GLES30.glDisableVertexAttribArray(mPosLoc);
+        GLES30.glDisableVertexAttribArray(mTexLoc);
     }
 
     private void initGLIfNeeded() {
@@ -148,29 +148,29 @@ public class WalkAroundGL extends GLESScene {
 
         String vs = AssetLoader.readText(mContext, "walkaround/shaders/GLES/walkaround_vs.glsl");
         String fs = AssetLoader.readText(mContext, "walkaround/shaders/GLES/walkaround_fs.glsl");
-        int v = compileShader(GLES20.GL_VERTEX_SHADER, vs);
-        int f = compileShader(GLES20.GL_FRAGMENT_SHADER, fs);
+        int v = compileShader(GLES30.GL_VERTEX_SHADER, vs);
+        int f = compileShader(GLES30.GL_FRAGMENT_SHADER, fs);
         if (v == 0 || f == 0) return;
 
-        mProgram = GLES20.glCreateProgram();
-        GLES20.glAttachShader(mProgram, v);
-        GLES20.glAttachShader(mProgram, f);
-        GLES20.glLinkProgram(mProgram);
+        mProgram = GLES30.glCreateProgram();
+        GLES30.glAttachShader(mProgram, v);
+        GLES30.glAttachShader(mProgram, f);
+        GLES30.glLinkProgram(mProgram);
         int[] linkStatus = new int[1];
-        GLES20.glGetProgramiv(mProgram, GLES20.GL_LINK_STATUS, linkStatus, 0);
+        GLES30.glGetProgramiv(mProgram, GLES30.GL_LINK_STATUS, linkStatus, 0);
         if (linkStatus[0] == 0) {
-            GLES20.glDeleteProgram(mProgram);
+            GLES30.glDeleteProgram(mProgram);
             mProgram = 0;
             return;
         }
-        GLES20.glDeleteShader(v);
-        GLES20.glDeleteShader(f);
+        GLES30.glDeleteShader(v);
+        GLES30.glDeleteShader(f);
 
-        mPosLoc = GLES20.glGetAttribLocation(mProgram, "aPosition");
-        mTexLoc = GLES20.glGetAttribLocation(mProgram, "aTexCoord");
-        mMvpLoc = GLES20.glGetUniformLocation(mProgram, "uMVP");
-        mTexMatrixLoc = GLES20.glGetUniformLocation(mProgram, "uTexMatrix");
-        mSamplerLoc = GLES20.glGetUniformLocation(mProgram, "uTex");
+        mPosLoc = GLES30.glGetAttribLocation(mProgram, "aPosition");
+        mTexLoc = GLES30.glGetAttribLocation(mProgram, "aTexCoord");
+        mMvpLoc = GLES30.glGetUniformLocation(mProgram, "uMVP");
+        mTexMatrixLoc = GLES30.glGetUniformLocation(mProgram, "uTexMatrix");
+        mSamplerLoc = GLES30.glGetUniformLocation(mProgram, "uTex");
 
         mOesTexId = createOesTexture();
         if (mOesTexId != 0) {
@@ -358,14 +358,14 @@ public class WalkAroundGL extends GLESScene {
 
     private int createOesTexture() {
         int[] tex = new int[1];
-        GLES20.glGenTextures(1, tex, 0);
+        GLES30.glGenTextures(1, tex, 0);
         int id = tex[0];
         if (id == 0) return 0;
-        GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, id);
-        GLES20.glTexParameteri(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
-        GLES20.glTexParameteri(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
+        GLES30.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, id);
+        GLES30.glTexParameteri(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE);
+        GLES30.glTexParameteri(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE);
         return id;
     }
 

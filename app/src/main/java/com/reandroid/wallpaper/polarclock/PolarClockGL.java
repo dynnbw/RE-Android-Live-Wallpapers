@@ -19,7 +19,7 @@ package com.reandroid.wallpaper.polarclock;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.XmlResourceParser;
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 import android.opengl.Matrix;
 import android.text.format.Time;
 import android.util.Log;
@@ -155,7 +155,7 @@ public class PolarClockGL extends GLESScene {
     public void release() {
         // 释放着色器程序
         if (mProgram != 0) {
-            GLES20.glDeleteProgram(mProgram);
+            GLES30.glDeleteProgram(mProgram);
             mProgram = 0;
         }
         mGlInitialized = false;
@@ -170,7 +170,7 @@ public class PolarClockGL extends GLESScene {
     public void resize(int width, int height) {
         super.resize(width, height);
         // 更新GL视口尺寸
-        GLES20.glViewport(0, 0, width, height);
+        GLES30.glViewport(0, 0, width, height);
     }
 
     /**
@@ -203,18 +203,18 @@ public class PolarClockGL extends GLESScene {
         }
 
         // 设置GL视口并清空画布（使用当前调色板的背景色）
-        GLES20.glViewport(0, 0, mWidth, mHeight);
+        GLES30.glViewport(0, 0, mWidth, mHeight);
         int bg = mPalette.getBackgroundColor();
         float[] bgColor = colorToRgba(bg, mRgbaScratch);
-        GLES20.glClearColor(bgColor[0], bgColor[1], bgColor[2], bgColor[3]);
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+        GLES30.glClearColor(bgColor[0], bgColor[1], bgColor[2], bgColor[3]);
+        GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT);
 
         // 使用当前GL程序，配置渲染状态
-        GLES20.glUseProgram(mProgram);
-        GLES20.glDisable(GLES20.GL_DEPTH_TEST);   // 禁用深度测试
-        GLES20.glDisable(GLES20.GL_CULL_FACE);    // 禁用面剔除
-        GLES20.glEnable(GLES20.GL_BLEND);         // 启用混合（支持透明）
-        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA); // 混合模式
+        GLES30.glUseProgram(mProgram);
+        GLES30.glDisable(GLES30.GL_DEPTH_TEST);   // 禁用深度测试
+        GLES30.glDisable(GLES30.GL_CULL_FACE);    // 禁用面剔除
+        GLES30.glEnable(GLES30.GL_BLEND);         // 启用混合（支持透明）
+        GLES30.glBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ONE_MINUS_SRC_ALPHA); // 混合模式
 
         // 初始化投影矩阵（正交投影）
         Matrix.orthoM(mProjectionMatrix, 0, 0f, mWidth, mHeight, 0f, -1f, 1f);
@@ -233,7 +233,7 @@ public class PolarClockGL extends GLESScene {
 
         // 计算MVP矩阵（投影矩阵 * 模型矩阵）
         Matrix.multiplyMM(mMvpMatrix, 0, mProjectionMatrix, 0, mModelMatrix, 0);
-        GLES20.glUniformMatrix4fv(mMatrixHandle, 1, false, mMvpMatrix, 0);
+        GLES30.glUniformMatrix4fv(mMatrixHandle, 1, false, mMvpMatrix, 0);
 
         // 更新日历到当前时间
         mCalendar.set(timeMs);
@@ -332,28 +332,28 @@ public class PolarClockGL extends GLESScene {
         String fragment = AssetLoader.readText(mContext, "polarclock/shaders/GLES/polarclock_fs.glsl");
 
         // 加载并编译着色器
-        int vShader = loadShader(GLES20.GL_VERTEX_SHADER, vertex);
-        int fShader = loadShader(GLES20.GL_FRAGMENT_SHADER, fragment);
+        int vShader = loadShader(GLES30.GL_VERTEX_SHADER, vertex);
+        int fShader = loadShader(GLES30.GL_FRAGMENT_SHADER, fragment);
         // 创建GL程序并附加着色器
-        mProgram = GLES20.glCreateProgram();
-        GLES20.glAttachShader(mProgram, vShader);
-        GLES20.glAttachShader(mProgram, fShader);
-        GLES20.glLinkProgram(mProgram);
+        mProgram = GLES30.glCreateProgram();
+        GLES30.glAttachShader(mProgram, vShader);
+        GLES30.glAttachShader(mProgram, fShader);
+        GLES30.glLinkProgram(mProgram);
 
         int[] linkStatus = new int[1];
-        GLES20.glGetProgramiv(mProgram, GLES20.GL_LINK_STATUS, linkStatus, 0);
+        GLES30.glGetProgramiv(mProgram, GLES30.GL_LINK_STATUS, linkStatus, 0);
         if (linkStatus[0] == 0) {
-            GLES20.glDeleteProgram(mProgram);
+            GLES30.glDeleteProgram(mProgram);
             mProgram = 0;
             return;
         }
-        GLES20.glDeleteShader(vShader);
-        GLES20.glDeleteShader(fShader);
+        GLES30.glDeleteShader(vShader);
+        GLES30.glDeleteShader(fShader);
 
         // 获取着色器中变量的句柄
-        mPositionHandle = GLES20.glGetAttribLocation(mProgram, "aPosition");
-        mMatrixHandle = GLES20.glGetUniformLocation(mProgram, "uMVPMatrix");
-        mColorHandle = GLES20.glGetUniformLocation(mProgram, "uColor");
+        mPositionHandle = GLES30.glGetAttribLocation(mProgram, "aPosition");
+        mMatrixHandle = GLES30.glGetUniformLocation(mProgram, "uMVPMatrix");
+        mColorHandle = GLES30.glGetUniformLocation(mProgram, "uColor");
     }
 
     /**
@@ -363,9 +363,9 @@ public class PolarClockGL extends GLESScene {
      * @return 编译后的着色器ID
      */
     private int loadShader(int type, String code) {
-        int shader = GLES20.glCreateShader(type);
-        GLES20.glShaderSource(shader, code);
-        GLES20.glCompileShader(shader);
+        int shader = GLES30.glCreateShader(type);
+        GLES30.glShaderSource(shader, code);
+        GLES30.glCompileShader(shader);
         return shader;
     }
 
@@ -375,7 +375,7 @@ public class PolarClockGL extends GLESScene {
      */
     private void setColor(int color) {
         float[] rgba = colorToRgba(color, mRgbaScratch);
-        GLES20.glUniform4f(mColorHandle, rgba[0], rgba[1], rgba[2], rgba[3]);
+        GLES30.glUniform4f(mColorHandle, rgba[0], rgba[1], rgba[2], rgba[3]);
     }
 
     /**
@@ -432,9 +432,9 @@ public class PolarClockGL extends GLESScene {
         buffer.position(0);
 
         // 启用顶点属性数组，绑定顶点数据并绘制三角带
-        GLES20.glEnableVertexAttribArray(mPositionHandle);
-        GLES20.glVertexAttribPointer(mPositionHandle, 2, GLES20.GL_FLOAT, false, 0, buffer);
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, vertexCount);
+        GLES30.glEnableVertexAttribArray(mPositionHandle);
+        GLES30.glVertexAttribPointer(mPositionHandle, 2, GLES30.GL_FLOAT, false, 0, buffer);
+        GLES30.glDrawArrays(GLES30.GL_TRIANGLE_STRIP, 0, vertexCount);
 
         // 如果圆弧未闭合（角度<360度），绘制端点的圆弧封帽
         if (sweep < 0.999f) {
@@ -472,9 +472,9 @@ public class PolarClockGL extends GLESScene {
         buffer.position(0);
 
         // 绘制三角扇（TriFan）实现圆形封帽
-        GLES20.glEnableVertexAttribArray(mPositionHandle);
-        GLES20.glVertexAttribPointer(mPositionHandle, 2, GLES20.GL_FLOAT, false, 0, buffer);
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, vertexCount);
+        GLES30.glEnableVertexAttribArray(mPositionHandle);
+        GLES30.glVertexAttribPointer(mPositionHandle, 2, GLES30.GL_FLOAT, false, 0, buffer);
+        GLES30.glDrawArrays(GLES30.GL_TRIANGLE_FAN, 0, vertexCount);
     }
 
     /**

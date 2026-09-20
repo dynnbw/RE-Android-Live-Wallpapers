@@ -2,7 +2,7 @@ package com.reandroid.wallpaper.deepsea;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 import com.reandroid.utils.AssetLoader;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
@@ -56,39 +56,39 @@ class Sea2 {
 
     public void initShader() {
         if (!isInitShader()) {
-            int createdAndLinkedProgram = GLHelper.getCreatedAndLinkedProgram(GLHelper.getCompiledShader(GLES20.GL_VERTEX_SHADER, AssetLoader.readText(getContext(), "deepsea/shaders/GLES/deepsea_sea2_0_vs.glsl")), GLHelper.getCompiledShader(GLES20.GL_FRAGMENT_SHADER, AssetLoader.readText(getContext(), "deepsea/shaders/GLES/deepsea_sea2_1_fs.glsl")));
+            int createdAndLinkedProgram = GLHelper.getCreatedAndLinkedProgram(GLHelper.getCompiledShader(GLES30.GL_VERTEX_SHADER, AssetLoader.readText(getContext(), "deepsea/shaders/GLES/deepsea_sea2_0_vs.glsl")), GLHelper.getCompiledShader(GLES30.GL_FRAGMENT_SHADER, AssetLoader.readText(getContext(), "deepsea/shaders/GLES/deepsea_sea2_1_fs.glsl")));
             this.mProgramHandle = createdAndLinkedProgram;
-            this.mPositionHandle = GLES20.glGetAttribLocation(createdAndLinkedProgram, "a_position");
-            this.mTexCoordHandle = GLES20.glGetAttribLocation(this.mProgramHandle, "a_texCoord");
-            this.mTextureHandle = GLES20.glGetUniformLocation(this.mProgramHandle, "s_texture");
-            this.mMVPMatrixHandle = GLES20.glGetUniformLocation(this.mProgramHandle, "u_MVPMatrix");
-            this.mBrightnessHandle = GLES20.glGetUniformLocation(this.mProgramHandle, "u_brightness");
+            this.mPositionHandle = GLES30.glGetAttribLocation(createdAndLinkedProgram, "a_position");
+            this.mTexCoordHandle = GLES30.glGetAttribLocation(this.mProgramHandle, "a_texCoord");
+            this.mTextureHandle = GLES30.glGetUniformLocation(this.mProgramHandle, "s_texture");
+            this.mMVPMatrixHandle = GLES30.glGetUniformLocation(this.mProgramHandle, "u_MVPMatrix");
+            this.mBrightnessHandle = GLES30.glGetUniformLocation(this.mProgramHandle, "u_brightness");
             changeTextureToBackground();
             this.mIsInitShader = true;
         }
     }
 
     public void setForDrawing() {
-        GLES20.glUseProgram(this.mProgramHandle);
+        GLES30.glUseProgram(this.mProgramHandle);
         this.mVertices.position(0);
-        GLES20.glVertexAttribPointer(this.mPositionHandle, 3, GLES20.GL_FLOAT, false, 20, (Buffer) this.mVertices);
+        GLES30.glVertexAttribPointer(this.mPositionHandle, 3, GLES30.GL_FLOAT, false, 20, (Buffer) this.mVertices);
         this.mVertices.position(3);
-        GLES20.glVertexAttribPointer(this.mTexCoordHandle, 2, GLES20.GL_FLOAT, false, 20, (Buffer) this.mVertices);
-        GLES20.glEnableVertexAttribArray(this.mPositionHandle);
-        GLES20.glEnableVertexAttribArray(this.mTexCoordHandle);
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, this.mTextureId);
-        GLES20.glEnable(GLES20.GL_TEXTURE_2D);
-        GLES20.glUniform1i(this.mTextureHandle, 0);
-        GLES20.glUniform1f(this.mBrightnessHandle, this.mBrightness);
+        GLES30.glVertexAttribPointer(this.mTexCoordHandle, 2, GLES30.GL_FLOAT, false, 20, (Buffer) this.mVertices);
+        GLES30.glEnableVertexAttribArray(this.mPositionHandle);
+        GLES30.glEnableVertexAttribArray(this.mTexCoordHandle);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, this.mTextureId);
+        GLES30.glEnable(GLES30.GL_TEXTURE_2D);
+        GLES30.glUniform1i(this.mTextureHandle, 0);
+        GLES30.glUniform1f(this.mBrightnessHandle, this.mBrightness);
     }
 
     public void draw() {
-        GLES20.glDrawElements(GLES20.GL_TRIANGLES, 6, GLES20.GL_UNSIGNED_SHORT, this.mIndices);
+        GLES30.glDrawElements(GLES30.GL_TRIANGLES, 6, GLES30.GL_UNSIGNED_SHORT, this.mIndices);
     }
 
     public void update(float[] fArr) {
-        GLES20.glUniformMatrix4fv(this.mMVPMatrixHandle, 1, false, fArr, 0);
+        GLES30.glUniformMatrix4fv(this.mMVPMatrixHandle, 1, false, fArr, 0);
     }
 
     public void changeTextureToBackground() {

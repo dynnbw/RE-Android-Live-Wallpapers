@@ -3,7 +3,7 @@ package com.reandroid.wallpaper.nixietube;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 import android.opengl.GLUtils;
 import android.opengl.Matrix;
 import android.util.Log;
@@ -109,32 +109,32 @@ public class NixieTubeGL extends GLESScene {
         mScene.update(timeMs);
         int[] tubes = mScene.getDisplayValues();
 
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
-        GLES20.glUseProgram(mProgram);
-        GLES20.glEnable(GLES20.GL_BLEND);
-        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
-        GLES20.glUniformMatrix4fv(mMvpHandle, 1, false, mMvpMatrix, 0);
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mAtlasTexture);
-        GLES20.glUniform1i(mTexSamplerHandle, 0);
+        GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT);
+        GLES30.glUseProgram(mProgram);
+        GLES30.glEnable(GLES30.GL_BLEND);
+        GLES30.glBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ONE_MINUS_SRC_ALPHA);
+        GLES30.glUniformMatrix4fv(mMvpHandle, 1, false, mMvpMatrix, 0);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mAtlasTexture);
+        GLES30.glUniform1i(mTexSamplerHandle, 0);
 
         for (int i = 0; i < TUBE_COUNT; i++) {
             buildTubeBuffer(i, tubes[i]);
             drawTube(i);
         }
 
-        GLES20.glDisable(GLES20.GL_BLEND);
+        GLES30.glDisable(GLES30.GL_BLEND);
     }
 
     @Override
     public void release() {
         if (mAtlasTexture != 0) {
             int[] t = {mAtlasTexture};
-            GLES20.glDeleteTextures(1, t, 0);
+            GLES30.glDeleteTextures(1, t, 0);
             mAtlasTexture = 0;
         }
         if (mProgram != 0) {
-            GLES20.glDeleteProgram(mProgram);
+            GLES30.glDeleteProgram(mProgram);
             mProgram = 0;
         }
         mGlReady = false;
@@ -167,10 +167,10 @@ public class NixieTubeGL extends GLESScene {
         mProgram = createProgram(vs, fs);
         if (mProgram == 0) return;
 
-        mPosHandle      = GLES20.glGetAttribLocation(mProgram, "aPosition");
-        mTexHandle      = GLES20.glGetAttribLocation(mProgram, "aTexCoord");
-        mMvpHandle      = GLES20.glGetUniformLocation(mProgram, "uMVPMatrix");
-        mTexSamplerHandle = GLES20.glGetUniformLocation(mProgram, "uTexture");
+        mPosHandle      = GLES30.glGetAttribLocation(mProgram, "aPosition");
+        mTexHandle      = GLES30.glGetAttribLocation(mProgram, "aTexCoord");
+        mMvpHandle      = GLES30.glGetUniformLocation(mProgram, "uMVPMatrix");
+        mTexSamplerHandle = GLES30.glGetUniformLocation(mProgram, "uTexture");
 
         mAtlasTexture = loadAtlas();
         mTubeBuffers = new FloatBuffer[TUBE_COUNT];
@@ -179,8 +179,8 @@ public class NixieTubeGL extends GLESScene {
                     .order(ByteOrder.nativeOrder()).asFloatBuffer();
         }
 
-        GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        GLES20.glDisable(GLES20.GL_DEPTH_TEST);
+        GLES30.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        GLES30.glDisable(GLES30.GL_DEPTH_TEST);
         resize(mWidth, mHeight);
         mScene.startAudio();
         mGlReady = true;
@@ -193,13 +193,13 @@ public class NixieTubeGL extends GLESScene {
             Bitmap bmp = BitmapFactory.decodeStream(is, null, opts);
             if (bmp == null) return 0;
             int[] tex = new int[1];
-            GLES20.glGenTextures(1, tex, 0);
-            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, tex[0]);
-            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
-            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
-            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
-            GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bmp, 0);
+            GLES30.glGenTextures(1, tex, 0);
+            GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, tex[0]);
+            GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR);
+            GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
+            GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE);
+            GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE);
+            GLUtils.texImage2D(GLES30.GL_TEXTURE_2D, 0, bmp, 0);
             bmp.recycle();
             return tex[0];
         } catch (Exception e) {
@@ -240,13 +240,13 @@ public class NixieTubeGL extends GLESScene {
     private void drawTube(int i) {
         FloatBuffer buf = mTubeBuffers[i];
         buf.position(0);
-        GLES20.glVertexAttribPointer(mPosHandle, 3, GLES20.GL_FLOAT, false, 20, buf);
-        GLES20.glEnableVertexAttribArray(mPosHandle);
+        GLES30.glVertexAttribPointer(mPosHandle, 3, GLES30.GL_FLOAT, false, 20, buf);
+        GLES30.glEnableVertexAttribArray(mPosHandle);
         buf.position(3);
-        GLES20.glVertexAttribPointer(mTexHandle, 2, GLES20.GL_FLOAT, false, 20, buf);
-        GLES20.glEnableVertexAttribArray(mTexHandle);
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, 4);
-        GLES20.glDisableVertexAttribArray(mPosHandle);
-        GLES20.glDisableVertexAttribArray(mTexHandle);
+        GLES30.glVertexAttribPointer(mTexHandle, 2, GLES30.GL_FLOAT, false, 20, buf);
+        GLES30.glEnableVertexAttribArray(mTexHandle);
+        GLES30.glDrawArrays(GLES30.GL_TRIANGLE_FAN, 0, 4);
+        GLES30.glDisableVertexAttribArray(mPosHandle);
+        GLES30.glDisableVertexAttribArray(mTexHandle);
     }
 }

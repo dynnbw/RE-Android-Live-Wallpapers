@@ -18,7 +18,7 @@ package com.reandroid.wallpaper.galaxy;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 import android.opengl.GLUtils;
 import android.os.Process;
 import android.os.SystemClock;
@@ -108,21 +108,21 @@ public class GalaxyGL extends GLESScene {
     @Override
     public void release() {
         int[] tex = new int[] { mTexSpace, mTexFlares, mTexLight1 };
-        GLES20.glDeleteTextures(tex.length, tex, 0);
+        GLES30.glDeleteTextures(tex.length, tex, 0);
         mTexSpace = 0;
         mTexFlares = 0;
         mTexLight1 = 0;
 
         if (mBgProgram != 0) {
-            GLES20.glDeleteProgram(mBgProgram);
+            GLES30.glDeleteProgram(mBgProgram);
             mBgProgram = 0;
         }
         if (mParticleProgram != 0) {
-            GLES20.glDeleteProgram(mParticleProgram);
+            GLES30.glDeleteProgram(mParticleProgram);
             mParticleProgram = 0;
         }
         if (mLightProgram != 0) {
-            GLES20.glDeleteProgram(mLightProgram);
+            GLES30.glDeleteProgram(mLightProgram);
             mLightProgram = 0;
         }
 
@@ -189,10 +189,10 @@ public class GalaxyGL extends GLESScene {
 
         Log.d(TAG, "initGL 开始执行");
         mGLInitialized = true;
-        GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        GLES20.glDisable(GLES20.GL_DEPTH_TEST);
-        GLES20.glEnable(GLES20.GL_BLEND);
-        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE);
+        GLES30.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        GLES30.glDisable(GLES30.GL_DEPTH_TEST);
+        GLES30.glEnable(GLES30.GL_BLEND);
+        GLES30.glBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ONE);
 
         createPrograms();
         loadTextures();
@@ -239,7 +239,7 @@ public class GalaxyGL extends GLESScene {
 
         if (mTexLight1 != 0) {
             int[] tex = new int[] { mTexLight1 };
-            GLES20.glDeleteTextures(1, tex, 0);
+            GLES30.glDeleteTextures(1, tex, 0);
             mTexLight1 = 0;
         }
 
@@ -250,15 +250,15 @@ public class GalaxyGL extends GLESScene {
 
     private int loadTexture(Bitmap bitmap) {
         int[] textureHandle = new int[1];
-        GLES20.glGenTextures(1, textureHandle, 0);
+        GLES30.glGenTextures(1, textureHandle, 0);
 
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureHandle[0]);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, textureHandle[0]);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE);
 
-        GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
+        GLUtils.texImage2D(GLES30.GL_TEXTURE_2D, 0, bitmap, 0);
         bitmap.recycle();
 
         return textureHandle[0];
@@ -290,7 +290,7 @@ public class GalaxyGL extends GLESScene {
         syncLightTexturePreference();
 
         syncParticleBuffers(sceneData);
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+        GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT);
         drawBackground();
         drawParticles(sceneData);
         drawLights(sceneData);
@@ -320,7 +320,7 @@ public class GalaxyGL extends GLESScene {
     }
 
     private void drawBackground() {
-        GLES20.glUseProgram(mBgProgram);
+        GLES30.glUseProgram(mBgProgram);
 
         float[] vertices = BG_VERTICES;
 
@@ -332,66 +332,66 @@ public class GalaxyGL extends GLESScene {
             mBgVertexBuffer.position(0);
         }
 
-        int posHandle = GLES20.glGetAttribLocation(mBgProgram, "aPosition");
-        int texHandle = GLES20.glGetAttribLocation(mBgProgram, "aTexCoord");
-        int samplerHandle = GLES20.glGetUniformLocation(mBgProgram, "uTexture");
+        int posHandle = GLES30.glGetAttribLocation(mBgProgram, "aPosition");
+        int texHandle = GLES30.glGetAttribLocation(mBgProgram, "aTexCoord");
+        int samplerHandle = GLES30.glGetUniformLocation(mBgProgram, "uTexture");
 
-        GLES20.glEnableVertexAttribArray(posHandle);
-        GLES20.glEnableVertexAttribArray(texHandle);
+        GLES30.glEnableVertexAttribArray(posHandle);
+        GLES30.glEnableVertexAttribArray(texHandle);
 
         mBgVertexBuffer.position(0);
-        GLES20.glVertexAttribPointer(posHandle, 2, GLES20.GL_FLOAT, false, 16, mBgVertexBuffer);
+        GLES30.glVertexAttribPointer(posHandle, 2, GLES30.GL_FLOAT, false, 16, mBgVertexBuffer);
         mBgVertexBuffer.position(2);
-        GLES20.glVertexAttribPointer(texHandle, 2, GLES20.GL_FLOAT, false, 16, mBgVertexBuffer);
+        GLES30.glVertexAttribPointer(texHandle, 2, GLES30.GL_FLOAT, false, 16, mBgVertexBuffer);
 
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTexSpace);
-        GLES20.glUniform1i(samplerHandle, 0);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mTexSpace);
+        GLES30.glUniform1i(samplerHandle, 0);
 
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
+        GLES30.glDrawArrays(GLES30.GL_TRIANGLE_STRIP, 0, 4);
 
-        GLES20.glDisableVertexAttribArray(posHandle);
-        GLES20.glDisableVertexAttribArray(texHandle);
+        GLES30.glDisableVertexAttribArray(posHandle);
+        GLES30.glDisableVertexAttribArray(texHandle);
     }
 
     private void drawParticles(GalaxyScene.SceneData sceneData) {
-        GLES20.glUseProgram(mParticleProgram);
+        GLES30.glUseProgram(mParticleProgram);
 
-        int posHandle = GLES20.glGetAttribLocation(mParticleProgram, "aPosition");
-        int colorHandle = GLES20.glGetAttribLocation(mParticleProgram, "aColor");
-        int mvpHandle = GLES20.glGetUniformLocation(mParticleProgram, "uMVPMatrix");
-        int samplerHandle = GLES20.glGetUniformLocation(mParticleProgram, "uTexture");
-        int alphaHandle = GLES20.glGetUniformLocation(mParticleProgram, "uAlphaMultiplier");
+        int posHandle = GLES30.glGetAttribLocation(mParticleProgram, "aPosition");
+        int colorHandle = GLES30.glGetAttribLocation(mParticleProgram, "aColor");
+        int mvpHandle = GLES30.glGetUniformLocation(mParticleProgram, "uMVPMatrix");
+        int samplerHandle = GLES30.glGetUniformLocation(mParticleProgram, "uTexture");
+        int alphaHandle = GLES30.glGetUniformLocation(mParticleProgram, "uAlphaMultiplier");
 
-        GLES20.glUniformMatrix4fv(mvpHandle, 1, false, sceneData.getMvpMatrix(), 0);
-        GLES20.glUniform1f(alphaHandle, sceneData.getParticleAlphaMultiplier());
+        GLES30.glUniformMatrix4fv(mvpHandle, 1, false, sceneData.getMvpMatrix(), 0);
+        GLES30.glUniform1f(alphaHandle, sceneData.getParticleAlphaMultiplier());
 
-        GLES20.glEnableVertexAttribArray(posHandle);
-        GLES20.glEnableVertexAttribArray(colorHandle);
+        GLES30.glEnableVertexAttribArray(posHandle);
+        GLES30.glEnableVertexAttribArray(colorHandle);
 
         mParticlePositionBuffer.position(0);
-        GLES20.glVertexAttribPointer(posHandle, 3, GLES20.GL_FLOAT, false, 0, mParticlePositionBuffer);
+        GLES30.glVertexAttribPointer(posHandle, 3, GLES30.GL_FLOAT, false, 0, mParticlePositionBuffer);
 
         mParticleColorBuffer.position(0);
-        GLES20.glVertexAttribPointer(colorHandle, 4, GLES20.GL_FLOAT, false, 0, mParticleColorBuffer);
+        GLES30.glVertexAttribPointer(colorHandle, 4, GLES30.GL_FLOAT, false, 0, mParticleColorBuffer);
 
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTexFlares);
-        GLES20.glUniform1i(samplerHandle, 0);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mTexFlares);
+        GLES30.glUniform1i(samplerHandle, 0);
 
-        GLES20.glDrawArrays(GLES20.GL_POINTS, 0, sceneData.getParticleCount());
+        GLES30.glDrawArrays(GLES30.GL_POINTS, 0, sceneData.getParticleCount());
 
-        GLES20.glDisableVertexAttribArray(posHandle);
-        GLES20.glDisableVertexAttribArray(colorHandle);
+        GLES30.glDisableVertexAttribArray(posHandle);
+        GLES30.glDisableVertexAttribArray(colorHandle);
     }
 
     private void drawLights(GalaxyScene.SceneData sceneData) {
-        GLES20.glUseProgram(mLightProgram);
+        GLES30.glUseProgram(mLightProgram);
 
-        int posHandle = GLES20.glGetAttribLocation(mLightProgram, "aPosition");
-        int texHandle = GLES20.glGetAttribLocation(mLightProgram, "aTexCoord");
-        int mvpHandle = GLES20.glGetUniformLocation(mLightProgram, "uMVPMatrix");
-        int samplerHandle = GLES20.glGetUniformLocation(mLightProgram, "uTexture");
+        int posHandle = GLES30.glGetAttribLocation(mLightProgram, "aPosition");
+        int texHandle = GLES30.glGetAttribLocation(mLightProgram, "aTexCoord");
+        int mvpHandle = GLES30.glGetUniformLocation(mLightProgram, "uMVPMatrix");
+        int samplerHandle = GLES30.glGetUniformLocation(mLightProgram, "uTexture");
 
         float baseSize = mScene.getGalaxyRadius() * 512.0f / 300.0f;
         float sx = (baseSize / mWidth) * 1.1f;
@@ -410,24 +410,24 @@ public class GalaxyGL extends GLESScene {
             mLightQuadBuffer.position(0);
         }
 
-        GLES20.glEnableVertexAttribArray(posHandle);
-        GLES20.glEnableVertexAttribArray(texHandle);
+        GLES30.glEnableVertexAttribArray(posHandle);
+        GLES30.glEnableVertexAttribArray(texHandle);
 
-        GLES20.glUniformMatrix4fv(mvpHandle, 1, false, sceneData.getMvpMatrix(), 0);
+        GLES30.glUniformMatrix4fv(mvpHandle, 1, false, sceneData.getMvpMatrix(), 0);
 
         mLightQuadBuffer.position(0);
-        GLES20.glVertexAttribPointer(posHandle, 3, GLES20.GL_FLOAT, false, 20, mLightQuadBuffer);
+        GLES30.glVertexAttribPointer(posHandle, 3, GLES30.GL_FLOAT, false, 20, mLightQuadBuffer);
         mLightQuadBuffer.position(3);
-        GLES20.glVertexAttribPointer(texHandle, 2, GLES20.GL_FLOAT, false, 20, mLightQuadBuffer);
+        GLES30.glVertexAttribPointer(texHandle, 2, GLES30.GL_FLOAT, false, 20, mLightQuadBuffer);
 
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTexLight1);
-        GLES20.glUniform1i(samplerHandle, 0);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mTexLight1);
+        GLES30.glUniform1i(samplerHandle, 0);
 
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
+        GLES30.glDrawArrays(GLES30.GL_TRIANGLE_STRIP, 0, 4);
 
-        GLES20.glDisableVertexAttribArray(posHandle);
-        GLES20.glDisableVertexAttribArray(texHandle);
+        GLES30.glDisableVertexAttribArray(posHandle);
+        GLES30.glDisableVertexAttribArray(texHandle);
     }
 
     private void syncPerfSettingsIfNeeded(long nowMs) {

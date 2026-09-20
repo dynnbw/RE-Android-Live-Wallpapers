@@ -3,7 +3,7 @@ package com.reandroid.wallpaper.phasebeam;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 import android.opengl.GLUtils;
 import android.util.Log;
 
@@ -61,16 +61,16 @@ public class PhaseBeamGL extends GLESScene {
     @Override
     public void release() {
         int[] tex = new int[] { mTexDot, mTexBeam };
-        GLES20.glDeleteTextures(tex.length, tex, 0);
+        GLES30.glDeleteTextures(tex.length, tex, 0);
         mTexDot = 0;
         mTexBeam = 0;
 
         if (mBgProgram != 0) {
-            GLES20.glDeleteProgram(mBgProgram);
+            GLES30.glDeleteProgram(mBgProgram);
             mBgProgram = 0;
         }
         if (mDotProgram != 0) {
-            GLES20.glDeleteProgram(mDotProgram);
+            GLES30.glDeleteProgram(mDotProgram);
             mDotProgram = 0;
         }
 
@@ -111,7 +111,7 @@ public class PhaseBeamGL extends GLESScene {
         if (!mInitialized) return;
 
         if (mScene.mNeedViewport) {
-            GLES20.glViewport(0, 0, mWidth, mHeight);
+            GLES30.glViewport(0, 0, mWidth, mHeight);
             mScene.mNeedViewport = false;
         }
 
@@ -146,7 +146,7 @@ public class PhaseBeamGL extends GLESScene {
 
         mScene.updateParticles(timeScale, newOffset);
 
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+        GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT);
 
         drawBackground();
         drawParticles();
@@ -158,10 +158,10 @@ public class PhaseBeamGL extends GLESScene {
     private void initGLIfNeeded() {
         if (mInitialized || mResources == null) return;
 
-        GLES20.glClearColor(0f, 0f, 0f, 1f);
-        GLES20.glDisable(GLES20.GL_DEPTH_TEST);
-        GLES20.glEnable(GLES20.GL_BLEND);
-        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE);
+        GLES30.glClearColor(0f, 0f, 0f, 1f);
+        GLES30.glDisable(GLES30.GL_DEPTH_TEST);
+        GLES30.glEnable(GLES30.GL_BLEND);
+        GLES30.glBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ONE);
 
         final String shaderPath = "phasebeam/shaders/GLES/";
         String bgVs = AssetLoader.readText(mContext, shaderPath + "phasebeam_bg_vs.glsl");
@@ -176,16 +176,16 @@ public class PhaseBeamGL extends GLESScene {
             return;
         }
 
-        mBgPositionLoc = GLES20.glGetAttribLocation(mBgProgram, "ATTRIB_position");
-        mBgOffsetLoc = GLES20.glGetAttribLocation(mBgProgram, "ATTRIB_offsetX");
-        mBgRealColorLoc = GLES20.glGetAttribLocation(mBgProgram, "ATTRIB_realColor");
-        mBgAdjustLoc = GLES20.glGetAttribLocation(mBgProgram, "ATTRIB_adjust");
+        mBgPositionLoc = GLES30.glGetAttribLocation(mBgProgram, "ATTRIB_position");
+        mBgOffsetLoc = GLES30.glGetAttribLocation(mBgProgram, "ATTRIB_offsetX");
+        mBgRealColorLoc = GLES30.glGetAttribLocation(mBgProgram, "ATTRIB_realColor");
+        mBgAdjustLoc = GLES30.glGetAttribLocation(mBgProgram, "ATTRIB_adjust");
 
-        mDotPositionLoc = GLES20.glGetAttribLocation(mDotProgram, "ATTRIB_position");
-        mDotOffsetLoc = GLES20.glGetAttribLocation(mDotProgram, "ATTRIB_offsetX");
-        mDotAdjustLoc = GLES20.glGetAttribLocation(mDotProgram, "ATTRIB_adjust");
-        mDotTexLoc = GLES20.glGetUniformLocation(mDotProgram, "UNI_Tex0");
-        mDotScaleLoc = GLES20.glGetUniformLocation(mDotProgram, "UNI_scaleSize");
+        mDotPositionLoc = GLES30.glGetAttribLocation(mDotProgram, "ATTRIB_position");
+        mDotOffsetLoc = GLES30.glGetAttribLocation(mDotProgram, "ATTRIB_offsetX");
+        mDotAdjustLoc = GLES30.glGetAttribLocation(mDotProgram, "ATTRIB_adjust");
+        mDotTexLoc = GLES30.glGetUniformLocation(mDotProgram, "UNI_Tex0");
+        mDotScaleLoc = GLES30.glGetUniformLocation(mDotProgram, "UNI_scaleSize");
 
         mScene.loadBackgroundMesh(mContext,
                 "sunbeam".equals(mScene.mTheme)
@@ -206,7 +206,7 @@ public class PhaseBeamGL extends GLESScene {
 
     private void reloadTextures() {
         int[] tex = new int[] { mTexDot, mTexBeam };
-        GLES20.glDeleteTextures(tex.length, tex, 0);
+        GLES30.glDeleteTextures(tex.length, tex, 0);
 
         final String texPath = "phasebeam/drawable/";
         // Sunbeam and waterbeam use their original colored textures; phasebeam uses grey in recolor mode
@@ -221,54 +221,54 @@ public class PhaseBeamGL extends GLESScene {
     }
 
     private void drawBackground() {
-        GLES20.glUseProgram(mBgProgram);
+        GLES30.glUseProgram(mBgProgram);
 
-        GLES20.glEnableVertexAttribArray(mBgPositionLoc);
-        GLES20.glEnableVertexAttribArray(mBgOffsetLoc);
-        GLES20.glEnableVertexAttribArray(mBgRealColorLoc);
-        GLES20.glEnableVertexAttribArray(mBgAdjustLoc);
+        GLES30.glEnableVertexAttribArray(mBgPositionLoc);
+        GLES30.glEnableVertexAttribArray(mBgOffsetLoc);
+        GLES30.glEnableVertexAttribArray(mBgRealColorLoc);
+        GLES30.glEnableVertexAttribArray(mBgAdjustLoc);
 
-        GLES20.glVertexAttribPointer(mBgPositionLoc, 3, GLES20.GL_FLOAT, false, 0, mScene.mBgPositionBuffer);
-        GLES20.glVertexAttribPointer(mBgOffsetLoc, 1, GLES20.GL_FLOAT, false, 0, mScene.mBgOffsetBuffer);
-        GLES20.glVertexAttribPointer(mBgRealColorLoc, 4, GLES20.GL_FLOAT, false, 0, mScene.mBgRealColorBuffer);
-        GLES20.glVertexAttribPointer(mBgAdjustLoc, 3, GLES20.GL_FLOAT, false, 0, mScene.mBgAdjustBuffer);
+        GLES30.glVertexAttribPointer(mBgPositionLoc, 3, GLES30.GL_FLOAT, false, 0, mScene.mBgPositionBuffer);
+        GLES30.glVertexAttribPointer(mBgOffsetLoc, 1, GLES30.GL_FLOAT, false, 0, mScene.mBgOffsetBuffer);
+        GLES30.glVertexAttribPointer(mBgRealColorLoc, 4, GLES30.GL_FLOAT, false, 0, mScene.mBgRealColorBuffer);
+        GLES30.glVertexAttribPointer(mBgAdjustLoc, 3, GLES30.GL_FLOAT, false, 0, mScene.mBgAdjustBuffer);
 
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, mScene.mBgVertexCount);
+        GLES30.glDrawArrays(GLES30.GL_TRIANGLES, 0, mScene.mBgVertexCount);
 
-        GLES20.glDisableVertexAttribArray(mBgPositionLoc);
-        GLES20.glDisableVertexAttribArray(mBgOffsetLoc);
-        GLES20.glDisableVertexAttribArray(mBgRealColorLoc);
-        GLES20.glDisableVertexAttribArray(mBgAdjustLoc);
+        GLES30.glDisableVertexAttribArray(mBgPositionLoc);
+        GLES30.glDisableVertexAttribArray(mBgOffsetLoc);
+        GLES30.glDisableVertexAttribArray(mBgRealColorLoc);
+        GLES30.glDisableVertexAttribArray(mBgAdjustLoc);
     }
 
     private void drawParticles() {
-        GLES20.glUseProgram(mDotProgram);
+        GLES30.glUseProgram(mDotProgram);
 
-        GLES20.glUniform1i(mDotTexLoc, 0);
-        GLES20.glUniform1f(mDotScaleLoc, mScene.mScaleSize);
+        GLES30.glUniform1i(mDotTexLoc, 0);
+        GLES30.glUniform1f(mDotScaleLoc, mScene.mScaleSize);
 
-        GLES20.glEnableVertexAttribArray(mDotPositionLoc);
-        GLES20.glEnableVertexAttribArray(mDotOffsetLoc);
-        GLES20.glEnableVertexAttribArray(mDotAdjustLoc);
+        GLES30.glEnableVertexAttribArray(mDotPositionLoc);
+        GLES30.glEnableVertexAttribArray(mDotOffsetLoc);
+        GLES30.glEnableVertexAttribArray(mDotAdjustLoc);
 
         // Draw beams
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTexBeam);
-        GLES20.glVertexAttribPointer(mDotPositionLoc, 3, GLES20.GL_FLOAT, false, 0, mScene.mBeamPositionBuffer);
-        GLES20.glVertexAttribPointer(mDotOffsetLoc, 1, GLES20.GL_FLOAT, false, 0, mScene.mBeamOffsetBuffer);
-        GLES20.glVertexAttribPointer(mDotAdjustLoc, 3, GLES20.GL_FLOAT, false, 0, mScene.mBeamAdjustBuffer);
-        GLES20.glDrawArrays(GLES20.GL_POINTS, 0, mScene.getDotCount());
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mTexBeam);
+        GLES30.glVertexAttribPointer(mDotPositionLoc, 3, GLES30.GL_FLOAT, false, 0, mScene.mBeamPositionBuffer);
+        GLES30.glVertexAttribPointer(mDotOffsetLoc, 1, GLES30.GL_FLOAT, false, 0, mScene.mBeamOffsetBuffer);
+        GLES30.glVertexAttribPointer(mDotAdjustLoc, 3, GLES30.GL_FLOAT, false, 0, mScene.mBeamAdjustBuffer);
+        GLES30.glDrawArrays(GLES30.GL_POINTS, 0, mScene.getDotCount());
 
         // Draw dots
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTexDot);
-        GLES20.glVertexAttribPointer(mDotPositionLoc, 3, GLES20.GL_FLOAT, false, 0, mScene.mDotPositionBuffer);
-        GLES20.glVertexAttribPointer(mDotOffsetLoc, 1, GLES20.GL_FLOAT, false, 0, mScene.mDotOffsetBuffer);
-        GLES20.glVertexAttribPointer(mDotAdjustLoc, 3, GLES20.GL_FLOAT, false, 0, mScene.mDotAdjustBuffer);
-        GLES20.glDrawArrays(GLES20.GL_POINTS, 0, mScene.getDotCount());
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mTexDot);
+        GLES30.glVertexAttribPointer(mDotPositionLoc, 3, GLES30.GL_FLOAT, false, 0, mScene.mDotPositionBuffer);
+        GLES30.glVertexAttribPointer(mDotOffsetLoc, 1, GLES30.GL_FLOAT, false, 0, mScene.mDotOffsetBuffer);
+        GLES30.glVertexAttribPointer(mDotAdjustLoc, 3, GLES30.GL_FLOAT, false, 0, mScene.mDotAdjustBuffer);
+        GLES30.glDrawArrays(GLES30.GL_POINTS, 0, mScene.getDotCount());
 
-        GLES20.glDisableVertexAttribArray(mDotPositionLoc);
-        GLES20.glDisableVertexAttribArray(mDotOffsetLoc);
-        GLES20.glDisableVertexAttribArray(mDotAdjustLoc);
+        GLES30.glDisableVertexAttribArray(mDotPositionLoc);
+        GLES30.glDisableVertexAttribArray(mDotOffsetLoc);
+        GLES30.glDisableVertexAttribArray(mDotAdjustLoc);
     }
 
     private int loadTexture(String assetPath) {
@@ -278,14 +278,14 @@ public class PhaseBeamGL extends GLESScene {
             return 0;
         }
         int[] tex = new int[1];
-        GLES20.glGenTextures(1, tex, 0);
+        GLES30.glGenTextures(1, tex, 0);
         int textureId = tex[0];
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
-        GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, textureId);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE);
+        GLUtils.texImage2D(GLES30.GL_TEXTURE_2D, 0, bitmap, 0);
         bitmap.recycle();
         return textureId;
     }

@@ -3,7 +3,7 @@ package com.reandroid.wallpaper.nexus;
 import android.app.WallpaperManager;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 import android.opengl.GLUtils;
 import android.opengl.Matrix;
 import android.os.SystemClock;
@@ -105,14 +105,14 @@ public class NexusGL extends GLESScene {
     public void release() {
         // 释放纹理资源
         int[] tex = new int[] { mTexBackground, mTexPulse, mTexGlow };
-        GLES20.glDeleteTextures(tex.length, tex, 0);
+        GLES30.glDeleteTextures(tex.length, tex, 0);
         mTexBackground = 0;
         mTexPulse = 0;
         mTexGlow = 0;
 
         // 释放着色器程序
         if (mProgram != 0) {
-            GLES20.glDeleteProgram(mProgram);
+            GLES30.glDeleteProgram(mProgram);
             mProgram = 0;
         }
 
@@ -206,10 +206,10 @@ public class NexusGL extends GLESScene {
         // 判断是否横屏（宽>高则旋转渲染）
         mScene.mRotate = mWidth > mHeight;
         // 设置视口大小
-        GLES20.glViewport(0, 0, mWidth, mHeight);
+        GLES30.glViewport(0, 0, mWidth, mHeight);
         // 清空颜色缓冲区（黑色背景）
-        GLES20.glClearColor(0f, 0f, 0f, 1f);
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+        GLES30.glClearColor(0f, 0f, 0f, 1f);
+        GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT);
 
         // 绘制背景
         drawBackground();
@@ -232,9 +232,9 @@ public class NexusGL extends GLESScene {
         }
 
         // 禁用深度测试（2D渲染不需要）
-        GLES20.glDisable(GLES20.GL_DEPTH_TEST);
+        GLES30.glDisable(GLES30.GL_DEPTH_TEST);
         // 启用混合（实现透明/光晕效果）
-        GLES20.glEnable(GLES20.GL_BLEND);
+        GLES30.glEnable(GLES30.GL_BLEND);
 
         mScene.applySettings(mScene.loadSettings(mResources));
 
@@ -303,17 +303,17 @@ public class NexusGL extends GLESScene {
         }
         int[] textureHandle = new int[1];
         // 生成纹理ID
-        GLES20.glGenTextures(1, textureHandle, 0);
+        GLES30.glGenTextures(1, textureHandle, 0);
         // 绑定纹理
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureHandle[0]);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, textureHandle[0]);
         // 设置纹理过滤模式（线性过滤）
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
         // 设置纹理环绕模式（边缘夹紧）
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE);
         // 将位图数据上传到纹理
-        GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
+        GLUtils.texImage2D(GLES30.GL_TEXTURE_2D, 0, bitmap, 0);
         // 回收位图（释放内存）
         bitmap.recycle();
         return textureHandle[0];
@@ -325,9 +325,9 @@ public class NexusGL extends GLESScene {
      */
     private void drawBackground() {
         // 背景不需要混合（不透明）
-        GLES20.glDisable(GLES20.GL_BLEND);
+        GLES30.glDisable(GLES30.GL_BLEND);
         // 使用着色器程序
-        GLES20.glUseProgram(mProgram);
+        GLES30.glUseProgram(mProgram);
 
         // 初始化模型矩阵
         Matrix.setIdentityM(mModelMatrix, 0);
@@ -393,11 +393,11 @@ public class NexusGL extends GLESScene {
             return;
         }
         // 启用混合（脉冲/光晕需要透明效果）
-        GLES20.glEnable(GLES20.GL_BLEND);
+        GLES30.glEnable(GLES30.GL_BLEND);
         // 设置混合模式（加法混合，增强光晕效果）
-        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE);
+        GLES30.glBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ONE);
         // 使用着色器程序
-        GLES20.glUseProgram(mProgram);
+        GLES30.glUseProgram(mProgram);
 
         // 遍历所有脉冲
         for (int i = 0; i < setSize; i++) {
@@ -634,28 +634,28 @@ public class NexusGL extends GLESScene {
         mTexCoordBuffer.put(uv).position(0);
 
         // 设置MVP矩阵统一变量
-        GLES20.glUniformMatrix4fv(mMatrixHandle, 1, false, mvp, 0);
+        GLES30.glUniformMatrix4fv(mMatrixHandle, 1, false, mvp, 0);
         // 设置颜色统一变量
-        GLES20.glUniform4f(mColorHandle, mColor[0], mColor[1], mColor[2], mColor[3]);
+        GLES30.glUniform4f(mColorHandle, mColor[0], mColor[1], mColor[2], mColor[3]);
 
         // 激活并绑定纹理
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId);
-        GLES20.glUniform1i(mTextureHandle, 0);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, textureId);
+        GLES30.glUniform1i(mTextureHandle, 0);
 
         // 启用顶点位置属性
-        GLES20.glEnableVertexAttribArray(mPositionHandle);
-        GLES20.glVertexAttribPointer(mPositionHandle, 4, GLES20.GL_FLOAT, false, 16, mVertexBuffer);
+        GLES30.glEnableVertexAttribArray(mPositionHandle);
+        GLES30.glVertexAttribPointer(mPositionHandle, 4, GLES30.GL_FLOAT, false, 16, mVertexBuffer);
 
         // 启用纹理坐标属性
-        GLES20.glEnableVertexAttribArray(mTexCoordHandle);
-        GLES20.glVertexAttribPointer(mTexCoordHandle, 2, GLES20.GL_FLOAT, false, 8, mTexCoordBuffer);
+        GLES30.glEnableVertexAttribArray(mTexCoordHandle);
+        GLES30.glVertexAttribPointer(mTexCoordHandle, 2, GLES30.GL_FLOAT, false, 8, mTexCoordBuffer);
 
         // 绘制三角带（4个顶点）
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
+        GLES30.glDrawArrays(GLES30.GL_TRIANGLE_STRIP, 0, 4);
 
         // 禁用属性（优化性能）
-        GLES20.glDisableVertexAttribArray(mPositionHandle);
-        GLES20.glDisableVertexAttribArray(mTexCoordHandle);
+        GLES30.glDisableVertexAttribArray(mPositionHandle);
+        GLES30.glDisableVertexAttribArray(mTexCoordHandle);
     }
 }

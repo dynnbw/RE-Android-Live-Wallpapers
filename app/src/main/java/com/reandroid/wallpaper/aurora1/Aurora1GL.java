@@ -2,7 +2,7 @@ package com.reandroid.wallpaper.aurora1;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 import android.opengl.GLUtils;
 import android.opengl.Matrix;
 import android.os.Process;
@@ -69,10 +69,10 @@ public class Aurora1GL extends GLESScene {
     @Override
     public void release() {
         if (mProgram != 0) {
-            GLES20.glDeleteProgram(mProgram);
+            GLES30.glDeleteProgram(mProgram);
             mProgram = 0;
         }
-        GLES20.glDeleteTextures(mTextures.length, mTextures, 0);
+        GLES30.glDeleteTextures(mTextures.length, mTextures, 0);
         for (int i = 0; i < mTextures.length; i++) {
             mTextures[i] = 0;
         }
@@ -90,26 +90,26 @@ public class Aurora1GL extends GLESScene {
         mScene.update(timeMs);
         Aurora1Scene.SceneData data = mScene.getSceneData();
 
-        GLES20.glViewport(0, 0, mWidth, mHeight);
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
-        GLES20.glUseProgram(mProgram);
-        GLES20.glEnableVertexAttribArray(mPositionHandle);
-        GLES20.glEnableVertexAttribArray(mTexCoordHandle);
+        GLES30.glViewport(0, 0, mWidth, mHeight);
+        GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT);
+        GLES30.glUseProgram(mProgram);
+        GLES30.glEnableVertexAttribArray(mPositionHandle);
+        GLES30.glEnableVertexAttribArray(mTexCoordHandle);
 
         mVertexBuffer.position(0);
-        GLES20.glVertexAttribPointer(mPositionHandle, 2, GLES20.GL_FLOAT, false, 0, mVertexBuffer);
+        GLES30.glVertexAttribPointer(mPositionHandle, 2, GLES30.GL_FLOAT, false, 0, mVertexBuffer);
         mTexCoordBuffer.position(0);
-        GLES20.glVertexAttribPointer(mTexCoordHandle, 2, GLES20.GL_FLOAT, false, 0, mTexCoordBuffer);
+        GLES30.glVertexAttribPointer(mTexCoordHandle, 2, GLES30.GL_FLOAT, false, 0, mTexCoordBuffer);
         if (mShaderStartTimeMs == 0L) {
             mShaderStartTimeMs = timeMs;
         }
         float shaderTimeSec = ((timeMs - mShaderStartTimeMs) % 600000L) / 1000.0f;
-        GLES20.glUniform1f(mTimeHandle, shaderTimeSec);
+        GLES30.glUniform1f(mTimeHandle, shaderTimeSec);
 
-        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+        GLES30.glBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ONE_MINUS_SRC_ALPHA);
         drawSprite(data.projectionMatrix, data.background);
 
-        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE);
+        GLES30.glBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ONE);
         for (Aurora1Scene.Sprite sprite : data.starSprites) {
             drawSprite(data.projectionMatrix, sprite);
         }
@@ -120,8 +120,8 @@ public class Aurora1GL extends GLESScene {
             drawSprite(data.projectionMatrix, data.particleSprites[i]);
         }
 
-        GLES20.glDisableVertexAttribArray(mPositionHandle);
-        GLES20.glDisableVertexAttribArray(mTexCoordHandle);
+        GLES30.glDisableVertexAttribArray(mPositionHandle);
+        GLES30.glDisableVertexAttribArray(mTexCoordHandle);
     }
 
     private void ensureGl() {
@@ -134,9 +134,9 @@ public class Aurora1GL extends GLESScene {
         }
 
         mGlInitialized = true;
-        GLES20.glClearColor(0.01f, 0.01f, 0.04f, 1.0f);
-        GLES20.glDisable(GLES20.GL_DEPTH_TEST);
-        GLES20.glEnable(GLES20.GL_BLEND);
+        GLES30.glClearColor(0.01f, 0.01f, 0.04f, 1.0f);
+        GLES30.glDisable(GLES30.GL_DEPTH_TEST);
+        GLES30.glEnable(GLES30.GL_BLEND);
 
         initBuffers();
         initProgram();
@@ -164,14 +164,14 @@ public class Aurora1GL extends GLESScene {
         mProgram = createProgram(
                 AssetLoader.readText(mContext, "aurora1/shaders/GLES/aurora1_sprite_vs.glsl"),
                 AssetLoader.readText(mContext, "aurora1/shaders/GLES/aurora1_sprite_fs.glsl"));
-        mPositionHandle = GLES20.glGetAttribLocation(mProgram, "aPosition");
-        mTexCoordHandle = GLES20.glGetAttribLocation(mProgram, "aTexCoord");
-        mMatrixHandle = GLES20.glGetUniformLocation(mProgram, "uMatrix");
-        mColorHandle = GLES20.glGetUniformLocation(mProgram, "uColor");
-        mTextureHandle = GLES20.glGetUniformLocation(mProgram, "uTexture");
-        mFlowHandle = GLES20.glGetUniformLocation(mProgram, "uFlow");
-        mDistortHandle = GLES20.glGetUniformLocation(mProgram, "uDistort");
-        mTimeHandle = GLES20.glGetUniformLocation(mProgram, "uTime");
+        mPositionHandle = GLES30.glGetAttribLocation(mProgram, "aPosition");
+        mTexCoordHandle = GLES30.glGetAttribLocation(mProgram, "aTexCoord");
+        mMatrixHandle = GLES30.glGetUniformLocation(mProgram, "uMatrix");
+        mColorHandle = GLES30.glGetUniformLocation(mProgram, "uColor");
+        mTextureHandle = GLES30.glGetUniformLocation(mProgram, "uTexture");
+        mFlowHandle = GLES30.glGetUniformLocation(mProgram, "uFlow");
+        mDistortHandle = GLES30.glGetUniformLocation(mProgram, "uDistort");
+        mTimeHandle = GLES30.glGetUniformLocation(mProgram, "uTime");
     }
 
     private void initTextures() {
@@ -202,13 +202,13 @@ public class Aurora1GL extends GLESScene {
         }
 
         int[] texture = new int[1];
-        GLES20.glGenTextures(1, texture, 0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture[0]);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
-        GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
+        GLES30.glGenTextures(1, texture, 0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, texture[0]);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE);
+        GLUtils.texImage2D(GLES30.GL_TEXTURE_2D, 0, bitmap, 0);
         bitmap.recycle();
         Log.d(TAG, "Loaded texture " + assetPath + " -> " + texture[0]);
         return texture[0];
@@ -226,14 +226,14 @@ public class Aurora1GL extends GLESScene {
         Matrix.scaleM(mModelMatrix, 0, sprite.width, sprite.height, 1.0f);
         Matrix.multiplyMM(mTempMatrix, 0, projectionMatrix, 0, mModelMatrix, 0);
 
-        GLES20.glUniformMatrix4fv(mMatrixHandle, 1, false, mTempMatrix, 0);
-        GLES20.glUniform4f(mColorHandle, sprite.red, sprite.green, sprite.blue, sprite.alpha);
-        GLES20.glUniform2f(mFlowHandle, sprite.flowX, sprite.flowY);
-        GLES20.glUniform1f(mDistortHandle, sprite.distort);
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId);
-        GLES20.glUniform1i(mTextureHandle, 0);
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
+        GLES30.glUniformMatrix4fv(mMatrixHandle, 1, false, mTempMatrix, 0);
+        GLES30.glUniform4f(mColorHandle, sprite.red, sprite.green, sprite.blue, sprite.alpha);
+        GLES30.glUniform2f(mFlowHandle, sprite.flowX, sprite.flowY);
+        GLES30.glUniform1f(mDistortHandle, sprite.distort);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, textureId);
+        GLES30.glUniform1i(mTextureHandle, 0);
+        GLES30.glDrawArrays(GLES30.GL_TRIANGLE_STRIP, 0, 4);
     }
 
 

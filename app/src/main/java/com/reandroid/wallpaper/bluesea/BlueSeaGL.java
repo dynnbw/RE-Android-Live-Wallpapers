@@ -2,7 +2,7 @@ package com.reandroid.wallpaper.bluesea;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 import android.opengl.GLUtils;
 import android.opengl.Matrix;
 import android.util.Log;
@@ -79,8 +79,8 @@ public class BlueSeaGL extends GLESScene {
 
         mScene.update(timeMs);
 
-        GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+        GLES30.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT);
 
         drawBackground();
         drawJellyPlane(2, timeMs);
@@ -102,7 +102,7 @@ public class BlueSeaGL extends GLESScene {
     @Override
     public void release() {
         if (mProgram != 0) {
-            GLES20.glDeleteProgram(mProgram);
+            GLES30.glDeleteProgram(mProgram);
             mProgram = 0;
         }
         deleteTexture(mScene.mBackground);
@@ -145,11 +145,11 @@ public class BlueSeaGL extends GLESScene {
         if (mProgram == 0) {
             Log.e(TAG, "Failed to create sprite program");
         }
-        mPositionHandle = GLES20.glGetAttribLocation(mProgram, "aPosition");
-        mTexCoordHandle = GLES20.glGetAttribLocation(mProgram, "aTexCoord");
-        mMvpHandle = GLES20.glGetUniformLocation(mProgram, "uMvpMatrix");
-        mColorHandle = GLES20.glGetUniformLocation(mProgram, "uColor");
-        mSamplerHandle = GLES20.glGetUniformLocation(mProgram, "uTexture");
+        mPositionHandle = GLES30.glGetAttribLocation(mProgram, "aPosition");
+        mTexCoordHandle = GLES30.glGetAttribLocation(mProgram, "aTexCoord");
+        mMvpHandle = GLES30.glGetUniformLocation(mProgram, "uMvpMatrix");
+        mColorHandle = GLES30.glGetUniformLocation(mProgram, "uColor");
+        mSamplerHandle = GLES30.glGetUniformLocation(mProgram, "uTexture");
     }
 
     private void initGlResources() {
@@ -168,10 +168,10 @@ public class BlueSeaGL extends GLESScene {
             }
         }
 
-        GLES20.glDisable(GLES20.GL_DEPTH_TEST);
-        GLES20.glDisable(GLES20.GL_CULL_FACE);
-        GLES20.glEnable(GLES20.GL_BLEND);
-        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+        GLES30.glDisable(GLES30.GL_DEPTH_TEST);
+        GLES30.glDisable(GLES30.GL_CULL_FACE);
+        GLES30.glEnable(GLES30.GL_BLEND);
+        GLES30.glBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ONE_MINUS_SRC_ALPHA);
 
         mGlReady = true;
     }
@@ -230,30 +230,30 @@ public class BlueSeaGL extends GLESScene {
         if (mProgram == 0 || texture == null || texture.id == 0) {
             return;
         }
-        GLES20.glUseProgram(mProgram);
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture.id);
-        GLES20.glUniform1i(mSamplerHandle, 0);
-        GLES20.glUniform4f(mColorHandle, 1.0f, 1.0f, 1.0f, alpha);
+        GLES30.glUseProgram(mProgram);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, texture.id);
+        GLES30.glUniform1i(mSamplerHandle, 0);
+        GLES30.glUniform4f(mColorHandle, 1.0f, 1.0f, 1.0f, alpha);
 
         Matrix.setIdentityM(mModel, 0);
         Matrix.translateM(mModel, 0, x, y, 0.0f);
         Matrix.scaleM(mModel, 0, width, height, 1.0f);
         Matrix.multiplyMM(mMvp, 0, mProjection, 0, mModel, 0);
-        GLES20.glUniformMatrix4fv(mMvpHandle, 1, false, mMvp, 0);
+        GLES30.glUniformMatrix4fv(mMvpHandle, 1, false, mMvp, 0);
 
         mVertexBuffer.position(0);
-        GLES20.glVertexAttribPointer(mPositionHandle, 2, GLES20.GL_FLOAT, false, 0, mVertexBuffer);
-        GLES20.glEnableVertexAttribArray(mPositionHandle);
+        GLES30.glVertexAttribPointer(mPositionHandle, 2, GLES30.GL_FLOAT, false, 0, mVertexBuffer);
+        GLES30.glEnableVertexAttribArray(mPositionHandle);
 
         mTexBuffer.position(0);
-        GLES20.glVertexAttribPointer(mTexCoordHandle, 2, GLES20.GL_FLOAT, false, 0, mTexBuffer);
-        GLES20.glEnableVertexAttribArray(mTexCoordHandle);
+        GLES30.glVertexAttribPointer(mTexCoordHandle, 2, GLES30.GL_FLOAT, false, 0, mTexBuffer);
+        GLES30.glEnableVertexAttribArray(mTexCoordHandle);
 
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
+        GLES30.glDrawArrays(GLES30.GL_TRIANGLE_STRIP, 0, 4);
 
-        GLES20.glDisableVertexAttribArray(mPositionHandle);
-        GLES20.glDisableVertexAttribArray(mTexCoordHandle);
+        GLES30.glDisableVertexAttribArray(mPositionHandle);
+        GLES30.glDisableVertexAttribArray(mTexCoordHandle);
     }
 
     // --- Texture loading / GL utilities ---
@@ -265,14 +265,14 @@ public class BlueSeaGL extends GLESScene {
             return null;
         }
         int[] ids = new int[1];
-        GLES20.glGenTextures(1, ids, 0);
+        GLES30.glGenTextures(1, ids, 0);
         int textureId = ids[0];
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
-        GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, textureId);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE);
+        GLUtils.texImage2D(GLES30.GL_TEXTURE_2D, 0, bitmap, 0);
         bitmap.recycle();
         return new BlueSeaScene.Texture(textureId);
     }
@@ -280,7 +280,7 @@ public class BlueSeaGL extends GLESScene {
     private void deleteTexture(BlueSeaScene.Texture texture) {
         if (texture != null && texture.id != 0) {
             int[] ids = {texture.id};
-            GLES20.glDeleteTextures(1, ids, 0);
+            GLES30.glDeleteTextures(1, ids, 0);
             texture.id = 0;
         }
     }

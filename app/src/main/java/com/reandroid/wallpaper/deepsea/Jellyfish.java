@@ -1,7 +1,7 @@
 package com.reandroid.wallpaper.deepsea;
 
 import android.content.Context;
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 import com.reandroid.utils.AssetLoader;
 import com.reandroid.gles.GLESWallpaper;
 import java.nio.Buffer;
@@ -58,16 +58,16 @@ class Jellyfish {
 
     public void initShader() {
         if (!isInitShader()) {
-            int createdAndLinkedProgram = GLHelper.getCreatedAndLinkedProgram(GLHelper.getCompiledShader(GLES20.GL_VERTEX_SHADER, AssetLoader.readText(mContext, "deepsea/shaders/GLES/deepsea_jellyfish_0_vs.glsl")), GLHelper.getCompiledShader(GLES20.GL_FRAGMENT_SHADER, AssetLoader.readText(mContext, "deepsea/shaders/GLES/deepsea_jellyfish_1_fs.glsl")));
+            int createdAndLinkedProgram = GLHelper.getCreatedAndLinkedProgram(GLHelper.getCompiledShader(GLES30.GL_VERTEX_SHADER, AssetLoader.readText(mContext, "deepsea/shaders/GLES/deepsea_jellyfish_0_vs.glsl")), GLHelper.getCompiledShader(GLES30.GL_FRAGMENT_SHADER, AssetLoader.readText(mContext, "deepsea/shaders/GLES/deepsea_jellyfish_1_fs.glsl")));
             this.mPointProgramHandle = createdAndLinkedProgram;
-            this.mPointMVPMatrixHandle = GLES20.glGetUniformLocation(this.mPointProgramHandle, "u_MVPMatrix");
-            this.mPointTextureHandle = GLES20.glGetUniformLocation(this.mPointProgramHandle, "s_Texture");
-            this.mAlphaTextureHandle = GLES20.glGetUniformLocation(this.mPointProgramHandle, "s_AlphaTexture");
-            this.mPositionHandle = GLES20.glGetAttribLocation(this.mPointProgramHandle, "a_Position");
-            this.mTexCoordHandle = GLES20.glGetAttribLocation(this.mPointProgramHandle, "a_TexCoord");
-            this.mScaleHandle = GLES20.glGetAttribLocation(this.mPointProgramHandle, "a_Scale");
-            this.mAddColorHandle = GLES20.glGetAttribLocation(this.mPointProgramHandle, "a_AddColor");
-            this.mAddAlphaHandle = GLES20.glGetUniformLocation(this.mPointProgramHandle, "u_AddAlpha");
+            this.mPointMVPMatrixHandle = GLES30.glGetUniformLocation(this.mPointProgramHandle, "u_MVPMatrix");
+            this.mPointTextureHandle = GLES30.glGetUniformLocation(this.mPointProgramHandle, "s_Texture");
+            this.mAlphaTextureHandle = GLES30.glGetUniformLocation(this.mPointProgramHandle, "s_AlphaTexture");
+            this.mPositionHandle = GLES30.glGetAttribLocation(this.mPointProgramHandle, "a_Position");
+            this.mTexCoordHandle = GLES30.glGetAttribLocation(this.mPointProgramHandle, "a_TexCoord");
+            this.mScaleHandle = GLES30.glGetAttribLocation(this.mPointProgramHandle, "a_Scale");
+            this.mAddColorHandle = GLES30.glGetAttribLocation(this.mPointProgramHandle, "a_AddColor");
+            this.mAddAlphaHandle = GLES30.glGetUniformLocation(this.mPointProgramHandle, "u_AddAlpha");
             this.mJellyfishTextureId = getTextureId();
             this.mAlphaTextureId = getAlphaTextureId();
             this.mIsInitShader = true;
@@ -75,33 +75,33 @@ class Jellyfish {
     }
 
     public void setForDrawing() {
-        GLES20.glUseProgram(this.mPointProgramHandle);
-        GLES20.glVertexAttrib4f(this.mAddColorHandle, this.mAddColorData[0], this.mAddColorData[1], this.mAddColorData[2], this.mAddColorData[3]);
-        GLES20.glDisableVertexAttribArray(this.mAddColorHandle);
-        GLES20.glVertexAttrib1f(this.mScaleHandle, this.mScale);
-        GLES20.glDisableVertexAttribArray(this.mScaleHandle);
+        GLES30.glUseProgram(this.mPointProgramHandle);
+        GLES30.glVertexAttrib4f(this.mAddColorHandle, this.mAddColorData[0], this.mAddColorData[1], this.mAddColorData[2], this.mAddColorData[3]);
+        GLES30.glDisableVertexAttribArray(this.mAddColorHandle);
+        GLES30.glVertexAttrib1f(this.mScaleHandle, this.mScale);
+        GLES30.glDisableVertexAttribArray(this.mScaleHandle);
         this.mVertices.position(0);
-        GLES20.glVertexAttribPointer(this.mPositionHandle, 3, GLES20.GL_FLOAT, false, 20, (Buffer) this.mVertices);
+        GLES30.glVertexAttribPointer(this.mPositionHandle, 3, GLES30.GL_FLOAT, false, 20, (Buffer) this.mVertices);
         this.mVertices.position(3);
-        GLES20.glVertexAttribPointer(this.mTexCoordHandle, 2, GLES20.GL_FLOAT, false, 20, (Buffer) this.mVertices);
-        GLES20.glEnableVertexAttribArray(this.mPositionHandle);
-        GLES20.glEnableVertexAttribArray(this.mTexCoordHandle);
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, this.mJellyfishTextureId);
-        GLES20.glUniform1i(this.mPointTextureHandle, 0);
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE1);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, this.mAlphaTextureId);
-        GLES20.glUniform1i(this.mAlphaTextureHandle, 1);
-        GLES20.glEnable(GLES20.GL_TEXTURE_2D);
-        GLES20.glUniform1f(this.mAddAlphaHandle, this.mAddAlpha);
+        GLES30.glVertexAttribPointer(this.mTexCoordHandle, 2, GLES30.GL_FLOAT, false, 20, (Buffer) this.mVertices);
+        GLES30.glEnableVertexAttribArray(this.mPositionHandle);
+        GLES30.glEnableVertexAttribArray(this.mTexCoordHandle);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, this.mJellyfishTextureId);
+        GLES30.glUniform1i(this.mPointTextureHandle, 0);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE1);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, this.mAlphaTextureId);
+        GLES30.glUniform1i(this.mAlphaTextureHandle, 1);
+        GLES30.glEnable(GLES30.GL_TEXTURE_2D);
+        GLES30.glUniform1f(this.mAddAlphaHandle, this.mAddAlpha);
     }
 
     public void draw() {
-        GLES20.glDrawElements(GLES20.GL_TRIANGLES, 6, GLES20.GL_UNSIGNED_SHORT, this.mIndices);
+        GLES30.glDrawElements(GLES30.GL_TRIANGLES, 6, GLES30.GL_UNSIGNED_SHORT, this.mIndices);
     }
 
     public void update(float[] fArr) {
-        GLES20.glUniformMatrix4fv(this.mPointMVPMatrixHandle, 1, false, fArr, 0);
+        GLES30.glUniformMatrix4fv(this.mPointMVPMatrixHandle, 1, false, fArr, 0);
     }
 
     protected int getTextureId() {

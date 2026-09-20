@@ -3,7 +3,7 @@ package com.reandroid.wallpaper.magicsmoke;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 import android.opengl.GLUtils;
 import android.util.Log;
 
@@ -105,10 +105,10 @@ public class MagicSmokeGL extends GLESScene {
         loadTextures();
 
         // Set OpenGL state
-        GLES20.glDisable(GLES20.GL_DEPTH_TEST);
-        GLES20.glDisable(GLES20.GL_CULL_FACE);
-        GLES20.glEnable(GLES20.GL_BLEND);
-        GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ZERO);
+        GLES30.glDisable(GLES30.GL_DEPTH_TEST);
+        GLES30.glDisable(GLES30.GL_CULL_FACE);
+        GLES30.glEnable(GLES30.GL_BLEND);
+        GLES30.glBlendFunc(GLES30.GL_ONE, GLES30.GL_ZERO);
 
         Log.d(TAG, "onCreate() completed successfully");
     }
@@ -132,34 +132,34 @@ public class MagicSmokeGL extends GLESScene {
 
     private void getUniformLocations() {
         // 5-texture program
-        mPositionHandle5 = GLES20.glGetAttribLocation(mProgram5Tex, "aPosition");
-        mLayer0Handle5 = GLES20.glGetUniformLocation(mProgram5Tex, "uLayer0");
-        mLayer1Handle5 = GLES20.glGetUniformLocation(mProgram5Tex, "uLayer1");
-        mLayer2Handle5 = GLES20.glGetUniformLocation(mProgram5Tex, "uLayer2");
-        mLayer3Handle5 = GLES20.glGetUniformLocation(mProgram5Tex, "uLayer3");
-        mLayer4Handle5 = GLES20.glGetUniformLocation(mProgram5Tex, "uLayer4");
-        mPanOffsetHandle5 = GLES20.glGetUniformLocation(mProgram5Tex, "uPanOffset");
-        mAspectScaleHandle5 = GLES20.glGetUniformLocation(mProgram5Tex, "uAspectScale");
-        mClearColorHandle5 = GLES20.glGetUniformLocation(mProgram5Tex, "uClearColor");
-        mTexture0Handle5 = GLES20.glGetUniformLocation(mProgram5Tex, "uTexture0");
-        mTexture1Handle5 = GLES20.glGetUniformLocation(mProgram5Tex, "uTexture1");
-        mTexture2Handle5 = GLES20.glGetUniformLocation(mProgram5Tex, "uTexture2");
-        mTexture3Handle5 = GLES20.glGetUniformLocation(mProgram5Tex, "uTexture3");
-        mTexture4Handle5 = GLES20.glGetUniformLocation(mProgram5Tex, "uTexture4");
+        mPositionHandle5 = GLES30.glGetAttribLocation(mProgram5Tex, "aPosition");
+        mLayer0Handle5 = GLES30.glGetUniformLocation(mProgram5Tex, "uLayer0");
+        mLayer1Handle5 = GLES30.glGetUniformLocation(mProgram5Tex, "uLayer1");
+        mLayer2Handle5 = GLES30.glGetUniformLocation(mProgram5Tex, "uLayer2");
+        mLayer3Handle5 = GLES30.glGetUniformLocation(mProgram5Tex, "uLayer3");
+        mLayer4Handle5 = GLES30.glGetUniformLocation(mProgram5Tex, "uLayer4");
+        mPanOffsetHandle5 = GLES30.glGetUniformLocation(mProgram5Tex, "uPanOffset");
+        mAspectScaleHandle5 = GLES30.glGetUniformLocation(mProgram5Tex, "uAspectScale");
+        mClearColorHandle5 = GLES30.glGetUniformLocation(mProgram5Tex, "uClearColor");
+        mTexture0Handle5 = GLES30.glGetUniformLocation(mProgram5Tex, "uTexture0");
+        mTexture1Handle5 = GLES30.glGetUniformLocation(mProgram5Tex, "uTexture1");
+        mTexture2Handle5 = GLES30.glGetUniformLocation(mProgram5Tex, "uTexture2");
+        mTexture3Handle5 = GLES30.glGetUniformLocation(mProgram5Tex, "uTexture3");
+        mTexture4Handle5 = GLES30.glGetUniformLocation(mProgram5Tex, "uTexture4");
 
         // 4-texture program
-        mPositionHandle4 = GLES20.glGetAttribLocation(mProgram4Tex, "aPosition");
-        mLayer0Handle4 = GLES20.glGetUniformLocation(mProgram4Tex, "uLayer0");
-        mLayer1Handle4 = GLES20.glGetUniformLocation(mProgram4Tex, "uLayer1");
-        mLayer2Handle4 = GLES20.glGetUniformLocation(mProgram4Tex, "uLayer2");
-        mLayer3Handle4 = GLES20.glGetUniformLocation(mProgram4Tex, "uLayer3");
-        mPanOffsetHandle4 = GLES20.glGetUniformLocation(mProgram4Tex, "uPanOffset");
-        mAspectScaleHandle4 = GLES20.glGetUniformLocation(mProgram4Tex, "uAspectScale");
-        mClearColorHandle4 = GLES20.glGetUniformLocation(mProgram4Tex, "uClearColor");
-        mTexture0Handle4 = GLES20.glGetUniformLocation(mProgram4Tex, "uTexture0");
-        mTexture1Handle4 = GLES20.glGetUniformLocation(mProgram4Tex, "uTexture1");
-        mTexture2Handle4 = GLES20.glGetUniformLocation(mProgram4Tex, "uTexture2");
-        mTexture3Handle4 = GLES20.glGetUniformLocation(mProgram4Tex, "uTexture3");
+        mPositionHandle4 = GLES30.glGetAttribLocation(mProgram4Tex, "aPosition");
+        mLayer0Handle4 = GLES30.glGetUniformLocation(mProgram4Tex, "uLayer0");
+        mLayer1Handle4 = GLES30.glGetUniformLocation(mProgram4Tex, "uLayer1");
+        mLayer2Handle4 = GLES30.glGetUniformLocation(mProgram4Tex, "uLayer2");
+        mLayer3Handle4 = GLES30.glGetUniformLocation(mProgram4Tex, "uLayer3");
+        mPanOffsetHandle4 = GLES30.glGetUniformLocation(mProgram4Tex, "uPanOffset");
+        mAspectScaleHandle4 = GLES30.glGetUniformLocation(mProgram4Tex, "uAspectScale");
+        mClearColorHandle4 = GLES30.glGetUniformLocation(mProgram4Tex, "uClearColor");
+        mTexture0Handle4 = GLES30.glGetUniformLocation(mProgram4Tex, "uTexture0");
+        mTexture1Handle4 = GLES30.glGetUniformLocation(mProgram4Tex, "uTexture1");
+        mTexture2Handle4 = GLES30.glGetUniformLocation(mProgram4Tex, "uTexture2");
+        mTexture3Handle4 = GLES30.glGetUniformLocation(mProgram4Tex, "uTexture3");
     }
 
     private void loadTextures() {
@@ -170,11 +170,11 @@ public class MagicSmokeGL extends GLESScene {
         mScene.mClearColor[1] = ((preset.backColor >> 8) & 0xff) / 255.0f;
         mScene.mClearColor[2] = (preset.backColor & 0xff) / 255.0f;
         mScene.mClearColor[3] = 1.0f;
-        GLES20.glClearColor(mScene.mClearColor[0], mScene.mClearColor[1], mScene.mClearColor[2], mScene.mClearColor[3]);
+        GLES30.glClearColor(mScene.mClearColor[0], mScene.mClearColor[1], mScene.mClearColor[2], mScene.mClearColor[3]);
 
         // Generate GL textures
         deleteTextures();
-        GLES20.glGenTextures(5, mTextures, 0);
+        GLES30.glGenTextures(5, mTextures, 0);
 
         // Load and process each noise texture
         float alphaFactor = 1.0f;
@@ -209,12 +209,12 @@ public class MagicSmokeGL extends GLESScene {
         processedBitmap.setPixels(pixels, 0, width, 0, 0, width, height);
 
         // Upload to GL texture
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTextures[index]);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_REPEAT);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_REPEAT);
-        GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, processedBitmap, 0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mTextures[index]);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_REPEAT);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_REPEAT);
+        GLUtils.texImage2D(GLES30.GL_TEXTURE_2D, 0, processedBitmap, 0);
 
         sourceBitmap.recycle();
         processedBitmap.recycle();
@@ -229,8 +229,8 @@ public class MagicSmokeGL extends GLESScene {
             loadTextures();
         }
         mScene.updateAnimation(timeMs);
-        GLES20.glClearColor(mScene.mClearColor[0], mScene.mClearColor[1], mScene.mClearColor[2], mScene.mClearColor[3]);
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+        GLES30.glClearColor(mScene.mClearColor[0], mScene.mClearColor[1], mScene.mClearColor[2], mScene.mClearColor[3]);
+        GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT);
 
         // Choose program based on texture mask
         MagicSmokeScene.Preset preset = MagicSmokeScene.PRESETS[mScene.mCurrentPreset];
@@ -250,7 +250,7 @@ public class MagicSmokeGL extends GLESScene {
     }
 
     private void drawWith5Textures(MagicSmokeScene.Preset preset) {
-        GLES20.glUseProgram(mProgram5Tex);
+        GLES30.glUseProgram(mProgram5Tex);
 
         // Set layer uniforms (rotation, scale, xshift)
         float m = 0.35f;
@@ -261,29 +261,29 @@ public class MagicSmokeGL extends GLESScene {
         setLayerUniform(mLayer4Handle5, mScene.mRotation[4], mScene.mScale[4] * m, mScene.mXShift[4]);
 
         // Set pan offset
-        GLES20.glUniform2f(mPanOffsetHandle5, mScene.mXOffset, -mScene.mYOffset);
+        GLES30.glUniform2f(mPanOffsetHandle5, mScene.mXOffset, -mScene.mYOffset);
 
         // Keep visual proportions consistent with the original 3:4 tuning.
         float aspect = (float) mWidth / Math.max(1.0f, (float) mHeight);
         float aspectScaleX = aspect / MagicSmokeScene.REF_ASPECT;
-        GLES20.glUniform2f(mAspectScaleHandle5, aspectScaleX, 1.0f);
+        GLES30.glUniform2f(mAspectScaleHandle5, aspectScaleX, 1.0f);
 
         // Set clear color
-        GLES20.glUniform4fv(mClearColorHandle5, 1, mScene.mClearColor, 0);
+        GLES30.glUniform4fv(mClearColorHandle5, 1, mScene.mClearColor, 0);
 
         // Bind textures
         bindTextures5(preset);
 
         // Draw quad
         mQuadVertices.position(0);
-        GLES20.glVertexAttribPointer(mPositionHandle5, 2, GLES20.GL_FLOAT, false, 0, mQuadVertices);
-        GLES20.glEnableVertexAttribArray(mPositionHandle5);
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
-        GLES20.glDisableVertexAttribArray(mPositionHandle5);
+        GLES30.glVertexAttribPointer(mPositionHandle5, 2, GLES30.GL_FLOAT, false, 0, mQuadVertices);
+        GLES30.glEnableVertexAttribArray(mPositionHandle5);
+        GLES30.glDrawArrays(GLES30.GL_TRIANGLE_STRIP, 0, 4);
+        GLES30.glDisableVertexAttribArray(mPositionHandle5);
     }
 
     private void drawWith4Textures(MagicSmokeScene.Preset preset) {
-        GLES20.glUseProgram(mProgram4Tex);
+        GLES30.glUseProgram(mProgram4Tex);
 
         // Set layer uniforms
         float m = 0.35f;
@@ -293,32 +293,32 @@ public class MagicSmokeGL extends GLESScene {
         setLayerUniform(mLayer3Handle4, mScene.mRotation[3], mScene.mScale[3] * m, mScene.mXShift[3]);
 
         // Set pan offset
-        GLES20.glUniform2f(mPanOffsetHandle4, mScene.mXOffset, -mScene.mYOffset);
+        GLES30.glUniform2f(mPanOffsetHandle4, mScene.mXOffset, -mScene.mYOffset);
 
         // Keep visual proportions consistent with the original 3:4 tuning.
         float aspect = (float) mWidth / Math.max(1.0f, (float) mHeight);
         float aspectScaleX = aspect / MagicSmokeScene.REF_ASPECT;
-        GLES20.glUniform2f(mAspectScaleHandle4, aspectScaleX, 1.0f);
+        GLES30.glUniform2f(mAspectScaleHandle4, aspectScaleX, 1.0f);
 
         // Set clear color
-        GLES20.glUniform4fv(mClearColorHandle4, 1, mScene.mClearColor, 0);
+        GLES30.glUniform4fv(mClearColorHandle4, 1, mScene.mClearColor, 0);
 
         // Bind textures
         bindTextures4(preset);
 
         // Draw quad
         mQuadVertices.position(0);
-        GLES20.glVertexAttribPointer(mPositionHandle4, 2, GLES20.GL_FLOAT, false, 0, mQuadVertices);
-        GLES20.glEnableVertexAttribArray(mPositionHandle4);
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
-        GLES20.glDisableVertexAttribArray(mPositionHandle4);
+        GLES30.glVertexAttribPointer(mPositionHandle4, 2, GLES30.GL_FLOAT, false, 0, mQuadVertices);
+        GLES30.glEnableVertexAttribArray(mPositionHandle4);
+        GLES30.glDrawArrays(GLES30.GL_TRIANGLE_STRIP, 0, 4);
+        GLES30.glDisableVertexAttribArray(mPositionHandle4);
     }
 
     private void setLayerUniform(int handle, float rotation, float scale, float xshift) {
         float radians = (float)Math.toRadians(rotation);
         float sin = (float)Math.sin(radians);
         float cos = (float)Math.cos(radians);
-        GLES20.glUniform4f(handle, sin, cos, scale, xshift);
+        GLES30.glUniform4f(handle, sin, cos, scale, xshift);
     }
 
     private void bindTextures5(MagicSmokeScene.Preset preset) {
@@ -331,16 +331,16 @@ public class MagicSmokeGL extends GLESScene {
                 // Swap texture 0 and 4 if textureSwap is enabled
                 if (i == 0 && preset.textureSwap) texIndex = 4;
 
-                GLES20.glActiveTexture(GLES20.GL_TEXTURE0 + pos);
-                GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTextures[texIndex]);
+                GLES30.glActiveTexture(GLES30.GL_TEXTURE0 + pos);
+                GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mTextures[texIndex]);
 
                 // Set corresponding sampler uniform
                 switch (pos) {
-                    case 0: GLES20.glUniform1i(mTexture0Handle5, pos); break;
-                    case 1: GLES20.glUniform1i(mTexture1Handle5, pos); break;
-                    case 2: GLES20.glUniform1i(mTexture2Handle5, pos); break;
-                    case 3: GLES20.glUniform1i(mTexture3Handle5, pos); break;
-                    case 4: GLES20.glUniform1i(mTexture4Handle5, pos); break;
+                    case 0: GLES30.glUniform1i(mTexture0Handle5, pos); break;
+                    case 1: GLES30.glUniform1i(mTexture1Handle5, pos); break;
+                    case 2: GLES30.glUniform1i(mTexture2Handle5, pos); break;
+                    case 3: GLES30.glUniform1i(mTexture3Handle5, pos); break;
+                    case 4: GLES30.glUniform1i(mTexture4Handle5, pos); break;
                 }
                 pos++;
             }
@@ -356,14 +356,14 @@ public class MagicSmokeGL extends GLESScene {
                 int texIndex = i;
                 if (i == 0 && preset.textureSwap) texIndex = 4;
 
-                GLES20.glActiveTexture(GLES20.GL_TEXTURE0 + pos);
-                GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTextures[texIndex]);
+                GLES30.glActiveTexture(GLES30.GL_TEXTURE0 + pos);
+                GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mTextures[texIndex]);
 
                 switch (pos) {
-                    case 0: GLES20.glUniform1i(mTexture0Handle4, pos); break;
-                    case 1: GLES20.glUniform1i(mTexture1Handle4, pos); break;
-                    case 2: GLES20.glUniform1i(mTexture2Handle4, pos); break;
-                    case 3: GLES20.glUniform1i(mTexture3Handle4, pos); break;
+                    case 0: GLES30.glUniform1i(mTexture0Handle4, pos); break;
+                    case 1: GLES30.glUniform1i(mTexture1Handle4, pos); break;
+                    case 2: GLES30.glUniform1i(mTexture2Handle4, pos); break;
+                    case 3: GLES30.glUniform1i(mTexture3Handle4, pos); break;
                 }
                 pos++;
             }
@@ -374,11 +374,11 @@ public class MagicSmokeGL extends GLESScene {
     public void release() {
         deleteTextures();
         if (mProgram5Tex != 0) {
-            GLES20.glDeleteProgram(mProgram5Tex);
+            GLES30.glDeleteProgram(mProgram5Tex);
             mProgram5Tex = 0;
         }
         if (mProgram4Tex != 0) {
-            GLES20.glDeleteProgram(mProgram4Tex);
+            GLES30.glDeleteProgram(mProgram4Tex);
             mProgram4Tex = 0;
         }
         mInitialized = false;
@@ -395,7 +395,7 @@ public class MagicSmokeGL extends GLESScene {
          * 无条件删。原来以 mTextures[0] != 0 为前提，若第 0 张加载失败而其余成功，
          * 整批都不会被删除（泄漏）。名字为 0 的条目 GL 会静默忽略，所以无条件调用是安全的。
          */
-        GLES20.glDeleteTextures(mTextures.length, mTextures, 0);
+        GLES30.glDeleteTextures(mTextures.length, mTextures, 0);
         for (int i = 0; i < mTextures.length; i++) {
             mTextures[i] = 0;
         }

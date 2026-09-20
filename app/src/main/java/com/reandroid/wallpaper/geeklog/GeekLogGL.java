@@ -4,7 +4,7 @@ import android.app.ActivityManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 import android.opengl.GLUtils;
 import android.os.BatteryManager;
 import android.os.Build;
@@ -110,8 +110,8 @@ public class GeekLogGL extends GLESScene {
         mInitialized = true;
         mScene.log(GeekLogScene.LEVEL_INFO, "render: initialized (" + mWidth + "x" + mHeight + ")");
         try {
-            GLES20.glEnable(GLES20.GL_BLEND);
-            GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+            GLES30.glEnable(GLES30.GL_BLEND);
+            GLES30.glBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ONE_MINUS_SRC_ALPHA);
             readPrefs();
             createProgram();
             createGlyphTexture();
@@ -126,10 +126,10 @@ public class GeekLogGL extends GLESScene {
 
     @Override
     public void release() {
-        if (mProgram != 0) { GLES20.glDeleteProgram(mProgram); mProgram = 0; }
+        if (mProgram != 0) { GLES30.glDeleteProgram(mProgram); mProgram = 0; }
         if (mGlyphTexture != 0) {
             int[] tex = { mGlyphTexture };
-            GLES20.glDeleteTextures(1, tex, 0);
+            GLES30.glDeleteTextures(1, tex, 0);
             mGlyphTexture = 0;
         }
         mInitialized = false;
@@ -186,38 +186,38 @@ public class GeekLogGL extends GLESScene {
             logSystemState();
         }
 
-        GLES20.glClearColor(0f, 0f, 0f, 1f);
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+        GLES30.glClearColor(0f, 0f, 0f, 1f);
+        GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT);
 
         buildVertices(timeMs);
         mLastReportedVerts = mVertexCount;
 
         if (mVertexCount == 0) return;
-        GLES20.glUseProgram(mProgram);
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mGlyphTexture);
-        GLES20.glUniform1i(mTexLoc, 0);
+        GLES30.glUseProgram(mProgram);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mGlyphTexture);
+        GLES30.glUniform1i(mTexLoc, 0);
 
-        GLES20.glEnableVertexAttribArray(mPosLoc);
-        GLES20.glEnableVertexAttribArray(mUVLoc);
-        GLES20.glEnableVertexAttribArray(mColorLoc);
+        GLES30.glEnableVertexAttribArray(mPosLoc);
+        GLES30.glEnableVertexAttribArray(mUVLoc);
+        GLES30.glEnableVertexAttribArray(mColorLoc);
 
         mVertexBuffer.position(0);
-        GLES20.glVertexAttribPointer(mPosLoc, 2, GLES20.GL_FLOAT, false,
+        GLES30.glVertexAttribPointer(mPosLoc, 2, GLES30.GL_FLOAT, false,
                 FLOATS_PER_VERTEX * 4, mVertexBuffer);
         mVertexBuffer.position(2);
-        GLES20.glVertexAttribPointer(mUVLoc, 2, GLES20.GL_FLOAT, false,
+        GLES30.glVertexAttribPointer(mUVLoc, 2, GLES30.GL_FLOAT, false,
                 FLOATS_PER_VERTEX * 4, mVertexBuffer);
         mVertexBuffer.position(4);
-        GLES20.glVertexAttribPointer(mColorLoc, 3, GLES20.GL_FLOAT, false,
+        GLES30.glVertexAttribPointer(mColorLoc, 3, GLES30.GL_FLOAT, false,
                 FLOATS_PER_VERTEX * 4, mVertexBuffer);
         mVertexBuffer.position(0);
 
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, mVertexCount);
+        GLES30.glDrawArrays(GLES30.GL_TRIANGLES, 0, mVertexCount);
 
-        GLES20.glDisableVertexAttribArray(mPosLoc);
-        GLES20.glDisableVertexAttribArray(mUVLoc);
-        GLES20.glDisableVertexAttribArray(mColorLoc);
+        GLES30.glDisableVertexAttribArray(mPosLoc);
+        GLES30.glDisableVertexAttribArray(mUVLoc);
+        GLES30.glDisableVertexAttribArray(mColorLoc);
     }
 
     // ---- 顶点构建 ----
@@ -406,25 +406,25 @@ public class GeekLogGL extends GLESScene {
             mScene.log(GeekLogScene.LEVEL_ERROR, "render: shader compile failed");
             return;
         }
-        mPosLoc = GLES20.glGetAttribLocation(mProgram, "aPosition");
-        mUVLoc = GLES20.glGetAttribLocation(mProgram, "aUV");
-        mColorLoc = GLES20.glGetAttribLocation(mProgram, "aColor");
-        mTexLoc = GLES20.glGetUniformLocation(mProgram, "uTexture");
+        mPosLoc = GLES30.glGetAttribLocation(mProgram, "aPosition");
+        mUVLoc = GLES30.glGetAttribLocation(mProgram, "aUV");
+        mColorLoc = GLES30.glGetAttribLocation(mProgram, "aColor");
+        mTexLoc = GLES30.glGetUniformLocation(mProgram, "uTexture");
     }
 
     /** 加载预烘焙字符图集（像素风格，槽位索引 = 字符码）。 */
     private void createGlyphTexture() {
         Bitmap bmp = AssetLoader.decodeBitmap(mContext, "geeklog/drawable/glyph_00.png");
         int[] tex = new int[1];
-        GLES20.glGenTextures(1, tex, 0);
+        GLES30.glGenTextures(1, tex, 0);
         mGlyphTexture = tex[0];
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mGlyphTexture);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mGlyphTexture);
         // LINEAR：无 NEAREST 的槽边界硬切问题（部分设备 NEAREST+收缩 UV 会黑屏）
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
-        GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bmp, 0);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE);
+        GLUtils.texImage2D(GLES30.GL_TEXTURE_2D, 0, bmp, 0);
         bmp.recycle();
     }
 }

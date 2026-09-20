@@ -18,7 +18,7 @@ package com.reandroid.wallpaper.noisefield;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 import android.opengl.GLUtils;
 import android.opengl.Matrix;
 import android.util.Log;
@@ -105,15 +105,15 @@ public class NoiseFieldGL extends GLESScene {
     @Override
     public void release() {
         int[] tex = new int[] { mDotTexture };
-        GLES20.glDeleteTextures(tex.length, tex, 0);
+        GLES30.glDeleteTextures(tex.length, tex, 0);
         mDotTexture = 0;
 
         if (mBgProgram != 0) {
-            GLES20.glDeleteProgram(mBgProgram);
+            GLES30.glDeleteProgram(mBgProgram);
             mBgProgram = 0;
         }
         if (mDotProgram != 0) {
-            GLES20.glDeleteProgram(mDotProgram);
+            GLES30.glDeleteProgram(mDotProgram);
             mDotProgram = 0;
         }
         mInitialized = false;
@@ -146,8 +146,8 @@ public class NoiseFieldGL extends GLESScene {
 
         mScene.updateFrameScale(timeMs);
 
-        GLES20.glViewport(0, 0, mWidth, mHeight);
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+        GLES30.glViewport(0, 0, mWidth, mHeight);
+        GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT);
 
         drawDots();
         drawBackground();
@@ -162,10 +162,10 @@ public class NoiseFieldGL extends GLESScene {
     private void initGLIfNeeded() {
         if (mInitialized || mGLFailed || mResources == null) return;
 
-        GLES20.glClearColor(0f, 0f, 0f, 1f);
-        GLES20.glDisable(GLES20.GL_DEPTH_TEST);
-        GLES20.glEnable(GLES20.GL_BLEND);
-        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE);
+        GLES30.glClearColor(0f, 0f, 0f, 1f);
+        GLES30.glDisable(GLES30.GL_DEPTH_TEST);
+        GLES30.glEnable(GLES30.GL_BLEND);
+        GLES30.glBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ONE);
 
         String bgVs = AssetLoader.readText(mContext, "noisefield/shaders/GLES/noisefield_bg_vs.glsl");
         String bgFs = AssetLoader.readText(mContext, "noisefield/shaders/GLES/noisefield_bg_fs.glsl");
@@ -179,15 +179,15 @@ public class NoiseFieldGL extends GLESScene {
             return;
         }
 
-        mBgPositionLoc = GLES20.glGetAttribLocation(mBgProgram, "ATTRIB_position");
-        mBgColorLoc = GLES20.glGetAttribLocation(mBgProgram, "ATTRIB_color");
+        mBgPositionLoc = GLES30.glGetAttribLocation(mBgProgram, "ATTRIB_position");
+        mBgColorLoc = GLES30.glGetAttribLocation(mBgProgram, "ATTRIB_color");
 
-        mDotPositionLoc = GLES20.glGetAttribLocation(mDotProgram, "ATTRIB_position");
-        mDotSpeedLoc = GLES20.glGetAttribLocation(mDotProgram, "ATTRIB_speed");
-        mDotAlphaLoc = GLES20.glGetAttribLocation(mDotProgram, "ATTRIB_alpha");
-        mDotMvpLoc = GLES20.glGetUniformLocation(mDotProgram, "UNI_MVP");
-        mDotScaleLoc = GLES20.glGetUniformLocation(mDotProgram, "UNI_scaleSize");
-        mDotTexLoc = GLES20.glGetUniformLocation(mDotProgram, "UNI_Tex0");
+        mDotPositionLoc = GLES30.glGetAttribLocation(mDotProgram, "ATTRIB_position");
+        mDotSpeedLoc = GLES30.glGetAttribLocation(mDotProgram, "ATTRIB_speed");
+        mDotAlphaLoc = GLES30.glGetAttribLocation(mDotProgram, "ATTRIB_alpha");
+        mDotMvpLoc = GLES30.glGetUniformLocation(mDotProgram, "UNI_MVP");
+        mDotScaleLoc = GLES30.glGetUniformLocation(mDotProgram, "UNI_scaleSize");
+        mDotTexLoc = GLES30.glGetUniformLocation(mDotProgram, "UNI_Tex0");
 
         createBackgroundMesh();
         if (mScene.consumeParamsDirty()) {
@@ -224,43 +224,43 @@ public class NoiseFieldGL extends GLESScene {
     }
 
     private void drawBackground() {
-        GLES20.glUseProgram(mBgProgram);
+        GLES30.glUseProgram(mBgProgram);
 
-        GLES20.glEnableVertexAttribArray(mBgPositionLoc);
-        GLES20.glEnableVertexAttribArray(mBgColorLoc);
+        GLES30.glEnableVertexAttribArray(mBgPositionLoc);
+        GLES30.glEnableVertexAttribArray(mBgColorLoc);
 
-        GLES20.glVertexAttribPointer(mBgPositionLoc, 3, GLES20.GL_FLOAT, false, 0, mBgPosBuffer);
-        GLES20.glVertexAttribPointer(mBgColorLoc, 4, GLES20.GL_FLOAT, false, 0, mBgColorBuffer);
+        GLES30.glVertexAttribPointer(mBgPositionLoc, 3, GLES30.GL_FLOAT, false, 0, mBgPosBuffer);
+        GLES30.glVertexAttribPointer(mBgColorLoc, 4, GLES30.GL_FLOAT, false, 0, mBgColorBuffer);
 
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, mBgVertexCount);
+        GLES30.glDrawArrays(GLES30.GL_TRIANGLES, 0, mBgVertexCount);
 
-        GLES20.glDisableVertexAttribArray(mBgPositionLoc);
-        GLES20.glDisableVertexAttribArray(mBgColorLoc);
+        GLES30.glDisableVertexAttribArray(mBgPositionLoc);
+        GLES30.glDisableVertexAttribArray(mBgColorLoc);
     }
 
     private void drawDots() {
         if (mDotTexture == 0) return;   // 纹理没就绪时绑 0 会采样到未定义内容
-        GLES20.glUseProgram(mDotProgram);
-        GLES20.glUniformMatrix4fv(mDotMvpLoc, 1, false, mMvp, 0);
-        GLES20.glUniform1f(mDotScaleLoc, mScaleSize * mSizeMultiplier);
-        GLES20.glUniform1i(mDotTexLoc, 0);
+        GLES30.glUseProgram(mDotProgram);
+        GLES30.glUniformMatrix4fv(mDotMvpLoc, 1, false, mMvp, 0);
+        GLES30.glUniform1f(mDotScaleLoc, mScaleSize * mSizeMultiplier);
+        GLES30.glUniform1i(mDotTexLoc, 0);
 
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mDotTexture);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mDotTexture);
 
-        GLES20.glEnableVertexAttribArray(mDotPositionLoc);
-        GLES20.glEnableVertexAttribArray(mDotSpeedLoc);
-        GLES20.glEnableVertexAttribArray(mDotAlphaLoc);
+        GLES30.glEnableVertexAttribArray(mDotPositionLoc);
+        GLES30.glEnableVertexAttribArray(mDotSpeedLoc);
+        GLES30.glEnableVertexAttribArray(mDotAlphaLoc);
 
-        GLES20.glVertexAttribPointer(mDotPositionLoc, 3, GLES20.GL_FLOAT, false, 0, mDotPosBuffer);
-        GLES20.glVertexAttribPointer(mDotSpeedLoc, 1, GLES20.GL_FLOAT, false, 0, mDotSpeedBuffer);
-        GLES20.glVertexAttribPointer(mDotAlphaLoc, 1, GLES20.GL_FLOAT, false, 0, mDotAlphaBuffer);
+        GLES30.glVertexAttribPointer(mDotPositionLoc, 3, GLES30.GL_FLOAT, false, 0, mDotPosBuffer);
+        GLES30.glVertexAttribPointer(mDotSpeedLoc, 1, GLES30.GL_FLOAT, false, 0, mDotSpeedBuffer);
+        GLES30.glVertexAttribPointer(mDotAlphaLoc, 1, GLES30.GL_FLOAT, false, 0, mDotAlphaBuffer);
 
-        GLES20.glDrawArrays(GLES20.GL_POINTS, 0, mScene.getDotCount());
+        GLES30.glDrawArrays(GLES30.GL_POINTS, 0, mScene.getDotCount());
 
-        GLES20.glDisableVertexAttribArray(mDotPositionLoc);
-        GLES20.glDisableVertexAttribArray(mDotSpeedLoc);
-        GLES20.glDisableVertexAttribArray(mDotAlphaLoc);
+        GLES30.glDisableVertexAttribArray(mDotPositionLoc);
+        GLES30.glDisableVertexAttribArray(mDotSpeedLoc);
+        GLES30.glDisableVertexAttribArray(mDotAlphaLoc);
     }
 
     private void updateMvp() {
@@ -310,14 +310,14 @@ public class NoiseFieldGL extends GLESScene {
             return 0;
         }
         int[] tex = new int[1];
-        GLES20.glGenTextures(1, tex, 0);
+        GLES30.glGenTextures(1, tex, 0);
         int textureId = tex[0];
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
-        GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, textureId);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE);
+        GLUtils.texImage2D(GLES30.GL_TEXTURE_2D, 0, bitmap, 0);
         bitmap.recycle();
         return textureId;
     }

@@ -1,7 +1,7 @@
 package com.reandroid.wallpaper.deepsea;
 
 import android.content.Context;
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 import com.reandroid.utils.AssetLoader;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
@@ -69,61 +69,61 @@ class SeaWaterDrops2 {
 
     public void initShader() {
         if (!isInitShader()) {
-            int createdAndLinkedProgram = GLHelper.getCreatedAndLinkedProgram(GLHelper.getCompiledShader(GLES20.GL_VERTEX_SHADER, AssetLoader.readText(getContext(), "deepsea/shaders/GLES/deepsea_seawaterdrops2_0_vs.glsl")), GLHelper.getCompiledShader(GLES20.GL_FRAGMENT_SHADER, AssetLoader.readText(getContext(), "deepsea/shaders/GLES/deepsea_seawaterdrops2_1_fs.glsl")));
+            int createdAndLinkedProgram = GLHelper.getCreatedAndLinkedProgram(GLHelper.getCompiledShader(GLES30.GL_VERTEX_SHADER, AssetLoader.readText(getContext(), "deepsea/shaders/GLES/deepsea_seawaterdrops2_0_vs.glsl")), GLHelper.getCompiledShader(GLES30.GL_FRAGMENT_SHADER, AssetLoader.readText(getContext(), "deepsea/shaders/GLES/deepsea_seawaterdrops2_1_fs.glsl")));
             this.mProgramHandle = createdAndLinkedProgram;
             this.mTextureID = GLHelper.getTextureFromAsset(getContext(), "deepsea/drawable/particle_mip_0.png");
             this.mAlphaTextureId = GLHelper.getTextureFromAsset(getContext(), "deepsea/drawable/particle_mip_0_alpha.png");
-            this.mAlphaTextureHandle = GLES20.glGetUniformLocation(this.mProgramHandle, "s_AlphaTexture");
-            this.mMVPMatrixHandle = GLES20.glGetUniformLocation(this.mProgramHandle, "u_MVPMatrix");
-            this.mPositionHandle = GLES20.glGetAttribLocation(this.mProgramHandle, "a_Position");
-            this.mTextureHandle = GLES20.glGetUniformLocation(this.mProgramHandle, "u_texture");
-            this.mMoveHandle = GLES20.glGetAttribLocation(this.mProgramHandle, "a_move");
-            this.mTimesHandle = GLES20.glGetUniformLocation(this.mProgramHandle, "a_time");
-            this.mLifeHandle = GLES20.glGetAttribLocation(this.mProgramHandle, "a_life");
-            this.mAgeHandle = GLES20.glGetAttribLocation(this.mProgramHandle, "a_age");
-            this.mSizeHandle = GLES20.glGetAttribLocation(this.mProgramHandle, "a_size");
-            this.mSpeedHandle = GLES20.glGetAttribLocation(this.mProgramHandle, "a_speed");
+            this.mAlphaTextureHandle = GLES30.glGetUniformLocation(this.mProgramHandle, "s_AlphaTexture");
+            this.mMVPMatrixHandle = GLES30.glGetUniformLocation(this.mProgramHandle, "u_MVPMatrix");
+            this.mPositionHandle = GLES30.glGetAttribLocation(this.mProgramHandle, "a_Position");
+            this.mTextureHandle = GLES30.glGetUniformLocation(this.mProgramHandle, "u_texture");
+            this.mMoveHandle = GLES30.glGetAttribLocation(this.mProgramHandle, "a_move");
+            this.mTimesHandle = GLES30.glGetUniformLocation(this.mProgramHandle, "a_time");
+            this.mLifeHandle = GLES30.glGetAttribLocation(this.mProgramHandle, "a_life");
+            this.mAgeHandle = GLES30.glGetAttribLocation(this.mProgramHandle, "a_age");
+            this.mSizeHandle = GLES30.glGetAttribLocation(this.mProgramHandle, "a_size");
+            this.mSpeedHandle = GLES30.glGetAttribLocation(this.mProgramHandle, "a_speed");
             this.mIsInitShader = true;
         }
     }
 
     public void setForDrawing() {
-        GLES20.glUseProgram(this.mProgramHandle);
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, this.mTextureID);
-        GLES20.glUniform1i(this.mTextureHandle, 0);
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE1);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, this.mAlphaTextureId);
-        GLES20.glUniform1i(this.mAlphaTextureHandle, 1);
-        GLES20.glEnable(GLES20.GL_TEXTURE_2D);
+        GLES30.glUseProgram(this.mProgramHandle);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, this.mTextureID);
+        GLES30.glUniform1i(this.mTextureHandle, 0);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE1);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, this.mAlphaTextureId);
+        GLES30.glUniform1i(this.mAlphaTextureHandle, 1);
+        GLES30.glEnable(GLES30.GL_TEXTURE_2D);
         updateTimeCounter();
         this.mVertexBuffer.position(0);
-        GLES20.glVertexAttribPointer(this.mPositionHandle, 3, GLES20.GL_FLOAT, false, 40, (Buffer) this.mVertexBuffer);
-        GLES20.glEnableVertexAttribArray(this.mPositionHandle);
+        GLES30.glVertexAttribPointer(this.mPositionHandle, 3, GLES30.GL_FLOAT, false, 40, (Buffer) this.mVertexBuffer);
+        GLES30.glEnableVertexAttribArray(this.mPositionHandle);
         this.mVertexBuffer.position(3);
-        GLES20.glVertexAttribPointer(this.mMoveHandle, 3, GLES20.GL_FLOAT, false, 40, (Buffer) this.mVertexBuffer);
-        GLES20.glEnableVertexAttribArray(this.mMoveHandle);
+        GLES30.glVertexAttribPointer(this.mMoveHandle, 3, GLES30.GL_FLOAT, false, 40, (Buffer) this.mVertexBuffer);
+        GLES30.glEnableVertexAttribArray(this.mMoveHandle);
         this.mVertexBuffer.position(6);
-        GLES20.glVertexAttribPointer(this.mLifeHandle, 1, GLES20.GL_FLOAT, false, 40, (Buffer) this.mVertexBuffer);
-        GLES20.glEnableVertexAttribArray(this.mLifeHandle);
+        GLES30.glVertexAttribPointer(this.mLifeHandle, 1, GLES30.GL_FLOAT, false, 40, (Buffer) this.mVertexBuffer);
+        GLES30.glEnableVertexAttribArray(this.mLifeHandle);
         this.mVertexBuffer.position(7);
-        GLES20.glVertexAttribPointer(this.mAgeHandle, 1, GLES20.GL_FLOAT, false, 40, (Buffer) this.mVertexBuffer);
-        GLES20.glEnableVertexAttribArray(this.mAgeHandle);
+        GLES30.glVertexAttribPointer(this.mAgeHandle, 1, GLES30.GL_FLOAT, false, 40, (Buffer) this.mVertexBuffer);
+        GLES30.glEnableVertexAttribArray(this.mAgeHandle);
         this.mVertexBuffer.position(8);
-        GLES20.glVertexAttribPointer(this.mSizeHandle, 1, GLES20.GL_FLOAT, false, 40, (Buffer) this.mVertexBuffer);
-        GLES20.glEnableVertexAttribArray(this.mSizeHandle);
+        GLES30.glVertexAttribPointer(this.mSizeHandle, 1, GLES30.GL_FLOAT, false, 40, (Buffer) this.mVertexBuffer);
+        GLES30.glEnableVertexAttribArray(this.mSizeHandle);
         this.mVertexBuffer.position(9);
-        GLES20.glVertexAttribPointer(this.mSpeedHandle, 1, GLES20.GL_FLOAT, false, 40, (Buffer) this.mVertexBuffer);
-        GLES20.glEnableVertexAttribArray(this.mSpeedHandle);
-        GLES20.glUniform1f(this.mTimesHandle, this.mTimeCounter);
+        GLES30.glVertexAttribPointer(this.mSpeedHandle, 1, GLES30.GL_FLOAT, false, 40, (Buffer) this.mVertexBuffer);
+        GLES30.glEnableVertexAttribArray(this.mSpeedHandle);
+        GLES30.glUniform1f(this.mTimesHandle, this.mTimeCounter);
     }
 
     public void draw() {
-        GLES20.glDrawArrays(GLES20.GL_POINTS, 0, 6);
+        GLES30.glDrawArrays(GLES30.GL_POINTS, 0, 6);
     }
 
     public void update(float[] fArr) {
-        GLES20.glUniformMatrix4fv(this.mMVPMatrixHandle, 1, false, fArr, 0);
+        GLES30.glUniformMatrix4fv(this.mMVPMatrixHandle, 1, false, fArr, 0);
     }
 
     private void setParticleData(float f, float f2, float f3) {

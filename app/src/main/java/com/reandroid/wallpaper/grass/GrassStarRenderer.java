@@ -1,7 +1,7 @@
 package com.reandroid.wallpaper.grass;
 
 import android.content.SharedPreferences;
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 
 /**
  * 夜空星星的 GLES 渲染。
@@ -54,7 +54,7 @@ final class GrassStarRenderer {
 
     void releaseTextures() {
         int[] tex = new int[]{texStarWhite, texStarWarm, texStarCool, texStarYellow};
-        GLES20.glDeleteTextures(tex.length, tex, 0);
+        GLES30.glDeleteTextures(tex.length, tex, 0);
         texStarWhite = 0;
         texStarWarm = 0;
         texStarCool = 0;
@@ -68,7 +68,7 @@ final class GrassStarRenderer {
 
         renderOps.useBackgroundProgram();
         renderOps.setAlphaBlend();
-        GLES20.glUniformMatrix4fv(bgMatrixHandle, 1, false, sd.projectionMatrix, 0);
+        GLES30.glUniformMatrix4fv(bgMatrixHandle, 1, false, sd.projectionMatrix, 0);
 
         GrassRenderDataBuilder.StarBatches stars = renderDataBuilder.buildStarBatches(
                 nightStarsLayer, sd, width, height, starBatches);

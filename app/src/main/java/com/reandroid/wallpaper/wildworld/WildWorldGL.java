@@ -2,7 +2,7 @@ package com.reandroid.wallpaper.wildworld;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 import android.opengl.GLUtils;
 import android.opengl.Matrix;
 
@@ -100,7 +100,7 @@ public class WildWorldGL extends GLESScene {
                 mTexLayer1, mTexLayer11, mTexPterosaur, mTexDinosaur,
                 mTexFireball
         };
-        GLES20.glDeleteTextures(tex.length, tex, 0);
+        GLES30.glDeleteTextures(tex.length, tex, 0);
         mTexBgDay = 0;
         mTexBgDay1 = 0;
         mTexBgNight = 0;
@@ -120,7 +120,7 @@ public class WildWorldGL extends GLESScene {
         mTexFireball = 0;
 
         if (mProgram != 0) {
-            GLES20.glDeleteProgram(mProgram);
+            GLES30.glDeleteProgram(mProgram);
             mProgram = 0;
         }
 
@@ -132,7 +132,7 @@ public class WildWorldGL extends GLESScene {
         super.resize(width, height);
         mScene.initState(width, height);
         if (mGLInitialized) {
-            GLES20.glViewport(0, 0, mWidth, mHeight);
+            GLES30.glViewport(0, 0, mWidth, mHeight);
             Matrix.orthoM(mProjectionMatrix, 0, 0, mWidth, mHeight, 0, -1.0f, 1.0f);
         }
     }
@@ -163,10 +163,10 @@ public class WildWorldGL extends GLESScene {
         mScene.updateFrame(timeMs);
 
         // 执行 OpenGL 绘制
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
-        GLES20.glUseProgram(mProgram);
-        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
-        GLES20.glUniformMatrix4fv(mMatrixHandle, 1, false, mProjectionMatrix, 0);
+        GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT);
+        GLES30.glUseProgram(mProgram);
+        GLES30.glBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ONE_MINUS_SRC_ALPHA);
+        GLES30.glUniformMatrix4fv(mMatrixHandle, 1, false, mProjectionMatrix, 0);
         draw();
     }
 
@@ -300,22 +300,22 @@ public class WildWorldGL extends GLESScene {
         mQuadBuffer.clear();
         mQuadBuffer.put(verts).position(0);
 
-        GLES20.glEnableVertexAttribArray(mPositionHandle);
-        GLES20.glVertexAttribPointer(mPositionHandle, 2, GLES20.GL_FLOAT, false, 16, mQuadBuffer);
+        GLES30.glEnableVertexAttribArray(mPositionHandle);
+        GLES30.glVertexAttribPointer(mPositionHandle, 2, GLES30.GL_FLOAT, false, 16, mQuadBuffer);
 
         mQuadBuffer.position(2);
-        GLES20.glEnableVertexAttribArray(mTexHandle);
-        GLES20.glVertexAttribPointer(mTexHandle, 2, GLES20.GL_FLOAT, false, 16, mQuadBuffer);
+        GLES30.glEnableVertexAttribArray(mTexHandle);
+        GLES30.glVertexAttribPointer(mTexHandle, 2, GLES30.GL_FLOAT, false, 16, mQuadBuffer);
 
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture);
-        GLES20.glUniform1i(mSamplerHandle, 0);
-        GLES20.glUniform1f(mAlphaHandle, 1.0f);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, texture);
+        GLES30.glUniform1i(mSamplerHandle, 0);
+        GLES30.glUniform1f(mAlphaHandle, 1.0f);
 
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, 4);
+        GLES30.glDrawArrays(GLES30.GL_TRIANGLE_FAN, 0, 4);
 
-        GLES20.glDisableVertexAttribArray(mPositionHandle);
-        GLES20.glDisableVertexAttribArray(mTexHandle);
+        GLES30.glDisableVertexAttribArray(mPositionHandle);
+        GLES30.glDisableVertexAttribArray(mTexHandle);
     }
 
     // ---- OpenGL 初始化 ----
@@ -325,9 +325,9 @@ public class WildWorldGL extends GLESScene {
      */
     private void initGL() {
         mGLInitialized = true;
-        GLES20.glDisable(GLES20.GL_DEPTH_TEST);
-        GLES20.glEnable(GLES20.GL_BLEND);
-        GLES20.glViewport(0, 0, mWidth, mHeight);
+        GLES30.glDisable(GLES30.GL_DEPTH_TEST);
+        GLES30.glEnable(GLES30.GL_BLEND);
+        GLES30.glViewport(0, 0, mWidth, mHeight);
 
         Matrix.orthoM(mProjectionMatrix, 0, 0, mWidth, mHeight, 0, -1.0f, 1.0f);
 
@@ -335,11 +335,11 @@ public class WildWorldGL extends GLESScene {
         String fs = AssetLoader.readText(mContext, "wildworld/shaders/GLES/wildworld_fs.glsl");
 
         mProgram = createProgram(vs, fs);
-        mPositionHandle = GLES20.glGetAttribLocation(mProgram, "aPosition");
-        mTexHandle = GLES20.glGetAttribLocation(mProgram, "aTexCoord");
-        mMatrixHandle = GLES20.glGetUniformLocation(mProgram, "uMVPMatrix");
-        mSamplerHandle = GLES20.glGetUniformLocation(mProgram, "uSampler");
-        mAlphaHandle = GLES20.glGetUniformLocation(mProgram, "uAlpha");
+        mPositionHandle = GLES30.glGetAttribLocation(mProgram, "aPosition");
+        mTexHandle = GLES30.glGetAttribLocation(mProgram, "aTexCoord");
+        mMatrixHandle = GLES30.glGetUniformLocation(mProgram, "uMVPMatrix");
+        mSamplerHandle = GLES30.glGetUniformLocation(mProgram, "uSampler");
+        mAlphaHandle = GLES30.glGetUniformLocation(mProgram, "uAlpha");
 
         mQuadBuffer = ByteBuffer.allocateDirect(4 * 4 * 4)
                 .order(ByteOrder.nativeOrder()).asFloatBuffer();
@@ -372,15 +372,15 @@ public class WildWorldGL extends GLESScene {
         if (bmp == null) return 0;
 
         int[] tex = new int[1];
-        GLES20.glGenTextures(1, tex, 0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, tex[0]);
+        GLES30.glGenTextures(1, tex, 0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, tex[0]);
 
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE);
 
-        GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bmp, 0);
+        GLUtils.texImage2D(GLES30.GL_TEXTURE_2D, 0, bmp, 0);
         bmp.recycle();
         return tex[0];
     }

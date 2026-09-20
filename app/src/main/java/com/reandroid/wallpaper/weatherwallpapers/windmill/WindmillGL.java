@@ -1,6 +1,6 @@
 package com.reandroid.wallpaper.weatherwallpapers.windmill;
 
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 import android.util.Log;
 
 import android.content.Context;
@@ -146,7 +146,7 @@ public class WindmillGL extends GLESScene {
     public void release() {
         deleteTextures();
         if (mProgram != 0) {
-            GLES20.glDeleteProgram(mProgram);
+            GLES30.glDeleteProgram(mProgram);
             mProgram = 0;
         }
         mGlReady = false;
@@ -156,7 +156,7 @@ public class WindmillGL extends GLESScene {
     public void resize(int width, int height) {
         super.resize(width, height);
         if (mGlReady) {
-            GLES20.glViewport(0, 0, mWidth, mHeight);
+            GLES30.glViewport(0, 0, mWidth, mHeight);
             mScene.updateProjection(mWidth, mHeight);
         }
     }
@@ -188,8 +188,8 @@ public class WindmillGL extends GLESScene {
 
         mScene.updateWeatherFlags();
 
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
-        GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+        GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT | GLES30.GL_DEPTH_BUFFER_BIT);
+        GLES30.glBlendFunc(GLES30.GL_ONE, GLES30.GL_ONE_MINUS_SRC_ALPHA);
 
         drawObjects();
     }
@@ -198,11 +198,11 @@ public class WindmillGL extends GLESScene {
         String vs = AssetLoader.readText(mContext, "windmill/shaders/GLES/windmill_vs.glsl");
         String fs = AssetLoader.readText(mContext, "windmill/shaders/GLES/windmill_fs.glsl");
         mProgram = createProgram(vs, fs);
-        mPositionHandle = GLES20.glGetAttribLocation(mProgram, "aPosition");
-        mTexCoordHandle = GLES20.glGetAttribLocation(mProgram, "aTexCoord");
-        mMatrixHandle = GLES20.glGetUniformLocation(mProgram, "uMVPMatrix");
-        mColorHandle = GLES20.glGetUniformLocation(mProgram, "uColor");
-        mSamplerHandle = GLES20.glGetUniformLocation(mProgram, "uTexture");
+        mPositionHandle = GLES30.glGetAttribLocation(mProgram, "aPosition");
+        mTexCoordHandle = GLES30.glGetAttribLocation(mProgram, "aTexCoord");
+        mMatrixHandle = GLES30.glGetUniformLocation(mProgram, "uMVPMatrix");
+        mColorHandle = GLES30.glGetUniformLocation(mProgram, "uColor");
+        mSamplerHandle = GLES30.glGetUniformLocation(mProgram, "uTexture");
 
         float[] quadVertices = AssetLoader.readFloatArray(mContext, "windmill/data/windmill_quad_vertices.csv");
         float[] rectOneToTwoVertices = AssetLoader.readFloatArray(mContext, "windmill/data/windmill_rect_one_to_two_vertices.csv");
@@ -222,8 +222,8 @@ public class WindmillGL extends GLESScene {
                 mColorHandle, mSamplerHandle, mScene.mProjectionMatrix,
                 mVertexBuffer, mTexBuffer, mRectOneToTwoBuffer, mRectVertexBuffer);
 
-        GLES20.glClearColor(0f, 0f, 0f, 0f);
-        GLES20.glEnable(GLES20.GL_BLEND);
+        GLES30.glClearColor(0f, 0f, 0f, 0f);
+        GLES30.glEnable(GLES30.GL_BLEND);
 
         mScene.updateProjection(mWidth, mHeight);
         loadTextures();
@@ -306,9 +306,9 @@ public class WindmillGL extends GLESScene {
 
     private void deleteTextures() {
         int[] textures = {mSky01,mSky02,mSky03,mSky04,mSkyStars,mCloudA01,mCloudA02,mCloudA03,mCloudB01,mCloudB02,mCloudB03,mSun1,mSun2,mSun3,mSun4,mStar,mMeteor,mMoon,mRain1,mRain2,mRain3,mRain4,mFog02,mIce,mWaterdrop,mFrostE,mFrostF,mSnow1,mSnow2,mSnow3,mSnow4,mNightcover,mSkyFlash,mLightning1,mLightning2,mLightning3,mCloudLightA1,mCloudLightA2,mCloudLightA3,mCloudLightB1,mCloudLightB2,mCloudLightB3,mWindmillWing,mWindmillWingBlur,mWindmillCenter1,mWindmillCenter2,mWindmillPillar1,mWindmillPillar2,mWindmillPillarFlip1,mWindmillPillarFlip2,mLand01,mLand02,mLand03,mLand04,mLand05,mLand06,mLand07,mLand08,mLand09,mLawn01,mLawn02,mLawn03,mLawn04,mLawn05};
-        GLES20.glDeleteTextures(textures.length, textures, 0);
-        if (mRaindrop1 != null) GLES20.glDeleteTextures(mRaindrop1.length, mRaindrop1, 0);
-        if (mRaindrop2 != null) GLES20.glDeleteTextures(mRaindrop2.length, mRaindrop2, 0);
+        GLES30.glDeleteTextures(textures.length, textures, 0);
+        if (mRaindrop1 != null) GLES30.glDeleteTextures(mRaindrop1.length, mRaindrop1, 0);
+        if (mRaindrop2 != null) GLES30.glDeleteTextures(mRaindrop2.length, mRaindrop2, 0);
     }
 
     private void drawObjects() {

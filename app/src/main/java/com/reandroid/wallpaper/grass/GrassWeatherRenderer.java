@@ -2,7 +2,7 @@ package com.reandroid.wallpaper.grass;
 
 import android.content.SharedPreferences;
 import android.graphics.Color;
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 
 import com.reandroid.settings.WallpaperSettings;
 import com.reandroid.weather.WeatherCondition;
@@ -148,7 +148,7 @@ final class GrassWeatherRenderer {
                 texWeatherLightning1, texWeatherLightning2, texWeatherLightning3,
                 texWeatherFlash, texWeatherTone
         };
-        GLES20.glDeleteTextures(tex.length, tex, 0);
+        GLES30.glDeleteTextures(tex.length, tex, 0);
 
         texWeatherRain1 = 0;
         texWeatherRain2 = 0;
@@ -177,7 +177,7 @@ final class GrassWeatherRenderer {
         }
         ops.useBackgroundProgram();
         ops.setAlphaBlend();
-        GLES20.glUniformMatrix4fv(bgMatrixHandle, 1, false, sd.projectionMatrix, 0);
+        GLES30.glUniformMatrix4fv(bgMatrixHandle, 1, false, sd.projectionMatrix, 0);
         drawWeatherTone(sd, spriteRenderer);
     }
 
@@ -189,7 +189,7 @@ final class GrassWeatherRenderer {
 
         ops.useBackgroundProgram();
         ops.setAlphaBlend();
-        GLES20.glUniformMatrix4fv(bgMatrixHandle, 1, false, sd.projectionMatrix, 0);
+        GLES30.glUniformMatrix4fv(bgMatrixHandle, 1, false, sd.projectionMatrix, 0);
 
         /*
          * 整个天气图层按昼夜染色：白天是白的，夜里压暗。
@@ -637,12 +637,12 @@ final class GrassWeatherRenderer {
         final float gradientEnd = 0.75f;
 
         int[] tex = new int[1];
-        GLES20.glGenTextures(1, tex, 0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, tex[0]);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
+        GLES30.glGenTextures(1, tex, 0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, tex[0]);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE);
 
         byte[] rgba = new byte[texWidth * texHeight * 4];
         for (int y = 0; y < texHeight; y++) {
@@ -662,8 +662,8 @@ final class GrassWeatherRenderer {
 
         ByteBuffer buf = ByteBuffer.allocateDirect(rgba.length).order(ByteOrder.nativeOrder());
         buf.put(rgba).position(0);
-        GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_RGBA, texWidth, texHeight, 0,
-                GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, buf);
+        GLES30.glTexImage2D(GLES30.GL_TEXTURE_2D, 0, GLES30.GL_RGBA, texWidth, texHeight, 0,
+                GLES30.GL_RGBA, GLES30.GL_UNSIGNED_BYTE, buf);
         return tex[0];
     }
 

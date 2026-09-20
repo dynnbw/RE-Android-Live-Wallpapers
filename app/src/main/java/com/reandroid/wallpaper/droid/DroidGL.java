@@ -7,7 +7,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 import android.opengl.GLUtils;
 import android.opengl.Matrix;
 import android.util.Log;
@@ -171,11 +171,11 @@ public class DroidGL extends GLESScene implements SensorEventListener {
     public void release() {
         unregisterSensors();
         if (mAtlasTexture != 0) {
-            GLES20.glDeleteTextures(1, new int[] {mAtlasTexture}, 0);
+            GLES30.glDeleteTextures(1, new int[] {mAtlasTexture}, 0);
             mAtlasTexture = 0;
         }
         if (mProgram != 0) {
-            GLES20.glDeleteProgram(mProgram);
+            GLES30.glDeleteProgram(mProgram);
             mProgram = 0;
         }
         mGlReady = false;
@@ -226,8 +226,8 @@ public class DroidGL extends GLESScene implements SensorEventListener {
         mScene.update(timeMs);
         long drawStart = System.nanoTime();
 
-        GLES20.glClearColor(mBgR, mBgG, mBgB, 1.0f);
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+        GLES30.glClearColor(mBgR, mBgG, mBgB, 1.0f);
+        GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT);
 
         drawDroids();
         long drawEnd = System.nanoTime();
@@ -284,29 +284,29 @@ public class DroidGL extends GLESScene implements SensorEventListener {
             return;
         }
 
-        GLES20.glUseProgram(mProgram);
-        GLES20.glUniformMatrix4fv(mMvpHandle, 1, false, mProjection, 0);
-        GLES20.glUniform3f(mTintHandle, mTintR, mTintG, mTintB);
-        GLES20.glUniform1f(mAlphaHandle, 1.0f);
-        GLES20.glUniform1i(mSamplerHandle, 0);
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mAtlasTexture);
+        GLES30.glUseProgram(mProgram);
+        GLES30.glUniformMatrix4fv(mMvpHandle, 1, false, mProjection, 0);
+        GLES30.glUniform3f(mTintHandle, mTintR, mTintG, mTintB);
+        GLES30.glUniform1f(mAlphaHandle, 1.0f);
+        GLES30.glUniform1i(mSamplerHandle, 0);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mAtlasTexture);
 
         mBatchBuffer.position(0);
         mBatchBuffer.limit(floats);
-        GLES20.glVertexAttribPointer(mPositionHandle, 2, GLES20.GL_FLOAT, false,
+        GLES30.glVertexAttribPointer(mPositionHandle, 2, GLES30.GL_FLOAT, false,
                 FLOATS_PER_VERTEX * 4, mBatchBuffer);
-        GLES20.glEnableVertexAttribArray(mPositionHandle);
+        GLES30.glEnableVertexAttribArray(mPositionHandle);
         mBatchBuffer.position(2);
-        GLES20.glVertexAttribPointer(mTexCoordHandle, 2, GLES20.GL_FLOAT, false,
+        GLES30.glVertexAttribPointer(mTexCoordHandle, 2, GLES30.GL_FLOAT, false,
                 FLOATS_PER_VERTEX * 4, mBatchBuffer);
-        GLES20.glEnableVertexAttribArray(mTexCoordHandle);
+        GLES30.glEnableVertexAttribArray(mTexCoordHandle);
 
         // 所有精灵一次提交:150 个精灵 × 2 三角形
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, floats / FLOATS_PER_VERTEX);
+        GLES30.glDrawArrays(GLES30.GL_TRIANGLES, 0, floats / FLOATS_PER_VERTEX);
 
-        GLES20.glDisableVertexAttribArray(mPositionHandle);
-        GLES20.glDisableVertexAttribArray(mTexCoordHandle);
+        GLES30.glDisableVertexAttribArray(mPositionHandle);
+        GLES30.glDisableVertexAttribArray(mTexCoordHandle);
     }
 
     /**
@@ -415,12 +415,12 @@ public class DroidGL extends GLESScene implements SensorEventListener {
             Log.e(TAG, "Failed to create sprite program");
             return;
         }
-        mPositionHandle = GLES20.glGetAttribLocation(mProgram, "aPosition");
-        mTexCoordHandle = GLES20.glGetAttribLocation(mProgram, "aTexCoord");
-        mMvpHandle = GLES20.glGetUniformLocation(mProgram, "uMvpMatrix");
-        mTintHandle = GLES20.glGetUniformLocation(mProgram, "uTint");
-        mAlphaHandle = GLES20.glGetUniformLocation(mProgram, "uAlpha");
-        mSamplerHandle = GLES20.glGetUniformLocation(mProgram, "uTexture");
+        mPositionHandle = GLES30.glGetAttribLocation(mProgram, "aPosition");
+        mTexCoordHandle = GLES30.glGetAttribLocation(mProgram, "aTexCoord");
+        mMvpHandle = GLES30.glGetUniformLocation(mProgram, "uMvpMatrix");
+        mTintHandle = GLES30.glGetUniformLocation(mProgram, "uTint");
+        mAlphaHandle = GLES30.glGetUniformLocation(mProgram, "uAlpha");
+        mSamplerHandle = GLES30.glGetUniformLocation(mProgram, "uTexture");
 
         boolean complete = buildAtlas();
         // 皮肤缺少某部件位图时,对应刚体也不创建(与原版 hasLeftArm 等参数一致)
@@ -433,10 +433,10 @@ public class DroidGL extends GLESScene implements SensorEventListener {
             Log.w(TAG, "Some droid part textures are missing");
         }
 
-        GLES20.glDisable(GLES20.GL_DEPTH_TEST);
-        GLES20.glDisable(GLES20.GL_CULL_FACE);
-        GLES20.glEnable(GLES20.GL_BLEND);
-        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+        GLES30.glDisable(GLES30.GL_DEPTH_TEST);
+        GLES30.glDisable(GLES30.GL_CULL_FACE);
+        GLES30.glEnable(GLES30.GL_BLEND);
+        GLES30.glBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ONE_MINUS_SRC_ALPHA);
 
         mGlReady = true;
     }
@@ -488,13 +488,13 @@ public class DroidGL extends GLESScene implements SensorEventListener {
 
     private int uploadTexture(Bitmap bitmap) {
         int[] ids = new int[1];
-        GLES20.glGenTextures(1, ids, 0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, ids[0]);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
-        GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
+        GLES30.glGenTextures(1, ids, 0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, ids[0]);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE);
+        GLUtils.texImage2D(GLES30.GL_TEXTURE_2D, 0, bitmap, 0);
         return ids[0];
     }
 

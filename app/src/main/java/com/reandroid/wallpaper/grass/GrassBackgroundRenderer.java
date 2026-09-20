@@ -1,6 +1,6 @@
 package com.reandroid.wallpaper.grass;
 
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -156,38 +156,38 @@ final class GrassBackgroundRenderer {
         }
 
         skyQuadBuffer.position(0);
-        GLES20.glEnableVertexAttribArray(skyPositionHandle);
-        GLES20.glVertexAttribPointer(skyPositionHandle, 2, GLES20.GL_FLOAT, false, 16, skyQuadBuffer);
+        GLES30.glEnableVertexAttribArray(skyPositionHandle);
+        GLES30.glVertexAttribPointer(skyPositionHandle, 2, GLES30.GL_FLOAT, false, 16, skyQuadBuffer);
         skyQuadBuffer.position(2);
-        GLES20.glEnableVertexAttribArray(skyTexHandle);
-        GLES20.glVertexAttribPointer(skyTexHandle, 2, GLES20.GL_FLOAT, false, 16, skyQuadBuffer);
+        GLES30.glEnableVertexAttribArray(skyTexHandle);
+        GLES30.glVertexAttribPointer(skyTexHandle, 2, GLES30.GL_FLOAT, false, 16, skyQuadBuffer);
 
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texNight);
-        GLES20.glUniform1i(skySamplerNightHandle, 0);
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE1);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texSunrise);
-        GLES20.glUniform1i(skySamplerSunriseHandle, 1);
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE2);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texSunset);
-        GLES20.glUniform1i(skySamplerSunsetHandle, 2);
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE3);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texSky);
-        GLES20.glUniform1i(skySamplerSkyHandle, 3);
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE4);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texSolarEclipse);
-        GLES20.glUniform1i(skySamplerSolarEclipseHandle, 4);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, texNight);
+        GLES30.glUniform1i(skySamplerNightHandle, 0);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE1);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, texSunrise);
+        GLES30.glUniform1i(skySamplerSunriseHandle, 1);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE2);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, texSunset);
+        GLES30.glUniform1i(skySamplerSunsetHandle, 2);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE3);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, texSky);
+        GLES30.glUniform1i(skySamplerSkyHandle, 3);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE4);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, texSolarEclipse);
+        GLES30.glUniform1i(skySamplerSolarEclipseHandle, 4);
 
-        GLES20.glUniform1f(skyWeightNightHandle, sd.accurateWeights[0]);
-        GLES20.glUniform1f(skyWeightSunriseHandle, sd.accurateWeights[1]);
-        GLES20.glUniform1f(skyWeightSunsetHandle, sd.accurateWeights[2]);
-        GLES20.glUniform1f(skyWeightSkyHandle, sd.accurateWeights[3]);
-        GLES20.glUniform1f(skyWeightSolarEclipseHandle, sd.solarEclipseWeight);
-        GLES20.glUniform1f(skyNightInvertHandle, sd.nightInvert ? 1.0f : 0.0f);
+        GLES30.glUniform1f(skyWeightNightHandle, sd.accurateWeights[0]);
+        GLES30.glUniform1f(skyWeightSunriseHandle, sd.accurateWeights[1]);
+        GLES30.glUniform1f(skyWeightSunsetHandle, sd.accurateWeights[2]);
+        GLES30.glUniform1f(skyWeightSkyHandle, sd.accurateWeights[3]);
+        GLES30.glUniform1f(skyWeightSolarEclipseHandle, sd.solarEclipseWeight);
+        GLES30.glUniform1f(skyNightInvertHandle, sd.nightInvert ? 1.0f : 0.0f);
 
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, 4);
-        GLES20.glDisableVertexAttribArray(skyPositionHandle);
-        GLES20.glDisableVertexAttribArray(skyTexHandle);
+        GLES30.glDrawArrays(GLES30.GL_TRIANGLE_FAN, 0, 4);
+        GLES30.glDisableVertexAttribArray(skyPositionHandle);
+        GLES30.glDisableVertexAttribArray(skyTexHandle);
     }
 
     /**
@@ -199,9 +199,9 @@ final class GrassBackgroundRenderer {
      * 用的是天空程序，那个着色器没有 uTint，也就不会被染色影响。
      */
     private void setAlpha(float alpha) {
-        GLES20.glUniform1f(bgAlphaHandle, alpha);
+        GLES30.glUniform1f(bgAlphaHandle, alpha);
         if (bgTintHandle >= 0) {
-            GLES20.glUniform3f(bgTintHandle, 1.0f, 1.0f, 1.0f);
+            GLES30.glUniform3f(bgTintHandle, 1.0f, 1.0f, 1.0f);
         }
     }
 
@@ -260,26 +260,26 @@ final class GrassBackgroundRenderer {
 
         bgQuadBuffer.clear();
         bgQuadBuffer.put(quadVerts).position(0);
-        GLES20.glEnableVertexAttribArray(bgPositionHandle);
-        GLES20.glVertexAttribPointer(bgPositionHandle, 2, GLES20.GL_FLOAT, false, 20, bgQuadBuffer);
+        GLES30.glEnableVertexAttribArray(bgPositionHandle);
+        GLES30.glVertexAttribPointer(bgPositionHandle, 2, GLES30.GL_FLOAT, false, 20, bgQuadBuffer);
         bgQuadBuffer.position(2);
-        GLES20.glEnableVertexAttribArray(bgTexHandle);
-        GLES20.glVertexAttribPointer(bgTexHandle, 2, GLES20.GL_FLOAT, false, 20, bgQuadBuffer);
+        GLES30.glEnableVertexAttribArray(bgTexHandle);
+        GLES30.glVertexAttribPointer(bgTexHandle, 2, GLES30.GL_FLOAT, false, 20, bgQuadBuffer);
         if (bgVertexAlphaHandle >= 0) {
             bgQuadBuffer.position(4);
-            GLES20.glEnableVertexAttribArray(bgVertexAlphaHandle);
-            GLES20.glVertexAttribPointer(bgVertexAlphaHandle, 1, GLES20.GL_FLOAT, false, 20, bgQuadBuffer);
+            GLES30.glEnableVertexAttribArray(bgVertexAlphaHandle);
+            GLES30.glVertexAttribPointer(bgVertexAlphaHandle, 1, GLES30.GL_FLOAT, false, 20, bgQuadBuffer);
         }
 
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture);
-        GLES20.glUniform1i(bgSamplerHandle, 0);
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, 4);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, texture);
+        GLES30.glUniform1i(bgSamplerHandle, 0);
+        GLES30.glDrawArrays(GLES30.GL_TRIANGLE_FAN, 0, 4);
 
-        GLES20.glDisableVertexAttribArray(bgPositionHandle);
-        GLES20.glDisableVertexAttribArray(bgTexHandle);
+        GLES30.glDisableVertexAttribArray(bgPositionHandle);
+        GLES30.glDisableVertexAttribArray(bgTexHandle);
         if (bgVertexAlphaHandle >= 0) {
-            GLES20.glDisableVertexAttribArray(bgVertexAlphaHandle);
+            GLES30.glDisableVertexAttribArray(bgVertexAlphaHandle);
         }
     }
 }

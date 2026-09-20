@@ -1,7 +1,7 @@
 package com.reandroid.wallpaper.nexus;
 
 import android.content.Context;
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 import android.util.Log;
 
 import com.reandroid.utils.AssetLoader;
@@ -22,61 +22,61 @@ final class NexusShaderProgram {
         String vertexShader = AssetLoader.readText(context, "nexus/shaders/GLES/nexus_vs.glsl");
         String fragmentShader = AssetLoader.readText(context, "nexus/shaders/GLES/nexus_fs.glsl");
 
-        int vs = compile(GLES20.GL_VERTEX_SHADER, vertexShader);
-        int fs = compile(GLES20.GL_FRAGMENT_SHADER, fragmentShader);
+        int vs = compile(GLES30.GL_VERTEX_SHADER, vertexShader);
+        int fs = compile(GLES30.GL_FRAGMENT_SHADER, fragmentShader);
         if (vs == 0 || fs == 0) {
             if (vs != 0) {
-                GLES20.glDeleteShader(vs);
+                GLES30.glDeleteShader(vs);
             }
             if (fs != 0) {
-                GLES20.glDeleteShader(fs);
+                GLES30.glDeleteShader(fs);
             }
             return null;
         }
 
-        int program = GLES20.glCreateProgram();
+        int program = GLES30.glCreateProgram();
         if (program == 0) {
-            GLES20.glDeleteShader(vs);
-            GLES20.glDeleteShader(fs);
+            GLES30.glDeleteShader(vs);
+            GLES30.glDeleteShader(fs);
             return null;
         }
 
-        GLES20.glAttachShader(program, vs);
-        GLES20.glAttachShader(program, fs);
-        GLES20.glLinkProgram(program);
+        GLES30.glAttachShader(program, vs);
+        GLES30.glAttachShader(program, fs);
+        GLES30.glLinkProgram(program);
 
         int[] linkStatus = new int[1];
-        GLES20.glGetProgramiv(program, GLES20.GL_LINK_STATUS, linkStatus, 0);
+        GLES30.glGetProgramiv(program, GLES30.GL_LINK_STATUS, linkStatus, 0);
         if (linkStatus[0] == 0) {
-            Log.e(TAG, "Program link failed: " + GLES20.glGetProgramInfoLog(program));
-            GLES20.glDeleteProgram(program);
-            GLES20.glDeleteShader(vs);
-            GLES20.glDeleteShader(fs);
+            Log.e(TAG, "Program link failed: " + GLES30.glGetProgramInfoLog(program));
+            GLES30.glDeleteProgram(program);
+            GLES30.glDeleteShader(vs);
+            GLES30.glDeleteShader(fs);
             return null;
         }
 
         Handles handles = new Handles();
         handles.program = program;
-        handles.position = GLES20.glGetAttribLocation(program, "aPosition");
-        handles.texCoord = GLES20.glGetAttribLocation(program, "aTexCoord");
-        handles.matrix = GLES20.glGetUniformLocation(program, "uMVPMatrix");
-        handles.color = GLES20.glGetUniformLocation(program, "uColor");
-        handles.texture = GLES20.glGetUniformLocation(program, "uTexture");
+        handles.position = GLES30.glGetAttribLocation(program, "aPosition");
+        handles.texCoord = GLES30.glGetAttribLocation(program, "aTexCoord");
+        handles.matrix = GLES30.glGetUniformLocation(program, "uMVPMatrix");
+        handles.color = GLES30.glGetUniformLocation(program, "uColor");
+        handles.texture = GLES30.glGetUniformLocation(program, "uTexture");
 
-        GLES20.glDeleteShader(vs);
-        GLES20.glDeleteShader(fs);
+        GLES30.glDeleteShader(vs);
+        GLES30.glDeleteShader(fs);
         return handles;
     }
 
     private static int compile(int type, String source) {
-        int shader = GLES20.glCreateShader(type);
-        GLES20.glShaderSource(shader, source);
-        GLES20.glCompileShader(shader);
+        int shader = GLES30.glCreateShader(type);
+        GLES30.glShaderSource(shader, source);
+        GLES30.glCompileShader(shader);
         int[] compiled = new int[1];
-        GLES20.glGetShaderiv(shader, GLES20.GL_COMPILE_STATUS, compiled, 0);
+        GLES30.glGetShaderiv(shader, GLES30.GL_COMPILE_STATUS, compiled, 0);
         if (compiled[0] == 0) {
-            Log.e(TAG, "Shader compile failed: " + GLES20.glGetShaderInfoLog(shader));
-            GLES20.glDeleteShader(shader);
+            Log.e(TAG, "Shader compile failed: " + GLES30.glGetShaderInfoLog(shader));
+            GLES30.glDeleteShader(shader);
             return 0;
         }
         return shader;

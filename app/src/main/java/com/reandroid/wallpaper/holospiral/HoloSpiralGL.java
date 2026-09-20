@@ -19,7 +19,7 @@ package com.reandroid.wallpaper.holospiral;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 import android.opengl.GLUtils;
 import android.opengl.Matrix;
 import android.util.Log;
@@ -97,8 +97,8 @@ public class HoloSpiralGL extends GLESScene {
         createTexture();
         initTransforms();
 
-        GLES20.glDisable(GLES20.GL_DEPTH_TEST);
-        GLES20.glDisable(GLES20.GL_CULL_FACE);
+        GLES30.glDisable(GLES30.GL_DEPTH_TEST);
+        GLES30.glDisable(GLES30.GL_CULL_FACE);
 
         mScene.resetAnimation();
         resize(mWidth, mHeight);
@@ -134,15 +134,15 @@ public class HoloSpiralGL extends GLESScene {
     public void release() {
         if (mPointTextureId != 0) {
             int[] textures = {mPointTextureId};
-            GLES20.glDeleteTextures(1, textures, 0);
+            GLES30.glDeleteTextures(1, textures, 0);
             mPointTextureId = 0;
         }
         if (mProgramBackground != 0) {
-            GLES20.glDeleteProgram(mProgramBackground);
+            GLES30.glDeleteProgram(mProgramBackground);
             mProgramBackground = 0;
         }
         if (mProgramGeometry != 0) {
-            GLES20.glDeleteProgram(mProgramGeometry);
+            GLES30.glDeleteProgram(mProgramGeometry);
             mProgramGeometry = 0;
         }
         mInitialized = false;
@@ -159,15 +159,15 @@ public class HoloSpiralGL extends GLESScene {
     }
 
     private void getHandles() {
-        mBgPositionHandle = GLES20.glGetAttribLocation(mProgramBackground, "aPosition");
-        mBgColorHandle = GLES20.glGetAttribLocation(mProgramBackground, "aColor");
+        mBgPositionHandle = GLES30.glGetAttribLocation(mProgramBackground, "aPosition");
+        mBgColorHandle = GLES30.glGetAttribLocation(mProgramBackground, "aColor");
 
-        mGeoPositionHandle = GLES20.glGetAttribLocation(mProgramGeometry, "aPosition");
-        mGeoColorHandle = GLES20.glGetAttribLocation(mProgramGeometry, "aColor");
-        mGeoModelViewProjHandle = GLES20.glGetUniformLocation(mProgramGeometry, "uModelViewProj");
-        mGeoMaxPointSizeHandle = GLES20.glGetUniformLocation(mProgramGeometry, "uMaxPointSize");
-        mGeoFarPlaneHandle = GLES20.glGetUniformLocation(mProgramGeometry, "uFarPlane");
-        mGeoTextureHandle = GLES20.glGetUniformLocation(mProgramGeometry, "uTexture0");
+        mGeoPositionHandle = GLES30.glGetAttribLocation(mProgramGeometry, "aPosition");
+        mGeoColorHandle = GLES30.glGetAttribLocation(mProgramGeometry, "aColor");
+        mGeoModelViewProjHandle = GLES30.glGetUniformLocation(mProgramGeometry, "uModelViewProj");
+        mGeoMaxPointSizeHandle = GLES30.glGetUniformLocation(mProgramGeometry, "uMaxPointSize");
+        mGeoFarPlaneHandle = GLES30.glGetUniformLocation(mProgramGeometry, "uFarPlane");
+        mGeoTextureHandle = GLES30.glGetUniformLocation(mProgramGeometry, "uTexture0");
     }
 
     private void createGeometry() {
@@ -187,14 +187,14 @@ public class HoloSpiralGL extends GLESScene {
             return;
         }
         int[] textures = new int[1];
-        GLES20.glGenTextures(1, textures, 0);
+        GLES30.glGenTextures(1, textures, 0);
         mPointTextureId = textures[0];
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mPointTextureId);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
-        GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bmp, 0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mPointTextureId);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE);
+        GLUtils.texImage2D(GLES30.GL_TEXTURE_2D, 0, bmp, 0);
         bmp.recycle();
     }
 
@@ -206,37 +206,37 @@ public class HoloSpiralGL extends GLESScene {
     }
 
     private void drawBackground() {
-        GLES20.glUseProgram(mProgramBackground);
-        GLES20.glDisable(GLES20.GL_BLEND);
+        GLES30.glUseProgram(mProgramBackground);
+        GLES30.glDisable(GLES30.GL_BLEND);
 
         mBackgroundBuffer.position(0);
-        GLES20.glVertexAttribPointer(mBgPositionHandle, 3, GLES20.GL_FLOAT, false, STRIDE_BYTES, mBackgroundBuffer);
-        GLES20.glEnableVertexAttribArray(mBgPositionHandle);
+        GLES30.glVertexAttribPointer(mBgPositionHandle, 3, GLES30.GL_FLOAT, false, STRIDE_BYTES, mBackgroundBuffer);
+        GLES30.glEnableVertexAttribArray(mBgPositionHandle);
 
         mBackgroundBuffer.position(3);
-        GLES20.glVertexAttribPointer(mBgColorHandle, 4, GLES20.GL_FLOAT, false, STRIDE_BYTES, mBackgroundBuffer);
-        GLES20.glEnableVertexAttribArray(mBgColorHandle);
+        GLES30.glVertexAttribPointer(mBgColorHandle, 4, GLES30.GL_FLOAT, false, STRIDE_BYTES, mBackgroundBuffer);
+        GLES30.glEnableVertexAttribArray(mBgColorHandle);
 
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
+        GLES30.glDrawArrays(GLES30.GL_TRIANGLE_STRIP, 0, 4);
 
-        GLES20.glDisableVertexAttribArray(mBgPositionHandle);
-        GLES20.glDisableVertexAttribArray(mBgColorHandle);
+        GLES30.glDisableVertexAttribArray(mBgPositionHandle);
+        GLES30.glDisableVertexAttribArray(mBgColorHandle);
     }
 
     private void drawGeometry(float dt) {
         if (mPointTextureId == 0) {
             return;
         }
-        GLES20.glUseProgram(mProgramGeometry);
-        GLES20.glEnable(GLES20.GL_BLEND);
-        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+        GLES30.glUseProgram(mProgramGeometry);
+        GLES30.glEnable(GLES30.GL_BLEND);
+        GLES30.glBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ONE_MINUS_SRC_ALPHA);
 
-        GLES20.glUniform1f(mGeoMaxPointSizeHandle, mScene.maxPointSize);
-        GLES20.glUniform1f(mGeoFarPlaneHandle, FAR_PLANE);
+        GLES30.glUniform1f(mGeoMaxPointSizeHandle, mScene.maxPointSize);
+        GLES30.glUniform1f(mGeoFarPlaneHandle, FAR_PLANE);
 
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mPointTextureId);
-        GLES20.glUniform1i(mGeoTextureHandle, 0);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mPointTextureId);
+        GLES30.glUniform1i(mGeoTextureHandle, 0);
 
         Matrix.setIdentityM(mModelView, 0);
         System.arraycopy(mBaseModelView, 0, mModelView, 0, mBaseModelView.length);
@@ -253,20 +253,20 @@ public class HoloSpiralGL extends GLESScene {
         System.arraycopy(mModelView, 0, mTempModelView, 0, mModelView.length);
         Matrix.rotateM(mTempModelView, 0, rotationZ, 0.0f, 0.0f, 1.0f);
         Matrix.multiplyMM(mMvp, 0, mProjection, 0, mTempModelView, 0);
-        GLES20.glUniformMatrix4fv(mGeoModelViewProjHandle, 1, false, mMvp, 0);
+        GLES30.glUniformMatrix4fv(mGeoModelViewProjHandle, 1, false, mMvp, 0);
 
         buffer.position(0);
-        GLES20.glVertexAttribPointer(mGeoPositionHandle, 3, GLES20.GL_FLOAT, false, STRIDE_BYTES, buffer);
-        GLES20.glEnableVertexAttribArray(mGeoPositionHandle);
+        GLES30.glVertexAttribPointer(mGeoPositionHandle, 3, GLES30.GL_FLOAT, false, STRIDE_BYTES, buffer);
+        GLES30.glEnableVertexAttribArray(mGeoPositionHandle);
 
         buffer.position(3);
-        GLES20.glVertexAttribPointer(mGeoColorHandle, 4, GLES20.GL_FLOAT, false, STRIDE_BYTES, buffer);
-        GLES20.glEnableVertexAttribArray(mGeoColorHandle);
+        GLES30.glVertexAttribPointer(mGeoColorHandle, 4, GLES30.GL_FLOAT, false, STRIDE_BYTES, buffer);
+        GLES30.glEnableVertexAttribArray(mGeoColorHandle);
 
-        GLES20.glDrawArrays(GLES20.GL_POINTS, 0, count);
+        GLES30.glDrawArrays(GLES30.GL_POINTS, 0, count);
 
-        GLES20.glDisableVertexAttribArray(mGeoPositionHandle);
-        GLES20.glDisableVertexAttribArray(mGeoColorHandle);
+        GLES30.glDisableVertexAttribArray(mGeoPositionHandle);
+        GLES30.glDisableVertexAttribArray(mGeoColorHandle);
     }
 
 }

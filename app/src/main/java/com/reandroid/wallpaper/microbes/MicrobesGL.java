@@ -2,7 +2,7 @@ package com.reandroid.wallpaper.microbes;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 import android.view.MotionEvent;
 
 import com.reandroid.utils.AssetLoader;
@@ -149,12 +149,12 @@ public class MicrobesGL extends GLESScene {
 
         mScene.updateScene(dt);
 
-        GLES20.glViewport(0, 0, mWidth, mHeight);
-        GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
-        GLES20.glEnable(GLES20.GL_BLEND);
+        GLES30.glViewport(0, 0, mWidth, mHeight);
+        GLES30.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT);
+        GLES30.glEnable(GLES30.GL_BLEND);
         // 原版:glBlendFunc(GL_SRC_ALPHA, GL_ONE)
-        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE);
+        GLES30.glBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ONE);
 
         float width = Math.max(1.0f, mWidth);
         float height = Math.max(1.0f, mHeight);
@@ -169,7 +169,7 @@ public class MicrobesGL extends GLESScene {
         drawFood(sx, sy, tx, ty);
         drawMicrobes(sx, sy, tx, ty);
 
-        GLES20.glDisable(GLES20.GL_BLEND);
+        GLES30.glDisable(GLES30.GL_BLEND);
     }
 
     // ---- Coordinate helpers ----
@@ -217,27 +217,27 @@ public class MicrobesGL extends GLESScene {
             AssetLoader.readText(mContext, shaderPath + "microbes_decor_fs.glsl")
         );
 
-        microbeAPosition = GLES20.glGetAttribLocation(microbeProgram, "aPosition");
-        microbeAMisc = GLES20.glGetAttribLocation(microbeProgram, "miscInfo");
-        microbeAColor = GLES20.glGetAttribLocation(microbeProgram, "aColor");
-        microbeUTrans = GLES20.glGetUniformLocation(microbeProgram, "uTrans");
-        microbeUTime = GLES20.glGetUniformLocation(microbeProgram, "time");
+        microbeAPosition = GLES30.glGetAttribLocation(microbeProgram, "aPosition");
+        microbeAMisc = GLES30.glGetAttribLocation(microbeProgram, "miscInfo");
+        microbeAColor = GLES30.glGetAttribLocation(microbeProgram, "aColor");
+        microbeUTrans = GLES30.glGetUniformLocation(microbeProgram, "uTrans");
+        microbeUTime = GLES30.glGetUniformLocation(microbeProgram, "time");
 
-        foodAPosition = GLES20.glGetAttribLocation(foodProgram, "aPosition");
-        foodUTrans = GLES20.glGetUniformLocation(foodProgram, "uTrans");
-        foodUTime = GLES20.glGetUniformLocation(foodProgram, "time");
+        foodAPosition = GLES30.glGetAttribLocation(foodProgram, "aPosition");
+        foodUTrans = GLES30.glGetUniformLocation(foodProgram, "uTrans");
+        foodUTime = GLES30.glGetUniformLocation(foodProgram, "time");
 
-        deadAPos = GLES20.glGetAttribLocation(deadProgram, "aPosition");
-        deadUTrans = GLES20.glGetUniformLocation(deadProgram, "uTrans");
-        deadUTime = GLES20.glGetUniformLocation(deadProgram, "time");
+        deadAPos = GLES30.glGetAttribLocation(deadProgram, "aPosition");
+        deadUTrans = GLES30.glGetUniformLocation(deadProgram, "uTrans");
+        deadUTime = GLES30.glGetUniformLocation(deadProgram, "time");
 
-        decorAPosition = GLES20.glGetAttribLocation(decorProgram, "pos");
-        decorUTrans = GLES20.glGetUniformLocation(decorProgram, "uTrans");
-        decorUTime = GLES20.glGetUniformLocation(decorProgram, "time");
-        decorUSizeScale = GLES20.glGetUniformLocation(decorProgram, "uSizeScale");
+        decorAPosition = GLES30.glGetAttribLocation(decorProgram, "pos");
+        decorUTrans = GLES30.glGetUniformLocation(decorProgram, "uTrans");
+        decorUTime = GLES30.glGetUniformLocation(decorProgram, "time");
+        decorUSizeScale = GLES30.glGetUniformLocation(decorProgram, "uSizeScale");
 
-        GLES20.glDisable(GLES20.GL_DEPTH_TEST);
-        GLES20.glDisable(GLES20.GL_CULL_FACE);
+        GLES30.glDisable(GLES30.GL_DEPTH_TEST);
+        GLES30.glDisable(GLES30.GL_CULL_FACE);
     }
 
     // ---- Draw methods ----
@@ -263,22 +263,22 @@ public class MicrobesGL extends GLESScene {
         microbeMiscBuffer.position(0);
         microbeColorBuffer.position(0);
 
-        GLES20.glUseProgram(microbeProgram);
-        GLES20.glUniform4f(microbeUTrans, sx, sy, tx, ty);
-        GLES20.glUniform1f(microbeUTime, mScene.timeSec);
+        GLES30.glUseProgram(microbeProgram);
+        GLES30.glUniform4f(microbeUTrans, sx, sy, tx, ty);
+        GLES30.glUniform1f(microbeUTime, mScene.timeSec);
 
-        GLES20.glEnableVertexAttribArray(microbeAPosition);
-        GLES20.glVertexAttribPointer(microbeAPosition, 3, GLES20.GL_FLOAT, false, 3 * 4, microbePosBuffer);
-        GLES20.glEnableVertexAttribArray(microbeAMisc);
-        GLES20.glVertexAttribPointer(microbeAMisc, 3, GLES20.GL_FLOAT, false, 3 * 4, microbeMiscBuffer);
-        GLES20.glEnableVertexAttribArray(microbeAColor);
-        GLES20.glVertexAttribPointer(microbeAColor, 3, GLES20.GL_FLOAT, false, 3 * 4, microbeColorBuffer);
+        GLES30.glEnableVertexAttribArray(microbeAPosition);
+        GLES30.glVertexAttribPointer(microbeAPosition, 3, GLES30.GL_FLOAT, false, 3 * 4, microbePosBuffer);
+        GLES30.glEnableVertexAttribArray(microbeAMisc);
+        GLES30.glVertexAttribPointer(microbeAMisc, 3, GLES30.GL_FLOAT, false, 3 * 4, microbeMiscBuffer);
+        GLES30.glEnableVertexAttribArray(microbeAColor);
+        GLES30.glVertexAttribPointer(microbeAColor, 3, GLES30.GL_FLOAT, false, 3 * 4, microbeColorBuffer);
 
-        GLES20.glDrawArrays(GLES20.GL_POINTS, 0, mScene.microbeCount);
+        GLES30.glDrawArrays(GLES30.GL_POINTS, 0, mScene.microbeCount);
 
-        GLES20.glDisableVertexAttribArray(microbeAPosition);
-        GLES20.glDisableVertexAttribArray(microbeAMisc);
-        GLES20.glDisableVertexAttribArray(microbeAColor);
+        GLES30.glDisableVertexAttribArray(microbeAPosition);
+        GLES30.glDisableVertexAttribArray(microbeAMisc);
+        GLES30.glDisableVertexAttribArray(microbeAColor);
     }
 
     private void drawFood(float sx, float sy, float tx, float ty) {
@@ -288,13 +288,13 @@ public class MicrobesGL extends GLESScene {
         }
         foodPosBuffer.position(0);
 
-        GLES20.glUseProgram(foodProgram);
-        GLES20.glUniform4f(foodUTrans, sx, sy, tx, ty);
-        GLES20.glUniform1f(foodUTime, mScene.timeSec);
-        GLES20.glEnableVertexAttribArray(foodAPosition);
-        GLES20.glVertexAttribPointer(foodAPosition, 3, GLES20.GL_FLOAT, false, 3 * 4, foodPosBuffer);
-        GLES20.glDrawArrays(GLES20.GL_POINTS, 0, FOOD_COUNT);
-        GLES20.glDisableVertexAttribArray(foodAPosition);
+        GLES30.glUseProgram(foodProgram);
+        GLES30.glUniform4f(foodUTrans, sx, sy, tx, ty);
+        GLES30.glUniform1f(foodUTime, mScene.timeSec);
+        GLES30.glEnableVertexAttribArray(foodAPosition);
+        GLES30.glVertexAttribPointer(foodAPosition, 3, GLES30.GL_FLOAT, false, 3 * 4, foodPosBuffer);
+        GLES30.glDrawArrays(GLES30.GL_POINTS, 0, FOOD_COUNT);
+        GLES30.glDisableVertexAttribArray(foodAPosition);
     }
 
     private void drawDecor(float sx, float sy, float tx, float ty) {
@@ -304,16 +304,16 @@ public class MicrobesGL extends GLESScene {
         }
         decorPosBuffer.position(0);
 
-        GLES20.glUseProgram(decorProgram);
-        GLES20.glUniform4f(decorUTrans, sx, sy, tx, ty);
-        GLES20.glUniform1f(decorUTime, mScene.timeSec);
+        GLES30.glUseProgram(decorProgram);
+        GLES30.glUniform4f(decorUTrans, sx, sy, tx, ty);
+        GLES30.glUniform1f(decorUTime, mScene.timeSec);
         // 装饰是极低 alpha 的软边光晕:全比例放大会把渐变拉成雾团导致模糊,
         // 限制最大 1.3×(260px),保留放大但不糊
-        GLES20.glUniform1f(decorUSizeScale, Math.min(sizeScale(), 1.3f));
-        GLES20.glEnableVertexAttribArray(decorAPosition);
-        GLES20.glVertexAttribPointer(decorAPosition, 3, GLES20.GL_FLOAT, false, 3 * 4, decorPosBuffer);
-        GLES20.glDrawArrays(GLES20.GL_POINTS, 0, DECOR_COUNT);
-        GLES20.glDisableVertexAttribArray(decorAPosition);
+        GLES30.glUniform1f(decorUSizeScale, Math.min(sizeScale(), 1.3f));
+        GLES30.glEnableVertexAttribArray(decorAPosition);
+        GLES30.glVertexAttribPointer(decorAPosition, 3, GLES30.GL_FLOAT, false, 3 * 4, decorPosBuffer);
+        GLES30.glDrawArrays(GLES30.GL_POINTS, 0, DECOR_COUNT);
+        GLES30.glDisableVertexAttribArray(decorAPosition);
     }
 
     private void drawDead(float sx, float sy, float tx, float ty) {
@@ -327,13 +327,13 @@ public class MicrobesGL extends GLESScene {
         }
         deadPosBuffer.position(0);
 
-        GLES20.glUseProgram(deadProgram);
-        GLES20.glUniform4f(deadUTrans, sx, sy, tx, ty);
-        GLES20.glUniform1f(deadUTime, mScene.timeSec);
-        GLES20.glEnableVertexAttribArray(deadAPos);
-        GLES20.glVertexAttribPointer(deadAPos, 4, GLES20.GL_FLOAT, false, 4 * 4, deadPosBuffer);
-        GLES20.glDrawArrays(GLES20.GL_POINTS, 0, DEAD_COUNT);
-        GLES20.glDisableVertexAttribArray(deadAPos);
+        GLES30.glUseProgram(deadProgram);
+        GLES30.glUniform4f(deadUTrans, sx, sy, tx, ty);
+        GLES30.glUniform1f(deadUTime, mScene.timeSec);
+        GLES30.glEnableVertexAttribArray(deadAPos);
+        GLES30.glVertexAttribPointer(deadAPos, 4, GLES30.GL_FLOAT, false, 4 * 4, deadPosBuffer);
+        GLES30.glDrawArrays(GLES30.GL_POINTS, 0, DEAD_COUNT);
+        GLES30.glDisableVertexAttribArray(deadAPos);
     }
 
     // ---- Shader utilities ----
@@ -348,7 +348,7 @@ public class MicrobesGL extends GLESScene {
 
     private void deleteProgram(int program) {
         if (program != 0) {
-            GLES20.glDeleteProgram(program);
+            GLES30.glDeleteProgram(program);
         }
     }
 }

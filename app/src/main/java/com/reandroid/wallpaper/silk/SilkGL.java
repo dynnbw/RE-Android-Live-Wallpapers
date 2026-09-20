@@ -4,7 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 import android.opengl.GLUtils;
 import android.util.Log;
 
@@ -91,17 +91,17 @@ public class SilkGL extends GLESScene {
             Log.e(TAG, "Ribbon shader program creation failed");
             return;
         }
-        mAttrPos = GLES20.glGetAttribLocation(mProgram, "a_position");
-        mAttrColor = GLES20.glGetAttribLocation(mProgram, "a_color");
-        mAttrCoord = GLES20.glGetAttribLocation(mProgram, "a_coord");
-        mUniformRotateFlash = GLES20.glGetUniformLocation(mProgram, "rotateAngleFlash");
-        mUniformNewPos = GLES20.glGetUniformLocation(mProgram, "uNewPos");
-        mUniformOriginColor = GLES20.glGetUniformLocation(mProgram, "uOriginColor");
-        mUniformOriginAlpha = GLES20.glGetUniformLocation(mProgram, "uOriginAlpha");
-        mUniformDecayLen = GLES20.glGetUniformLocation(mProgram, "uDecayLen");
-        mUniformDivFactor = GLES20.glGetUniformLocation(mProgram, "uDivFactor");
-        mUniformDecay = GLES20.glGetUniformLocation(mProgram, "uDecay");
-        mUniformSampler = GLES20.glGetUniformLocation(mProgram, "CC_Texture0");
+        mAttrPos = GLES30.glGetAttribLocation(mProgram, "a_position");
+        mAttrColor = GLES30.glGetAttribLocation(mProgram, "a_color");
+        mAttrCoord = GLES30.glGetAttribLocation(mProgram, "a_coord");
+        mUniformRotateFlash = GLES30.glGetUniformLocation(mProgram, "rotateAngleFlash");
+        mUniformNewPos = GLES30.glGetUniformLocation(mProgram, "uNewPos");
+        mUniformOriginColor = GLES30.glGetUniformLocation(mProgram, "uOriginColor");
+        mUniformOriginAlpha = GLES30.glGetUniformLocation(mProgram, "uOriginAlpha");
+        mUniformDecayLen = GLES30.glGetUniformLocation(mProgram, "uDecayLen");
+        mUniformDivFactor = GLES30.glGetUniformLocation(mProgram, "uDivFactor");
+        mUniformDecay = GLES30.glGetUniformLocation(mProgram, "uDecay");
+        mUniformSampler = GLES30.glGetUniformLocation(mProgram, "CC_Texture0");
 
         String bgVs = AssetLoader.readText(mContext, "silk/shaders/GLES/silk_bg_vs.glsl");
         String bgFs = AssetLoader.readText(mContext, "silk/shaders/GLES/silk_bg_fs.glsl");
@@ -110,13 +110,13 @@ public class SilkGL extends GLESScene {
             Log.e(TAG, "Background shader program creation failed");
             return;
         }
-        mBgAttrPos = GLES20.glGetAttribLocation(mBgProgram, "aPosition");
-        mBgAttrCoord = GLES20.glGetAttribLocation(mBgProgram, "aTexCoor");
-        mBgSampler = GLES20.glGetUniformLocation(mBgProgram, "sTexture");
+        mBgAttrPos = GLES30.glGetAttribLocation(mBgProgram, "aPosition");
+        mBgAttrCoord = GLES30.glGetAttribLocation(mBgProgram, "aTexCoor");
+        mBgSampler = GLES30.glGetUniformLocation(mBgProgram, "sTexture");
 
         // Static geometry buffers
         int[] bufs = new int[SilkScene.RIBBON_COUNT * 2 + 2];
-        GLES20.glGenBuffers(bufs.length, bufs, 0);
+        GLES30.glGenBuffers(bufs.length, bufs, 0);
         for (int r = 0; r < SilkScene.RIBBON_COUNT; r++) {
             mPosVbo[r] = bufs[r * 2];
             mColorVbo[r] = bufs[r * 2 + 1];
@@ -125,24 +125,24 @@ public class SilkGL extends GLESScene {
         mIndexVbo = bufs[SilkScene.RIBBON_COUNT * 2 + 1];
 
         for (int r = 0; r < SilkScene.RIBBON_COUNT; r++) {
-            GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, mPosVbo[r]);
-            GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, SilkScene.VERTICES * 2 * 4, null,
-                    GLES20.GL_DYNAMIC_DRAW);
-            GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, mColorVbo[r]);
-            GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, SilkScene.VERTICES * 4, null,
-                    GLES20.GL_DYNAMIC_DRAW);
+            GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, mPosVbo[r]);
+            GLES30.glBufferData(GLES30.GL_ARRAY_BUFFER, SilkScene.VERTICES * 2 * 4, null,
+                    GLES30.GL_DYNAMIC_DRAW);
+            GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, mColorVbo[r]);
+            GLES30.glBufferData(GLES30.GL_ARRAY_BUFFER, SilkScene.VERTICES * 4, null,
+                    GLES30.GL_DYNAMIC_DRAW);
         }
-        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, mUvVbo);
-        GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, SilkScene.VERTICES * 2 * 4,
-                createFloatBuffer(SilkScene.buildUv()), GLES20.GL_STATIC_DRAW);
-        GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, mIndexVbo);
+        GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, mUvVbo);
+        GLES30.glBufferData(GLES30.GL_ARRAY_BUFFER, SilkScene.VERTICES * 2 * 4,
+                createFloatBuffer(SilkScene.buildUv()), GLES30.GL_STATIC_DRAW);
+        GLES30.glBindBuffer(GLES30.GL_ELEMENT_ARRAY_BUFFER, mIndexVbo);
         ByteBuffer idx = ByteBuffer.allocateDirect((SilkScene.COLUMNS - 1) * 6)
                 .order(ByteOrder.nativeOrder()).put(SilkScene.buildIndices());
         idx.position(0);
-        GLES20.glBufferData(GLES20.GL_ELEMENT_ARRAY_BUFFER, (SilkScene.COLUMNS - 1) * 6, idx,
-                GLES20.GL_STATIC_DRAW);
-        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
-        GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, 0);
+        GLES30.glBufferData(GLES30.GL_ELEMENT_ARRAY_BUFFER, (SilkScene.COLUMNS - 1) * 6, idx,
+                GLES30.GL_STATIC_DRAW);
+        GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, 0);
+        GLES30.glBindBuffer(GLES30.GL_ELEMENT_ARRAY_BUFFER, 0);
 
         for (int r = 0; r < SilkScene.RIBBON_COUNT; r++) {
             mPosBuf[r] = createFloatBuffer(new float[SilkScene.VERTICES * 2]);
@@ -155,21 +155,21 @@ public class SilkGL extends GLESScene {
 
     /** Load theme textures on the GL thread. */
     private void loadTextures(String theme) {
-        if (mBackgroundTexture != 0) GLES20.glDeleteTextures(1, new int[]{mBackgroundTexture}, 0);
-        if (mSilkTexture != 0) GLES20.glDeleteTextures(1, new int[]{mSilkTexture}, 0);
+        if (mBackgroundTexture != 0) GLES30.glDeleteTextures(1, new int[]{mBackgroundTexture}, 0);
+        if (mSilkTexture != 0) GLES30.glDeleteTextures(1, new int[]{mSilkTexture}, 0);
         mBackgroundTexture = 0;
         mSilkTexture = 0;
 
         // Background: RGB, NEAREST/NEAREST, CLAMP_TO_EDGE (original params)
         Bitmap bg = AssetLoader.decodeBitmap(mContext, SilkScene.themeBackgroundAsset(theme));
         int[] tex = new int[1];
-        GLES20.glGenTextures(1, tex, 0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, tex[0]);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_NEAREST);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
-        GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bg, 0);
+        GLES30.glGenTextures(1, tex, 0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, tex[0]);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_NEAREST);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_NEAREST);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE);
+        GLUtils.texImage2D(GLES30.GL_TEXTURE_2D, 0, bg, 0);
         bg.recycle();
         mBackgroundTexture = tex[0];
 
@@ -179,13 +179,13 @@ public class SilkGL extends GLESScene {
         opts.inPremultiplied = true;
         Bitmap silk = AssetLoader.decodeBitmapWithOptions(mContext,
                 SilkScene.themeSilkAsset(theme), opts);
-        GLES20.glGenTextures(1, tex, 0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, tex[0]);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
-        GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, silk, 0);
+        GLES30.glGenTextures(1, tex, 0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, tex[0]);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_NEAREST);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE);
+        GLUtils.texImage2D(GLES30.GL_TEXTURE_2D, 0, silk, 0);
         silk.recycle();
         mSilkTexture = tex[0];
 
@@ -209,93 +209,93 @@ public class SilkGL extends GLESScene {
             loadTextures(mScene.mTheme);
         }
 
-        GLES20.glViewport(0, 0, mWidth, mHeight);
-        GLES20.glClearColor(0f, 0f, 0f, 0f);
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+        GLES30.glViewport(0, 0, mWidth, mHeight);
+        GLES30.glClearColor(0f, 0f, 0f, 0f);
+        GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT);
 
         drawBackground();
         drawRibbons();
     }
 
     private void drawBackground() {
-        GLES20.glUseProgram(mBgProgram);
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mBackgroundTexture);
-        GLES20.glUniform1i(mBgSampler, 0);
+        GLES30.glUseProgram(mBgProgram);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mBackgroundTexture);
+        GLES30.glUniform1i(mBgSampler, 0);
 
-        GLES20.glEnableVertexAttribArray(mBgAttrPos);
-        GLES20.glVertexAttribPointer(mBgAttrPos, 2, GLES20.GL_FLOAT, false, 0, mQuadPos);
-        GLES20.glEnableVertexAttribArray(mBgAttrCoord);
-        GLES20.glVertexAttribPointer(mBgAttrCoord, 2, GLES20.GL_FLOAT, false, 0, mQuadUv);
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, 4);
-        GLES20.glDisableVertexAttribArray(mBgAttrPos);
-        GLES20.glDisableVertexAttribArray(mBgAttrCoord);
+        GLES30.glEnableVertexAttribArray(mBgAttrPos);
+        GLES30.glVertexAttribPointer(mBgAttrPos, 2, GLES30.GL_FLOAT, false, 0, mQuadPos);
+        GLES30.glEnableVertexAttribArray(mBgAttrCoord);
+        GLES30.glVertexAttribPointer(mBgAttrCoord, 2, GLES30.GL_FLOAT, false, 0, mQuadUv);
+        GLES30.glDrawArrays(GLES30.GL_TRIANGLE_FAN, 0, 4);
+        GLES30.glDisableVertexAttribArray(mBgAttrPos);
+        GLES30.glDisableVertexAttribArray(mBgAttrCoord);
     }
 
     private void drawRibbons() {
-        GLES20.glUseProgram(mProgram);
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mSilkTexture);
-        GLES20.glUniform1i(mUniformSampler, 0);
+        GLES30.glUseProgram(mProgram);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mSilkTexture);
+        GLES30.glUniform1i(mUniformSampler, 0);
 
-        GLES20.glEnable(GLES20.GL_BLEND);
-        GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+        GLES30.glEnable(GLES30.GL_BLEND);
+        GLES30.glBlendFunc(GLES30.GL_ONE, GLES30.GL_ONE_MINUS_SRC_ALPHA);
 
         SilkScene.RibbonConfig[] ribbons = SilkScene.RIBBONS;
         for (int r = 0; r < SilkScene.RIBBON_COUNT; r++) {
             SilkScene.RibbonConfig c = ribbons[r];
 
-            GLES20.glUniform3f(mUniformRotateFlash, mScene.mRotSin[r], mScene.mRotCos[r],
+            GLES30.glUniform3f(mUniformRotateFlash, mScene.mRotSin[r], mScene.mRotCos[r],
                     mScene.mFlash[r]);
-            GLES20.glUniform4f(mUniformNewPos, c.newPosX, c.newPosY, 0f, 0f);
+            GLES30.glUniform4f(mUniformNewPos, c.newPosX, c.newPosY, 0f, 0f);
             float[] oc = SilkScene.themeOriginColor(mScene.mTheme);
             // Premultiplied origin term: a = 1 so rgb·uOriginAlpha stays premultiplied
             // consistently with the texture term (the shader multiplies by uOriginAlpha).
-            GLES20.glUniform4f(mUniformOriginColor, oc[0], oc[1], oc[2], 1f);
-            GLES20.glUniform1f(mUniformOriginAlpha, c.originAlpha);
-            GLES20.glUniform1f(mUniformDecayLen, c.decayLen);
-            GLES20.glUniform1f(mUniformDivFactor, c.divFactor);
-            GLES20.glUniform1f(mUniformDecay, c.decay ? 1f : 0f);
+            GLES30.glUniform4f(mUniformOriginColor, oc[0], oc[1], oc[2], 1f);
+            GLES30.glUniform1f(mUniformOriginAlpha, c.originAlpha);
+            GLES30.glUniform1f(mUniformDecayLen, c.decayLen);
+            GLES30.glUniform1f(mUniformDivFactor, c.divFactor);
+            GLES30.glUniform1f(mUniformDecay, c.decay ? 1f : 0f);
 
             // Position (dynamic)
             FloatBuffer posBuf = mPosBuf[r];
             posBuf.position(0);
             posBuf.put(mScene.mPositions[r]);
             posBuf.position(0);
-            GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, mPosVbo[r]);
-            GLES20.glBufferSubData(GLES20.GL_ARRAY_BUFFER, 0,
+            GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, mPosVbo[r]);
+            GLES30.glBufferSubData(GLES30.GL_ARRAY_BUFFER, 0,
                     SilkScene.VERTICES * 2 * 4, posBuf);
-            GLES20.glVertexAttribPointer(mAttrPos, 2, GLES20.GL_FLOAT, false, 0, 0);
+            GLES30.glVertexAttribPointer(mAttrPos, 2, GLES30.GL_FLOAT, false, 0, 0);
 
             // Color (dynamic)
             FloatBuffer colorBuf = mColorBuf[r];
             colorBuf.position(0);
             colorBuf.put(mScene.mColors[r]);
             colorBuf.position(0);
-            GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, mColorVbo[r]);
-            GLES20.glBufferSubData(GLES20.GL_ARRAY_BUFFER, 0,
+            GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, mColorVbo[r]);
+            GLES30.glBufferSubData(GLES30.GL_ARRAY_BUFFER, 0,
                     SilkScene.VERTICES * 4, colorBuf);
-            GLES20.glVertexAttribPointer(mAttrColor, 1, GLES20.GL_FLOAT, false, 0, 0);
+            GLES30.glVertexAttribPointer(mAttrColor, 1, GLES30.GL_FLOAT, false, 0, 0);
 
             // UV (static, shared)
-            GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, mUvVbo);
-            GLES20.glVertexAttribPointer(mAttrCoord, 2, GLES20.GL_FLOAT, false, 0, 0);
+            GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, mUvVbo);
+            GLES30.glVertexAttribPointer(mAttrCoord, 2, GLES30.GL_FLOAT, false, 0, 0);
 
-            GLES20.glEnableVertexAttribArray(mAttrPos);
-            GLES20.glEnableVertexAttribArray(mAttrColor);
-            GLES20.glEnableVertexAttribArray(mAttrCoord);
+            GLES30.glEnableVertexAttribArray(mAttrPos);
+            GLES30.glEnableVertexAttribArray(mAttrColor);
+            GLES30.glEnableVertexAttribArray(mAttrCoord);
 
-            GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, mIndexVbo);
-            GLES20.glDrawElements(GLES20.GL_TRIANGLES, (SilkScene.COLUMNS - 1) * 6,
-                    GLES20.GL_UNSIGNED_BYTE, 0);
+            GLES30.glBindBuffer(GLES30.GL_ELEMENT_ARRAY_BUFFER, mIndexVbo);
+            GLES30.glDrawElements(GLES30.GL_TRIANGLES, (SilkScene.COLUMNS - 1) * 6,
+                    GLES30.GL_UNSIGNED_BYTE, 0);
 
-            GLES20.glDisableVertexAttribArray(mAttrPos);
-            GLES20.glDisableVertexAttribArray(mAttrColor);
-            GLES20.glDisableVertexAttribArray(mAttrCoord);
+            GLES30.glDisableVertexAttribArray(mAttrPos);
+            GLES30.glDisableVertexAttribArray(mAttrColor);
+            GLES30.glDisableVertexAttribArray(mAttrCoord);
         }
-        GLES20.glDisable(GLES20.GL_BLEND);
-        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
-        GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, 0);
+        GLES30.glDisable(GLES30.GL_BLEND);
+        GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, 0);
+        GLES30.glBindBuffer(GLES30.GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 
     @Override
@@ -305,15 +305,15 @@ public class SilkGL extends GLESScene {
         System.arraycopy(mColorVbo, 0, bufs, SilkScene.RIBBON_COUNT, SilkScene.RIBBON_COUNT);
         bufs[SilkScene.RIBBON_COUNT * 2] = mUvVbo;
         bufs[SilkScene.RIBBON_COUNT * 2 + 1] = mIndexVbo;
-        GLES20.glDeleteBuffers(bufs.length, bufs, 0);
+        GLES30.glDeleteBuffers(bufs.length, bufs, 0);
         if (mBackgroundTexture != 0) {
-            GLES20.glDeleteTextures(1, new int[]{mBackgroundTexture}, 0);
+            GLES30.glDeleteTextures(1, new int[]{mBackgroundTexture}, 0);
         }
         if (mSilkTexture != 0) {
-            GLES20.glDeleteTextures(1, new int[]{mSilkTexture}, 0);
+            GLES30.glDeleteTextures(1, new int[]{mSilkTexture}, 0);
         }
-        if (mProgram != 0) GLES20.glDeleteProgram(mProgram);
-        if (mBgProgram != 0) GLES20.glDeleteProgram(mBgProgram);
+        if (mProgram != 0) GLES30.glDeleteProgram(mProgram);
+        if (mBgProgram != 0) GLES30.glDeleteProgram(mBgProgram);
         mProgram = 0;
         mBgProgram = 0;
         mBackgroundTexture = 0;

@@ -18,7 +18,7 @@ package com.reandroid.wallpaper.galaxy4;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 import android.opengl.GLUtils;
 import android.util.Log;
 
@@ -94,7 +94,7 @@ public class Galaxy4GL extends GLESScene {
     public void release() {
         // 释放纹理资源
         int[] tex = new int[] { mTexBg, mTexCloud, mTexStaticStar, mTexStaticStar2 };
-        GLES20.glDeleteTextures(tex.length, tex, 0);
+        GLES30.glDeleteTextures(tex.length, tex, 0);
         mTexBg = 0;
         mTexCloud = 0;
         mTexStaticStar = 0;
@@ -102,19 +102,19 @@ public class Galaxy4GL extends GLESScene {
 
         // 释放着色器程序
         if (mBgProgram != 0) {
-            GLES20.glDeleteProgram(mBgProgram);
+            GLES30.glDeleteProgram(mBgProgram);
             mBgProgram = 0;
         }
         if (mCloudProgram != 0) {
-            GLES20.glDeleteProgram(mCloudProgram);
+            GLES30.glDeleteProgram(mCloudProgram);
             mCloudProgram = 0;
         }
         if (mBgStarProgram != 0) {
-            GLES20.glDeleteProgram(mBgStarProgram);
+            GLES30.glDeleteProgram(mBgStarProgram);
             mBgStarProgram = 0;
         }
         if (mStaticStarProgram != 0) {
-            GLES20.glDeleteProgram(mStaticStarProgram);
+            GLES30.glDeleteProgram(mStaticStarProgram);
             mStaticStarProgram = 0;
         }
 
@@ -144,13 +144,13 @@ public class Galaxy4GL extends GLESScene {
         mGLInitialized = true;
         
         // 设置清屏颜色（黑色，半透明）
-        GLES20.glClearColor(0.0f, 0.0f, 0.0f, 0.5f);
+        GLES30.glClearColor(0.0f, 0.0f, 0.0f, 0.5f);
         // 禁用深度测试（2D壁纸不需要）
-        GLES20.glDisable(GLES20.GL_DEPTH_TEST);
+        GLES30.glDisable(GLES30.GL_DEPTH_TEST);
         // 启用混合模式（实现透明效果）
-        GLES20.glEnable(GLES20.GL_BLEND);
+        GLES30.glEnable(GLES30.GL_BLEND);
         // 设置混合因子：源Alpha * 源颜色 + 1 * 目标颜色（加法混合，适合粒子发光效果）
-        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE);
+        GLES30.glBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ONE);
         
         // 创建所有着色器程序
         createPrograms();
@@ -199,29 +199,29 @@ public class Galaxy4GL extends GLESScene {
      */
     private int createShaderProgram(String vertexSource, String fragmentSource) {
         // 编译顶点着色器
-        int vertexShader = compileShader(GLES20.GL_VERTEX_SHADER, vertexSource);
+        int vertexShader = compileShader(GLES30.GL_VERTEX_SHADER, vertexSource);
         // 编译片段着色器
-        int fragmentShader = compileShader(GLES20.GL_FRAGMENT_SHADER, fragmentSource);
+        int fragmentShader = compileShader(GLES30.GL_FRAGMENT_SHADER, fragmentSource);
         
         // 创建程序对象并附加着色器
-        int program = GLES20.glCreateProgram();
-        GLES20.glAttachShader(program, vertexShader);
-        GLES20.glAttachShader(program, fragmentShader);
+        int program = GLES30.glCreateProgram();
+        GLES30.glAttachShader(program, vertexShader);
+        GLES30.glAttachShader(program, fragmentShader);
         // 链接程序
-        GLES20.glLinkProgram(program);
+        GLES30.glLinkProgram(program);
         
         // 检查链接状态
         int[] linkStatus = new int[1];
-        GLES20.glGetProgramiv(program, GLES20.GL_LINK_STATUS, linkStatus, 0);
+        GLES30.glGetProgramiv(program, GLES30.GL_LINK_STATUS, linkStatus, 0);
         if (linkStatus[0] == 0) {
-            Log.e(TAG, "程序链接错误: " + GLES20.glGetProgramInfoLog(program));
-            GLES20.glDeleteProgram(program);
+            Log.e(TAG, "程序链接错误: " + GLES30.glGetProgramInfoLog(program));
+            GLES30.glDeleteProgram(program);
             return 0;
         }
         
         // 链接成功后删除着色器（已附加到程序，无需保留）
-        GLES20.glDeleteShader(vertexShader);
-        GLES20.glDeleteShader(fragmentShader);
+        GLES30.glDeleteShader(vertexShader);
+        GLES30.glDeleteShader(fragmentShader);
         
         return program;
     }
@@ -258,21 +258,21 @@ public class Galaxy4GL extends GLESScene {
         
         // 生成纹理句柄
         int[] textureHandle = new int[1];
-        GLES20.glGenTextures(1, textureHandle, 0);
+        GLES30.glGenTextures(1, textureHandle, 0);
         
         // 绑定纹理并设置参数
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureHandle[0]);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, textureHandle[0]);
         // 缩小过滤：线性过滤
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR);
         // 放大过滤：线性过滤
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
         // S轴纹理环绕：夹紧到边缘（避免纹理重复）
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE);
         // T轴纹理环绕：夹紧到边缘
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE);
         
         // 将位图数据上传到OpenGL纹理
-        GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
+        GLUtils.texImage2D(GLES30.GL_TEXTURE_2D, 0, bitmap, 0);
         
         // 释放位图内存（已上传到GPU，无需保留）
         bitmap.recycle();
@@ -301,7 +301,7 @@ public class Galaxy4GL extends GLESScene {
         }
 
         syncParticleBuffers(sceneData);
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+        GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT);
 
         drawBackground();
         drawSpaceClouds(sceneData);
@@ -341,7 +341,7 @@ public class Galaxy4GL extends GLESScene {
      */
     private void drawBackground() {
         // 使用背景着色器程序
-        GLES20.glUseProgram(mBgProgram);
+        GLES30.glUseProgram(mBgProgram);
 
         // Background fills a square area (max dimension), centered — matches original RS
         float maxDim = Math.max(mWidth, mHeight);
@@ -361,32 +361,32 @@ public class Galaxy4GL extends GLESScene {
         }
         
         // 获取着色器属性/统一变量句柄
-        int posHandle = GLES20.glGetAttribLocation(mBgProgram, "aPosition");    // 位置属性
-        int texHandle = GLES20.glGetAttribLocation(mBgProgram, "aTexCoord");    // 纹理坐标属性
-        int samplerHandle = GLES20.glGetUniformLocation(mBgProgram, "uTexture");// 纹理采样器
+        int posHandle = GLES30.glGetAttribLocation(mBgProgram, "aPosition");    // 位置属性
+        int texHandle = GLES30.glGetAttribLocation(mBgProgram, "aTexCoord");    // 纹理坐标属性
+        int samplerHandle = GLES30.glGetUniformLocation(mBgProgram, "uTexture");// 纹理采样器
         
         // 启用属性数组
-        GLES20.glEnableVertexAttribArray(posHandle);
-        GLES20.glEnableVertexAttribArray(texHandle);
+        GLES30.glEnableVertexAttribArray(posHandle);
+        GLES30.glEnableVertexAttribArray(texHandle);
         
         // 设置位置属性指针（每4个浮点数为一组，步长16字节）
         mBgQuadBuffer.position(0);
-        GLES20.glVertexAttribPointer(posHandle, 2, GLES20.GL_FLOAT, false, 16, mBgQuadBuffer);
+        GLES30.glVertexAttribPointer(posHandle, 2, GLES30.GL_FLOAT, false, 16, mBgQuadBuffer);
         // 设置纹理坐标属性指针
         mBgQuadBuffer.position(2);
-        GLES20.glVertexAttribPointer(texHandle, 2, GLES20.GL_FLOAT, false, 16, mBgQuadBuffer);
+        GLES30.glVertexAttribPointer(texHandle, 2, GLES30.GL_FLOAT, false, 16, mBgQuadBuffer);
         
         // 绑定背景纹理到纹理单元0
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTexBg);
-        GLES20.glUniform1i(samplerHandle, 0);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mTexBg);
+        GLES30.glUniform1i(samplerHandle, 0);
         
         // 绘制四边形（三角带方式，4个顶点）
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
+        GLES30.glDrawArrays(GLES30.GL_TRIANGLE_STRIP, 0, 4);
         
         // 禁用属性数组（绘制完成后释放）
-        GLES20.glDisableVertexAttribArray(posHandle);
-        GLES20.glDisableVertexAttribArray(texHandle);
+        GLES30.glDisableVertexAttribArray(posHandle);
+        GLES30.glDisableVertexAttribArray(texHandle);
     }
     
     /**
@@ -394,33 +394,33 @@ public class Galaxy4GL extends GLESScene {
      */
     private void drawSpaceClouds(Galaxy4Scene.SceneData sceneData) {
         // 使用星云着色器程序
-        GLES20.glUseProgram(mCloudProgram);
+        GLES30.glUseProgram(mCloudProgram);
         
         // 获取着色器句柄
-        int posHandle = GLES20.glGetAttribLocation(mCloudProgram, "aPosition");  // 粒子位置属性
-        int mvpHandle = GLES20.glGetUniformLocation(mCloudProgram, "uMVPMatrix");// MVP矩阵统一变量
-        int samplerHandle = GLES20.glGetUniformLocation(mCloudProgram, "uTexture");// 纹理采样器
+        int posHandle = GLES30.glGetAttribLocation(mCloudProgram, "aPosition");  // 粒子位置属性
+        int mvpHandle = GLES30.glGetUniformLocation(mCloudProgram, "uMVPMatrix");// MVP矩阵统一变量
+        int samplerHandle = GLES30.glGetUniformLocation(mCloudProgram, "uTexture");// 纹理采样器
         
         // 设置MVP矩阵
-        GLES20.glUniformMatrix4fv(mvpHandle, 1, false, sceneData.getMvpMatrix(), 0);
+        GLES30.glUniformMatrix4fv(mvpHandle, 1, false, sceneData.getMvpMatrix(), 0);
         
         // 启用位置属性数组
-        GLES20.glEnableVertexAttribArray(posHandle);
+        GLES30.glEnableVertexAttribArray(posHandle);
         
         // 设置粒子位置属性指针
         mSpaceCloudBuffer.position(0);
-        GLES20.glVertexAttribPointer(posHandle, 3, GLES20.GL_FLOAT, false, 0, mSpaceCloudBuffer);
+        GLES30.glVertexAttribPointer(posHandle, 3, GLES30.GL_FLOAT, false, 0, mSpaceCloudBuffer);
         
         // 绑定星云纹理到纹理单元0
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTexCloud);
-        GLES20.glUniform1i(samplerHandle, 0);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mTexCloud);
+        GLES30.glUniform1i(samplerHandle, 0);
         
         // 绘制所有星云粒子（点精灵方式）
-        GLES20.glDrawArrays(GLES20.GL_POINTS, 0, sceneData.getSpaceCloudCount());
+        GLES30.glDrawArrays(GLES30.GL_POINTS, 0, sceneData.getSpaceCloudCount());
         
         // 禁用属性数组
-        GLES20.glDisableVertexAttribArray(posHandle);
+        GLES30.glDisableVertexAttribArray(posHandle);
     }
     
     /**
@@ -428,31 +428,31 @@ public class Galaxy4GL extends GLESScene {
      */
     private void drawBgStars(Galaxy4Scene.SceneData sceneData) {
         // 使用背景星星着色器程序
-        GLES20.glUseProgram(mBgStarProgram);
+        GLES30.glUseProgram(mBgStarProgram);
         
         // 获取着色器句柄
-        int posHandle = GLES20.glGetAttribLocation(mBgStarProgram, "aPosition");// 粒子位置属性
-        int mvpHandle = GLES20.glGetUniformLocation(mBgStarProgram, "uMVPMatrix");// MVP矩阵统一变量
+        int posHandle = GLES30.glGetAttribLocation(mBgStarProgram, "aPosition");// 粒子位置属性
+        int mvpHandle = GLES30.glGetUniformLocation(mBgStarProgram, "uMVPMatrix");// MVP矩阵统一变量
 
         // 设置MVP矩阵
-        GLES20.glUniformMatrix4fv(mvpHandle, 1, false, sceneData.getMvpMatrix(), 0);
-        int sizeHandle = GLES20.glGetUniformLocation(mBgStarProgram, "uParticleSize");
-        int opacityHandle = GLES20.glGetUniformLocation(mBgStarProgram, "uParticleOpacity");
-        GLES20.glUniform1f(sizeHandle, sceneData.getParticleSize());
-        GLES20.glUniform1f(opacityHandle, sceneData.getParticleOpacity());
+        GLES30.glUniformMatrix4fv(mvpHandle, 1, false, sceneData.getMvpMatrix(), 0);
+        int sizeHandle = GLES30.glGetUniformLocation(mBgStarProgram, "uParticleSize");
+        int opacityHandle = GLES30.glGetUniformLocation(mBgStarProgram, "uParticleOpacity");
+        GLES30.glUniform1f(sizeHandle, sceneData.getParticleSize());
+        GLES30.glUniform1f(opacityHandle, sceneData.getParticleOpacity());
 
         // 启用位置属性数组
-        GLES20.glEnableVertexAttribArray(posHandle);
+        GLES30.glEnableVertexAttribArray(posHandle);
         
         // 设置粒子位置属性指针
         mBgStarBuffer.position(0);
-        GLES20.glVertexAttribPointer(posHandle, 3, GLES20.GL_FLOAT, false, 0, mBgStarBuffer);
+        GLES30.glVertexAttribPointer(posHandle, 3, GLES30.GL_FLOAT, false, 0, mBgStarBuffer);
         
         // 绘制所有背景星星粒子（点精灵方式）
-        GLES20.glDrawArrays(GLES20.GL_POINTS, 0, sceneData.getBgStarCount());
+        GLES30.glDrawArrays(GLES30.GL_POINTS, 0, sceneData.getBgStarCount());
         
         // 禁用属性数组
-        GLES20.glDisableVertexAttribArray(posHandle);
+        GLES30.glDisableVertexAttribArray(posHandle);
     }
     
     /**
@@ -461,47 +461,47 @@ public class Galaxy4GL extends GLESScene {
      */
     private void drawStaticStars(Galaxy4Scene.SceneData sceneData) {
         // 使用静态星星着色器程序
-        GLES20.glUseProgram(mStaticStarProgram);
+        GLES30.glUseProgram(mStaticStarProgram);
         
         // 获取着色器句柄
-        int posHandle = GLES20.glGetAttribLocation(mStaticStarProgram, "aPosition");  // 位置属性
-        int sizeHandle = GLES20.glGetAttribLocation(mStaticStarProgram, "aPointSize");// 点大小属性
-        int mvpHandle = GLES20.glGetUniformLocation(mStaticStarProgram, "uMVPMatrix");// MVP矩阵
-        int tex1Handle = GLES20.glGetUniformLocation(mStaticStarProgram, "uTexture1");// 纹理1采样器
-        int tex2Handle = GLES20.glGetUniformLocation(mStaticStarProgram, "uTexture2");// 纹理2采样器
-        int timeHandle = GLES20.glGetUniformLocation(mStaticStarProgram, "uTime");    // 时间统一变量
+        int posHandle = GLES30.glGetAttribLocation(mStaticStarProgram, "aPosition");  // 位置属性
+        int sizeHandle = GLES30.glGetAttribLocation(mStaticStarProgram, "aPointSize");// 点大小属性
+        int mvpHandle = GLES30.glGetUniformLocation(mStaticStarProgram, "uMVPMatrix");// MVP矩阵
+        int tex1Handle = GLES30.glGetUniformLocation(mStaticStarProgram, "uTexture1");// 纹理1采样器
+        int tex2Handle = GLES30.glGetUniformLocation(mStaticStarProgram, "uTexture2");// 纹理2采样器
+        int timeHandle = GLES30.glGetUniformLocation(mStaticStarProgram, "uTime");    // 时间统一变量
         
         // 静态星星使用单位矩阵（屏幕空间绘制）
         if (mIdentityMatrix[0] != 1f) android.opengl.Matrix.setIdentityM(mIdentityMatrix, 0);
-        GLES20.glUniformMatrix4fv(mvpHandle, 1, false, mIdentityMatrix, 0);
-        GLES20.glUniform1f(timeHandle, sceneData.getTimeSeconds());
+        GLES30.glUniformMatrix4fv(mvpHandle, 1, false, mIdentityMatrix, 0);
+        GLES30.glUniform1f(timeHandle, sceneData.getTimeSeconds());
         
         // 启用属性数组
-        GLES20.glEnableVertexAttribArray(posHandle);
-        GLES20.glEnableVertexAttribArray(sizeHandle);
+        GLES30.glEnableVertexAttribArray(posHandle);
+        GLES30.glEnableVertexAttribArray(sizeHandle);
         
         // 设置位置属性指针（每3个浮点数为一组，步长12字节）
         mStaticStarBuffer.position(0);
-        GLES20.glVertexAttribPointer(posHandle, 2, GLES20.GL_FLOAT, false, 12, mStaticStarBuffer);
+        GLES30.glVertexAttribPointer(posHandle, 2, GLES30.GL_FLOAT, false, 12, mStaticStarBuffer);
         // 设置点大小属性指针
         mStaticStarBuffer.position(2);
-        GLES20.glVertexAttribPointer(sizeHandle, 1, GLES20.GL_FLOAT, false, 12, mStaticStarBuffer);
+        GLES30.glVertexAttribPointer(sizeHandle, 1, GLES30.GL_FLOAT, false, 12, mStaticStarBuffer);
         
         // 绑定纹理1到纹理单元0
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTexStaticStar);
-        GLES20.glUniform1i(tex1Handle, 0);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mTexStaticStar);
+        GLES30.glUniform1i(tex1Handle, 0);
         
         // 绑定纹理2到纹理单元1
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE1);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTexStaticStar2);
-        GLES20.glUniform1i(tex2Handle, 1);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE1);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mTexStaticStar2);
+        GLES30.glUniform1i(tex2Handle, 1);
         
         // 绘制所有静态星星粒子
-        GLES20.glDrawArrays(GLES20.GL_POINTS, 0, sceneData.getStaticStarCount());
+        GLES30.glDrawArrays(GLES30.GL_POINTS, 0, sceneData.getStaticStarCount());
         
         // 禁用属性数组
-        GLES20.glDisableVertexAttribArray(posHandle);
-        GLES20.glDisableVertexAttribArray(sizeHandle);
+        GLES30.glDisableVertexAttribArray(posHandle);
+        GLES30.glDisableVertexAttribArray(sizeHandle);
     }
 }

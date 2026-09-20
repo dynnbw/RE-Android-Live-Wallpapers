@@ -3,7 +3,7 @@ package com.reandroid.wallpaper.fireworks;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 import android.opengl.GLUtils;
 import android.opengl.Matrix;
 import android.os.SystemClock;
@@ -210,18 +210,18 @@ public class FireworksGL extends GLESScene {
     public void release() {
         // 释放纹理资源
         int[] tex = new int[] { mTexBackground, mTexStar };
-        GLES20.glDeleteTextures(tex.length, tex, 0);
+        GLES30.glDeleteTextures(tex.length, tex, 0);
         mTexBackground = 0;
         mTexStar = 0;
 
         // 释放着色器程序
         if (mProgram != 0) {
-            GLES20.glDeleteProgram(mProgram);
+            GLES30.glDeleteProgram(mProgram);
             mProgram = 0;
         }
 
         if (mParticleProgram != 0) {
-            GLES20.glDeleteProgram(mParticleProgram);
+            GLES30.glDeleteProgram(mParticleProgram);
             mParticleProgram = 0;
         }
 
@@ -243,7 +243,7 @@ public class FireworksGL extends GLESScene {
         super.resize(width, height);
         if (mGLInitialized) {
             // 更新OpenGL视口
-            GLES20.glViewport(0, 0, mWidth, mHeight);
+            GLES30.glViewport(0, 0, mWidth, mHeight);
             // 更新正交投影矩阵
             Matrix.orthoM(mProjectionMatrix, 0, 0, mWidth, mHeight, 0, -1.0f, 1.0f);
         }
@@ -334,15 +334,15 @@ public class FireworksGL extends GLESScene {
         checkAndReloadBackground();
 
         // 清空颜色缓冲区（准备绘制新帧）
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+        GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT);
 
         // 使用着色器程序
-        GLES20.glUseProgram(mProgram);
+        GLES30.glUseProgram(mProgram);
         // 设置投影矩阵
-        GLES20.glUniformMatrix4fv(mMatrixHandle, 1, false, mProjectionMatrix, 0);
+        GLES30.glUniformMatrix4fv(mMatrixHandle, 1, false, mProjectionMatrix, 0);
 
         // 设置混合模式（背景：常规Alpha混合）
-        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+        GLES30.glBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ONE_MINUS_SRC_ALPHA);
         // 绘制背景
         drawBackground(mWidth, mHeight, offsetX);
 
@@ -350,7 +350,7 @@ public class FireworksGL extends GLESScene {
         mScene.update();
 
         // 设置混合模式（粒子：加法混合，实现发光效果）
-        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE);
+        GLES30.glBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ONE);
         // 绘制所有粒子和拖尾
         draw(offsetX);
     }
@@ -378,7 +378,7 @@ public class FireworksGL extends GLESScene {
         }
 
         // 清空颜色缓冲区（准备绘制新帧）
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+        GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT);
 
         // 夜空渐变 + 星星（标准 Alpha 混合）
         mBackdrop.drawSky(mProjectionMatrix);
@@ -388,9 +388,9 @@ public class FireworksGL extends GLESScene {
         mScene.update();
 
         // 烟花：加法混合，发光效果，绘制于星星之上、草叶之下
-        GLES20.glUseProgram(mProgram);
-        GLES20.glUniformMatrix4fv(mMatrixHandle, 1, false, mProjectionMatrix, 0);
-        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE);
+        GLES30.glUseProgram(mProgram);
+        GLES30.glUniformMatrix4fv(mMatrixHandle, 1, false, mProjectionMatrix, 0);
+        GLES30.glBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ONE);
         draw(offsetX);
 
         // 草叶最后绘制，遮挡烟花
@@ -429,11 +429,11 @@ public class FireworksGL extends GLESScene {
         mGLInitialized = true;
 
         // 禁用深度测试（2D渲染不需要）
-        GLES20.glDisable(GLES20.GL_DEPTH_TEST);
+        GLES30.glDisable(GLES30.GL_DEPTH_TEST);
         // 启用混合（实现透明效果）
-        GLES20.glEnable(GLES20.GL_BLEND);
+        GLES30.glEnable(GLES30.GL_BLEND);
         // 设置视口大小
-        GLES20.glViewport(0, 0, mWidth, mHeight);
+        GLES30.glViewport(0, 0, mWidth, mHeight);
         // 创建正交投影矩阵（适配屏幕坐标）
         Matrix.orthoM(mProjectionMatrix, 0, 0, mWidth, mHeight, 0, -1.0f, 1.0f);
 
@@ -444,12 +444,12 @@ public class FireworksGL extends GLESScene {
         // 创建并链接着色器程序
         mProgram = createProgram(vs, fs);
         // 获取着色器属性/统一变量句柄
-        mPositionHandle = GLES20.glGetAttribLocation(mProgram, "aPosition");
-        mTexHandle = GLES20.glGetAttribLocation(mProgram, "aTexCoord");
-        mMatrixHandle = GLES20.glGetUniformLocation(mProgram, "uMVPMatrix");
-        mSamplerHandle = GLES20.glGetUniformLocation(mProgram, "uSampler");
-        mAlphaHandle = GLES20.glGetUniformLocation(mProgram, "uAlpha");
-        mColorHandle = GLES20.glGetUniformLocation(mProgram, "uColor");
+        mPositionHandle = GLES30.glGetAttribLocation(mProgram, "aPosition");
+        mTexHandle = GLES30.glGetAttribLocation(mProgram, "aTexCoord");
+        mMatrixHandle = GLES30.glGetUniformLocation(mProgram, "uMVPMatrix");
+        mSamplerHandle = GLES30.glGetUniformLocation(mProgram, "uSampler");
+        mAlphaHandle = GLES30.glGetUniformLocation(mProgram, "uAlpha");
+        mColorHandle = GLES30.glGetUniformLocation(mProgram, "uColor");
 
         // 创建四边形顶点缓冲（用于绘制纹理矩形）
         mQuadBuffer = ByteBuffer.allocateDirect(4 * 4 * 4)
@@ -479,11 +479,11 @@ public class FireworksGL extends GLESScene {
         String pvs = AssetLoader.readText(mContext, "fireworks/shaders/GLES/fireworks_particle_vs.glsl");
         String pfs = AssetLoader.readText(mContext, "fireworks/shaders/GLES/fireworks_particle_fs.glsl");
         mParticleProgram = createProgram(pvs, pfs);
-        mParticlePositionHandle = GLES20.glGetAttribLocation(mParticleProgram, "aPosition");
-        mParticleTexHandle = GLES20.glGetAttribLocation(mParticleProgram, "aTexCoord");
-        mParticleColorHandle = GLES20.glGetAttribLocation(mParticleProgram, "aColor");
-        mParticleMatrixHandle = GLES20.glGetUniformLocation(mParticleProgram, "uMVPMatrix");
-        mParticleSamplerHandle = GLES20.glGetUniformLocation(mParticleProgram, "uSampler");
+        mParticlePositionHandle = GLES30.glGetAttribLocation(mParticleProgram, "aPosition");
+        mParticleTexHandle = GLES30.glGetAttribLocation(mParticleProgram, "aTexCoord");
+        mParticleColorHandle = GLES30.glGetAttribLocation(mParticleProgram, "aColor");
+        mParticleMatrixHandle = GLES30.glGetUniformLocation(mParticleProgram, "uMVPMatrix");
+        mParticleSamplerHandle = GLES30.glGetUniformLocation(mParticleProgram, "uSampler");
 
         initParticleBatch();
     }
@@ -529,7 +529,7 @@ public class FireworksGL extends GLESScene {
                 // 删除旧纹理（释放资源）
                 if (mTexBackground != 0) {
                     int[] tex = new int[]{mTexBackground};
-                    GLES20.glDeleteTextures(1, tex, 0);
+                    GLES30.glDeleteTextures(1, tex, 0);
                     mTexBackground = 0;
                 }
 
@@ -607,16 +607,16 @@ public class FireworksGL extends GLESScene {
 
             // 创建OpenGL纹理
             int[] tex = new int[1];
-            GLES20.glGenTextures(1, tex, 0);
-            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, tex[0]);
+            GLES30.glGenTextures(1, tex, 0);
+            GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, tex[0]);
             // 设置纹理过滤模式
-            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
-            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
+            GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR);
+            GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
             // 设置纹理环绕模式（边缘夹紧）
-            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
-            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
+            GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE);
+            GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE);
             // 将位图数据上传到纹理
-            android.opengl.GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bmp, 0);
+            android.opengl.GLUtils.texImage2D(GLES30.GL_TEXTURE_2D, 0, bmp, 0);
             // 释放位图资源
             bmp.recycle();
 
@@ -809,34 +809,34 @@ public class FireworksGL extends GLESScene {
     private void flushParticles() {
         if (mParticleCount == 0) return;
 
-        GLES20.glUseProgram(mParticleProgram);
-        GLES20.glUniformMatrix4fv(mParticleMatrixHandle, 1, false, mProjectionMatrix, 0);
+        GLES30.glUseProgram(mParticleProgram);
+        GLES30.glUniformMatrix4fv(mParticleMatrixHandle, 1, false, mProjectionMatrix, 0);
 
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTexStar);
-        GLES20.glUniform1i(mParticleSamplerHandle, 0);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mTexStar);
+        GLES30.glUniform1i(mParticleSamplerHandle, 0);
 
         int stride = PARTICLE_FLOATS * 4;
         mParticleBuffer.position(0);
-        GLES20.glEnableVertexAttribArray(mParticlePositionHandle);
-        GLES20.glVertexAttribPointer(mParticlePositionHandle, 2, GLES20.GL_FLOAT,
+        GLES30.glEnableVertexAttribArray(mParticlePositionHandle);
+        GLES30.glVertexAttribPointer(mParticlePositionHandle, 2, GLES30.GL_FLOAT,
                 false, stride, mParticleBuffer);
         mParticleBuffer.position(2);
-        GLES20.glEnableVertexAttribArray(mParticleTexHandle);
-        GLES20.glVertexAttribPointer(mParticleTexHandle, 2, GLES20.GL_FLOAT,
+        GLES30.glEnableVertexAttribArray(mParticleTexHandle);
+        GLES30.glVertexAttribPointer(mParticleTexHandle, 2, GLES30.GL_FLOAT,
                 false, stride, mParticleBuffer);
         mParticleBuffer.position(4);
-        GLES20.glEnableVertexAttribArray(mParticleColorHandle);
-        GLES20.glVertexAttribPointer(mParticleColorHandle, 4, GLES20.GL_FLOAT,
+        GLES30.glEnableVertexAttribArray(mParticleColorHandle);
+        GLES30.glVertexAttribPointer(mParticleColorHandle, 4, GLES30.GL_FLOAT,
                 false, stride, mParticleBuffer);
 
         mParticleIndexBuffer.position(0);
-        GLES20.glDrawElements(GLES20.GL_TRIANGLES, mParticleCount * INDICES_PER_PARTICLE,
-                GLES20.GL_UNSIGNED_SHORT, mParticleIndexBuffer);
+        GLES30.glDrawElements(GLES30.GL_TRIANGLES, mParticleCount * INDICES_PER_PARTICLE,
+                GLES30.GL_UNSIGNED_SHORT, mParticleIndexBuffer);
 
-        GLES20.glDisableVertexAttribArray(mParticlePositionHandle);
-        GLES20.glDisableVertexAttribArray(mParticleTexHandle);
-        GLES20.glDisableVertexAttribArray(mParticleColorHandle);
+        GLES30.glDisableVertexAttribArray(mParticlePositionHandle);
+        GLES30.glDisableVertexAttribArray(mParticleTexHandle);
+        GLES30.glDisableVertexAttribArray(mParticleColorHandle);
     }
 
     /**
@@ -882,31 +882,31 @@ public class FireworksGL extends GLESScene {
         mQuadBuffer.put(verts).position(0);
 
         // 启用顶点位置属性
-        GLES20.glEnableVertexAttribArray(mPositionHandle);
-        GLES20.glVertexAttribPointer(mPositionHandle, 2, GLES20.GL_FLOAT, false, 16, mQuadBuffer);
+        GLES30.glEnableVertexAttribArray(mPositionHandle);
+        GLES30.glVertexAttribPointer(mPositionHandle, 2, GLES30.GL_FLOAT, false, 16, mQuadBuffer);
 
         // 启用纹理坐标属性
         mQuadBuffer.position(2);
-        GLES20.glEnableVertexAttribArray(mTexHandle);
-        GLES20.glVertexAttribPointer(mTexHandle, 2, GLES20.GL_FLOAT, false, 16, mQuadBuffer);
+        GLES30.glEnableVertexAttribArray(mTexHandle);
+        GLES30.glVertexAttribPointer(mTexHandle, 2, GLES30.GL_FLOAT, false, 16, mQuadBuffer);
 
         // 绑定纹理并设置采样器
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture);
-        GLES20.glUniform1i(mSamplerHandle, 0);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, texture);
+        GLES30.glUniform1i(mSamplerHandle, 0);
 
         // 背景纹理强制使用不透明白色
         if (texture == mTexBackground) {
-            GLES20.glUniform1f(mAlphaHandle, 1.0f);
-            GLES20.glUniform3f(mColorHandle, 1.0f, 1.0f, 1.0f);
+            GLES30.glUniform1f(mAlphaHandle, 1.0f);
+            GLES30.glUniform3f(mColorHandle, 1.0f, 1.0f, 1.0f);
         }
 
         // 绘制四边形（三角扇模式）
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, 4);
+        GLES30.glDrawArrays(GLES30.GL_TRIANGLE_FAN, 0, 4);
 
         // 禁用属性（性能优化）
-        GLES20.glDisableVertexAttribArray(mPositionHandle);
-        GLES20.glDisableVertexAttribArray(mTexHandle);
+        GLES30.glDisableVertexAttribArray(mPositionHandle);
+        GLES30.glDisableVertexAttribArray(mTexHandle);
     }
 
     /**
@@ -920,21 +920,21 @@ public class FireworksGL extends GLESScene {
 
         // 创建OpenGL纹理
         int[] tex = new int[1];
-        GLES20.glGenTextures(1, tex, 0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, tex[0]);
+        GLES30.glGenTextures(1, tex, 0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, tex[0]);
 
         // 设置纹理过滤模式（最近邻过滤）
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
 
         // 设置纹理环绕模式
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S,
-                repeat ? GLES20.GL_REPEAT : GLES20.GL_CLAMP_TO_EDGE);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T,
-                repeat ? GLES20.GL_REPEAT : GLES20.GL_CLAMP_TO_EDGE);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S,
+                repeat ? GLES30.GL_REPEAT : GLES30.GL_CLAMP_TO_EDGE);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T,
+                repeat ? GLES30.GL_REPEAT : GLES30.GL_CLAMP_TO_EDGE);
 
         // 上传位图数据到纹理
-        GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bmp, 0);
+        GLUtils.texImage2D(GLES30.GL_TEXTURE_2D, 0, bmp, 0);
         // 释放位图资源
         bmp.recycle();
 

@@ -1,6 +1,6 @@
 package com.reandroid.wallpaper.weatherwallpapers.ocean;
 
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -120,7 +120,7 @@ public class OceanWeatherGL extends GLESScene {
     public void resize(int width, int height) {
         super.resize(width, height);
         if (mGlReady) {
-            GLES20.glViewport(0, 0, mWidth, mHeight);
+            GLES30.glViewport(0, 0, mWidth, mHeight);
             mScene.updateProjection(mWidth, mHeight);
         }
     }
@@ -148,8 +148,8 @@ public class OceanWeatherGL extends GLESScene {
         mScene.mAnimationController.advanceFrame(deltaMs);
         mScene.mWeatherFlagManager.update(mScene.mCondition, mScene.mIsNight);
 
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
-        GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+        GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT | GLES30.GL_DEPTH_BUFFER_BIT);
+        GLES30.glBlendFunc(GLES30.GL_ONE, GLES30.GL_ONE_MINUS_SRC_ALPHA);
         drawObjects();
     }
 
@@ -157,21 +157,21 @@ public class OceanWeatherGL extends GLESScene {
     public void release() {
         if (!mGlReady) return;
         int[] textures = {mSkyA,mSkyB,mSkyC,mSkyD,mSkyG,mSkyStars,mCloudA01,mCloudA02,mCloudA03,mCloudB01,mCloudB02,mCloudB03,mCloudLightA1,mCloudLightA2,mCloudLightA3,mCloudLightB1,mCloudLightB2,mCloudLightB3,mSun1,mSun2,mSun3,mSun4,mStar,mMeteor,mMoon,mWatercover1,mWatercover2,mWatercover3,mWatercover4,mNightcover,mCapCover,mFog01,mFog02,mIce,mRain1,mRain2,mRain3,mRain4,mWaterdrop,mCloudcover,mFrostC,mFrostE,mFrostF,mSnow1,mSnow2,mSnow3,mSnow4,mSkyFlash,mLightning1,mLightning2,mLightning3,mWaveBack};
-        GLES20.glDeleteTextures(textures.length, textures, 0);
-        if (mWave != null) GLES20.glDeleteTextures(mWave.length, mWave, 0);
-        if (mRaindrop1 != null) GLES20.glDeleteTextures(mRaindrop1.length, mRaindrop1, 0);
-        if (mRaindrop2 != null) GLES20.glDeleteTextures(mRaindrop2.length, mRaindrop2, 0);
+        GLES30.glDeleteTextures(textures.length, textures, 0);
+        if (mWave != null) GLES30.glDeleteTextures(mWave.length, mWave, 0);
+        if (mRaindrop1 != null) GLES30.glDeleteTextures(mRaindrop1.length, mRaindrop1, 0);
+        if (mRaindrop2 != null) GLES30.glDeleteTextures(mRaindrop2.length, mRaindrop2, 0);
     }
 
     private void initGl() {
         String vs = AssetLoader.readText(mContext, "ocean/shaders/GLES/ocean_weather_vs.glsl");
         String fs = AssetLoader.readText(mContext, "ocean/shaders/GLES/ocean_weather_fs.glsl");
         mProgram = createProgram(vs, fs);
-        mPositionHandle = GLES20.glGetAttribLocation(mProgram, "aPosition");
-        mTexCoordHandle = GLES20.glGetAttribLocation(mProgram, "aTexCoord");
-        mMatrixHandle = GLES20.glGetUniformLocation(mProgram, "uMVPMatrix");
-        mColorHandle = GLES20.glGetUniformLocation(mProgram, "uColor");
-        mSamplerHandle = GLES20.glGetUniformLocation(mProgram, "uTexture");
+        mPositionHandle = GLES30.glGetAttribLocation(mProgram, "aPosition");
+        mTexCoordHandle = GLES30.glGetAttribLocation(mProgram, "aTexCoord");
+        mMatrixHandle = GLES30.glGetUniformLocation(mProgram, "uMVPMatrix");
+        mColorHandle = GLES30.glGetUniformLocation(mProgram, "uColor");
+        mSamplerHandle = GLES30.glGetUniformLocation(mProgram, "uTexture");
 
         float[] quadVertices = AssetLoader.readFloatArray(mContext, "ocean/data/ocean_quad_vertices.csv");
         float[] rectOneToTwoVertices = AssetLoader.readFloatArray(mContext, "ocean/data/ocean_rect_one_to_two_vertices.csv");
@@ -190,8 +190,8 @@ public class OceanWeatherGL extends GLESScene {
         mSpriteDrawer.configure(mProgram, mPositionHandle, mTexCoordHandle, mMatrixHandle,
                 mColorHandle, mSamplerHandle, mScene.mProjectionMatrix, vb, tb, r12b, r14b);
 
-        GLES20.glClearColor(0f, 0f, 0f, 0f);
-        GLES20.glEnable(GLES20.GL_BLEND);
+        GLES30.glClearColor(0f, 0f, 0f, 0f);
+        GLES30.glEnable(GLES30.GL_BLEND);
         mScene.updateProjection(mWidth, mHeight);
         loadTextures();
         mGlReady = true;

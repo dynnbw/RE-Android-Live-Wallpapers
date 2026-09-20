@@ -1,6 +1,6 @@
 package com.reandroid.wallpaper.grass;
 
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -123,25 +123,25 @@ final class GrassSpriteRenderer {
         batchBuffer.clear();
         batchBuffer.put(vertices, 0, floatCount).position(0);
 
-        GLES20.glEnableVertexAttribArray(positionHandle);
-        GLES20.glVertexAttribPointer(positionHandle, 2, GLES20.GL_FLOAT, false, VERTEX_STRIDE_BYTES, batchBuffer);
+        GLES30.glEnableVertexAttribArray(positionHandle);
+        GLES30.glVertexAttribPointer(positionHandle, 2, GLES30.GL_FLOAT, false, VERTEX_STRIDE_BYTES, batchBuffer);
         batchBuffer.position(2);
-        GLES20.glEnableVertexAttribArray(texHandle);
-        GLES20.glVertexAttribPointer(texHandle, 2, GLES20.GL_FLOAT, false, VERTEX_STRIDE_BYTES, batchBuffer);
+        GLES30.glEnableVertexAttribArray(texHandle);
+        GLES30.glVertexAttribPointer(texHandle, 2, GLES30.GL_FLOAT, false, VERTEX_STRIDE_BYTES, batchBuffer);
         batchBuffer.position(4);
-        GLES20.glEnableVertexAttribArray(vertexAlphaHandle);
-        GLES20.glVertexAttribPointer(vertexAlphaHandle, 1, GLES20.GL_FLOAT, false, VERTEX_STRIDE_BYTES, batchBuffer);
+        GLES30.glEnableVertexAttribArray(vertexAlphaHandle);
+        GLES30.glVertexAttribPointer(vertexAlphaHandle, 1, GLES30.GL_FLOAT, false, VERTEX_STRIDE_BYTES, batchBuffer);
 
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture);
-        GLES20.glUniform1i(samplerHandle, 0);
-        GLES20.glUniform1f(alphaHandle, alpha);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, texture);
+        GLES30.glUniform1i(samplerHandle, 0);
+        GLES30.glUniform1f(alphaHandle, alpha);
         uploadTint();
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, floatCount / FLOATS_PER_VERTEX);
+        GLES30.glDrawArrays(GLES30.GL_TRIANGLES, 0, floatCount / FLOATS_PER_VERTEX);
 
-        GLES20.glDisableVertexAttribArray(positionHandle);
-        GLES20.glDisableVertexAttribArray(texHandle);
-        GLES20.glDisableVertexAttribArray(vertexAlphaHandle);
+        GLES30.glDisableVertexAttribArray(positionHandle);
+        GLES30.glDisableVertexAttribArray(texHandle);
+        GLES30.glDisableVertexAttribArray(vertexAlphaHandle);
     }
 
     private void appendSpriteQuadVertices(
@@ -177,30 +177,30 @@ final class GrassSpriteRenderer {
             return;
         }
 
-        GLES20.glEnableVertexAttribArray(positionHandle);
-        GLES20.glVertexAttribPointer(positionHandle, 2, GLES20.GL_FLOAT, false, VERTEX_STRIDE_BYTES, spriteBuffer);
+        GLES30.glEnableVertexAttribArray(positionHandle);
+        GLES30.glVertexAttribPointer(positionHandle, 2, GLES30.GL_FLOAT, false, VERTEX_STRIDE_BYTES, spriteBuffer);
         spriteBuffer.position(2);
-        GLES20.glEnableVertexAttribArray(texHandle);
-        GLES20.glVertexAttribPointer(texHandle, 2, GLES20.GL_FLOAT, false, VERTEX_STRIDE_BYTES, spriteBuffer);
+        GLES30.glEnableVertexAttribArray(texHandle);
+        GLES30.glVertexAttribPointer(texHandle, 2, GLES30.GL_FLOAT, false, VERTEX_STRIDE_BYTES, spriteBuffer);
         spriteBuffer.position(4);
-        GLES20.glEnableVertexAttribArray(vertexAlphaHandle);
-        GLES20.glVertexAttribPointer(vertexAlphaHandle, 1, GLES20.GL_FLOAT, false, VERTEX_STRIDE_BYTES, spriteBuffer);
+        GLES30.glEnableVertexAttribArray(vertexAlphaHandle);
+        GLES30.glVertexAttribPointer(vertexAlphaHandle, 1, GLES30.GL_FLOAT, false, VERTEX_STRIDE_BYTES, spriteBuffer);
 
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture);
-        GLES20.glUniform1i(samplerHandle, 0);
-        GLES20.glUniform1f(alphaHandle, alpha);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, texture);
+        GLES30.glUniform1i(samplerHandle, 0);
+        GLES30.glUniform1f(alphaHandle, alpha);
         uploadTint();
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, 4);
+        GLES30.glDrawArrays(GLES30.GL_TRIANGLE_FAN, 0, 4);
 
-        GLES20.glDisableVertexAttribArray(positionHandle);
-        GLES20.glDisableVertexAttribArray(texHandle);
-        GLES20.glDisableVertexAttribArray(vertexAlphaHandle);
+        GLES30.glDisableVertexAttribArray(positionHandle);
+        GLES30.glDisableVertexAttribArray(texHandle);
+        GLES30.glDisableVertexAttribArray(vertexAlphaHandle);
     }
 
     private void uploadTint() {
         if (tintHandle >= 0) {
-            GLES20.glUniform3f(tintHandle, tintR, tintG, tintB);
+            GLES30.glUniform3f(tintHandle, tintR, tintG, tintB);
         }
     }
 

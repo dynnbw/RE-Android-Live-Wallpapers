@@ -3,7 +3,7 @@ package com.reandroid.wallpaper.cosmicflow;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 import android.opengl.GLUtils;
 import android.opengl.Matrix;
 import android.os.SystemClock;
@@ -103,34 +103,34 @@ public class CosmicGL extends GLESScene {
             return;
         }
 
-        mBgAPosition = GLES20.glGetAttribLocation(mBgProgram, "vPosition");
-        mBgATexCoord = GLES20.glGetAttribLocation(mBgProgram, "texCoord");
-        mBgUTimeHeightScaleColorXOffset = GLES20.glGetUniformLocation(mBgProgram, "u_Time_HeightScale_Color_XOffset");
-        mBgUPrimaryColor = GLES20.glGetUniformLocation(mBgProgram, "u_PrimaryColor");
-        mBgUSampler = GLES20.glGetUniformLocation(mBgProgram, "sTexture");
+        mBgAPosition = GLES30.glGetAttribLocation(mBgProgram, "vPosition");
+        mBgATexCoord = GLES30.glGetAttribLocation(mBgProgram, "texCoord");
+        mBgUTimeHeightScaleColorXOffset = GLES30.glGetUniformLocation(mBgProgram, "u_Time_HeightScale_Color_XOffset");
+        mBgUPrimaryColor = GLES30.glGetUniformLocation(mBgProgram, "u_PrimaryColor");
+        mBgUSampler = GLES30.glGetUniformLocation(mBgProgram, "sTexture");
 
-        mFlowAPosition = GLES20.glGetAttribLocation(mFlowProgram, "aPosition");
-        mFlowUMvpMatrix = GLES20.glGetUniformLocation(mFlowProgram, "uMVPMatrix");
-        mFlowUTimeNoiseScaleColor = GLES20.glGetUniformLocation(mFlowProgram, "u_Time_NoiseScale_Color");
-        mFlowUNoisePos01 = GLES20.glGetUniformLocation(mFlowProgram, "u_NoisePos01");
-        mFlowUPrimaryColor = GLES20.glGetUniformLocation(mFlowProgram, "u_PrimaryColor");
-        mFlowUSecondaryColor = GLES20.glGetUniformLocation(mFlowProgram, "u_SecondaryColor");
-        mFlowUSampler = GLES20.glGetUniformLocation(mFlowProgram, "sTexture");
+        mFlowAPosition = GLES30.glGetAttribLocation(mFlowProgram, "aPosition");
+        mFlowUMvpMatrix = GLES30.glGetUniformLocation(mFlowProgram, "uMVPMatrix");
+        mFlowUTimeNoiseScaleColor = GLES30.glGetUniformLocation(mFlowProgram, "u_Time_NoiseScale_Color");
+        mFlowUNoisePos01 = GLES30.glGetUniformLocation(mFlowProgram, "u_NoisePos01");
+        mFlowUPrimaryColor = GLES30.glGetUniformLocation(mFlowProgram, "u_PrimaryColor");
+        mFlowUSecondaryColor = GLES30.glGetUniformLocation(mFlowProgram, "u_SecondaryColor");
+        mFlowUSampler = GLES30.glGetUniformLocation(mFlowProgram, "sTexture");
 
         // 方形背景网格:(-1,1,0.02)(1,1,0.02)(-1,-1,0.02)(1,-1,0.02)
         FloatBuffer squarePos = newFloatBuffer(new float[]{
                 -1f, 1f, 0.02f, 1f, 1f, 0.02f, -1f, -1f, 0.02f, 1f, -1f, 0.02f});
         ShortBuffer squareIdx = newShortBuffer(new short[]{0, 1, 2, 1, 2, 3});
         int[] bufs = new int[4];
-        GLES20.glGenBuffers(4, bufs, 0);
+        GLES30.glGenBuffers(4, bufs, 0);
         mSquarePosVbo = bufs[0];
         mSquareIndexVbo = bufs[1];
         mFlowPosVbo = bufs[2];
         mFlowIndexVbo = bufs[3];
-        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, mSquarePosVbo);
-        GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, squarePos.capacity() * 4, squarePos, GLES20.GL_STATIC_DRAW);
-        GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, mSquareIndexVbo);
-        GLES20.glBufferData(GLES20.GL_ELEMENT_ARRAY_BUFFER, squareIdx.capacity() * 2, squareIdx, GLES20.GL_STATIC_DRAW);
+        GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, mSquarePosVbo);
+        GLES30.glBufferData(GLES30.GL_ARRAY_BUFFER, squarePos.capacity() * 4, squarePos, GLES30.GL_STATIC_DRAW);
+        GLES30.glBindBuffer(GLES30.GL_ELEMENT_ARRAY_BUFFER, mSquareIndexVbo);
+        GLES30.glBufferData(GLES30.GL_ELEMENT_ARRAY_BUFFER, squareIdx.capacity() * 2, squareIdx, GLES30.GL_STATIC_DRAW);
 
         // 流场网格:100×100,顶点 (j/100, i·0.7/100, 0)
         FloatBuffer flowPos = newFloatBuffer(FLOW_VERTICES * 3);
@@ -159,41 +159,41 @@ public class CosmicGL extends GLESScene {
             flowIdx.put((short) ((i + 1) * FLOW_MESH_SIZE));
         }
         flowIdx.position(0);
-        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, mFlowPosVbo);
-        GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, flowPos.capacity() * 4, flowPos, GLES20.GL_STATIC_DRAW);
-        GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, mFlowIndexVbo);
-        GLES20.glBufferData(GLES20.GL_ELEMENT_ARRAY_BUFFER, flowIdx.capacity() * 2, flowIdx, GLES20.GL_STATIC_DRAW);
-        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
-        GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, 0);
+        GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, mFlowPosVbo);
+        GLES30.glBufferData(GLES30.GL_ARRAY_BUFFER, flowPos.capacity() * 4, flowPos, GLES30.GL_STATIC_DRAW);
+        GLES30.glBindBuffer(GLES30.GL_ELEMENT_ARRAY_BUFFER, mFlowIndexVbo);
+        GLES30.glBufferData(GLES30.GL_ELEMENT_ARRAY_BUFFER, flowIdx.capacity() * 2, flowIdx, GLES30.GL_STATIC_DRAW);
+        GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, 0);
+        GLES30.glBindBuffer(GLES30.GL_ELEMENT_ARRAY_BUFFER, 0);
 
         loadTextures();
 
-        GLES20.glEnable(GLES20.GL_BLEND);
+        GLES30.glEnable(GLES30.GL_BLEND);
         // 原版 glBlendFunc(770, 1):770 十进制 = 0x0302 = GL_SRC_ALPHA,即 (SRC_ALPHA, ONE)。
         // 流场片段 alpha(pow 2.3 透明度)调制颜色浓淡,不能按 GL_ONE 加性处理。
-        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE);
-        GLES20.glDisable(GLES20.GL_DEPTH_TEST);
+        GLES30.glBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ONE);
+        GLES30.glDisable(GLES30.GL_DEPTH_TEST);
 
         updateProjection(mWidth, mHeight);
         mScene.readPrefs();
     }
 
     private void loadTextures() {
-        if (mBgTexture != 0) GLES20.glDeleteTextures(1, new int[]{mBgTexture}, 0);
-        if (mFlowTexture != 0) GLES20.glDeleteTextures(1, new int[]{mFlowTexture}, 0);
+        if (mBgTexture != 0) GLES30.glDeleteTextures(1, new int[]{mBgTexture}, 0);
+        if (mFlowTexture != 0) GLES30.glDeleteTextures(1, new int[]{mFlowTexture}, 0);
         mBgTexture = createTexture(AssetLoader.decodeBitmap(mContext, "cosmicflow/drawable/bg_grey.png"));
         mFlowTexture = createTexture(AssetLoader.decodeBitmap(mContext, "cosmicflow/drawable/flow_greyscale.png"));
     }
 
     private int createTexture(Bitmap bitmap) {
         int[] tex = new int[1];
-        GLES20.glGenTextures(1, tex, 0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, tex[0]);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
-        GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
+        GLES30.glGenTextures(1, tex, 0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, tex[0]);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE);
+        GLUtils.texImage2D(GLES30.GL_TEXTURE_2D, 0, bitmap, 0);
         bitmap.recycle();
         return tex[0];
     }
@@ -276,9 +276,9 @@ public class CosmicGL extends GLESScene {
         mIsFirstFrame = false;
         mLastFrameMs = SystemClock.uptimeMillis();
 
-        GLES20.glViewport(0, 0, mWidth, mHeight);
-        GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+        GLES30.glViewport(0, 0, mWidth, mHeight);
+        GLES30.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT);
 
         renderBackground();
         renderFlow();
@@ -287,40 +287,40 @@ public class CosmicGL extends GLESScene {
     // ---- 背景(原版 renderBackground)----
 
     private void renderBackground() {
-        GLES20.glUseProgram(mBgProgram);
-        GLES20.glUniform4f(mBgUTimeHeightScaleColorXOffset,
+        GLES30.glUseProgram(mBgProgram);
+        GLES30.glUniform4f(mBgUTimeHeightScaleColorXOffset,
                 mScene.animationTimeMs / 1000.0f * 0.6f,       // time
                 1.0f / (mScene.noiseScale / 8.0f),              // heightScale = 8/noiseScale
                 0.0f,                                           // color index(原版恒 0)
                 mScene.xOffsetEff);                             // x offset
-        GLES20.glUniform3f(mBgUPrimaryColor,
+        GLES30.glUniform3f(mBgUPrimaryColor,
                 mScene.primaryColor[0], mScene.primaryColor[1], mScene.primaryColor[2]);
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mBgTexture);
-        GLES20.glUniform1i(mBgUSampler, 0);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mBgTexture);
+        GLES30.glUniform1i(mBgUSampler, 0);
 
-        GLES20.glEnableVertexAttribArray(mBgATexCoord);
+        GLES30.glEnableVertexAttribArray(mBgATexCoord);
         mSquareTexCoord.position(0);
-        GLES20.glVertexAttribPointer(mBgATexCoord, 2, GLES20.GL_FLOAT, false, 0, mSquareTexCoord);
-        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, mSquarePosVbo);
-        GLES20.glEnableVertexAttribArray(mBgAPosition);
-        GLES20.glVertexAttribPointer(mBgAPosition, 3, GLES20.GL_FLOAT, false, 0, 0);
-        GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, mSquareIndexVbo);
-        GLES20.glDrawElements(GLES20.GL_TRIANGLE_STRIP, 6, GLES20.GL_UNSIGNED_SHORT, 0);
-        GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, 0);
-        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
-        GLES20.glDisableVertexAttribArray(mBgATexCoord);
-        GLES20.glDisableVertexAttribArray(mBgAPosition);
+        GLES30.glVertexAttribPointer(mBgATexCoord, 2, GLES30.GL_FLOAT, false, 0, mSquareTexCoord);
+        GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, mSquarePosVbo);
+        GLES30.glEnableVertexAttribArray(mBgAPosition);
+        GLES30.glVertexAttribPointer(mBgAPosition, 3, GLES30.GL_FLOAT, false, 0, 0);
+        GLES30.glBindBuffer(GLES30.GL_ELEMENT_ARRAY_BUFFER, mSquareIndexVbo);
+        GLES30.glDrawElements(GLES30.GL_TRIANGLE_STRIP, 6, GLES30.GL_UNSIGNED_SHORT, 0);
+        GLES30.glBindBuffer(GLES30.GL_ELEMENT_ARRAY_BUFFER, 0);
+        GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, 0);
+        GLES30.glDisableVertexAttribArray(mBgATexCoord);
+        GLES30.glDisableVertexAttribArray(mBgAPosition);
     }
 
     // ---- 流场(原版 renderFlow)----
 
     private void renderFlow() {
-        GLES20.glUseProgram(mFlowProgram);
+        GLES30.glUseProgram(mFlowProgram);
         float t = mScene.animationTimeMs / 1000.0f;
-        GLES20.glUniform3f(mFlowUTimeNoiseScaleColor,
+        GLES30.glUniform3f(mFlowUTimeNoiseScaleColor,
                 t * 0.6f, mScene.noiseScale, 0.0f);
-        GLES20.glUniformMatrix4fv(mFlowUMvpMatrix, 1, false, mMvpMatrix, 0);
+        GLES30.glUniformMatrix4fv(mFlowUMvpMatrix, 1, false, mMvpMatrix, 0);
         // 噪声源点漂移(原版公式,所有频率 ×0.6)
         float noisePos0X = 0.45f + 0.7f * (0.32f * (float) Math.cos(t * 0.02f * 0.6f)
                 + 0.1f * (float) Math.sin(t * 0.01f * 0.6f)
@@ -328,33 +328,33 @@ public class CosmicGL extends GLESScene {
         float noisePos0Y = 0.5f + 0.7f * (0.30f * (float) Math.sin(t * 0.02f * 0.6f)
                 + 0.1f * (float) Math.cos(t * 0.01f * 0.6f)
                 + 0.07f * (float) Math.cos(t * 0.005f * 0.6f));
-        GLES20.glUniform3f(mFlowUPrimaryColor,
+        GLES30.glUniform3f(mFlowUPrimaryColor,
                 mScene.primaryColor[0], mScene.primaryColor[1], mScene.primaryColor[2]);
-        GLES20.glUniform3f(mFlowUSecondaryColor,
+        GLES30.glUniform3f(mFlowUSecondaryColor,
                 mScene.secondaryColor[0], mScene.secondaryColor[1], mScene.secondaryColor[2]);
-        GLES20.glUniform4f(mFlowUNoisePos01, noisePos0X, noisePos0Y, 0.0f, 0.0f);
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mFlowTexture);
-        GLES20.glUniform1i(mFlowUSampler, 0);
+        GLES30.glUniform4f(mFlowUNoisePos01, noisePos0X, noisePos0Y, 0.0f, 0.0f);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mFlowTexture);
+        GLES30.glUniform1i(mFlowUSampler, 0);
 
-        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, mFlowPosVbo);
-        GLES20.glEnableVertexAttribArray(mFlowAPosition);
-        GLES20.glVertexAttribPointer(mFlowAPosition, 3, GLES20.GL_FLOAT, false, 0, 0);
-        GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, mFlowIndexVbo);
-        GLES20.glDrawElements(GLES20.GL_TRIANGLE_STRIP, FLOW_INDICES, GLES20.GL_UNSIGNED_SHORT, 0);
-        GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, 0);
-        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
-        GLES20.glDisableVertexAttribArray(mFlowAPosition);
+        GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, mFlowPosVbo);
+        GLES30.glEnableVertexAttribArray(mFlowAPosition);
+        GLES30.glVertexAttribPointer(mFlowAPosition, 3, GLES30.GL_FLOAT, false, 0, 0);
+        GLES30.glBindBuffer(GLES30.GL_ELEMENT_ARRAY_BUFFER, mFlowIndexVbo);
+        GLES30.glDrawElements(GLES30.GL_TRIANGLE_STRIP, FLOW_INDICES, GLES30.GL_UNSIGNED_SHORT, 0);
+        GLES30.glBindBuffer(GLES30.GL_ELEMENT_ARRAY_BUFFER, 0);
+        GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, 0);
+        GLES30.glDisableVertexAttribArray(mFlowAPosition);
     }
 
     @Override
     public void release() {
-        GLES20.glDeleteProgram(mBgProgram);
-        GLES20.glDeleteProgram(mFlowProgram);
+        GLES30.glDeleteProgram(mBgProgram);
+        GLES30.glDeleteProgram(mFlowProgram);
         int[] bufs = new int[]{mSquarePosVbo, mSquareIndexVbo, mFlowPosVbo, mFlowIndexVbo};
-        GLES20.glDeleteBuffers(4, bufs, 0);
-        if (mBgTexture != 0) GLES20.glDeleteTextures(1, new int[]{mBgTexture}, 0);
-        if (mFlowTexture != 0) GLES20.glDeleteTextures(1, new int[]{mFlowTexture}, 0);
+        GLES30.glDeleteBuffers(4, bufs, 0);
+        if (mBgTexture != 0) GLES30.glDeleteTextures(1, new int[]{mBgTexture}, 0);
+        if (mFlowTexture != 0) GLES30.glDeleteTextures(1, new int[]{mFlowTexture}, 0);
         mBgProgram = 0;
         mFlowProgram = 0;
         mBgTexture = 0;
