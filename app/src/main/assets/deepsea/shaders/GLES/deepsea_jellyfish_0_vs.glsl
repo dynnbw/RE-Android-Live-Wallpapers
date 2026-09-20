@@ -1,10 +1,11 @@
+#version 300 es
 uniform mat4 u_MVPMatrix;						
-attribute vec4 a_Position;						
-attribute float a_Scale;						
-attribute vec4 a_AddColor;						
-attribute vec2 a_TexCoord;						
-varying vec4 v_AddColor;						
-varying vec2 v_TexCoord;						
+in vec4 a_Position;						
+in float a_Scale;						
+in vec4 a_AddColor;						
+in vec2 a_TexCoord;						
+out vec4 v_AddColor;						
+out vec2 v_TexCoord;						
 void main(){									
 	gl_Position = a_Position;					
 	gl_Position.x *= a_Scale;					

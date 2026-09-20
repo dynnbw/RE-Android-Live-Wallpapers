@@ -1,7 +1,8 @@
+#version 300 es
 uniform mat4 uMVPMatrix;
-attribute vec4 aPosition;
-attribute vec2 aTexCoord;
-varying highp vec2 vTexCoord;
+in vec4 aPosition;
+in vec2 aTexCoord;
+out highp vec2 vTexCoord;
 void main() {
   gl_Position = uMVPMatrix * aPosition;
   vTexCoord = aTexCoord;

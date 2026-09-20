@@ -1,9 +1,10 @@
-attribute vec2 aPosition;
-attribute vec2 aTexCoord;
+#version 300 es
+in vec2 aPosition;
+in vec2 aTexCoord;
 
 uniform mat4 uMvpMatrix;
 
-varying mediump vec2 vTexCoord;
+out mediump vec2 vTexCoord;
 
 void main() {
     vTexCoord = aTexCoord;

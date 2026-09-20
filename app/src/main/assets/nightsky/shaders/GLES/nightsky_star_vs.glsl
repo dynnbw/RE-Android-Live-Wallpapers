@@ -1,5 +1,6 @@
-attribute vec4 aStar;
-attribute vec3 aColor;
+#version 300 es
+in vec4 aStar;
+in vec3 aColor;
 
 uniform mat4 uProj;
 uniform mat4 uViewRot;
@@ -8,7 +9,7 @@ uniform float uLSTRad;
 uniform float uTimeSec;
 uniform float uTrailMode;
 
-varying vec4 vColor;
+out vec4 vColor;
 
 const float PI = 3.14159265358979323846;
 

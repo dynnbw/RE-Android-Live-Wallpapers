@@ -1,7 +1,8 @@
-attribute vec3 aPosition;
-attribute vec4 aColor;
+#version 300 es
+in vec3 aPosition;
+in vec4 aColor;
 
-varying lowp vec4 vColor;
+out lowp vec4 vColor;
 
 void main() {
     vColor = aColor;

@@ -1,13 +1,14 @@
-attribute vec4 aPosition;
+#version 300 es
+in vec4 aPosition;
 
 uniform mat4 uMVPMatrix;
 
 uniform vec3 u_Time_NoiseScale_Color;
 uniform vec4 u_NoisePos01;
 
-varying vec4 vPosition;
-varying vec4 vDx;
-varying vec4 vDy;
+out vec4 vPosition;
+out vec4 vDx;
+out vec4 vDy;
 
 // ----------------------------------------------------------------------
 // 注:原版在文件作用域用 uniform 初始化别名(float u_NoiseScale = u_Time_NoiseScale_Color.y;),

@@ -1,3 +1,4 @@
+#version 300 es
 /*********************************************************************
  *  ____                      _____      _                           *
  * / ___|  ___  _ __  _   _  | ____|_ __(_) ___ ___ ___  ___  _ __   *
@@ -11,16 +12,16 @@
  * All rights, including trade secret rights, reserved.              *
  *********************************************************************/
 
-attribute vec4 vPosition;
+in vec4 vPosition;
 
 uniform vec3 u_PrimaryColor;
 uniform float u_xoffset;
 uniform vec4 u_Time_HeightScale_Color_XOffset;
 
-varying vec3 v_Color;
+out vec3 v_Color;
 
-attribute vec2 texCoord;
-varying vec2 texture_coordinate;
+in vec2 texCoord;
+out vec2 texture_coordinate;
 
 void main(){
     // 原版在文件作用域用 uniform 初始化别名,现代编译器禁止,移入 main()(语义不变)

@@ -1,18 +1,19 @@
+#version 300 es
 precision mediump float;									
 uniform mat4 u_MVPMatrix;									
-attribute vec4 a_Position;									
-attribute vec4 a_EmitterPosition;							
-attribute vec4 a_move;										
+in vec4 a_Position;									
+in vec4 a_EmitterPosition;							
+in vec4 a_move;										
 uniform float a_time;										
-attribute float a_Scale;									
-attribute float a_life;									
-attribute float a_age;										
-attribute float a_size;									
-attribute float a_angle;									
-attribute float a_speed;									
-attribute vec4 a_AddColor;									
-varying float alpha;										
-varying vec4 v_AddColor;									
+in float a_Scale;									
+in float a_life;									
+in float a_age;										
+in float a_size;									
+in float a_angle;									
+in float a_speed;									
+in vec4 a_AddColor;									
+out float alpha;										
+out vec4 v_AddColor;									
 float time;												
 void main(){												
 		float td = a_life/a_age;							

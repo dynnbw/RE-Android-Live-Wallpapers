@@ -1,7 +1,9 @@
+#version 300 es
 // Full-screen background quad (port of COriginal pass-through shader).
 precision lowp float;
+out vec4 fragColor;
 uniform sampler2D sTexture;
-varying vec2 vTextureCoord;
+in vec2 vTextureCoord;
 void main() {
-    gl_FragColor = texture2D(sTexture, vTextureCoord);
+    fragColor = texture(sTexture, vTextureCoord);
 }

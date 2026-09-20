@@ -1,7 +1,8 @@
-attribute vec2 aPos;
-attribute vec4 aColor;
+#version 300 es
+in vec2 aPos;
+in vec4 aColor;
 
-varying vec4 vColor;
+out vec4 vColor;
 
 void main() {
     vColor = aColor;

@@ -1,5 +1,6 @@
+#version 300 es
 // Magic Smoke 4-texture vertex shader
-attribute vec4 aPosition;
+in vec4 aPosition;
 
 uniform vec4 uLayer0;
 uniform vec4 uLayer1;
@@ -8,10 +9,10 @@ uniform vec4 uLayer3;
 uniform vec2 uPanOffset;
 uniform vec2 uAspectScale;
 
-varying vec2 vTexCoord0;
-varying vec2 vTexCoord1;
-varying vec2 vTexCoord2;
-varying vec2 vTexCoord3;
+out vec2 vTexCoord0;
+out vec2 vTexCoord1;
+out vec2 vTexCoord2;
+out vec2 vTexCoord3;
 
 vec2 computeTexCoord(vec4 layer, vec2 position, float depth, vec2 panOffset) {
     float invZ = 0.35 + depth * 0.05;

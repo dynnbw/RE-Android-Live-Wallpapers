@@ -1,16 +1,19 @@
+#version 300 es
 // Port of the original vivo CSilk vertex shader.
 // Hardcoded MVP maps world 0..1080 x 0..1920 to full screen
 // (design space 540x960, world = 2x design), matching the original exactly.
 precision mediump float;
-attribute vec4 a_position;
-attribute float a_color;
-attribute vec2 a_coord;
+in vec4 a_position;
+in float a_color;
+in vec2 a_coord;
 uniform vec3 rotateAngleFlash;   // (sin(rot), cos(rot), flash)
 uniform vec4 uNewPos;            // ribbon placement (x, y, 0, 0)
-varying float v_fragmentColor;
-varying vec2 v_coord;
-varying vec4 localPos;
-varying float flash;
+// 接口变量的精度必须两侧一致(ESSL 3.00 会因此链接报错)，所以这里显式写死；
+// 不写的话顶点侧会落到 mediump、片段侧的 lowp 默认上，两边对不上。
+out mediump float v_fragmentColor;
+out mediump vec2 v_coord;
+out mediump vec4 localPos;
+out mediump float flash;
 #define MVPMatrix0 vec4(3.0792017, 0.0, 0.0, 0.0)
 #define MVPMatrix1 vec4(0.0, 1.7320509, 0.0, 0.0)
 #define MVPMatrix2 vec4(0.0, 0.0, -1.00766277, -1.0)

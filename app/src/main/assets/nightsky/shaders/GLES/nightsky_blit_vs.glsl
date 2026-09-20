@@ -1,6 +1,7 @@
-attribute vec2 aPos;
-attribute vec2 aUv;
-varying highp vec2 vUv;
+#version 300 es
+in vec2 aPos;
+in vec2 aUv;
+out highp vec2 vUv;
 
 void main() {
     vUv = aUv;

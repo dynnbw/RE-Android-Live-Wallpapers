@@ -1,3 +1,4 @@
+#version 300 es
 // 球体层（地球 / 云层 / 高光 / 月球）共用。
 //
 // 光照必须在**世界空间**算,不能在世界·相机空间算 —— 见 fs 里的说明。
@@ -6,13 +7,13 @@ uniform mat4 uProjection;
 uniform mat4 uView;
 uniform mat4 uModel;
 
-attribute vec3 aPosition;
-attribute vec3 aNormal;
-attribute vec2 aTexCoord;
+in vec3 aPosition;
+in vec3 aNormal;
+in vec2 aTexCoord;
 
-varying vec3 vWorldPos;
-varying vec3 vNormal;
-varying highp vec2 vTexCoord;
+out vec3 vWorldPos;
+out vec3 vNormal;
+out highp vec2 vTexCoord;
 
 void main() {
   vec4 world = uModel * vec4(aPosition, 1.0);

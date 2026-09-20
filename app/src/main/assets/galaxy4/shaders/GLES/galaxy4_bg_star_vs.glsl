@@ -1,6 +1,7 @@
+#version 300 es
 uniform mat4 uMVPMatrix;
 uniform float uParticleSize;
-attribute vec3 aPosition;
+in vec3 aPosition;
 void main() {
   float dist = aPosition.y;
   float angle = aPosition.x;

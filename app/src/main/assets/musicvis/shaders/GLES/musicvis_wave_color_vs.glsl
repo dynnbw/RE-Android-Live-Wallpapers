@@ -1,9 +1,10 @@
-attribute vec2 aPosition;
-attribute vec2 aTexCoord;
-attribute vec3 aAdjust;
+#version 300 es
+in vec2 aPosition;
+in vec2 aTexCoord;
+in vec3 aAdjust;
 uniform mat4 uMVP;
-varying vec2 vTex;
-varying vec3 vAdjust;
+out vec2 vTex;
+out vec3 vAdjust;
 void main() {
     vTex = aTexCoord;
     vAdjust = aAdjust;

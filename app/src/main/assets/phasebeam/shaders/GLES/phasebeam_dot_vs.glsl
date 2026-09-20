@@ -1,9 +1,10 @@
-varying float pointSize;
-varying vec3 adjust;
+#version 300 es
+out float pointSize;
+out vec3 adjust;
 
-attribute vec3 ATTRIB_position;
-attribute float ATTRIB_offsetX;
-attribute vec3 ATTRIB_adjust;
+in vec3 ATTRIB_position;
+in float ATTRIB_offsetX;
+in vec3 ATTRIB_adjust;
 
 uniform float UNI_scaleSize;
 

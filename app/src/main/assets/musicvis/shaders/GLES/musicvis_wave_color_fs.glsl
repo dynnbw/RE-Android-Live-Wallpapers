@@ -1,6 +1,8 @@
+#version 300 es
 precision mediump float;
-varying vec2 vTex;
-varying vec3 vAdjust;
+out vec4 fragColor;
+in vec2 vTex;
+in vec3 vAdjust;
 uniform sampler2D uTex;
 
 vec3 hsl2rgb(vec3 hsl) {
@@ -13,10 +15,10 @@ vec3 hsl2rgb(vec3 hsl) {
 }
 
 void main() {
-    vec3 rgb = texture2D(uTex, vTex).rgb;
+    vec3 rgb = texture(uTex, vTex).rgb;
     if (vAdjust.x >= 0.0) {
         vec3 hsl = vAdjust * vec3(1.0, 1.0, rgb.r);
         rgb = hsl2rgb(hsl);
     }
-    gl_FragColor = vec4(rgb, 1.0);
+    fragColor = vec4(rgb, 1.0);
 }

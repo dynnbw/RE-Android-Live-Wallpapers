@@ -1,11 +1,13 @@
+#version 300 es
 precision mediump float;
 
+out vec4 fragColor;
 uniform sampler2D uTexture;
 
-varying vec2 vUV;
-varying vec3 vColor;
+in vec2 vUV;
+in vec3 vColor;
 
 void main() {
-    float a = texture2D(uTexture, vUV).a;
-    gl_FragColor = vec4(vColor, a);
+    float a = texture(uTexture, vUV).a;
+    fragColor = vec4(vColor, a);
 }

@@ -1,9 +1,10 @@
-attribute vec2 aPosition;
-attribute vec2 aUV;
-attribute vec3 aColor;
+#version 300 es
+in vec2 aPosition;
+in vec2 aUV;
+in vec3 aColor;
 
-varying vec2 vUV;
-varying vec3 vColor;
+out vec2 vUV;
+out vec3 vColor;
 
 void main() {
     vUV = aUV;

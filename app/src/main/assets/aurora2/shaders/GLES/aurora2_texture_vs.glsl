@@ -1,9 +1,10 @@
-attribute vec3 aPosition;
-attribute vec2 aTexCoord;
+#version 300 es
+in vec3 aPosition;
+in vec2 aTexCoord;
 
 uniform mat4 uMatrix;
 
-varying vec2 vTexCoord;
+out vec2 vTexCoord;
 
 void main() {
     vTexCoord = aTexCoord;

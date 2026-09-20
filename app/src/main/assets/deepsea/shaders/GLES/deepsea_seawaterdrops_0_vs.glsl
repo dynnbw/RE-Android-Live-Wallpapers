@@ -1,15 +1,16 @@
+#version 300 es
 precision mediump float;									
 uniform mat4 u_MVPMatrix;									
-attribute vec4 a_Position;									
-attribute vec4 a_EmitterPosition;							
-attribute vec4 a_move;										
+in vec4 a_Position;									
+in vec4 a_EmitterPosition;							
+in vec4 a_move;										
 uniform float a_time;										
-attribute float a_life;									
-attribute float a_age;										
-attribute float a_size;									
-attribute float a_angle;									
-attribute float a_speed;									
-varying float alpha;										
+in float a_life;									
+in float a_age;										
+in float a_size;									
+in float a_angle;									
+in float a_speed;									
+out float alpha;										
 float time;												
 void main(){												
 	alpha = a_life - (a_time * 10.0 * a_age);				

@@ -1,12 +1,13 @@
+#version 300 es
 precision mediump float;
 uniform vec4 uTrans;
 uniform float time;
-attribute vec3 aPosition;
-attribute vec3 miscInfo;
-attribute vec3 aColor;
-varying vec3 vColor;
-varying vec2 vTransform;
-varying float vWidthScale;
+in vec3 aPosition;
+in vec3 miscInfo;
+in vec3 aColor;
+out vec3 vColor;
+out vec2 vTransform;
+out float vWidthScale;
 void main() {
   float scale = miscInfo.x;
   float energy = miscInfo.y;

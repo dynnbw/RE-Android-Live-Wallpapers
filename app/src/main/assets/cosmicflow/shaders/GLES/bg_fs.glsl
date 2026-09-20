@@ -1,3 +1,4 @@
+#version 300 es
 /*********************************************************************
  *  ____                      _____      _                           *
  * / ___|  ___  _ __  _   _  | ____|_ __(_) ___ ___ ___  ___  _ __   *
@@ -13,12 +14,13 @@
 
 precision mediump float;
 
+out vec4 fragColor;
 uniform sampler2D sTexture;
 
-varying vec3 v_Color;
-varying vec2 texture_coordinate;
+in vec3 v_Color;
+in vec2 texture_coordinate;
 
 void main(void){
-    gl_FragColor = texture2D(sTexture, vec2(texture_coordinate.x, texture_coordinate.y));
-    gl_FragColor = vec4(gl_FragColor.xyz * v_Color, gl_FragColor.a);
+    fragColor = texture(sTexture, vec2(texture_coordinate.x, texture_coordinate.y));
+    fragColor = vec4(fragColor.xyz * v_Color, fragColor.a);
 }

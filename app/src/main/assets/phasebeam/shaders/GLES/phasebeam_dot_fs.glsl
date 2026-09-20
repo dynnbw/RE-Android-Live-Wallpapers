@@ -1,7 +1,9 @@
+#version 300 es
 precision mediump float;
 
-varying float pointSize;
-varying vec3 adjust;
+out vec4 fragColor;
+in float pointSize;
+in vec3 adjust;
 
 uniform sampler2D UNI_Tex0;
 
@@ -18,12 +20,12 @@ vec3 hsl2rgb(vec3 hsl)
 }
 
 void main() {
-    vec3 rgb = texture2D(UNI_Tex0, gl_PointCoord).rgb;
+    vec3 rgb = texture(UNI_Tex0, gl_PointCoord).rgb;
 
     if (adjust.x >= 0.0) {
         vec3 hsl = adjust * vec3(1.0, 1.0, rgb.r);
         rgb = hsl2rgb(hsl);
     }
 
-    gl_FragColor = vec4(rgb, pointSize);
+    fragColor = vec4(rgb, pointSize);
 }

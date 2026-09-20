@@ -1,11 +1,13 @@
+#version 300 es
 precision mediump float;									
+out vec4 fragColor;
 uniform sampler2D u_texture;								
 uniform sampler2D s_AlphaTexture;							
-varying float alpha;										
+in float alpha;										
 void main(){												
-	vec4 tex = texture2D(u_texture, gl_PointCoord);			
+	vec4 tex = texture(u_texture, gl_PointCoord);			
 	vec4 alphaTexture;										
-	alphaTexture = texture2D(s_AlphaTexture, gl_PointCoord);
-	gl_FragColor = tex;										
-	gl_FragColor.w = alphaTexture.r * alpha;
+	alphaTexture = texture(s_AlphaTexture, gl_PointCoord);
+	fragColor = tex;										
+	fragColor.w = alphaTexture.r * alpha;
 }

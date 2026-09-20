@@ -1,10 +1,11 @@
-varying lowp vec4 color;
-varying vec3 adjust;
+#version 300 es
+out lowp vec4 color;
+out vec3 adjust;
 
-attribute vec3 ATTRIB_position;
-attribute float ATTRIB_offsetX;
-attribute vec4 ATTRIB_realColor;
-attribute vec3 ATTRIB_adjust;
+in vec3 ATTRIB_position;
+in float ATTRIB_offsetX;
+in vec4 ATTRIB_realColor;
+in vec3 ATTRIB_adjust;
 
 void main() {
     adjust = ATTRIB_adjust;

@@ -1,12 +1,13 @@
+#version 300 es
 uniform mat4 uMVPMatrix;
 uniform vec2 uResolution;
 uniform vec2 uSunPos;
 
-attribute vec2 aPosition;
-attribute vec2 aTexCoord;
+in vec2 aPosition;
+in vec2 aTexCoord;
 
-varying highp vec2 vUv;
-varying highp vec2 vSunPos;
+out highp vec2 vUv;
+out highp vec2 vSunPos;
 
 void main() {
   gl_Position = uMVPMatrix * vec4(aPosition, 0.0, 1.0);

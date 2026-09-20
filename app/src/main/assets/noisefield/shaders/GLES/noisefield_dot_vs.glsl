@@ -1,7 +1,8 @@
-varying float alpha;
-attribute vec3 ATTRIB_position;
-attribute float ATTRIB_speed;
-attribute float ATTRIB_alpha;
+#version 300 es
+out float alpha;
+in vec3 ATTRIB_position;
+in float ATTRIB_speed;
+in float ATTRIB_alpha;
 uniform mat4 UNI_MVP;
 uniform float UNI_scaleSize;
 void main() {

@@ -1,3 +1,4 @@
+#version 300 es
 // 复刻原版 GLES1 固定管线的光照。
 //
 // 原版全篇没有 glMaterial / GL_COLOR_MATERIAL → 默认材质 ambient=0.2 / diffuse=0.8;
@@ -9,6 +10,7 @@
 // 永远只看得到全亮面，晨昏线与城市灯光就整个失效了。
 precision highp float;
 
+out vec4 fragColor;
 uniform sampler2D uDay;
 uniform sampler2D uNight;
 uniform vec3  uLightPosWorld;
@@ -17,9 +19,9 @@ uniform float uAmbient;
 uniform float uNightGain;
 uniform float uUseNight;
 
-varying vec3 vWorldPos;
-varying vec3 vNormal;
-varying highp vec2 vTexCoord;
+in vec3 vWorldPos;
+in vec3 vNormal;
+in highp vec2 vTexCoord;
 
 void main() {
   vec3 n = normalize(vNormal);
@@ -31,14 +33,14 @@ void main() {
   // 例如下午四点时亚洲却是夜里。U 平移 0.5 即可（右半边采样到左半边）。
   vec2 uv = vec2(fract(vTexCoord.x + 0.5), vTexCoord.y);
 
-  vec4 dayTex = texture2D(uDay, uv);
+  vec4 dayTex = texture(uDay, uv);
   vec3 dayCol = dayTex.rgb * (uAmbient + (1.0 - uAmbient) * max(nl, 0.0)) + uChannelDelta;
 
   vec3 col = dayCol;
   if (uUseNight > 0.5) {
     // 城市灯光是自发光，不参与光照调制；晨昏线用 smoothstep 柔化
-    vec3 nightCol = texture2D(uNight, uv).rgb * uNightGain;
+    vec3 nightCol = texture(uNight, uv).rgb * uNightGain;
     col = mix(nightCol, dayCol, smoothstep(-0.15, 0.25, nl));
   }
-  gl_FragColor = vec4(col, dayTex.a);
+  fragColor = vec4(col, dayTex.a);
 }

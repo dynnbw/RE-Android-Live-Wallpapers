@@ -1,11 +1,13 @@
+#version 300 es
 precision mediump float;
 
+out vec4 fragColor;
 uniform float uTime;
 uniform float uOpacity;
 uniform float uLineAlpha;
 
-varying highp vec2 vUv;
-varying highp vec2 vSunPos;
+in highp vec2 vUv;
+in highp vec2 vSunPos;
 
 #define PI 3.1415926
 
@@ -49,5 +51,5 @@ void main() {
     // alpha
     float alpha = clamp(disc * 0.7 + glow * 2.0, 0.0, 1.0) * uOpacity;
 
-    gl_FragColor = vec4(color, alpha);
+    fragColor = vec4(color, alpha);
 }

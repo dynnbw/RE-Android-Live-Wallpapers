@@ -1,11 +1,12 @@
-attribute vec2 aUv;
+#version 300 es
+in vec2 aUv;
 
 uniform mat4 uProj;
 uniform mat4 uViewRot;
 uniform float uLatitudeRad;
 uniform float uLSTRad;
 
-varying highp vec2 vUv;
+out highp vec2 vUv;
 
 const float PI = 3.14159265358979323846;
 

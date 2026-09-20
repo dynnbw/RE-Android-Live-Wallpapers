@@ -1,4 +1,6 @@
+#version 300 es
 precision mediump float;
+out vec4 fragColor;
 uniform sampler2D uMoonBase;
 uniform sampler2D uMoonMask;
 uniform float uPhaseAngle;
@@ -18,7 +20,7 @@ uniform vec2 uShadowOffset;
 uniform vec3 uShadowColor;
 uniform vec3 uPenumbraColor;
 uniform float uSolarOcclusion;
-varying highp vec2 vTexCoord;
+in highp vec2 vTexCoord;
 void main() {
   vec2 uv = vTexCoord * 2.0 - 1.0;
 
@@ -34,17 +36,17 @@ void main() {
   uv = vec2(uv.x * cr - uv.y * sr, uv.x * sr + uv.y * cr);
   vec2 discUv = uv * 0.5 + 0.5;
 
-  float mask = texture2D(uMoonMask, discUv).a;
+  float mask = texture(uMoonMask, discUv).r;
   float circle = smoothstep(1.0, 0.97, length(uv));
   float alphaMask = mask * circle;
   if (alphaMask <= 0.001) discard;
 
   if (uSolarOcclusion > 0.5) {
-    gl_FragColor = vec4(0.0, 0.0, 0.0, alphaMask * uMoonAlpha);
+    fragColor = vec4(0.0, 0.0, 0.0, alphaMask * uMoonAlpha);
     return;
   }
 
-  vec4 base = texture2D(uMoonBase, discUv);
+  vec4 base = texture(uMoonBase, discUv);
 
   float phaseRad = radians(uPhaseAngle);
   float dir = (sin(phaseRad) >= 0.0) ? 1.0 : -1.0;
@@ -101,5 +103,5 @@ void main() {
     color *= (1.0 - total * 0.65);
   }
 
-  gl_FragColor = vec4(color, alphaMask * uMoonAlpha);
+  fragColor = vec4(color, alphaMask * uMoonAlpha);
 }

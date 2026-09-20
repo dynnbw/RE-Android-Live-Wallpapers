@@ -1,7 +1,9 @@
+#version 300 es
 precision mediump float;
 
-varying lowp vec4 color;
-varying vec3 adjust;
+out vec4 fragColor;
+in lowp vec4 color;
+in vec3 adjust;
 
 // inspired by http://www.chilliant.com/rgb2hsv.html
 vec3 hsl2rgb(vec3 hsl)
@@ -23,5 +25,5 @@ void main() {
         rgb = hsl2rgb(hsl);
     }
 
-    gl_FragColor = vec4(rgb, color.a);
+    fragColor = vec4(rgb, color.a);
 }

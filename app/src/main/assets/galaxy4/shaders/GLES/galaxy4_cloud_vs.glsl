@@ -1,6 +1,7 @@
+#version 300 es
 uniform mat4 uMVPMatrix;
-attribute vec3 aPosition;
-attribute float aPointSize;
+in vec3 aPosition;
+in float aPointSize;
 void main() {
   float dist = aPosition.y / 4.0;
   float angle = aPosition.x;

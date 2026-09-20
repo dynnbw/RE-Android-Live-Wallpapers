@@ -1,13 +1,14 @@
-attribute vec3 aPosition;
-attribute vec4 aColor;
+#version 300 es
+in vec3 aPosition;
+in vec4 aColor;
 
 uniform mat4 uModelViewProj;
 uniform float uMaxPointSize;
 uniform float uFarPlane;
 
-varying lowp vec4 vColor;
-varying lowp float vFactor1;
-varying lowp float vFactor2;
+out lowp vec4 vColor;
+out lowp float vFactor1;
+out lowp float vFactor2;
 
 void main() {
     gl_Position = uModelViewProj * vec4(aPosition, 1.0);
