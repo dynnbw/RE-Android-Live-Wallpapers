@@ -122,6 +122,7 @@ com.reandroid
 ├── settings/       SettingsActivity / SettingsMainFragment / PluginSettingsActivity
 │                   PreviewPreference / WallpaperSettings / MiuiPermissionHelper
 ├── weather/        WeatherManager / WeatherCondition / WeatherState
+├── astronomy/      SunCalculator / DayNightResolver / DeviceLocation
 ├── update/         UpdateHelper / UpdateChecker / UpdateDownloader / VersionInfo
 └── wallpaper/      每壁纸一组 Plugin / Engine / GL，多数另有 Scene（按子包划分）
     ├── weatherwallpapers/  Ocean / Windmill
@@ -318,6 +319,7 @@ app/src/main/
 │   ├── utils/             工具类
 │   ├── settings/          设置 UI
 │   ├── weather/           天气数据层
+│   ├── astronomy/         日出日落与昼夜判定（grass / ocean / windmill 共用）
 │   ├── update/            更新系统
 │   └── wallpaper/         所有壁纸（每壁纸 Plugin + Engine + GL，多数另有 Scene）
 ├── assets/

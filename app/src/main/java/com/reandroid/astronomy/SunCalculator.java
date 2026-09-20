@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.reandroid.wallpaper.grass;
+package com.reandroid.astronomy;
 
 import android.location.Location;
 import android.util.Log;
@@ -24,6 +24,8 @@ import java.util.TimeZone;
 
 /**
  * 日出日落计算器（复刻原版 RenderScript 时间逻辑）
+ *
+ * <p>原先住在 grass 包里，但 ocean、windmill 的日夜判定也要用它，于是提到公用包。
  */
 public class SunCalculator {
     private static final String TAG = "SunCalculator";
@@ -34,11 +36,16 @@ public class SunCalculator {
     private double mLongitude;
     private TimeZone mTimeZone;
 
-    public SunCalculator(Location location, String timeZoneId) {
-        mLatitude = location.getLatitude();
-        mLongitude = location.getLongitude();
+    /** 经纬度直接给 —— 不经过 {@link Location}，于是这个类在 JVM 上也能单独跑（测试用）。 */
+    public SunCalculator(double latitude, double longitude, String timeZoneId) {
+        mLatitude = latitude;
+        mLongitude = longitude;
         mTimeZone = TimeZone.getTimeZone(timeZoneId);
         if (mTimeZone == null) mTimeZone = TimeZone.getDefault();
+    }
+
+    public SunCalculator(Location location, String timeZoneId) {
+        this(location.getLatitude(), location.getLongitude(), timeZoneId);
     }
 
     /**

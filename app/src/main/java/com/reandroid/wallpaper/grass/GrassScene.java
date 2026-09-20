@@ -17,10 +17,10 @@ package com.reandroid.wallpaper.grass;
 
 import android.content.SharedPreferences;
 import android.graphics.Color;
-import android.location.Location;
 import android.opengl.Matrix;
 import android.os.SystemClock;
 
+import com.reandroid.astronomy.SunCalculator;
 import com.reandroid.settings.WallpaperSettings;
 import com.reandroid.weather.WeatherCondition;
 import com.reandroid.weather.WeatherState;
@@ -953,8 +953,8 @@ final class GrassScene {
             return mCachedMoonData;
         }
 
-        Location location = mDayNightSystem.getLocation();
-        mCachedMoonData = MoonCalculator.compute(now, location.getLatitude(), location.getLongitude());
+        mCachedMoonData = MoonCalculator.compute(now,
+                mDayNightSystem.getLatitude(), mDayNightSystem.getLongitude());
         mLastCelestialComputeMs = realNowMs;
         return mCachedMoonData;
     }

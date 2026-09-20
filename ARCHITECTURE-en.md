@@ -123,6 +123,7 @@ com.reandroid
 ├── settings/       SettingsActivity / SettingsMainFragment / PluginSettingsActivity
 │                   PreviewPreference / WallpaperSettings / MiuiPermissionHelper
 ├── weather/        WeatherManager / WeatherCondition / WeatherState
+├── astronomy/      SunCalculator / DayNightResolver / DeviceLocation
 ├── update/         UpdateHelper / UpdateChecker / UpdateDownloader / VersionInfo
 └── wallpaper/      One Plugin / Engine / GL per wallpaper, most also a Scene (grouped by subpackage)
     ├── weatherwallpapers/  Ocean / Windmill
@@ -319,6 +320,7 @@ app/src/main/
 │   ├── utils/             Utilities
 │   ├── settings/          Settings UI
 │   ├── weather/           Weather data layer
+│   ├── astronomy/         Sunrise/sunset and day-night resolution (shared by grass / ocean / windmill)
 │   ├── update/            Update system
 │   └── wallpaper/         All wallpapers (Plugin + Engine + GL each, most also a Scene)
 ├── assets/

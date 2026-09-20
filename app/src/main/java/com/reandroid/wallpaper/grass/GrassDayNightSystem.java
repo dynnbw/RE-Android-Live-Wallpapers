@@ -15,14 +15,9 @@
  */
 package com.reandroid.wallpaper.grass;
 
-import android.content.Context;
-import android.content.pm.PackageManager;
-import android.location.Location;
-import android.location.LocationManager;
-
-import androidx.core.content.ContextCompat;
-
-import com.reandroid.gles.GLESWallpaper;
+import com.reandroid.astronomy.DayNightResolver;
+import com.reandroid.astronomy.DeviceLocation;
+import com.reandroid.astronomy.SunCalculator;
 
 import java.util.Calendar;
 import java.util.TimeZone;
@@ -31,9 +26,9 @@ import com.reandroid.utils.MathUtils;
 final public class GrassDayNightSystem {
     private static final float SECONDS_IN_DAY = 86400.0f;
 
-    private final Location location = new Location("grass_wallpaper");
-    private TimeZone timeZone = TimeZone.getDefault();
-    private SunCalculator sunCalculator;
+    /** 位置与时区由公用组件持有；这里只管草地的四段权重。 */
+    private final DayNightResolver mResolver = new DayNightResolver();
+    private final DeviceLocation mDeviceLocation = new DeviceLocation();
     private final Calendar mCachedCalendar = Calendar.getInstance();
 
     private float dawn;
@@ -81,15 +76,9 @@ final public class GrassDayNightSystem {
     private double lastSunsetHour = -1.0;
     private double lastSunriseOfficialHour = -1.0;
     private double lastSunsetOfficialHour = -1.0;
-    private long lastLocationUpdateMs;
 
     void initDefaultLocation() {
-        // Approximate longitude from timezone offset (15° per hour), equator for latitude
-        long offsetMillis = timeZone.getRawOffset();
-        float longitude = offsetMillis / 3600000f * 15f;
-        location.setLatitude(0f);
-        location.setLongitude(longitude);
-        sunCalculator = new SunCalculator(location, timeZone.getID());
+        mResolver.applyFallbackLocation(TimeZone.getDefault());
         updateSunTimes(System.currentTimeMillis());
     }
 
@@ -100,7 +89,7 @@ final public class GrassDayNightSystem {
      * 实际壁纸传真实时间。两者走的都是这一套。
      */
     float timeFraction(long nowMs) {
-        mCachedCalendar.setTimeZone(timeZone);
+        mCachedCalendar.setTimeZone(mResolver.getTimeZone());
         mCachedCalendar.setTimeInMillis(nowMs);
         return (mCachedCalendar.get(Calendar.HOUR_OF_DAY) * 3600.0f
                 + mCachedCalendar.get(Calendar.MINUTE) * 60.0f
@@ -111,24 +100,23 @@ final public class GrassDayNightSystem {
         float dawnValue = 0.3f;
         float duskValue = 0.75f;
 
-        updateLocationFromSystem(nowMs);
-        if (sunCalculator != null) {
-            timeZone = TimeZone.getDefault();
-            sunCalculator = new SunCalculator(location, timeZone.getID());
-            Calendar now = Calendar.getInstance(timeZone);
-            now.setTimeInMillis(nowMs);
-            double sunrise = sunCalculator.computeSunriseTime(SunCalculator.ZENITH_CIVIL, now);
-            double sunset = sunCalculator.computeSunsetTime(SunCalculator.ZENITH_CIVIL, now);
-            if (!Double.isNaN(sunrise) && !Double.isNaN(sunset)
-                    && sunrise > 0.0 && sunrise < 24.0
-                    && sunset > 0.0 && sunset < 24.0
-                    && sunrise < sunset) {
-                float computedDawn = SunCalculator.timeToDayFraction(sunrise);
-                float computedDusk = SunCalculator.timeToDayFraction(sunset);
-                if (computedDusk - computedDawn >= 2.0f / 12.0f) {
-                    dawnValue = computedDawn;
-                    duskValue = computedDusk;
-                }
+        updateLocation();
+        mResolver.setTimeZone(TimeZone.getDefault());
+        TimeZone timeZone = mResolver.getTimeZone();
+        SunCalculator sunCalculator = mResolver.getSunCalculator();
+        Calendar now = Calendar.getInstance(timeZone);
+        now.setTimeInMillis(nowMs);
+        double sunrise = sunCalculator.computeSunriseTime(SunCalculator.ZENITH_CIVIL, now);
+        double sunset = sunCalculator.computeSunsetTime(SunCalculator.ZENITH_CIVIL, now);
+        if (!Double.isNaN(sunrise) && !Double.isNaN(sunset)
+                && sunrise > 0.0 && sunrise < 24.0
+                && sunset > 0.0 && sunset < 24.0
+                && sunrise < sunset) {
+            float computedDawn = SunCalculator.timeToDayFraction(sunrise);
+            float computedDusk = SunCalculator.timeToDayFraction(sunset);
+            if (computedDusk - computedDawn >= 2.0f / 12.0f) {
+                dawnValue = computedDawn;
+                duskValue = computedDusk;
             }
         }
 
@@ -144,17 +132,13 @@ final public class GrassDayNightSystem {
             return;
         }
 
-        updateLocationFromSystem(nowMs);
+        updateLocation();
         TimeZone tz = TimeZone.getDefault();
+        mResolver.setTimeZone(tz);
         Calendar now = Calendar.getInstance(tz);
         now.setTimeInMillis(nowMs);
 
-        SunCalculator calc = sunCalculator;
-        if (calc == null || !tz.getID().equals(timeZone.getID())) {
-            calc = new SunCalculator(location, tz.getID());
-            sunCalculator = calc;
-            timeZone = tz;
-        }
+        SunCalculator calc = mResolver.getSunCalculator();
 
         double sunrise = calc.computeSunriseTime(SunCalculator.ZENITH_CIVIL, now);
         double sunset = calc.computeSunsetTime(SunCalculator.ZENITH_CIVIL, now);
@@ -289,53 +273,12 @@ final public class GrassDayNightSystem {
         lastSunAltitude = altitude;
     }
 
-    void updateLocationFromSystem(long nowMs) {
-        if (lastLocationUpdateMs != 0L && (realNow() - lastLocationUpdateMs) < 300000L) return;
-
-        // Debug override: use manually configured lat/lng instead of GPS
-        float[] debugLoc = com.reandroid.utils.LocationProvider.getDebugLocation();
-        if (debugLoc != null) {
-            location.setLatitude(debugLoc[0]);
-            location.setLongitude(debugLoc[1]);
-            sunCalculator = new SunCalculator(location, timeZone.getID());
-            lastLocationUpdateMs = realNow();
-            return;
+    /** 位置每 5 分钟问一次系统；拿不到就沿用上一次的（首次没有则用兜底经纬度）。 */
+    private void updateLocation() {
+        float[] resolved = mDeviceLocation.resolve();
+        if (resolved != null) {
+            mResolver.setLocation(resolved[0], resolved[1]);
         }
-
-        Context ctx = GLESWallpaper.getAppContext();
-        if (ctx == null) return;
-
-        boolean hasFine = ContextCompat.checkSelfPermission(ctx,
-                android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
-        boolean hasCoarse = ContextCompat.checkSelfPermission(ctx,
-                android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
-        if (!hasFine && !hasCoarse) return;
-
-        LocationManager lm = (LocationManager) ctx.getSystemService(Context.LOCATION_SERVICE);
-        if (lm == null) return;
-
-        Location best = null;
-        try {
-            Location gps = hasFine ? lm.getLastKnownLocation(LocationManager.GPS_PROVIDER) : null;
-            Location net = lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-            Location passive = lm.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
-            best = pickBestLocation(gps, net);
-            best = pickBestLocation(best, passive);
-        } catch (SecurityException ignored) {
-        }
-
-        if (best != null) {
-            location.setLatitude(best.getLatitude());
-            location.setLongitude(best.getLongitude());
-            sunCalculator = new SunCalculator(location, timeZone.getID());
-            lastLocationUpdateMs = realNow();
-        }
-    }
-
-    private static Location pickBestLocation(Location a, Location b) {
-        if (a == null) return b;
-        if (b == null) return a;
-        return a.getTime() >= b.getTime() ? a : b;
     }
 
     private void setWeights(float wNight, float wSunrise, float wSunset, float wSky) {
@@ -354,15 +297,19 @@ final public class GrassDayNightSystem {
     }
 
     SunCalculator getSunCalculator() {
-        return sunCalculator;
+        return mResolver.getSunCalculator();
     }
 
-    Location getLocation() {
-        return location;
+    double getLatitude() {
+        return mResolver.getLatitude();
+    }
+
+    double getLongitude() {
+        return mResolver.getLongitude();
     }
 
     TimeZone getTimeZone() {
-        return timeZone;
+        return mResolver.getTimeZone();
     }
 
     float getDawn() {
