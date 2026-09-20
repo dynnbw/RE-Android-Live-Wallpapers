@@ -39,6 +39,8 @@ import com.reandroid.utils.MathUtils;
 final class GrassScene {
 
     private static final long CELESTIAL_CACHE_INTERVAL_MS = 60000L;
+    /** 预览用的天文量缓存间隔，见 {@link #celestialCacheIntervalMs()}。 */
+    private static final long PREVIEW_CELESTIAL_CACHE_MS = 100L;
 
     // ---- Plugin prefs ----
     private SharedPreferences mPluginPrefs;
@@ -55,6 +57,8 @@ final class GrassScene {
 
     final Random mRandom = new Random(System.currentTimeMillis());
     private final Calendar mCalendar = Calendar.getInstance();
+    /** 压缩时间轴的 scratch（见 {@link #sceneClockMs()}），避免每帧新建。 */
+    private final Calendar mClockScratch = Calendar.getInstance();
     private final GrassWindField mWindField = new GrassWindField();
     private final GrassBladeSystem mBladeSystem;
     private final GrassDayNightSystem mDayNightSystem = new GrassDayNightSystem();
@@ -69,7 +73,6 @@ final class GrassScene {
     private boolean mGrassEnabled = true;
     private boolean mNightInvert = false;
     private boolean mNightDesaturateGrass = false;
-    private boolean mUseAccurateSun = false;
     private boolean mSunEnabled = false;
     private boolean mMoonEnabled = false;
     private boolean mProceduralSun = true;
@@ -204,6 +207,7 @@ final class GrassScene {
         if (mInitialized) return;
         mInitialized = true;
         mIsPreview = isPreview;
+        mDayNightSystem.setPreview(isPreview);
 
         mWindField.init(mRandom);
         updateSettingsFromPrefs();
@@ -242,7 +246,7 @@ final class GrassScene {
      * 非传统模式：把一粒蒲公英/萤火虫重置于点击点（按夜空权重选昼夜类型）。
      */
     void addTap(float x, float y) {
-        float nightWeight = computeStarVisibility(mSceneData.timeFraction);
+        float nightWeight = computeStarVisibility();
         // 传统优先：对应类型的原版 extras 粒子优先，否则现代粒子
         if (nightWeight > 0.5f) {
             if (mLegacyFireflyEnabled) {
@@ -360,45 +364,68 @@ final class GrassScene {
         return dt;
     }
 
+    /** 预览模式下把一整天压进这么长的真实时间。 */
+    private static final long PREVIEW_CYCLE_MS = 30000L;
+    private static final long DAY_MS = 86400000L;
+
+    /**
+     * 场景时钟（毫秒）。天文计算的唯一时间入口。
+     *
+     * <p>实际壁纸就是真实时间。预览模式把一整天压进 {@link #PREVIEW_CYCLE_MS} ——
+     * 走的是**同一套真实算法**（太阳高度角、月亮相位、日食），只是时间轴压缩了，
+     * 所以预览里能快速看到日月实际怎么走，而不是另跑一套粗糙渐变。
+     *
+     * <p>基准取本地当天 0 点：这样压缩出来的一天仍从子夜开始，与真实运行时的
+     * 相位关系一致。
+     */
+    private long sceneClockMs() {
+        long real = System.currentTimeMillis();
+        if (!mIsPreview) return real;
+
+        mClockScratch.setTimeZone(mDayNightSystem.getTimeZone());
+        mClockScratch.setTimeInMillis(real);
+        mClockScratch.set(Calendar.HOUR_OF_DAY, 0);
+        mClockScratch.set(Calendar.MINUTE, 0);
+        mClockScratch.set(Calendar.SECOND, 0);
+        mClockScratch.set(Calendar.MILLISECOND, 0);
+        long localMidnight = mClockScratch.getTimeInMillis();
+
+        long intoCycle = real % PREVIEW_CYCLE_MS;
+        return localMidnight + intoCycle * DAY_MS / PREVIEW_CYCLE_MS;
+    }
+
     /** 算本帧的天文状态（时刻 / 亮度 / 昼夜），顺带更新日、月与日食。 */
     private void updateSky() {
-        long nowMs = System.currentTimeMillis();
-        if (mDayNightSystem.getLastSunUpdateMs() == 0L || (nowMs - mDayNightSystem.getLastSunUpdateMs()) > 3600000L) {
+        long nowMs = sceneClockMs();
+        // 门限按真实时间：nowMs 是模拟时间，预览下 1 小时会被压缩成 1.25 秒
+        if (mDayNightSystem.getLastSunUpdateMs() == 0L
+                || (System.currentTimeMillis() - mDayNightSystem.getLastSunUpdateMs()) > 3600000L) {
             mDayNightSystem.updateSunTimes(nowMs);
         }
 
-        mSky.timeFrac = mDayNightSystem.timeFraction(mIsPreview, mUseAccurateSun);
+        mSky.timeFrac = mDayNightSystem.timeFraction(nowMs);
 
-        if (mUseAccurateSun) {
-            mDayNightSystem.updateAccurateWeights(nowMs);
-            float[] accurate = mDayNightSystem.getAccurateWeights();
-            mSky.brightness = clamp(accurate[3] + 0.6f * (accurate[1] + accurate[2]), 0.0f, 1.0f);
-            mSky.isNight = mDayNightSystem.getLastSunAltitude() < 0.0;
+        mDayNightSystem.updateAccurateWeights(nowMs);
+        float[] accurate = mDayNightSystem.getAccurateWeights();
+        mSky.brightness = clamp(accurate[3] + 0.6f * (accurate[1] + accurate[2]), 0.0f, 1.0f);
+        mSky.isNight = mDayNightSystem.getLastSunAltitude() < 0.0;
 
-            // Compute moon data once, reuse for sun/moon/eclipse rendering
-            mCalendar.setTimeZone(mDayNightSystem.getTimeZone());
-            mCalendar.setTimeInMillis(System.currentTimeMillis());
-            Calendar now = mCalendar;
-            MoonCalculator.MoonData moonData = getCachedMoonData(nowMs, now);
-            updateSolarEclipseState(moonData);
+        // Compute moon data once, reuse for sun/moon/eclipse rendering
+        mCalendar.setTimeZone(mDayNightSystem.getTimeZone());
+        mCalendar.setTimeInMillis(nowMs);
+        Calendar now = mCalendar;
+        MoonCalculator.MoonData moonData = getCachedMoonData(nowMs, now);
+        updateSolarEclipseState(moonData, now);
 
-            if (mSunEnabled) {
-                computeSunPosition(now, moonData);
-            } else {
-                mSceneData.hasSunData = false;
-                mSceneData.hasSolarEclipseOcclusion = false;
-            }
-            if (mMoonEnabled) {
-                computeMoonData(now, moonData);
-            } else {
-                mSceneData.moonVisible = false;
-            }
+        if (mSunEnabled) {
+            computeSunPosition(now, moonData);
         } else {
-            mSky.brightness = mDayNightSystem.computeSimpleNewB(mSky.timeFrac);
-            mSky.isNight = (mSky.timeFrac < mDayNightSystem.getDawn()
-                    || mSky.timeFrac > mDayNightSystem.getDusk());
             mSceneData.hasSunData = false;
             mSceneData.hasSolarEclipseOcclusion = false;
+        }
+        if (mMoonEnabled) {
+            computeMoonData(now, moonData);
+        } else {
             mSceneData.moonVisible = false;
         }
     }
@@ -469,7 +496,7 @@ final class GrassScene {
                 * mDandelionWeatherGate;
         mFireflyVisibility = (mFireflyEnabled ? computeFireflyVisibility(mSky.timeFrac) : 0.0f)
                 * mFireflyWeatherGate;
-        mNightWeight = computeStarVisibility(mSky.timeFrac);
+        mNightWeight = computeStarVisibility();
         /*
          * 星空还要再被天气压一道：阴雨夜里不该满天星。
          * 太阳/月亮早有对应的 scale，星星这一层之前漏了，于是任何天气的夜空都长一样。
@@ -508,7 +535,6 @@ final class GrassScene {
         mSceneData.grassEnabled = mGrassEnabled;
         mSceneData.nightInvert = mNightInvert;
         mSceneData.nightDesaturateGrass = mNightDesaturateGrass;
-        mSceneData.useAccurateSun = mUseAccurateSun;
         mSceneData.sunEnabled = mSunEnabled;
         mSceneData.moonEnabled = mMoonEnabled;
         mSceneData.proceduralSunEnabled = mProceduralSun;
@@ -640,7 +666,7 @@ final class GrassScene {
             mSceneData.moonVisible = false;
             return;
         }
-        double sunAlt = mUseAccurateSun ? mDayNightSystem.getLastSunAltitude() : data.sunAltitudeDeg;
+        double sunAlt = mDayNightSystem.getLastSunAltitude();
         boolean isDaytime = sunAlt > 0.0;
         float moonX = moonXFromHourAngle(data.moonHourAngleDeg);
         float clampedAlt = clamp((float) data.moonAltitudeDeg, 0.0f, 90.0f);
@@ -664,44 +690,29 @@ final class GrassScene {
         mSceneData.moonEclipse = eclipse;
     }
 
-    private float computeSimpleNewB(float now) {
-        return mDayNightSystem.computeSimpleNewB(now);
-    }
-
     /**
      * 蒲公英可见度 = 白天权重（1 - 夜空权重），与星星/萤火虫/传统粒子同一曲线，
      * 随天空渐变而非 1 分钟阶梯。
      */
     private float computeDandelionVisibility(float now) {
-        return 1.0f - computeStarVisibility(now);
+        return 1.0f - computeStarVisibility();
     }
 
     /**
      * 萤火虫可见度 = 夜空权重，与星星同一曲线。
      */
     private float computeFireflyVisibility(float now) {
-        return computeStarVisibility(now);
+        return computeStarVisibility();
     }
 
     /**
-     * 星星可见度与夜空贴图同曲线，随 night 贴图一起淡入淡出：
-     * 简单模式跟随 computeSimpleSkyWeights 的 night 权重（背景贴图同一来源），
-     * 精确模式跟随 accurateWeights[0]（背景贴图同一来源）。
+     * 星星可见度与夜空贴图同曲线：跟随 accurateWeights[0]（两者同一来源），
+     * 随 night 贴图一起淡入淡出。
      * 之前是独立的 1 分钟阶梯，夜空还在渐变时星星就瞬间全亮。
      */
-    private float computeStarVisibility(float now) {
-        float dawn = mDayNightSystem.getDawn();
-        float morning = mDayNightSystem.getMorning();
-        float afternoon = mDayNightSystem.getAfternoon();
-        float dusk = mDayNightSystem.getDusk();
-
-        if (mUseAccurateSun) {
-            float[] weights = mDayNightSystem.getAccurateWeights();
-            return weights != null ? weights[0] : 0.0f;
-        }
-        float[] w = new float[4];
-        SceneData.computeSimpleSkyWeights(now, dawn, morning, afternoon, dusk, w);
-        return w[0];
+    private float computeStarVisibility() {
+        float[] weights = mDayNightSystem.getAccurateWeights();
+        return weights != null ? weights[0] : 0.0f;
     }
 
 
@@ -754,9 +765,6 @@ final class GrassScene {
         boolean newNightDesaturate = p != null
                 ? p.getBoolean(WallpaperSettings.KEY_GRASS_NIGHT_DESATURATE, false)
                 : WallpaperSettings.isGrassNightDesaturateEnabled(false);
-        boolean newAccurateSun = p != null
-                ? p.getBoolean(WallpaperSettings.KEY_GRASS_ACCURATE_SUN, false)
-                : WallpaperSettings.isAccurateSunEnabled(false);
         boolean newSunEnabled = p != null
                 ? p.getBoolean(WallpaperSettings.KEY_GRASS_SUN, true)
                 : WallpaperSettings.isSunEnabled(true);
@@ -796,7 +804,6 @@ final class GrassScene {
         hash = 31 * hash + (newEnabled ? 1 : 0);
         hash = 31 * hash + (newNightInvert ? 1 : 0);
         hash = 31 * hash + (newNightDesaturate ? 1 : 0);
-        hash = 31 * hash + (newAccurateSun ? 1 : 0);
         hash = 31 * hash + (newSunEnabled ? 1 : 0);
         hash = 31 * hash + (newMoonEnabled ? 1 : 0);
         hash = 31 * hash + (newProceduralSun ? 1 : 0);
@@ -817,7 +824,6 @@ final class GrassScene {
         mGrassEnabled = newEnabled;
         mNightInvert = newNightInvert;
         mNightDesaturateGrass = newNightDesaturate;
-        mUseAccurateSun = newAccurateSun;
         mSunEnabled = newSunEnabled;
         mMoonEnabled = newMoonEnabled;
         mProceduralSun = newProceduralSun;
@@ -910,28 +916,12 @@ final class GrassScene {
         GrassParticleSystem.flyLegacyDandelion(mRandom, p, isInit, legacyNow, legacyDirection, mWidth, mHeight);
     }
 
-    // ---- Sun time helpers ----
-
-    private float timeFraction() {
-        return mDayNightSystem.timeFraction(mIsPreview, mUseAccurateSun);
-    }
-
-    private void updateSunTimes() {
-        mDayNightSystem.updateSunTimes(System.currentTimeMillis());
-    }
-
-    // ---- Accurate sun / sky weights ----
-
-    private void updateAccurateWeights() {
-        mDayNightSystem.updateAccurateWeights(System.currentTimeMillis());
-    }
-
-    private void updateLocationFromSystem(long nowMs) {
-        mDayNightSystem.updateLocationFromSystem(nowMs);
-    }
-
-    private void updateSolarEclipseState(MoonCalculator.MoonData data) {
-        if (!mUseAccurateSun) { mSolarEclipseWeight = 0.0f; return; }
+    /**
+     * @param now 当前**模拟**时刻的日历，由调用方设好（见 {@link #updateSky}）。
+     *            这里不再自己读时钟 —— 否则预览下日食几何会走真实时间，和其他部分脱节。
+     */
+    private void updateSolarEclipseState(MoonCalculator.MoonData data, Calendar now) {
+        // 节流按真实时间
         long nowMs = System.currentTimeMillis();
         if (mLastSolarEclipseUpdateMs != 0L && (nowMs - mLastSolarEclipseUpdateMs) < 15000L) return;
         if (data == null) {
@@ -939,9 +929,6 @@ final class GrassScene {
             mLastSolarEclipseUpdateMs = nowMs;
             return;
         }
-        mCalendar.setTimeZone(mDayNightSystem.getTimeZone());
-        mCalendar.setTimeInMillis(System.currentTimeMillis());
-        Calendar now = mCalendar;
         SolarEclipse eclipse = computeSolarEclipse(data, now);
         float[] accurateWeights = mDayNightSystem.getAccurateWeights();
         float dayVisibility = clamp(accurateWeights[3] + 0.45f * (accurateWeights[1] + accurateWeights[2]),
@@ -957,14 +944,26 @@ final class GrassScene {
             return null;
         }
 
-        if (mCachedMoonData != null && (nowMs - mLastCelestialComputeMs) < CELESTIAL_CACHE_INTERVAL_MS) {
+        // 缓存按真实时间衡量 —— nowMs 是模拟时间，预览下 60 秒会被压缩成一帧
+        long realNowMs = System.currentTimeMillis();
+        if (mCachedMoonData != null && (realNowMs - mLastCelestialComputeMs) < celestialCacheIntervalMs()) {
             return mCachedMoonData;
         }
 
         Location location = mDayNightSystem.getLocation();
         mCachedMoonData = MoonCalculator.compute(now, location.getLatitude(), location.getLongitude());
-        mLastCelestialComputeMs = nowMs;
+        mLastCelestialComputeMs = realNowMs;
         return mCachedMoonData;
+    }
+
+    /**
+     * 天文量的缓存间隔。
+     *
+     * <p>预览把一天压进 30 秒，用实机的 60 秒缓存会让月亮整个卡住不动；改成 100 毫秒
+     * （约 10 次/秒）既跟得上压缩后的时间轴，又不必每帧重算星历。
+     */
+    private long celestialCacheIntervalMs() {
+        return mIsPreview ? PREVIEW_CELESTIAL_CACHE_MS : CELESTIAL_CACHE_INTERVAL_MS;
     }
 
     // ---- Astronomical computation ----

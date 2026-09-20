@@ -40,6 +40,32 @@ final public class GrassDayNightSystem {
     private float morning;
     private float afternoon;
     private float dusk;
+    /**
+     * 节流专用：真实时间。
+     *
+     * <p>传入的 {@code nowMs} 是**模拟时间**（预览下把一天压进 30 秒），天文计算该用它；
+     * 但节流衡量的是 CPU 开销，必须用真实时间 —— 否则预览里 60 秒的缓存会被压缩成
+     * 一帧，重的星历计算每帧都跑。
+     */
+    private static long realNow() {
+        return System.currentTimeMillis();
+    }
+
+    private static final long WEIGHT_UPDATE_INTERVAL_MS = 60000L;
+    /** 预览用的权重更新间隔。一天只有 30 秒，60 秒的节流会让权重在整个循环里只算一次。 */
+    private static final long PREVIEW_WEIGHT_UPDATE_INTERVAL_MS = 100L;
+
+    /** 预览模式（一天压缩进 30 秒）。决定节流间隔用实机还是预览那一档。 */
+    private boolean mPreview;
+
+    void setPreview(boolean preview) {
+        mPreview = preview;
+    }
+
+    private long weightUpdateIntervalMs() {
+        return mPreview ? PREVIEW_WEIGHT_UPDATE_INTERVAL_MS : WEIGHT_UPDATE_INTERVAL_MS;
+    }
+
     private long lastSunUpdateMs;
 
     private final float[] accurateWeights = new float[]{1.0f, 0.0f, 0.0f, 0.0f};
@@ -61,30 +87,18 @@ final public class GrassDayNightSystem {
         updateSunTimes(System.currentTimeMillis());
     }
 
-    float timeFraction(boolean isPreview, boolean useAccurateSun) {
-        if (!isPreview || useAccurateSun) {
-            mCachedCalendar.setTimeZone(timeZone);
-            mCachedCalendar.setTimeInMillis(System.currentTimeMillis());
-            return (mCachedCalendar.get(Calendar.HOUR_OF_DAY) * 3600.0f
-                    + mCachedCalendar.get(Calendar.MINUTE) * 60.0f
-                    + mCachedCalendar.get(Calendar.SECOND)) / SECONDS_IN_DAY;
-        }
-        float t = (System.currentTimeMillis() % 30000L) / 30000.0f;
-        return t - (int) t;
-    }
-
-    float computeSimpleNewB(float now) {
-        if (now >= 0.0f && now < dawn) return 0.0f;
-        if (now >= dawn && now <= morning) {
-            float half = dawn + (morning - dawn) * 0.5f;
-            return now <= half ? MathUtils.norm(dawn, half, now) : 1.0f;
-        }
-        if (now > morning && now < afternoon) return 1.0f;
-        if (now >= afternoon && now <= dusk) {
-            float half = afternoon + (dusk - afternoon) * 0.5f;
-            return now <= half ? (1.0f - MathUtils.norm(afternoon, half, now)) : 0.0f;
-        }
-        return 0.0f;
+    /**
+     * 该时刻的本地昼夜进度（0=本地零点，1=次日零点）。
+     *
+     * <p>时刻由调用方给定 —— 预览模式传的是压缩后的时间轴（见 {@code GrassScene#sceneClockMs}），
+     * 实际壁纸传真实时间。两者走的都是这一套。
+     */
+    float timeFraction(long nowMs) {
+        mCachedCalendar.setTimeZone(timeZone);
+        mCachedCalendar.setTimeInMillis(nowMs);
+        return (mCachedCalendar.get(Calendar.HOUR_OF_DAY) * 3600.0f
+                + mCachedCalendar.get(Calendar.MINUTE) * 60.0f
+                + mCachedCalendar.get(Calendar.SECOND)) / SECONDS_IN_DAY;
     }
 
     void updateSunTimes(long nowMs) {
@@ -96,6 +110,7 @@ final public class GrassDayNightSystem {
             timeZone = TimeZone.getDefault();
             sunCalculator = new SunCalculator(location, timeZone.getID());
             Calendar now = Calendar.getInstance(timeZone);
+            now.setTimeInMillis(nowMs);
             double sunrise = sunCalculator.computeSunriseTime(SunCalculator.ZENITH_CIVIL, now);
             double sunset = sunCalculator.computeSunsetTime(SunCalculator.ZENITH_CIVIL, now);
             if (!Double.isNaN(sunrise) && !Double.isNaN(sunset)
@@ -115,17 +130,18 @@ final public class GrassDayNightSystem {
         dusk = MathUtils.clamp(duskValue, 0.0f, 1.0f);
         morning = dawn + 1.0f / 12.0f;
         afternoon = dusk - 1.0f / 12.0f;
-        lastSunUpdateMs = nowMs;
+        lastSunUpdateMs = realNow();
     }
 
     void updateAccurateWeights(long nowMs) {
-        if (lastWeightUpdateMs != 0L && (nowMs - lastWeightUpdateMs) < 60000L) {
+        if (lastWeightUpdateMs != 0L && (realNow() - lastWeightUpdateMs) < weightUpdateIntervalMs()) {
             return;
         }
 
         updateLocationFromSystem(nowMs);
         TimeZone tz = TimeZone.getDefault();
         Calendar now = Calendar.getInstance(tz);
+        now.setTimeInMillis(nowMs);
 
         SunCalculator calc = sunCalculator;
         if (calc == null || !tz.getID().equals(timeZone.getID())) {
@@ -160,25 +176,25 @@ final public class GrassDayNightSystem {
 
         if (noonAlt < 0.0 && midnightAlt < 0.0) {
             setWeights(1.0f, 0.0f, 0.0f, 0.0f);
-            lastWeightUpdateMs = nowMs;
+            lastWeightUpdateMs = realNow();
             lastSunAltitude = calc.computeSunAltitude(now);
             return;
         }
         if (noonAlt > 0.0 && midnightAlt > 0.0) {
             setWeights(0.0f, 0.0f, 0.0f, 1.0f);
-            lastWeightUpdateMs = nowMs;
+            lastWeightUpdateMs = realNow();
             lastSunAltitude = calc.computeSunAltitude(now);
             return;
         }
         if (sunrise <= 0.0 && sunset <= 0.0) {
             setWeights(1.0f, 0.0f, 0.0f, 0.0f);
-            lastWeightUpdateMs = nowMs;
+            lastWeightUpdateMs = realNow();
             lastSunAltitude = -90.0;
             return;
         }
         if (sunrise >= 24.0 && sunset >= 24.0) {
             setWeights(0.0f, 0.0f, 0.0f, 1.0f);
-            lastWeightUpdateMs = nowMs;
+            lastWeightUpdateMs = realNow();
             lastSunAltitude = 90.0;
             return;
         }
@@ -263,12 +279,12 @@ final public class GrassDayNightSystem {
         }
 
         setWeights(wNight, wSunrise, wSunset, wSky);
-        lastWeightUpdateMs = nowMs;
+        lastWeightUpdateMs = realNow();
         lastSunAltitude = altitude;
     }
 
     void updateLocationFromSystem(long nowMs) {
-        if (lastLocationUpdateMs != 0L && (nowMs - lastLocationUpdateMs) < 300000L) return;
+        if (lastLocationUpdateMs != 0L && (realNow() - lastLocationUpdateMs) < 300000L) return;
 
         // Debug override: use manually configured lat/lng instead of GPS
         float[] debugLoc = com.reandroid.utils.LocationProvider.getDebugLocation();
@@ -276,7 +292,7 @@ final public class GrassDayNightSystem {
             location.setLatitude(debugLoc[0]);
             location.setLongitude(debugLoc[1]);
             sunCalculator = new SunCalculator(location, timeZone.getID());
-            lastLocationUpdateMs = nowMs;
+            lastLocationUpdateMs = realNow();
             return;
         }
 
@@ -306,7 +322,7 @@ final public class GrassDayNightSystem {
             location.setLatitude(best.getLatitude());
             location.setLongitude(best.getLongitude());
             sunCalculator = new SunCalculator(location, timeZone.getID());
-            lastLocationUpdateMs = nowMs;
+            lastLocationUpdateMs = realNow();
         }
     }
 

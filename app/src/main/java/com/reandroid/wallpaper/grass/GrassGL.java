@@ -321,36 +321,21 @@ public class GrassGL extends GLESScene {
 
         float eclipseImpact, grassBrightness, nightDesat;
 
-        if (sd.useAccurateSun) {
-            useProgram(mSkyProgram);
-            setBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ONE_MINUS_SRC_ALPHA);
-            GLES30.glUniformMatrix4fv(mSkyMatrixHandle, 1, false, sd.projectionMatrix, 0);
-            mBackgroundRenderer.drawAccurateBackground(sd);
-            drawWeatherBackground(sd);
-            if (sd.sunEnabled && sd.hasSunData) drawSun(sd);
-            eclipseImpact = MathUtils.clamp(sd.solarEclipseWeight, 0.0f, 1.0f);
-            grassBrightness = sd.newB;
-            nightDesat = 0.0f;
-            if (sd.nightDesaturateGrass) {
-                grassBrightness = MathUtils.mix(1.0f, 0.72f, eclipseImpact);
-                float baseNightDesat = sd.accurateWeights[0];
-                nightDesat = MathUtils.clamp(baseNightDesat + eclipseImpact * 0.85f, 0.0f, 1.0f);
-            } else {
-                grassBrightness *= MathUtils.mix(1.0f, 0.62f, eclipseImpact);
-            }
+        useProgram(mSkyProgram);
+        setBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ONE_MINUS_SRC_ALPHA);
+        GLES30.glUniformMatrix4fv(mSkyMatrixHandle, 1, false, sd.projectionMatrix, 0);
+        mBackgroundRenderer.drawAccurateBackground(sd);
+        drawWeatherBackground(sd);
+        if (sd.sunEnabled && sd.hasSunData) drawSun(sd);
+        eclipseImpact = MathUtils.clamp(sd.solarEclipseWeight, 0.0f, 1.0f);
+        grassBrightness = sd.newB;
+        nightDesat = 0.0f;
+        if (sd.nightDesaturateGrass) {
+            grassBrightness = MathUtils.mix(1.0f, 0.72f, eclipseImpact);
+            float baseNightDesat = sd.accurateWeights[0];
+            nightDesat = MathUtils.clamp(baseNightDesat + eclipseImpact * 0.85f, 0.0f, 1.0f);
         } else {
-            useProgram(mBackgroundProgram);
-            setBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ONE_MINUS_SRC_ALPHA);
-            GLES30.glUniformMatrix4fv(mBgMatrixHandle, 1, false, sd.projectionMatrix, 0);
-            mBackgroundRenderer.drawBackground(sd);
-            drawWeatherBackground(sd);
-            eclipseImpact = 0.0f;
-            grassBrightness = sd.newB;
-            nightDesat = 0.0f;
-            if (sd.nightDesaturateGrass) {
-                grassBrightness = 1.0f;
-                nightDesat = MathUtils.clamp(1.0f - sd.newB, 0.0f, 1.0f);
-            }
+            grassBrightness *= MathUtils.mix(1.0f, 0.62f, eclipseImpact);
         }
 
         mStarRenderer.drawNightStars(sd, mSpriteRenderer, mBackgroundRenderOps);
@@ -781,7 +766,7 @@ public class GrassGL extends GLESScene {
     }
 
     private void drawMoon(SceneData sd) {
-        if (!sd.useAccurateSun || !sd.moonEnabled || !sd.moonVisible) return;
+        if (!sd.moonEnabled || !sd.moonVisible) return;
         if (mMoonProgram == 0 || mTexMoonBase == 0 || mTexMoonMask == 0) return;
 
         useProgram(mMoonProgram);

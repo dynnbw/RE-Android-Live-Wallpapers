@@ -103,16 +103,9 @@
     },
     {
       "type": "switch",
-      "key": "pref_grass_accurate_sun",
-      "title": "pref_grass_accurate_sun",
-      "default": "false"
-    },
-    {
-      "type": "switch",
       "key": "pref_grass_sun",
       "title": "pref_grass_sun",
-      "default": "true",
-      "dependency": "pref_grass_accurate_sun"
+      "default": "true"
     },
     {
       "type": "switch",
@@ -126,8 +119,7 @@
       "type": "switch",
       "key": "pref_grass_moon",
       "title": "pref_grass_moon",
-      "default": "true",
-      "dependency": "pref_grass_accurate_sun"
+      "default": "true"
     },
     {
       "type": "switch",

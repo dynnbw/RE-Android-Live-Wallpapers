@@ -76,15 +76,10 @@ final class GrassRenderDataBuilder {
         out[4] = sd.nightInvert ? 1.0f : 0.0f;
         out[5] = MathUtils.clamp(sd.solarEclipseWeight, 0.0f, 1.0f);
 
-        if (sd.useAccurateSun) {
-            out[0] = sd.accurateWeights[0];
-            out[1] = sd.accurateWeights[1];
-            out[2] = sd.accurateWeights[2];
-            out[3] = sd.accurateWeights[3];
-            return out;
-        }
-
-        SceneData.computeSimpleSkyWeights(sd.timeFraction, sd.dawn, sd.morning, sd.afternoon, sd.dusk, out);
+        out[0] = sd.accurateWeights[0];
+        out[1] = sd.accurateWeights[1];
+        out[2] = sd.accurateWeights[2];
+        out[3] = sd.accurateWeights[3];
         return out;
     }
 
@@ -93,7 +88,7 @@ final class GrassRenderDataBuilder {
         for (int i = 0; i < out.length; i++) {
             out[i] = 0.0f;
         }
-        if (!sd.useAccurateSun || !sd.moonEnabled || !sd.moonVisible) {
+        if (!sd.moonEnabled || !sd.moonVisible) {
             return out;
         }
 
@@ -124,26 +119,15 @@ final class GrassRenderDataBuilder {
             return mVKGrassVertices;
         }
 
-        float eclipseImpact = sd.useAccurateSun ? MathUtils.clamp(sd.solarEclipseWeight, 0.0f, 1.0f) : 0.0f;
-        float grassBrightness;
-        float nightDesat;
-        if (sd.useAccurateSun) {
-            grassBrightness = sd.newB;
-            nightDesat = 0.0f;
-            if (sd.nightDesaturateGrass) {
-                grassBrightness = MathUtils.mix(1.0f, 0.72f, eclipseImpact);
-                float baseNightDesat = sd.accurateWeights[0];
-                nightDesat = MathUtils.clamp(baseNightDesat + eclipseImpact * 0.85f, 0.0f, 1.0f);
-            } else {
-                grassBrightness *= MathUtils.mix(1.0f, 0.62f, eclipseImpact);
-            }
+        float eclipseImpact = MathUtils.clamp(sd.solarEclipseWeight, 0.0f, 1.0f);
+        float grassBrightness = sd.newB;
+        float nightDesat = 0.0f;
+        if (sd.nightDesaturateGrass) {
+            grassBrightness = MathUtils.mix(1.0f, 0.72f, eclipseImpact);
+            float baseNightDesat = sd.accurateWeights[0];
+            nightDesat = MathUtils.clamp(baseNightDesat + eclipseImpact * 0.85f, 0.0f, 1.0f);
         } else {
-            grassBrightness = sd.newB;
-            nightDesat = 0.0f;
-            if (sd.nightDesaturateGrass) {
-                grassBrightness = 1.0f;
-                nightDesat = MathUtils.clamp(1.0f - sd.newB, 0.0f, 1.0f);
-            }
+            grassBrightness *= MathUtils.mix(1.0f, 0.62f, eclipseImpact);
         }
 
         final int stride = 8;
@@ -203,7 +187,7 @@ final class GrassRenderDataBuilder {
     }
 
     float[] buildSunSpriteVertices(SceneData sd) {
-        if (!sd.useAccurateSun || !sd.sunEnabled || !sd.hasSunData) {
+        if (!sd.sunEnabled || !sd.hasSunData) {
             mVKSunFloatCount = 0;
             return mVKSunVerts;
         }
@@ -217,7 +201,7 @@ final class GrassRenderDataBuilder {
     }
 
     float[] buildMoonSpriteVertices(SceneData sd) {
-        if (!sd.useAccurateSun || !sd.moonEnabled || !sd.moonVisible) {
+        if (!sd.moonEnabled || !sd.moonVisible) {
             mVKMoonFloatCount = 0;
             return mVKMoonVerts;
         }
@@ -515,7 +499,6 @@ final class GrassRenderDataBuilder {
     private int computeGrassAppearanceKey(SceneData sd, float brightness, float nightDesat) {
         int key = 17;
         key = 31 * key + (sd.grassEnabled ? 1 : 0);
-        key = 31 * key + (sd.useAccurateSun ? 1 : 0);
         key = 31 * key + (sd.useGrassTint ? 1 : 0);
         key = 31 * key + (sd.nightDesaturateGrass ? 1 : 0);
         key = 31 * key + Math.round(sd.xDraw * 2.0f);

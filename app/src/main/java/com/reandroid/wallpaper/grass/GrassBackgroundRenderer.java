@@ -43,8 +43,6 @@ final class GrassBackgroundRenderer {
     private FloatBuffer skyQuadBuffer;
     private boolean skyQuadDirty = true;
     private final float[] quadVerts = new float[20];
-    /** computeSimpleSkyWeights 的输出缓冲：每帧算一次，别每帧新建。 */
-    private final float[] skyWeights = new float[4];
 
     void setViewport(int width, int height) {
         this.width = width;
@@ -102,42 +100,6 @@ final class GrassBackgroundRenderer {
         this.texSunset = texSunset;
         this.texSky = texSky;
         this.texSolarEclipse = texSolarEclipse;
-    }
-
-    void drawBackground(SceneData sd) {
-        // Compute sky blend weights once, shared with Vulkan path via SceneData
-        float[] w = skyWeights;
-        SceneData.computeSimpleSkyWeights(sd.timeFraction, sd.dawn, sd.morning, sd.afternoon, sd.dusk, w);
-        float wNight = w[0], wSunrise = w[1], wSunset = w[2], wSky = w[3];
-
-        // Two-weight transition phases: draw first layer at full alpha, second at blend alpha
-        if (wNight > 0.0f && wSunrise > 0.0f) {
-            setAlpha(1.0f);
-            drawNight(sd.nightInvert);
-            setAlpha(wSunrise);
-            drawSunrise();
-        } else if (wSunrise > 0.0f && wSky > 0.0f) {
-            setAlpha(1.0f);
-            drawSunrise();
-            setAlpha(wSky);
-            drawNoon();
-        } else if (wSky > 0.0f && wSunset > 0.0f) {
-            setAlpha(1.0f);
-            drawNoon();
-            setAlpha(wSunset);
-            drawSunset();
-        } else if (wSunset > 0.0f && wNight > 0.0f) {
-            setAlpha(1.0f);
-            drawSunset();
-            setAlpha(wNight);
-            drawNight(sd.nightInvert);
-        } else if (wNight >= 1.0f) {
-            setAlpha(1.0f);
-            drawNight(sd.nightInvert);
-        } else if (wSky >= 1.0f) {
-            setAlpha(1.0f);
-            drawNoon();
-        }
     }
 
     void drawAccurateBackground(SceneData sd) {
