@@ -74,15 +74,23 @@ final class NixieTubeAudioSource {
     // ---- System audio (Visualizer with DataCaptureListener) ----
 
     private void startSystemAudio() {
-        int[] range = Visualizer.getCaptureSizeRange();
         final int size = CAPTURE_SIZE;
         try {
             mVisualizer = new Visualizer(0);
             mVisualizer.setCaptureSize(size);
             mVisualizer.setEnabled(true);
         } catch (Exception e) {
-            Log.w(TAG, "Visualizer init failed, falling back to mic", e);
-            startMicrophone();
+            /*
+             * 这里以前是静默 startMicrophone() 兜底。后果：用户选的是「系统内部音」，
+             * 只要 Visualizer 建不起来（例如上一次用过麦克风、音频会话被占），就会去开
+             * 麦克风 —— 界面上完全看不出来，而且一直耗电。
+             * 选什么就是什么：起不来就静默，不替用户改选择。
+             */
+            Log.w(TAG, "System audio unavailable; no capture started", e);
+            if (mVisualizer != null) {
+                try { mVisualizer.release(); } catch (Exception ignored) {}
+                mVisualizer = null;
+            }
             return;
         }
 
