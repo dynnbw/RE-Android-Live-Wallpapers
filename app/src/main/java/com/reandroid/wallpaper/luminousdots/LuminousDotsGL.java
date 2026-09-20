@@ -2,7 +2,7 @@ package com.reandroid.wallpaper.luminousdots;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 import android.opengl.GLUtils;
 import android.util.Log;
 
@@ -18,20 +18,21 @@ public class LuminousDotsGL extends GLESScene {
 
     // Original embedded GLSL shader from LuminousDotsRenderer.onSurfaceCreated()
     private static final String VERTEX_SHADER =
+        "#version 300 es\n" +
         "uniform int uIsGradiatObj;                         \t\t\t\n" +
-        "varying  float vIsGradiatObj;                         \t\t\n" +
+        "out float vIsGradiatObj;                         \t\t\n" +
         "uniform float u_BatteryAlpha;                               \n" +
         "uniform float u_gradiantUpYStart;                         \n" +
         "uniform float u_gradiantDownYStart;                     \n" +
         "uniform float u_gradiantYUpGap;                     \t\t\n" +
         "uniform float u_gradiantYDownGap;                     \t\n" +
         "uniform mat4 u_mvpMatrix;                   \t\t\t\t\n" +
-        "attribute vec3 a_position;                        \t\t\t\t\n" +
-        "attribute vec2 a_texCoord;   \t\t\t\t\t\t\t\t\t\n" +
-        "varying vec2 v_texCoord;     \t\t\t\t\t\t\t\t\t\n" +
-        "varying float vAlpha; \t\t\t\t\t\t\t\t\t\t\t\n" +
-        "attribute vec4 aColor;\t\t\t\t\t\t\t\t\t\t\t\n" +
-        "varying vec4 vColor;\t\t\t\t\t \t\t\t\t\t\t\n" +
+        "in vec3 a_position;                        \t\t\t\t\n" +
+        "in vec2 a_texCoord;   \t\t\t\t\t\t\t\t\t\n" +
+        "out vec2 v_texCoord;     \t\t\t\t\t\t\t\t\t\n" +
+        "out float vAlpha; \t\t\t\t\t\t\t\t\t\t\t\n" +
+        "in vec4 aColor;\t\t\t\t\t\t\t\t\t\t\t\n" +
+        "out vec4 vColor;\t\t\t\t\t \t\t\t\t\t\t\n" +
         "void main()                                          \t\t\t\t\n" +
         "{                                                    \t\t\t\t\t\n" +
         " \tv_texCoord = a_texCoord;  \t\t\t\t\t\t\t\t\n" +
@@ -64,25 +65,26 @@ public class LuminousDotsGL extends GLESScene {
         "}\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n";
 
     private static final String FRAGMENT_SHADER =
+        "#version 300 es\n" +
         "precision mediump float;                             \t\t\t\t\n" +
-        "varying vec2 v_texCoord;                            \t\t\t\t\t\n" +
-        "varying float vAlpha; \t\t\t\t\t\t\t\t\t\t\t\t\t\n" +
-        "varying vec4 vColor; \t\t\t\t\t\t\t\t\t\t\t\t\t\n" +
-        "varying float v_TexIdx;\t\t\t \t\t\t\t\t\t\t\t\t\t\n" +
+        "out vec4 fragColor;\n" +
+        "in vec2 v_texCoord;                            \t\t\t\t\t\n" +
+        "in float vAlpha; \t\t\t\t\t\t\t\t\t\t\t\t\t\n" +
+        "in vec4 vColor; \t\t\t\t\t\t\t\t\t\t\t\t\t\n" +
         "uniform float uAlpha;                         \t\t\t\t\t\t\t\n" +
         "uniform vec4 uColor;                         \t\t\t\t\t\t\t\n" +
         "uniform sampler2D s_texture;                         \t\t\t\t\n" +
         "uniform sampler2D s_texture1;                         \t\t\t\t\n" +
-        "varying float vIsGradiatObj;                         \t\t\t\t\t\n" +
+        "in float vIsGradiatObj;                         \t\t\t\t\t\n" +
         "void main()                                          \t\t\t\t\t\t\n" +
         "{                                                    \t\t\t\t\t\t\t\n" +
         "  \tvec4 baseColor;\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n" +
-        "\tbaseColor = texture2D( s_texture, v_texCoord );\t\t\t\n" +
+        "\tbaseColor = texture( s_texture, v_texCoord );\t\t\t\n" +
         "\tif(vIsGradiatObj >= 1.0)\t\t\t\t\t\t\t\t\t\t\t\n" +
         " \t\tbaseColor = uColor;\t\t\t\t\t\t\t\t\t\t\t\t\n" +
         "\telse \t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n" +
         "\t\tbaseColor = baseColor*vColor;\t\t\t\t\t\t\t\t\n" +
-        "  \tgl_FragColor = baseColor*vAlpha*uAlpha;\t\t\t\t\t\n" +
+        "  \tfragColor = baseColor*vAlpha*uAlpha;\t\t\t\t\t\n" +
         "}                                              \t\t\t\t\t\t\t\t\n";
 
     private final Context mContext;
@@ -157,10 +159,10 @@ public class LuminousDotsGL extends GLESScene {
         int[] tex = {mObjTexId0, mObjTexId0_1, mObjTexId0_64, mObjTexId0_1_64,
                      mObjTexId1, mObjTexId2,
                      mGlowTexId0, mGlowTexId1, mGlowTexId2};
-        GLES20.glDeleteTextures(tex.length, tex, 0);
+        GLES30.glDeleteTextures(tex.length, tex, 0);
 
         if (mProgram != 0) {
-            GLES20.glDeleteProgram(mProgram);
+            GLES30.glDeleteProgram(mProgram);
             mProgram = 0;
         }
         mGLInit = false;
@@ -177,20 +179,20 @@ public class LuminousDotsGL extends GLESScene {
             return;
         }
 
-        mMVPLoc = GLES20.glGetUniformLocation(mProgram, "u_mvpMatrix");
-        mObjTexLoc = GLES20.glGetUniformLocation(mProgram, "s_texture");
-        mColorLoc = GLES20.glGetUniformLocation(mProgram, "uColor");
-        mAlphaLoc = GLES20.glGetUniformLocation(mProgram, "uAlpha");
-        mBatteryAlphaLoc = GLES20.glGetUniformLocation(mProgram, "u_BatteryAlpha");
-        mGradiantDownStartLoc = GLES20.glGetUniformLocation(mProgram, "u_gradiantDownYStart");
-        mGradiantUpStartLoc = GLES20.glGetUniformLocation(mProgram, "u_gradiantUpYStart");
-        mGradiantGapUpLoc = GLES20.glGetUniformLocation(mProgram, "u_gradiantYUpGap");
-        mGradiantGapDownLoc = GLES20.glGetUniformLocation(mProgram, "u_gradiantYDownGap");
-        mIsGradiantLoc = GLES20.glGetUniformLocation(mProgram, "uIsGradiatObj");
-        maPositionHandle = GLES20.glGetAttribLocation(mProgram, "a_position");
-        maTextureHandle = GLES20.glGetAttribLocation(mProgram, "a_texCoord");
-        maAlphaHandle = GLES20.glGetAttribLocation(mProgram, "aAlpha");
-        maColorHandle = GLES20.glGetAttribLocation(mProgram, "aColor");
+        mMVPLoc = GLES30.glGetUniformLocation(mProgram, "u_mvpMatrix");
+        mObjTexLoc = GLES30.glGetUniformLocation(mProgram, "s_texture");
+        mColorLoc = GLES30.glGetUniformLocation(mProgram, "uColor");
+        mAlphaLoc = GLES30.glGetUniformLocation(mProgram, "uAlpha");
+        mBatteryAlphaLoc = GLES30.glGetUniformLocation(mProgram, "u_BatteryAlpha");
+        mGradiantDownStartLoc = GLES30.glGetUniformLocation(mProgram, "u_gradiantDownYStart");
+        mGradiantUpStartLoc = GLES30.glGetUniformLocation(mProgram, "u_gradiantUpYStart");
+        mGradiantGapUpLoc = GLES30.glGetUniformLocation(mProgram, "u_gradiantYUpGap");
+        mGradiantGapDownLoc = GLES30.glGetUniformLocation(mProgram, "u_gradiantYDownGap");
+        mIsGradiantLoc = GLES30.glGetUniformLocation(mProgram, "uIsGradiatObj");
+        maPositionHandle = GLES30.glGetAttribLocation(mProgram, "a_position");
+        maTextureHandle = GLES30.glGetAttribLocation(mProgram, "a_texCoord");
+        maAlphaHandle = GLES30.glGetAttribLocation(mProgram, "aAlpha");
+        maColorHandle = GLES30.glGetAttribLocation(mProgram, "aColor");
 
         Log.d(TAG, "Shader compiled: prog=" + mProgram + " mvp=" + mMVPLoc);
 
@@ -232,13 +234,13 @@ public class LuminousDotsGL extends GLESScene {
                 return 0;
             }
             int[] tex = new int[1];
-            GLES20.glGenTextures(1, tex, 0);
-            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, tex[0]);
-            GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
-            GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
-            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
-            GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bmp, 0);
+            GLES30.glGenTextures(1, tex, 0);
+            GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, tex[0]);
+            GLES30.glTexParameterf(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR);
+            GLES30.glTexParameterf(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
+            GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE);
+            GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE);
+            GLUtils.texImage2D(GLES30.GL_TEXTURE_2D, 0, bmp, 0);
             bmp.recycle();
             return tex[0];
         } catch (Exception e) {
@@ -262,14 +264,14 @@ public class LuminousDotsGL extends GLESScene {
         LuminousDotsScene.SceneData data = mScene.getSceneData();
         if (data == null || data.verticesUp == null) return;
 
-        GLES20.glViewport(0, 0, mWidth, mHeight);
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT); // 16640 in original
-        GLES20.glUseProgram(mProgram);
-        GLES20.glEnable(GLES20.GL_BLEND);
-        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+        GLES30.glViewport(0, 0, mWidth, mHeight);
+        GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT | GLES30.GL_DEPTH_BUFFER_BIT); // 16640 in original
+        GLES30.glUseProgram(mProgram);
+        GLES30.glEnable(GLES30.GL_BLEND);
+        GLES30.glBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ONE_MINUS_SRC_ALPHA);
 
         // --- Bind object texture based on shape ---
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
         int objTex;
         switch (data.shape) {
             case 0:
@@ -284,32 +286,32 @@ public class LuminousDotsGL extends GLESScene {
             case 2: objTex = mObjTexId2; break;
             default: objTex = mObjTexId0; break;
         }
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, objTex);
-        GLES20.glUniform1i(mObjTexLoc, 0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, objTex);
+        GLES30.glUniform1i(mObjTexLoc, 0);
 
         // --- Set uColor based on colorState ---
         switch (data.colorState) {
             case 1:
-                GLES20.glUniform4f(mColorLoc, 0.031f, 0.07f, 0.0f, 1.0f);
+                GLES30.glUniform4f(mColorLoc, 0.031f, 0.07f, 0.0f, 1.0f);
                 break;
             case 2:
-                GLES20.glUniform4f(mColorLoc, 0.094f, 0.05f, 0.008f, 1.0f);
+                GLES30.glUniform4f(mColorLoc, 0.094f, 0.05f, 0.008f, 1.0f);
                 break;
             default: // 0
-                GLES20.glUniform4f(mColorLoc, 0.015f, 0.027f, 0.055f, 1.0f);
+                GLES30.glUniform4f(mColorLoc, 0.015f, 0.027f, 0.055f, 1.0f);
                 break;
         }
 
         // --- Gradient uniform ---
-        GLES20.glUniform1f(mGradiantDownStartLoc, data.gradDownStart);
-        GLES20.glUniform1f(mGradiantUpStartLoc, data.gradUpStart);
-        GLES20.glUniform1f(mGradiantGapUpLoc, data.gradGapUp);
-        GLES20.glUniform1f(mGradiantGapDownLoc, data.gradGapDown);
+        GLES30.glUniform1f(mGradiantDownStartLoc, data.gradDownStart);
+        GLES30.glUniform1f(mGradiantUpStartLoc, data.gradUpStart);
+        GLES30.glUniform1f(mGradiantGapUpLoc, data.gradGapUp);
+        GLES30.glUniform1f(mGradiantGapDownLoc, data.gradGapDown);
 
-        GLES20.glUniform1i(mIsGradiantLoc, 0);
+        GLES30.glUniform1i(mIsGradiantLoc, 0);
 
         // --- Battery alpha ---
-        GLES20.glUniform1f(mBatteryAlphaLoc, data.batteryAlpha);
+        GLES30.glUniform1f(mBatteryAlphaLoc, data.batteryAlpha);
 
         // --- 8 rendering passes ---
         float f2 = data.halfLayoutSize * data.mScale;
@@ -367,18 +369,18 @@ public class LuminousDotsGL extends GLESScene {
         }
 
         // --- Glow passes ---
-        GLES20.glUniform1f(mAlphaLoc, data.glowAlpha);
+        GLES30.glUniform1f(mAlphaLoc, data.glowAlpha);
         for (int gi = 0; gi < data.glowList.size(); gi++) {
             LuminousDotsScene.GlowData glow = data.glowList.get(gi);
             if (glow == null || glow.vertices == null) continue;
 
             // Bind glow texture based on wallpaper shape (original: all glows use same texture = mShape)
-            GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+            GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
             switch (data.shape) {
-                case 0: GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mGlowTexId0); break;
-                case 1: GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mGlowTexId1); break;
-                case 2: GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mGlowTexId2); break;
-                default: GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mGlowTexId0); break;
+                case 0: GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mGlowTexId0); break;
+                case 1: GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mGlowTexId1); break;
+                case 2: GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mGlowTexId2); break;
+                default: GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mGlowTexId0); break;
             }
 
             float[] rot = LuminousDotsScene.ROTATE_TYPE[LuminousDotsScene.ROTATE_IDX[data.rotIdxGlow][0]];
@@ -387,8 +389,8 @@ public class LuminousDotsGL extends GLESScene {
             LuminousDotsScene.buildMVPGlow(mvp, mProjMatrix, mHeight, data.mScale, rot, data.camPx, data.camPy);
 
             bindVertexAttribs(glow.vertices);
-            GLES20.glUniformMatrix4fv(mMVPLoc, 1, false, mvp, 0);
-            GLES20.glDrawElements(GLES20.GL_TRIANGLES, 6, GLES20.GL_UNSIGNED_SHORT, data.indices);
+            GLES30.glUniformMatrix4fv(mMVPLoc, 1, false, mvp, 0);
+            GLES30.glDrawElements(GLES30.GL_TRIANGLES, 6, GLES30.GL_UNSIGNED_SHORT, data.indices);
         }
     }
 
@@ -403,33 +405,33 @@ public class LuminousDotsGL extends GLESScene {
         LuminousDotsScene.buildMVP(mvp, mProjMatrix, mHeight, tx, ty, tz, data.mScale, rot, data.camPx, data.camPy);
 
         bindVertexAttribs(vertices);
-        GLES20.glUniformMatrix4fv(mMVPLoc, 1, false, mvp, 0);
-        GLES20.glUniform1f(mAlphaLoc, alpha);
-        GLES20.glDrawElements(GLES20.GL_TRIANGLES, LuminousDotsScene.QUADS * 6, GLES20.GL_UNSIGNED_SHORT, indices);
+        GLES30.glUniformMatrix4fv(mMVPLoc, 1, false, mvp, 0);
+        GLES30.glUniform1f(mAlphaLoc, alpha);
+        GLES30.glDrawElements(GLES30.GL_TRIANGLES, LuminousDotsScene.QUADS * 6, GLES30.GL_UNSIGNED_SHORT, indices);
     }
 
     private void bindVertexAttribs(java.nio.FloatBuffer buf) {
         if (buf == null) return;
         buf.position(0);
         // a_position: offset 0, 3 floats, stride 48
-        GLES20.glVertexAttribPointer(maPositionHandle, 3, GLES20.GL_FLOAT, false, 48, buf);
-        GLES20.glEnableVertexAttribArray(maPositionHandle);
+        GLES30.glVertexAttribPointer(maPositionHandle, 3, GLES30.GL_FLOAT, false, 48, buf);
+        GLES30.glEnableVertexAttribArray(maPositionHandle);
 
         buf.position(3);
         // a_texCoord: offset 3, 2 floats, stride 48
-        GLES20.glVertexAttribPointer(maTextureHandle, 2, GLES20.GL_FLOAT, false, 48, buf);
-        GLES20.glEnableVertexAttribArray(maTextureHandle);
+        GLES30.glVertexAttribPointer(maTextureHandle, 2, GLES30.GL_FLOAT, false, 48, buf);
+        GLES30.glEnableVertexAttribArray(maTextureHandle);
 
         buf.position(5);
         // aAlpha: offset 5, 1 float, stride 48
         if (maAlphaHandle >= 0) {
-            GLES20.glVertexAttribPointer(maAlphaHandle, 1, GLES20.GL_FLOAT, false, 48, buf);
-            GLES20.glEnableVertexAttribArray(maAlphaHandle);
+            GLES30.glVertexAttribPointer(maAlphaHandle, 1, GLES30.GL_FLOAT, false, 48, buf);
+            GLES30.glEnableVertexAttribArray(maAlphaHandle);
         }
 
         buf.position(6);
         // aColor: offset 6, 4 floats (r*alpha, g*alpha, b*alpha, a*alpha), stride 48
-        GLES20.glVertexAttribPointer(maColorHandle, 4, GLES20.GL_FLOAT, false, 48, buf);
-        GLES20.glEnableVertexAttribArray(maColorHandle);
+        GLES30.glVertexAttribPointer(maColorHandle, 4, GLES30.GL_FLOAT, false, 48, buf);
+        GLES30.glEnableVertexAttribArray(maColorHandle);
     }
 }

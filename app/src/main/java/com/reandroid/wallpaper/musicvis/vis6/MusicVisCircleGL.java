@@ -3,7 +3,7 @@ package com.reandroid.wallpaper.musicvis.vis6;
 import com.reandroid.utils.GLTextureUtils;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 
 import com.reandroid.utils.AssetLoader;
 import com.reandroid.gles.GLESScene;
@@ -77,17 +77,17 @@ public class MusicVisCircleGL extends GLESScene {
 
         uploadRingBuffers(s);
 
-        GLES20.glClearColor(s.mBgColor[0], s.mBgColor[1], s.mBgColor[2], 1f);
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+        GLES30.glClearColor(s.mBgColor[0], s.mBgColor[1], s.mBgColor[2], 1f);
+        GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT);
 
         if (s.mRecolorEnabled && mColorProgram != 0) {
-            GLES20.glUseProgram(mColorProgram);
-            GLES20.glUniformMatrix4fv(mColorMvpLoc, 1, false, s.mMvp, 0);
-            GLES20.glUniform1i(mColorSamplerLoc, 0);
-            GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mGreyTextureId);
-            GLES20.glEnableVertexAttribArray(mColorPosLoc);
-            GLES20.glEnableVertexAttribArray(mColorAdjustLoc);
+            GLES30.glUseProgram(mColorProgram);
+            GLES30.glUniformMatrix4fv(mColorMvpLoc, 1, false, s.mMvp, 0);
+            GLES30.glUniform1i(mColorSamplerLoc, 0);
+            GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
+            GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mGreyTextureId);
+            GLES30.glEnableVertexAttribArray(mColorPosLoc);
+            GLES30.glEnableVertexAttribArray(mColorAdjustLoc);
             for (int i = 0; i < s.mRingCount; i++) {
                 float hue = s.mRecolorDynamic ? (s.mHue + i * 0.04f) % 1f : s.mHue;
                 float sat = s.mSaturation, bri = s.mBrightness;
@@ -98,42 +98,42 @@ public class MusicVisCircleGL extends GLESScene {
                 }
                 mRingAdjustBuffers[i].position(0);
                 mRingAdjustBuffers[i].put(s.mRingAdjust[i]).position(0);
-                GLES20.glVertexAttribPointer(mColorPosLoc, 2, GLES20.GL_FLOAT, false, 0, mRingBuffers[i]);
-                GLES20.glVertexAttribPointer(mColorAdjustLoc, 3, GLES20.GL_FLOAT, false, 0, mRingAdjustBuffers[i]);
-                GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, CircleScene.STRIP_VERTS);
+                GLES30.glVertexAttribPointer(mColorPosLoc, 2, GLES30.GL_FLOAT, false, 0, mRingBuffers[i]);
+                GLES30.glVertexAttribPointer(mColorAdjustLoc, 3, GLES30.GL_FLOAT, false, 0, mRingAdjustBuffers[i]);
+                GLES30.glDrawArrays(GLES30.GL_TRIANGLE_STRIP, 0, CircleScene.STRIP_VERTS);
             }
-            GLES20.glDisableVertexAttribArray(mColorPosLoc);
-            GLES20.glDisableVertexAttribArray(mColorAdjustLoc);
+            GLES30.glDisableVertexAttribArray(mColorPosLoc);
+            GLES30.glDisableVertexAttribArray(mColorAdjustLoc);
         } else {
-            GLES20.glUseProgram(mProgram);
-            GLES20.glUniformMatrix4fv(mMvpLoc, 1, false, s.mMvp, 0);
-            GLES20.glEnableVertexAttribArray(mPosLoc);
+            GLES30.glUseProgram(mProgram);
+            GLES30.glUniformMatrix4fv(mMvpLoc, 1, false, s.mMvp, 0);
+            GLES30.glEnableVertexAttribArray(mPosLoc);
             for (int i = 0; i < s.mRingCount; i++) {
-                GLES20.glVertexAttribPointer(mPosLoc, 2, GLES20.GL_FLOAT, false, 0, mRingBuffers[i]);
-                GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, CircleScene.STRIP_VERTS);
+                GLES30.glVertexAttribPointer(mPosLoc, 2, GLES30.GL_FLOAT, false, 0, mRingBuffers[i]);
+                GLES30.glDrawArrays(GLES30.GL_TRIANGLE_STRIP, 0, CircleScene.STRIP_VERTS);
             }
-            GLES20.glDisableVertexAttribArray(mPosLoc);
+            GLES30.glDisableVertexAttribArray(mPosLoc);
         }
     }
 
     private void initGLIfNeeded() {
         if (mProgram != 0 || mContext == null) return;
-        GLES20.glClearColor(0, 0, 0, 1);
+        GLES30.glClearColor(0, 0, 0, 1);
 
-        String vs = "attribute vec2 aPosition;uniform mat4 uMVP;void main(){gl_Position=uMVP*vec4(aPosition,0,1);}";
-        String fs = "precision mediump float;void main(){gl_FragColor=vec4(1,1,1,0.75);}";
+        String vs = "#version 300 es\nin vec2 aPosition;uniform mat4 uMVP;void main(){gl_Position=uMVP*vec4(aPosition,0,1);}";
+        String fs = "#version 300 es\nprecision mediump float;out vec4 fragColor;void main(){fragColor=vec4(1,1,1,0.75);}";
         mProgram = createProgram(vs, fs);
-        mPosLoc = GLES20.glGetAttribLocation(mProgram, "aPosition");
-        mMvpLoc = GLES20.glGetUniformLocation(mProgram, "uMVP");
+        mPosLoc = GLES30.glGetAttribLocation(mProgram, "aPosition");
+        mMvpLoc = GLES30.glGetUniformLocation(mProgram, "uMVP");
 
         String cvs = AssetLoader.readText(mContext, "musicvis/shaders/GLES/musicvis_wave_color_vs.glsl");
         String cfs = AssetLoader.readText(mContext, "musicvis/shaders/GLES/musicvis_wave_color_fs.glsl");
         mColorProgram = createProgram(cvs, cfs);
         if (mColorProgram != 0) {
-            mColorPosLoc = GLES20.glGetAttribLocation(mColorProgram, "aPosition");
-            mColorAdjustLoc = GLES20.glGetAttribLocation(mColorProgram, "aAdjust");
-            mColorMvpLoc = GLES20.glGetUniformLocation(mColorProgram, "uMVP");
-            mColorSamplerLoc = GLES20.glGetUniformLocation(mColorProgram, "uTex");
+            mColorPosLoc = GLES30.glGetAttribLocation(mColorProgram, "aPosition");
+            mColorAdjustLoc = GLES30.glGetAttribLocation(mColorProgram, "aAdjust");
+            mColorMvpLoc = GLES30.glGetUniformLocation(mColorProgram, "uMVP");
+            mColorSamplerLoc = GLES30.glGetUniformLocation(mColorProgram, "uTex");
         }
         mGreyTextureId = GLTextureUtils.loadTextureFromAsset(mContext, "musicvis/drawable/musicvis_grey.png");
 

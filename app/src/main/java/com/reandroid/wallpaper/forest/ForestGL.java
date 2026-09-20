@@ -2,7 +2,7 @@ package com.reandroid.wallpaper.forest;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 import android.opengl.GLUtils;
 import android.opengl.Matrix;
 import android.view.MotionEvent;
@@ -72,11 +72,11 @@ public class ForestGL extends GLESScene {
     @Override
     public void release() {
         if (mTexIndex != null) {
-            GLES20.glDeleteTextures(mTexIndex.length, mTexIndex, 0);
+            GLES30.glDeleteTextures(mTexIndex.length, mTexIndex, 0);
             mTexIndex = null;
         }
         if (mProgram != 0) {
-            GLES20.glDeleteProgram(mProgram);
+            GLES30.glDeleteProgram(mProgram);
             mProgram = 0;
         }
         mGlReady = false;
@@ -118,22 +118,22 @@ public class ForestGL extends GLESScene {
             return;
         }
 
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
+        GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT | GLES30.GL_DEPTH_BUFFER_BIT);
 
         mScene.update();
 
-        GLES20.glUseProgram(mProgram);
+        GLES30.glUseProgram(mProgram);
 
         // enable vertex/texcoord arrays
-        GLES20.glEnableVertexAttribArray(mAPosition);
-        GLES20.glEnableVertexAttribArray(mATexCoord);
+        GLES30.glEnableVertexAttribArray(mAPosition);
+        GLES30.glEnableVertexAttribArray(mATexCoord);
 
         drawBackground();
         drawStems();
         drawParticles();
 
-        GLES20.glDisableVertexAttribArray(mAPosition);
-        GLES20.glDisableVertexAttribArray(mATexCoord);
+        GLES30.glDisableVertexAttribArray(mAPosition);
+        GLES30.glDisableVertexAttribArray(mATexCoord);
 
         mLastFrameMs = timeMs;
     }
@@ -141,17 +141,17 @@ public class ForestGL extends GLESScene {
     // ---- GL init ----
 
     private void initGL() {
-        String vs = "attribute vec4 aPosition;\nattribute vec2 aTexCoord;\nvarying vec2 vTexCoord;\nuniform mat4 uMVPMatrix;\nvoid main() {\n  gl_Position = uMVPMatrix * aPosition;\n  vTexCoord = aTexCoord;\n}";
-        String fs = "precision mediump float;\nvarying vec2 vTexCoord;\nuniform sampler2D uTexture;\nuniform float uAlpha;\nvoid main() {\n  vec4 c = texture2D(uTexture, vTexCoord);\n  gl_FragColor = vec4(c.rgb, c.a * uAlpha);\n}";
+        String vs = "#version 300 es\nin vec4 aPosition;\nin vec2 aTexCoord;\nout vec2 vTexCoord;\nuniform mat4 uMVPMatrix;\nvoid main() {\n  gl_Position = uMVPMatrix * aPosition;\n  vTexCoord = aTexCoord;\n}";
+        String fs = "#version 300 es\nprecision mediump float;\nout vec4 fragColor;\nin vec2 vTexCoord;\nuniform sampler2D uTexture;\nuniform float uAlpha;\nvoid main() {\n  vec4 c = texture(uTexture, vTexCoord);\n  fragColor = vec4(c.rgb, c.a * uAlpha);\n}";
 
         mProgram = createProgram(vs, fs);
-        mAPosition = GLES20.glGetAttribLocation(mProgram, "aPosition");
-        mATexCoord = GLES20.glGetAttribLocation(mProgram, "aTexCoord");
-        mUMVPMatrix = GLES20.glGetUniformLocation(mProgram, "uMVPMatrix");
-        mUAlpha = GLES20.glGetUniformLocation(mProgram, "uAlpha");
-        mUTexture = GLES20.glGetUniformLocation(mProgram, "uTexture");
+        mAPosition = GLES30.glGetAttribLocation(mProgram, "aPosition");
+        mATexCoord = GLES30.glGetAttribLocation(mProgram, "aTexCoord");
+        mUMVPMatrix = GLES30.glGetUniformLocation(mProgram, "uMVPMatrix");
+        mUAlpha = GLES30.glGetUniformLocation(mProgram, "uAlpha");
+        mUTexture = GLES30.glGetUniformLocation(mProgram, "uTexture");
 
-        GLES20.glClearColor(0, 0, 0, 1);
+        GLES30.glClearColor(0, 0, 0, 1);
 
         setupProjection(mWidth, mHeight);
         initBuffers();
@@ -162,7 +162,7 @@ public class ForestGL extends GLESScene {
     }
 
     private void setupProjection(int width, int height) {
-        GLES20.glViewport(0, 0, width, height);
+        GLES30.glViewport(0, 0, width, height);
         Matrix.orthoM(mProjectionMatrix, 0, 0, ForestScene.SCREEN_W, 0, ForestScene.SCREEN_H, -10, 1000);
     }
 
@@ -189,16 +189,16 @@ public class ForestGL extends GLESScene {
                 "forest_stem_c_64_512", "forest_stem_b_02_64_512"};
 
         mTexIndex = new int[assetNames.length];
-        GLES20.glGenTextures(assetNames.length, mTexIndex, 0);
+        GLES30.glGenTextures(assetNames.length, mTexIndex, 0);
         for (int i = 0; i < assetNames.length; i++) {
             String assetPath = "forest/drawable/" + assetNames[i] + ".png";
             Bitmap bmp = AssetLoader.decodeBitmap(mContext, assetPath);
-            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTexIndex[i]);
-            GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
-            GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-            GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
-            GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
-            GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bmp, 0);
+            GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mTexIndex[i]);
+            GLES30.glTexParameterf(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR);
+            GLES30.glTexParameterf(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
+            GLES30.glTexParameterf(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE);
+            GLES30.glTexParameterf(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE);
+            GLUtils.texImage2D(GLES30.GL_TEXTURE_2D, 0, bmp, 0);
             bmp.recycle();
         }
     }
@@ -207,7 +207,7 @@ public class ForestGL extends GLESScene {
 
     private void drawBackground() {
         // bg layer (tex 0) — opaque, disable blend
-        GLES20.glDisable(GLES20.GL_BLEND);
+        GLES30.glDisable(GLES30.GL_BLEND);
         bindTexture(mTexIndex[0]);
         setAlpha(1.0f);
         Matrix.setIdentityM(mModelMatrix, 0);
@@ -215,8 +215,8 @@ public class ForestGL extends GLESScene {
         drawQuad(mVertexBG);
 
         // overlay layer (tex 1) with additive blend + pulsing alpha
-        GLES20.glEnable(GLES20.GL_BLEND);
-        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE);
+        GLES30.glEnable(GLES30.GL_BLEND);
+        GLES30.glBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ONE);
         bindTexture(mTexIndex[1]);
         setAlpha(mScene.mOverlayOutTime);
         Matrix.setIdentityM(mModelMatrix, 0);
@@ -224,12 +224,12 @@ public class ForestGL extends GLESScene {
         drawQuad(mVertexOverlay);
 
         // restore blend
-        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+        GLES30.glBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ONE_MINUS_SRC_ALPHA);
     }
 
     private void drawStems() {
-        GLES20.glEnable(GLES20.GL_BLEND);
-        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+        GLES30.glEnable(GLES30.GL_BLEND);
+        GLES30.glBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ONE_MINUS_SRC_ALPHA);
         bindVertex(mVertexStem);
         bindTexCoord(mTexCoordDefault);
 
@@ -245,15 +245,15 @@ public class ForestGL extends GLESScene {
             Matrix.translateM(mModelMatrix, 0, -ForestScene.STEM_WIDTH, -ForestScene.STEM_HEIGHT, 0);
 
             computeMVP();
-            GLES20.glUniformMatrix4fv(mUMVPMatrix, 1, false, mMVPMatrix, 0);
-            GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
+            GLES30.glUniformMatrix4fv(mUMVPMatrix, 1, false, mMVPMatrix, 0);
+            GLES30.glDrawArrays(GLES30.GL_TRIANGLE_STRIP, 0, 4);
         }
     }
 
     private void drawParticles() {
         // 粒子使用标准非预乘混合
-        GLES20.glEnable(GLES20.GL_BLEND);
-        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+        GLES30.glEnable(GLES30.GL_BLEND);
+        GLES30.glBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ONE_MINUS_SRC_ALPHA);
         bindTexture(mTexIndex[3]);
         bindVertex(mVertexParticle);
         bindTexCoord(mTexCoordDefault);
@@ -270,39 +270,39 @@ public class ForestGL extends GLESScene {
 
             setAlpha(p.outTime);
             computeMVP();
-            GLES20.glUniformMatrix4fv(mUMVPMatrix, 1, false, mMVPMatrix, 0);
-            GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
+            GLES30.glUniformMatrix4fv(mUMVPMatrix, 1, false, mMVPMatrix, 0);
+            GLES30.glDrawArrays(GLES30.GL_TRIANGLE_STRIP, 0, 4);
         }
     }
 
     // ---- helpers ----
 
     private void bindTexture(int tex) {
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, tex);
-        GLES20.glUniform1i(mUTexture, 0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, tex);
+        GLES30.glUniform1i(mUTexture, 0);
     }
 
     private void bindVertex(FloatBuffer buf) {
         buf.position(0);
-        GLES20.glVertexAttribPointer(mAPosition, 3, GLES20.GL_FLOAT, false, 0, buf);
+        GLES30.glVertexAttribPointer(mAPosition, 3, GLES30.GL_FLOAT, false, 0, buf);
     }
 
     private void bindTexCoord(FloatBuffer buf) {
         buf.position(0);
-        GLES20.glVertexAttribPointer(mATexCoord, 2, GLES20.GL_FLOAT, false, 0, buf);
+        GLES30.glVertexAttribPointer(mATexCoord, 2, GLES30.GL_FLOAT, false, 0, buf);
     }
 
     private void setAlpha(float a) {
-        GLES20.glUniform1f(mUAlpha, a);
+        GLES30.glUniform1f(mUAlpha, a);
     }
 
     private void drawQuad(FloatBuffer verts) {
         verts.position(0);
-        GLES20.glVertexAttribPointer(mAPosition, 3, GLES20.GL_FLOAT, false, 0, verts);
+        GLES30.glVertexAttribPointer(mAPosition, 3, GLES30.GL_FLOAT, false, 0, verts);
         bindTexCoord(mTexCoordDefault);
         computeMVP();
-        GLES20.glUniformMatrix4fv(mUMVPMatrix, 1, false, mMVPMatrix, 0);
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
+        GLES30.glUniformMatrix4fv(mUMVPMatrix, 1, false, mMVPMatrix, 0);
+        GLES30.glDrawArrays(GLES30.GL_TRIANGLE_STRIP, 0, 4);
     }
 
     private void computeMVP() {

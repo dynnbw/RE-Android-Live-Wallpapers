@@ -2,7 +2,7 @@ package com.reandroid.wallpaper.cube;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 import android.util.Log;
 
 import com.reandroid.gles.GLESScene;
@@ -35,16 +35,19 @@ public class CubeGL extends GLESScene {
     private FloatBuffer mRingBuf;
 
     private static final String LINE_VS =
-            "attribute vec2 aPosition;\n" +
+            "#version 300 es\n" +
+            "in vec2 aPosition;\n" +
             "void main() {\n" +
             "    gl_Position = vec4(aPosition, 0.0, 1.0);\n" +
             "}";
 
     private static final String LINE_FS =
+            "#version 300 es\n" +
             "precision mediump float;\n" +
+            "out vec4 fragColor;\n" +
             "uniform vec4 uColor;\n" +
             "void main() {\n" +
-            "    gl_FragColor = uColor;\n" +
+            "    fragColor = uColor;\n" +
             "}";
 
     public CubeGL(int width, int height, Context context) {
@@ -72,7 +75,7 @@ public class CubeGL extends GLESScene {
     @Override
     public void release() {
         if (mLineProgram != 0) {
-            GLES20.glDeleteProgram(mLineProgram);
+            GLES30.glDeleteProgram(mLineProgram);
             mLineProgram = 0;
         }
         mInitialized = false;
@@ -109,8 +112,8 @@ public class CubeGL extends GLESScene {
         initGLIfNeeded();
         if (!mInitialized) return;
 
-        GLES20.glViewport(0, 0, mWidth, mHeight);
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+        GLES30.glViewport(0, 0, mWidth, mHeight);
+        GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT);
 
         drawLines(timeMs);
         drawTouchPoint();
@@ -124,9 +127,9 @@ public class CubeGL extends GLESScene {
             mScene.loadShape(shape);
         }
 
-        GLES20.glClearColor(0f, 0f, 0f, 1f);
-        GLES20.glEnable(GLES20.GL_BLEND);
-        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+        GLES30.glClearColor(0f, 0f, 0f, 1f);
+        GLES30.glEnable(GLES30.GL_BLEND);
+        GLES30.glBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ONE_MINUS_SRC_ALPHA);
 
         mLineProgram = createProgram(LINE_VS, LINE_FS);
         if (mLineProgram == 0) {
@@ -134,8 +137,8 @@ public class CubeGL extends GLESScene {
             return;
         }
 
-        mLinePositionLoc = GLES20.glGetAttribLocation(mLineProgram, "aPosition");
-        mLineColorLoc = GLES20.glGetUniformLocation(mLineProgram, "uColor");
+        mLinePositionLoc = GLES30.glGetAttribLocation(mLineProgram, "aPosition");
+        mLineColorLoc = GLES30.glGetUniformLocation(mLineProgram, "uColor");
 
         mHalfWidth = mWidth / 2f;
         mHalfHeight = mHeight / 2f;
@@ -174,14 +177,14 @@ public class CubeGL extends GLESScene {
             mLineBuf.position(0);
         }
 
-        GLES20.glUseProgram(mLineProgram);
-        GLES20.glUniform4f(mLineColorLoc, 1f, 1f, 1f, 1f);
+        GLES30.glUseProgram(mLineProgram);
+        GLES30.glUniform4f(mLineColorLoc, 1f, 1f, 1f, 1f);
 
-        GLES20.glEnableVertexAttribArray(mLinePositionLoc);
-        GLES20.glVertexAttribPointer(mLinePositionLoc, 2, GLES20.GL_FLOAT, false, 0, mLineBuf);
-        GLES20.glLineWidth(2f);
-        GLES20.glDrawArrays(GLES20.GL_LINES, 0, vertCount);
-        GLES20.glDisableVertexAttribArray(mLinePositionLoc);
+        GLES30.glEnableVertexAttribArray(mLinePositionLoc);
+        GLES30.glVertexAttribPointer(mLinePositionLoc, 2, GLES30.GL_FLOAT, false, 0, mLineBuf);
+        GLES30.glLineWidth(2f);
+        GLES30.glDrawArrays(GLES30.GL_LINES, 0, vertCount);
+        GLES30.glDisableVertexAttribArray(mLinePositionLoc);
     }
 
     private void drawTouchPoint() {
@@ -205,14 +208,14 @@ public class CubeGL extends GLESScene {
             mRingBuf.position(0);
         }
 
-        GLES20.glUseProgram(mLineProgram);
-        GLES20.glUniform4f(mLineColorLoc, 1f, 1f, 1f, 0.6f);
+        GLES30.glUseProgram(mLineProgram);
+        GLES30.glUniform4f(mLineColorLoc, 1f, 1f, 1f, 0.6f);
 
-        GLES20.glEnableVertexAttribArray(mLinePositionLoc);
-        GLES20.glVertexAttribPointer(mLinePositionLoc, 2, GLES20.GL_FLOAT, false, 0, mRingBuf);
-        GLES20.glLineWidth(2f);
-        GLES20.glDrawArrays(GLES20.GL_LINE_LOOP, 0, CIRCLE_SEGMENTS);
-        GLES20.glDisableVertexAttribArray(mLinePositionLoc);
+        GLES30.glEnableVertexAttribArray(mLinePositionLoc);
+        GLES30.glVertexAttribPointer(mLinePositionLoc, 2, GLES30.GL_FLOAT, false, 0, mRingBuf);
+        GLES30.glLineWidth(2f);
+        GLES30.glDrawArrays(GLES30.GL_LINE_LOOP, 0, CIRCLE_SEGMENTS);
+        GLES30.glDisableVertexAttribArray(mLinePositionLoc);
     }
 
 
