@@ -3,6 +3,5 @@
   "nixie_audio_source": "অডিও উৎস",
   "nixie_audio_source_label_0": "সিস্টেম অডিও",
   "nixie_audio_source_label_1": "মাইক্রোফোন",
-  "nixie_threshold_db": "ট্রিগার থ্রেশহোল্ড (dBFS)",
-  "nixie_decay_speed": "ক্ষয় গতি"
+  "nixie_threshold_db": "ট্রিগার থ্রেশহোল্ড (dBFS)"
 }

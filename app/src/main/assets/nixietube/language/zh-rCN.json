@@ -3,6 +3,5 @@
   "nixie_audio_source": "音频来源",
   "nixie_audio_source_label_0": "系统音频",
   "nixie_audio_source_label_1": "麦克风",
-  "nixie_threshold_db": "触发阈值 (dBFS)",
-  "nixie_decay_speed": "衰减速度"
+  "nixie_threshold_db": "触发阈值 (dBFS)"
 }

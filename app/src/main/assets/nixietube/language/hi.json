@@ -3,6 +3,5 @@
   "nixie_audio_source": "ऑडियो स्रोत",
   "nixie_audio_source_label_0": "सिस्टम ऑडियो",
   "nixie_audio_source_label_1": "माइक्रोफ़ोन",
-  "nixie_threshold_db": "ट्रिगर थ्रेशोल्ड (dBFS)",
-  "nixie_decay_speed": "क्षय गति"
+  "nixie_threshold_db": "ट्रिगर थ्रेशोल्ड (dBFS)"
 }

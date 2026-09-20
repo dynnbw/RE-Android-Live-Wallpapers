@@ -3,6 +3,5 @@
   "nixie_audio_source": "Source audio",
   "nixie_audio_source_label_0": "Audio du système",
   "nixie_audio_source_label_1": "Microphone",
-  "nixie_threshold_db": "Seuil de déclenchement (dBFS)",
-  "nixie_decay_speed": "Vitesse d'atténuation"
+  "nixie_threshold_db": "Seuil de déclenchement (dBFS)"
 }
