@@ -18,6 +18,7 @@ import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 
+import com.reandroid.gles.GlCapabilities;
 import com.reandroid.gles.GLESScene;
 import com.reandroid.gles.GLESWallpaper;
 
@@ -293,6 +294,7 @@ public abstract class BasePluginEngine implements WallpaperEngine {
                 return;
             }
             Log.d(TAG, "EGL current, scene pending init=" + mSceneInitPending);
+            GlCapabilities.logDriverVersion(TAG);
             try {
                 GLES20.glClearColor(0f, 0f, 0f, 1f);
                 GLES20.glEnable(GLES20.GL_BLEND);
@@ -340,30 +342,19 @@ public abstract class BasePluginEngine implements WallpaperEngine {
         if (mDisplay == EGL14.EGL_NO_DISPLAY) return false;
         int[] version = new int[2];
         if (!EGL14.eglInitialize(mDisplay, version, 0, version, 1)) return false;
-        // 三维内容(Earth)需要深度缓冲;其余场景本来就显式关闭深度测试,对它们是惰性的。
-        // 没有带深度的配置时退回不带深度的,不能让所有壁纸都渲染不出来。
-        int[] withDepth = {EGL14.EGL_RED_SIZE,8, EGL14.EGL_GREEN_SIZE,8, EGL14.EGL_BLUE_SIZE,8,
-                EGL14.EGL_DEPTH_SIZE,16,
-                EGL14.EGL_RENDERABLE_TYPE,EGL14.EGL_OPENGL_ES2_BIT, EGL14.EGL_NONE};
-        int[] noDepth = {EGL14.EGL_RED_SIZE,8, EGL14.EGL_GREEN_SIZE,8, EGL14.EGL_BLUE_SIZE,8,
-                EGL14.EGL_RENDERABLE_TYPE,EGL14.EGL_OPENGL_ES2_BIT, EGL14.EGL_NONE};
-        EGLConfig[] configs = new EGLConfig[1];
-        int[] numConfig = new int[1];
-        if (!EGL14.eglChooseConfig(mDisplay, withDepth, 0, configs, 0, 1, numConfig, 0)
-                || numConfig[0] <= 0) {
-            EGL14.eglChooseConfig(mDisplay, noDepth, 0, configs, 0, 1, numConfig, 0);
-        }
-        if (numConfig[0] <= 0 || configs[0] == null) {
+        // 优先带深度的配置，没有就退回不带深度的，不能让所有壁纸都渲染不出来。
+        EGLConfig config = GlCapabilities.chooseConfig(mDisplay, true);
+        if (config == null) config = GlCapabilities.chooseConfig(mDisplay, false);
+        if (config == null) {
             Log.e(TAG, "eglChooseConfig failed");
             return false;
         }
         int[] depthBits = new int[1];
-        EGL14.eglGetConfigAttrib(mDisplay, configs[0], EGL14.EGL_DEPTH_SIZE, depthBits, 0);
+        EGL14.eglGetConfigAttrib(mDisplay, config, EGL14.EGL_DEPTH_SIZE, depthBits, 0);
         Log.i(TAG, "EGL 配置深度位数 = " + depthBits[0]);
-        int[] ctxAttribs = {EGL14.EGL_CONTEXT_CLIENT_VERSION, 2, EGL14.EGL_NONE};
-        mEglContext = EGL14.eglCreateContext(mDisplay, configs[0], EGL14.EGL_NO_CONTEXT, ctxAttribs, 0);
+        mEglContext = GlCapabilities.createContext(mDisplay, config);
         if (mEglContext == EGL14.EGL_NO_CONTEXT) return false;
-        mEglSurface = EGL14.eglCreateWindowSurface(mDisplay, configs[0], surface,
+        mEglSurface = EGL14.eglCreateWindowSurface(mDisplay, config, surface,
                 new int[]{EGL14.EGL_NONE}, 0);
         return mEglSurface != null && mEglSurface != EGL14.EGL_NO_SURFACE;
     }
