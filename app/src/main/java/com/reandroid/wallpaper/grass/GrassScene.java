@@ -39,8 +39,10 @@ import com.reandroid.utils.MathUtils;
 final class GrassScene {
 
     private static final long CELESTIAL_CACHE_INTERVAL_MS = 60000L;
-    /** 预览用的天文量缓存间隔，见 {@link #celestialCacheIntervalMs()}。 */
-    private static final long PREVIEW_CELESTIAL_CACHE_MS = 100L;
+    /** 日食几何的实机更新间隔。见 {@link #updateSolarEclipseState}。 */
+    private static final long SOLAR_ECLIPSE_UPDATE_INTERVAL_MS = 15000L;
+    /** 预览用的天文量缓存间隔：0 = 每帧都算（月亮要连续移动，不能按实机的 60 秒缓存）。 */
+    private static final long PREVIEW_CELESTIAL_CACHE_MS = 0L;
 
     // ---- Plugin prefs ----
     private SharedPreferences mPluginPrefs;
@@ -921,9 +923,10 @@ final class GrassScene {
      *            这里不再自己读时钟 —— 否则预览下日食几何会走真实时间，和其他部分脱节。
      */
     private void updateSolarEclipseState(MoonCalculator.MoonData data, Calendar now) {
-        // 节流按真实时间
+        // 节流按真实时间；预览下不节流，否则一个 30 秒周期只更新两次，日食会一跳一跳
         long nowMs = System.currentTimeMillis();
-        if (mLastSolarEclipseUpdateMs != 0L && (nowMs - mLastSolarEclipseUpdateMs) < 15000L) return;
+        long interval = mIsPreview ? 0L : SOLAR_ECLIPSE_UPDATE_INTERVAL_MS;
+        if (mLastSolarEclipseUpdateMs != 0L && (nowMs - mLastSolarEclipseUpdateMs) < interval) return;
         if (data == null) {
             mSolarEclipseWeight = 0.0f;
             mLastSolarEclipseUpdateMs = nowMs;
@@ -959,8 +962,8 @@ final class GrassScene {
     /**
      * 天文量的缓存间隔。
      *
-     * <p>预览把一天压进 30 秒，用实机的 60 秒缓存会让月亮整个卡住不动；改成 100 毫秒
-     * （约 10 次/秒）既跟得上压缩后的时间轴，又不必每帧重算星历。
+     * <p>预览把一天压进 30 秒，实机那 60 秒的缓存会让月亮整个卡住不动；预览下取 0，
+     * 也就是逐帧重算 —— {@code MoonCalculator.compute} 只有几十次三角函数，微秒量级。
      */
     private long celestialCacheIntervalMs() {
         return mIsPreview ? PREVIEW_CELESTIAL_CACHE_MS : CELESTIAL_CACHE_INTERVAL_MS;

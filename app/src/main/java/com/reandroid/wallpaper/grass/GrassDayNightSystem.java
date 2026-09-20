@@ -52,8 +52,14 @@ final public class GrassDayNightSystem {
     }
 
     private static final long WEIGHT_UPDATE_INTERVAL_MS = 60000L;
-    /** 预览用的权重更新间隔。一天只有 30 秒，60 秒的节流会让权重在整个循环里只算一次。 */
-    private static final long PREVIEW_WEIGHT_UPDATE_INTERVAL_MS = 100L;
+    /**
+     * 预览用的权重更新间隔：0 = 每帧都算。
+     *
+     * <p>预览把一天压进 30 秒，任何节流都会变成肉眼可见的台阶 —— 天空色、太阳高度角
+     * 都需要逐帧连续。这里不算贵：{@code computeSunriseTime/SunsetTime} 都是直线计算
+     * （无循环），整个方法几十次三角函数，微秒量级。GPS 读取另有 5 分钟节流兜着。
+     */
+    private static final long PREVIEW_WEIGHT_UPDATE_INTERVAL_MS = 0L;
 
     /** 预览模式（一天压缩进 30 秒）。决定节流间隔用实机还是预览那一档。 */
     private boolean mPreview;
