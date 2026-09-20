@@ -4,7 +4,6 @@ import android.opengl.GLES30;
 import android.util.Log;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 
 import com.reandroid.utils.AssetLoader;
 import com.reandroid.gles.GLESScene;
@@ -115,10 +114,6 @@ public class WindmillGL extends GLESScene {
         super(width, height);
         mContext = GLESWallpaper.getAppContext();
         mScene = new WindmillScene();
-    }
-
-    public void setPluginPrefs(SharedPreferences prefs) {
-        mScene.setPluginPrefs(prefs);
     }
 
     @Override

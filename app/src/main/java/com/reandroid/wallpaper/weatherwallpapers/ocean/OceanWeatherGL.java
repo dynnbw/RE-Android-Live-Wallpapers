@@ -3,7 +3,6 @@ package com.reandroid.wallpaper.weatherwallpapers.ocean;
 import android.opengl.GLES30;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 
 import com.reandroid.utils.AssetLoader;
 import com.reandroid.gles.GLESScene;
@@ -94,10 +93,6 @@ public class OceanWeatherGL extends GLESScene {
         super(width, height);
         mContext = context;
         mScene = new OceanWeatherScene();
-    }
-
-    public void setPluginPrefs(SharedPreferences prefs) {
-        mScene.setPluginPrefs(prefs);
     }
 
     @Override

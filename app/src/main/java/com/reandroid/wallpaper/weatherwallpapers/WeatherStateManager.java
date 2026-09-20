@@ -1,13 +1,14 @@
 package com.reandroid.wallpaper.weatherwallpapers;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 
+import com.reandroid.astronomy.DayNightResolver;
+import com.reandroid.astronomy.DeviceLocation;
 import com.reandroid.weather.WeatherCondition;
 import com.reandroid.weather.WeatherManager;
 import com.reandroid.weather.WeatherState;
 
-import java.util.Calendar;
+import java.util.TimeZone;
 
 public class WeatherStateManager {
     private static final long PREVIEW_STEP_MS = 3000L;
@@ -24,8 +25,19 @@ public class WeatherStateManager {
             WeatherCondition.D9_SLEET
     };
 
-    private final SharedPreferences mPrefs;
     private final WeatherManager mWeatherManager;
+
+    /**
+     * 昼夜改由设备位置就地算（与 grass 同一套）。
+     *
+     * <p>早先这里读 {@code last_sunrise}/{@code last_sunset}，拿不到就退回硬编码的
+     * 06:00/18:00 —— 而那份读法一直是死分支：它读插件设置文件，那两个键却被写进
+     * 应用的默认设置文件。也就是说这两款壁纸从来只有后一半在生效，一整年都按本地
+     * 钟表的 6 点/18 点切换。
+     */
+    private final DayNightResolver mDayNight = new DayNightResolver();
+    private final DeviceLocation mDeviceLocation = new DeviceLocation();
+    private float[] mResolvedLocation;
 
     private WeatherCondition mCondition = WeatherCondition.D1_CLEAR;
     private boolean mIsNight = false;
@@ -34,8 +46,7 @@ public class WeatherStateManager {
     private int mPreviewIndex = 0;
     private long mPreviewNextMs = 0L;
 
-    public WeatherStateManager(Context appContext, SharedPreferences prefs) {
-        mPrefs = prefs;
+    public WeatherStateManager(Context appContext) {
         mWeatherManager = appContext != null ? new WeatherManager(appContext, this::onWeatherUpdated) : null;
     }
 
@@ -59,8 +70,8 @@ public class WeatherStateManager {
         if (preview) {
             updatePreviewCycle(timeMs);
         }
-        // Always re-evaluate day/night based on current time (original behavior)
-        mIsNight = computeIsNight();
+        refreshLocation();
+        mIsNight = mDayNight.isNight(System.currentTimeMillis());
     }
 
     public synchronized WeatherCondition getCondition() {
@@ -80,14 +91,31 @@ public class WeatherStateManager {
             return;
         }
         mCondition = state.condition;
-        mIsNight = state.isNight;
+        // state.isNight 不再采用：那是接口所在城市的昼夜，和本机位置不是一回事
+    }
+
+    /**
+     * 位置变了才重建太阳计算器。
+     *
+     * <p>{@link DeviceLocation} 没有新结果时返回同一个数组实例，所以这个引用比较
+     * 在 5 分钟节流内恒为真 —— 每帧跑的就只有一次引用比较。
+     */
+    private void refreshLocation() {
+        float[] resolved = mDeviceLocation.resolve();
+        if (resolved == mResolvedLocation) {
+            return;
+        }
+        mResolvedLocation = resolved;
+        if (resolved != null) {
+            mDayNight.setLocation(resolved[0], resolved[1]);
+        }
+        mDayNight.setTimeZone(TimeZone.getDefault());
     }
 
     private void initPreviewCycle() {
         mPreviewActive = true;
         mPreviewIndex = 0;
         mPreviewNextMs = 0L;
-        mIsNight = computeIsNight();
         mCondition = WeatherCondition.D1_CLEAR;
     }
 
@@ -113,18 +141,5 @@ public class WeatherStateManager {
         mPreviewIndex++;
         mCondition = PREVIEW_ORDER[mPreviewIndex];
         mPreviewNextMs = timeMs + PREVIEW_STEP_MS;
-    }
-
-    private boolean computeIsNight() {
-        long nowMs = System.currentTimeMillis();
-        long sunriseUtc = mPrefs != null ? mPrefs.getLong("last_sunrise", 0L) : 0L;
-        long sunsetUtc = mPrefs != null ? mPrefs.getLong("last_sunset", 0L) : 0L;
-        if (sunriseUtc > 0L && sunsetUtc > 0L) {
-            long nowSec = nowMs / 1000L;
-            return nowSec < sunriseUtc || nowSec >= sunsetUtc;
-        }
-        Calendar calendar = Calendar.getInstance();
-        int time = (calendar.get(Calendar.HOUR_OF_DAY) * 100) + calendar.get(Calendar.MINUTE);
-        return time < 600 || time > 1800;
     }
 }

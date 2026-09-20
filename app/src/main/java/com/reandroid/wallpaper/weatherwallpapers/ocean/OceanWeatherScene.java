@@ -1,7 +1,6 @@
 package com.reandroid.wallpaper.weatherwallpapers.ocean;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.opengl.Matrix;
 
 import com.reandroid.wallpaper.weatherwallpapers.AnimationController;
@@ -28,18 +27,12 @@ final class OceanWeatherScene {
 
     WeatherStateManager mWeatherStateManager;
     final WeatherFlagManager mWeatherFlagManager = new WeatherFlagManager();
-    private SharedPreferences mPluginPrefs;
 
     OceanWeatherScene() {
     }
 
-    void setPluginPrefs(SharedPreferences prefs) {
-        mPluginPrefs = prefs;
-    }
-
     void onCreate(Context appContext) {
-        // 只认注入的设置（原来未注入时退到应用默认 prefs，会把日出日落缓存写到错误的文件里）
-        mWeatherStateManager = new WeatherStateManager(appContext, mPluginPrefs);
+        mWeatherStateManager = new WeatherStateManager(appContext);
     }
 
     void start(boolean isPreview) {

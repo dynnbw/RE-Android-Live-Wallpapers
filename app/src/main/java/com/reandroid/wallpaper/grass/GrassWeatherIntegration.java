@@ -7,11 +7,17 @@ import com.reandroid.weather.WeatherCondition;
 import com.reandroid.weather.WeatherManager;
 import com.reandroid.weather.WeatherState;
 
-import java.util.Calendar;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 final class GrassWeatherIntegration {
+
+    /**
+     * 构造预览用的 {@link WeatherState} 时占位 —— 草地的昼夜一律取自本地太阳高度角
+     * （见 {@code GrassScene#updateSky}），{@code WeatherState.isNight} 全项目无人读取，
+     * 没必要再为它算一遍。
+     */
+    private static final boolean IS_NIGHT_UNUSED = false;
 
     static final class FrameUpdate {
         final WeatherState stateToApply;
@@ -86,7 +92,7 @@ final class GrassWeatherIntegration {
         if (isPreview && weatherEnabled) {
             WeatherCondition next = mPreviewCycle.advance(timeMs);
             if (next != null) {
-                pendingWeatherState.set(new WeatherState(next, computePreviewIsNight(),
+                pendingWeatherState.set(new WeatherState(next, IS_NIGHT_UNUSED,
                         0.0f, 0.0f, 0L, 0L, 0L));
             }
         }
@@ -134,23 +140,9 @@ final class GrassWeatherIntegration {
         pendingWeatherState.set(state);
     }
 
-    private boolean computePreviewIsNight() {
-        long nowMs = System.currentTimeMillis();
-        long sunriseUtc = prefs != null ? prefs.getLong("last_sunrise", 0L) : 0L;
-        long sunsetUtc = prefs != null ? prefs.getLong("last_sunset", 0L) : 0L;
-        if (sunriseUtc > 0L && sunsetUtc > 0L) {
-            long nowSec = nowMs / 1000L;
-            return nowSec < sunriseUtc || nowSec >= sunsetUtc;
-        }
-
-        Calendar calendar = Calendar.getInstance();
-        int time = (calendar.get(Calendar.HOUR_OF_DAY) * 100) + calendar.get(Calendar.MINUTE);
-        return time < 600 || time > 1800;
-    }
-
     private void initPreviewWeatherCycle() {
         mPreviewCycle.reset();
-        pendingWeatherState.set(new WeatherState(mPreviewCycle.current(), computePreviewIsNight(),
+        pendingWeatherState.set(new WeatherState(mPreviewCycle.current(), IS_NIGHT_UNUSED,
                 0.0f, 0.0f, 0L, 0L, 0L));
     }
 }
