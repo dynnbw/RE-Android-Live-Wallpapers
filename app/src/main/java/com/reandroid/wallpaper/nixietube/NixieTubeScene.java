@@ -56,7 +56,9 @@ final class NixieTubeScene {
     private volatile float mLevelDb = -60f;      // instantaneous dBFS for threshold detection
     private volatile float mEnvelopeDb = -60f;   // attack-release smoothed for VU display
     private static final float ENVELOPE_RELEASE = 0.5f; // per-frame decay (30Hz → ~100ms)
-    private float mAudioThresholdDb = -30f;
+    /** 与 layout.json 的 nixie_threshold_db 默认值保持一致，否则界面显示的值与实际生效值不同。 */
+    private static final int DEFAULT_THRESHOLD_DB = -25;
+    private float mAudioThresholdDb = DEFAULT_THRESHOLD_DB;
     private boolean mAudioEnabled = true;
     private int mAudioSource = 0; // 0=system, 1=mic
     private volatile long mAudioSilenceMs;
@@ -77,7 +79,7 @@ final class NixieTubeScene {
 
     private void readPrefs() {
         if (mPrefs == null) return;
-        mAudioThresholdDb = mPrefs.getInt("nixie_threshold_db", -50);
+        mAudioThresholdDb = mPrefs.getInt("nixie_threshold_db", DEFAULT_THRESHOLD_DB);
         // prefs 被外部写入非数字（备份恢复、手改）时 parseInt 会抛，直接用默认值
         try {
             mAudioSource = Integer.parseInt(mPrefs.getString("nixie_audio_source", "0"));
