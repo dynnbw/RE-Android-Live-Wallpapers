@@ -15,7 +15,7 @@ import android.opengl.EGLConfig;
 import android.opengl.EGLContext;
 import android.opengl.EGLDisplay;
 import android.opengl.EGLSurface;
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 import android.view.MotionEvent;
 
 public abstract class GLESWallpaper extends WallpaperService {
@@ -293,43 +293,20 @@ public abstract class GLESWallpaper extends WallpaperService {
                     return;
                 }
 
-                    // 先申请深度缓冲。三维内容(Earth)需要它来遮挡背面;
-                    // 其余场景本来就显式 glDisable(GL_DEPTH_TEST),对它们是惰性的。
-                    // 万一没有带深度的配置,退回不带深度的,不能让壁纸直接渲染不出来。
-                    int[] withDepth = {
-                            EGL14.EGL_RED_SIZE, 8,
-                            EGL14.EGL_GREEN_SIZE, 8,
-                            EGL14.EGL_BLUE_SIZE, 8,
-                            EGL14.EGL_DEPTH_SIZE, 16,
-                            EGL14.EGL_RENDERABLE_TYPE, EGL14.EGL_OPENGL_ES2_BIT,
-                            EGL14.EGL_NONE
-                    };
-                    int[] noDepth = {
-                            EGL14.EGL_RED_SIZE, 8,
-                            EGL14.EGL_GREEN_SIZE, 8,
-                            EGL14.EGL_BLUE_SIZE, 8,
-                            EGL14.EGL_RENDERABLE_TYPE, EGL14.EGL_OPENGL_ES2_BIT,
-                            EGL14.EGL_NONE
-                    };
-                EGLConfig[] configs = new EGLConfig[1];
-                int[] numConfig = new int[1];
-                if (!EGL14.eglChooseConfig(display, withDepth, 0, configs, 0, 1, numConfig, 0)
-                        || numConfig[0] <= 0) {
-                    EGL14.eglChooseConfig(display, noDepth, 0, configs, 0, 1, numConfig, 0);
-                }
-                if (numConfig[0] <= 0 || configs[0] == null) {
+                // 优先带深度的配置，没有就退回不带深度的。
+                EGLConfig config = EglSetup.chooseConfig(display, true);
+                if (config == null) config = EglSetup.chooseConfig(display, false);
+                if (config == null) {
                     Log.e(TAG, "eglChooseConfig failed");
                     return;
                 }
-                EGLConfig config = configs[0];
                 {
                     int[] depthBits = new int[1];
                     EGL14.eglGetConfigAttrib(display, config, EGL14.EGL_DEPTH_SIZE, depthBits, 0);
                     android.util.Log.i("EarthEGL", "GLESWallpaper.java 深度位数 = " + depthBits[0]);
                 }
 
-                int[] attrib_list = {EGL14.EGL_CONTEXT_CLIENT_VERSION, 2, EGL14.EGL_NONE};
-                context = EGL14.eglCreateContext(display, config, EGL14.EGL_NO_CONTEXT, attrib_list, 0);
+                context = EglSetup.createContext(display, config);
                 if (context == null || context == EGL14.EGL_NO_CONTEXT) {
                     Log.e(TAG, "eglCreateContext failed");
                     return;
@@ -351,6 +328,7 @@ public abstract class GLESWallpaper extends WallpaperService {
                     Log.e(TAG, "eglMakeCurrent failed");
                     return;
                 }
+                EglSetup.logDriverVersion(TAG);
 
                 // **CRITICAL BUGFIX**: If mScene is still null, create it now in the GL thread
                 // This can happen if onSurfaceChanged() was never called by the system

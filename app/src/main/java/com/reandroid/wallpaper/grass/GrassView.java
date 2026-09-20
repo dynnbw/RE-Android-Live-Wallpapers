@@ -44,8 +44,8 @@ public class GrassView extends GLSurfaceView implements GLSurfaceView.Renderer {
     }
 
     private void init() {
-        // 设置EGL版本（GLES2.0）
-        setEGLContextClientVersion(2);
+        // 设置EGL版本（GLES3.0）
+        setEGLContextClientVersion(3);
         setRenderer(this);
         // 连续渲染（动态壁纸需要）
         setRenderMode(RENDERMODE_CONTINUOUSLY);

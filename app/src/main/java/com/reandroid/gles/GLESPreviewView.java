@@ -6,7 +6,7 @@ import android.opengl.EGLConfig;
 import android.opengl.EGLContext;
 import android.opengl.EGLDisplay;
 import android.opengl.EGLSurface;
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Surface;
@@ -173,7 +173,7 @@ public class GLESPreviewView extends SurfaceView implements SurfaceHolder.Callba
                         if (scene != null) {
                             scene.drawFrame(now);
                         } else {
-                            GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+                            GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT);
                         }
                     }
                 } catch (Exception e) {
@@ -221,42 +221,21 @@ public class GLESPreviewView extends SurfaceView implements SurfaceHolder.Callba
         int[] version = new int[2];
         if (!EGL14.eglInitialize(mDisplay, version, 0, version, 1)) return false;
 
-                // 先申请深度缓冲。三维内容(Earth)需要它来遮挡背面;
-                // 其余场景本来就显式 glDisable(GL_DEPTH_TEST),对它们是惰性的。
-                // 万一没有带深度的配置,退回不带深度的,不能让壁纸直接渲染不出来。
-                int[] withDepth = {
-                        EGL14.EGL_RED_SIZE, 8,
-                        EGL14.EGL_GREEN_SIZE, 8,
-                        EGL14.EGL_BLUE_SIZE, 8,
-                        EGL14.EGL_DEPTH_SIZE, 16,
-                        EGL14.EGL_RENDERABLE_TYPE, EGL14.EGL_OPENGL_ES2_BIT,
-                        EGL14.EGL_NONE
-                };
-                int[] noDepth = {
-                        EGL14.EGL_RED_SIZE, 8,
-                        EGL14.EGL_GREEN_SIZE, 8,
-                        EGL14.EGL_BLUE_SIZE, 8,
-                        EGL14.EGL_RENDERABLE_TYPE, EGL14.EGL_OPENGL_ES2_BIT,
-                        EGL14.EGL_NONE
-                };
-        EGLConfig[] configs = new EGLConfig[1];
-        int[] numConfig = new int[1];
-        EGL14.eglChooseConfig(mDisplay, withDepth, 0, configs, 0, 1, numConfig, 0);
-        if (numConfig[0] == 0) {
-            EGL14.eglChooseConfig(mDisplay, noDepth, 0, configs, 0, 1, numConfig, 0);
-        }
-        if (numConfig[0] == 0) return false;
-        EGLConfig config = configs[0];
+        // 优先带深度的配置，没有就退回不带深度的，不能让壁纸直接渲染不出来。
+        EGLConfig config = EglSetup.chooseConfig(mDisplay, true);
+        if (config == null) config = EglSetup.chooseConfig(mDisplay, false);
+        if (config == null) return false;
 
-        int[] contextAttribs = {EGL14.EGL_CONTEXT_CLIENT_VERSION, 2, EGL14.EGL_NONE};
-        mContext = EGL14.eglCreateContext(mDisplay, config, EGL14.EGL_NO_CONTEXT, contextAttribs, 0);
+        mContext = EglSetup.createContext(mDisplay, config);
         if (mContext == EGL14.EGL_NO_CONTEXT) return false;
 
         int[] surfaceAttribs = {EGL14.EGL_NONE};
         mSurface = EGL14.eglCreateWindowSurface(mDisplay, config, surface, surfaceAttribs, 0);
         if (mSurface == null || mSurface == EGL14.EGL_NO_SURFACE) return false;
 
-        return EGL14.eglMakeCurrent(mDisplay, mSurface, mSurface, mContext);
+        boolean current = EGL14.eglMakeCurrent(mDisplay, mSurface, mSurface, mContext);
+        if (current) EglSetup.logDriverVersion(TAG);
+        return current;
     }
 
     private void destroyEgl() {
