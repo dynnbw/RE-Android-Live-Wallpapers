@@ -52,6 +52,15 @@ public class MusicVisVuGL extends GLESScene {
     @Override
     protected void onCreate() {}
 
+    /**
+     * vis4 的 {@code previewClass} 指向本类，所以注入器只会找这个方法 —— 没有它，
+     * {@link com.reandroid.plugin.PluginPrefsInjector} 会打一条日志放过，
+     * VuScene 永远拿不到设置。VuScene 自身继承自 {@code AudioVisBase}，转发即可。
+     */
+    public void setPluginPrefs(android.content.SharedPreferences p) {
+        mScene.setPluginPrefs(p);
+    }
+
     @Override
     public void resize(int width, int height) {
         super.resize(width, height);
