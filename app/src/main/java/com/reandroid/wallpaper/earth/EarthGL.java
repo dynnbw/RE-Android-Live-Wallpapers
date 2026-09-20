@@ -3,7 +3,7 @@ package com.reandroid.wallpaper.earth;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 import android.opengl.GLUtils;
 import android.opengl.Matrix;
 import android.os.SystemClock;
@@ -80,15 +80,6 @@ public class EarthGL extends GLESScene {
 
     private boolean mGLReady;
     private boolean mGlobeFailed;
-    /**
-     * 设备是否支持 NPOT 贴图的 mipmap。
-     *
-     * <p>GLES2 规范里 NPOT 贴图只能用 CLAMP_TO_EDGE + NEAREST/LINEAR，**不能生成 mipmap**；
-     * 而我们的地球/星空是 3072 宽（POT 但非 2 的幂）。没有 mipmap 时，月球那种 2048 宽贴图
-     * 缩到 330px（约 6:1）会出现明显走样 —— 实测是一层菱形织纹。
-     * {@code GL_OES_texture_npot} 普遍支持，支持时就能给 NPOT 也上 mipmap。
-     */
-    private boolean mNpotMipmaps;
 
     // ---- programs ----
     private int mPlanetProgram;
@@ -172,7 +163,7 @@ public class EarthGL extends GLESScene {
     public void release() {
         int[] programs = { mPlanetProgram, mSkyProgram, mOverlayProgram };
         for (int p : programs) {
-            if (p != 0) GLES20.glDeleteProgram(p);
+            if (p != 0) GLES30.glDeleteProgram(p);
         }
         mPlanetProgram = 0;
         mSkyProgram = 0;
@@ -181,7 +172,7 @@ public class EarthGL extends GLESScene {
         int[] textures = { mTexEarthDay, mTexEarthNight, mTexClouds, mTexMoon,
                 mTexSpecular, mTexHalo, mTexHaloCloseup, mTexSky };
         for (int t : textures) {
-            if (t != 0) GLES20.glDeleteTextures(1, new int[] { t }, 0);
+            if (t != 0) GLES30.glDeleteTextures(1, new int[] { t }, 0);
         }
         mTexEarthDay = 0;
         mTexEarthNight = 0;
@@ -199,7 +190,7 @@ public class EarthGL extends GLESScene {
     public void resize(int width, int height) {
         super.resize(width, height);
         if (mGLReady) {
-            GLES20.glViewport(0, 0, mWidth, mHeight);
+            GLES30.glViewport(0, 0, mWidth, mHeight);
             updateProjection();
         }
     }
@@ -289,17 +280,17 @@ public class EarthGL extends GLESScene {
         // 深度写入必须在清屏**之前**打开：glClear(GL_DEPTH_BUFFER_BIT) 受 glDepthMask 影响，
         // 上一帧末尾光晕把深度写入关了，若不在清屏前恢复，深度清除会变成空操作，
         // 深度值一直留着上一帧的，结果所有球体都被深度测试拒绝 —— 整屏黑。
-        GLES20.glDepthMask(true);
-        GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
+        GLES30.glDepthMask(true);
+        GLES30.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT | GLES30.GL_DEPTH_BUFFER_BIT);
 
         buildView();
 
         // ① 天空：从内侧看，只当背景 —— 不测深度、也不写深度，后面的球体才能盖住它
         if (mPrefSky && mTexSky != 0 && !mGlobeFailed) {
-            GLES20.glDisable(GLES20.GL_DEPTH_TEST);
-            GLES20.glDepthMask(false);
-            GLES20.glDisable(GLES20.GL_BLEND);
+            GLES30.glDisable(GLES30.GL_DEPTH_TEST);
+            GLES30.glDepthMask(false);
+            GLES30.glDisable(GLES30.GL_BLEND);
             Matrix.setIdentityM(mSkyModel, 0);
             Matrix.rotateM(mSkyModel, 0, mScene.skyAngleY(), 0.0f, 1.0f, 0.0f);
             Matrix.scaleM(mSkyModel, 0, SKY_SCALE, SKY_SCALE, SKY_SCALE);
@@ -315,23 +306,23 @@ public class EarthGL extends GLESScene {
         // ② 地球正面能看到背面的云（背面没被任何机制拦住）
         // 深度缓冲已在 EGL 配置里补上；靠它遮挡与绕序无关，比依赖 glFrontFace 判断更稳。
         // （网格实测 100% 逆时针朝外，剔除方向其实是对的，但那属于可后置的优化。）
-        GLES20.glEnable(GLES20.GL_DEPTH_TEST);
-        GLES20.glDepthFunc(GLES20.GL_LEQUAL);
-        GLES20.glDepthMask(true);
-        GLES20.glDisable(GLES20.GL_CULL_FACE);
+        GLES30.glEnable(GLES30.GL_DEPTH_TEST);
+        GLES30.glDepthFunc(GLES30.GL_LEQUAL);
+        GLES30.glDepthMask(true);
+        GLES30.glDisable(GLES30.GL_CULL_FACE);
 
         EarthCamera cam = mScene.activeCamera();
         boolean closeup = cam.id == EarthScene.CAMERA_CLOSEUP;
         float[] delta = closeup ? CLOSEUP_DELTA : null;
 
         // 地球（不透明）
-        GLES20.glDisable(GLES20.GL_BLEND);
+        GLES30.glDisable(GLES30.GL_BLEND);
         drawSphere(mTexEarthDay, mTexEarthNight, EarthScene.EARTH_SCALE,
                 mScene.earthAngleY(), true, delta);
 
         // 云层 / 高光（加色）
-        GLES20.glEnable(GLES20.GL_BLEND);
-        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE);
+        GLES30.glEnable(GLES30.GL_BLEND);
+        GLES30.glBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ONE);
         if (mPrefClouds) {
             drawSphere(mTexClouds, mTexClouds, EarthScene.CLOUDS_SCALE,
                     mScene.cloudAngleY(), false, null);
@@ -340,7 +331,7 @@ public class EarthGL extends GLESScene {
             drawSphere(mTexSpecular, mTexSpecular, EarthScene.SPECULAR_SCALE,
                     EarthScene.SPECULAR_ANGLE_Y, false, null);
         }
-        GLES20.glDisable(GLES20.GL_BLEND);
+        GLES30.glDisable(GLES30.GL_BLEND);
 
         // 月球（不透明）
         drawSphere(mTexMoon, mTexMoon, EarthScene.MOON_SCALE,
@@ -369,73 +360,73 @@ public class EarthGL extends GLESScene {
         }
         Matrix.rotateM(mModel, 0, angleY, 0.0f, 1.0f, 0.0f);
         Matrix.scaleM(mModel, 0, scale, scale, scale);
-        GLES20.glUseProgram(mPlanetProgram);
-        GLES20.glUniformMatrix4fv(mPlanetProj, 1, false, mProj, 0);
-        GLES20.glUniformMatrix4fv(mPlanetView, 1, false, mView, 0);
-        GLES20.glUniformMatrix4fv(mPlanetModel, 1, false, mModel, 0);
-        GLES20.glUniform3f(mPlanetLightPos, LIGHT_X, LIGHT_Y, LIGHT_Z);
-        GLES20.glUniform1f(mPlanetAmbient, AMBIENT);
-        GLES20.glUniform1f(mPlanetNightGain, NIGHT_GAIN);
-        GLES20.glUniform1f(mPlanetUseNight, useNight ? 1.0f : 0.0f);
+        GLES30.glUseProgram(mPlanetProgram);
+        GLES30.glUniformMatrix4fv(mPlanetProj, 1, false, mProj, 0);
+        GLES30.glUniformMatrix4fv(mPlanetView, 1, false, mView, 0);
+        GLES30.glUniformMatrix4fv(mPlanetModel, 1, false, mModel, 0);
+        GLES30.glUniform3f(mPlanetLightPos, LIGHT_X, LIGHT_Y, LIGHT_Z);
+        GLES30.glUniform1f(mPlanetAmbient, AMBIENT);
+        GLES30.glUniform1f(mPlanetNightGain, NIGHT_GAIN);
+        GLES30.glUniform1f(mPlanetUseNight, useNight ? 1.0f : 0.0f);
         if (channelDelta != null) {
-            GLES20.glUniform3f(mPlanetDelta, channelDelta[0], channelDelta[1], channelDelta[2]);
+            GLES30.glUniform3f(mPlanetDelta, channelDelta[0], channelDelta[1], channelDelta[2]);
         } else {
-            GLES20.glUniform3f(mPlanetDelta, 0.0f, 0.0f, 0.0f);
+            GLES30.glUniform3f(mPlanetDelta, 0.0f, 0.0f, 0.0f);
         }
 
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, dayTex);
-        GLES20.glUniform1i(mPlanetDay, 0);
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE1);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, nightTex);
-        GLES20.glUniform1i(mPlanetNight, 1);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, dayTex);
+        GLES30.glUniform1i(mPlanetDay, 0);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE1);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, nightTex);
+        GLES30.glUniform1i(mPlanetNight, 1);
 
         int stride = EarthGlobe.FLOATS_PER_VERTEX * 4;
         mGlobeVerts.position(0);
-        GLES20.glEnableVertexAttribArray(mPlanetPos);
-        GLES20.glVertexAttribPointer(mPlanetPos, 3, GLES20.GL_FLOAT, false, stride, mGlobeVerts);
+        GLES30.glEnableVertexAttribArray(mPlanetPos);
+        GLES30.glVertexAttribPointer(mPlanetPos, 3, GLES30.GL_FLOAT, false, stride, mGlobeVerts);
         mGlobeVerts.position(3);
-        GLES20.glEnableVertexAttribArray(mPlanetNormal);
-        GLES20.glVertexAttribPointer(mPlanetNormal, 3, GLES20.GL_FLOAT, false, stride, mGlobeVerts);
+        GLES30.glEnableVertexAttribArray(mPlanetNormal);
+        GLES30.glVertexAttribPointer(mPlanetNormal, 3, GLES30.GL_FLOAT, false, stride, mGlobeVerts);
         mGlobeVerts.position(6);
-        GLES20.glEnableVertexAttribArray(mPlanetTex);
-        GLES20.glVertexAttribPointer(mPlanetTex, 2, GLES20.GL_FLOAT, false, stride, mGlobeVerts);
+        GLES30.glEnableVertexAttribArray(mPlanetTex);
+        GLES30.glVertexAttribPointer(mPlanetTex, 2, GLES30.GL_FLOAT, false, stride, mGlobeVerts);
 
         mGlobeIndices.position(0);
-        GLES20.glDrawElements(GLES20.GL_TRIANGLES, mGlobeTriangles * 3,
-                GLES20.GL_UNSIGNED_SHORT, mGlobeIndices);
+        GLES30.glDrawElements(GLES30.GL_TRIANGLES, mGlobeTriangles * 3,
+                GLES30.GL_UNSIGNED_SHORT, mGlobeIndices);
 
-        GLES20.glDisableVertexAttribArray(mPlanetPos);
-        GLES20.glDisableVertexAttribArray(mPlanetNormal);
-        GLES20.glDisableVertexAttribArray(mPlanetTex);
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+        GLES30.glDisableVertexAttribArray(mPlanetPos);
+        GLES30.glDisableVertexAttribArray(mPlanetNormal);
+        GLES30.glDisableVertexAttribArray(mPlanetTex);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
     }
 
     /** 画天空球（只用位置与 UV）。 */
     private void drawGlobe(int program, int uProj, int uModelView, int aPos, int aTex,
                            int texture) {
-        GLES20.glUseProgram(program);
-        GLES20.glUniformMatrix4fv(uProj, 1, false, mProj, 0);
-        GLES20.glUniformMatrix4fv(uModelView, 1, false, mSkyMV, 0);
+        GLES30.glUseProgram(program);
+        GLES30.glUniformMatrix4fv(uProj, 1, false, mProj, 0);
+        GLES30.glUniformMatrix4fv(uModelView, 1, false, mSkyMV, 0);
 
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture);
-        GLES20.glUniform1i(mSkySampler, 0);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, texture);
+        GLES30.glUniform1i(mSkySampler, 0);
 
         int stride = EarthGlobe.FLOATS_PER_VERTEX * 4;
         mGlobeVerts.position(0);
-        GLES20.glEnableVertexAttribArray(aPos);
-        GLES20.glVertexAttribPointer(aPos, 3, GLES20.GL_FLOAT, false, stride, mGlobeVerts);
+        GLES30.glEnableVertexAttribArray(aPos);
+        GLES30.glVertexAttribPointer(aPos, 3, GLES30.GL_FLOAT, false, stride, mGlobeVerts);
         mGlobeVerts.position(6);
-        GLES20.glEnableVertexAttribArray(aTex);
-        GLES20.glVertexAttribPointer(aTex, 2, GLES20.GL_FLOAT, false, stride, mGlobeVerts);
+        GLES30.glEnableVertexAttribArray(aTex);
+        GLES30.glVertexAttribPointer(aTex, 2, GLES30.GL_FLOAT, false, stride, mGlobeVerts);
 
         mGlobeIndices.position(0);
-        GLES20.glDrawElements(GLES20.GL_TRIANGLES, mGlobeTriangles * 3,
-                GLES20.GL_UNSIGNED_SHORT, mGlobeIndices);
+        GLES30.glDrawElements(GLES30.GL_TRIANGLES, mGlobeTriangles * 3,
+                GLES30.GL_UNSIGNED_SHORT, mGlobeIndices);
 
-        GLES20.glDisableVertexAttribArray(aPos);
-        GLES20.glDisableVertexAttribArray(aTex);
+        GLES30.glDisableVertexAttribArray(aPos);
+        GLES30.glDisableVertexAttribArray(aTex);
     }
 
     /**
@@ -481,29 +472,29 @@ public class EarthGL extends GLESScene {
         mOverlayBuf.put(sx + screenR).put(sy - screenR).put(1.0f).put(0.0f);
         mOverlayBuf.position(0);
 
-        GLES20.glDisable(GLES20.GL_DEPTH_TEST);
-        GLES20.glDepthMask(false);
-        GLES20.glEnable(GLES20.GL_BLEND);
-        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE);
+        GLES30.glDisable(GLES30.GL_DEPTH_TEST);
+        GLES30.glDepthMask(false);
+        GLES30.glEnable(GLES30.GL_BLEND);
+        GLES30.glBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ONE);
 
-        GLES20.glUseProgram(mOverlayProgram);
-        GLES20.glUniformMatrix4fv(mOverlayOrtho, 1, false, mOrtho, 0);
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, tex);
-        GLES20.glUniform1i(mOverlaySampler, 0);
+        GLES30.glUseProgram(mOverlayProgram);
+        GLES30.glUniformMatrix4fv(mOverlayOrtho, 1, false, mOrtho, 0);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, tex);
+        GLES30.glUniform1i(mOverlaySampler, 0);
 
         mOverlayBuf.position(0);
-        GLES20.glEnableVertexAttribArray(mOverlayPos);
-        GLES20.glVertexAttribPointer(mOverlayPos, 2, GLES20.GL_FLOAT, false, 16, mOverlayBuf);
+        GLES30.glEnableVertexAttribArray(mOverlayPos);
+        GLES30.glVertexAttribPointer(mOverlayPos, 2, GLES30.GL_FLOAT, false, 16, mOverlayBuf);
         mOverlayBuf.position(2);
-        GLES20.glEnableVertexAttribArray(mOverlayTex);
-        GLES20.glVertexAttribPointer(mOverlayTex, 2, GLES20.GL_FLOAT, false, 16, mOverlayBuf);
+        GLES30.glEnableVertexAttribArray(mOverlayTex);
+        GLES30.glVertexAttribPointer(mOverlayTex, 2, GLES30.GL_FLOAT, false, 16, mOverlayBuf);
 
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, 4);
+        GLES30.glDrawArrays(GLES30.GL_TRIANGLE_FAN, 0, 4);
 
-        GLES20.glDisableVertexAttribArray(mOverlayPos);
-        GLES20.glDisableVertexAttribArray(mOverlayTex);
-        GLES20.glDisable(GLES20.GL_BLEND);
+        GLES30.glDisableVertexAttribArray(mOverlayPos);
+        GLES30.glDisableVertexAttribArray(mOverlayTex);
+        GLES30.glDisable(GLES30.GL_BLEND);
     }
 
     // ------------------------------------------------------------------
@@ -525,10 +516,6 @@ public class EarthGL extends GLESScene {
     }
 
     private final float[] mSkyModel = new float[16];
-
-    private static boolean isPowerOfTwo(int v) {
-        return v > 0 && (v & (v - 1)) == 0;
-    }
 
     /** 每分钟从 Calendar 取一次时间；原版是每帧取，代价高且无必要。 */
     private void refreshClock() {
@@ -599,13 +586,10 @@ public class EarthGL extends GLESScene {
         mTexSky = loadTexture("earth/drawable/sky.jpg");
 
         int[] maxTex = new int[1];
-        GLES20.glGetIntegerv(GLES20.GL_MAX_TEXTURE_SIZE, maxTex, 0);
+        GLES30.glGetIntegerv(GLES30.GL_MAX_TEXTURE_SIZE, maxTex, 0);
         android.util.Log.i("EarthTex", "GL_MAX_TEXTURE_SIZE = " + maxTex[0]);
 
-        String extensions = GLES20.glGetString(GLES20.GL_EXTENSIONS);
-        mNpotMipmaps = extensions != null && extensions.contains("GL_OES_texture_npot");
-
-        GLES20.glDisable(GLES20.GL_DITHER);
+        GLES30.glDisable(GLES30.GL_DITHER);
         mGLReady = true;
     }
 
@@ -613,40 +597,40 @@ public class EarthGL extends GLESScene {
         String vs = AssetLoader.readText(mContext, "earth/shaders/GLES/earth_planet_vs.glsl");
         String fs = AssetLoader.readText(mContext, "earth/shaders/GLES/earth_planet_fs.glsl");
         mPlanetProgram = createProgram(vs, fs);
-        mPlanetProj = GLES20.glGetUniformLocation(mPlanetProgram, "uProjection");
-        mPlanetView = GLES20.glGetUniformLocation(mPlanetProgram, "uView");
-        mPlanetModel = GLES20.glGetUniformLocation(mPlanetProgram, "uModel");
-        mPlanetLightPos = GLES20.glGetUniformLocation(mPlanetProgram, "uLightPosWorld");
-        mPlanetDelta = GLES20.glGetUniformLocation(mPlanetProgram, "uChannelDelta");
-        mPlanetAmbient = GLES20.glGetUniformLocation(mPlanetProgram, "uAmbient");
-        mPlanetNightGain = GLES20.glGetUniformLocation(mPlanetProgram, "uNightGain");
-        mPlanetUseNight = GLES20.glGetUniformLocation(mPlanetProgram, "uUseNight");
-        mPlanetDay = GLES20.glGetUniformLocation(mPlanetProgram, "uDay");
-        mPlanetNight = GLES20.glGetUniformLocation(mPlanetProgram, "uNight");
-        mPlanetPos = GLES20.glGetAttribLocation(mPlanetProgram, "aPosition");
-        mPlanetNormal = GLES20.glGetAttribLocation(mPlanetProgram, "aNormal");
-        mPlanetTex = GLES20.glGetAttribLocation(mPlanetProgram, "aTexCoord");
+        mPlanetProj = GLES30.glGetUniformLocation(mPlanetProgram, "uProjection");
+        mPlanetView = GLES30.glGetUniformLocation(mPlanetProgram, "uView");
+        mPlanetModel = GLES30.glGetUniformLocation(mPlanetProgram, "uModel");
+        mPlanetLightPos = GLES30.glGetUniformLocation(mPlanetProgram, "uLightPosWorld");
+        mPlanetDelta = GLES30.glGetUniformLocation(mPlanetProgram, "uChannelDelta");
+        mPlanetAmbient = GLES30.glGetUniformLocation(mPlanetProgram, "uAmbient");
+        mPlanetNightGain = GLES30.glGetUniformLocation(mPlanetProgram, "uNightGain");
+        mPlanetUseNight = GLES30.glGetUniformLocation(mPlanetProgram, "uUseNight");
+        mPlanetDay = GLES30.glGetUniformLocation(mPlanetProgram, "uDay");
+        mPlanetNight = GLES30.glGetUniformLocation(mPlanetProgram, "uNight");
+        mPlanetPos = GLES30.glGetAttribLocation(mPlanetProgram, "aPosition");
+        mPlanetNormal = GLES30.glGetAttribLocation(mPlanetProgram, "aNormal");
+        mPlanetTex = GLES30.glGetAttribLocation(mPlanetProgram, "aTexCoord");
     }
 
     private void buildSkyProgram() {
         String vs = AssetLoader.readText(mContext, "earth/shaders/GLES/earth_sky_vs.glsl");
         String fs = AssetLoader.readText(mContext, "earth/shaders/GLES/earth_sky_fs.glsl");
         mSkyProgram = createProgram(vs, fs);
-        mSkyProj = GLES20.glGetUniformLocation(mSkyProgram, "uProjection");
-        mSkyModelView = GLES20.glGetUniformLocation(mSkyProgram, "uModelView");
-        mSkySampler = GLES20.glGetUniformLocation(mSkyProgram, "uSampler");
-        mSkyPos = GLES20.glGetAttribLocation(mSkyProgram, "aPosition");
-        mSkyTex = GLES20.glGetAttribLocation(mSkyProgram, "aTexCoord");
+        mSkyProj = GLES30.glGetUniformLocation(mSkyProgram, "uProjection");
+        mSkyModelView = GLES30.glGetUniformLocation(mSkyProgram, "uModelView");
+        mSkySampler = GLES30.glGetUniformLocation(mSkyProgram, "uSampler");
+        mSkyPos = GLES30.glGetAttribLocation(mSkyProgram, "aPosition");
+        mSkyTex = GLES30.glGetAttribLocation(mSkyProgram, "aTexCoord");
     }
 
     private void buildOverlayProgram() {
         String vs = AssetLoader.readText(mContext, "earth/shaders/GLES/earth_overlay_vs.glsl");
         String fs = AssetLoader.readText(mContext, "earth/shaders/GLES/earth_overlay_fs.glsl");
         mOverlayProgram = createProgram(vs, fs);
-        mOverlayOrtho = GLES20.glGetUniformLocation(mOverlayProgram, "uOrtho");
-        mOverlaySampler = GLES20.glGetUniformLocation(mOverlayProgram, "uSampler");
-        mOverlayPos = GLES20.glGetAttribLocation(mOverlayProgram, "aPosition");
-        mOverlayTex = GLES20.glGetAttribLocation(mOverlayProgram, "aTexCoord");
+        mOverlayOrtho = GLES30.glGetUniformLocation(mOverlayProgram, "uOrtho");
+        mOverlaySampler = GLES30.glGetUniformLocation(mOverlayProgram, "uSampler");
+        mOverlayPos = GLES30.glGetAttribLocation(mOverlayProgram, "aPosition");
+        mOverlayTex = GLES30.glGetAttribLocation(mOverlayProgram, "aTexCoord");
     }
 
     /**
@@ -668,19 +652,16 @@ public class EarthGL extends GLESScene {
         }
         android.util.Log.i("EarthTex", assetPath + " 解码 " + bmp.getWidth() + "x" + bmp.getHeight());
         int[] tex = new int[1];
-        GLES20.glGenTextures(1, tex, 0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, tex[0]);
-        // 2 的幂贴图一定可以生成 mipmap；非 2 的幂要看 GL_OES_texture_npot
-        boolean mipmaps = mNpotMipmaps || (isPowerOfTwo(bmp.getWidth()) && isPowerOfTwo(bmp.getHeight()));
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER,
-                mipmaps ? GLES20.GL_LINEAR_MIPMAP_LINEAR : GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
-        GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bmp, 0);
-        if (mipmaps) {
-            GLES20.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
-        }
+        GLES30.glGenTextures(1, tex, 0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, tex[0]);
+        // ES3 里非 2 次幂贴图照样能生成 mipmap，不再需要 GL_OES_texture_npot 探测
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER,
+                GLES30.GL_LINEAR_MIPMAP_LINEAR);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE);
+        GLUtils.texImage2D(GLES30.GL_TEXTURE_2D, 0, bmp, 0);
+        GLES30.glGenerateMipmap(GLES30.GL_TEXTURE_2D);
         bmp.recycle();
         return tex[0];
     }

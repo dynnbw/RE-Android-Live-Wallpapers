@@ -21,7 +21,7 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 import android.opengl.GLUtils;
 import android.opengl.Matrix;
 import android.os.Process;
@@ -133,23 +133,23 @@ public class FallGL extends GLESScene {
     @Override
     public void release() {
         if (mLeafTextures != null && mLeafTextures.length > 0) {
-            GLES20.glDeleteTextures(mLeafTextures.length, mLeafTextures, 0);
+            GLES30.glDeleteTextures(mLeafTextures.length, mLeafTextures, 0);
             mLeafTextures = null;
         }
 
         if (mMaskTexture != 0 || mSkyTexture != 0) {
             int[] tex = new int[] { mMaskTexture, mSkyTexture };
-            GLES20.glDeleteTextures(2, tex, 0);
+            GLES30.glDeleteTextures(2, tex, 0);
             mMaskTexture = 0;
             mSkyTexture = 0;
         }
 
         if (mProgram != 0) {
-            GLES20.glDeleteProgram(mProgram);
+            GLES30.glDeleteProgram(mProgram);
             mProgram = 0;
         }
         if (mWaterProgram != 0) {
-            GLES20.glDeleteProgram(mWaterProgram);
+            GLES30.glDeleteProgram(mWaterProgram);
             mWaterProgram = 0;
         }
 
@@ -176,10 +176,10 @@ public class FallGL extends GLESScene {
 
         mGLInitialized = true;
         mScene.ensureResources();
-        GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        GLES20.glEnable(GLES20.GL_BLEND);
-        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
-        GLES20.glViewport(0, 0, mWidth, mHeight);
+        GLES30.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        GLES30.glEnable(GLES30.GL_BLEND);
+        GLES30.glBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ONE_MINUS_SRC_ALPHA);
+        GLES30.glViewport(0, 0, mWidth, mHeight);
 
         createProgram();
         createWaterProgram();
@@ -298,11 +298,11 @@ public class FallGL extends GLESScene {
         FallScene.SceneData sceneData = mScene.getSceneData();
         syncWaterMeshBuffers(sceneData);
 
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
+        GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT | GLES30.GL_DEPTH_BUFFER_BIT);
 
         drawWaterQuad(sceneData);  // uses mWaterProgram internally
         if (mProgram == 0) return;
-        GLES20.glUseProgram(mProgram);
+        GLES30.glUseProgram(mProgram);
         for (FallScene.Leaf leaf : sceneData.getLeaves()) {
             drawLeaf(leaf, sceneData);
         }
@@ -312,8 +312,8 @@ public class FallGL extends GLESScene {
          * 原来每帧无条件调用。
          */
         if (mAnrDiagEnabled) {
-            int glError = GLES20.glGetError();
-            if (glError != GLES20.GL_NO_ERROR) {
+            int glError = GLES30.glGetError();
+            if (glError != GLES30.GL_NO_ERROR) {
                 Log.w(TAG, "drawFrame中GL错误: " + glError);
             }
         }
@@ -338,44 +338,44 @@ public class FallGL extends GLESScene {
 
     private void drawWaterQuad(FallScene.SceneData sceneData) {
         if (mWaterProgram == 0) return;
-        GLES20.glUseProgram(mWaterProgram);
+        GLES30.glUseProgram(mWaterProgram);
 
         Matrix.setIdentityM(mModelMatrix, 0);
         Matrix.multiplyMM(mViewMatrix, 0, sceneData.getViewMatrix(), 0, mModelMatrix, 0);
         Matrix.multiplyMM(mMVPMatrix, 0, sceneData.getProjectionMatrix(), 0, mViewMatrix, 0);
-        GLES20.glUniformMatrix4fv(mWMatrixHandle, 1, false, mMVPMatrix, 0);
-        GLES20.glUniform1f(mWAlphaHandle, 1.0f);
-        GLES20.glUniform4f(mWColorHandle, 1.0f, 1.0f, 1.0f, 1.0f);
+        GLES30.glUniformMatrix4fv(mWMatrixHandle, 1, false, mMVPMatrix, 0);
+        GLES30.glUniform1f(mWAlphaHandle, 1.0f);
+        GLES30.glUniform4f(mWColorHandle, 1.0f, 1.0f, 1.0f, 1.0f);
 
         // Scene parameters for GPU ripple
-        GLES20.glUniform1f(mWGlHeightHandle, sceneData.getGlHeight());
-        GLES20.glUniform1f(mWBgScaleHandle, sceneData.getBgScale());
-        GLES20.glUniform1f(mWMeshScaleXHandle, sceneData.getMeshScaleX());
-        GLES20.glUniform1f(mWMeshScaleYHandle, sceneData.getMeshScaleY());
-        GLES20.glUniform1f(mWDxMulHandle, sceneData.getDxMul());
-        GLES20.glUniform1f(mWXOffsetHandle, sceneData.getXOffset());
-        GLES20.glUniform1f(mWRotateHandle, (float) sceneData.getRotate());
-        GLES20.glUniform1f(mWDropCountHandle, (float) sceneData.getActiveDropCount());
-        GLES20.glUniform4fv(mWDropHandle, Math.max(1, sceneData.getActiveDropCount()), sceneData.getDropData(), 0);
+        GLES30.glUniform1f(mWGlHeightHandle, sceneData.getGlHeight());
+        GLES30.glUniform1f(mWBgScaleHandle, sceneData.getBgScale());
+        GLES30.glUniform1f(mWMeshScaleXHandle, sceneData.getMeshScaleX());
+        GLES30.glUniform1f(mWMeshScaleYHandle, sceneData.getMeshScaleY());
+        GLES30.glUniform1f(mWDxMulHandle, sceneData.getDxMul());
+        GLES30.glUniform1f(mWXOffsetHandle, sceneData.getXOffset());
+        GLES30.glUniform1f(mWRotateHandle, (float) sceneData.getRotate());
+        GLES30.glUniform1f(mWDropCountHandle, (float) sceneData.getActiveDropCount());
+        GLES30.glUniform4fv(mWDropHandle, Math.max(1, sceneData.getActiveDropCount()), sceneData.getDropData(), 0);
 
-        GLES20.glEnableVertexAttribArray(mWPositionHandle);
+        GLES30.glEnableVertexAttribArray(mWPositionHandle);
         mWaterMeshVertexBuffer.position(0);
-        GLES20.glVertexAttribPointer(mWPositionHandle, 3, GLES20.GL_FLOAT, false, 12, mWaterMeshVertexBuffer);
+        GLES30.glVertexAttribPointer(mWPositionHandle, 3, GLES30.GL_FLOAT, false, 12, mWaterMeshVertexBuffer);
 
         // 水面顶点着色器不使用 aTexCoord 属性（vTexCoord 由 VS 程序化计算），
         // 未声明的属性 location 为 -1，启用/绑定它会触发 GL_INVALID_VALUE (1281)。
         if (mWTexCoordHandle >= 0) {
-            GLES20.glEnableVertexAttribArray(mWTexCoordHandle);
+            GLES30.glEnableVertexAttribArray(mWTexCoordHandle);
             mWaterMeshTexCoordBuffer.position(0);
-            GLES20.glVertexAttribPointer(mWTexCoordHandle, 2, GLES20.GL_FLOAT, false, 8, mWaterMeshTexCoordBuffer);
+            GLES30.glVertexAttribPointer(mWTexCoordHandle, 2, GLES30.GL_FLOAT, false, 8, mWaterMeshTexCoordBuffer);
         }
 
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mMaskTexture);
-        GLES20.glUniform1i(mWMaskHandle, 0);
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE1);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mSkyTexture);
-        GLES20.glUniform1i(mWSkyHandle, 1);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mMaskTexture);
+        GLES30.glUniform1i(mWMaskHandle, 0);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE1);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mSkyTexture);
+        GLES30.glUniform1i(mWSkyHandle, 1);
 
         int indexCount = sceneData.getWaterMeshIndexCount();
         if (indexCount > 0) {
@@ -384,12 +384,12 @@ public class FallGL extends GLESScene {
                         .order(ByteOrder.nativeOrder()).asShortBuffer();
                 mWaterIndexBuffer.put(sceneData.getWaterMeshIndices()).position(0);
             }
-            GLES20.glDrawElements(GLES20.GL_TRIANGLES, indexCount, GLES20.GL_UNSIGNED_SHORT, mWaterIndexBuffer);
+            GLES30.glDrawElements(GLES30.GL_TRIANGLES, indexCount, GLES30.GL_UNSIGNED_SHORT, mWaterIndexBuffer);
         }
 
-        GLES20.glDisableVertexAttribArray(mWPositionHandle);
+        GLES30.glDisableVertexAttribArray(mWPositionHandle);
         if (mWTexCoordHandle >= 0) {
-            GLES20.glDisableVertexAttribArray(mWTexCoordHandle);
+            GLES30.glDisableVertexAttribArray(mWTexCoordHandle);
         }
     }
 
@@ -457,60 +457,60 @@ public class FallGL extends GLESScene {
             mLeafQuadVertexBuffer.position(0);
         }
 
-        GLES20.glUniformMatrix4fv(mMatrixHandle, 1, false, mMVPMatrix, 0);
-        GLES20.glUniform1f(mAlphaHandle, alpha);
+        GLES30.glUniformMatrix4fv(mMatrixHandle, 1, false, mMVPMatrix, 0);
+        GLES30.glUniform1f(mAlphaHandle, alpha);
         if (silhouette) {
-            GLES20.glUniform4f(mColorHandle, 0.0f, 0.0f, 0.0f, 1.0f);
+            GLES30.glUniform4f(mColorHandle, 0.0f, 0.0f, 0.0f, 1.0f);
         } else {
-            GLES20.glUniform4f(mColorHandle, 1.0f, 1.0f, 1.0f, 1.0f);
+            GLES30.glUniform4f(mColorHandle, 1.0f, 1.0f, 1.0f, 1.0f);
         }
 
-        GLES20.glEnableVertexAttribArray(mPositionHandle);
-        GLES20.glVertexAttribPointer(mPositionHandle, 3, GLES20.GL_FLOAT, false, 20, mLeafQuadVertexBuffer);
+        GLES30.glEnableVertexAttribArray(mPositionHandle);
+        GLES30.glVertexAttribPointer(mPositionHandle, 3, GLES30.GL_FLOAT, false, 20, mLeafQuadVertexBuffer);
 
         mLeafQuadVertexBuffer.position(3);
-        GLES20.glEnableVertexAttribArray(mTexCoordHandle);
-        GLES20.glVertexAttribPointer(mTexCoordHandle, 2, GLES20.GL_FLOAT, false, 20, mLeafQuadVertexBuffer);
+        GLES30.glEnableVertexAttribArray(mTexCoordHandle);
+        GLES30.glVertexAttribPointer(mTexCoordHandle, 2, GLES30.GL_FLOAT, false, 20, mLeafQuadVertexBuffer);
 
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture);
-        GLES20.glUniform1i(mSamplerHandle, 0);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, texture);
+        GLES30.glUniform1i(mSamplerHandle, 0);
 
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, 4);
-        GLES20.glDisableVertexAttribArray(mPositionHandle);
-        GLES20.glDisableVertexAttribArray(mTexCoordHandle);
+        GLES30.glDrawArrays(GLES30.GL_TRIANGLE_FAN, 0, 4);
+        GLES30.glDisableVertexAttribArray(mPositionHandle);
+        GLES30.glDisableVertexAttribArray(mTexCoordHandle);
     }
 
     private void createProgram() {
         String vertexShader = AssetLoader.readText(mContext, "fall/shaders/GLES/fall_vs.glsl");
         String fragmentShader = AssetLoader.readText(mContext, "fall/shaders/GLES/fall_fs.glsl");
-        int vs = compileShader(GLES20.GL_VERTEX_SHADER, vertexShader);
-        int fs = compileShader(GLES20.GL_FRAGMENT_SHADER, fragmentShader);
+        int vs = compileShader(GLES30.GL_VERTEX_SHADER, vertexShader);
+        int fs = compileShader(GLES30.GL_FRAGMENT_SHADER, fragmentShader);
         if (vs == 0 || fs == 0) {
             Log.e(TAG, "着色器编译失败!");
             return;
         }
 
-        mProgram = GLES20.glCreateProgram();
-        GLES20.glAttachShader(mProgram, vs);
-        GLES20.glAttachShader(mProgram, fs);
-        GLES20.glLinkProgram(mProgram);
+        mProgram = GLES30.glCreateProgram();
+        GLES30.glAttachShader(mProgram, vs);
+        GLES30.glAttachShader(mProgram, fs);
+        GLES30.glLinkProgram(mProgram);
 
         int[] linkStatus = new int[1];
-        GLES20.glGetProgramiv(mProgram, GLES20.GL_LINK_STATUS, linkStatus, 0);
-        if (linkStatus[0] != GLES20.GL_TRUE) {
-            Log.e(TAG, "程序链接失败: " + GLES20.glGetProgramInfoLog(mProgram));
+        GLES30.glGetProgramiv(mProgram, GLES30.GL_LINK_STATUS, linkStatus, 0);
+        if (linkStatus[0] != GLES30.GL_TRUE) {
+            Log.e(TAG, "程序链接失败: " + GLES30.glGetProgramInfoLog(mProgram));
         }
 
-        mPositionHandle = GLES20.glGetAttribLocation(mProgram, "aPosition");
-        mTexCoordHandle = GLES20.glGetAttribLocation(mProgram, "aTexCoord");
-        mMatrixHandle = GLES20.glGetUniformLocation(mProgram, "uMVPMatrix");
-        mAlphaHandle = GLES20.glGetUniformLocation(mProgram, "uAlpha");
-        mSamplerHandle = GLES20.glGetUniformLocation(mProgram, "uSampler");
-        mColorHandle = GLES20.glGetUniformLocation(mProgram, "uColor");
+        mPositionHandle = GLES30.glGetAttribLocation(mProgram, "aPosition");
+        mTexCoordHandle = GLES30.glGetAttribLocation(mProgram, "aTexCoord");
+        mMatrixHandle = GLES30.glGetUniformLocation(mProgram, "uMVPMatrix");
+        mAlphaHandle = GLES30.glGetUniformLocation(mProgram, "uAlpha");
+        mSamplerHandle = GLES30.glGetUniformLocation(mProgram, "uSampler");
+        mColorHandle = GLES30.glGetUniformLocation(mProgram, "uColor");
 
-        GLES20.glDeleteShader(vs);
-        GLES20.glDeleteShader(fs);
+        GLES30.glDeleteShader(vs);
+        GLES30.glDeleteShader(fs);
     }
 
     private void createWaterProgram() {
@@ -519,45 +519,45 @@ public class FallGL extends GLESScene {
         String template = AssetLoader.readText(mContext, "fall/shaders/GLES/fall_water_vs.glsl");
         String vertexShader = template.replace("$DROP_SIZE", String.valueOf(maxDrops));
         String fragmentShader = AssetLoader.readText(mContext, "fall/shaders/GLES/fall_water_fs.glsl");
-        int vs = compileShader(GLES20.GL_VERTEX_SHADER, vertexShader);
-        int fs = compileShader(GLES20.GL_FRAGMENT_SHADER, fragmentShader);
+        int vs = compileShader(GLES30.GL_VERTEX_SHADER, vertexShader);
+        int fs = compileShader(GLES30.GL_FRAGMENT_SHADER, fragmentShader);
         if (vs == 0 || fs == 0) {
             Log.e(TAG, "Water着色器编译失败!");
-            if (vs != 0) GLES20.glDeleteShader(vs);
-            if (fs != 0) GLES20.glDeleteShader(fs);
+            if (vs != 0) GLES30.glDeleteShader(vs);
+            if (fs != 0) GLES30.glDeleteShader(fs);
             return;
         }
 
-        mWaterProgram = GLES20.glCreateProgram();
-        GLES20.glAttachShader(mWaterProgram, vs);
-        GLES20.glAttachShader(mWaterProgram, fs);
-        GLES20.glLinkProgram(mWaterProgram);
+        mWaterProgram = GLES30.glCreateProgram();
+        GLES30.glAttachShader(mWaterProgram, vs);
+        GLES30.glAttachShader(mWaterProgram, fs);
+        GLES30.glLinkProgram(mWaterProgram);
 
         int[] linkStatus = new int[1];
-        GLES20.glGetProgramiv(mWaterProgram, GLES20.GL_LINK_STATUS, linkStatus, 0);
-        if (linkStatus[0] != GLES20.GL_TRUE) {
-            Log.e(TAG, "Water程序链接失败: " + GLES20.glGetProgramInfoLog(mWaterProgram));
+        GLES30.glGetProgramiv(mWaterProgram, GLES30.GL_LINK_STATUS, linkStatus, 0);
+        if (linkStatus[0] != GLES30.GL_TRUE) {
+            Log.e(TAG, "Water程序链接失败: " + GLES30.glGetProgramInfoLog(mWaterProgram));
         }
 
-        mWPositionHandle     = GLES20.glGetAttribLocation(mWaterProgram, "aPosition");
-        mWTexCoordHandle     = GLES20.glGetAttribLocation(mWaterProgram, "aTexCoord");
-        mWMatrixHandle       = GLES20.glGetUniformLocation(mWaterProgram, "uMVPMatrix");
-        mWAlphaHandle        = GLES20.glGetUniformLocation(mWaterProgram, "uAlpha");
-        mWMaskHandle         = GLES20.glGetUniformLocation(mWaterProgram, "uMask");
-        mWSkyHandle          = GLES20.glGetUniformLocation(mWaterProgram, "uSky");
-        mWColorHandle        = GLES20.glGetUniformLocation(mWaterProgram, "uColor");
-        mWGlHeightHandle     = GLES20.glGetUniformLocation(mWaterProgram, "u_glHeight");
-        mWBgScaleHandle      = GLES20.glGetUniformLocation(mWaterProgram, "u_bgScale");
-        mWMeshScaleXHandle   = GLES20.glGetUniformLocation(mWaterProgram, "u_meshScaleX");
-        mWMeshScaleYHandle   = GLES20.glGetUniformLocation(mWaterProgram, "u_meshScaleY");
-        mWDxMulHandle        = GLES20.glGetUniformLocation(mWaterProgram, "u_dxMul");
-        mWXOffsetHandle      = GLES20.glGetUniformLocation(mWaterProgram, "u_xOffset");
-        mWRotateHandle       = GLES20.glGetUniformLocation(mWaterProgram, "u_rotate");
-        mWDropHandle         = GLES20.glGetUniformLocation(mWaterProgram, "u_drop");
-        mWDropCountHandle    = GLES20.glGetUniformLocation(mWaterProgram, "u_dropCount");
+        mWPositionHandle     = GLES30.glGetAttribLocation(mWaterProgram, "aPosition");
+        mWTexCoordHandle     = GLES30.glGetAttribLocation(mWaterProgram, "aTexCoord");
+        mWMatrixHandle       = GLES30.glGetUniformLocation(mWaterProgram, "uMVPMatrix");
+        mWAlphaHandle        = GLES30.glGetUniformLocation(mWaterProgram, "uAlpha");
+        mWMaskHandle         = GLES30.glGetUniformLocation(mWaterProgram, "uMask");
+        mWSkyHandle          = GLES30.glGetUniformLocation(mWaterProgram, "uSky");
+        mWColorHandle        = GLES30.glGetUniformLocation(mWaterProgram, "uColor");
+        mWGlHeightHandle     = GLES30.glGetUniformLocation(mWaterProgram, "u_glHeight");
+        mWBgScaleHandle      = GLES30.glGetUniformLocation(mWaterProgram, "u_bgScale");
+        mWMeshScaleXHandle   = GLES30.glGetUniformLocation(mWaterProgram, "u_meshScaleX");
+        mWMeshScaleYHandle   = GLES30.glGetUniformLocation(mWaterProgram, "u_meshScaleY");
+        mWDxMulHandle        = GLES30.glGetUniformLocation(mWaterProgram, "u_dxMul");
+        mWXOffsetHandle      = GLES30.glGetUniformLocation(mWaterProgram, "u_xOffset");
+        mWRotateHandle       = GLES30.glGetUniformLocation(mWaterProgram, "u_rotate");
+        mWDropHandle         = GLES30.glGetUniformLocation(mWaterProgram, "u_drop");
+        mWDropCountHandle    = GLES30.glGetUniformLocation(mWaterProgram, "u_dropCount");
 
-        GLES20.glDeleteShader(vs);
-        GLES20.glDeleteShader(fs);
+        GLES30.glDeleteShader(vs);
+        GLES30.glDeleteShader(fs);
     }
 
 
@@ -568,19 +568,19 @@ public class FallGL extends GLESScene {
         }
 
         int[] texture = new int[1];
-        GLES20.glGenTextures(1, texture, 0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture[0]);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
-        GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
+        GLES30.glGenTextures(1, texture, 0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, texture[0]);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE);
+        GLUtils.texImage2D(GLES30.GL_TEXTURE_2D, 0, bitmap, 0);
         bitmap.recycle();
         return texture[0];
     }
 
     /**
-     * 把白底黑图的河床遮罩上传成单通道纹理（GL_ALPHA）。
+     * 把白底黑图的河床遮罩上传成单通道纹理（GL_R8）。
      * 解码与条带化的细节见 {@link AssetLoader#decodeMask}。
      */
     private int loadMaskTexture(String assetPath) {
@@ -593,30 +593,32 @@ public class FallGL extends GLESScene {
         buf.put(mask.pixels).position(0);
 
         int[] tex = new int[1];
-        GLES20.glGenTextures(1, tex, 0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, tex[0]);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
-        GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_ALPHA, mask.width, mask.height, 0,
-                GLES20.GL_ALPHA, GLES20.GL_UNSIGNED_BYTE, buf);
+        GLES30.glGenTextures(1, tex, 0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, tex[0]);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE);
+        // 单字节/像素：行对齐按 4 字节算的话，宽度不是 4 的倍数时行会错位
+        GLES30.glPixelStorei(GLES30.GL_UNPACK_ALIGNMENT, 1);
+        GLES30.glTexImage2D(GLES30.GL_TEXTURE_2D, 0, GLES30.GL_R8, mask.width, mask.height, 0,
+                GLES30.GL_RED, GLES30.GL_UNSIGNED_BYTE, buf);
         return tex[0];
     }
 
     /** 1×1 全白遮罩：贴图缺失时的退路，效果是整屏天空。 */
     private int createSolidMaskTexture() {
         int[] tex = new int[1];
-        GLES20.glGenTextures(1, tex, 0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, tex[0]);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
+        GLES30.glGenTextures(1, tex, 0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, tex[0]);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE);
         ByteBuffer buf = ByteBuffer.allocateDirect(1).order(ByteOrder.nativeOrder());
         buf.put((byte) 255).position(0);
-        GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_ALPHA, 1, 1, 0,
-                GLES20.GL_ALPHA, GLES20.GL_UNSIGNED_BYTE, buf);
+        GLES30.glTexImage2D(GLES30.GL_TEXTURE_2D, 0, GLES30.GL_R8, 1, 1, 0,
+                GLES30.GL_RED, GLES30.GL_UNSIGNED_BYTE, buf);
         return tex[0];
     }
 
@@ -637,11 +639,11 @@ public class FallGL extends GLESScene {
         canvas.drawColor(color);
 
         int[] texture = new int[1];
-        GLES20.glGenTextures(1, texture, 0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture[0]);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-        GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
+        GLES30.glGenTextures(1, texture, 0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, texture[0]);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
+        GLUtils.texImage2D(GLES30.GL_TEXTURE_2D, 0, bitmap, 0);
         bitmap.recycle();
         return texture[0];
     }
@@ -664,14 +666,14 @@ public class FallGL extends GLESScene {
         }
 
         int[] texture = new int[1];
-        GLES20.glGenTextures(1, texture, 0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture[0]);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR_MIPMAP_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
-        GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
-        GLES20.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
+        GLES30.glGenTextures(1, texture, 0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, texture[0]);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR_MIPMAP_LINEAR);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE);
+        GLUtils.texImage2D(GLES30.GL_TEXTURE_2D, 0, bitmap, 0);
+        GLES30.glGenerateMipmap(GLES30.GL_TEXTURE_2D);
         bitmap.recycle();
         return texture[0];
     }

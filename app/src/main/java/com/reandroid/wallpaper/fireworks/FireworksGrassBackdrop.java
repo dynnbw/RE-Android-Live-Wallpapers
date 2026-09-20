@@ -1,7 +1,7 @@
 package com.reandroid.wallpaper.fireworks;
 
 import android.content.Context;
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 import android.os.SystemClock;
 import android.util.Log;
 
@@ -258,21 +258,21 @@ public class FireworksGrassBackdrop {
         String quadVs = AssetLoader.readText(context, "fireworks/shaders/GLES/fireworks_vs.glsl");
         String quadFs = AssetLoader.readText(context, "fireworks/shaders/GLES/fireworks_fs.glsl");
         mQuadProgram = createProgram(quadVs, quadFs);
-        mQuadPositionHandle = GLES20.glGetAttribLocation(mQuadProgram, "aPosition");
-        mQuadTexHandle = GLES20.glGetAttribLocation(mQuadProgram, "aTexCoord");
-        mQuadMatrixHandle = GLES20.glGetUniformLocation(mQuadProgram, "uMVPMatrix");
-        mQuadSamplerHandle = GLES20.glGetUniformLocation(mQuadProgram, "uSampler");
-        mQuadAlphaHandle = GLES20.glGetUniformLocation(mQuadProgram, "uAlpha");
-        mQuadColorHandle = GLES20.glGetUniformLocation(mQuadProgram, "uColor");
+        mQuadPositionHandle = GLES30.glGetAttribLocation(mQuadProgram, "aPosition");
+        mQuadTexHandle = GLES30.glGetAttribLocation(mQuadProgram, "aTexCoord");
+        mQuadMatrixHandle = GLES30.glGetUniformLocation(mQuadProgram, "uMVPMatrix");
+        mQuadSamplerHandle = GLES30.glGetUniformLocation(mQuadProgram, "uSampler");
+        mQuadAlphaHandle = GLES30.glGetUniformLocation(mQuadProgram, "uAlpha");
+        mQuadColorHandle = GLES30.glGetUniformLocation(mQuadProgram, "uColor");
 
         String bladeVs = AssetLoader.readText(context, "fireworks/shaders/GLES/grass_blade_vs.glsl");
         String bladeFs = AssetLoader.readText(context, "fireworks/shaders/GLES/grass_blade_fs.glsl");
         mBladeProgram = createProgram(bladeVs, bladeFs);
-        mBladePositionHandle = GLES20.glGetAttribLocation(mBladeProgram, "aPosition");
-        mBladeColorHandle = GLES20.glGetAttribLocation(mBladeProgram, "aColor");
-        mBladeTexHandle = GLES20.glGetAttribLocation(mBladeProgram, "aTexCoord");
-        mBladeMatrixHandle = GLES20.glGetUniformLocation(mBladeProgram, "uMVPMatrix");
-        mBladeSamplerHandle = GLES20.glGetUniformLocation(mBladeProgram, "uSampler");
+        mBladePositionHandle = GLES30.glGetAttribLocation(mBladeProgram, "aPosition");
+        mBladeColorHandle = GLES30.glGetAttribLocation(mBladeProgram, "aColor");
+        mBladeTexHandle = GLES30.glGetAttribLocation(mBladeProgram, "aTexCoord");
+        mBladeMatrixHandle = GLES30.glGetUniformLocation(mBladeProgram, "uMVPMatrix");
+        mBladeSamplerHandle = GLES30.glGetUniformLocation(mBladeProgram, "uSampler");
 
         // 夜空渐变纹理（自包含数据文件）
         String skyText = AssetLoader.readText(context, "fireworks/data/sky_field_night.txt");
@@ -327,11 +327,11 @@ public class FireworksGrassBackdrop {
     /** 夜空渐变（标准 Alpha 混合）。 */
     public void drawSky(float[] projection) {
         if (!mGLReady || mTexNight == 0) return;
-        GLES20.glUseProgram(mQuadProgram);
-        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
-        GLES20.glUniformMatrix4fv(mQuadMatrixHandle, 1, false, projection, 0);
-        GLES20.glUniform1f(mQuadAlphaHandle, 1.0f);
-        GLES20.glUniform3f(mQuadColorHandle, 1.0f, 1.0f, 1.0f);
+        GLES30.glUseProgram(mQuadProgram);
+        GLES30.glBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ONE_MINUS_SRC_ALPHA);
+        GLES30.glUniformMatrix4fv(mQuadMatrixHandle, 1, false, projection, 0);
+        GLES30.glUniform1f(mQuadAlphaHandle, 1.0f);
+        GLES30.glUniform3f(mQuadColorHandle, 1.0f, 1.0f, 1.0f);
 
         // 与原版一致：全屏四边，垂直方向 -32px 上扩，UV 横向 0..2 无缝衔接
         float[] verts = {
@@ -346,10 +346,10 @@ public class FireworksGrassBackdrop {
     /** 闪烁星星（标准 Alpha 混合，恒夜 starVisibility=1）。 */
     public void drawStars(float[] projection) {
         if (!mGLReady || mStars == null || mTexStarWhite == 0) return;
-        GLES20.glUseProgram(mQuadProgram);
-        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
-        GLES20.glUniformMatrix4fv(mQuadMatrixHandle, 1, false, projection, 0);
-        GLES20.glUniform3f(mQuadColorHandle, 1.0f, 1.0f, 1.0f);
+        GLES30.glUseProgram(mQuadProgram);
+        GLES30.glBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ONE_MINUS_SRC_ALPHA);
+        GLES30.glUniformMatrix4fv(mQuadMatrixHandle, 1, false, projection, 0);
+        GLES30.glUniform3f(mQuadColorHandle, 1.0f, 1.0f, 1.0f);
 
         clearBatchCounters();
         float t = mStarTimeSec;
@@ -389,43 +389,43 @@ public class FireworksGrassBackdrop {
             mLastXDraw = mXDraw;
         }
 
-        GLES20.glUseProgram(mBladeProgram);
-        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
-        GLES20.glUniformMatrix4fv(mBladeMatrixHandle, 1, false, projection, 0);
+        GLES30.glUseProgram(mBladeProgram);
+        GLES30.glBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ONE_MINUS_SRC_ALPHA);
+        GLES30.glUniformMatrix4fv(mBladeMatrixHandle, 1, false, projection, 0);
 
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTexAA);
-        GLES20.glUniform1i(mBladeSamplerHandle, 0);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mTexAA);
+        GLES30.glUniform1i(mBladeSamplerHandle, 0);
 
         mBladeVertexBuffer.position(0);
-        GLES20.glEnableVertexAttribArray(mBladePositionHandle);
-        GLES20.glVertexAttribPointer(mBladePositionHandle, 2, GLES20.GL_FLOAT, false, 32, mBladeVertexBuffer);
+        GLES30.glEnableVertexAttribArray(mBladePositionHandle);
+        GLES30.glVertexAttribPointer(mBladePositionHandle, 2, GLES30.GL_FLOAT, false, 32, mBladeVertexBuffer);
         mBladeVertexBuffer.position(2);
-        GLES20.glEnableVertexAttribArray(mBladeColorHandle);
-        GLES20.glVertexAttribPointer(mBladeColorHandle, 4, GLES20.GL_FLOAT, false, 32, mBladeVertexBuffer);
+        GLES30.glEnableVertexAttribArray(mBladeColorHandle);
+        GLES30.glVertexAttribPointer(mBladeColorHandle, 4, GLES30.GL_FLOAT, false, 32, mBladeVertexBuffer);
         mBladeVertexBuffer.position(6);
-        GLES20.glEnableVertexAttribArray(mBladeTexHandle);
-        GLES20.glVertexAttribPointer(mBladeTexHandle, 2, GLES20.GL_FLOAT, false, 32, mBladeVertexBuffer);
+        GLES30.glEnableVertexAttribArray(mBladeTexHandle);
+        GLES30.glVertexAttribPointer(mBladeTexHandle, 2, GLES30.GL_FLOAT, false, 32, mBladeVertexBuffer);
 
         mBladeIndexBuffer.position(0);
-        GLES20.glDrawElements(GLES20.GL_TRIANGLES, mIndexCount, GLES20.GL_UNSIGNED_SHORT, mBladeIndexBuffer);
+        GLES30.glDrawElements(GLES30.GL_TRIANGLES, mIndexCount, GLES30.GL_UNSIGNED_SHORT, mBladeIndexBuffer);
 
-        GLES20.glDisableVertexAttribArray(mBladePositionHandle);
-        GLES20.glDisableVertexAttribArray(mBladeColorHandle);
-        GLES20.glDisableVertexAttribArray(mBladeTexHandle);
+        GLES30.glDisableVertexAttribArray(mBladePositionHandle);
+        GLES30.glDisableVertexAttribArray(mBladeColorHandle);
+        GLES30.glDisableVertexAttribArray(mBladeTexHandle);
     }
 
     public void release() {
         if (mQuadProgram != 0) {
-            GLES20.glDeleteProgram(mQuadProgram);
+            GLES30.glDeleteProgram(mQuadProgram);
             mQuadProgram = 0;
         }
         if (mBladeProgram != 0) {
-            GLES20.glDeleteProgram(mBladeProgram);
+            GLES30.glDeleteProgram(mBladeProgram);
             mBladeProgram = 0;
         }
         int[] tex = new int[]{mTexNight, mTexAA, mTexStarWhite, mTexStarWarm, mTexStarCool, mTexStarYellow};
-        GLES20.glDeleteTextures(tex.length, tex, 0);
+        GLES30.glDeleteTextures(tex.length, tex, 0);
         mTexNight = 0;
         mTexAA = 0;
         mTexStarWhite = 0;
@@ -788,20 +788,20 @@ public class FireworksGrassBackdrop {
         mQuadBuffer.clear();
         mQuadBuffer.put(vertices, 0, floatCount).position(0);
 
-        GLES20.glEnableVertexAttribArray(mQuadPositionHandle);
-        GLES20.glVertexAttribPointer(mQuadPositionHandle, 2, GLES20.GL_FLOAT, false, 16, mQuadBuffer);
+        GLES30.glEnableVertexAttribArray(mQuadPositionHandle);
+        GLES30.glVertexAttribPointer(mQuadPositionHandle, 2, GLES30.GL_FLOAT, false, 16, mQuadBuffer);
         mQuadBuffer.position(2);
-        GLES20.glEnableVertexAttribArray(mQuadTexHandle);
-        GLES20.glVertexAttribPointer(mQuadTexHandle, 2, GLES20.GL_FLOAT, false, 16, mQuadBuffer);
+        GLES30.glEnableVertexAttribArray(mQuadTexHandle);
+        GLES30.glVertexAttribPointer(mQuadTexHandle, 2, GLES30.GL_FLOAT, false, 16, mQuadBuffer);
 
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture);
-        GLES20.glUniform1i(mQuadSamplerHandle, 0);
-        GLES20.glUniform1f(mQuadAlphaHandle, alpha);
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, floatCount / 4);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, texture);
+        GLES30.glUniform1i(mQuadSamplerHandle, 0);
+        GLES30.glUniform1f(mQuadAlphaHandle, alpha);
+        GLES30.glDrawArrays(GLES30.GL_TRIANGLES, 0, floatCount / 4);
 
-        GLES20.glDisableVertexAttribArray(mQuadPositionHandle);
-        GLES20.glDisableVertexAttribArray(mQuadTexHandle);
+        GLES30.glDisableVertexAttribArray(mQuadPositionHandle);
+        GLES30.glDisableVertexAttribArray(mQuadTexHandle);
     }
 
     private void drawQuad(float[] verts, int texture) {
@@ -812,19 +812,19 @@ public class FireworksGrassBackdrop {
         mQuadBuffer.clear();
         mQuadBuffer.put(verts).position(0);
 
-        GLES20.glEnableVertexAttribArray(mQuadPositionHandle);
-        GLES20.glVertexAttribPointer(mQuadPositionHandle, 2, GLES20.GL_FLOAT, false, 16, mQuadBuffer);
+        GLES30.glEnableVertexAttribArray(mQuadPositionHandle);
+        GLES30.glVertexAttribPointer(mQuadPositionHandle, 2, GLES30.GL_FLOAT, false, 16, mQuadBuffer);
         mQuadBuffer.position(2);
-        GLES20.glEnableVertexAttribArray(mQuadTexHandle);
-        GLES20.glVertexAttribPointer(mQuadTexHandle, 2, GLES20.GL_FLOAT, false, 16, mQuadBuffer);
+        GLES30.glEnableVertexAttribArray(mQuadTexHandle);
+        GLES30.glVertexAttribPointer(mQuadTexHandle, 2, GLES30.GL_FLOAT, false, 16, mQuadBuffer);
 
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture);
-        GLES20.glUniform1i(mQuadSamplerHandle, 0);
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, 4);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, texture);
+        GLES30.glUniform1i(mQuadSamplerHandle, 0);
+        GLES30.glDrawArrays(GLES30.GL_TRIANGLE_FAN, 0, 4);
 
-        GLES20.glDisableVertexAttribArray(mQuadPositionHandle);
-        GLES20.glDisableVertexAttribArray(mQuadTexHandle);
+        GLES30.glDisableVertexAttribArray(mQuadPositionHandle);
+        GLES30.glDisableVertexAttribArray(mQuadTexHandle);
     }
 
     // ---- 纹理工具（自包含，与 grass 壁纸同逻辑） ----
@@ -908,93 +908,93 @@ public class FireworksGrassBackdrop {
         }
 
         int[] tex = new int[1];
-        GLES20.glGenTextures(1, tex, 0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, tex[0]);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S,
-                repeatS ? GLES20.GL_REPEAT : GLES20.GL_CLAMP_TO_EDGE);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
+        GLES30.glGenTextures(1, tex, 0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, tex[0]);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S,
+                repeatS ? GLES30.GL_REPEAT : GLES30.GL_CLAMP_TO_EDGE);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE);
         ByteBuffer buf = ByteBuffer.allocateDirect(rgba.length).order(ByteOrder.nativeOrder());
         buf.put(rgba).position(0);
-        GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_RGBA, targetW, targetH, 0,
-                GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, buf);
+        GLES30.glTexImage2D(GLES30.GL_TEXTURE_2D, 0, GLES30.GL_RGBA, targetW, targetH, 0,
+                GLES30.GL_RGBA, GLES30.GL_UNSIGNED_BYTE, buf);
         return tex[0];
     }
 
     /** 草叶抗锯齿 alpha 纹理（4x1 mipmap）。 */
     private static int createAlphaTexture() {
         int[] tex = new int[1];
-        GLES20.glGenTextures(1, tex, 0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, tex[0]);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR_MIPMAP_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_REPEAT);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_REPEAT);
+        GLES30.glGenTextures(1, tex, 0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, tex[0]);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR_MIPMAP_LINEAR);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_REPEAT);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_REPEAT);
         byte[] mip0 = new byte[]{0, (byte) 255, (byte) 255, 0};
         byte[] mip1 = new byte[]{64, 64};
         byte[] mip2 = new byte[]{0};
         ByteBuffer b0 = ByteBuffer.allocateDirect(mip0.length).order(ByteOrder.nativeOrder());
         b0.put(mip0).position(0);
-        GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_ALPHA, 4, 1, 0,
-                GLES20.GL_ALPHA, GLES20.GL_UNSIGNED_BYTE, b0);
+        GLES30.glTexImage2D(GLES30.GL_TEXTURE_2D, 0, GLES30.GL_R8, 4, 1, 0,
+                GLES30.GL_RED, GLES30.GL_UNSIGNED_BYTE, b0);
         ByteBuffer b1 = ByteBuffer.allocateDirect(mip1.length).order(ByteOrder.nativeOrder());
         b1.put(mip1).position(0);
-        GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 1, GLES20.GL_ALPHA, 2, 1, 0,
-                GLES20.GL_ALPHA, GLES20.GL_UNSIGNED_BYTE, b1);
+        GLES30.glTexImage2D(GLES30.GL_TEXTURE_2D, 1, GLES30.GL_R8, 2, 1, 0,
+                GLES30.GL_RED, GLES30.GL_UNSIGNED_BYTE, b1);
         ByteBuffer b2 = ByteBuffer.allocateDirect(mip2.length).order(ByteOrder.nativeOrder());
         b2.put(mip2).position(0);
-        GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 2, GLES20.GL_ALPHA, 1, 1, 0,
-                GLES20.GL_ALPHA, GLES20.GL_UNSIGNED_BYTE, b2);
+        GLES30.glTexImage2D(GLES30.GL_TEXTURE_2D, 2, GLES30.GL_R8, 1, 1, 0,
+                GLES30.GL_RED, GLES30.GL_UNSIGNED_BYTE, b2);
         return tex[0];
     }
 
     /** 1x1 纯色纹理（星星配色）。 */
     private static int createSolidColorTexture(byte r, byte g, byte b, byte a) {
         int[] tex = new int[1];
-        GLES20.glGenTextures(1, tex, 0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, tex[0]);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
+        GLES30.glGenTextures(1, tex, 0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, tex[0]);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE);
         byte[] rgba = new byte[]{r, g, b, a};
         ByteBuffer buf = ByteBuffer.allocateDirect(rgba.length).order(ByteOrder.nativeOrder());
         buf.put(rgba).position(0);
-        GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_RGBA, 1, 1, 0,
-                GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, buf);
+        GLES30.glTexImage2D(GLES30.GL_TEXTURE_2D, 0, GLES30.GL_RGBA, 1, 1, 0,
+                GLES30.GL_RGBA, GLES30.GL_UNSIGNED_BYTE, buf);
         return tex[0];
     }
 
     private int createProgram(String vertexSource, String fragmentSource) {
-        int vs = compileShader(GLES20.GL_VERTEX_SHADER, vertexSource);
-        int fs = compileShader(GLES20.GL_FRAGMENT_SHADER, fragmentSource);
+        int vs = compileShader(GLES30.GL_VERTEX_SHADER, vertexSource);
+        int fs = compileShader(GLES30.GL_FRAGMENT_SHADER, fragmentSource);
         if (vs == 0 || fs == 0) return 0;
-        int program = GLES20.glCreateProgram();
-        GLES20.glAttachShader(program, vs);
-        GLES20.glAttachShader(program, fs);
-        GLES20.glLinkProgram(program);
+        int program = GLES30.glCreateProgram();
+        GLES30.glAttachShader(program, vs);
+        GLES30.glAttachShader(program, fs);
+        GLES30.glLinkProgram(program);
         int[] link = new int[1];
-        GLES20.glGetProgramiv(program, GLES20.GL_LINK_STATUS, link, 0);
+        GLES30.glGetProgramiv(program, GLES30.GL_LINK_STATUS, link, 0);
         if (link[0] == 0) {
-            Log.e(TAG, "Program link failed: " + GLES20.glGetProgramInfoLog(program));
-            GLES20.glDeleteProgram(program);
+            Log.e(TAG, "Program link failed: " + GLES30.glGetProgramInfoLog(program));
+            GLES30.glDeleteProgram(program);
             return 0;
         }
-        GLES20.glDeleteShader(vs);
-        GLES20.glDeleteShader(fs);
+        GLES30.glDeleteShader(vs);
+        GLES30.glDeleteShader(fs);
         return program;
     }
 
     private int compileShader(int type, String source) {
-        int shader = GLES20.glCreateShader(type);
-        GLES20.glShaderSource(shader, source);
-        GLES20.glCompileShader(shader);
+        int shader = GLES30.glCreateShader(type);
+        GLES30.glShaderSource(shader, source);
+        GLES30.glCompileShader(shader);
         int[] compiled = new int[1];
-        GLES20.glGetShaderiv(shader, GLES20.GL_COMPILE_STATUS, compiled, 0);
+        GLES30.glGetShaderiv(shader, GLES30.GL_COMPILE_STATUS, compiled, 0);
         if (compiled[0] == 0) {
-            Log.e(TAG, "Shader compile failed: " + GLES20.glGetShaderInfoLog(shader));
-            GLES20.glDeleteShader(shader);
+            Log.e(TAG, "Shader compile failed: " + GLES30.glGetShaderInfoLog(shader));
+            GLES30.glDeleteShader(shader);
             return 0;
         }
         return shader;
