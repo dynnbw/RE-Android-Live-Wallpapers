@@ -1,25 +1,19 @@
-/*
- * 物理内核回归测试(纯 JVM,无需 Android 设备):
- *
- *   javac -d /tmp/phystest $(find app/src/main/java/com/reandroid/wallpaper/droid/physics -name "*.java")  *         tools/physics-test/PhysTest.java
- *   java -cp /tmp/phystest PhysTest
- *
- * 覆盖:落地静止高度、不穿透地板/墙体、铰链不松开、多机堆叠不互穿不下陷、
- *      触摸径向冲量方向、长时间静置的关节漂移收敛性。
- */
-import com.reandroid.wallpaper.droid.physics.Body;
-import com.reandroid.wallpaper.droid.physics.PivotJoint;
-import com.reandroid.wallpaper.droid.physics.PolyShape;
-import com.reandroid.wallpaper.droid.physics.RotaryLimitJoint;
-import com.reandroid.wallpaper.droid.physics.SegmentShape;
-import com.reandroid.wallpaper.droid.physics.SimpleMotor;
-import com.reandroid.wallpaper.droid.physics.Space;
+package com.reandroid.wallpaper.droid.physics;
+
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
-/** 物理内核的桌面验证:跌落 / 关节保持 / 堆叠 / 触摸冲量。 */
-public final class PhysTest {
+import static org.junit.Assert.assertTrue;
+
+/**
+ * 物理内核回归测试(纯 JVM,无需 Android 设备)。
+ *
+ * <p>覆盖:落地静止高度、不穿透地板/墙体、铰链不松开、多机堆叠不互穿不下陷、
+ * 触摸径向冲量方向、长时间静置的关节漂移收敛性。
+ */
+public class PhysTest {
 
     private static final double DT = 1.0 / 30.0;
     private static final double SCREEN_W = 480.0;
@@ -35,23 +29,6 @@ public final class PhysTest {
     private static final double LEG_HALF_LEN = 0.166666667;
     private static final double LEG_PIVOT_Y = 0.444444444;
     private static final double LIMB_BOX_WIDTH = 0.149925037;
-
-    private static int failures = 0;
-
-    public static void main(String[] args) {
-        testSingleDroidFallsAndRests();
-        testJointHoldsLimbs();
-        testMultipleDroidsStack();
-        testTouchImpulse();
-        testLongRunStability();
-        testRenderInterpolation();
-        testAngleInterpolationWraps();
-        testTouchDirectionAllSides();
-        System.out.println(failures == 0 ? "ALL TESTS PASSED" : ("FAILURES: " + failures));
-        if (failures != 0) {
-            System.exit(1);
-        }
-    }
 
     // --- 场景搭建(与原版 addDroid 常量一致) ---
 
@@ -152,7 +129,9 @@ public final class PhysTest {
 
     // --- 测试 ---
 
-    private static void testSingleDroidFallsAndRests() {
+    /** 单个机器人落地后停在画面底部,不穿透地板与左右墙。 */
+    @Test
+    public void singleDroidFallsAndRests() {
         Space space = newSpace();
         Droid droid = addDroid(space, 1, 0.0, 300.0);
 
@@ -162,15 +141,17 @@ public final class PhysTest {
         }
 
         double expectedY = -(SCREEN_H * 0.5 - BODY_H * 0.5);
-        report("落在画面底部并静止 (y=" + fmt(droid.body.y()) + ", 期望≈" + fmt(expectedY) + ")",
+        assertTrue("落在画面底部并静止 (y=" + fmt(droid.body.y()) + ", 期望≈" + fmt(expectedY) + ")",
                 Math.abs(droid.body.y() - expectedY) < 8.0);
-        report("未穿透地板 (y=" + fmt(droid.body.y()) + ")",
+        assertTrue("未穿透地板 (y=" + fmt(droid.body.y()) + ")",
                 droid.body.y() > expectedY - 8.0);
-        report("未穿出左右墙 (x=" + fmt(droid.body.x()) + ")",
+        assertTrue("未穿出左右墙 (x=" + fmt(droid.body.x()) + ")",
                 Math.abs(droid.body.x()) < SCREEN_W * 0.5 + 5.0);
     }
 
-    private static void testJointHoldsLimbs() {
+    /** 铰链(raw pivot joint)运行中不松开。 */
+    @Test
+    public void jointHoldsLimbs() {
         Space space = newSpace();
         Droid droid = addDroid(space, 1, 0.0, 300.0);
 
@@ -189,10 +170,12 @@ public final class PhysTest {
                 maxDrift = Math.max(maxDrift, Math.sqrt(dx * dx + dy * dy));
             }
         }
-        report("铰链未松开 (最大锚点漂移=" + fmt(maxDrift) + "px)", maxDrift < 6.0);
+        assertTrue("铰链未松开 (最大锚点漂移=" + fmt(maxDrift) + "px)", maxDrift < 6.0);
     }
 
-    private static void testMultipleDroidsStack() {
+    /** 八个机器人堆叠 60s:不下陷、不飞出场景、不深度互穿。 */
+    @Test
+    public void multipleDroidsStack() {
         Space space = newSpace();
         List<Droid> droids = new ArrayList<>();
         for (int i = 1; i <= 8; i++) {
@@ -209,13 +192,13 @@ public final class PhysTest {
         for (Droid droid : droids) {
             lowestY = Math.min(lowestY, droid.body.y());
         }
-        report("堆叠 60s 后未陷入地板 (最低 y=" + fmt(lowestY) + ")",
+        assertTrue("堆叠 60s 后未陷入地板 (最低 y=" + fmt(lowestY) + ")",
                 lowestY > -(SCREEN_H * 0.5 - BODY_H * 0.5) - 6.0);
 
         double maxOverlap = 0.0;
         for (int i = 0; i < droids.size(); i++) {
             Body a = droids.get(i).body;
-            report("机器人 " + i + " 未飞出场景 (x=" + fmt(a.x()) + ", y=" + fmt(a.y()) + ")",
+            assertTrue("机器人 " + i + " 未飞出场景 (x=" + fmt(a.x()) + ", y=" + fmt(a.y()) + ")",
                     a.y() > -(SCREEN_H * 0.5) - 60.0 && Math.abs(a.x()) < SCREEN_W * 0.5 + 60.0);
             for (int j = i + 1; j < droids.size(); j++) {
                 Body b = droids.get(j).body;
@@ -226,10 +209,12 @@ public final class PhysTest {
                 }
             }
         }
-        report("堆叠时未深度互穿 (最大重叠=" + fmt(maxOverlap) + "px)", maxOverlap < 20.0);
+        assertTrue("堆叠时未深度互穿 (最大重叠=" + fmt(maxOverlap) + "px)", maxOverlap < 20.0);
     }
 
-    private static void testTouchImpulse() {
+    /** 空中施加触摸冲量,机器人应被推离触点。 */
+    @Test
+    public void touchImpulse() {
         Space space = newSpace();
         Droid droid = addDroid(space, 1, 0.0, 350.0);
         // 空中施加:避免地面摩擦吃掉水平速度
@@ -264,12 +249,13 @@ public final class PhysTest {
         for (int i = 0; i < 15; i++) {
             space.step(DT);
         }
-        report("触摸冲量把机器人推离触点 (Δx=" + fmt(droid.body.x() - xBefore) + ")",
+        assertTrue("触摸冲量把机器人推离触点 (Δx=" + fmt(droid.body.x() - xBefore) + ")",
                 droid.body.x() - xBefore > 5.0);
     }
 
     /** 长跑稳定性:静置后关节漂移不得随时间发散(落地瞬间的甩动不算)。 */
-    private static void testLongRunStability() {
+    @Test
+    public void longRunStability() {
         Space space = newSpace();
         Droid droid = addDroid(space, 1, 0.0, 300.0);
         double settled = 0.0;
@@ -283,12 +269,13 @@ public final class PhysTest {
                 settled = Math.max(settled, currentMaxDrift(droid));
             }
         }
-        report("静置后关节漂移不发散 (50s=" + fmt(half) + " 100s=" + fmt(settled) + "px)",
+        assertTrue("静置后关节漂移不发散 (50s=" + fmt(half) + " 100s=" + fmt(settled) + "px)",
                 settled < 3.0 && settled < half + 2.0);
     }
 
     /** 渲染插值:端点为上下两步状态,中点取平均,且随时间单调。 */
-    private static void testRenderInterpolation() {
+    @Test
+    public void renderInterpolation() {
         Space space = newSpace();
         Droid droid = addDroid(space, 1, 0.0, 300.0);
         for (int i = 0; i < 5; i++) {
@@ -297,7 +284,7 @@ public final class PhysTest {
         double prevY = droid.body.renderY(0.0);
         double curY = droid.body.renderY(1.0);
         double midY = droid.body.renderY(0.5);
-        report("插值端点/中点正确 (prev=" + fmt(prevY) + " mid=" + fmt(midY)
+        assertTrue("插值端点/中点正确 (prev=" + fmt(prevY) + " mid=" + fmt(midY)
                         + " cur=" + fmt(curY) + ")",
                 Math.abs(midY - (prevY + curY) * 0.5) < 1e-9 && Math.abs(curY - prevY) > 1e-6);
 
@@ -310,16 +297,17 @@ public final class PhysTest {
             }
             last = v;
         }
-        report("插值单调(下落中 y 单调递减)", monotonic);
+        assertTrue("插值单调(下落中 y 单调递减)", monotonic);
 
         double prevX = droid.body.renderX(0.0);
         double curX = droid.body.renderX(1.0);
         double midX = droid.body.renderX(0.5);
-        report("X 插值端点/中点正确", Math.abs(midX - (prevX + curX) * 0.5) < 1e-9);
+        assertTrue("X 插值端点/中点正确", Math.abs(midX - (prevX + curX) * 0.5) < 1e-9);
     }
 
     /** 角度插值需按最短路径回绕:每步转角超过 π 时不能倒转。 */
-    private static void testAngleInterpolationWraps() {
+    @Test
+    public void angleInterpolationWraps() {
         Space space = new Space();
         Body body = Body.create(1.0, 1.0);
         body.setPosition(0.0, 0.0);
@@ -339,7 +327,7 @@ public final class PhysTest {
             last = v;
         }
         double sweep = body.renderAngle(1.0) - body.renderAngle(0.0);
-        report("快速自旋时角度插值不回绕 (单步插值跨度=" + fmt(sweep) + " rad, 应 < π)",
+        assertTrue("快速自旋时角度插值不回绕 (单步插值跨度=" + fmt(sweep) + " rad, 应 < π)",
                 monotonic && Math.abs(sweep) < Math.PI);
     }
 
@@ -347,7 +335,8 @@ public final class PhysTest {
      * 触摸链路端到端:屏幕坐标 → 世界坐标(与 DroidGL.onTouchEvent 同式)→ 径向冲量,
      * 验证四个方向都是"推离触点"(与 x86 版原版反编译一致)。
      */
-    private static void testTouchDirectionAllSides() {
+    @Test
+    public void touchDirectionAllSides() {
         // 机器人位于世界原点 = 屏幕中心;参数为触点相对机器人的屏幕偏移
         checkTouchSide("触点在上方 → 机器人向下", 0.0, -120.0, 0.0, -1.0);
         checkTouchSide("触点在下方 → 机器人向上", 0.0, 120.0, 0.0, 1.0);
@@ -374,7 +363,7 @@ public final class PhysTest {
         double movedX = droid.body.x();
         double movedY = droid.body.y();
         double alongExpected = movedX * expectedDx + movedY * expectedDy;
-        report(label + " (Δ=" + fmt(movedX) + "," + fmt(movedY) + ")", alongExpected > 2.0);
+        assertTrue(label + " (Δ=" + fmt(movedX) + "," + fmt(movedY) + ")", alongExpected > 2.0);
     }
 
     /** 与 DroidScene.applyRadialImpulse 同式(整数截断归一化 + (r/5)*500/dist)。 */
@@ -419,27 +408,16 @@ public final class PhysTest {
     // --- 断言工具 ---
 
     private static void checkFinite(String label, Droid droid) {
-        if (!isFinite(droid.body.x()) || !isFinite(droid.body.y()) || !isFinite(droid.body.angle())) {
-            report(label + " 躯干数值有限", false);
-            return;
-        }
+        assertTrue(label + " 躯干数值有限",
+                isFinite(droid.body.x()) && isFinite(droid.body.y()) && isFinite(droid.body.angle()));
         for (Limb limb : droid.limbs) {
-            if (!isFinite(limb.body.x()) || !isFinite(limb.body.y()) || !isFinite(limb.body.angle())) {
-                report(label + " 四肢数值有限", false);
-                return;
-            }
+            assertTrue(label + " 四肢数值有限",
+                    isFinite(limb.body.x()) && isFinite(limb.body.y()) && isFinite(limb.body.angle()));
         }
     }
 
     private static boolean isFinite(double v) {
         return !Double.isNaN(v) && !Double.isInfinite(v);
-    }
-
-    private static void report(String what, boolean ok) {
-        if (!ok) {
-            failures++;
-        }
-        System.out.println((ok ? "  PASS  " : "  FAIL  ") + what);
     }
 
     private static String fmt(double v) {

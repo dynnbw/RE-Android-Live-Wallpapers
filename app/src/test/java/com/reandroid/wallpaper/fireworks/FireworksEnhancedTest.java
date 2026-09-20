@@ -1,23 +1,27 @@
-/*
- * 烟花增强模式(形态库 / 实时单位物理 / 目标点发射)回归测试 —— 纯 JVM,不需要设备:
- *
- *   javac -d /tmp/fwtest \
- *         tools/fireworks-test/android/os/SystemClock.java \
- *         app/src/main/java/com/reandroid/wallpaper/fireworks/FireworksScene.java \
- *         app/src/main/java/com/reandroid/wallpaper/fireworks/FireworksShapes.java \
- *         tools/fireworks-test/FireworksEnhancedTest.java
- *   java -cp /tmp/fwtest com.reandroid.wallpaper.fireworks.FireworksEnhancedTest
- *
- * 覆盖:形态函数与粒子数无关(u = i/n);各形态的速度特征;螺旋色相单调;
- *       增强积分器帧率无关;增强模式不影响原版路径。
- */
 package com.reandroid.wallpaper.fireworks;
 
 import java.util.Random;
 
-public final class FireworksEnhancedTest {
+import org.junit.Test;
 
-    private static int failures = 0;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+/**
+ * 烟花增强模式(形态库 / 实时单位物理 / 目标点发射)回归测试。
+ *
+ * 覆盖:形态函数与粒子数无关(u = i/n);各形态的速度特征;螺旋色相单调;
+ *       增强积分器帧率无关;增强模式不影响原版路径。
+ */
+public class FireworksEnhancedTest {
+
+    /**
+     * 基准时刻。测试用 {@code initialize(T0)} 而不是无参重载 —— 后者读
+     * {@code SystemClock}，在 JVM 单测里会抛 not mocked。取 1000000 是为了与迁移前
+     * {@code tools/fireworks-test/android/os/SystemClock.java} 那个常量替身的行为一致。
+     */
+    private static final int T0 = 1000000;
 
     /** 结构化形态:只依赖 u = i/n,因此点数翻倍(同一 u)必须给出同一速度。 */
     private static final int[] STRUCTURED = {
@@ -30,23 +34,9 @@ public final class FireworksEnhancedTest {
             FireworksShapes.SPIRAL,
     };
 
-    public static void main(String[] args) {
-        testPointCountIndependence();
-        testRing();
-        testDoubleRing();
-        testHeartAndStarBounded();
-        testSpiralHueMonotonic();
-        testEnhancedBaselineUntouched();
-        testFrameRateIndependence();
-        if (failures == 0) {
-            System.out.println("全部通过");
-        } else {
-            System.out.println(failures + " 个用例失败");
-            System.exit(1);
-        }
-    }
-
-    private static void testPointCountIndependence() {
+    /** 形态函数只依赖 u = i/n:点数翻倍时同一个 u 必须给出同一个速度。 */
+    @Test
+    public void velocityIsIndependentOfPointCount() {
         for (int shape : STRUCTURED) {
             for (int i = 0; i < 74; i++) {
                 float[] a = new float[2];
@@ -61,7 +51,8 @@ public final class FireworksEnhancedTest {
     }
 
     /** 环形:速度恒定,才是一圈清晰的环而不是一团雾。 */
-    private static void testRing() {
+    @Test
+    public void ringSpeedIsConstant() {
         for (int i = 0; i < 74; i++) {
             float[] v = new float[2];
             FireworksShapes.fillVelocity(FireworksShapes.RING, i, 74, new Random(1), v);
@@ -71,7 +62,8 @@ public final class FireworksEnhancedTest {
     }
 
     /** 双色双环:前 44% 一个速度,其余另一个。 */
-    private static void testDoubleRing() {
+    @Test
+    public void doubleRingSplitsAtFortyFourPercent() {
         for (int i = 0; i < 74; i++) {
             float[] v = new float[2];
             FireworksShapes.fillVelocity(FireworksShapes.DOUBLE_RING, i, 74, new Random(1), v);
@@ -83,12 +75,13 @@ public final class FireworksEnhancedTest {
     }
 
     /** 心形/五角星:速度幅值有界,且不是所有点都挤在一起。 */
-    private static void testHeartAndStarBounded() {
+    @Test
+    public void heartAndStarAreBounded() {
         assertBounded("心形", FireworksShapes.HEART, 290.0f);
         assertBounded("五角星", FireworksShapes.STAR, 300.0f);
     }
 
-    private static void assertBounded(String name, int shape, float maxSpeed) {
+    private void assertBounded(String name, int shape, float maxSpeed) {
         float min = Float.MAX_VALUE;
         float max = 0.0f;
         for (int i = 0; i < 74; i++) {
@@ -104,7 +97,8 @@ public final class FireworksEnhancedTest {
     }
 
     /** 螺旋:逐粒子色相单调递增 → 彩虹。 */
-    private static void testSpiralHueMonotonic() {
+    @Test
+    public void spiralHueIsMonotonic() {
         float prev = -1.0f;
         for (int i = 0; i < 74; i++) {
             float h = FireworksShapes.hueStep(FireworksShapes.SPIRAL, i);
@@ -116,9 +110,10 @@ public final class FireworksEnhancedTest {
     }
 
     /** 关掉开关必须是原版行为:不会建火箭,也不会把 life 当成秒。 */
-    private static void testEnhancedBaselineUntouched() {
+    @Test
+    public void enhancedOffKeepsLegacyPath() {
         FireworksScene scene = new FireworksScene(1080, 2400);
-        scene.initialize();
+        scene.initialize(T0);
         scene.applySettings(2, false, false, false);
         assertFalse("默认不是增强模式", scene.mEnhanced);
         FireworkParticle leader = scene.mNormal[0];
@@ -135,7 +130,8 @@ public final class FireworksEnhancedTest {
      * 帧率无关性:同样跑 1.2 秒,33ms 与 16ms 两种步长下爆开的平均尺度应当相近。
      * 形态每次随机,所以用多次试验的均值来抵消抖动。
      */
-    private static void testFrameRateIndependence() {
+    @Test
+    public void burstScaleIsFrameRateIndependent() {
         float r33 = meanBurstRadius(33);
         float r16 = meanBurstRadius(16);
         float diff = Math.abs(r33 - r16) / r33;
@@ -144,12 +140,12 @@ public final class FireworksEnhancedTest {
     }
 
     /** 反复发一炮,量爆开后 1.0 秒时子粒子到爆心的平均距离。 */
-    private static float meanBurstRadius(int dtMs) {
+    private float meanBurstRadius(int dtMs) {
         double sum = 0.0;
         int trials = 40;
         for (int t = 0; t < trials; t++) {
             FireworksScene scene = new FireworksScene(1080, 2400);
-            scene.initialize();
+            scene.initialize(T0);
             scene.applySettings(2, false, true, false);
             FireworkParticle leader = scene.mNormal[0];
             leader.time = scene.mNow;      // 无延迟,立刻发射
@@ -178,23 +174,5 @@ public final class FireworksEnhancedTest {
             if (n > 0) sum += s / n;
         }
         return (float) (sum / trials);
-    }
-
-    private static void assertTrue(String name, boolean cond) {
-        if (!cond) {
-            failures++;
-            System.out.println("失败: " + name);
-        }
-    }
-
-    private static void assertFalse(String name, boolean cond) {
-        assertTrue(name, !cond);
-    }
-
-    private static void assertEquals(String name, float expect, float actual, float eps) {
-        if (Math.abs(expect - actual) > eps) {
-            failures++;
-            System.out.println("失败: " + name + " 期望 " + expect + " 实际 " + actual);
-        }
     }
 }

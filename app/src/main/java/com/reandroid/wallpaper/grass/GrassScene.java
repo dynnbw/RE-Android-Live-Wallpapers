@@ -140,7 +140,7 @@ final class GrassScene {
      * 噪声场在 y 上的周期。
      *
      * <p>{@code noisef2} 内部对 y 取 {@code & 0xff}，而 {@code turbulencef2} 最高取到
-     * 八度 f=4，三者(256/128/64)的最小公倍数就是 256。实测（tools/grass-test）：
+     * 八度 f=4，三者(256/128/64)的最小公倍数就是 256。实测（{@code WindPhasePeriodTest}）：
      * 取模后的回绕帧变化 6.9E-4，比普通帧的 4.0E-3 还小，看不出接缝。
      *
      * <p>取模还有个副作用是好的：相位始终停在 [0,256)，而 {@code noisef2} 里

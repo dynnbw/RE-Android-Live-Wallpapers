@@ -1,48 +1,31 @@
-/*
- * Earth 壁纸视图矩阵回归测试 —— 纯 JVM,不需要设备:
- *
- *   javac -d /tmp/earthview \
- *         app/src/main/java/com/reandroid/utils/Mat4.java \
- *         app/src/main/java/com/reandroid/wallpaper/earth/EarthCamera.java \
- *         app/src/main/java/com/reandroid/wallpaper/earth/EarthScene.java \
- *         app/src/main/java/com/reandroid/wallpaper/earth/EarthView.java \
- *         tools/earth-test/EarthViewTest.java
- *   java -cp /tmp/earthview com.reandroid.wallpaper.earth.EarthViewTest
- *
- * 覆盖:星空随相机旋转(相机转向哪就看见哪片星);天空与相机的旋转部分逐位一致
- *       (星星与地表同步扫过屏幕);天空不含相机平移(切机位星野不平移);
- *       黄赤交角保留;一天下来星野相对地表只漂 0.9856°。
- */
 package com.reandroid.wallpaper.earth;
 
-public final class EarthViewTest {
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+/**
+ * Earth 壁纸视图矩阵回归测试 —— 纯 JVM,不需要设备。
+ *
+ * <p>覆盖:星空随相机旋转(相机转向哪就看见哪片星);天空与相机的旋转部分逐位一致
+ * (星星与地表同步扫过屏幕);天空不含相机平移(切机位星野不平移);
+ * 黄赤交角保留;一天下来星野相对地表只漂 0.9856°。
+ */
+public class EarthViewTest {
 
     private static final float EPS = 1.0E-4f;
-    private static int failures = 0;
-
-    public static void main(String[] args) {
-        testSkyFollowsCamera();
-        testSkyRotationMatchesCamera();
-        testSkyDropsCameraTranslation();
-        testUniverseTiltKept();
-        testStarsStayLockedToGround();
-        if (failures == 0) {
-            System.out.println("全部通过");
-        } else {
-            System.out.println(failures + " 个用例失败");
-            System.exit(1);
-        }
-    }
 
     /**
      * 星空必须随相机转:相机转到哪,看到的就是哪片星。
      *
-     * 取一颗固定在世界空间的星(世界 +X 方向)。相机绕 Y 转 90° 后,它应当正好
+     * <p>取一颗固定在世界空间的星(世界 +X 方向)。相机绕 Y 转 90° 后,它应当正好
      * 落在屏幕中心 —— 相机朝 -Z 看,所以屏幕中心就是 eye 空间的 (0,0,-1)。
      * (未修之前星空视图里没有相机旋转,这颗星的 eye 方向恒为 Rz(23.5°)·(1,0,0),
      * 不随相机变,这就是"星空完全不随摄像机移动"。)
      */
-    private static void testSkyFollowsCamera() {
+    @Test
+    public void skyFollowsCamera() {
         float[] sky = new float[16];
         EarthView.buildSky(sky, camera(0.0f));
         float[] before = transformDir(sky, 1.0f, 0.0f, 0.0f);
@@ -70,7 +53,8 @@ public final class EarthViewTest {
      * 天空与相机的旋转部分必须逐位一致 —— 这等于"星星和地表以同样的幅度扫过屏幕",
      * 也就是拖拽时地球与星空是一起转的(真实相机绕地球转动的观感)。
      */
-    private static void testSkyRotationMatchesCamera() {
+    @Test
+    public void skyRotationMatchesCamera() {
         float[] view = new float[16];
         float[] sky = new float[16];
         for (float yaw : new float[] { 0.0f, 37.0f, 120.0f, 251.0f, 359.0f }) {
@@ -91,7 +75,8 @@ public final class EarthViewTest {
      * 天空不能含相机平移:星空在无穷远,三个机位之间切换时星野不该平移。
      * 相机的平移列则是 Rz(黄赤交角) 作用后的机位坐标(顺序 Rz · T · R_cam 的直接结果)。
      */
-    private static void testSkyDropsCameraTranslation() {
+    @Test
+    public void skyDropsCameraTranslation() {
         float[] view = new float[16];
         float[] sky = new float[16];
         for (int id = 0; id < 3; id++) {
@@ -122,7 +107,8 @@ public final class EarthViewTest {
      * 黄赤交角必须保留:它是整个场景的姿态,星空跟着倾斜才对。
      * 相机不转时,世界 +X 的星应落在 Rz(23.5°)·(1,0,0)。
      */
-    private static void testUniverseTiltKept() {
+    @Test
+    public void universeTiltKept() {
         float[] sky = new float[16];
         EarthView.buildSky(sky, camera(0.0f));
         float[] d = transformDir(sky, 1.0f, 0.0f, 0.0f);
@@ -135,11 +121,12 @@ public final class EarthViewTest {
     /**
      * 一天下来,星野相对地球表面只漂 0.9856°(≈4 分钟)—— 星星每天提早 4 分钟升起。
      *
-     * 这条把两个层的速率锁在一起:地球自转 +360°/天(时钟推出),
+     * <p>这条把两个层的速率锁在一起:地球自转 +360°/天(时钟推出),
      * 星空在同一个世界空间里 -360.9856°/天(恒星日),两者之差就是那 1°。
      * 单独看 skyAngleY 是看不出对错的,必须和 earthAngleY 一起比。
      */
-    private static void testStarsStayLockedToGround() {
+    @Test
+    public void starsStayLockedToGround() {
         EarthScene day0 = new EarthScene();
         day0.setClock(0L, 0, 1, 0.0);
         EarthScene day1 = new EarthScene();
@@ -197,19 +184,5 @@ public final class EarthViewTest {
         if (d > 1.0) d = 1.0;
         if (d < -1.0) d = -1.0;
         return (float) Math.toDegrees(Math.acos(d));
-    }
-
-    private static void assertTrue(String name, boolean cond) {
-        if (!cond) {
-            failures++;
-            System.out.println("失败: " + name);
-        }
-    }
-
-    private static void assertEquals(String name, float expect, float actual, float eps) {
-        if (Math.abs(expect - actual) > eps) {
-            failures++;
-            System.out.println("失败: " + name + " 期望 " + expect + " 实际 " + actual);
-        }
     }
 }

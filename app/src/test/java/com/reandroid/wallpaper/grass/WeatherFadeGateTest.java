@@ -1,27 +1,25 @@
-/*
- * GrassWeatherSystem.fadeGate 的回归测试 —— 纯 JVM:
- *
- *   javac -d /tmp/gatetest \
- *         app/src/main/java/com/reandroid/weather/WeatherCondition.java \
- *         app/src/main/java/com/reandroid/wallpaper/grass/GrassWeatherSystem.java \
- *         tools/grass-test/WeatherFadeGateTest.java
- *   java -cp /tmp/gatetest com.reandroid.wallpaper.grass.WeatherFadeGateTest
- *
- * 要守住的性质:切换天气时放行系数**每帧的变化量有上界**(dt/时长),
- * 也就是"不会有一帧突然从 1 掉到 0"。这正是原来硬切丢掉的东西。
- */
 package com.reandroid.wallpaper.grass;
 
 import com.reandroid.weather.WeatherCondition;
 
-public final class WeatherFadeGateTest {
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+/**
+ * GrassWeatherSystem.fadeGate 的回归测试。
+ *
+ * <p>要守住的性质:切换天气时放行系数**每帧的变化量有上界**(dt/时长)，
+ * 也就是"不会有一帧突然从 1 掉到 0"。这正是原来硬切丢掉的东西。
+ */
+public class WeatherFadeGateTest {
 
     private static final float FADE_SEC = 1.2f;
-    private static int failures = 0;
 
-    public static void main(String[] args) {
-
-        // ---- 1. 淡出用时时长正确 ----
+    /** 淡出用时时长正确。 */
+    @Test
+    public void fadeOutTakesTheFullDuration() {
         float gate = 1.0f;
         int frames60 = 0;
         while (gate > 0.0f && frames60 < 10000) {
@@ -30,8 +28,11 @@ public final class WeatherFadeGateTest {
         }
         assertEquals("淡出帧数@60fps", Math.round(FADE_SEC * 60), frames60);
         assertEquals("淡出终点", 0.0f, gate, 0.0f);
+    }
 
-        // ---- 2. 帧率无关:跑到一半时应当刚好 0.5 ----
+    /** 帧率无关:跑到一半时应当刚好 0.5。 */
+    @Test
+    public void fadeIsFrameRateIndependent() {
         for (float fps : new float[]{30, 60, 90, 120}) {
             float g = 1.0f;
             float dt = 1.0f / fps;
@@ -41,8 +42,11 @@ public final class WeatherFadeGateTest {
             }
             assertEquals("半程值@" + (int) fps + "fps", 0.5f, g, 0.02f);
         }
+    }
 
-        // ---- 3. 每帧变化量有上界(这就是"不硬切"的形式化) ----
+    /** 每帧变化量有上界(这就是"不硬切"的形式化)。 */
+    @Test
+    public void perFrameChangeIsBounded() {
         float maxJump = 0.0f;
         float g = 1.0f;
         for (int i = 0; i < 200; i++) {
@@ -50,81 +54,62 @@ public final class WeatherFadeGateTest {
             maxJump = Math.max(maxJump, Math.abs(next - g));
             g = next;
         }
-        System.out.println("单帧最大变化 = " + maxJump + "，上界 = " + (1.0f / 60.0f / FADE_SEC));
         assertTrue("单帧变化不应超过 dt/时长",
                 maxJump <= 1.0f / 60.0f / FADE_SEC + 1.0E-6f);
+    }
 
-        // ---- 4. 不越界、单调 ----
-        g = 1.0f;
+    /** 不越界、单调。 */
+    @Test
+    public void fadeOutStaysInRangeAndMonotonic() {
+        float g = 1.0f;
         for (int i = 0; i < 500; i++) {
             float next = GrassWeatherSystem.fadeGate(g, false, 1.0f / 60.0f, FADE_SEC);
-            if (next < 0.0f || next > 1.0f) {
-                failures++;
-                System.out.println("失败: 越界 " + next + " @f" + i);
-                break;
-            }
-            if (next > g) {
-                failures++;
-                System.out.println("失败: 淡出过程中回升 @f" + i);
-                break;
-            }
+            assertTrue("越界 " + next + " @f" + i, next >= 0.0f && next <= 1.0f);
+            assertTrue("淡出过程中回升 @f" + i, next <= g);
             g = next;
         }
+    }
 
-        // ---- 5. 能淡回来 ----
-        g = 0.0f;
+    /** 能淡回来。 */
+    @Test
+    public void fadeInReachesOne() {
+        float g = 0.0f;
         for (int i = 0; i < Math.round(FADE_SEC * 60) + 2; i++) {
             g = GrassWeatherSystem.fadeGate(g, true, 1.0f / 60.0f, FADE_SEC);
         }
         assertEquals("淡入终点", 1.0f, g, 0.0f);
+    }
 
-        // ---- 6. 中途反向:从当前值继续,不从头来 ----
-        g = 1.0f;
+    /** 中途反向:从当前值继续,不从头来。 */
+    @Test
+    public void reversalContinuesFromCurrentValue() {
+        float g = 1.0f;
         for (int i = 0; i < 36; i++) {                 // 淡出 0.6s → 0.5
             g = GrassWeatherSystem.fadeGate(g, false, 1.0f / 60.0f, FADE_SEC);
         }
         assertEquals("反向前的值", 0.5f, g, 0.02f);
         float afterOneFrame = GrassWeatherSystem.fadeGate(g, true, 1.0f / 60.0f, FADE_SEC);
         assertEquals("反向一帧后应从 0.5 继续往上", 0.5f + 1.0f / 60.0f / FADE_SEC, afterOneFrame, 1.0E-5f);
+    }
 
-        // ---- 7. 边界:时长为 0 直接到位;dt 为 0 不动 ----
+    /** 边界:时长为 0 直接到位;dt 为 0 不动。 */
+    @Test
+    public void zeroDurationAndZeroDtAreEdges() {
         assertEquals("时长为 0 应直接到位(false)", 0.0f,
                 GrassWeatherSystem.fadeGate(0.7f, false, 0.016f, 0.0f), 0.0f);
         assertEquals("时长为 0 应直接到位(true)", 1.0f,
                 GrassWeatherSystem.fadeGate(0.7f, true, 0.016f, 0.0f), 0.0f);
         assertEquals("dt 为 0 不应变化", 0.7f,
                 GrassWeatherSystem.fadeGate(0.7f, false, 0.0f, FADE_SEC), 0.0f);
+    }
 
-        // ---- 8. 天气表本身:阵雨起就不放行蒲公英 ----
+    /** 天气表本身:阵雨起就不放行蒲公英。 */
+    @Test
+    public void weatherTableGatesDandelionAndFirefly() {
         assertTrue("阵雨不应放行蒲公英", !GrassWeatherSystem.allowsDandelion(WeatherCondition.D5_RAIN_SHOWERS));
         assertTrue("晴朗应放行蒲公英", GrassWeatherSystem.allowsDandelion(WeatherCondition.D1_CLEAR));
         assertTrue("晴朗应放行萤火虫", GrassWeatherSystem.allowsFirefly(WeatherCondition.D1_CLEAR));
         assertTrue("多云应放行萤火虫", GrassWeatherSystem.allowsFirefly(WeatherCondition.D2_CLOUDY));
         assertTrue("阴沉不应放行萤火虫", !GrassWeatherSystem.allowsFirefly(WeatherCondition.D3_DREARY));
-
-        System.out.println(failures == 0 ? "全部通过" : failures + " 个用例失败");
-        if (failures != 0) System.exit(1);
-    }
-
-    /** 失败只记数不中断 —— 否则后面的用例根本跑不到,一个错误会盖住其余全部。 */
-    private static void assertTrue(String name, boolean cond) {
-        if (!cond) {
-            failures++;
-            System.out.println("失败: " + name);
-        }
-    }
-
-    private static void assertEquals(String name, float expect, float actual, float eps) {
-        if (Math.abs(expect - actual) > eps) {
-            failures++;
-            System.out.println("失败: " + name + " 期望 " + expect + " 实际 " + actual);
-        }
-    }
-
-    private static void assertEquals(String name, int expect, int actual) {
-        if (expect != actual) {
-            failures++;
-            System.out.println("失败: " + name + " 期望 " + expect + " 实际 " + actual);
-        }
     }
 }

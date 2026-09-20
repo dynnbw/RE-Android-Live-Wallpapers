@@ -224,8 +224,7 @@ which gives up exactly the testability the rule exists to buy.
 
 So: prefer to leave matrices in the GL layer in a new Scene, and if you do use it, know what
 you are giving up. If you want JVM tests for a Scene, keeping matrix construction on the GL
-side makes things much easier (the tests under `tools/` only run because they pick Scenes
-that do not depend on Android classes).
+side makes things much easier.
 
 ### Performance discipline
 
@@ -352,9 +351,8 @@ and [fireworks/layout.json](app/src/main/assets/fireworks/layout.json).
 Confirm each of these once your change is in place:
 
 - [ ] `./gradlew assembleDebug` passes with no new warnings
-- [ ] If you touched Scene logic, run the matching JVM tests. Each test under
-      `tools/<name>-test/` has its `javac` / `java` command in its header comment (they only
-      run because the Scene avoids Android classes — see
+- [ ] If you touched Scene logic, run the matching JVM tests: `./gradlew test` (tests live
+      under `app/src/test/java/`, in the package of the class under test — see
       [Code Conventions](#code-conventions)). If there is no matching test, adding one is
       the preferred outcome: that is what the Scene/GL split is for
 - [ ] The new wallpaper appears in the settings list (icon + localised name)

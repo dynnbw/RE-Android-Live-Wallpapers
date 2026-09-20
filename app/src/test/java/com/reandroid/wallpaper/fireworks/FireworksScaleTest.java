@@ -1,36 +1,29 @@
-/*
- * 烟花数量/尾迹 回归测试 —— 纯 JVM,不需要设备:
- *
- *   javac -d /tmp/fwtest \
- *         tools/fireworks-test/android/os/SystemClock.java \
- *         app/src/main/java/com/reandroid/wallpaper/fireworks/FireworksScene.java \
- *         tools/fireworks-test/FireworksScaleTest.java
- *   java -cp /tmp/fwtest com.reandroid.wallpaper.fireworks.FireworksScaleTest
+package com.reandroid.wallpaper.fireworks;
+
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+/**
+ * 烟花数量/尾迹 回归测试。
  *
  * 覆盖:数量→组数→槽位 的映射;越界夹取;重建后数组长度;调小不越界;
  *       组首判定(替代 indexOf 全表扫描后行为不变)。
  */
-package com.reandroid.wallpaper.fireworks;
+public class FireworksScaleTest {
 
-public final class FireworksScaleTest {
-
-    private static int failures = 0;
-
-    public static void main(String[] args) {
-        testSlotMapping();
-        testBounds();
-        testRebuild();
-        testLeaderFlagTailLife();
-        if (failures == 0) {
-            System.out.println("全部通过");
-        } else {
-            System.out.println(failures + " 个用例失败");
-            System.exit(1);
-        }
-    }
+    /**
+     * 基准时刻。测试用 {@code initialize(T0)} 而不是无参重载 —— 后者读
+     * {@code SystemClock}，在 JVM 单测里会抛 not mocked。取 1000000 是为了与迁移前
+     * {@code tools/fireworks-test/android/os/SystemClock.java} 那个常量替身的行为一致。
+     */
+    private static final int T0 = 1000000;
 
     /** N=1…30:上升组数 = N,炸开组数 = round(N×1.5),槽位 = 和 × STRIDE。 */
-    private static void testSlotMapping() {
+    @Test
+    public void countMapsToGroupsAndSlots() {
         for (int n = FireworksScene.MIN_COUNT; n <= FireworksScene.MAX_COUNT; n++) {
             int normal = FireworksScene.normalGroups(n);
             int extras = FireworksScene.extraGroups(n);
@@ -52,16 +45,18 @@ public final class FireworksScaleTest {
     }
 
     /** 越界输入被夹到 [MIN_COUNT, MAX_COUNT]。 */
-    private static void testBounds() {
+    @Test
+    public void outOfRangeCountIsClamped() {
         assertEquals("0 被夹到下限", FireworksScene.MIN_COUNT, FireworksScene.normalGroups(0));
         assertEquals("负数被夹到下限", FireworksScene.MIN_COUNT, FireworksScene.normalGroups(-5));
         assertEquals("超上限被夹住", FireworksScene.MAX_COUNT, FireworksScene.normalGroups(999));
     }
 
     /** 重建后数组长度与组数一致;调小后不越界;相同设置不重建。 */
-    private static void testRebuild() {
+    @Test
+    public void rebuildResizesArraysAndStaysInBounds() {
         FireworksScene scene = new FireworksScene(1080, 1920);
-        scene.initialize();
+        scene.initialize(T0);
         assertEquals("默认上升组数 = 原版", 2, scene.mNormalGroups);
         assertEquals("默认炸开组数 = 原版", 3, scene.mExtraGroups);
         assertEquals("默认上升槽位", 2 * FireworksScene.STRIDE, scene.mNormal.length);
@@ -106,16 +101,17 @@ public final class FireworksScaleTest {
      * 组首判定改为参数传入后,行为必须与原来的 indexOf + index % STRIDE == 0 一致。
      * 可观测的差异:组首的尾迹生命值会被乘 0.3(原版行为)。
      */
-    private static void testLeaderFlagTailLife() {
+    @Test
+    public void leaderTailLifeIsThirtyPercent() {
         float leader = tailLifeFor(true);
         float child = tailLifeFor(false);
         assertEquals("组首尾迹生命值 = 普通 × 0.3", child * 0.3f, leader, 1.0E-4f);
     }
 
     /** 用同一颗粒子按"组首 / 普通"两种身份生成尾迹,返回落池后的 life。 */
-    private static float tailLifeFor(boolean isLeader) {
+    private float tailLifeFor(boolean isLeader) {
         FireworksScene scene = new FireworksScene(1080, 1920);
-        scene.initialize();
+        scene.initialize(T0);
         FireworkParticle p = new FireworkParticle();
         p.dx = 0.0f;
         p.dy = -0.8f;
@@ -126,30 +122,5 @@ public final class FireworksScaleTest {
         int index = scene.genTails(p, isLeader);
         assertTrue("尾迹池应有空位", index >= 0 && index < FireworksScene.MAX_TAILS);
         return scene.mTails[index].life;
-    }
-
-    private static void assertEquals(String name, float expect, float actual, float eps) {
-        if (Math.abs(expect - actual) > eps) {
-            failures++;
-            System.out.println("失败: " + name + " 期望 " + expect + " 实际 " + actual);
-        }
-    }
-
-    private static void assertEquals(String name, int expect, int actual) {
-        if (expect != actual) {
-            failures++;
-            System.out.println("失败: " + name + " 期望 " + expect + " 实际 " + actual);
-        }
-    }
-
-    private static void assertTrue(String name, boolean cond) {
-        if (!cond) {
-            failures++;
-            System.out.println("失败: " + name);
-        }
-    }
-
-    private static void assertFalse(String name, boolean cond) {
-        assertTrue(name, !cond);
     }
 }

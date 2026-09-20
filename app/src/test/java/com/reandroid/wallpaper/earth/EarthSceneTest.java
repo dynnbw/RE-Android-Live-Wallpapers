@@ -1,47 +1,28 @@
-/*
- * Sony Earth 壁纸纯逻辑回归测试 —— 纯 JVM,不需要设备:
- *
- *   javac -d /tmp/earthtest \
- *         app/src/main/java/com/reandroid/wallpaper/earth/EarthCamera.java \
- *         app/src/main/java/com/reandroid/wallpaper/earth/EarthScene.java \
- *         app/src/main/java/com/reandroid/wallpaper/earth/EarthGlobe.java \
- *         tools/earth-test/EarthSceneTest.java
- *   java -cp /tmp/earthtest com.reandroid.wallpaper.earth.EarthSceneTest
- *
- * 覆盖:网格解析与归一化(正球 + 法线重算 + UV 与原版一致);
- *       地球自转角公式;云层 720°/天;月球轨道;三镜头互不相同;
- *       惯性衰减与帧率无关。
- */
 package com.reandroid.wallpaper.earth;
 
+import org.junit.Test;
+
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 
-public final class EarthSceneTest {
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
-    private static int failures = 0;
-    private static final String OBJ_PATH = "app/src/main/assets/earth/data/globe.obj";
+/**
+ * Sony Earth 壁纸纯逻辑回归测试 —— 纯 JVM,不需要设备。
+ *
+ * <p>覆盖:网格解析与归一化(正球 + 法线重算 + UV 与原版一致);
+ * 地球自转角公式;云层 720°/天;月球轨道;三镜头互不相同;
+ * 惯性衰减与帧率无关。
+ */
+public class EarthSceneTest {
 
-    public static void main(String[] args) throws Exception {
-        testGlobeGeometry();
-        testGlobeUvMatchesOriginal();
-        testSubsolarLongitude();
-        testSiderealDrift();
-        testSkyAnglePrecision();
-        testCloudRotation();
-        testMoonOrbit();
-        testCamerasDistinct();
-        testInertiaFrameRateIndependent();
-        if (failures == 0) {
-            System.out.println("全部通过");
-        } else {
-            System.out.println(failures + " 个用例失败");
-            System.exit(1);
-        }
-    }
+    private static final String OBJ_RELATIVE = "app/src/main/assets/earth/data/globe.obj";
 
     /** 网格必须被归一化成正球,且法线等于归一化位置。 */
-    private static void testGlobeGeometry() throws Exception {
+    @Test
+    public void globeGeometry() throws Exception {
         EarthGlobe g = loadGlobe();
         // 源文件 4290 个 v / 4357 个 vt。UV 接缝上同一条经线要 u=0 与 u=1 两个顶点,
         // 所以展开后的顶点数等于 vt 数(4357)而不是 v 数 —— 这是正确的。
@@ -81,7 +62,8 @@ public final class EarthSceneTest {
      * 探针取自原版实测:+X 赤道 u=0.531/v=0.5、+Z 赤道 u=0.281/v=0.5、
      * 北极 u=0.5/v=0.0、南极 u=0.5/v=1.0。
      */
-    private static void testGlobeUvMatchesOriginal() throws Exception {
+    @Test
+    public void globeUvMatchesOriginal() throws Exception {
         EarthGlobe g = loadGlobe();
         assertUvNear(g, 1.0f, 0.0f, 0.0f, 0.531f, 0.5f, "+X 赤道");
         assertUvNear(g, 0.0f, 0.0f, 1.0f, 0.281f, 0.5f, "+Z 赤道");
@@ -117,7 +99,8 @@ public final class EarthSceneTest {
      * <p>角度与经度的关系：直射经度 = 75° + earthAngleY（常量 75 由原版那个 -75 定出，
      * 它保证 UTC 正午时直射经度为 0°）。
      */
-    private static void testSubsolarLongitude() {
+    @Test
+    public void subsolarLongitude() {
         // UTC 正午 → 直射 0°
         assertEquals("UTC 正午直射经度", 0.0f, subsolarLon(0L, 0), 0.5f);
         // UTC 06:00 → 直射 90°E
@@ -146,7 +129,8 @@ public final class EarthSceneTest {
     }
 
     /** 星空按恒星日漂移：每天相对地球表面多转约 1°（≈4 分钟）。 */
-    private static void testSiderealDrift() {
+    @Test
+    public void siderealDrift() {
         EarthScene s = new EarthScene();
         s.setClock(0L, 0, 1, 0.0);
         float day0 = s.skyAngleY();
@@ -160,11 +144,12 @@ public final class EarthSceneTest {
     /**
      * 星空角度必须按 double 精度算出来。
      *
-     * daysSinceEpoch≈2e4 时 -days*360.9856 ≈ 7.2e6，float 的 ULP 约 0.5° ——
+     * <p>daysSinceEpoch≈2e4 时 -days*360.9856 ≈ 7.2e6，float 的 ULP 约 0.5° ——
      * 先在 float 里算再 wrap 的话，星空会被量化成半度一跳。这条用远期的天数
      * （第 20000 天）把它逼出来。
      */
-    private static void testSkyAnglePrecision() {
+    @Test
+    public void skyAnglePrecision() {
         double days = 20000.0;
         double exact = (-days * EarthScene.SIDEREAL_DEG_PER_DAY) % 360.0;
         if (exact < 0.0) exact += 360.0;
@@ -187,7 +172,8 @@ public final class EarthSceneTest {
      * 云层自转速率 = 0.008333334 度/秒(一天 720°)。
      * 只跑 1 小时(30°)—— 跑满一天会绕圈回到起点,验证不到速率还会被 float 累积误差干扰。
      */
-    private static void testCloudRotation() {
+    @Test
+    public void cloudRotation() {
         EarthScene s = new EarthScene();
         for (int i = 0; i < 3600; i++) {
             s.update(1.0f);
@@ -202,7 +188,8 @@ public final class EarthSceneTest {
     }
 
     /** 月球轨道：角度 = 第几天 × 13.186813；位置落在半径 4 的圆上。 */
-    private static void testMoonOrbit() {
+    @Test
+    public void moonOrbit() {
         EarthScene s = new EarthScene();
         s.setClock(0L, 0, 10, 0.0);
         assertEquals("第 10 天的月球角", 10 * EarthScene.MOON_DEGREES_PER_DAY, s.moonAngleY(), 1.0E-3f);
@@ -219,7 +206,8 @@ public final class EarthSceneTest {
      * 原版反编译后把数组写成了 {camera, camera, camera}（三格同一对象），
      * 这个用例就是防它复发的。
      */
-    private static void testCamerasDistinct() {
+    @Test
+    public void camerasDistinct() {
         EarthScene s = new EarthScene();
         EarthCamera[] cams = s.cameras();
         assertTrue("应有三个镜头", cams.length == 3);
@@ -241,7 +229,8 @@ public final class EarthSceneTest {
     }
 
     /** 惯性衰减必须与帧率无关：同样跑 1 秒，16ms 与 33ms 步长的结果应接近。 */
-    private static void testInertiaFrameRateIndependent() {
+    @Test
+    public void inertiaFrameRateIndependent() {
         float slow = spinAfterDrag(16.0f);
         float fast = spinAfterDrag(33.0f);
         float diff = Math.abs(slow - fast);
@@ -262,33 +251,31 @@ public final class EarthSceneTest {
         return Math.abs(c.angleY - before);
     }
 
+    /**
+     * 打开网格素材。
+     *
+     * <p>原脚本从仓库根运行，路径写死为 {@code app/src/main/assets/...}；Gradle 单测的
+     * 工作目录可能是模块根也可能是仓库根，所以这里向上逐级查找同一个相对路径。
+     */
+    private static InputStream openObj() throws Exception {
+        File dir = new File("").getAbsoluteFile();
+        while (dir != null) {
+            File f = new File(dir, OBJ_RELATIVE);
+            if (f.isFile()) {
+                return new FileInputStream(f);
+            }
+            dir = dir.getParentFile();
+        }
+        throw new IllegalStateException("找不到素材 " + OBJ_RELATIVE
+                + "（cwd=" + new File("").getAbsolutePath() + "）");
+    }
+
     private static EarthGlobe loadGlobe() throws Exception {
-        InputStream in = new FileInputStream(OBJ_PATH);
+        InputStream in = openObj();
         try {
             return EarthGlobe.load(in);
         } finally {
             in.close();
-        }
-    }
-
-    private static void assertTrue(String name, boolean cond) {
-        if (!cond) {
-            failures++;
-            System.out.println("失败: " + name);
-        }
-    }
-
-    private static void assertEquals(String name, float expect, float actual, float eps) {
-        if (Math.abs(expect - actual) > eps) {
-            failures++;
-            System.out.println("失败: " + name + " 期望 " + expect + " 实际 " + actual);
-        }
-    }
-
-    private static void assertEquals(String name, int expect, int actual) {
-        if (expect != actual) {
-            failures++;
-            System.out.println("失败: " + name + " 期望 " + expect + " 实际 " + actual);
         }
     }
 }

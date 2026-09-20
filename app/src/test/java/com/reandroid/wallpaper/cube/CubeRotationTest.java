@@ -1,20 +1,20 @@
-/*
- * 立方体触摸旋转(四元数视角)回归测试 —— 纯 JVM,不需要设备:
- *
- *   javac -d /tmp/cubetest app/src/main/java/com/reandroid/wallpaper/cube/CubeViewRotation.java \
- *         tools/cube-test/CubeRotationTest.java
- *   java -cp /tmp/cubetest com.reandroid.wallpaper.cube.CubeRotationTest
- *
- * 覆盖:单位姿态是恒等变换;单轴拖拽与原版欧拉公式等价;拖拽方向符合直觉
- *       (指尖按住的那一面跟着手指走);增量恒在屏幕坐标系里左乘(不会退化成
- *       姿态相关的旋转);长时间累乘后仍是正交的单位旋转;反向拖拽可回到原姿态。
- */
 package com.reandroid.wallpaper.cube;
 
-public final class CubeRotationTest {
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+/**
+ * 立方体触摸旋转(四元数视角)回归测试 —— 纯 JVM,不需要设备。
+ *
+ * <p>覆盖:单位姿态是恒等变换;单轴拖拽与原版欧拉公式等价;拖拽方向符合直觉
+ * (指尖按住的那一面跟着手指走);增量恒在屏幕坐标系里左乘(不会退化成
+ * 姿态相关的旋转);长时间累乘后仍是正交的单位旋转;反向拖拽可回到原姿态。
+ */
+public class CubeRotationTest {
 
     private static final float EPS = 1.0E-4f;
-    private static int failures = 0;
 
     /** 原版的旋转公式(Ry(yrot) · Rx(xrot)),用来做等价性对照。 */
     private static float[] originalRotate(float xrot, float yrot, float x, float y, float z) {
@@ -66,35 +66,21 @@ public final class CubeRotationTest {
         return new float[] { p[0] / scale, p[1] / scale };
     }
 
-    public static void main(String[] args) {
-        identityIsNoOp();
-        yawMatchesOriginal();
-        pitchMatchesOriginal();
-        dragFollowsFinger();
-        incrementsStayInScreenSpace();
-        staysOrthonormal();
-        reverseReturnsToStart();
-
-        if (failures == 0) {
-            System.out.println("CubeRotationTest: 全部通过");
-        } else {
-            System.out.println("CubeRotationTest: " + failures + " 项失败");
-            System.exit(1);
-        }
-    }
-
-    private static void identityIsNoOp() {
+    /** 初始姿态为单位四元数,且变换不改变任何顶点。 */
+    @Test
+    public void identityIsNoOp() {
         CubeViewRotation view = new CubeViewRotation();
-        check("初始姿态为单位四元数", view.isIdentity());
+        assertTrue("初始姿态为单位四元数", view.isIdentity());
         float[] m = matrix(view);
         float[] p = applyMatrix(m, 0.37f, -1.24f, 2.5f);
-        checkNear("单位姿态不改变顶点", 0.37f, p[0], EPS);
-        checkNear("单位姿态不改变顶点", -1.24f, p[1], EPS);
-        checkNear("单位姿态不改变顶点", 2.5f, p[2], EPS);
+        assertEquals("单位姿态不改变顶点", 0.37f, p[0], EPS);
+        assertEquals("单位姿态不改变顶点", -1.24f, p[1], EPS);
+        assertEquals("单位姿态不改变顶点", 2.5f, p[2], EPS);
     }
 
     /** 纯偏航拖拽累加 1.0rad == 原版 yrot = 1.0。 */
-    private static void yawMatchesOriginal() {
+    @Test
+    public void yawMatchesOriginal() {
         CubeViewRotation view = new CubeViewRotation();
         for (int i = 0; i < 100; i++) {
             view.apply(0.01f, 0f);
@@ -103,14 +89,15 @@ public final class CubeRotationTest {
         for (float[] p : PROBES) {
             float[] expect = originalRotate(0f, 1.0f, p[0], p[1], p[2]);
             float[] actual = applyMatrix(m, p[0], p[1], p[2]);
-            checkNear("纯偏航与原版一致 x", expect[0], actual[0], EPS);
-            checkNear("纯偏航与原版一致 y", expect[1], actual[1], EPS);
-            checkNear("纯偏航与原版一致 z", expect[2], actual[2], EPS);
+            assertEquals("纯偏航与原版一致 x", expect[0], actual[0], EPS);
+            assertEquals("纯偏航与原版一致 y", expect[1], actual[1], EPS);
+            assertEquals("纯偏航与原版一致 z", expect[2], actual[2], EPS);
         }
     }
 
     /** 纯俯仰拖拽累加 1.0rad == 原版 xrot = 1.0。 */
-    private static void pitchMatchesOriginal() {
+    @Test
+    public void pitchMatchesOriginal() {
         CubeViewRotation view = new CubeViewRotation();
         for (int i = 0; i < 100; i++) {
             view.apply(0f, 0.01f);
@@ -119,36 +106,38 @@ public final class CubeRotationTest {
         for (float[] p : PROBES) {
             float[] expect = originalRotate(1.0f, 0f, p[0], p[1], p[2]);
             float[] actual = applyMatrix(m, p[0], p[1], p[2]);
-            checkNear("纯俯仰与原版一致 x", expect[0], actual[0], EPS);
-            checkNear("纯俯仰与原版一致 y", expect[1], actual[1], EPS);
-            checkNear("纯俯仰与原版一致 z", expect[2], actual[2], EPS);
+            assertEquals("纯俯仰与原版一致 x", expect[0], actual[0], EPS);
+            assertEquals("纯俯仰与原版一致 y", expect[1], actual[1], EPS);
+            assertEquals("纯俯仰与原版一致 z", expect[2], actual[2], EPS);
         }
     }
 
     /** 直接操纵:横拖正面往右,竖拖正面往下(屏幕上向下 = mProjectedY 正方向)。 */
-    private static void dragFollowsFinger() {
+    @Test
+    public void dragFollowsFinger() {
         float[] front = { 0f, 0f, 1f };
 
         CubeViewRotation yawed = new CubeViewRotation();
         yawed.apply(0.2f, 0f);
         float[] beforeYaw = project(front);
         float[] afterYaw = project(applyMatrix(matrix(yawed), front[0], front[1], front[2]));
-        check("横拖(向右)正面跟着往右", afterYaw[0] > beforeYaw[0] + 0.01f);
-        checkNear("横拖不改变正面的上下位置", beforeYaw[1], afterYaw[1], EPS);
+        assertTrue("横拖(向右)正面跟着往右", afterYaw[0] > beforeYaw[0] + 0.01f);
+        assertEquals("横拖不改变正面的上下位置", beforeYaw[1], afterYaw[1], EPS);
 
         CubeViewRotation pitched = new CubeViewRotation();
         pitched.apply(0f, 0.2f);
         float[] beforePitch = project(front);
         float[] afterPitch = project(applyMatrix(matrix(pitched), front[0], front[1], front[2]));
-        check("竖拖(向下)正面跟着往下", afterPitch[1] > beforePitch[1] + 0.01f);
-        checkNear("竖拖不改变正面的左右位置", beforePitch[0], afterPitch[0], EPS);
+        assertTrue("竖拖(向下)正面跟着往下", afterPitch[1] > beforePitch[1] + 0.01f);
+        assertEquals("竖拖不改变正面的左右位置", beforePitch[0], afterPitch[0], EPS);
     }
 
     /**
      * 增量必须左乘(作用在屏幕坐标系),否则拖拽方向会随姿态漂移。
      * 任意姿态下再拖一点点,结果都应等于 Ry(δ)·R(当前)。
      */
-    private static void incrementsStayInScreenSpace() {
+    @Test
+    public void incrementsStayInScreenSpace() {
         CubeViewRotation view = new CubeViewRotation();
         view.apply(0.9f, 0.4f);
         view.apply(-1.7f, 2.3f);
@@ -166,7 +155,8 @@ public final class CubeRotationTest {
     }
 
     /** 两万次增量后仍是正交的单位旋转矩阵(无缩放、无剪切、无 NaN)。 */
-    private static void staysOrthonormal() {
+    @Test
+    public void staysOrthonormal() {
         CubeViewRotation view = new CubeViewRotation();
         long seed = 12345L;
         for (int i = 0; i < 20000; i++) {
@@ -180,19 +170,19 @@ public final class CubeRotationTest {
         for (int r = 0; r < 3; r++) {
             float[] row = { m[r * 3], m[r * 3 + 1], m[r * 3 + 2] };
             float len = (float) Math.sqrt(row[0] * row[0] + row[1] * row[1] + row[2] * row[2]);
-            checkNear("行向量保持单位长度", 1f, len, 1.0E-3f);
-            check("矩阵无 NaN", !Float.isNaN(len));
+            assertEquals("行向量保持单位长度", 1f, len, 1.0E-3f);
+            assertTrue("矩阵无 NaN", !Float.isNaN(len));
         }
         float dot01 = m[0] * m[3] + m[1] * m[4] + m[2] * m[5];
         float dot02 = m[0] * m[6] + m[1] * m[7] + m[2] * m[8];
         float dot12 = m[3] * m[6] + m[4] * m[7] + m[5] * m[8];
-        checkNear("行向量互相垂直(01)", 0f, dot01, 1.0E-3f);
-        checkNear("行向量互相垂直(02)", 0f, dot02, 1.0E-3f);
-        checkNear("行向量互相垂直(12)", 0f, dot12, 1.0E-3f);
+        assertEquals("行向量互相垂直(01)", 0f, dot01, 1.0E-3f);
+        assertEquals("行向量互相垂直(02)", 0f, dot02, 1.0E-3f);
+        assertEquals("行向量互相垂直(12)", 0f, dot12, 1.0E-3f);
         float det = m[0] * (m[4] * m[8] - m[5] * m[7])
                 - m[1] * (m[3] * m[8] - m[5] * m[6])
                 + m[2] * (m[3] * m[7] - m[4] * m[6]);
-        checkNear("行列式为 1(纯旋转)", 1f, det, 1.0E-3f);
+        assertEquals("行列式为 1(纯旋转)", 1f, det, 1.0E-3f);
     }
 
     /**
@@ -201,22 +191,23 @@ public final class CubeRotationTest {
      * 换位子残差(0.2rad × 0.15rad ≈ 0.03rad ≈ 1.7°,肉眼不可见,任何
      * 非交换的 trackball 都有这一项)。
      */
-    private static void reverseReturnsToStart() {
+    @Test
+    public void reverseReturnsToStart() {
         CubeViewRotation yawOnly = new CubeViewRotation();
         yawOnly.apply(0.2f, 0f);
         yawOnly.apply(-0.2f, 0f);
-        checkNear("单轴偏航正反拖拽精确回位", 0f, rotationAngle(yawOnly), 1.0E-5f);
+        assertEquals("单轴偏航正反拖拽精确回位", 0f, rotationAngle(yawOnly), 1.0E-5f);
 
         CubeViewRotation pitchOnly = new CubeViewRotation();
         pitchOnly.apply(0f, 0.2f);
         pitchOnly.apply(0f, -0.2f);
-        checkNear("单轴俯仰正反拖拽精确回位", 0f, rotationAngle(pitchOnly), 1.0E-5f);
+        assertEquals("单轴俯仰正反拖拽精确回位", 0f, rotationAngle(pitchOnly), 1.0E-5f);
 
         CubeViewRotation diagonal = new CubeViewRotation();
         diagonal.apply(0.2f, 0.15f);
         diagonal.apply(-0.2f, -0.15f);
         float residual = rotationAngle(diagonal);
-        check("斜向正反拖拽残差角 ≤ 换位子量级,实际 " + residual, residual < 0.032f);
+        assertTrue("斜向正反拖拽残差角 ≤ 换位子量级,实际 " + residual, residual < 0.032f);
     }
 
     /** 从旋转矩阵求等效转角。 */
@@ -234,27 +225,9 @@ public final class CubeRotationTest {
             { 0.3f, -0.9f, -0.7f },
     };
 
-    private static void check(String name, boolean ok) {
-        if (!ok) {
-            failures++;
-            System.out.println("FAIL " + name);
-        }
-    }
-
-    private static void checkNear(String name, float expect, float actual, float eps) {
-        if (Math.abs(expect - actual) > eps) {
-            failures++;
-            System.out.println("FAIL " + name + " 期望 " + expect + " 实际 " + actual);
-        }
-    }
-
     private static void assertMatrixNear(String name, float[] expect, float[] actual, float eps) {
         for (int i = 0; i < 9; i++) {
-            if (Math.abs(expect[i] - actual[i]) > eps) {
-                failures++;
-                System.out.println("FAIL " + name + " 元素[" + i + "] 期望 " + expect[i] + " 实际 " + actual[i]);
-                return;
-            }
+            assertEquals(name + " 元素[" + i + "]", expect[i], actual[i], eps);
         }
     }
 }

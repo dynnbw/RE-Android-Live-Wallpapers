@@ -155,7 +155,7 @@ assets/{id}/
 
 **关于 `android.opengl.Matrix`**:它有 `orthoM` / `multiplyMM` / `rotateM` 这类纯矩阵运算,不碰 GL 状态,**现有 10 个 Scene 都在用它构造投影矩阵**。用它不算破坏"不碰 GL"这条,但**会让该 Scene 无法在 JVM 上跑**(它是 Android 类,测试时得造替身)——也就是牺牲了这条规则本来要换来的可测性。
 
-所以:新写的 Scene 优先把矩阵留给 GL 层;确实要用时,清楚自己在放弃什么。想给 Scene 写 JVM 测试的话,矩阵构造留在 GL 侧会让事情简单很多(`tools/` 下的测试就是靠挑"不依赖 Android 类"的 Scene 才跑起来的)。
+所以:新写的 Scene 优先把矩阵留给 GL 层;确实要用时,清楚自己在放弃什么。想给 Scene 写 JVM 测试的话,矩阵构造留在 GL 侧会让事情简单很多。
 
 ### 性能纪律
 
@@ -250,9 +250,9 @@ public void setPluginPrefs(SharedPreferences prefs) { ... }
 改动完成后逐项确认:
 
 - [ ] `./gradlew assembleDebug` 通过,无新增警告
-- [ ] 动了 Scene 逻辑的,跑一遍对应的 JVM 测试:`tools/<名字>-test/` 下每个测试的
-      文件头注释里写着它的 `javac` / `java` 命令(Scene 不依赖 Android 类才跑得起来,
-      见 [代码约定](#代码约定))。没有对应测试时,优先补一个 —— 这正是 Scene/GL 分离换来的东西
+- [ ] 动了 Scene 逻辑的,跑一遍对应的 JVM 测试:`./gradlew test`(测试放在
+      `app/src/test/java/` 下,包名与生产类一致;见 [代码约定](#代码约定))。
+      没有对应测试时,优先补一个 —— 这正是 Scene/GL 分离换来的东西
 - [ ] 设置列表出现新壁纸(图标 + 本地化名称)
 - [ ] 设置页顶部预览正常渲染;改设置**实时生效**、不重启
 - [ ] 应用到壁纸后运行正常;反复切换壁纸/开关无 GL 报错(注意 logcat 的 EGL/GL 错误)
