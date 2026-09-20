@@ -210,7 +210,18 @@ final class FireworksScene {
      * 设置变更时会再次调用（见 applySettings），空中现有的烟花直接丢弃。
      */
     void initialize() {
-        mNow = (int) SystemClock.uptimeMillis();
+        initialize((int) SystemClock.uptimeMillis());
+    }
+
+    /**
+     * 同上，但基准时刻由调用方给定。
+     *
+     * <p>存在的理由：JVM 单元测试里 {@code SystemClock} 不可用（一律抛 not mocked），
+     * 而 {@link #initialize()} 是构造路径上的第一个动作 —— 没有这个入口，测试连场景都
+     * 建不出来。渲染路径继续走无参重载，行为不变。
+     */
+    void initialize(int nowMs) {
+        mNow = nowMs;
         // 首帧不该有一个巨大的 dt
         mPrevNow = mNow;
         mDeltaSec = 0.0f;
@@ -259,7 +270,9 @@ final class FireworksScene {
         // 半空中改模式会让同一颗粒子的 life 被两套含义解读
         mEnhanced = enhanced;
         mVivid = vivid;
-        initialize();
+        // 用当前的 mNow 而不是重新读时钟：GL 每帧都在刷新它(FireworksGL.drawFrame)，
+        // 两者等价，少一次 SystemClock 调用，也让本方法在 JVM 单测里可调用。
+        initialize(mNow);
         return true;
     }
 
