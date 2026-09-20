@@ -9,6 +9,7 @@ import android.opengl.Matrix;
 import android.os.SystemClock;
 import android.view.MotionEvent;
 
+import com.reandroid.gles.GlCapabilities;
 import com.reandroid.gles.GLESScene;
 import com.reandroid.utils.AssetLoader;
 
@@ -603,7 +604,13 @@ public class EarthGL extends GLESScene {
         android.util.Log.i("EarthTex", "GL_MAX_TEXTURE_SIZE = " + maxTex[0]);
 
         String extensions = GLES20.glGetString(GLES20.GL_EXTENSIONS);
-        mNpotMipmaps = extensions != null && extensions.contains("GL_OES_texture_npot");
+        // ES3 上下文里非 2 次幂贴图的 mipmap 是核心能力，不再需要这个扩展；驱动在
+        // ES3 上下文下也可能不再把它列进扩展串，所以不能只看扩展串，否则地表/星空
+        // 那三张 3072x1536 的贴图会白白丢掉 mipmap。
+        boolean hasNpotExt = extensions != null && extensions.contains("GL_OES_texture_npot");
+        mNpotMipmaps = GlCapabilities.isEs3() || hasNpotExt;
+        android.util.Log.i("EarthTex", "NPOT mipmaps = " + mNpotMipmaps
+                + " (ES" + GlCapabilities.getMajorVersion() + ", hasExt = " + hasNpotExt + ")");
 
         GLES20.glDisable(GLES20.GL_DITHER);
         mGLReady = true;
