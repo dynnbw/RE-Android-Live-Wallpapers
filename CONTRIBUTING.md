@@ -111,6 +111,8 @@ assets/{id}/
 
 `info.json` 的**字段表与用法**见 [ARCHITECTURE.md 的 info.json Schema](ARCHITECTURE.md#infojson-schema)。
 
+**GL 版本**:着色器不写 `#version` 即为 GLSL ES 1.00。设备一律先申请 ES 3 上下文、失败退回 ES 2,两种上下文都接受 `#version 100`,所以现有壁纸不需要关心版本。新壁纸要用 ES 3.0 特性(`#version 300 es`、HDR 中间缓冲等)时,在该壁纸的 `info.json` 里加 `"minGlVersion": 3`,只支持 ES2 的设备就不会在列表里看到它。注意 `#version 300 es` 与 `#version 100` **不能在同一个 program 里链接**——升级某个 pass 时顶点与片段着色器必须一起改。
+
 **`hidden` 与打包**:标了 `"hidden": true` 的壁纸,`assembleRelease` 时整份资产不会被编入 APK(由 [app/build.gradle](app/build.gradle) 解析各 `info.json` 自动推导,无需改构建脚本);`assembleDebug` 仍会保留,方便继续开发。判定取「纯 debug 构建才保留」,失败方向是安全的。同时请求 debug 与 release(如 `./gradlew assemble`)时按正式包处理并打印提示。
 
 ### 2. Java 层 `app/src/main/java/com/reandroid/wallpaper/{id}/`

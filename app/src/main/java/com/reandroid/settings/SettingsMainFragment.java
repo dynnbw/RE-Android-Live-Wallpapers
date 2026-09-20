@@ -26,6 +26,7 @@ import androidx.preference.PreferenceViewHolder;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.reandroid.gles.GlCapabilities;
 import com.reandroid.utils.IoUtils;
 import com.reandroid.wallpaper.R;
 
@@ -125,6 +126,7 @@ public class SettingsMainFragment extends PreferenceFragmentCompat {
                 String pluginClass = null;
                 boolean useLegacySettings = false;
                 boolean hidden = false;
+                int minGlVersion = 2;
                 try (InputStream is = am.open(jsonPath)) {
                     JSONObject json = new JSONObject(new String(IoUtils.readAllBytes(is), "UTF-8"));
                     fragmentClass = json.optString("fragment", null);
@@ -132,9 +134,21 @@ public class SettingsMainFragment extends PreferenceFragmentCompat {
                     pluginClass = json.optString("plugin", null);
                     useLegacySettings = json.optBoolean("useLegacySettings", false);
                     hidden = json.optBoolean("hidden", false);
+                    minGlVersion = json.optInt("minGlVersion", 2);
                 } catch (Exception e) { Log.w(TAG, "Failed to parse info.json", e); continue; }
                 // 隐藏入口：info.json 中 "hidden": true 时不在列表显示
                 if (label == null || hidden) continue;
+                // GL 门槛：声明了 "minGlVersion": 3 的壁纸(用了 #version 300 es)
+                // 在只支持 ES2 的设备上不出现——它是个可选壁纸，藏起来比让用户
+                // 选中后黑屏好。只在真有壁纸声明门槛时才去探测设备能力。
+                if (minGlVersion > 2) {
+                    GlCapabilities.probe();
+                    if (GlCapabilities.getMajorVersion() < minGlVersion) {
+                        Log.i(TAG, "跳过 " + dir + ": 需要 ES" + minGlVersion
+                                + "，设备为 ES" + GlCapabilities.getMajorVersion());
+                        continue;
+                    }
+                }
 
                 // Resolve @string/ references
                 String title = label;

@@ -68,6 +68,7 @@ WallpaperPluginHost      → 宿主机服务：getSharedPreferences() / getConte
 | `previewClass` | | 设置页实时预览的 GL 类，也可以是 Scene 类（vis2/vis3 就是直接指向 Scene） |
 | `permissions` | | 运行时权限列表，API 常量名 |
 | `hidden` | | `true` 时不在设置列表显示，且 `assembleRelease` 不把该资产编入 APK |
+| `minGlVersion` | | 要求的最低 OpenGL ES 主版本，默认 `2`。填 `3` 表示该壁纸用了 `#version 300 es`——只支持 ES2 的设备不会在列表里看到它 |
 | `fragment` | | 旧版设置页的 Fragment 类（不配 `plugin` 时使用） |
 | `useLegacySettings` | | `true` 时不走插件设置路径，改用 `fragment`。**当前没有壁纸使用**（PolarClock 早年用过，已迁到插件路径） |
 

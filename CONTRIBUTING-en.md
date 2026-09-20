@@ -160,6 +160,14 @@ assets/{id}/
 The **field table and usage** for `info.json` are in
 [ARCHITECTURE-en.md](ARCHITECTURE-en.md#infojson-schema).
 
+**GL version**: a shader with no `#version` directive is GLSL ES 1.00. Every device is first
+offered an ES 3 context and falls back to ES 2 if that fails; both accept `#version 100`, so
+existing wallpapers do not need to care about the version. When a new wallpaper wants ES 3.0
+features (`#version 300 es`, HDR intermediate buffers, and so on), add
+`"minGlVersion": 3` to that wallpaper's `info.json` — devices that only support ES2 will not
+see it in the list. Note that `#version 300 es` and `#version 100` **cannot be linked into the
+same program**, so upgrading one pass means changing its vertex and fragment shaders together.
+
 **`hidden` and packaging**: for a wallpaper marked `"hidden": true`, `assembleRelease`
 leaves the whole asset directory out of the APK (derived automatically from each `info.json`
 by [app/build.gradle](app/build.gradle) — the build script needs no changes);

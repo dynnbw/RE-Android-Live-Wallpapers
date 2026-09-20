@@ -69,6 +69,7 @@ Located at `assets/{pluginId}/info.json`:
 | `previewClass` | | Class for the real-time preview in settings — a GL class, or a Scene class (vis2/vis3 point straight at their Scene) |
 | `permissions` | | Runtime permission list, API constant names |
 | `hidden` | | `true` hides it from the settings list, and `assembleRelease` leaves the assets out of the APK |
+| `minGlVersion` | | Minimum OpenGL ES major version required, default `2`. Set to `3` for a wallpaper using `#version 300 es` — devices that only support ES2 will not see it in the list |
 | `fragment` | | Fragment class for the legacy settings screen (used when `plugin` is absent) |
 | `useLegacySettings` | | `true` skips the plugin settings path and uses `fragment` instead. **No wallpaper sets this today** (PolarClock did once, and has since moved to the plugin path) |
 
