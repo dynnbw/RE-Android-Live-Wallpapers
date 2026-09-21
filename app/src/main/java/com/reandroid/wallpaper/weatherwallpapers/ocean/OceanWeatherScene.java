@@ -19,7 +19,6 @@ final class OceanWeatherScene {
     final AnimationController mAnimationController = new AnimationController(1600);
 
     WeatherCondition mCondition = WeatherCondition.D1_CLEAR;
-    boolean mIsNight = false;
     /** 夜间权重 0..1 —— 渲染器按它交叉淡入，见 {@code WeatherStateManager#nightWeight}。 */
     float mNightWeight = 0.0f;
 

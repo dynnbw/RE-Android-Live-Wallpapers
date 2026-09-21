@@ -51,7 +51,6 @@ public class WeatherStateManager {
     private float[] mResolvedLocation;
 
     private WeatherCondition mCondition = WeatherCondition.D1_CLEAR;
-    private boolean mIsNight = false;
     /** 夜间权重 0..1，渲染器按它把白天那套观感与夜里那套交叉淡入。 */
     private float mNightWeight = 0.0f;
 
@@ -87,16 +86,11 @@ public class WeatherStateManager {
         long nowMs = preview
                 ? mDayNight.compressedClockMs(System.currentTimeMillis(), PREVIEW_CYCLE_MS)
                 : System.currentTimeMillis();
-        mIsNight = mDayNight.isNight(nowMs);
         mNightWeight = mDayNight.nightWeight(nowMs);
     }
 
     public synchronized WeatherCondition getCondition() {
         return mCondition;
-    }
-
-    public synchronized boolean isNight() {
-        return mIsNight;
     }
 
     /** 夜间权重：0 = 白天，1 = 完全入夜。渲染器拿它交叉淡入。 */

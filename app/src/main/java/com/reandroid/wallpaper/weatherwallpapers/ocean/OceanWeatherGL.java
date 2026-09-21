@@ -135,7 +135,6 @@ public class OceanWeatherGL extends GLESScene {
         if (wsm != null) {
             wsm.update(timeMs, isPreview());
             mScene.mCondition = wsm.getCondition();
-            mScene.mIsNight = wsm.isNight();
             mScene.mNightWeight = wsm.nightWeight();
         }
 
@@ -267,7 +266,7 @@ public class OceanWeatherGL extends GLESScene {
         boolean snowOn = mScene.mWeatherFlagManager.isSnowOn();
         boolean thunderOn = mScene.mWeatherFlagManager.isThunderOn();
 
-        clearOn = mSkyRenderer.drawSkyAndCelestial(mSkyDrawer, mScene.mCondition, mScene.mIsNight,
+        clearOn = mSkyRenderer.drawSkyAndCelestial(mSkyDrawer, mScene.mCondition, mScene.mNightWeight,
                 frameCnt, mScene.mOffset, mScene.mLandscape, mScene.mFillScaleY,
                 mSkyA,mSkyB,mSkyC,mSkyD,mSkyG,mSkyStars,mSun1,mSun2,mSun3,mMoon,mStar,mMeteor,clearOn);
 
@@ -278,10 +277,10 @@ public class OceanWeatherGL extends GLESScene {
 
         mWaveRenderer.drawWaves(mWaveDrawer, frameCnt, mScene.mOffset, mScene.mLandscape, mWaveBack, mWave);
 
-        clearOn = mSkyRenderer.drawSunlight(mSkyDrawer, mScene.mCondition, mScene.mIsNight,
+        clearOn = mSkyRenderer.drawSunlight(mSkyDrawer, mScene.mCondition, mScene.mNightWeight,
                 frameCnt, mScene.mOffset, mScene.mLandscape, mSun4, clearOn);
 
-        mWaterSurfaceRenderer.drawWaterCover(mWaterDrawer, mScene.mCondition, mScene.mIsNight,
+        mWaterSurfaceRenderer.drawWaterCover(mWaterDrawer, mScene.mCondition, mScene.mNightWeight,
                 mScene.mOffset, mScene.mLandscape,
                 mWatercover1,mWatercover2,mWatercover3,mWatercover4,mNightcover,mCapCover);
 

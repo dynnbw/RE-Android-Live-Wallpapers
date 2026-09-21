@@ -50,7 +50,7 @@ public class SkyRenderer {
 
     public boolean drawSkyAndCelestial(Drawer drawer,
                                 WeatherCondition condition,
-                                boolean isNight,
+                                float nightWeight,
                                 int frameCnt,
                                 float offset,
                                 float landscape,
@@ -71,7 +71,7 @@ public class SkyRenderer {
                     return drawSkyAndCelestial(
                         drawer,
                         condition,
-                        isNight,
+                        nightWeight,
                         frameCnt,
                         offset,
                         landscape,
@@ -95,7 +95,7 @@ public class SkyRenderer {
 
                     public boolean drawSkyAndCelestial(Drawer drawer,
                                        WeatherCondition condition,
-                                       boolean isNight,
+                                       float nightWeight,
                                        int frameCnt,
                                        float offset,
                                        float landscape,
@@ -118,7 +118,7 @@ public class SkyRenderer {
                         return drawWindmillSkyAndCelestial(
                             drawer,
                             condition,
-                            isNight,
+                            nightWeight,
                             frameCnt,
                             offset,
                             landscape,
@@ -141,7 +141,7 @@ public class SkyRenderer {
                     return drawOceanSkyAndCelestial(
                         drawer,
                         condition,
-                        isNight,
+                        nightWeight,
                         frameCnt,
                         offset,
                         landscape,
@@ -164,7 +164,7 @@ public class SkyRenderer {
 
                     private boolean drawOceanSkyAndCelestial(Drawer drawer,
                                          WeatherCondition condition,
-                                         boolean isNight,
+                                         float nightWeight,
                                          int frameCnt,
                                          float offset,
                                          float landscape,
@@ -182,8 +182,10 @@ public class SkyRenderer {
                                          int star,
                                          int meteor,
                                          boolean clearOn) {
+        float dayWeight = 1.0f - nightWeight;
+        // 两张天空都不透明：白天那张整块铺上，夜里那张按权重盖上，叠出来是精确的交叉淡入
         drawer.drawSpriteRectOneToTwo(
-                selectSkyTexture(condition, isNight, skyA, skyB, skyC, skyD, skyG),
+                selectSkyTexture(condition, false, skyA, skyB, skyC, skyD, skyG),
                 (-2.0f) + ((1.5f - offset) * 5.0f),
                 4.7f,
                 -30.0f,
@@ -192,29 +194,38 @@ public class SkyRenderer {
                 0.0f,
                 1.0f
         );
+        if (nightWeight > 0.0f) {
+            drawer.drawSpriteRectOneToTwo(
+                    selectSkyTexture(condition, true, skyA, skyB, skyC, skyD, skyG),
+                    (-2.0f) + ((1.5f - offset) * 5.0f),
+                    4.7f,
+                    -30.0f,
+                    3.8f * landscape,
+                    3.5f * fillScaleY,
+                    0.0f,
+                    nightWeight
+            );
+        }
 
-        if (condition == WeatherCondition.D1_CLEAR && isNight) {
+        if (condition == WeatherCondition.D1_CLEAR && nightWeight > 0.0f) {
             drawer.drawSpriteRectOneToFour(skyStars, 2.2f + ((1.5f - offset) * 5.0f), 7.0f, -29.9f,
-                    2.3f * landscape, 2.3f, 0.0f, 1.0f);
+                    2.3f * landscape, 2.3f, 0.0f, nightWeight);
         }
 
         if (condition == WeatherCondition.D1_CLEAR
                 || condition == WeatherCondition.D2_CLOUDY
                 || condition == WeatherCondition.D8_ICE_COLD) {
-            if (!isNight) {
-                if (condition == WeatherCondition.D1_CLEAR) {
-                    float sunX = (((1.5f - offset) * 5.0f) * 0.2f) - 3.0f;
-                    drawer.drawSprite(sun1, sunX, 5.5f, -28.0f, 1.0f, 1.0f, frameCnt * 0.45f, 1.0f);
-                    drawer.drawSprite(sun2, sunX, 5.5f, -28.0f, 1.0f, 1.0f, frameCnt * 0.225f, 1.0f);
-                    drawer.drawSprite(sun3, sunX, 5.5f, -28.0f, 1.0f, 1.0f, frameCnt * -0.45f, 1.0f);
-                }
-            } else {
-                if (condition != WeatherCondition.D2_CLOUDY) {
-                    drawer.drawSprite(moon, 3.2f + ((1.5f - offset) * 5.0f), 7.0f, -28.5f,
-                            0.25f * landscape, 0.25f, 0.0f, 1.0f);
-                    updateStars(drawer, frameCnt, offset, landscape, star, clearOn);
-                    clearOn = updateMeteor(drawer, frameCnt, offset, landscape, meteor, clearOn);
-                }
+            if (dayWeight > 0.0f && condition == WeatherCondition.D1_CLEAR) {
+                float sunX = (((1.5f - offset) * 5.0f) * 0.2f) - 3.0f;
+                drawer.drawSprite(sun1, sunX, 5.5f, -28.0f, 1.0f, 1.0f, frameCnt * 0.45f, dayWeight);
+                drawer.drawSprite(sun2, sunX, 5.5f, -28.0f, 1.0f, 1.0f, frameCnt * 0.225f, dayWeight);
+                drawer.drawSprite(sun3, sunX, 5.5f, -28.0f, 1.0f, 1.0f, frameCnt * -0.45f, dayWeight);
+            }
+            if (nightWeight > 0.0f && condition != WeatherCondition.D2_CLOUDY) {
+                drawer.drawSprite(moon, 3.2f + ((1.5f - offset) * 5.0f), 7.0f, -28.5f,
+                        0.25f * landscape, 0.25f, 0.0f, nightWeight);
+                updateStars(drawer, frameCnt, offset, landscape, star, clearOn);
+                clearOn = updateMeteor(drawer, frameCnt, offset, landscape, meteor, clearOn);
             }
         }
 
@@ -223,7 +234,7 @@ public class SkyRenderer {
 
     private boolean drawWindmillSkyAndCelestial(Drawer drawer,
                                                 WeatherCondition condition,
-                                                boolean isNight,
+                                                float nightWeight,
                                                 int frameCnt,
                                                 float offset,
                                                 float landscape,
@@ -240,8 +251,10 @@ public class SkyRenderer {
                                                 int star,
                                                 int meteor,
                                                 boolean clearOn) {
+        float dayWeight = 1.0f - nightWeight;
+        // 同海洋：白天铺满，夜里那张按权重盖上
         drawer.drawSprite(
-                selectWindmillSkyTexture(condition, isNight, skyA, skyB, skyC, skyD),
+                selectWindmillSkyTexture(condition, false, skyA, skyB, skyC, skyD),
                 (-1.5f) + ((1.5f - offset) * 5.0f),
                 -2.3f,
                 -30.0f,
@@ -250,23 +263,34 @@ public class SkyRenderer {
                 0.0f,
                 1.0f
         );
+        if (nightWeight > 0.0f) {
+            drawer.drawSprite(
+                    selectWindmillSkyTexture(condition, true, skyA, skyB, skyC, skyD),
+                    (-1.5f) + ((1.5f - offset) * 5.0f),
+                    -2.3f,
+                    -30.0f,
+                    2.0f * landscape,
+                    2.0f * fillScaleY,
+                    0.0f,
+                    nightWeight
+            );
+        }
 
-        if (condition == WeatherCondition.D1_CLEAR && isNight) {
+        if (condition == WeatherCondition.D1_CLEAR && nightWeight > 0.0f) {
             drawer.drawSprite(skyStars, 1.3f + ((1.5f - offset) * 5.0f), 7.0f, -29.9f,
-                    1.8f * landscape, 0.45f, 0.0f, 1.0f);
+                    1.8f * landscape, 0.45f, 0.0f, nightWeight);
         }
 
         if (condition == WeatherCondition.D1_CLEAR || condition == WeatherCondition.D8_ICE_COLD) {
-            if (!isNight) {
-                if (condition == WeatherCondition.D1_CLEAR) {
-                    float sunX = ((1.5f - offset) * 5.0f * 0.2f) + 3.0f;
-                    drawer.drawSprite(sun1, sunX, 6.0f, -28.0f, 1.0f, 1.0f, frameCnt * 0.54f, 1.0f);
-                    drawer.drawSprite(sun2, sunX, 6.0f, -28.0f, 1.0f, 1.0f, frameCnt * 0.36f, 1.0f);
-                    drawer.drawSprite(sun3, sunX, 6.0f, -28.0f, 1.0f, 1.0f, frameCnt * -0.54f, 1.0f);
-                }
-            } else {
+            if (dayWeight > 0.0f && condition == WeatherCondition.D1_CLEAR) {
+                float sunX = ((1.5f - offset) * 5.0f * 0.2f) + 3.0f;
+                drawer.drawSprite(sun1, sunX, 6.0f, -28.0f, 1.0f, 1.0f, frameCnt * 0.54f, dayWeight);
+                drawer.drawSprite(sun2, sunX, 6.0f, -28.0f, 1.0f, 1.0f, frameCnt * 0.36f, dayWeight);
+                drawer.drawSprite(sun3, sunX, 6.0f, -28.0f, 1.0f, 1.0f, frameCnt * -0.54f, dayWeight);
+            }
+            if (nightWeight > 0.0f) {
                 drawer.drawSprite(moon, 3.2f + ((1.5f - offset) * 5.0f), 7.0f, -28.5f,
-                        0.25f * landscape, 0.25f, 0.0f, 1.0f);
+                        0.25f * landscape, 0.25f, 0.0f, nightWeight);
                 updateStars(drawer, frameCnt, offset, landscape, star, clearOn);
                 clearOn = updateMeteor(drawer, frameCnt, offset, landscape, meteor, clearOn);
             }
@@ -277,18 +301,18 @@ public class SkyRenderer {
 
     public boolean drawSunlight(Drawer drawer,
                          WeatherCondition condition,
-                         boolean isNight,
+                         float nightWeight,
                          int frameCnt,
                          float offset,
                          float landscape,
                          int sun4,
                          boolean clearOn) {
-        return drawSunlight(drawer, condition, isNight, frameCnt, offset, landscape, sun4, clearOn, Config.OCEAN);
+        return drawSunlight(drawer, condition, nightWeight, frameCnt, offset, landscape, sun4, clearOn, Config.OCEAN);
     }
 
     public boolean drawSunlight(Drawer drawer,
                                 WeatherCondition condition,
-                                boolean isNight,
+                                float nightWeight,
                                 int frameCnt,
                                 float offset,
                                 float landscape,
@@ -296,28 +320,29 @@ public class SkyRenderer {
                                 boolean clearOn,
                                 Config config) {
         if (config != null && config.mWindmill) {
-            return drawWindmillSunlight(drawer, condition, isNight, frameCnt, offset, landscape, sun4, clearOn);
+            return drawWindmillSunlight(drawer, condition, nightWeight, frameCnt, offset, landscape, sun4, clearOn);
         }
 
-        return drawOceanSunlight(drawer, condition, isNight, frameCnt, offset, landscape, sun4, clearOn);
+        return drawOceanSunlight(drawer, condition, nightWeight, frameCnt, offset, landscape, sun4, clearOn);
     }
 
     private boolean drawOceanSunlight(Drawer drawer,
                                       WeatherCondition condition,
-                                      boolean isNight,
+                                      float nightWeight,
                                       int frameCnt,
                                       float offset,
                                       float landscape,
                                       int sun4,
                                       boolean clearOn) {
-        if (condition == WeatherCondition.D1_CLEAR && !isNight && clearOn) {
+        float dayWeight = 1.0f - nightWeight;
+        if (condition == WeatherCondition.D1_CLEAR && dayWeight > 0.0f && clearOn) {
             float sunlightCnt = (frameCnt + 50) % 200;
             float coeff = sunlightCnt < 100.0f
                     ? 2.0f - (sunlightCnt / 100.0f)
                     : ((sunlightCnt - 100.0f) / 100.0f) + 1.0f;
             float alpha = (float) Math.sqrt(coeff - 1.0f);
             drawer.drawSprite(sun4, (0.6f - 3.0f) + ((1.5f - offset) * 5.0f * 0.15f), 5.5f - 1.75f, -20.5f,
-                    landscape * coeff * 0.6f, 0.6f * coeff, -1.8f * sunlightCnt, alpha);
+                    landscape * coeff * 0.6f, 0.6f * coeff, -1.8f * sunlightCnt, alpha * dayWeight);
             mSunInitCnt++;
             if (mSunInitCnt > 400 && sunlightCnt == 100.0f) {
                 clearOn = false;
@@ -329,20 +354,21 @@ public class SkyRenderer {
 
     private boolean drawWindmillSunlight(Drawer drawer,
                                          WeatherCondition condition,
-                                         boolean isNight,
+                                         float nightWeight,
                                          int frameCnt,
                                          float offset,
                                          float landscape,
                                          int sun4,
                                          boolean clearOn) {
-        if (condition == WeatherCondition.D1_CLEAR && !isNight && clearOn) {
+        float dayWeight = 1.0f - nightWeight;
+        if (condition == WeatherCondition.D1_CLEAR && dayWeight > 0.0f && clearOn) {
             float sunlightCnt = (frameCnt + 125) % 200;
             float coeff = sunlightCnt < 100.0f
                     ? 2.0f - (sunlightCnt / 100.0f)
                     : ((sunlightCnt - 100.0f) / 100.0f) + 1.0f;
             float alpha = (float) Math.sqrt(coeff - 1.0f);
             drawer.drawSprite(sun4, (3.0f - 0.4f) + ((1.5f - offset) * 5.0f * 0.15f), 6.0f - 1.0f, -23.5f,
-                    landscape * coeff * 0.8f, 0.8f * coeff, -1.8f * sunlightCnt, alpha);
+                    landscape * coeff * 0.8f, 0.8f * coeff, -1.8f * sunlightCnt, alpha * dayWeight);
             mSunInitCnt++;
             if (mSunInitCnt > 800 && sunlightCnt == 100.0f) {
                 clearOn = false;
@@ -353,13 +379,13 @@ public class SkyRenderer {
     }
 
     private int selectSkyTexture(WeatherCondition condition,
-                                 boolean isNight,
+                                 boolean night,
                                  int skyA,
                                  int skyB,
                                  int skyC,
                                  int skyD,
                                  int skyG) {
-        if (isNight) {
+        if (night) {
             return skyD;
         }
         switch (condition) {
@@ -381,12 +407,12 @@ public class SkyRenderer {
     }
 
     private int selectWindmillSkyTexture(WeatherCondition condition,
-                                         boolean isNight,
+                                         boolean night,
                                          int skyA,
                                          int skyB,
                                          int skyC,
                                          int skyD) {
-        if (isNight) {
+        if (night) {
             return skyB;
         }
         switch (condition) {

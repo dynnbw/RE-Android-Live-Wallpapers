@@ -173,7 +173,6 @@ public class WindmillGL extends GLESScene {
         if (wsm != null) {
             wsm.update(timeMs, isPreview());
             mScene.mCondition = wsm.getCondition();
-            mScene.mIsNight = wsm.isNight();
             mScene.mNightWeight = wsm.nightWeight();
         }
 
@@ -311,7 +310,7 @@ public class WindmillGL extends GLESScene {
         if (isPreview()) mScene.mOffset = 1.25f;
 
         GroundRenderer.GroundTextures groundTextures = mGroundRenderer.selectTextures(
-                mScene.mCondition, mScene.mIsNight,
+                mScene.mCondition,
                 mLand01,mLand02,mLand03,mLand04,mLand05,mLand06,mLand07,mLand08,mLand09,
                 mLawn01,mLawn02,mLawn03,mLawn04,mLawn05);
 
@@ -320,7 +319,7 @@ public class WindmillGL extends GLESScene {
         boolean snowOn = mScene.mWeatherFlagManager.isSnowOn();
         boolean thunderOn = mScene.mWeatherFlagManager.isThunderOn();
 
-        clearOn = mSkyRenderer.drawSkyAndCelestial(mSkyDrawer, mScene.mCondition, mScene.mIsNight,
+        clearOn = mSkyRenderer.drawSkyAndCelestial(mSkyDrawer, mScene.mCondition, mScene.mNightWeight,
                 mScene.mFrameCnt, mScene.mOffset, mScene.mLandscape, mScene.mFillScaleY,
                 mSky01,mSky02,mSky03,mSky04,mSky04,mSkyStars,
                 mSun1,mSun2,mSun3,mMoon,mStar,mMeteor, clearOn, SkyRenderer.Config.WINDMILL);
@@ -347,23 +346,26 @@ public class WindmillGL extends GLESScene {
                 mWindmillWing,mWindmillWingBlur,mWindmillCenter1,mWindmillCenter2,
                 mWindmillPillar1,mWindmillPillar2,mWindmillPillarFlip1,mWindmillPillarFlip2);
 
-        mGroundRenderer.drawFarLand(mGroundDrawer, groundTextures.farLand, mScene.mOffset, mScene.mLandscape);
+        mGroundRenderer.drawFarLand(mGroundDrawer, groundTextures.farLand, groundTextures.farLandNight,
+                mScene.mOffset, mScene.mLandscape, mScene.mNightWeight);
 
         mWindmillRenderer.drawByDistance(mWindmillDrawer, 1, mScene.mFrameCnt, mScene.mOffset,
                 mScene.mLandscape, mScene.mNightWeight,
                 mWindmillWing,mWindmillWingBlur,mWindmillCenter1,mWindmillCenter2,
                 mWindmillPillar1,mWindmillPillar2,mWindmillPillarFlip1,mWindmillPillarFlip2);
 
-        mGroundRenderer.drawNearLand(mGroundDrawer, groundTextures.nearLand, mScene.mOffset, mScene.mLandscape);
+        mGroundRenderer.drawNearLand(mGroundDrawer, groundTextures.nearLand, groundTextures.nearLandNight,
+                mScene.mOffset, mScene.mLandscape, mScene.mNightWeight);
 
         mWindmillRenderer.drawByDistance(mWindmillDrawer, 0, mScene.mFrameCnt, mScene.mOffset,
                 mScene.mLandscape, mScene.mNightWeight,
                 mWindmillWing,mWindmillWingBlur,mWindmillCenter1,mWindmillCenter2,
                 mWindmillPillar1,mWindmillPillar2,mWindmillPillarFlip1,mWindmillPillarFlip2);
 
-        mGroundRenderer.drawLawn(mGroundDrawer, groundTextures.lawn, mScene.mOffset, mScene.mLandscape);
+        mGroundRenderer.drawLawn(mGroundDrawer, groundTextures.lawn, groundTextures.lawnNight,
+                mScene.mOffset, mScene.mLandscape, mScene.mNightWeight);
 
-        clearOn = mSkyRenderer.drawSunlight(mSkyDrawer, mScene.mCondition, mScene.mIsNight,
+        clearOn = mSkyRenderer.drawSunlight(mSkyDrawer, mScene.mCondition, mScene.mNightWeight,
                 mScene.mFrameCnt, mScene.mOffset, mScene.mLandscape, mSun4, clearOn, SkyRenderer.Config.WINDMILL);
 
         mFogIceRenderer.drawFogIce(mFogIceDrawer, mScene.mCondition, mScene.mNightWeight,
