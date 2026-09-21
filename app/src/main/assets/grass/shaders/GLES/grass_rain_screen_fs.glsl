@@ -91,7 +91,16 @@ vec4 drawDropLayer(vec2 uv, float scale, float alpha, float index) {
 }
 
 void main() {
-  vec2 uv = vUv;
+  // 参考实现的全屏四边形 aUv 是**上正**（v 在顶部为 1），而 grass 的 vUv.y 是**下正**
+  // （v 在屏幕底为 1，见 GrassScene 的 orthoM(0, w, h, 0, ...)）。
+  //
+  // 这一处不能省：drawDropLayer 里是 fract(uv.y + time*speed + ...)，时间增大时
+  // 特征往 **-y** 走。参考实现上正，于是 -y 就是向下 ✓；grass 下正，同一个式子
+  // 就变成雨往**上**飞了。翻了这一次之后，下面所有对 uv.y 的用法才和参考实现同义。
+  //
+  // 旁证：同一批参考着色器里 rain_drop_new.glsl 有 `uv.y = 1.0 - uv.y;`，
+  // 而 rain_screen 没有 —— 正是因为 rain_screen 的输入本来就是上正。
+  vec2 uv = vec2(vUv.x, 1.0 - vUv.y);
   vec4 color = vec4(0.0);
 
   // 最近的一层：单独处理，最粗最亮

@@ -172,6 +172,7 @@ public class GrassGL extends GLESScene {
     private int mTexSunAnnulusRamp;
     private int mTexSunRays;
     private int mTexWaterBead;
+    private int mTexWaterSplash;
 
     // 屏幕空间雨丝
     private int mRainScreenProgram;
@@ -288,13 +289,13 @@ public class GrassGL extends GLESScene {
                 mTexSolarEclipse, mTexSun, mTexAA, mTexDandelion, mTexFirefly,
             mTexFirefly1, mTexFirefly2,
             mTexMoonBase, mTexMoonMask,
-            mTexSunRamp, mTexSunAnnulusRamp, mTexSunRays, mTexWaterBead
+            mTexSunRamp, mTexSunAnnulusRamp, mTexSunRays, mTexWaterBead, mTexWaterSplash
         };
         GLES30.glDeleteTextures(tex.length, tex, 0);
         mTexNight = 0; mTexSunrise = 0; mTexSunset = 0; mTexSky = 0;
         mTexSolarEclipse = 0; mTexSun = 0; mTexAA = 0;
         mTexSunRamp = 0; mTexSunAnnulusRamp = 0; mTexSunRays = 0;
-        mTexWaterBead = 0;
+        mTexWaterBead = 0; mTexWaterSplash = 0;
         mTexDandelion = 0; mTexFirefly = 0; mTexFirefly1 = 0; mTexFirefly2 = 0;
         mTexMoonBase = 0; mTexMoonMask = 0;
         mWeatherRenderer.releaseTextures();
@@ -589,6 +590,9 @@ public class GrassGL extends GLESScene {
         // 水珠贴图是程序化生成的：参考实现那层水珠是算出来的（折射 + 高光），没有贴图，
         // 所以照它的观感反推一张。见 GrassTextureUtils.createWaterBeadTexture。
         mTexWaterBead = GrassTextureUtils.createWaterBeadTexture(64);
+        // 水花用**另一张**贴图：挂珠那张的珠体是刻意几乎全透明的，
+        // 拿它画 3~7 像素的水花等于什么都没画。
+        mTexWaterSplash = GrassTextureUtils.createWaterSplashTexture(32);
         mTexAA = GrassTextureUtils.createAlphaTexture();
         mTexDandelion = loadTexture("grass/drawable/dandelion.png", false, false);
         mTexFirefly = loadTexture("grass/drawable/firefly.png", false, false);
@@ -1024,15 +1028,26 @@ public class GrassGL extends GLESScene {
             return;
         }
         GrassRenderDataBuilder b = mScene.mRenderDataBuilder;
-        float[] verts = b.buildWaterVertices(sd);
-        int floats = b.getWaterFloatCount();
-        if (floats <= 0) {
-            return;
-        }
         useProgram(mBackgroundProgram);
         setBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ONE_MINUS_SRC_ALPHA);
         GLES30.glUniformMatrix4fv(mBgMatrixHandle, 1, false, sd.projectionMatrix, 0);
-        mSpriteRenderer.drawBatch(mTexWaterBead, verts, floats, 1.0f);
+
+        // 水花先画（贴在叶面上），挂珠后画（盖在水花之上），这样溅开的点子不会
+        // 盖住会长大的珠。
+        if (mTexWaterSplash != 0) {
+            float[] splash = b.buildSplashVertices(sd);
+            int splashFloats = b.getSplashFloatCount();
+            if (splashFloats > 0) {
+                mSpriteRenderer.drawBatch(mTexWaterSplash, splash, splashFloats, 1.0f);
+            }
+        }
+        if (mTexWaterBead != 0) {
+            float[] beads = b.buildBeadVertices(sd);
+            int beadFloats = b.getBeadFloatCount();
+            if (beadFloats > 0) {
+                mSpriteRenderer.drawBatch(mTexWaterBead, beads, beadFloats, 1.0f);
+            }
+        }
     }
 
     private void drawSprites(SceneData sd) {

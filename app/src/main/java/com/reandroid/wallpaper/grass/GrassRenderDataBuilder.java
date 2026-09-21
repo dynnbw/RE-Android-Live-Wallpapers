@@ -54,9 +54,11 @@ final class GrassRenderDataBuilder {
 
     private int mVKTempSpriteFloatCount;
 
-    /** 水珠 / 水花的精灵批。 */
-    private float[] mVKWaterVerts = new float[0];
-    private int mVKWaterFloatCount;
+    /** 水珠与水花各一批 —— 它们的贴图不同（挂珠几乎全透明，水花是实心亮点）。 */
+    private float[] mVKBeadVerts = new float[0];
+    private int mVKBeadFloatCount;
+    private float[] mVKSplashVerts = new float[0];
+    private int mVKSplashFloatCount;
 
     GrassRenderDataBuilder(LegacyParticleOps legacyOps) {
         this.legacyOps = legacyOps;
@@ -464,28 +466,25 @@ final class GrassRenderDataBuilder {
     }
 
     /**
-     * 水珠与水花的精灵批。
+     * 水珠的精灵批。
      *
      * <p>每个四边形都被旋转到"高光朝向太阳"的角度 —— 贴图里高光固定画在正上方，
      * 所以旋转角就是"从水珠指向太阳"的方向再加 90°（贴图的"上"在屏幕坐标里是 -y）。
      * 参考实现里那半句 {@code spec = max(dot(reflect(sunDir, texNorm), vec3(0,0,1)), 0)}
      * 表达的就是这件事；在原件里它是死代码，但意图清楚。
      */
-    float[] buildWaterVertices(SceneData sd) {
+    float[] buildBeadVertices(SceneData sd) {
         GrassWaterDroplets water = sd.water;
         if (water == null) {
-            mVKWaterFloatCount = 0;
-            return mVKWaterVerts;
+            mVKBeadFloatCount = 0;
+            return mVKBeadVerts;
         }
-        // 每个四边形 6 个顶点
-        int required = (water.activeBeadCount() + water.activeSplashCount())
-                * 6 * FLOATS_PER_SPRITE_VERTEX;
-        if (mVKWaterVerts.length < required) {
-            mVKWaterVerts = new float[required];
+        int required = water.activeBeadCount() * 6 * FLOATS_PER_SPRITE_VERTEX;
+        if (mVKBeadVerts.length < required) {
+            mVKBeadVerts = new float[required];
         }
-        float[] out = mVKWaterVerts;
+        float[] out = mVKBeadVerts;
         int cursor = 0;
-
         for (int i = 0; i < water.beadCapacity(); i++) {
             GrassWaterDroplets.Bead b = water.beadAt(i);
             if (!b.active) {
@@ -495,21 +494,41 @@ final class GrassRenderDataBuilder {
             cursor = appendSpriteQuadVertices(out, cursor, b.x, b.y, b.size * 2.0f,
                     GrassWaterDroplets.beadAlpha(b.size), true, sunFacingRotation(sd, b.x, b.y));
         }
+        mVKBeadFloatCount = Math.max(0, Math.min(cursor, out.length));
+        return out;
+    }
+
+    int getBeadFloatCount() {
+        return mVKBeadFloatCount;
+    }
+
+    /** 水花的精灵批。不旋转 —— 它是个亮点，没有朝向。 */
+    float[] buildSplashVertices(SceneData sd) {
+        GrassWaterDroplets water = sd.water;
+        if (water == null) {
+            mVKSplashFloatCount = 0;
+            return mVKSplashVerts;
+        }
+        int required = water.activeSplashCount() * 6 * FLOATS_PER_SPRITE_VERTEX;
+        if (mVKSplashVerts.length < required) {
+            mVKSplashVerts = new float[required];
+        }
+        float[] out = mVKSplashVerts;
+        int cursor = 0;
         for (int i = 0; i < water.splashCapacity(); i++) {
             GrassWaterDroplets.Splash sp = water.splashAt(i);
             if (!sp.active) {
                 continue;
             }
             cursor = appendSpriteQuadVertices(out, cursor, sp.x, sp.y, sp.size * 2.0f,
-                    sp.alpha() * 0.8f, true, 0.0f);
+                    sp.alpha(), false, 0.0f);
         }
-
-        mVKWaterFloatCount = Math.max(0, Math.min(cursor, out.length));
+        mVKSplashFloatCount = Math.max(0, Math.min(cursor, out.length));
         return out;
     }
 
-    int getWaterFloatCount() {
-        return mVKWaterFloatCount;
+    int getSplashFloatCount() {
+        return mVKSplashFloatCount;
     }
 
     /** 没有太阳数据时不旋转（高光朝上）。 */
