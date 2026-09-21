@@ -97,8 +97,11 @@ public class WeatherStateManager {
     /**
      * 位置变了才重建太阳计算器。
      *
-     * <p>{@link DeviceLocation} 没有新结果时返回同一个数组实例，所以这个引用比较
+     * <p>{@link DeviceLocation} 结果没变时返回同一个数组实例，所以这个引用比较
      * 在 5 分钟节流内恒为真 —— 每帧跑的就只有一次引用比较。
+     *
+     * <p>解析成 null 也当成一次变化：那是"调试覆盖被清除了、又没有真实定位"，
+     * 该回到按时区反推的兜底，而不是继续用手填的经纬度。
      */
     private void refreshLocation() {
         float[] resolved = mDeviceLocation.resolve();
@@ -106,10 +109,13 @@ public class WeatherStateManager {
             return;
         }
         mResolvedLocation = resolved;
+        TimeZone zone = TimeZone.getDefault();
         if (resolved != null) {
             mDayNight.setLocation(resolved[0], resolved[1]);
+            mDayNight.setTimeZone(zone);
+        } else {
+            mDayNight.applyFallbackLocation(zone);
         }
-        mDayNight.setTimeZone(TimeZone.getDefault());
     }
 
     private void initPreviewCycle() {

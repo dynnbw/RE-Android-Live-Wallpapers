@@ -14,65 +14,54 @@ import com.reandroid.utils.LocationProvider;
 /**
  * 设备位置来源：调试覆盖 → GPS / 网络 / 被动的最后已知位置。
  *
+ * <p>本类只管"怎么问系统要位置"；两个来源之间怎么取舍在 {@link LocationArbiter}
+ * 里，那一半是纯 Java，也能在 JVM 上单独测。
+ *
+ * <p>{@link #resolve()} 返回 null 表示当前没有任何位置可用（覆盖被清除、又没有真实定位）。
+ * 这不是"没事发生"，调用方应回到按时区反推的兜底，而不是留着上一次的值。
+ *
  * <p>真实定位只有 5 分钟节流，而且**每次都记时间戳**（成功失败都记）。原先只记成功那次，
  * 于是"权限给了、但系统还没有任何最后已知位置"这种状态会让每一帧都去查一次
  * LocationManager —— 那是跨进程调用，60fps 下每秒 180 次。
  *
- * <p>代价是权限刚授予时最多要等 5 分钟才用上新位置。这个窗口可以接受：
+ * <p>调试覆盖不受节流约束：它是个测试开关，设上和清除都该立刻生效。
+ * 代价是权限刚授予时最多要等 5 分钟才用上新位置；这个窗口可以接受 ——
  * 拿不到位置时用的是按时区反推的经度，误差上限约 1 小时，不是"没有日夜"。
- * 而调试覆盖（设置页里手填的经纬度）不受节流约束，见 {@link #resolve()}。
  */
 public final class DeviceLocation {
 
     private static final long UPDATE_INTERVAL_MS = 300000L;
 
-    /** 上次解析结果 {纬度, 经度}；从没解析到就是 null。 */
-    private float[] mResolved;
+    private final LocationArbiter mArbiter = new LocationArbiter();
     private long mLastAttemptMs;
 
     /**
-     * 返回 {@code {纬度, 经度}}；这次（以及之前）都拿不到就返回 null，
-     * 调用方应保留自己上一次的值。
+     * 返回当前有效的位置 {@code {纬度, 经度}}；没有任何位置可用时返回 null。
      *
-     * <p>没有新结果时返回的是<b>同一个数组实例</b>，所以调用方可以用引用比较判断
-     * "这五分钟里位置有没有真的变过"，避免拿每帧的老值去做重建。
+     * <p>结果没变时返回<b>同一个数组实例</b>，所以调用方可以用引用比较判断
+     * "位置有没有真的变过"，避免拿每帧的老值去做重建。
      */
     public float[] resolve() {
-        /*
-         * 调试覆盖不走节流 —— 它是个测试开关，改完就该立刻生效。真定位要等 5 分钟，
-         * 而"改完经纬度得等五分钟才看得出来"会把这个开关本身废掉。
-         */
-        float[] debug = LocationProvider.getDebugLocation();
-        if (debug != null && !matches(debug)) {
-            mResolved = new float[]{debug[0], debug[1]};
-            mLastAttemptMs = System.currentTimeMillis();
-            return mResolved;
+        mArbiter.setOverride(LocationProvider.getDebugLocation());
+        if (!mArbiter.hasOverride()) {
+            refreshDevice();
         }
+        return mArbiter.resolved();
+    }
 
+    private void refreshDevice() {
         long now = System.currentTimeMillis();
         if (mLastAttemptMs != 0L && (now - mLastAttemptMs) < UPDATE_INTERVAL_MS) {
-            return mResolved;
+            return;
         }
 
         Context ctx = GLESWallpaper.getAppContext();
         if (ctx == null) {
             // 还没拿到 Context 是启动早期的事，不记时间戳，下一帧再试
-            return mResolved;
+            return;
         }
         mLastAttemptMs = now;
-
-        float[] fresh = query(ctx);
-        if (fresh != null) {
-            mResolved = fresh;
-        }
-        return mResolved;
-    }
-
-    /** {@code resolve()} 的返回值是不是已经是这组经纬度了。 */
-    private boolean matches(float[] latLng) {
-        return mResolved != null
-                && mResolved[0] == latLng[0]
-                && mResolved[1] == latLng[1];
+        mArbiter.setDevice(query(ctx));
     }
 
     private float[] query(Context ctx) {

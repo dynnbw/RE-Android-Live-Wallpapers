@@ -29,6 +29,8 @@ final public class GrassDayNightSystem {
     /** 位置与时区由公用组件持有；这里只管草地的四段权重。 */
     private final DayNightResolver mResolver = new DayNightResolver();
     private final DeviceLocation mDeviceLocation = new DeviceLocation();
+    /** 上一次用过的位置（引用比较，见 {@link #updateLocation()}）。 */
+    private float[] mResolvedLocation;
     private final Calendar mCachedCalendar = Calendar.getInstance();
 
     private float dawn;
@@ -273,11 +275,22 @@ final public class GrassDayNightSystem {
         lastSunAltitude = altitude;
     }
 
-    /** 位置每 5 分钟问一次系统；拿不到就沿用上一次的（首次没有则用兜底经纬度）。 */
+    /**
+     * 位置每 5 分钟问一次系统。
+     *
+     * <p>解析成 null 也当成一次变化：那是"调试覆盖被清除了、又没有真实定位"，
+     * 该回到按时区反推的兜底，而不是继续用手填的经纬度。
+     */
     private void updateLocation() {
         float[] resolved = mDeviceLocation.resolve();
+        if (resolved == mResolvedLocation) {
+            return;
+        }
+        mResolvedLocation = resolved;
         if (resolved != null) {
             mResolver.setLocation(resolved[0], resolved[1]);
+        } else {
+            mResolver.applyFallbackLocation(TimeZone.getDefault());
         }
     }
 
