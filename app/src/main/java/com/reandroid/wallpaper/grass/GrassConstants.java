@@ -32,6 +32,20 @@ final class GrassConstants {
     /** > 0.5 才绘制环晕与成对光环。 */
     static final float SUN_22_OPEN = 1.0f;
 
+    /**
+     * 屏幕空间雨丝的调参。
+     *
+     * <p>参考实现（{@code rain_screen_fragment_shader.glsl}）里这几个是 uniform，
+     * 取值在混淆过的 Java 里**没能提取出来**。现值是上机的起点，不是标准答案。
+     */
+    /** 竖轨道数（参考实现的 SCALE_X）。越大雨丝越细越密。 */
+    static final float RAIN_TRACK_COUNT = 20.0f;
+    /** 下落速度。 */
+    static final float RAIN_SPEED_Y = 1.0f;
+    /** 最靠近镜头那一层的透明度与粗细（参考实现里单独处理的那层）。 */
+    static final float RAIN_BASE_ALPHA = 0.8f;
+    static final float RAIN_BASE_SCALE = 1.0f;
+
     static final int LEGACY_MAX_NORMAL = 10;
     static final int LEGACY_MAX_EXTRAS = 50;
     static final float LEGACY_SPEED = 0.1f;

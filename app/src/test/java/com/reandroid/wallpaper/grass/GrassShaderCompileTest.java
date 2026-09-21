@@ -118,6 +118,7 @@ public class GrassShaderCompileTest {
             "grass_moon_fs.glsl", "grass_moon_vs.glsl",
             "grass_sky_fs.glsl", "grass_sky_vs.glsl",
             "grass_sun_fs.glsl", "grass_sun_vs.glsl",
+            "grass_rain_screen_fs.glsl", "grass_rain_screen_vs.glsl",
     };
 
     @Test
