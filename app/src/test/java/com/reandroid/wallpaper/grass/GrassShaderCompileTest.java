@@ -4,6 +4,11 @@ import org.junit.Assume;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -129,6 +134,62 @@ public class GrassShaderCompileTest {
             if (!present.contains(r)) missing.add(r);
         }
         assertEquals("这些着色器不见了（删掉或改名了？）：" + missing, 0, missing.size());
+    }
+
+    /**
+     * 成对的 vs/fs 必须能**链接** —— 单条编译通过、链接失败照样是黑屏。
+     *
+     * <p>这不是假想的风险。重写太阳着色器时，新 vs 顶部是 {@code precision highp float;}
+     * 而当时的 fs 还是 {@code mediump}，两者共用的 {@code uTime} / {@code uLineAlpha}
+     * 精度不一致，链接直接失败 —— 而**单条编译完全查不出这一条**（每条单独都合法）。
+     *
+     * <p>glslangValidator 靠扩展名认阶段，而我们的文件叫 {@code *_vs.glsl}，
+     * 所以要先把两条拷成 {@code .vert} / {@code .frag} 临时文件再 {@code -l}。
+     */
+    @Test
+    public void everyShaderPairLinks() throws Exception {
+        File validator = findValidator();
+        Assume.assumeTrue("未找到 glslangValidator，跳过（跳过 = 本闸门什么都没验）",
+                validator != null);
+
+        List<String> failures = new ArrayList<>();
+        for (String vs : REQUIRED) {
+            if (!vs.endsWith("_vs.glsl")) continue;
+            String fs = vs.substring(0, vs.length() - "_vs.glsl".length()) + "_fs.glsl";
+            File vsFile = new File(SHADER_DIR, vs);
+            File fsFile = new File(SHADER_DIR, fs);
+            assertTrue(fs + " 不存在（" + vs + " 没有配对的片段着色器）", fsFile.isFile());
+
+            File tmpVs = File.createTempFile("gsvs", ".vert");
+            File tmpFs = File.createTempFile("gsfs", ".frag");
+            try {
+                copy(vsFile, tmpVs);
+                copy(fsFile, tmpFs);
+                ProcessBuilder pb = new ProcessBuilder(validator.getAbsolutePath(), "-l",
+                        tmpVs.getAbsolutePath(), tmpFs.getAbsolutePath());
+                pb.redirectErrorStream(true);
+                Process proc = pb.start();
+                String out = new String(proc.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+                assertTrue(vs + " 链接超时", proc.waitFor(60, TimeUnit.SECONDS));
+                if (proc.exitValue() != 0) {
+                    failures.add("=== " + vs + " + " + fs + System.lineSeparator() + out);
+                }
+            } finally {
+                tmpVs.delete();
+                tmpFs.delete();
+            }
+        }
+        assertEquals("有着色器配对链接失败：" + failures, 0, failures.size());
+    }
+
+    private static void copy(File from, File to) throws IOException {
+        try (InputStream in = new FileInputStream(from); OutputStream out = new FileOutputStream(to)) {
+            byte[] buf = new byte[8192];
+            int n;
+            while ((n = in.read(buf)) > 0) {
+                out.write(buf, 0, n);
+            }
+        }
     }
 
     /** 每条着色器都要显式声明 `#version 300 es` —— 缺了就退回 ESSL 1.00。 */
