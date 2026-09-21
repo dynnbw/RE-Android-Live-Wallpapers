@@ -148,6 +148,18 @@ public class GrassGL extends GLESScene {
     private int mSunLineAlphaHandle;
     private int mSunResolutionHandle;
     private int mSunSunPosHandle;
+    private int mSunSunRampHandle;
+    private int mSunAnnulusRampHandle;
+    private int mSunRaysHandle;
+    private int mSunCircleAlphaHandle;
+    private int mSunCircleOffsetHandle;
+    private int mSunCircleOffsetRatioHandle;
+    private int mSunAnnulusAlphaHandle;
+    private int mSunRayAlphaHandle;
+    private int mSunQualityHandle;
+    private int mSun22OpenHandle;
+    private int mSunCloseCircleHandle;
+    private int mSunSunPosOffsetYHandle;
 
     // Textures
     private int mTexNight;
@@ -156,6 +168,9 @@ public class GrassGL extends GLESScene {
     private int mTexSky;
     private int mTexSolarEclipse;
     private int mTexSun;
+    private int mTexSunRamp;
+    private int mTexSunAnnulusRamp;
+    private int mTexSunRays;
     private int mTexAA;
     private int mTexDandelion;
     private int mTexFirefly;
@@ -253,11 +268,13 @@ public class GrassGL extends GLESScene {
                 mTexNight, mTexSunrise, mTexSunset, mTexSky,
                 mTexSolarEclipse, mTexSun, mTexAA, mTexDandelion, mTexFirefly,
             mTexFirefly1, mTexFirefly2,
-            mTexMoonBase, mTexMoonMask
+            mTexMoonBase, mTexMoonMask,
+            mTexSunRamp, mTexSunAnnulusRamp, mTexSunRays
         };
         GLES30.glDeleteTextures(tex.length, tex, 0);
         mTexNight = 0; mTexSunrise = 0; mTexSunset = 0; mTexSky = 0;
         mTexSolarEclipse = 0; mTexSun = 0; mTexAA = 0;
+        mTexSunRamp = 0; mTexSunAnnulusRamp = 0; mTexSunRays = 0;
         mTexDandelion = 0; mTexFirefly = 0; mTexFirefly1 = 0; mTexFirefly2 = 0;
         mTexMoonBase = 0; mTexMoonMask = 0;
         mWeatherRenderer.releaseTextures();
@@ -509,6 +526,18 @@ public class GrassGL extends GLESScene {
         mSunLineAlphaHandle = GLES30.glGetUniformLocation(mSunProgram, "uLineAlpha");
         mSunResolutionHandle = GLES30.glGetUniformLocation(mSunProgram, "uResolution");
         mSunSunPosHandle = GLES30.glGetUniformLocation(mSunProgram, "uSunPos");
+        mSunSunRampHandle = GLES30.glGetUniformLocation(mSunProgram, "uSunRamp");
+        mSunAnnulusRampHandle = GLES30.glGetUniformLocation(mSunProgram, "uAnnulusRamp");
+        mSunRaysHandle = GLES30.glGetUniformLocation(mSunProgram, "uRays");
+        mSunCircleAlphaHandle = GLES30.glGetUniformLocation(mSunProgram, "uCircleAlpha");
+        mSunCircleOffsetHandle = GLES30.glGetUniformLocation(mSunProgram, "uCircleOffset");
+        mSunCircleOffsetRatioHandle = GLES30.glGetUniformLocation(mSunProgram, "uCircleOffsetRatio");
+        mSunAnnulusAlphaHandle = GLES30.glGetUniformLocation(mSunProgram, "uAnnulusAlpha");
+        mSunRayAlphaHandle = GLES30.glGetUniformLocation(mSunProgram, "uRayAlpha");
+        mSunQualityHandle = GLES30.glGetUniformLocation(mSunProgram, "uQuality");
+        mSun22OpenHandle = GLES30.glGetUniformLocation(mSunProgram, "u22Open");
+        mSunCloseCircleHandle = GLES30.glGetUniformLocation(mSunProgram, "uCloseCircle");
+        mSunSunPosOffsetYHandle = GLES30.glGetUniformLocation(mSunProgram, "uSunPosOffsetY");
     }
 
 
@@ -526,6 +555,13 @@ public class GrassGL extends GLESScene {
         mTexSolarEclipse = loadTexture("grass/drawable/solar_eclipse.jpg", false, false);
         mBackgroundRenderer.setSkyTextures(mTexNight, mTexSunrise, mTexSunset, mTexSky, mTexSolarEclipse);
         mTexSun = loadTexture("grass/drawable/sun.png", false, false);
+        // 太阳的三张 LUT / 图，由 tools/weather_tex/decode_lzstc.py 从参考实现的
+        // .lzstc 解出。sun_ramp / sun_annulus_ramp 是 540x1，着色器按
+        // texture(tex, vec2(radius, 0.5)) 采样，所以 v 必须落在唯一那一行上 ——
+        // repeat 必须为 false（CLAMP_TO_EDGE），mipmap 必须为 false。
+        mTexSunRamp = loadTexture("grass/drawable/sun_ramp.png", false, false);
+        mTexSunAnnulusRamp = loadTexture("grass/drawable/sun_annulus_ramp.png", false, false);
+        mTexSunRays = loadTexture("grass/drawable/sun_rays.png", false, false);
         mTexAA = GrassTextureUtils.createAlphaTexture();
         mTexDandelion = loadTexture("grass/drawable/dandelion.png", false, false);
         mTexFirefly = loadTexture("grass/drawable/firefly.png", false, false);
@@ -701,6 +737,25 @@ public class GrassGL extends GLESScene {
         GLES30.glUniform1f(mSunTimeHandle, sd.animNowMs * 0.001f);
         GLES30.glUniform1f(mSunOpacityHandle, sd.sunAlpha);
         GLES30.glUniform1f(mSunLineAlphaHandle, 320.0f);
+        GLES30.glUniform1f(mSunSunPosOffsetYHandle, 0.0f);
+        GLES30.glUniform1f(mSunCircleAlphaHandle, GrassConstants.SUN_CIRCLE_ALPHA);
+        GLES30.glUniform1f(mSunCircleOffsetHandle, GrassConstants.SUN_CIRCLE_OFFSET);
+        GLES30.glUniform1f(mSunCircleOffsetRatioHandle, GrassConstants.SUN_CIRCLE_OFFSET_RATIO);
+        GLES30.glUniform1f(mSunAnnulusAlphaHandle, GrassConstants.SUN_ANNULUS_ALPHA);
+        GLES30.glUniform1f(mSunRayAlphaHandle, GrassConstants.SUN_RAY_ALPHA);
+        GLES30.glUniform1f(mSunQualityHandle, GrassConstants.SUN_QUALITY);
+        GLES30.glUniform1f(mSun22OpenHandle, GrassConstants.SUN_22_OPEN);
+        GLES30.glUniform1i(mSunCloseCircleHandle, 0);
+
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mTexSunRamp);
+        GLES30.glUniform1i(mSunSunRampHandle, 0);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE1);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mTexSunAnnulusRamp);
+        GLES30.glUniform1i(mSunAnnulusRampHandle, 1);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE2);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mTexSunRays);
+        GLES30.glUniform1i(mSunRaysHandle, 2);
 
         // draw full-screen quad via moon buffer (reused)
         if (mMoonBuffer == null) {
