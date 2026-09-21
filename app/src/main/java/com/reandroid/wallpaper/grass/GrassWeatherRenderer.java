@@ -19,7 +19,8 @@ final class GrassWeatherRenderer {
         mPluginPrefs = prefs;
     }
 
-    private static final int RAIN_BATCH_GROUP_COUNT = 3;
+    /** 雨丝现在只有一张贴图、一个批次（原来三张固定尺寸的精灵已删除）。 */
+    private static final int RAIN_BATCH_GROUP_COUNT = 1;
     private static final int SNOW_BATCH_GROUP_COUNT = 4;
     private static final int CLOUD_BATCH_GROUP_COUNT = 4;
     /**
@@ -39,8 +40,6 @@ final class GrassWeatherRenderer {
     private static final float[] CLOUD_MDPI_H = {180f, 163f, 198f, 170f};
     private static final float FOG1_H_OVER_W = 95f / 280f;
     private static final float FOG2_H_OVER_W = 86f / 150f;
-    private static final float[] RAIN_MDPI_W = {2f, 2f, 2f};
-    private static final float[] RAIN_MDPI_H = {42f, 30f, 49f};
 
     private int width;
     private int height;
@@ -68,9 +67,18 @@ final class GrassWeatherRenderer {
         return width > 0 ? width / REFERENCE_WIDTH_DP : 1.0f;
     }
 
-    private int texWeatherRain1;
-    private int texWeatherRain2;
-    private int texWeatherRain3;
+    private int texRainStreak;
+
+    /**
+     * 雨粒子。原来的实现里每条雨丝速度都在 300-350、三张贴图尺寸与速度毫无关系，
+     * 也就是一堵平墙；这里换成参考实现的粒子模型：**下落速度、尺寸、透明度由同一个
+     * "深度"值决定**，那才是雨看起来有纵深的原因。
+     */
+    private GrassRainParticleSystem mRainParticles;
+    /** drawRainLayer 前后两遍都会调，用它挡住第二次推进（否则 dt 翻倍、雨速是两倍）。 */
+    private long mRainSteppedAtMs = -1L;
+    /** 上一帧是否在降雨；用来检测"刚切进降雨"并重置粒子。 */
+    private boolean mRainActive;
     private int texWeatherSnow1;
     private int texWeatherSnow2;
     private int texWeatherSnow3;
@@ -119,9 +127,8 @@ final class GrassWeatherRenderer {
     }
 
     void loadTextures(TextureLoader loader, SolidColorTextureFactory solidColorFactory) {
-        texWeatherRain1 = loader.load("grass/drawable/grass_weather_rain_01.png", false, false);
-        texWeatherRain2 = loader.load("grass/drawable/grass_weather_rain_02.png", false, false);
-        texWeatherRain3 = loader.load("grass/drawable/grass_weather_rain_03.png", false, false);
+        // 雨丝条纹：从天气应用的 rain.png 解出来的原像素（64x64 白竖条）
+        texRainStreak = loader.load("grass/drawable/grass_rain_streak.png", false, false);
         texWeatherSnow1 = loader.load("grass/drawable/grass_weather_snow_01.png", false, false);
         texWeatherSnow2 = loader.load("grass/drawable/grass_weather_snow_02.png", false, false);
         texWeatherSnow3 = loader.load("grass/drawable/grass_weather_snow_03.png", false, false);
@@ -141,7 +148,7 @@ final class GrassWeatherRenderer {
 
     void releaseTextures() {
         int[] tex = new int[]{
-                texWeatherRain1, texWeatherRain2, texWeatherRain3,
+                texRainStreak,
                 texWeatherSnow1, texWeatherSnow2, texWeatherSnow3, texWeatherSnow4,
                 texWeatherFog1, texWeatherFog2,
                 texWeatherCloud1, texWeatherCloud2, texWeatherCloud3, texWeatherCloud4,
@@ -150,9 +157,7 @@ final class GrassWeatherRenderer {
         };
         GLES30.glDeleteTextures(tex.length, tex, 0);
 
-        texWeatherRain1 = 0;
-        texWeatherRain2 = 0;
-        texWeatherRain3 = 0;
+        texRainStreak = 0;
         texWeatherSnow1 = 0;
         texWeatherSnow2 = 0;
         texWeatherSnow3 = 0;
@@ -200,6 +205,12 @@ final class GrassWeatherRenderer {
         updateWeatherTint(sd);
         spriteRenderer.setTint(weatherTintR, weatherTintG, weatherTintB);
 
+        // 切出降雨：清标志，下次切回来会重新起雨。
+        // 放在这里是有意的 —— 每个非降雨 case 各写一遍必然会漏掉某一个。
+        if (GrassWeatherSystem.rainIntensity(sd.weatherCondition) <= 0.0f) {
+            mRainActive = false;
+        }
+
         switch (sd.weatherCondition) {
             case D2_CLOUDY:
                 if (!frontPass) {
@@ -222,7 +233,7 @@ final class GrassWeatherRenderer {
                 if (!frontPass) {
                     drawCloudLayer(sd.weatherCondition, sd.animNowMs, 12, spriteRenderer);
                 }
-                drawRainLayer(sd.animNowMs, resolveRainCount(false), frontPass, spriteRenderer);
+                drawRainLayer(sd, resolveRainCount(false), frontPass, spriteRenderer);
                 break;
             case D6_THUNDERSTORMS:
                 if (!frontPass) {
@@ -232,7 +243,7 @@ final class GrassWeatherRenderer {
                     restoreWeatherTint(spriteRenderer);
                     drawCloudLayer(sd.weatherCondition, sd.animNowMs, 12, spriteRenderer);
                 }
-                drawRainLayer(sd.animNowMs, resolveRainCount(true), frontPass, spriteRenderer);
+                drawRainLayer(sd, resolveRainCount(true), frontPass, spriteRenderer);
                 if (frontPass && thunderFlashAlpha > 0.0f && texWeatherFlash != 0) {
                     float fullSize = Math.max(width, height) * 2.4f;
                     spriteRenderer.setTintWhite();
@@ -257,7 +268,7 @@ final class GrassWeatherRenderer {
                 if (!frontPass) {
                     drawCloudLayer(sd.weatherCondition, sd.animNowMs, 12, spriteRenderer);
                 }
-                drawRainLayer(sd.animNowMs, resolveRainCount(true), frontPass, spriteRenderer);
+                drawRainLayer(sd, resolveRainCount(true), frontPass, spriteRenderer);
                 drawSnowLayer(sd.animNowMs, resolveSnowCount(false), frontPass, spriteRenderer);
                 break;
             case D1_CLEAR:
@@ -411,35 +422,59 @@ final class GrassWeatherRenderer {
         }
     }
 
-    private void drawRainLayer(long animNowMs, int count, boolean frontPass, GrassSpriteRenderer spriteRenderer) {
-        if (texWeatherRain1 == 0 || texWeatherRain2 == 0 || texWeatherRain3 == 0) return;
-        float tSec = animNowMs / 1000.0f;
+    /**
+     * 画雨丝。前后两遍各调一次，但**粒子系统每帧只推进一次** ——
+     * 否则 dt 翻倍、雨速是标称的两倍，而且看起来还挺正常，不容易发现。
+     */
+    private void drawRainLayer(SceneData sd, int count, boolean frontPass,
+                               GrassSpriteRenderer spriteRenderer) {
+        if (texRainStreak == 0) return;
+
+        if (mRainParticles == null || mRainParticles.count() != count) {
+            GrassRainParticleSystem.Config cfg = new GrassRainParticleSystem.Config();
+            cfg.count = count;
+            // 线段发射器：屏幕上方一条斜线，粒子沿它撒开再各自往下掉
+            cfg.startX = -width * 0.2f;
+            cfg.endX = width * 1.2f;
+            cfg.startY = -height * 0.45f;
+            cfg.endY = height * 0.10f;
+            cfg.baseWidth = 8.0f * density;
+            cfg.baseHeight = 96.0f * density;
+            mRainParticles = new GrassRainParticleSystem(cfg);
+            mRainSteppedAtMs = -1L;
+            mRainActive = false;
+        }
+
+        // 刚切进降雨：重置一次，让雨有起点（预热，避免开局从一条干净的线开始）
+        if (!mRainActive) {
+            mRainParticles.reset(true);
+            mRainActive = true;
+            mRainSteppedAtMs = -1L;
+        }
+        if (mRainSteppedAtMs != sd.animNowMs) {
+            mRainParticles.advance(sd.dt, sd.animNowMs / 1000.0f);
+            mRainSteppedAtMs = sd.animNowMs;
+        }
+
         clearBatchCounts(rainBatchFloatCounts);
-        for (int i = 0; i < count; i++) {
+        for (int i = 0; i < mRainParticles.count(); i++) {
+            if (mRainParticles.state(i) != GrassRainParticleSystem.STATE_RUN) continue;
+            // 前后分层沿用原逻辑：一半在草叶后、一半在草叶前
             boolean front = hash01(i * 37L + 991L) > 0.5f;
             if (front != frontPass) continue;
-            int texIdx = i % 3;
-            float rainW = RAIN_MDPI_W[texIdx] * density;
-            float rainH = RAIN_MDPI_H[texIdx] * density;
-            float xPos = hash01((long) (i * 17 + 503)) * width;
-            float speed = 300.0f + hash01((long) (i * 31 + 271)) * 50.0f;
-            float cycleLen = rainH + height;
-            float phase = hash01((long) (i * 23 + 713)) * cycleLen;
-            float yPos = (phase + speed * tSec) % cycleLen - rainH;
-            appendQuadToGroup(rainBatchVertices, rainBatchFloatCounts, texIdx,
-                    xPos, yPos, xPos + rainW, yPos + rainH,
-                    0.0f, 0.0f, 1.0f, 1.0f);
+            float alpha = mRainParticles.renderAlpha(i);
+            if (alpha <= 0.001f) continue;
+
+            float w = mRainParticles.quadWidthPx(i);
+            float h = mRainParticles.quadHeightPx(i);
+            float x0 = mRainParticles.x(i) - w * 0.5f;
+            float y0 = mRainParticles.y(i) - h * 0.5f;
+            appendQuadToGroup(rainBatchVertices, rainBatchFloatCounts, 0,
+                    x0, y0, x0 + w, y0 + h, 0.0f, 0.0f, 1.0f, 1.0f, alpha);
         }
-        for (int i = 0; i < RAIN_BATCH_GROUP_COUNT; i++) {
-            int floatCount = rainBatchFloatCounts[i];
-            if (floatCount <= 0) {
-                continue;
-            }
-            int texture = rainTextureForIndex(i);
-            if (texture == 0) {
-                continue;
-            }
-            spriteRenderer.drawBatch(texture, rainBatchVertices[i], floatCount, 1.0f);
+        if (rainBatchFloatCounts[0] > 0) {
+            spriteRenderer.drawBatch(texRainStreak, rainBatchVertices[0],
+                    rainBatchFloatCounts[0], 1.0f);
         }
     }
 
@@ -499,17 +534,6 @@ final class GrassWeatherRenderer {
         return base;
     }
 
-    private int rainTextureForIndex(int idx) {
-        switch (idx) {
-            case 0:
-                return texWeatherRain1;
-            case 1:
-                return texWeatherRain2;
-            default:
-                return texWeatherRain3;
-        }
-    }
-
     private int snowTextureForIndex(int idx) {
         switch (idx) {
             case 0:
@@ -532,17 +556,25 @@ final class GrassWeatherRenderer {
     private void appendQuadToGroup(float[][] groups, int[] counts, int group,
             float left, float top, float right, float bottom,
             float uLeft, float vTop, float uRight, float vBottom) {
+        appendQuadToGroup(groups, counts, group, left, top, right, bottom,
+                uLeft, vTop, uRight, vBottom, 1.0f);
+    }
+
+    /** 带逐四边形透明度的版本 —— 雨丝按深度给浓淡要它。 */
+    private void appendQuadToGroup(float[][] groups, int[] counts, int group,
+            float left, float top, float right, float bottom,
+            float uLeft, float vTop, float uRight, float vBottom, float alpha) {
         ensureGroupCapacity(groups, counts, group, FLOATS_PER_QUAD);
         float[] out = groups[group];
         int cursor = counts[group];
 
-        cursor = putVertex(out, cursor, left, top, uLeft, vTop);
-        cursor = putVertex(out, cursor, left, bottom, uLeft, vBottom);
-        cursor = putVertex(out, cursor, right, bottom, uRight, vBottom);
+        cursor = putVertex(out, cursor, left, top, uLeft, vTop, alpha);
+        cursor = putVertex(out, cursor, left, bottom, uLeft, vBottom, alpha);
+        cursor = putVertex(out, cursor, right, bottom, uRight, vBottom, alpha);
 
-        cursor = putVertex(out, cursor, left, top, uLeft, vTop);
-        cursor = putVertex(out, cursor, right, bottom, uRight, vBottom);
-        cursor = putVertex(out, cursor, right, top, uRight, vTop);
+        cursor = putVertex(out, cursor, left, top, uLeft, vTop, alpha);
+        cursor = putVertex(out, cursor, right, bottom, uRight, vBottom, alpha);
+        cursor = putVertex(out, cursor, right, top, uRight, vTop, alpha);
 
         counts[group] = cursor;
     }
@@ -553,6 +585,16 @@ final class GrassWeatherRenderer {
         out[cursor++] = u;
         out[cursor++] = v;
         out[cursor++] = 1.0f;   // 逐顶点 alpha：本层不用，整批透明度走 uniform
+        return cursor;
+    }
+
+    /** 逐顶点 alpha 版本。雨丝要按深度给不同的浓淡，整批一个 uniform 表达不了。 */
+    private int putVertex(float[] out, int cursor, float x, float y, float u, float v, float a) {
+        out[cursor++] = x;
+        out[cursor++] = y;
+        out[cursor++] = u;
+        out[cursor++] = v;
+        out[cursor++] = a;
         return cursor;
     }
 
