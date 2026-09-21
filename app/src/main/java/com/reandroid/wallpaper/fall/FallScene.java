@@ -33,6 +33,23 @@ final class FallScene {
     static final int DEFAULT_RANDOM_DROPS = 10;
     static final float LEAF_SIZE = 0.55f;
     private static final int MESH_RESOLUTION = 48;
+
+    /**
+     * 世界尺寸：**定值**，不随屏幕变。
+     *
+     * <p>取自 AOSP 原版 {@code fall.rs} —— 真实尺寸被原作者注释掉了：
+     * <pre>
+     *   float width  = 2;      //g_glWidth;
+     *   float height = 3.333;  //g_glHeight;
+     * </pre>
+     * 世界恒为 2 × 3.333（长宽比 0.6），屏幕差异靠"铺满 + 裁切"适配，**永不拉伸**。
+     * 移植时这里被换成了 {@code 2*height/width}，世界形状跟着设备走，背景于是被拉伸。
+     */
+    private static final float WORLD_HEIGHT = 3.333f;
+
+    /** 世界宽度恒为 ±1（即宽 2）。 */
+    private static final float WORLD_HALF_WIDTH = 1.0f;
+
     private static final int DEFAULT_WATER_MESH_DROPS = 10;
     // Drop array sized dynamically — no hard limit
 
@@ -147,12 +164,16 @@ final class FallScene {
     private int mMeshWidth;
     private int mMeshHeight;
     /**
-     * 可见高度（正交投影的上下跨度）。resize() 里按 2*h/w 重算。
+     * 可见高度（正交投影的上下跨度）。定值，见 {@link #worldHeight()}。
      *
-     * <p>默认值 3.333 是 480×800 竖屏的取值，沿用 AOSP 里那个占位常量 ——
-     * 它只在 resize() 之前被读到，作用是不让初值为 0，**不是可以照抄的目标值**。
+     * <p>默认值只在 resize() 之前被读到，作用是不让初值为 0，
+     * **不是可以照抄的目标值**。
      */
-    private float mGlHeight = 3.333f;
+    private float mGlHeight = WORLD_HEIGHT;
+
+    /** 当前屏幕上可见的世界半宽/半高。铺满+裁切之后它与世界半宽/半高不一定相等。 */
+    private float mVisibleHalfW = WORLD_HALF_WIDTH;
+    private float mVisibleHalfH = WORLD_HEIGHT * 0.5f;
     private float mBackgroundScale = 0.75f;
     private Drop[] mDrops;
     private Drop[] mWaterDrops;
@@ -180,7 +201,12 @@ final class FallScene {
     private float mLeafSizeMultiplier = 1.0f;
     private float mFallSpeedMultiplier = 1.0f;
 
-    float getLeafSizeMultiplier() { return mLeafSizeMultiplier; }
+    float getLeafSizeMultiplier() { return effectiveLeafSizeMultiplier(); }
+
+    /** 设置里的倍率 × 朝向补偿（竖屏时补偿恒为 1）。 */
+    private float effectiveLeafSizeMultiplier() {
+        return mLeafSizeMultiplier * leafOrientationScale();
+    }
 
     /**
      * 实际会用到的叶子贴图数（绿叶开 20、关 14，见 prepareNonGLResources）。
@@ -205,11 +231,76 @@ final class FallScene {
         mSceneData.xOffset = xOffset;
     }
 
+    /**
+     * 按当前屏幕尺寸刷新朝向与世界高度。
+     *
+     * <p><b>世界高度恒按竖屏方向取</b>（长边 / 短边），横屏时靠
+     * {@link #updateProjectionMatrix()} 把世界转 90° 摆正。于是竖屏和横屏的世界形状
+     * 一致（约 2 × 3.8），叶片的**像素**尺寸与背景贴图的长宽比都不会变
+     * —— 这正是"保留竖屏叶子大小"要的。
+     *
+     * <p>这里原先是三处赋值、两种公式：{@code resize()} 用 2*height/width（不交换），
+     * {@code prepareNonGLResources()} 与 {@code addDrop()} 交换。竖屏下两者相等，
+     * 横屏差 4.9 倍，谁最后写谁赢 —— 桌面是后者，于是世界被横向拉 4 倍。
+     */
+    private void updateOrientation() {
+        mRotate = mWidth > mHeight ? 1 : 0;
+        mGlHeight = WORLD_HEIGHT;
+    }
+
+    /**
+     * 世界恒为 2 × {@link #WORLD_HEIGHT}，与屏幕无关。
+     *
+     * <p>屏幕比例由 {@link #updateProjectionMatrix()} 用"铺满 + 裁切"适配 ——
+     * 被裁掉的是画面范围，不是比例。
+     */
+    static float worldHeight() {
+        return WORLD_HEIGHT;
+    }
+
+    /**
+     * 叶片的朝向补偿 —— 与波纹同一个系数，见 {@link #rippleScale()}。
+     *
+     * <p>两者本来各用各的（叶片按"短边/屏幕宽"、波纹按每世界单位像素），
+     * 结果横屏叶子比竖屏小 25%。现在统一：同一个世界尺寸的东西，
+     * 在两个朝向下都落在同样的物理尺寸上。竖屏恒为 1。
+     */
+    private float leafOrientationScale() {
+        return rippleScale();
+    }
+
+    /**
+     * 朝向系数：让世界尺寸的东西（叶片、波纹）**在两个朝向下落在同样的物理尺寸上**。
+     * 竖屏恒为 1，方形屏幕也是 1。
+     *
+     * <p>屏幕尺寸 = 世界尺寸 × 每世界单位像素，而铺满 + 裁切之后每世界单位像素随朝向变
+     * （本机横屏 1147、竖屏 720，差 1.59 倍）—— 同一张叶片、同一个波纹半径，横屏看着
+     * 就大一半以上。
+     *
+     * <p>系数取"同一块屏幕竖过来时会是多少"与当前值的比，不含任何硬编码参考值。
+     */
+    private float rippleScale() {
+        if (mWidth <= 0 || mHeight <= 0) {
+            return 1.0f;
+        }
+        return pixelsPerWorldUnit(Math.min(mWidth, mHeight), Math.max(mWidth, mHeight))
+                / pixelsPerWorldUnit(mWidth, mHeight);
+    }
+
+    /** 铺满 + 裁切之后，每世界单位对应多少像素（两轴相等）。 */
+    private static float pixelsPerWorldUnit(int width, int height) {
+        float screenAspect = (float) width / height;
+        float worldAspect = (2.0f * WORLD_HALF_WIDTH) / WORLD_HEIGHT;
+        float halfW = screenAspect < worldAspect
+                ? WORLD_HEIGHT * 0.5f * screenAspect
+                : WORLD_HALF_WIDTH;
+        return width / (2.0f * halfW);
+    }
+
     void resize(int width, int height) {
         mWidth = width;
         mHeight = height;
-        mRotate = width > height ? 1 : 0;
-        mGlHeight = 2.0f * (float) height / (float) width;
+        updateOrientation();
         updateProjectionMatrix();
         createWaterMesh();
         mMeshBuffersDirty = true;
@@ -241,10 +332,7 @@ final class FallScene {
                 mWaterDrops[i].init();
             }
             if (mMeshWidth <= 1 || mMeshHeight <= 1) {
-                mRotate = mWidth > mHeight ? 1 : 0;
-                float w = mWidth > mHeight ? mHeight : mWidth;
-                float h = mWidth > mHeight ? mWidth : mHeight;
-                mGlHeight = 2.0f * h / w;
+                updateOrientation();
                 createWaterMesh();
             }
         }
@@ -259,8 +347,14 @@ final class FallScene {
             }
         }
 
-        float posX = ((float) x / (float) mWidth) * 2.0f - 1.0f;
-        float posY = (1.0f - (float) y / (float) mHeight) * mGlHeight - (mGlHeight * 0.5f);
+        /*
+         * 像素 → 世界。必须按**可见**矩形换算：铺满 + 裁切之后，屏幕边缘对应的
+         * 是 mVisibleHalfW/H，而不是世界半宽/半高。以前这里写死 ±1 与 ±glHeight/2，
+         * 投影一改成裁切，横屏点击就整体偏掉了。
+         */
+        float posX = (((float) x / (float) mWidth) * 2.0f - 1.0f) * mVisibleHalfW;
+        float posY = (1.0f - (float) y / (float) mHeight) * 2.0f * mVisibleHalfH
+                - mVisibleHalfH;
         if (mRotate == 0) {
             posX += mSceneData.xOffset * 2.0f;
         }
@@ -295,7 +389,7 @@ final class FallScene {
             int base = i * 6;
             mVkLeafData[base] = leaf.x;
             mVkLeafData[base + 1] = leaf.y;
-            mVkLeafData[base + 2] = leaf.scale * mLeafSizeMultiplier;
+            mVkLeafData[base + 2] = leaf.scale * effectiveLeafSizeMultiplier();
             mVkLeafData[base + 3] = leaf.angle;
             mVkLeafData[base + 4] = leaf.altitude;
             mVkLeafData[base + 5] = leaf.leafTextureIndex;
@@ -325,6 +419,8 @@ final class FallScene {
             return;
         }
         mInitialized = true;
+        // 叶子按 glHeight 布点，必须先把朝向定下来
+        updateOrientation();
 
         mLeafTextureCount = isGreenLeaves() ? 20 : 14;
         mLeafCount = getLeafCount();
@@ -341,11 +437,6 @@ final class FallScene {
             mDrops[i].init();
         }
 
-        mRotate = mWidth > mHeight ? 1 : 0;
-        float width = mWidth > mHeight ? mHeight : mWidth;
-        float height = mWidth > mHeight ? mWidth : mHeight;
-        mGlHeight = 2.0f * height / width;
-
         mWaterDropCount = Math.max(1, getMaxDrops());
         mLastWaterDropCount = mWaterDropCount;
         mWaterDrops = new Drop[mWaterDropCount];
@@ -360,21 +451,75 @@ final class FallScene {
         Log.d(TAG, "FallScene 初始化完成");
     }
 
+    /**
+     * 把定值世界映射到屏幕：**铺满 + 裁切**，两轴每世界单位对应的像素恒相等。
+     *
+     * <p>世界长宽比是 0.6，屏幕几乎不会正好相等，于是取"能盖住屏幕的最大矩形"：
+     * 屏幕比世界窄就按高度对齐、横向裁掉两侧；比世界宽就按宽度对齐、纵向裁掉上下。
+     * 无论哪种，被裁掉的是**画面范围**而不是比例 —— 这正是"背景不应该拉伸"。
+     */
     private void updateProjectionMatrix() {
-        float yScale = 0.9f;
-        Matrix.orthoM(mSceneData.projectionMatrix, 0, -1, 1,
-                -mGlHeight / 2.0f * yScale, mGlHeight / 2.0f * yScale, 0.1f, 10.0f);
+        float screenAspect = mHeight > 0 ? (float) mWidth / mHeight : 1.0f;
+        float worldAspect = (2.0f * WORLD_HALF_WIDTH) / WORLD_HEIGHT;
+
+        float halfW;
+        float halfH;
+        if (screenAspect < worldAspect) {
+            halfH = WORLD_HEIGHT * 0.5f;
+            halfW = halfH * screenAspect;
+        } else {
+            halfW = WORLD_HALF_WIDTH;
+            halfH = halfW / screenAspect;
+        }
+
+        mVisibleHalfW = halfW;
+        mVisibleHalfH = halfH;
+        Matrix.orthoM(mSceneData.projectionMatrix, 0,
+                -halfW, halfW, -halfH, halfH, 0.1f, 10.0f);
     }
 
+    /**
+     * 水面网格纵向该切多少个区间 —— 世界是定值，所以这也**与屏幕无关**。
+     *
+     * <p>取"两轴每区间对应的世界长度相等"：横向 {@code wIntervals} 个区间铺满世界宽 2，
+     * 纵向就该有 {@code wIntervals * WORLD_HEIGHT / 2} 个区间铺满世界高。
+     * 这样 {@code addDrop()} 在网格单位里算的等距线投到屏幕上才是圆。
+     */
+    static int meshYIntervals(int wIntervals) {
+        return Math.max(2, Math.round(
+                wIntervals * WORLD_HEIGHT / (2.0f * WORLD_HALF_WIDTH)));
+    }
+
+    /**
+     * 水面网格。顶点本身只提供"采样密度"，但网格**区间数**决定了
+     * {@code addDrop()} 里的距离度量 —— 所以两个轴的区间必须对应同样多的屏幕像素，
+     * 否则波纹的等距线投到屏幕上就是椭圆。
+     *
+     * <pre>
+     *   X 每区间像素 = width  / Ux
+     *   Y 每区间像素 = height / (Uy * yScale)
+     * </pre>
+     *
+     * <p>（Y 这一侧：Uy 个区间铺满 glHeight 个世界单位，而屏幕上只看得见其中
+     * {@code yScale} 那么多，所以每个区间落到 {@code height/(Uy*yScale)} 像素。）
+     *
+     * <p>令两者相等即得 {@code Uy = Ux * height / (width * yScale)}。
+     *
+     * <p><b>用的是屏幕宽高，不是 mGlHeight。</b> 网格区间铺满多少世界单位会被
+     * glHeight 约掉 —— 它只决定可见范围，不决定每区间多少像素。
+     *
+     * <p>旧写法 {@code (int)(MESH_RESOLUTION * glHeight / 2) + 2} 隐含假设
+     * "网格纵向跨度 == 可见纵向跨度"，既漏了 yScale（竖屏差 11%），
+     * 又与横向密度差了 4%（常数取了 48 而不是 50），合起来 14%。
+     */
     private void createWaterMesh() {
-        float height = mGlHeight;
         int wResolution = MESH_RESOLUTION + 2;
-        int hResolution = (int) (MESH_RESOLUTION * height / 2.0f) + 2;
+        int hResolution = meshYIntervals(wResolution);
 
         List<Float> vertices = new ArrayList<>();
         List<Float> texCoords = new ArrayList<>();
         for (int y = 0; y <= hResolution; y++) {
-            float yOffset = (((float) y / hResolution) * 2.0f - 1.0f) * height / 2.0f;
+            float yOffset = (((float) y / hResolution) * 2.0f - 1.0f) * mGlHeight / 2.0f;
             for (int x = 0; x <= wResolution; x++) {
                 float xPos = ((float) x / wResolution) * 2.0f - 1.0f;
                 vertices.add(xPos);
@@ -556,8 +701,18 @@ final class FallScene {
             Drop drop = mWaterDrops[i];
             d[off]     = drop.x;
             d[off + 1] = drop.y;
-            d[off + 2] = drop.ampE;
-            d[off + 3] = drop.spread;
+            /*
+             * 半径与幅度一起乘朝向系数 —— 这样波纹是**整体缩小**，形状不变。
+             *
+             * 半径（d.w）与幅度（d.z）同乘 f 时，shader 里
+             *   amp = z*0.12*dist/(w*w)*sin(w-dist)
+             * 在 mesh 距离 f·d 处的值恰好等于原来 d 处的值，即同一张波纹按 f 缩放。
+             * 只缩半径不缩幅度的话，幅度会被 1/f² 放大。
+             *
+             * 位置不能动 —— 它也是 mesh 单位，本来就跟着世界走。
+             */
+            d[off + 2] = drop.ampE * rippleScale();
+            d[off + 3] = drop.spread * rippleScale();
         }
 
         // Precompute shader parameters
@@ -565,7 +720,18 @@ final class FallScene {
         mSceneData.bgScale = mBackgroundScale;
         mSceneData.meshScaleX = (mMeshWidth - 1) * 0.5f;
         mSceneData.meshScaleY = (mMeshHeight - 1) * 0.5f;
-        mSceneData.dxMul = (mRotate < 1) ? 1.0f : 2.5f;
+        /*
+         * 恒为 1。
+         *
+         * addDrop() 里 dxMul 只进 distance —— 它把 X 方向的度量压扁，两端的
+         * `ret.x /= dxMul` 又抵消掉，所以**它只改变波纹的形状，不改变幅度**。
+         * 网格两轴已经是等距的（见 createWaterMesh），任何非 1 的值都只会把圆
+         * 拉成椭圆。原来横屏取 2.5 是在补旧网格 4.3 倍的各向异性，补不全，
+         * 于是横屏波纹一直是扁的。
+         *
+         * 参数本身留着（JNI 的签名和 SPIR-V 都带着它），只是不再有非 1 的理由。
+         */
+        mSceneData.dxMul = 1.0f;
         mSceneData.rotate = mRotate;
 
         mWaterTexCoordsDirty = true;
