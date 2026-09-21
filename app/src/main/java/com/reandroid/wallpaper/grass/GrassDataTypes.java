@@ -67,6 +67,14 @@ final class SceneData {
     boolean legacyDandelionEnabled, legacyFireflyEnabled;
 
     Blade[] blades;
+
+    /**
+     * 挂在草叶上的水珠与水花。
+     *
+     * <p>这里放的是**系统本身**而不是摊平的数组 —— 它的活跃数是内部维护的，
+     * 摊出来就得每帧同步两份状态，容易不一致。
+     */
+    GrassWaterDroplets water;
     Dandelion[] dandelions;
     Firefly[] fireflies;
     LegacyParticle[] legacyNormal;

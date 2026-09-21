@@ -54,6 +54,10 @@ final class GrassRenderDataBuilder {
 
     private int mVKTempSpriteFloatCount;
 
+    /** 水珠 / 水花的精灵批。 */
+    private float[] mVKWaterVerts = new float[0];
+    private int mVKWaterFloatCount;
+
     GrassRenderDataBuilder(LegacyParticleOps legacyOps) {
         this.legacyOps = legacyOps;
     }
@@ -457,6 +461,63 @@ final class GrassRenderDataBuilder {
             return p.originX < 0.0f || p.originX > width * 2.0f || p.originY < 0.0f || p.originY > height;
         }
         return p.originX < 0.0f || p.originX > width * 2.0f || p.originY < 0.0f;
+    }
+
+    /**
+     * 水珠与水花的精灵批。
+     *
+     * <p>每个四边形都被旋转到"高光朝向太阳"的角度 —— 贴图里高光固定画在正上方，
+     * 所以旋转角就是"从水珠指向太阳"的方向再加 90°（贴图的"上"在屏幕坐标里是 -y）。
+     * 参考实现里那半句 {@code spec = max(dot(reflect(sunDir, texNorm), vec3(0,0,1)), 0)}
+     * 表达的就是这件事；在原件里它是死代码，但意图清楚。
+     */
+    float[] buildWaterVertices(SceneData sd) {
+        GrassWaterDroplets water = sd.water;
+        if (water == null) {
+            mVKWaterFloatCount = 0;
+            return mVKWaterVerts;
+        }
+        // 每个四边形 6 个顶点
+        int required = (water.activeBeadCount() + water.activeSplashCount())
+                * 6 * FLOATS_PER_SPRITE_VERTEX;
+        if (mVKWaterVerts.length < required) {
+            mVKWaterVerts = new float[required];
+        }
+        float[] out = mVKWaterVerts;
+        int cursor = 0;
+
+        for (int i = 0; i < water.beadCapacity(); i++) {
+            GrassWaterDroplets.Bead b = water.beadAt(i);
+            if (!b.active) {
+                continue;
+            }
+            // b.size 是半径
+            cursor = appendSpriteQuadVertices(out, cursor, b.x, b.y, b.size * 2.0f,
+                    GrassWaterDroplets.beadAlpha(b.size), true, sunFacingRotation(sd, b.x, b.y));
+        }
+        for (int i = 0; i < water.splashCapacity(); i++) {
+            GrassWaterDroplets.Splash sp = water.splashAt(i);
+            if (!sp.active) {
+                continue;
+            }
+            cursor = appendSpriteQuadVertices(out, cursor, sp.x, sp.y, sp.size * 2.0f,
+                    sp.alpha() * 0.8f, true, 0.0f);
+        }
+
+        mVKWaterFloatCount = Math.max(0, Math.min(cursor, out.length));
+        return out;
+    }
+
+    int getWaterFloatCount() {
+        return mVKWaterFloatCount;
+    }
+
+    /** 没有太阳数据时不旋转（高光朝上）。 */
+    private static float sunFacingRotation(SceneData sd, float x, float y) {
+        if (!sd.hasSunData) {
+            return 0.0f;
+        }
+        return (float) Math.toDegrees(Math.atan2(sd.sunY - y, sd.sunX - x)) + 90.0f;
     }
 
     private int appendBladeVertices(SceneData sd, Blade blade, float brightness,

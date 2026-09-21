@@ -171,6 +171,7 @@ public class GrassGL extends GLESScene {
     private int mTexSunRamp;
     private int mTexSunAnnulusRamp;
     private int mTexSunRays;
+    private int mTexWaterBead;
     private int mTexAA;
     private int mTexDandelion;
     private int mTexFirefly;
@@ -269,12 +270,13 @@ public class GrassGL extends GLESScene {
                 mTexSolarEclipse, mTexSun, mTexAA, mTexDandelion, mTexFirefly,
             mTexFirefly1, mTexFirefly2,
             mTexMoonBase, mTexMoonMask,
-            mTexSunRamp, mTexSunAnnulusRamp, mTexSunRays
+            mTexSunRamp, mTexSunAnnulusRamp, mTexSunRays, mTexWaterBead
         };
         GLES30.glDeleteTextures(tex.length, tex, 0);
         mTexNight = 0; mTexSunrise = 0; mTexSunset = 0; mTexSky = 0;
         mTexSolarEclipse = 0; mTexSun = 0; mTexAA = 0;
         mTexSunRamp = 0; mTexSunAnnulusRamp = 0; mTexSunRays = 0;
+        mTexWaterBead = 0;
         mTexDandelion = 0; mTexFirefly = 0; mTexFirefly1 = 0; mTexFirefly2 = 0;
         mTexMoonBase = 0; mTexMoonMask = 0;
         mWeatherRenderer.releaseTextures();
@@ -365,6 +367,7 @@ public class GrassGL extends GLESScene {
 
         drawBlades(sd, grassBrightness, sd.xDraw, nightDesat);
         drawSprites(sd);
+        drawWater(sd);
         drawWeatherOverlays(sd, true);
 
         long frameCost = SystemClock.uptimeMillis() - frameStart;
@@ -562,6 +565,9 @@ public class GrassGL extends GLESScene {
         mTexSunRamp = loadTexture("grass/drawable/sun_ramp.png", false, false);
         mTexSunAnnulusRamp = loadTexture("grass/drawable/sun_annulus_ramp.png", false, false);
         mTexSunRays = loadTexture("grass/drawable/sun_rays.png", false, false);
+        // 水珠贴图是程序化生成的：参考实现那层水珠是算出来的（折射 + 高光），没有贴图，
+        // 所以照它的观感反推一张。见 GrassTextureUtils.createWaterBeadTexture。
+        mTexWaterBead = GrassTextureUtils.createWaterBeadTexture(64);
         mTexAA = GrassTextureUtils.createAlphaTexture();
         mTexDandelion = loadTexture("grass/drawable/dandelion.png", false, false);
         mTexFirefly = loadTexture("grass/drawable/firefly.png", false, false);
@@ -918,6 +924,28 @@ public class GrassGL extends GLESScene {
     }
 
     // ---- Sprite drawing ----
+
+    /**
+     * 草叶上的水珠与水花。
+     *
+     * <p>画在草叶**之后**，所以珠盖在叶面上；而前层天气（雨丝）在那之后画，
+     * 所以雨在珠的前面 —— 这个顺序是对的。
+     */
+    private void drawWater(SceneData sd) {
+        if (mTexWaterBead == 0 || sd.water == null) {
+            return;
+        }
+        GrassRenderDataBuilder b = mScene.mRenderDataBuilder;
+        float[] verts = b.buildWaterVertices(sd);
+        int floats = b.getWaterFloatCount();
+        if (floats <= 0) {
+            return;
+        }
+        useProgram(mBackgroundProgram);
+        setBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ONE_MINUS_SRC_ALPHA);
+        GLES30.glUniformMatrix4fv(mBgMatrixHandle, 1, false, sd.projectionMatrix, 0);
+        mSpriteRenderer.drawBatch(mTexWaterBead, verts, floats, 1.0f);
+    }
 
     private void drawSprites(SceneData sd) {
         useProgram(mBackgroundProgram);

@@ -136,6 +136,22 @@ final class GrassWeatherSystem {
         return current;
     }
 
+    /**
+     * 雨量强度，0..5。
+     *
+     * <p>范围取自参考实现 {@code rain_screen_fragment_shader.glsl} 的 {@code uIntensity}
+     * —— 那里到处是 {@code /5.}（如 {@code mix(1.3, 1.0, uIntensity1)}）。具体取值在混淆过的
+     * Java 里**没能提取出来**，这里按档位给，上机调。
+     */
+    static float rainIntensity(WeatherCondition condition) {
+        switch (condition) {
+            case D6_THUNDERSTORMS: return 5.0f;
+            case D5_RAIN_SHOWERS: return 2.5f;
+            case D9_SLEET: return 2.0f;
+            default: return 0.0f;
+        }
+    }
+
     static float sunAlphaScale(WeatherCondition condition) {
         switch (condition) {
             case D3_DREARY: return 0.72f;

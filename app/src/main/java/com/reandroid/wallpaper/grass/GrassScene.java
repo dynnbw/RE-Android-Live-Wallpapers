@@ -59,6 +59,10 @@ final class GrassScene {
 
     final Random mRandom = new Random(System.currentTimeMillis());
     private final Calendar mCalendar = Calendar.getInstance();
+    /** 草叶上的水珠。只认雨量强度，不自己判断天气。 */
+    private final GrassWaterDroplets mWaterDroplets =
+            new GrassWaterDroplets(new java.util.Random(), 160, 96);
+
     private final GrassWindField mWindField = new GrassWindField();
     private final GrassBladeSystem mBladeSystem;
     private final GrassDayNightSystem mDayNightSystem = new GrassDayNightSystem();
@@ -569,6 +573,12 @@ final class GrassScene {
         mSceneData.animNowMs = animNowMs;
         mSceneData.bladeIndexRebuildNeeded = mBladeIndexRebuildNeeded;
         mSceneData.grassGeometryDirty = mGrassGeometryDirty || bladeAnglesDirty;
+
+        // 水珠要读 blades / xDraw / dt / 草的缩放，所以放在这一段的最后。
+        // 强度为 0 时它自己会停止生成并让已有的珠离场。
+        mWaterDroplets.update(dt, GrassWeatherSystem.rainIntensity(mWeatherCondition),
+                mSceneData.blades, mSceneData);
+        mSceneData.water = mWaterDroplets;
     }
 
     // ---- Private update helpers ----
