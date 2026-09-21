@@ -2,7 +2,6 @@ package com.reandroid.wallpaper.grass;
 
 import android.graphics.Color;
 
-import static com.reandroid.wallpaper.grass.GrassConstants.HALF_TESSELATION;
 import static com.reandroid.wallpaper.grass.GrassConstants.LEGACY_INTERVAL_VARIANCE;
 import static com.reandroid.wallpaper.grass.GrassConstants.LEGACY_MAX_EXTRAS;
 import static com.reandroid.wallpaper.grass.GrassConstants.LEGACY_MAX_FLARE;
@@ -59,12 +58,32 @@ final class GrassRenderDataBuilder {
         this.legacyOps = legacyOps;
     }
 
+    /**
+     * {@link GrassBladeGeometry#trace} 的输出缓冲。
+     *
+     * <p>按最长的一条叶片分配一次就够 —— 每帧为每片叶新建数组的话，
+     * 200 片叶 × 60fps 就是每秒一万两千次分配。
+     */
+    private float[] mBladeXY = new float[0];
+    private float[] mBladeHalfWidth = new float[0];
+
     void setGeometry(int width, int height, int vertexCount, int indexCount, int[] bladeSizes) {
         this.width = width;
         this.height = height;
         this.vertexCount = vertexCount;
         this.indexCount = indexCount;
         this.bladeSizes = bladeSizes != null ? bladeSizes : new int[0];
+
+        int maxPoints = 1;
+        for (int s : this.bladeSizes) {
+            if (s + 1 > maxPoints) {
+                maxPoints = s + 1;
+            }
+        }
+        if (mBladeXY.length < maxPoints * 2) {
+            mBladeXY = new float[maxPoints * 2];
+            mBladeHalfWidth = new float[maxPoints];
+        }
     }
 
     float[] computeSkyParams(SceneData sd) {
@@ -443,7 +462,6 @@ final class GrassRenderDataBuilder {
     private int appendBladeVertices(SceneData sd, Blade blade, float brightness,
             float xOffset, float nightDesat, float[] out, int cursor) {
         float scale = blade.scale * sd.grassWidthScale;
-        float angle = blade.angle;
         float xpos = blade.xPos + xOffset;
         int size = blade.size;
 
@@ -464,34 +482,23 @@ final class GrassRenderDataBuilder {
         float g = Color.green(color) / 255.0f;
         float b = Color.blue(color) / 255.0f;
 
-        float currentAngle = (float) (Math.PI * 0.5);
-        float bottomX = xpos;
-        float bottomY = blade.yPos;
-        float d = angle * blade.hardness * sd.grassHardnessScale;
-        float stepCos = (float) Math.cos(d);
-        float stepSin = (float) Math.sin(d);
-        float currentCos = 0.0f;
-        float currentSin = 1.0f;
+        // 中心线的行走交给 GrassBladeGeometry —— 挂珠也要用它，两处各写一份的话
+        // 日后一改叶片形状，水珠就会飘到叶外（而且不会报错）。
+        GrassBladeGeometry.trace(blade, xpos, scale,
+                sd.grassHardnessScale, sd.grassHeightScale, mBladeXY, mBladeHalfWidth);
 
-        float si = size * scale;
-        cursor = putVertex(out, cursor, bottomX - si, bottomY + HALF_TESSELATION, r, g, b, 1.0f, 0.0f, 0.0f);
-        cursor = putVertex(out, cursor, bottomX + si, bottomY + HALF_TESSELATION, r, g, b, 1.0f, 1.0f, 0.0f);
+        float hw0 = mBladeHalfWidth[0];
+        float baseX = mBladeXY[0];
+        float baseY = mBladeXY[1];
+        cursor = putVertex(out, cursor, baseX - hw0, baseY, r, g, b, 1.0f, 0.0f, 0.0f);
+        cursor = putVertex(out, cursor, baseX + hw0, baseY, r, g, b, 1.0f, 1.0f, 0.0f);
 
-        for (; size > 0; size--) {
-            float lengthX = blade.lengthX * sd.grassHeightScale;
-            float lengthY = blade.lengthY * sd.grassHeightScale;
-            float topX = bottomX - currentCos * lengthX;
-            float topY = bottomY - currentSin * lengthY;
-            si = size * scale;
-            float spi = si - scale;
-            cursor = putVertex(out, cursor, topX - spi, topY, r, g, b, 1.0f, 0.0f, 0.0f);
-            cursor = putVertex(out, cursor, topX + spi, topY, r, g, b, 1.0f, 1.0f, 0.0f);
-            bottomX = topX;
-            bottomY = topY;
-            float nextCos = currentCos * stepCos - currentSin * stepSin;
-            float nextSin = currentSin * stepCos + currentCos * stepSin;
-            currentCos = nextCos;
-            currentSin = nextSin;
+        for (int k = 1; k <= size; k++) {
+            float px = mBladeXY[k * 2];
+            float py = mBladeXY[k * 2 + 1];
+            float hw = mBladeHalfWidth[k];
+            cursor = putVertex(out, cursor, px - hw, py, r, g, b, 1.0f, 0.0f, 0.0f);
+            cursor = putVertex(out, cursor, px + hw, py, r, g, b, 1.0f, 1.0f, 0.0f);
         }
         return cursor;
     }
