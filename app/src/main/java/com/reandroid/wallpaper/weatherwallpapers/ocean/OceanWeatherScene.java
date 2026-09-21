@@ -20,6 +20,8 @@ final class OceanWeatherScene {
 
     WeatherCondition mCondition = WeatherCondition.D1_CLEAR;
     boolean mIsNight = false;
+    /** 夜间权重 0..1 —— 渲染器按它交叉淡入，见 {@code WeatherStateManager#nightWeight}。 */
+    float mNightWeight = 0.0f;
 
     float mOffset = 1.25f;
     float mLandscape = 1.0f;

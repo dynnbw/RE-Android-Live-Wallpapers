@@ -174,6 +174,7 @@ public class WindmillGL extends GLESScene {
             wsm.update(timeMs, isPreview());
             mScene.mCondition = wsm.getCondition();
             mScene.mIsNight = wsm.isNight();
+            mScene.mNightWeight = wsm.nightWeight();
         }
 
         float frameDuration = wsm != null && wsm.shouldFastAnimate() ? 16.666f : 20.0f;

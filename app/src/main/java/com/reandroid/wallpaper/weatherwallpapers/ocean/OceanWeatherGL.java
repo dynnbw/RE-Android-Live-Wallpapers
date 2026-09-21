@@ -136,12 +136,13 @@ public class OceanWeatherGL extends GLESScene {
             wsm.update(timeMs, isPreview());
             mScene.mCondition = wsm.getCondition();
             mScene.mIsNight = wsm.isNight();
+            mScene.mNightWeight = wsm.nightWeight();
         }
 
         float frameDuration = wsm != null && wsm.shouldFastAnimate() ? 16.666f : 40.0f;
         mScene.mAnimationController.setFrameDurationMs(frameDuration);
         mScene.mAnimationController.advanceFrame(deltaMs);
-        mScene.mWeatherFlagManager.update(mScene.mCondition, mScene.mIsNight);
+        mScene.mWeatherFlagManager.update(mScene.mCondition);
 
         GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT | GLES30.GL_DEPTH_BUFFER_BIT);
         GLES30.glBlendFunc(GLES30.GL_ONE, GLES30.GL_ONE_MINUS_SRC_ALPHA);

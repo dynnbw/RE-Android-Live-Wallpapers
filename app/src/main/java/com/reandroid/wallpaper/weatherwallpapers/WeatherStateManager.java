@@ -13,6 +13,17 @@ import java.util.TimeZone;
 public class WeatherStateManager {
     private static final long PREVIEW_STEP_MS = 3000L;
 
+    /**
+     * 预览模式下把一整天压进这么长的真实时间。
+     *
+     * <p>取 9 秒是相对于天气轮播（每档 3 秒）定的：一档跨三分之一天，于是同一圈里
+     * 九个天气档各占一天的一段，能一眼看到这几种天气在白天 / 黄昏 / 夜里的样子。
+     *
+     * <p>注意 9 与轮播一圈（27 秒）是整除关系，所以每一圈都是**同一套配对** ——
+     * 想看到"某个天气在另一种时段"得改这里的数值，让它与 27 互质。
+     */
+    private static final long PREVIEW_CYCLE_MS = 9000L;
+
     private static final WeatherCondition[] PREVIEW_ORDER = {
             WeatherCondition.D1_CLEAR,
             WeatherCondition.D2_CLOUDY,
@@ -41,6 +52,8 @@ public class WeatherStateManager {
 
     private WeatherCondition mCondition = WeatherCondition.D1_CLEAR;
     private boolean mIsNight = false;
+    /** 夜间权重 0..1，渲染器按它把白天那套观感与夜里那套交叉淡入。 */
+    private float mNightWeight = 0.0f;
 
     private boolean mPreviewActive = false;
     private int mPreviewIndex = 0;
@@ -71,7 +84,11 @@ public class WeatherStateManager {
             updatePreviewCycle(timeMs);
         }
         refreshLocation();
-        mIsNight = mDayNight.isNight(System.currentTimeMillis());
+        long nowMs = preview
+                ? mDayNight.compressedClockMs(System.currentTimeMillis(), PREVIEW_CYCLE_MS)
+                : System.currentTimeMillis();
+        mIsNight = mDayNight.isNight(nowMs);
+        mNightWeight = mDayNight.nightWeight(nowMs);
     }
 
     public synchronized WeatherCondition getCondition() {
@@ -80,6 +97,11 @@ public class WeatherStateManager {
 
     public synchronized boolean isNight() {
         return mIsNight;
+    }
+
+    /** 夜间权重：0 = 白天，1 = 完全入夜。渲染器拿它交叉淡入。 */
+    public synchronized float nightWeight() {
+        return mNightWeight;
     }
 
     public synchronized boolean shouldFastAnimate() {
