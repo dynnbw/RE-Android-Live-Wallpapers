@@ -33,16 +33,24 @@ public final class DayNightResolver {
 
     /**
      * 没有定位权限、也拿不到最后已知位置时的兜底：纬度取赤道，经度按时区偏移反推
-     * （每小时 15°）。
+     * （每小时 15°）。{@code zone} 为 null 表示用系统默认时区。
      *
-     * <p>经度只决定日出日落落在**当地几点**——赤道纬度下全年都是 6 点上下，
-     * 误差主要来自经度；15° 的经度偏差就是 1 小时的时刻偏差。
+     * <p>经度只决定日出日落（以及星空朝向）落在**当地几点**——赤道纬度下全年都是
+     * 6 点上下，误差主要来自经度；15° 的经度偏差就是 1 小时的偏差。
+     *
+     * <p>nightsky 的星空朝向也用这条兜底，所以做成静态的、不依附于本类的实例状态。
      */
+    public static float[] fallbackLatLng(TimeZone zone) {
+        TimeZone tz = zone != null ? zone : TimeZone.getDefault();
+        return new float[]{0.0f, (float) (tz.getRawOffset() / 3600000.0 * 15.0)};
+    }
+
     public void applyFallbackLocation(TimeZone zone) {
         if (zone != null) {
             mTimeZone = zone;
         }
-        setLocation(0.0, mTimeZone.getRawOffset() / 3600000.0 * 15.0);
+        float[] fallback = fallbackLatLng(mTimeZone);
+        setLocation(fallback[0], fallback[1]);
     }
 
     /** 位置与时区一起换 —— 太阳计算器只在构造时认经纬度和时区，任一变化都要重建。 */

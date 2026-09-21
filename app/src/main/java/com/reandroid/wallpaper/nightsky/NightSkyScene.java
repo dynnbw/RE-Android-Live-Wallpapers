@@ -6,11 +6,14 @@ import android.opengl.Matrix;
 import android.view.Surface;
 import android.view.WindowManager;
 
+import com.reandroid.astronomy.DayNightResolver;
+import com.reandroid.astronomy.DeviceLocation;
 import com.reandroid.gles.GLESWallpaper;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+import java.util.TimeZone;
 
 final class NightSkyScene {
 
@@ -35,8 +38,15 @@ final class NightSkyScene {
     final float[] currentViewRot = new float[16];
 
     final NightSkySensorController sensorController = new NightSkySensorController();
-    final NightSkyLocationController locationController = new NightSkyLocationController();
+    final DeviceLocation deviceLocation = new DeviceLocation();
     final NightSkyTouchTimeController touchTimeController = new NightSkyTouchTimeController();
+
+    /**
+     * 观测点的经纬度。由 {@link #updateLocation()} 维护，读数的人不必关心它有没有值 ——
+     * 拿不到定位时是按时区反推的兜底，不是"没有"。
+     */
+    float latitudeDeg;
+    float longitudeDeg;
 
     NightSkyCatalog catalog;
     FloatBuffer starParamBuffer;
@@ -60,7 +70,7 @@ final class NightSkyScene {
 
     void init(Context context) {
         sensorController.init(context);
-        locationController.refresh(context, true);
+        updateLocation();
         touchTimeController.init();
         catalog = NightSkyCatalogLoader.load(context);
         starParamBuffer = catalog.newStarParamBuffer();
@@ -111,9 +121,24 @@ final class NightSkyScene {
                     DEFAULT_TIME_ACCEL_SPEED);
             accelSpeed = Math.max(MIN_TIME_ACCEL_SPEED, Math.min(MAX_TIME_ACCEL_SPEED, accelSpeed));
             touchTimeController.setAccelerationScale(accelSpeed);
-            locationController.refresh(context, false);
+            updateLocation();
         } catch (Throwable ignored) {
         }
+    }
+
+    /**
+     * 刷新观测点：调试覆盖 → 系统的最后已知位置 → 按时区反推的兜底。
+     *
+     * <p>兜底以前是硬编码的北京，于是拒绝定位权限时整片星空按"你在北京"来画 ——
+     * 在欧洲就是 120° 的经度误差，星空的朝向整个是歪的。
+     */
+    void updateLocation() {
+        float[] resolved = deviceLocation.resolve();
+        if (resolved == null) {
+            resolved = DayNightResolver.fallbackLatLng(TimeZone.getDefault());
+        }
+        latitudeDeg = resolved[0];
+        longitudeDeg = resolved[1];
     }
 
     void buildSphereGrid(int lonSteps, int latSteps) {

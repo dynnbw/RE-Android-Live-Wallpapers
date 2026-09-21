@@ -1,5 +1,9 @@
 {
   "label": "@string/wallpaper_nightsky",
   "plugin": "com.reandroid.wallpaper.nightsky.NightSkyPlugin",
-  "previewClass": "com.reandroid.wallpaper.nightsky.NightSkyGL"
+  "previewClass": "com.reandroid.wallpaper.nightsky.NightSkyGL",
+  "permissions": [
+    "ACCESS_FINE_LOCATION",
+    "ACCESS_COARSE_LOCATION"
+  ]
 }

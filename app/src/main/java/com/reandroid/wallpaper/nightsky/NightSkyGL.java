@@ -73,13 +73,12 @@ public class NightSkyGL extends GLESScene {
         } else {
             mScene.sensorController.stop();
         }
-        mScene.locationController.start(GLESWallpaper.getAppContext());
+        mScene.updateLocation();
     }
 
     @Override
     public void stop() {
         mScene.sensorController.stop();
-        mScene.locationController.stop();
     }
 
     @Override
@@ -152,10 +151,10 @@ public class NightSkyGL extends GLESScene {
             Matrix.rotateM(mScene.currentViewRot, 0, mScene.scrollPages * NightSkyScene.PAGE_ROTATION_DEG, 0.0f, 0.0f, 1.0f);
         }
 
-        float latitudeRad = (float) (mScene.locationController.getLatitudeDeg() * NightSkyMath.DEG_TO_RAD);
+        float latitudeRad = (float) (mScene.latitudeDeg * NightSkyMath.DEG_TO_RAD);
         float lstRad = (float) NightSkyMath.computeLocalSiderealTimeRad(
                 mScene.touchTimeController.getAstronomyTimeMs(),
-                mScene.locationController.getLongitudeDeg());
+                mScene.longitudeDeg);
         long baseTrailLookbackMs = mScene.touchTimeController.getAcceleratingSimElapsedMs() / 6;
         float speedScale = mScene.touchTimeController.getCurrentTimeScale();
         float speedNorm = MathUtils.clamp(
@@ -182,7 +181,7 @@ public class NightSkyGL extends GLESScene {
                 latitudeRad, lstRad, timeSec, mScene.currentViewRot, false);
 
         trailRenderer.draw(mScene.catalog, latitudeRad,
-                mScene.locationController.getLongitudeDeg(),
+                mScene.longitudeDeg,
                 mScene.touchTimeController.getAstronomyTimeMs(),
                 timeMs, mScene.currentViewRot, mScene.proj,
                 mWidth, mHeight, trailLookbackMs,
