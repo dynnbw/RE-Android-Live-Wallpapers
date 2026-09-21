@@ -196,6 +196,27 @@ dependencies {
     testImplementation 'org.mockito:mockito-core:4.11.0'
 }
 
+/*
+ * 把 assets 声明成单元测试的输入。
+ *
+ * 有几个测试是在**运行时**去读 src/main/assets 下的文件的（GrassShaderCompileTest 读
+ * 着色器、SunLutAssetsTest 读贴图）。Gradle 看不到这种关系 —— 它只按已声明的输入算
+ * up-to-date 和缓存键，于是"只改了着色器、没改测试源码"时，
+ * :app:testDebugUnitTest 会直接报 UP-TO-DATE 并把上一次的绿端回来，**一次都没跑**。
+ *
+ * 这个坑很难发现，因为它只在"先跑绿一次、再改资源、再跑"的顺序下出现：如果刚编辑过测试
+ * 源码，编译任务会重跑、顺带把测试任务也带成 out-of-date，看起来一切正常。
+ *
+ * 实测（注入一行语法错误的着色器后）：加这段之前 "UP-TO-DATE / BUILD SUCCESSFUL"，
+ * 加之后正常 FAILED。缓存键对"着色器都对"和"少了一条着色器"原本完全相同，
+ * 也就是说 Gradle 根本区分不了这两种状态。
+ */
+tasks.withType(Test).configureEach {
+    inputs.dir("src/main/assets")
+        .withPropertyName("testReadAssets")
+        .withPathSensitivity(PathSensitivity.RELATIVE)
+}
+
 def shouldBumpAfterBuild = false
 gradle.taskGraph.whenReady { graph ->
     shouldBumpAfterBuild = graph.hasTask(':app:assembleRelease') || graph.hasTask('assembleRelease')
