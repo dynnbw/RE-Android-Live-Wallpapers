@@ -19,6 +19,15 @@ import java.util.TimeZone;
  */
 public final class DayNightResolver {
 
+    private static final long DAY_MS = 86400000L;
+
+    /**
+     * 民用晨昏带：太阳从地平线降到地平线以下这么深，天就完全黑了。
+     *
+     * <p>与 grass 的 dawn/dusk 用的是同一条线（{@code SunCalculator.ZENITH_CIVIL}）。
+     */
+    private static final double CIVIL_TWILIGHT_DEG = 6.0;
+
     /** 复用同一个 Calendar：{@code computeSunAltitude} 每帧都要读，不想每帧分配。 */
     private final Calendar mCalendar = Calendar.getInstance();
 
@@ -101,6 +110,56 @@ public final class DayNightResolver {
      */
     public boolean isNight(long nowMs) {
         return sunAltitude(nowMs) < 0.0;
+    }
+
+    /**
+     * 夜间权重：0 = 白天，1 = 完全入夜，中间是民用晨昏带上的平滑过渡。
+     *
+     * <p>给的是**连续量**而不是"是不是夜里"，让调用方能把白天那套观感和夜里那套
+     * 按同一个权重交叉淡入，而不是在日落那一刻硬切。
+     *
+     * <p>两端是精确的 0 和 1 —— 调用方据此跳过另一遍绘制，于是白天和深夜里
+     * 这个改动一分钱不花，只有晨昏那半小时会画两遍。
+     *
+     * <p>注意入夜判据仍是 {@link #isNight}（高度角过零），权重的中点在 −3°，
+     * 也就是视觉上"半明半暗"的时刻比 {@code isNight} 翻面的时刻晚十几分钟 —— 这是对的，
+     * 两者回答的是不同的问题。
+     */
+    public float nightWeight(long nowMs) {
+        double altitude = sunAltitude(nowMs);
+        if (altitude >= 0.0) {
+            return 0.0f;
+        }
+        if (altitude <= -CIVIL_TWILIGHT_DEG) {
+            return 1.0f;
+        }
+        float t = (float) (-altitude / CIVIL_TWILIGHT_DEG);
+        return t * t * (3.0f - 2.0f * t);
+    }
+
+    /**
+     * 把真实时刻压进"一天"的某一刻 —— 预览专用。
+     *
+     * <p>预览没法等一整天，就把一天压进 {@code cycleMs}：先取当地零点，再加上
+     * "当前处在第几个周期"映射到一天里的位置。于是预览里能完整看到日出→正午→
+     * 日落→深夜，而实机走的是真实时间。
+     *
+     * <p>{@code cycleMs <= 0} 表示不压缩，直接返回真实时刻。
+     *
+     * <p>本来是 grass 里的一段私有逻辑，ocean/windmill 的预览也要用同一套，就提上来共用。
+     */
+    public long compressedClockMs(long realMs, long cycleMs) {
+        if (cycleMs <= 0L) {
+            return realMs;
+        }
+        mCalendar.setTimeZone(mTimeZone);
+        mCalendar.setTimeInMillis(realMs);
+        mCalendar.set(Calendar.HOUR_OF_DAY, 0);
+        mCalendar.set(Calendar.MINUTE, 0);
+        mCalendar.set(Calendar.SECOND, 0);
+        mCalendar.set(Calendar.MILLISECOND, 0);
+        long localMidnight = mCalendar.getTimeInMillis();
+        return localMidnight + (realMs % cycleMs) * DAY_MS / cycleMs;
     }
 
     private Calendar calendarAt(long nowMs) {

@@ -204,6 +204,153 @@ public class DayNightResolverTest {
         assertFalse("东八区正午不是夜里", resolver.isNight(shanghaiNoon));
     }
 
+    // ---- 夜间权重（渲染器按它交叉淡入） ----
+
+    /**
+     * 两端必须**精确**是 0 和 1。
+     *
+     * <p>渲染器靠这两个端点跳过"另一套观感"那一遍绘制 —— 只要有一个像素级的不精确，
+     * 白天和深夜就会白白多画一整遍场景。
+     */
+    @Test
+    public void weightEndpointsAreExact() {
+        DayNightResolver resolver = fixed(BEIJING_LAT, BEIJING_LNG, SHANGHAI);
+        assertEquals("北京夏至正午", 0.0f,
+                resolver.nightWeight(at(SHANGHAI, 2026, Calendar.JUNE, 21, 12, 0).getTimeInMillis()), 0.0f);
+        assertEquals("北京夏至午夜", 1.0f,
+                resolver.nightWeight(at(SHANGHAI, 2026, Calendar.JUNE, 21, 0, 0).getTimeInMillis()), 0.0f);
+    }
+
+    /** 白天（{@code isNight} 为假）时权重恒为 0 —— 两条判据在这一点上必须一致。 */
+    @Test
+    public void dayIsAlwaysExactlyZero() {
+        DayNightResolver resolver = fixed(BEIJING_LAT, BEIJING_LNG, SHANGHAI);
+        for (int minute = 0; minute < 24 * 60; minute += 7) {
+            Calendar c = at(SHANGHAI, 2026, Calendar.JUNE, 21, 0, 0);
+            c.add(Calendar.MINUTE, minute);
+            long t = c.getTimeInMillis();
+            if (!resolver.isNight(t)) {
+                assertEquals("白天第 " + minute + " 分钟权重应为 0", 0.0f,
+                        resolver.nightWeight(t), 0.0f);
+            }
+        }
+    }
+
+    /** 黄昏里权重单调升、且不跳变 —— 否则会看到台阶。 */
+    @Test
+    public void weightRisesSmoothlyIntoNight() {
+        DayNightResolver resolver = fixed(BEIJING_LAT, BEIJING_LNG, SHANGHAI);
+        float previous = -1.0f;
+        for (int minute = 12 * 60; minute <= 24 * 60; minute += 2) {
+            Calendar c = at(SHANGHAI, 2026, Calendar.JUNE, 21, 0, 0);
+            c.add(Calendar.MINUTE, minute);
+            float w = resolver.nightWeight(c.getTimeInMillis());
+            if (previous >= 0.0f) {
+                assertTrue("权重不该回落：" + previous + " → " + w, w >= previous);
+                assertTrue("权重跳变：" + previous + " → " + w, w - previous < 0.2f);
+            }
+            previous = w;
+        }
+        assertEquals("扫到午夜应是全夜", 1.0f, previous, 0.0f);
+    }
+
+    /** 半明半暗落在太阳高度角 −3° 附近（民用晨昏带的中点）。 */
+    @Test
+    public void halfWeightHappensNearMinusThreeDegrees() {
+        DayNightResolver resolver = fixed(BEIJING_LAT, BEIJING_LNG, SHANGHAI);
+        double closestAltitude = 0.0;
+        float weightThere = -1.0f;
+        for (int minute = 12 * 60; minute <= 24 * 60; minute++) {
+            Calendar c = at(SHANGHAI, 2026, Calendar.JUNE, 21, 0, 0);
+            c.add(Calendar.MINUTE, minute);
+            long t = c.getTimeInMillis();
+            double altitude = resolver.sunAltitude(t);
+            if (weightThere < 0.0f || Math.abs(altitude + 3.0) < Math.abs(closestAltitude + 3.0)) {
+                closestAltitude = altitude;
+                weightThere = resolver.nightWeight(t);
+            }
+        }
+        assertTrue("最接近 −3° 的那一分钟高度角是 " + closestAltitude,
+                Math.abs(closestAltitude + 3.0) < 0.5);
+        assertEquals("−3° 处的权重应约等于 0.5", 0.5f, weightThere, 0.1f);
+    }
+
+    /** 极昼恒 0、极夜恒 1 —— 和 {@code isNight} 一样不需要给极区打特判。 */
+    @Test
+    public void polarWeightsAreConstant() {
+        DayNightResolver svalbard = fixed(78.22, 15.65, TimeZone.getTimeZone("Europe/Oslo"));
+        for (int hour = 0; hour < 24; hour++) {
+            assertEquals("朗伊尔城夏至 " + hour + " 点",
+                    0.0f, svalbard.nightWeight(
+                            at(TimeZone.getTimeZone("Europe/Oslo"), 2026, Calendar.JUNE, 21, hour, 0)
+                                    .getTimeInMillis()), 0.0f);
+            assertEquals("朗伊尔城冬至 " + hour + " 点",
+                    1.0f, svalbard.nightWeight(
+                            at(TimeZone.getTimeZone("Europe/Oslo"), 2026, Calendar.DECEMBER, 21, hour, 0)
+                                    .getTimeInMillis()), 0.0f);
+        }
+    }
+
+    // ---- 预览用的压缩时钟 ----
+
+    /** 不压缩时原样返回。 */
+    @Test
+    public void zeroCycleMeansRealTime() {
+        DayNightResolver resolver = fixed(BEIJING_LAT, BEIJING_LNG, SHANGHAI);
+        long real = at(SHANGHAI, 2026, Calendar.JUNE, 21, 12, 0).getTimeInMillis();
+        assertEquals(real, resolver.compressedClockMs(real, 0L));
+    }
+
+    /** 本地当天零点。 */
+    private static long localMidnight(TimeZone tz, long ms) {
+        Calendar c = Calendar.getInstance(tz);
+        c.setTimeInMillis(ms);
+        c.set(Calendar.HOUR_OF_DAY, 0);
+        c.set(Calendar.MINUTE, 0);
+        c.set(Calendar.SECOND, 0);
+        c.set(Calendar.MILLISECOND, 0);
+        return c.getTimeInMillis();
+    }
+
+    /** 压出来的一天仍落在本地当天之内（0 点到 24 点），不会跑到别的日子去。 */
+    @Test
+    public void compressedClockStaysInsideTheLocalDay() {
+        DayNightResolver resolver = fixed(BEIJING_LAT, BEIJING_LNG, SHANGHAI);
+        long base = at(SHANGHAI, 2026, Calendar.JUNE, 21, 12, 0).getTimeInMillis();
+        long day = 86400000L;
+
+        // 跨过好几个周期，覆盖取模会绕回去的各个相位
+        for (long real = base; real < base + 100000L; real += 1237L) {
+            long midnight = localMidnight(SHANGHAI, real);
+            long compressed = resolver.compressedClockMs(real, 9000L);
+            assertTrue("压缩结果 " + compressed + " 应落在 [" + midnight + ", "
+                            + (midnight + day) + ")",
+                    compressed >= midnight && compressed < midnight + day);
+        }
+    }
+
+    /**
+     * 时间轴是线性的：半天对应半天，一个周期正好覆盖一整天。
+     *
+     * <p>先把时刻对齐到周期起点，免得取模绕回去，测出来的是假的。
+     */
+    @Test
+    public void compressedClockIsLinear() {
+        DayNightResolver resolver = fixed(BEIJING_LAT, BEIJING_LNG, SHANGHAI);
+        long cycle = 9000L;
+        long noon = at(SHANGHAI, 2026, Calendar.JUNE, 21, 12, 0).getTimeInMillis();
+        long aligned = noon - (noon % cycle);
+        assertTrue("对齐后应仍在这一天的正午附近", aligned <= noon && noon - aligned < cycle);
+
+        long start = resolver.compressedClockMs(aligned, cycle);
+        assertEquals("周期起点应映到当地零点", localMidnight(SHANGHAI, aligned), start);
+
+        assertEquals("走半圈应对应半天", 43200000L,
+                resolver.compressedClockMs(aligned + cycle / 2, cycle) - start);
+        assertEquals("走满一圈应回到同一点", start,
+                resolver.compressedClockMs(aligned + cycle, cycle));
+    }
+
     /** 一天的太阳高度角是连续的：逐分钟扫过去，不该出现跳变。 */
     @Test
     public void altitudeIsContinuousAcrossTheDay() {

@@ -90,6 +90,11 @@ final public class GrassDayNightSystem {
      * <p>时刻由调用方给定 —— 预览模式传的是压缩后的时间轴（见 {@code GrassScene#sceneClockMs}），
      * 实际壁纸传真实时间。两者走的都是这一套。
      */
+    /** 把真实时刻压进一天（见 {@code DayNightResolver.compressedClockMs}）。 */
+    long compressedClockMs(long realMs, long cycleMs) {
+        return mResolver.compressedClockMs(realMs, cycleMs);
+    }
+
     float timeFraction(long nowMs) {
         mCachedCalendar.setTimeZone(mResolver.getTimeZone());
         mCachedCalendar.setTimeInMillis(nowMs);

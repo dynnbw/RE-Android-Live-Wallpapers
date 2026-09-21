@@ -59,8 +59,6 @@ final class GrassScene {
 
     final Random mRandom = new Random(System.currentTimeMillis());
     private final Calendar mCalendar = Calendar.getInstance();
-    /** 压缩时间轴的 scratch（见 {@link #sceneClockMs()}），避免每帧新建。 */
-    private final Calendar mClockScratch = Calendar.getInstance();
     private final GrassWindField mWindField = new GrassWindField();
     private final GrassBladeSystem mBladeSystem;
     private final GrassDayNightSystem mDayNightSystem = new GrassDayNightSystem();
@@ -368,7 +366,6 @@ final class GrassScene {
 
     /** 预览模式下把一整天压进这么长的真实时间。 */
     private static final long PREVIEW_CYCLE_MS = 30000L;
-    private static final long DAY_MS = 86400000L;
 
     /**
      * 场景时钟（毫秒）。天文计算的唯一时间入口。
@@ -377,23 +374,13 @@ final class GrassScene {
      * 走的是**同一套真实算法**（太阳高度角、月亮相位、日食），只是时间轴压缩了，
      * 所以预览里能快速看到日月实际怎么走，而不是另跑一套粗糙渐变。
      *
-     * <p>基准取本地当天 0 点：这样压缩出来的一天仍从子夜开始，与真实运行时的
-     * 相位关系一致。
+     * <p>压缩本身在 {@code DayNightResolver.compressedClockMs} 里，ocean/windmill 的
+     * 预览共用同一套（它们压到 9 秒）。
      */
     private long sceneClockMs() {
         long real = System.currentTimeMillis();
         if (!mIsPreview) return real;
-
-        mClockScratch.setTimeZone(mDayNightSystem.getTimeZone());
-        mClockScratch.setTimeInMillis(real);
-        mClockScratch.set(Calendar.HOUR_OF_DAY, 0);
-        mClockScratch.set(Calendar.MINUTE, 0);
-        mClockScratch.set(Calendar.SECOND, 0);
-        mClockScratch.set(Calendar.MILLISECOND, 0);
-        long localMidnight = mClockScratch.getTimeInMillis();
-
-        long intoCycle = real % PREVIEW_CYCLE_MS;
-        return localMidnight + intoCycle * DAY_MS / PREVIEW_CYCLE_MS;
+        return mDayNightSystem.compressedClockMs(real, PREVIEW_CYCLE_MS);
     }
 
     /** 算本帧的天文状态（时刻 / 亮度 / 昼夜），顺带更新日、月与日食。 */
