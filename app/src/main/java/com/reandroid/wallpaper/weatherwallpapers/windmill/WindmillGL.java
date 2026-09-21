@@ -325,37 +325,39 @@ public class WindmillGL extends GLESScene {
                 mSky01,mSky02,mSky03,mSky04,mSky04,mSkyStars,
                 mSun1,mSun2,mSun3,mMoon,mStar,mMeteor, clearOn, SkyRenderer.Config.WINDMILL);
 
-        if (mScene.mIsNight && (mScene.mCondition == com.reandroid.weather.WeatherCondition.D3_DREARY
+        // 夜罩随夜色渐入；白天权重为 0 时整块跳过，不白画一张全透明的
+        if (mScene.mNightWeight > 0.0f
+                && (mScene.mCondition == com.reandroid.weather.WeatherCondition.D3_DREARY
                 || mScene.mCondition == com.reandroid.weather.WeatherCondition.D4_FOG
                 || mScene.mCondition == com.reandroid.weather.WeatherCondition.D5_RAIN_SHOWERS
                 || mScene.mCondition == com.reandroid.weather.WeatherCondition.D6_THUNDERSTORMS
                 || mScene.mCondition == com.reandroid.weather.WeatherCondition.D9_SLEET)) {
             mSpriteDrawer.drawSprite(mNightcover, (-1.5f) + ((1.5f - mScene.mOffset) * 5.0f), -2.3f, -29.9f,
-                    2.0f * mScene.mLandscape, 2.0f * mScene.mFillScaleY, 0.0f, 1.0f);
+                    2.0f * mScene.mLandscape, 2.0f * mScene.mFillScaleY, 0.0f, mScene.mNightWeight);
         }
 
-        thunderOn = mCloudRenderer.drawClouds(mCloudDrawer, mScene.mCondition, mScene.mIsNight,
+        thunderOn = mCloudRenderer.drawClouds(mCloudDrawer, mScene.mCondition, mScene.mNightWeight,
                 mScene.mFrameCnt, mScene.mOffset, mScene.mLandscape,
                 mCloudA01,mCloudA02,mCloudA03,mCloudB01,mCloudB02,mCloudB03,
                 mCloudLightA1,mCloudLightA2,mCloudLightA3,mCloudLightB1,mCloudLightB2,mCloudLightB3,
                 thunderOn, CloudRenderer.Config.WINDMILL);
 
         mWindmillRenderer.drawByDistance(mWindmillDrawer, 2, mScene.mFrameCnt, mScene.mOffset,
-                mScene.mLandscape, mScene.mIsNight,
+                mScene.mLandscape, mScene.mNightWeight,
                 mWindmillWing,mWindmillWingBlur,mWindmillCenter1,mWindmillCenter2,
                 mWindmillPillar1,mWindmillPillar2,mWindmillPillarFlip1,mWindmillPillarFlip2);
 
         mGroundRenderer.drawFarLand(mGroundDrawer, groundTextures.farLand, mScene.mOffset, mScene.mLandscape);
 
         mWindmillRenderer.drawByDistance(mWindmillDrawer, 1, mScene.mFrameCnt, mScene.mOffset,
-                mScene.mLandscape, mScene.mIsNight,
+                mScene.mLandscape, mScene.mNightWeight,
                 mWindmillWing,mWindmillWingBlur,mWindmillCenter1,mWindmillCenter2,
                 mWindmillPillar1,mWindmillPillar2,mWindmillPillarFlip1,mWindmillPillarFlip2);
 
         mGroundRenderer.drawNearLand(mGroundDrawer, groundTextures.nearLand, mScene.mOffset, mScene.mLandscape);
 
         mWindmillRenderer.drawByDistance(mWindmillDrawer, 0, mScene.mFrameCnt, mScene.mOffset,
-                mScene.mLandscape, mScene.mIsNight,
+                mScene.mLandscape, mScene.mNightWeight,
                 mWindmillWing,mWindmillWingBlur,mWindmillCenter1,mWindmillCenter2,
                 mWindmillPillar1,mWindmillPillar2,mWindmillPillarFlip1,mWindmillPillarFlip2);
 
@@ -364,7 +366,7 @@ public class WindmillGL extends GLESScene {
         clearOn = mSkyRenderer.drawSunlight(mSkyDrawer, mScene.mCondition, mScene.mIsNight,
                 mScene.mFrameCnt, mScene.mOffset, mScene.mLandscape, mSun4, clearOn, SkyRenderer.Config.WINDMILL);
 
-        mFogIceRenderer.drawFogIce(mFogIceDrawer, mScene.mCondition, mScene.mIsNight,
+        mFogIceRenderer.drawFogIce(mFogIceDrawer, mScene.mCondition, mScene.mNightWeight,
                 mScene.mLandscape, mFog02, mFog02, mIce, FogIceRenderer.Config.WINDMILL);
 
         rainOn = drawRain(rainOn);

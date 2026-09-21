@@ -46,7 +46,7 @@ class WindmillRenderer {
                         int frameCnt,
                         float offset,
                         float landscape,
-                        boolean isNight,
+                        float nightWeight,
                         int windmillWing,
                         int windmillWingBlur,
                         int windmillCenter1,
@@ -59,7 +59,8 @@ class WindmillRenderer {
             return;
         }
 
-        float tone = isNight ? 0.0f : 1.0f;
+        // 白天 1、入夜 0 —— 直接就是权重的互补，不必再分档
+        float tone = 1.0f - nightWeight;
         for (int i = 0; i < mWindmills.length; i++) {
             WindmillInstance mill = mWindmills[i];
             if (mill == null || mill.distance != distance) {

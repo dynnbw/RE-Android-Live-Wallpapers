@@ -271,7 +271,7 @@ public class OceanWeatherGL extends GLESScene {
                 frameCnt, mScene.mOffset, mScene.mLandscape, mScene.mFillScaleY,
                 mSkyA,mSkyB,mSkyC,mSkyD,mSkyG,mSkyStars,mSun1,mSun2,mSun3,mMoon,mStar,mMeteor,clearOn);
 
-        thunderOn = mCloudRenderer.drawClouds(mCloudDrawer, mScene.mCondition, mScene.mIsNight,
+        thunderOn = mCloudRenderer.drawClouds(mCloudDrawer, mScene.mCondition, mScene.mNightWeight,
                 frameCnt, mScene.mOffset, mScene.mLandscape,
                 mCloudA01,mCloudA02,mCloudA03,mCloudB01,mCloudB02,mCloudB03,
                 mCloudLightA1,mCloudLightA2,mCloudLightA3,mCloudLightB1,mCloudLightB2,mCloudLightB3,thunderOn);
@@ -285,7 +285,7 @@ public class OceanWeatherGL extends GLESScene {
                 mScene.mOffset, mScene.mLandscape,
                 mWatercover1,mWatercover2,mWatercover3,mWatercover4,mNightcover,mCapCover);
 
-        mFogIceRenderer.drawFogIce(mFogIceDrawer, mScene.mCondition, mScene.mIsNight,
+        mFogIceRenderer.drawFogIce(mFogIceDrawer, mScene.mCondition, mScene.mNightWeight,
                 mScene.mLandscape, mFog01, mFog02, mIce, FogIceRenderer.Config.OCEAN);
 
         rainOn = mPrecipitationRenderer.drawRain(mPrecipitationDrawer, mScene.mCondition,

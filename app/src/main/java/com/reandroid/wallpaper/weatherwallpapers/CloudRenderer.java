@@ -1,5 +1,6 @@
 package com.reandroid.wallpaper.weatherwallpapers;
 
+import com.reandroid.utils.MathUtils;
 import com.reandroid.weather.WeatherCondition;
 
 public class CloudRenderer {
@@ -49,7 +50,7 @@ public class CloudRenderer {
 
     public boolean drawClouds(Drawer drawer,
                        WeatherCondition condition,
-                       boolean isNight,
+                       float nightWeight,
                        int frameCnt,
                        float offset,
                        float landscape,
@@ -69,7 +70,7 @@ public class CloudRenderer {
                 return drawClouds(
                     drawer,
                     condition,
-                    isNight,
+                    nightWeight,
                     frameCnt,
                     offset,
                     landscape,
@@ -92,7 +93,7 @@ public class CloudRenderer {
 
                 public boolean drawClouds(Drawer drawer,
                               WeatherCondition condition,
-                              boolean isNight,
+                              float nightWeight,
                               int frameCnt,
                               float offset,
                               float landscape,
@@ -114,7 +115,7 @@ public class CloudRenderer {
                     return drawWindmillClouds(
                         drawer,
                         condition,
-                        isNight,
+                        nightWeight,
                         frameCnt,
                         offset,
                         landscape,
@@ -137,7 +138,7 @@ public class CloudRenderer {
                 return drawOceanClouds(
                     drawer,
                     condition,
-                    isNight,
+                    nightWeight,
                     frameCnt,
                     offset,
                     landscape,
@@ -159,7 +160,7 @@ public class CloudRenderer {
 
                 private boolean drawOceanClouds(Drawer drawer,
                                 WeatherCondition condition,
-                                boolean isNight,
+                                float nightWeight,
                                 int frameCnt,
                                 float offset,
                                 float landscape,
@@ -179,7 +180,8 @@ public class CloudRenderer {
         int cloudA = selectCloudATexture(condition, cloudA01, cloudA02, cloudA03);
         int cloudB = selectCloudBTexture(condition, cloudB01, cloudB02, cloudB03);
 
-        if ((condition == WeatherCondition.D1_CLEAR || condition == WeatherCondition.D8_ICE_COLD) && !isNight) {
+        if ((condition == WeatherCondition.D1_CLEAR || condition == WeatherCondition.D8_ICE_COLD) && nightWeight < 1.0f) {
+            float dayWeight = 1.0f - nightWeight;
             if (frameCnt < 300) {
                 mCloudAX3 = (float) (((-0.025d) * frameCnt) - 13.0d);
             } else {
@@ -211,17 +213,17 @@ public class CloudRenderer {
                 mCloudAX2 = (float) (((-0.025d) * frameCnt) + 46.0d);
             }
             drawer.drawSpriteRectOneToTwo(cloudA, mCloudAX3 + ((1.5f - offset) * 5.0f), 6.0f, -27.0f,
-                    1.3f * landscape, 1.3f, 0.0f, 0.6f);
+                    1.3f * landscape, 1.3f, 0.0f, 0.6f * dayWeight);
             drawer.drawSpriteRectOneToTwo(cloudA, mCloudAX1 + ((1.5f - offset) * 5.0f), 1.0f, -27.0f,
-                    2.0f * landscape, 2.0f, 0.0f, 0.6f);
+                    2.0f * landscape, 2.0f, 0.0f, 0.6f * dayWeight);
             drawer.drawSpriteRectOneToTwo(cloudB, mCloudBX3 + ((1.5f - offset) * 5.0f), 3.8f, -26.0f,
-                    1.3f * landscape, 1.3f, 0.0f, 0.7f);
+                    1.3f * landscape, 1.3f, 0.0f, 0.7f * dayWeight);
             drawer.drawSpriteRectOneToTwo(cloudB, mCloudBX2 + ((1.5f - offset) * 5.0f), 3.8f, -26.0f,
-                    1.2f * landscape, 1.2f, 0.0f, 0.9f);
+                    1.2f * landscape, 1.2f, 0.0f, 0.9f * dayWeight);
             drawer.drawSpriteRectOneToTwo(cloudB, mCloudBX1 + ((1.5f - offset) * 5.0f), -0.2f, -26.0f,
-                    1.6f * landscape, 1.6f, 0.0f, 0.3f);
+                    1.6f * landscape, 1.6f, 0.0f, 0.3f * dayWeight);
             drawer.drawSpriteRectOneToTwo(cloudA, mCloudAX2 + ((1.5f - offset) * 5.0f), 4.7f, -27.0f,
-                    1.1f * landscape, 1.1f, 0.0f, 0.8f);
+                    1.1f * landscape, 1.1f, 0.0f, 0.8f * dayWeight);
             return thunderOn;
         }
 
@@ -289,31 +291,31 @@ public class CloudRenderer {
             float tint = darkCloud ? 0.2f : 0.0f;
             drawer.drawSpriteColoredRectOneToTwo(cloudA, mCloudAX1 + ((1.5f - offset) * 5.0f), 5.5f, -27.0f,
                     2.0f * landscape, 2.2f, 0.0f, 0.9f - tint, 0.9f - tint, 0.9f - tint, 0.9f);
-            float alphaA2 = isNight ? 0.9f : 0.8f;
+            float alphaA2 = MathUtils.mix(0.8f, 0.9f, nightWeight);
             drawer.drawSpriteColoredRectOneToTwo(cloudA, mCloudAX2 + ((1.5f - offset) * 5.0f), 4.8f, -27.3f,
                     1.8f * landscape, 1.8f, 0.0f, alphaA2 - tint, alphaA2 - tint, alphaA2 - tint, alphaA2);
-            float alphaA3 = isNight ? 1.0f : 0.8f;
+            float alphaA3 = MathUtils.mix(0.8f, 1.0f, nightWeight);
             drawer.drawSpriteColoredRectOneToTwo(cloudA, mCloudAX3 + ((1.5f - offset) * 5.0f), 2.0f, -27.5f,
                     1.4f * landscape, 1.4f, 0.0f, alphaA3 - tint, alphaA3 - tint, alphaA3 - tint, alphaA3);
-            float alphaB3 = isNight ? 0.9f : 0.7f;
+            float alphaB3 = MathUtils.mix(0.7f, 0.9f, nightWeight);
             drawer.drawSpriteColoredRectOneToTwo(cloudB, mCloudBX3 + ((1.5f - offset) * 5.0f), 3.2f, -27.4f,
                     1.4f * landscape, 1.6f, 0.0f, alphaB3 - tint, alphaB3 - tint, alphaB3 - tint, alphaB3);
-            float alphaB1 = isNight ? 1.0f : 0.9f;
+            float alphaB1 = MathUtils.mix(0.9f, 1.0f, nightWeight);
             drawer.drawSpriteColoredRectOneToTwo(cloudB, mCloudBX1 + ((1.5f - offset) * 5.0f), 6.2f, -26.9f,
                     2.7f * landscape, 2.5f, 0.0f, alphaB1 - tint, alphaB1 - tint, alphaB1 - tint, alphaB1);
-            float alphaB2 = isNight ? 0.9f : 0.9f;
+            float alphaB2 = MathUtils.mix(0.9f, 0.9f, nightWeight);
             drawer.drawSpriteColoredRectOneToTwo(cloudB, mCloudBX2 + ((1.5f - offset) * 5.0f), 7.2f, -27.1f,
                     1.7f * landscape, 1.7f, 0.0f, alphaB2 - tint, alphaB2 - tint, alphaB2 - tint, alphaB2);
-            float alphaB4 = isNight ? 0.9f : 0.4f;
+            float alphaB4 = MathUtils.mix(0.4f, 0.9f, nightWeight);
             drawer.drawSpriteColoredRectOneToTwo(cloudB, mCloudBX4 + ((1.5f - offset) * 5.0f), 0.2f, -27.6f,
                     1.6f * landscape, 1.6f, 0.0f, alphaB4 - tint, alphaB4 - tint, alphaB4 - tint, alphaB4);
-            float alphaB5 = isNight ? 0.8f : 0.4f;
+            float alphaB5 = MathUtils.mix(0.4f, 0.8f, nightWeight);
             drawer.drawSpriteColoredRectOneToTwo(cloudB, mCloudBX5 + ((1.5f - offset) * 5.0f), 0.3f, -27.7f,
                     1.9f * landscape, 1.9f, 0.0f, alphaB5 - tint, alphaB5 - tint, alphaB5 - tint, alphaB5);
-            float alphaB6 = isNight ? 0.9f : 0.7f;
+            float alphaB6 = MathUtils.mix(0.7f, 0.9f, nightWeight);
             drawer.drawSpriteColoredRectOneToTwo(cloudB, mCloudBX6 + ((1.5f - offset) * 5.0f), -0.2f, -27.8f,
                     2.2f * landscape, 2.2f, 0.0f, alphaB6 - tint, alphaB6 - tint, alphaB6 - tint, alphaB6);
-            float alphaB7 = isNight ? 0.8f : 0.6f;
+            float alphaB7 = MathUtils.mix(0.6f, 0.8f, nightWeight);
             drawer.drawSpriteColoredRectOneToTwo(cloudB, mCloudBX7 + ((1.5f - offset) * 5.0f), 0.4f, -27.9f,
                     1.8f * landscape, 1.8f, 0.0f, alphaB7 - tint, alphaB7 - tint, alphaB7 - tint, alphaB7);
 
@@ -339,7 +341,7 @@ public class CloudRenderer {
 
     private boolean drawWindmillClouds(Drawer drawer,
                                        WeatherCondition condition,
-                                       boolean isNight,
+                                       float nightWeight,
                                        int frameCnt,
                                        float offset,
                                        float landscape,
@@ -356,7 +358,7 @@ public class CloudRenderer {
                                        int cloudLightB2,
                                        int cloudLightB3,
                                        boolean thunderOn) {
-        if ((condition == WeatherCondition.D1_CLEAR || condition == WeatherCondition.D8_ICE_COLD) && !isNight) {
+        if ((condition == WeatherCondition.D1_CLEAR || condition == WeatherCondition.D8_ICE_COLD) && nightWeight < 1.0f) {
             if (frameCnt < 100) {
                 mCloudAX3 = (float) (((-0.025d) * frameCnt) - 18.0d);
             } else {
@@ -393,7 +395,7 @@ public class CloudRenderer {
                 mCloudAX4 = (float) (((-0.025d) * frameCnt) + 63.0d);
             }
 
-            float clearAlphaScale = isNight ? 1.0f : 0.7f;
+            float clearAlphaScale = 0.7f * (1.0f - nightWeight);
             float clearTint = 0.05f;
             float alphaA3 = 0.4f * clearAlphaScale;
             float colorA3 = Math.max(0.0f, alphaA3 - clearTint);
@@ -484,9 +486,9 @@ public class CloudRenderer {
             boolean useDarkClouds = condition == WeatherCondition.D3_DREARY || condition == WeatherCondition.D4_FOG;
             int cloudA = useDarkClouds ? cloudA03 : cloudA02;
             int cloudB = useDarkClouds ? cloudB03 : cloudB02;
-            float dayAlphaScale = isNight ? 1.0f : 0.8f;
+            float dayAlphaScale = MathUtils.mix(0.8f, 1.0f, nightWeight);
             float tint = useDarkClouds ? 0.1f : 0.0f;
-            float alphaA1 = (isNight ? 0.25f : 0.9f) * dayAlphaScale;
+            float alphaA1 = MathUtils.mix(0.9f, 0.25f, nightWeight) * dayAlphaScale;
             float colorA1 = Math.max(0.0f, alphaA1 - tint);
             drawer.drawSpriteColoredRectOneToTwo(cloudA, mCloudAX1 + ((1.5f - offset) * 5.0f), 5.5f, -27.0f,
                     4.0f * landscape, 4.4f, 0.0f, colorA1, colorA1, colorA1, alphaA1);
@@ -498,23 +500,23 @@ public class CloudRenderer {
             float colorA3 = Math.max(0.0f, alphaA3 - tint);
             drawer.drawSpriteColoredRectOneToTwo(cloudA, mCloudAX3 + ((1.5f - offset) * 5.0f), 2.0f, -27.5f,
                     2.8f * landscape, 2.8f, 0.0f, colorA3, colorA3, colorA3, alphaA3);
-            float alphaB3 = (isNight ? 0.25f : 0.5f) * dayAlphaScale;
+            float alphaB3 = MathUtils.mix(0.5f, 0.25f, nightWeight) * dayAlphaScale;
             float colorB3 = Math.max(0.0f, alphaB3 - tint);
             drawer.drawSpriteColoredRectOneToTwo(cloudB, mCloudBX3 + ((1.5f - offset) * 5.0f), 3.2f, -27.4f,
                     2.8f * landscape, 3.2f, 0.0f, colorB3, colorB3, colorB3, alphaB3);
-            float alphaB1 = (isNight ? 0.25f : 0.9f) * dayAlphaScale;
+            float alphaB1 = MathUtils.mix(0.9f, 0.25f, nightWeight) * dayAlphaScale;
             float colorB1 = Math.max(0.0f, alphaB1 - tint);
             drawer.drawSpriteColoredRectOneToTwo(cloudB, mCloudBX1 + ((1.5f - offset) * 5.0f), 6.2f, -26.9f,
                     4.4f * landscape, 5.0f, 0.0f, colorB1, colorB1, colorB1, alphaB1);
-            float alphaB2 = (isNight ? 0.25f : 0.3f) * dayAlphaScale;
+            float alphaB2 = MathUtils.mix(0.3f, 0.25f, nightWeight) * dayAlphaScale;
             float colorB2 = Math.max(0.0f, alphaB2 - tint);
             drawer.drawSpriteColoredRectOneToTwo(cloudB, mCloudBX2 + ((1.5f - offset) * 5.0f), 7.2f, -27.1f,
                     3.4f * landscape, 3.4f, 0.0f, colorB2, colorB2, colorB2, alphaB2);
-            float alphaB4 = (isNight ? 0.2f : 0.4f) * dayAlphaScale;
+            float alphaB4 = MathUtils.mix(0.4f, 0.2f, nightWeight) * dayAlphaScale;
             float colorB4 = Math.max(0.0f, alphaB4 - tint);
             drawer.drawSpriteColoredRectOneToTwo(cloudB, mCloudBX4 + ((1.5f - offset) * 5.0f), 0.2f, -27.6f,
                     3.2f * landscape, 3.2f, 0.0f, colorB4, colorB4, colorB4, alphaB4);
-            float alphaB5 = (isNight ? 0.25f : 0.4f) * dayAlphaScale;
+            float alphaB5 = MathUtils.mix(0.4f, 0.25f, nightWeight) * dayAlphaScale;
             float colorB5 = Math.max(0.0f, alphaB5 - tint);
             drawer.drawSpriteColoredRectOneToTwo(cloudB, mCloudBX5 + ((1.5f - offset) * 5.0f), 0.3f, -27.7f,
                     3.8f * landscape, 3.8f, 0.0f, colorB5, colorB5, colorB5, alphaB5);
@@ -522,7 +524,7 @@ public class CloudRenderer {
             float colorB6 = Math.max(0.0f, alphaB6 - tint);
             drawer.drawSpriteColoredRectOneToTwo(cloudB, mCloudBX6 + ((1.5f - offset) * 5.0f), -0.2f, -27.8f,
                     4.4f * landscape, 4.4f, 0.0f, colorB6, colorB6, colorB6, alphaB6);
-            float alphaB7 = (isNight ? 0.15f : 0.47f) * dayAlphaScale;
+            float alphaB7 = MathUtils.mix(0.47f, 0.15f, nightWeight) * dayAlphaScale;
             float colorB7 = Math.max(0.0f, alphaB7 - tint);
             drawer.drawSpriteColoredRectOneToTwo(cloudB, 0.0f, 0.0f, -27.6f,
                     8.0f * landscape, 8.0f, 0.0f, colorB7, colorB7, colorB7, alphaB7);
