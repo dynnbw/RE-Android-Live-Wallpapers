@@ -106,4 +106,38 @@ final class GrassConstants {
     static final float DANDELION_SIZE_SCALE = 2.2f;
     static final float FIREFLY_SIZE_SCALE = 6.0f;
     static final float DANDELION_SPEED_SCALE = 1.6f;
+
+    // ---- 草叶逆光（第二版）----
+    //
+    // 与第一版的分水岭：第一版只有「屏幕位置」和「轮廓线」，于是做成了一层与形体无关的
+    // 径向覆盖 —— 同一距离上每片叶拿到的值数学上必然相等，整片草一起变金。
+    // 这一版每片叶的受光由 GrassBladeLighting 算好，片元里**没有光源位置**，
+    // 只消费「横截面位置 / 叶尖位置 / beam」三个标量。
+    //
+    // 取值是上机的起点，不是标准答案 —— 观感不对就调这里。
+
+    /** 横截面法线扫过的张角（弧度）。越大，迎光边越"卷"。 */
+    static final float GRASS_LIGHT_CROSS_ANGLE = 2.0f;
+    /** 叶根（厚）的明暗系数。 */
+    static final float GRASS_LIGHT_HEIGHT_DIM = 0.55f;
+    /** 叶尖（薄）的明暗系数。 */
+    static final float GRASS_LIGHT_HEIGHT_GAIN = 1.15f;
+    /** 透射暖金。**乘**在叶色上，所以数值可以大于 1。 */
+    static final float[] GRASS_LIGHT_WARM = {1.55f, 1.20f, 0.65f};
+    /**
+     * 冷影。**乘**上去 —— 暗部偏冷，而不是把原来的绿调暗。
+     *
+     * <p>只把亮部染暖、暗部不动，读起来就像"同一种颜料被调亮调暗"，是插画里最典型的塑料感来源。
+     */
+    static final float[] GRASS_LIGHT_COOL = {0.62f, 0.70f, 0.86f};
+    /** 迎光边暖白。是**加**上去的 —— 乘法到不了那个亮度。 */
+    static final float[] GRASS_LIGHT_RIM = {1.00f, 0.94f, 0.78f};
+    /** 迎光边增益。 */
+    static final float GRASS_LIGHT_RIM_GAIN = 1.0f;
+    /**
+     * 压暗幅度。设 0 就退化成"只加光不压暗"，也就是第一版的行为。
+     *
+     * <p>逆光本来就有一半是剪影 —— 只加光不减去光，画面就会像罩了一层发光滤镜。
+     */
+    static final float GRASS_LIGHT_SHADOW_GAIN = 0.45f;
 }
