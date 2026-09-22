@@ -580,13 +580,13 @@ public class GrassGL extends GLESScene {
         mTexSolarEclipse = loadTexture("grass/drawable/solar_eclipse.jpg", false, false);
         mBackgroundRenderer.setSkyTextures(mTexNight, mTexSunrise, mTexSunset, mTexSky, mTexSolarEclipse);
         mTexSun = loadTexture("grass/drawable/sun.png", false, false);
-        // 太阳的三张 LUT / 图，由 tools/weather_tex/decode_lzstc.py 从参考实现的
-        // .lzstc 解出。sun_ramp / sun_annulus_ramp 是 540x1，着色器按
-        // texture(tex, vec2(radius, 0.5)) 采样，所以 v 必须落在唯一那一行上 ——
-        // repeat 必须为 false（CLAMP_TO_EDGE），mipmap 必须为 false。
-        mTexSunRamp = loadTexture("grass/drawable/sun_ramp.png", false, false);
-        mTexSunAnnulusRamp = loadTexture("grass/drawable/sun_annulus_ramp.png", false, false);
-        mTexSunRays = loadTexture("grass/drawable/sun_rays.png", false, false);
+        // 太阳的三张 LUT / 图，由 tools/weather_tex/decode_lzstc.py 从参考实现的 .lzstc
+        // 解出，直接以 ASTC 上传（不解码、不占 RGBA 那份显存）。
+        // sun_ramp / sun_annulus_ramp 是 540x2 / 540x4，着色器按
+        // texture(tex, vec2(radius, 0.5)) 采样，v=0.5 落在中间那行上。
+        mTexSunRamp = loadAstcTexture("grass/drawable/sun_ramp.astc");
+        mTexSunAnnulusRamp = loadAstcTexture("grass/drawable/sun_annulus_ramp.astc");
+        mTexSunRays = loadAstcTexture("grass/drawable/sun_rays.astc");
         // 水珠贴图是程序化生成的：参考实现那层水珠是算出来的（折射 + 高光），没有贴图，
         // 所以照它的观感反推一张。见 GrassTextureUtils.createWaterBeadTexture。
         mTexWaterBead = GrassTextureUtils.createWaterBeadTexture(64);
@@ -684,6 +684,63 @@ public class GrassGL extends GLESScene {
         GLUtils.texImage2D(GLES30.GL_TEXTURE_2D, 0, bitmap, 0);
         if (mipmap) GLES30.glGenerateMipmap(GLES30.GL_TEXTURE_2D);
         bitmap.recycle();
+        return tex[0];
+    }
+
+    /** GL_COMPRESSED_RGBA_ASTC_4x4_KHR。EGL14/GLES30 都没定义它，值取自 KHR_texture_compression_astc。 */
+    private static final int GL_COMPRESSED_RGBA_ASTC_4x4 = 0x93B0;
+
+    /**
+     * 上传一张 ASTC 贴图。
+     *
+     * <p>ES 3.2 里 ASTC 是核心能力，不必查扩展。数据本来就是压缩态，直接进显存 ——
+     * 不经过 Bitmap、不做解码、也不占 RGBA 那份显存：540x540 的射线图 RGBA 要 1.17 MB，
+     * ASTC 只要 292 KB。
+     *
+     * <p>文件是标准的 .astc 布局（16 字节头 + 分块载荷），头里的尺寸就是上传要报的尺寸 ——
+     * 别拿"看着多出来的那几行"去裁（540x2 的 2 行是分块对齐的一部分）。
+     */
+    private int loadAstcTexture(String assetPath) {
+        byte[] data = AssetLoader.readBytes(mContext, assetPath);
+        if (data == null || data.length <= 16) {
+            Log.w(TAG, "ASTC 资源读取失败：" + assetPath);
+            return 0;
+        }
+        int magic = (data[0] & 0xFF) | ((data[1] & 0xFF) << 8)
+                | ((data[2] & 0xFF) << 16) | ((data[3] & 0xFF) << 24);
+        if (magic != 0x5CA1AB13) {
+            Log.w(TAG, "不是 ASTC 文件：" + assetPath);
+            return 0;
+        }
+        int blockX = data[4] & 0xFF;
+        int blockY = data[5] & 0xFF;
+        if (blockX != 4 || blockY != 4) {
+            // 不认识的块尺寸就明确报出来，别静默按 4x4 传 —— 那样解码出来是花的
+            Log.w(TAG, assetPath + " 的分块是 " + blockX + "x" + blockY
+                    + "，这里只处理 4x4");
+            return 0;
+        }
+        int width = (data[7] & 0xFF) | ((data[8] & 0xFF) << 8) | ((data[9] & 0xFF) << 16);
+        int height = (data[10] & 0xFF) | ((data[11] & 0xFF) << 8) | ((data[12] & 0xFF) << 16);
+        int payload = data.length - 16;
+
+        ByteBuffer buf = ByteBuffer.allocateDirect(payload).order(ByteOrder.nativeOrder());
+        buf.put(data, 16, payload).position(0);
+
+        int[] tex = new int[1];
+        GLES30.glGenTextures(1, tex, 0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, tex[0]);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE);
+        GLES30.glCompressedTexImage2D(GLES30.GL_TEXTURE_2D, 0, GL_COMPRESSED_RGBA_ASTC_4x4,
+                width, height, 0, payload, buf);
+        int err = GLES30.glGetError();
+        if (err != GLES30.GL_NO_ERROR) {
+            Log.w(TAG, "ASTC 上传失败 " + assetPath + "：0x" + Integer.toHexString(err)
+                    + "（" + width + "x" + height + "，" + payload + " B）");
+        }
         return tex[0];
     }
 

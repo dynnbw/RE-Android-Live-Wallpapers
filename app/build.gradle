@@ -77,6 +77,13 @@ def bumpAppVersion = {
 }
 
 android {
+    /*
+     * ASTC 贴图本来就是压缩态，再让 aapt deflate 一遍只是白花安装期和读取期的 CPU。
+     */
+    aaptOptions {
+        noCompress 'astc'
+    }
+
 	compileSdk 35
 	namespace "com.reandroid.wallpaper"
 
