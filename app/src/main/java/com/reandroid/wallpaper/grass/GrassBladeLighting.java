@@ -53,4 +53,112 @@ final class GrassBladeLighting {
         }
         return MathUtils.clamp((cx * lx + cy * ly) / lLen, -1.0f, 1.0f);
     }
+
+    /** 遮挡射线的长度（像素）。取得太长会把整片草都算成互相遮挡。 */
+    static final float OCCLUSION_RAY_LEN = 260.0f;
+
+    /** 遮挡曲线的软度：阻挡者达到这个数时遮挡降到 1/e。 */
+    static final float OCCLUSION_K = 3.0f;
+
+    /**
+     * 遮挡重算间隔（毫秒）。
+     *
+     * <p>叶片摆动只影响**朝向**，遮挡变化慢得多（要等草长得够多或光源明显移动），
+     * 所以朝向每帧算、遮挡限频算。这个比值是"看得出变化"与"不浪费"之间的取舍。
+     */
+    static final long OCCLUSION_INTERVAL_MS = 250L;
+
+    /** 叶片的包围盒：{minX, minY, maxX, maxY}，写进 {@code out}。 */
+    private static void boundsOf(Blade blade, float[] out) {
+        float scale = blade.scale;
+        float halfSpread = blade.size * scale;
+        float reach = (blade.lengthX + blade.lengthY) * scale;
+        out[0] = blade.xPos - halfSpread;
+        out[1] = blade.yPos - reach;
+        out[2] = blade.xPos + halfSpread;
+        out[3] = blade.yPos + halfSpread;
+    }
+
+    /** 线段 (x0,y0)-(x1,y1) 是否与包围盒相交（slab 法）。 */
+    private static boolean segmentHitsBox(float x0, float y0, float x1, float y1, float[] box) {
+        float dx = x1 - x0;
+        float dy = y1 - y0;
+        float tMin = 0.0f;
+        float tMax = 1.0f;
+
+        // X 轴 slab
+        if (Math.abs(dx) < EPSILON) {
+            if (x0 < box[0] || x0 > box[2]) return false;
+        } else {
+            float t1 = (box[0] - x0) / dx;
+            float t2 = (box[2] - x0) / dx;
+            tMin = Math.max(tMin, Math.min(t1, t2));
+            tMax = Math.min(tMax, Math.max(t1, t2));
+            if (tMin > tMax) return false;
+        }
+        // Y 轴 slab
+        if (Math.abs(dy) < EPSILON) {
+            if (y0 < box[1] || y0 > box[3]) return false;
+        } else {
+            float t1 = (box[1] - y0) / dy;
+            float t2 = (box[3] - y0) / dy;
+            tMin = Math.max(tMin, Math.min(t1, t2));
+            tMax = Math.min(tMax, Math.max(t1, t2));
+            if (tMin > tMax) return false;
+        }
+        return true;
+    }
+
+    /**
+     * 第 {@code selfIndex} 片叶的遮挡 ∈ [0,1]，1 是完全受光。
+     *
+     * <p>{@code blades} 必须**按绘制顺序**排列（{@code SceneData.blades} 就是），
+     * 因为绘制顺序就是深度：先画的离相机远、离太阳近，光先打到它们。
+     *
+     * <p>只数**先于自己绘制**的叶片。
+     *
+     * <p>复杂度 O(n²) 的包围盒测试：200 片时是 4 万次简单运算，可忽略；而且这是**限频**的
+     * （见 {@link #OCCLUSION_INTERVAL_MS}）。
+     */
+    static float occlusionOf(Blade[] blades, int selfIndex, float lightX, float lightY) {
+        if (blades == null || selfIndex < 0 || selfIndex >= blades.length) {
+            return 1.0f;
+        }
+        Blade self = blades[selfIndex];
+        if (self == null) {
+            return 1.0f;
+        }
+
+        float dx = lightX - self.xPos;
+        float dy = lightY - self.yPos;
+        float len = (float) Math.sqrt(dx * dx + dy * dy);
+        if (len < EPSILON) {
+            return 1.0f;
+        }
+        float reach = Math.min(OCCLUSION_RAY_LEN, len);
+        float ex = self.xPos + dx / len * reach;
+        float ey = self.yPos + dy / len * reach;
+
+        float[] box = new float[4];
+        int blockers = 0;
+        for (int i = 0; i < selfIndex; i++) {
+            Blade other = blades[i];
+            if (other == null) {
+                continue;
+            }
+            boundsOf(other, box);
+            if (segmentHitsBox(self.xPos, self.yPos, ex, ey, box)) {
+                blockers++;
+            }
+        }
+        return occlusion(blockers);
+    }
+
+    /** 由阻挡者数量得到的遮挡系数 ∈ (0,1]。 */
+    static float occlusion(int blockers) {
+        if (blockers <= 0) {
+            return 1.0f;
+        }
+        return (float) Math.exp(-blockers / OCCLUSION_K);
+    }
 }

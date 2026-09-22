@@ -80,4 +80,87 @@ public class GrassBladeLightingTest {
         assertEquals("零长叶片应当给 0", 0.0f, zeroLength, 0.0f);
         assertEquals("光源与叶根重合应当给 0", 0.0f, lightOnBase, 0.0f);
     }
+
+    // ---- 遮挡（叶片级 AO）----
+
+    /** 造一片在给定位置的叶子，用来当阻挡者。字段照 {@link GrassBladeGeometryTest#makeBlade}。 */
+    private static Blade blockerAt(float x, float y) {
+        Blade b = new Blade();
+        b.size = 4;
+        b.angle = 0.0f;
+        b.xPos = x;
+        b.yPos = y;
+        b.scale = 3.0f;
+        b.lengthX = 10.0f;
+        b.lengthY = 12.0f;
+        b.hardness = 0.5f;
+        return b;
+    }
+
+    /** 没有阻挡者时遮挡为 1 —— 完全受光。 */
+    @Test
+    public void noBlockersMeansFullyLit() {
+        Blade self = blockerAt(500.0f, 800.0f);
+        Blade[] blades = { self };
+        assertEquals(1.0f, GrassBladeLighting.occlusionOf(blades, 0, 900.0f, 780.0f), 1.0E-4f);
+    }
+
+    /** 阻挡者越多，遮挡越强，且**单调**。 */
+    @Test
+    public void moreBlockersMeansDarkerAndItIsMonotonic() {
+        Blade self = blockerAt(500.0f, 800.0f);
+        Blade b1 = blockerAt(600.0f, 795.0f);
+        Blade b2 = blockerAt(650.0f, 793.0f);
+        Blade b3 = blockerAt(700.0f, 791.0f);
+
+        // 阻挡者必须**排在 self 之前** —— 先画的离太阳近，光先打到它们。
+        float none = GrassBladeLighting.occlusionOf(new Blade[]{ self }, 0, 900.0f, 780.0f);
+        float one = GrassBladeLighting.occlusionOf(new Blade[]{ b1, self }, 1, 900.0f, 780.0f);
+        float three = GrassBladeLighting.occlusionOf(
+                new Blade[]{ b1, b2, b3, self }, 3, 900.0f, 780.0f);
+
+        assertTrue("1 个阻挡者应当比 0 个暗：" + none + " -> " + one, one < none);
+        assertTrue("3 个阻挡者应当比 1 个暗：" + one + " -> " + three, three < one);
+        assertTrue("遮挡不能变负：" + three, three >= 0.0f);
+    }
+
+    /**
+     * **只有先画的算阻挡者。**
+     *
+     * <p>绘制顺序就是深度：先画的离相机远、离太阳近，光先打到它们，它们才投影到后面的叶子上。
+     * 反过来算的话，光会从相机这一侧穿过来 —— 那是彻底错的。
+     */
+    @Test
+    public void onlyEarlierBladesCastShadows() {
+        Blade self = blockerAt(500.0f, 800.0f);
+        Blade ahead = blockerAt(600.0f, 795.0f);
+
+        float withEarlier = GrassBladeLighting.occlusionOf(
+                new Blade[]{ ahead, self }, 1, 900.0f, 780.0f);
+        float withLater = GrassBladeLighting.occlusionOf(
+                new Blade[]{ self, ahead }, 0, 900.0f, 780.0f);
+
+        assertTrue("先画的应当遮住后面的：" + withEarlier, withEarlier < 1.0f);
+        assertEquals("后画的不该遮住前面的", 1.0f, withLater, 1.0E-4f);
+    }
+
+    /** 反方向的叶子不该挡光。 */
+    @Test
+    public void aBlockerOnTheOppositeSideDoesNotShadow() {
+        Blade self = blockerAt(500.0f, 800.0f);
+        Blade opposite = blockerAt(300.0f, 805.0f);
+
+        float occ = GrassBladeLighting.occlusionOf(
+                new Blade[]{ opposite, self }, 1, 900.0f, 780.0f);
+        assertEquals("反方向的叶子不该挡光", 1.0f, occ, 1.0E-4f);
+    }
+
+    /** 越界与 null 要安全返回 1，而不是抛异常 —— 那会在每帧的渲染路径上炸。 */
+    @Test
+    public void occlusionSurvivesBadIndices() {
+        Blade[] blades = { blockerAt(500.0f, 800.0f) };
+        assertEquals(1.0f, GrassBladeLighting.occlusionOf(null, 0, 900.0f, 780.0f), 0.0f);
+        assertEquals(1.0f, GrassBladeLighting.occlusionOf(blades, -1, 900.0f, 780.0f), 0.0f);
+        assertEquals(1.0f, GrassBladeLighting.occlusionOf(blades, 9, 900.0f, 780.0f), 0.0f);
+    }
 }
