@@ -21,15 +21,41 @@ final class GrassConstants {
      * 取值在混淆过的 Java 里，**没能提取出来**。这里按本项目既有惯例
      * （{@link #SUN_PHOTOSPHERE_SCALE} 也是这么放的）收成常量，上机按肉眼调。
      */
-    static final float SUN_CIRCLE_ALPHA = 1.0f;
+    /**
+     * 太阳各特效层的强度。
+     *
+     * <p>移植的对象是天气应用**"三日卡片"那个展示场景**的太阳（射线扇 + 镜头光环 +
+     * 彩色光斑 + 环晕）。它比 grass 需要的要亮：主页面那颗太阳要收敛得多。
+     *
+     * <p><b>所以这些强度一律取参考实现的一半，但层数与条数一个不动。</b>
+     * 是"调暗"而不是"减少" —— 射线还是那 20 条、光斑还是那 4~8 个，只是每条更淡。
+     * 上机觉得还亮就继续往下调这几个数。
+     */
+
+    /** 彩色圆斑强度（参考实现是 1.0）。 */
+    static final float SUN_CIRCLE_ALPHA = 0.5f;
     static final float SUN_CIRCLE_OFFSET = 0.35f;
     static final float SUN_CIRCLE_OFFSET_RATIO = 0.5f;
-    static final float SUN_ANNULUS_ALPHA = 0.25f;
-    /** 射线扇的整体强度。参考实现里这一项是常量 1.0（{@code color += obviousLine * fan}）。 */
-    static final float SUN_RAY_ALPHA = 1.0f;
-    /** > 0 才绘制彩色圆斑。 */
+    /** 透视环晕强度（参考实现是 0.25，还受 {@link #SUN_22_OPEN} 门控）。 */
+    static final float SUN_ANNULUS_ALPHA = 0.125f;
+    /** 静态射线扇的整体强度（参考实现是 1.0）。 */
+    static final float SUN_RAY_ALPHA = 0.5f;
+    /**
+     * 动态射线（三相位那三条弱光线）的强度。
+     *
+     * <p>参考实现里这一项是**硬编码的 1.2**，没有做成 uniform。这里提出来是因为它和射线扇
+     * 是两套独立的射线 —— 只调射线扇的话，画面上仍然会剩一层没动的射线。
+     */
+    static final float SUN_DYNAMIC_RAY_ALPHA = 0.6f;
+    /**
+     * 成对光环的亮度（参考实现里是硬编码的 0.6）。
+     *
+     * <p>同理：不把它提出来，"强度减半"就漏掉了这一层。
+     */
+    static final float SUN_FLARE_BRIGHTNESS = 0.3f;
+    /** &gt; 0 才绘制彩色圆斑与镜头光环那一整块。**保持开启** —— 要减的是强度不是数量。 */
     static final float SUN_QUALITY = 1.0f;
-    /** > 0.5 才绘制环晕与成对光环。 */
+    /** &gt; 0.5 才绘制环晕与成对光环。同样保持开启。 */
     static final float SUN_22_OPEN = 1.0f;
 
     /**

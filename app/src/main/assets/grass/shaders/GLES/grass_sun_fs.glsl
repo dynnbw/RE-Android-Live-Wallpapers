@@ -19,6 +19,10 @@ uniform float uCircleOffset;
 uniform float uCircleOffsetRatio;
 uniform float uAnnulusAlpha;
 uniform float uRayAlpha;
+/** 动态射线（三相位弱光线）的强度。参考实现里是硬编码的 1.2。 */
+uniform float uDynamicRayAlpha;
+/** 成对光环的亮度。参考实现里是硬编码的 0.6。 */
+uniform float uFlareBrightness;
 uniform float uQuality;
 uniform float u22Open;
 uniform bool uCloseCircle;
@@ -136,7 +140,7 @@ vec4 getWeatherEffect(vec2 uv) {
         if (mainCondition || (!mainCondition && (l > threshL + 0.1 || l < -0.8 * lsun + threshL - 0.1))) {
             color -= 0.01 * number;
             if (enableLensflare) {
-                color += lensflareSimple(uvScaled, sunPosScaled, 0.6, 4.0) * lensflareColor;
+                color += lensflareSimple(uvScaled, sunPosScaled, uFlareBrightness, 4.0) * lensflareColor;
             }
         } else {
             for (float i = 0.; i < MAX_ITER; i++) {
@@ -149,7 +153,7 @@ vec4 getWeatherEffect(vec2 uv) {
             }
 
             if (enableLensflare) {
-                color += lensflare(uvScaled, sunPosScaled, 0.6, 4.0) * lensflareColor;
+                color += lensflare(uvScaled, sunPosScaled, uFlareBrightness, 4.0) * lensflareColor;
             }
         }
     }
@@ -193,7 +197,7 @@ vec4 getWeatherEffect(vec2 uv) {
     vec3 term1 = sin(angle3 + cos9);
     vec3 term2 = abs(sin9);
     vec3 dimLine = abs(term1) * term2 * vLight.rgb;
-    color += (dimLine.x + dimLine.y + dimLine.z) * 1.2 * (1.0 - st2.x);
+    color += (dimLine.x + dimLine.y + dimLine.z) * uDynamicRayAlpha * (1.0 - st2.x);
 
     // 太阳
     vec2 st3 = clamp(diff + 0.5, 0.0, 1.0);
