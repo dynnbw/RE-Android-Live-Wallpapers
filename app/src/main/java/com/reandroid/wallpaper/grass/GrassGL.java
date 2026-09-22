@@ -174,6 +174,7 @@ public class GrassGL extends GLESScene {
     private int mSunTintHandle;
     private int mSunQualityHandle;
     private int mSun22OpenHandle;
+    private int mSunLensFlareHandle;
     private int mSunCloseCircleHandle;
     private int mSunSunPosOffsetYHandle;
 
@@ -407,6 +408,8 @@ public class GrassGL extends GLESScene {
         }
 
         mStarRenderer.drawNightStars(sd, mSpriteRenderer, mBackgroundRenderOps);
+        // 假光画在月亮之前：剥掉核心之后它本来就是一圈外圈的光，不会盖住月盘
+        drawMoonGlow(sd);
         drawMoon(sd);
         drawWeatherOverlays(sd, false);
 
@@ -641,6 +644,7 @@ public class GrassGL extends GLESScene {
         mSunTintHandle = GLES30.glGetUniformLocation(mSunProgram, "uSunTint");
         mSunQualityHandle = GLES30.glGetUniformLocation(mSunProgram, "uQuality");
         mSun22OpenHandle = GLES30.glGetUniformLocation(mSunProgram, "u22Open");
+        mSunLensFlareHandle = GLES30.glGetUniformLocation(mSunProgram, "uLensFlare");
         mSunCloseCircleHandle = GLES30.glGetUniformLocation(mSunProgram, "uCloseCircle");
         mSunSunPosOffsetYHandle = GLES30.glGetUniformLocation(mSunProgram, "uSunPosOffsetY");
     }
@@ -895,6 +899,74 @@ public class GrassGL extends GLESScene {
         }
     }
 
+    /**
+     * 月亮那层**假光**。
+     *
+     * <p>**整套复用太阳的着色器** —— 程序、四条眩光层、甚至连四边形都不新建
+     * （太阳画的是铺满屏幕的那一个，顶点侧完全由 {@code uSunPos} 驱动）。
+     *
+     * <p>唯一的关键改动是 {@code uCoreGain = 0}：太阳本体正好就是乘这个系数的两行
+     * （光盘 + 本体辉光），置零即精确剥掉，剩下的全是"假光"。**月亮本体一个像素不变。**
+     *
+     * <p>太阳那套眩光是给本来就顶到 1.0 的太阳调的，单靠它远低于亮部阈值，
+     * 所以每一层的 alpha 都乘 {@link GrassConstants#MOON_GLOW_GAIN} 推上去
+     * —— 这些 alpha 都是 uniform，可以大于 1。
+     */
+    private void drawMoonGlow(SceneData sd) {
+        if (!sd.glowEnabled || !sd.moonVisible || mSunProgram == 0) {
+            return;
+        }
+        float gain = GrassConstants.MOON_GLOW_RAY_GAIN;
+
+        useProgram(mSunProgram);
+        setBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ONE);
+
+        GLES30.glUniformMatrix4fv(mSunMatrixHandle, 1, false, sd.projectionMatrix, 0);
+        GLES30.glUniform2f(mSunResolutionHandle, (float) mWidth, (float) mHeight);
+        // ← 与太阳那一趟唯一的几何差别：把它们的位置换成月亮
+        GLES30.glUniform2f(mSunSunPosHandle, sd.moonX, sd.moonY);
+        GLES30.glUniform1f(mSunTimeHandle, sd.animNowMs * 0.001f);
+        // 月亮越亮（高度越高）晕越强；很低的月亮本来就该暗淡。
+        //
+        // **再乘夜间权重。** 月亮白天也在天上（只是淡），而假光只在夜里才有意义；
+        // 用连续量而不是 `isNight` 布尔，晨昏时它是平滑淡出而不是"啪"地跳一下
+        // —— 同一个理由，见 GrassScene 里天气色调那段注释。
+        float night = 1.0f - sd.dayWeight;
+        GLES30.glUniform1f(mSunOpacityHandle, sd.moonBrightness * night);
+        GLES30.glUniform1f(mSunLineAlphaHandle, 320.0f);
+        GLES30.glUniform1f(mSunSunPosOffsetYHandle, 0.0f);
+        GLES30.glUniform1f(mSunCircleAlphaHandle, GrassConstants.SUN_CIRCLE_ALPHA * gain);
+        GLES30.glUniform1f(mSunCircleOffsetHandle, GrassConstants.SUN_CIRCLE_OFFSET);
+        GLES30.glUniform1f(mSunCircleOffsetRatioHandle, GrassConstants.SUN_CIRCLE_OFFSET_RATIO);
+        GLES30.glUniform1f(mSunAnnulusAlphaHandle, GrassConstants.SUN_ANNULUS_ALPHA * gain);
+        GLES30.glUniform1f(mSunRayAlphaHandle, GrassConstants.SUN_RAY_ALPHA * gain);
+        GLES30.glUniform1f(mSunDynamicRayAlphaHandle, GrassConstants.SUN_DYNAMIC_RAY_ALPHA * gain);
+        GLES30.glUniform1f(mSunFlareBrightnessHandle, GrassConstants.SUN_FLARE_BRIGHTNESS * gain);
+        // **不要核心。** 太阳本体就是乘这个系数的两行，置零即剥掉。
+        GLES30.glUniform1f(mSunCoreGainHandle, 0.0f);
+        // tint 只作用于核心那一行，核心关掉之后它没有作用，给中性值免得误读
+        GLES30.glUniform3f(mSunTintHandle, 1.0f, 1.0f, 1.0f);
+        GLES30.glUniform1f(mSunQualityHandle, GrassConstants.SUN_QUALITY);
+        // 透视环晕**关掉**：它是围着光源的一个屏幕尺度的大圆环，套在月亮上太大。
+        GLES30.glUniform1f(mSun22OpenHandle, 0.0f);
+        // 镜头光环**留着** —— 它是贴着光源的小环，与上面那层是两回事。
+        // 这两项在着色器里原本共用一个门控，拆开了才做得到"关一个留一个"。
+        GLES30.glUniform1f(mSunLensFlareHandle, 1.0f);
+        GLES30.glUniform1i(mSunCloseCircleHandle, 0);
+
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mTexSunRamp);
+        GLES30.glUniform1i(mSunSunRampHandle, 0);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE1);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mTexSunAnnulusRamp);
+        GLES30.glUniform1i(mSunAnnulusRampHandle, 1);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE2);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mTexSunRays);
+        GLES30.glUniform1i(mSunRaysHandle, 2);
+
+        drawFullScreenQuad(mSunPositionHandle, mSunTexHandle);
+    }
+
     private void drawProceduralSun(SceneData sd) {
         useProgram(mSunProgram);
         setBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ONE);
@@ -917,6 +989,8 @@ public class GrassGL extends GLESScene {
         GLES30.glUniform3f(mSunTintHandle, sd.sunTint[0], sd.sunTint[1], sd.sunTint[2]);
         GLES30.glUniform1f(mSunQualityHandle, GrassConstants.SUN_QUALITY);
         GLES30.glUniform1f(mSun22OpenHandle, GrassConstants.SUN_22_OPEN);
+        // 太阳这一趟两者同开 —— 与拆开之前的行为一致
+        GLES30.glUniform1f(mSunLensFlareHandle, GrassConstants.SUN_22_OPEN);
         GLES30.glUniform1i(mSunCloseCircleHandle, 0);
 
         GLES30.glActiveTexture(GLES30.GL_TEXTURE0);

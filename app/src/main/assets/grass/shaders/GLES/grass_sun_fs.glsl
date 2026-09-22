@@ -29,6 +29,15 @@ uniform float uCoreGain;
 uniform vec3 uSunTint;
 uniform float uQuality;
 uniform float u22Open;
+/**
+ * 镜头光环（围着光源的那一对环）的开关。
+ *
+ * <p><b>刻意与 {@link #u22Open} 拆开。</b> 原先光环的门控写的是 {@code u22Open > 0.5}，
+ * 于是"关掉透视环晕"会连镜头光环一起关掉 —— 而这两层是独立的：透视环晕是屏幕尺度的
+ * 大圆环，镜头光环是贴着光源的小环。月亮那趟要"关前者、留后者"，就必须能分开。
+ * 太阳那一趟把两者都设成原值，行为不变。
+ */
+uniform float uLensFlare;
 uniform bool uCloseCircle;
 
 // 圆形光斑
@@ -131,7 +140,7 @@ vec4 getWeatherEffect(vec2 uv) {
         vec3 lensflareColor = vec3(1.4, 1.2, 1.);
         const float MAX_ITER = 10.;
 
-        bool enableLensflare = u22Open > 0.5;
+        bool enableLensflare = uLensFlare > 0.5;
         float d = abs(vSunPos.x * uv.y - vSunPos.y * uv.x) * invLsun;
 
         bool mainCondition = d > 0.1;
