@@ -253,8 +253,11 @@ public final class GlowRenderer {
         }
         GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0);
         GLES30.glViewport(0, 0, mWidth, mHeight);
-        // 这几遍都是直接覆写，不参与混合；留着混合会让结果依赖上一帧的残值。
-        GLES30.glDisable(GLES30.GL_BLEND);
+        // **不动混合开关。** 这几遍的输出 alpha 都是 1，而
+        // `SRC_ALPHA/ONE_MINUS_SRC_ALPHA` 在 alpha=1 时结果就是 src 本身，
+        // 所以加不加混合完全一样。反过来，这里要是调了 glDisable，
+        // 就会**绕过调用方的混合状态缓存** —— 下一帧它按缓存判断"没变"而跳过设置，
+        // 于是整帧的混合都是关的，背景/太阳/月亮这些靠 alpha 的东西全都变样。
 
         // 亮部提取 + 降采样 → A
         GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, mBloomFboA);
