@@ -117,6 +117,12 @@
     },
     {
       "type": "switch",
+      "key": "pref_grass_light",
+      "title": "pref_grass_light",
+      "default": "false"
+    },
+    {
+      "type": "switch",
       "key": "pref_grass_moon",
       "title": "pref_grass_moon",
       "default": "true"
