@@ -718,6 +718,11 @@ final class GrassScene {
         float moonY = mHeight * (1.0f - clampedAlt / 90.0f);
         float size = mWidth * 0.24f;
         float baseBrightness = clamp((float) ((data.moonAltitudeDeg + 2.0) / 30.0), 0.0f, 1.0f);
+        // 辉光开着时把月亮推进 HDR 区间 —— 上面这条曲线 alt ≥ 28° 才到 1.0，
+        // 而亮部阈值是 0.85，不推的话晨昏的月亮永远够不着、永远不发光。
+        if (mGrassGlowEnabled) {
+            baseBrightness *= GrassConstants.GLOW_MOON_GAIN;
+        }
         MoonEclipse eclipse = computeMoonEclipse(data);
 
         mSceneData.moonVisible = true;

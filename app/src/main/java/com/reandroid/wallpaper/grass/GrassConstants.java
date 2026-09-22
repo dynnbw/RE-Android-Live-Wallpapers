@@ -170,4 +170,15 @@ final class GrassConstants {
     static final float GLOW_RADIUS = 8.0f;
     /** 辉光叠加强度。 */
     static final float GLOW_STRENGTH = 0.85f;
+    /**
+     * 辉光开着时月亮亮度的增益，把它推进 HDR 区间（> 1 就是"比白还亮"）。
+     *
+     * <p>月亮的亮度是按高度角爬坡的（alt ≥ 28° 才到 1.0），而阈值是 0.85 ——
+     * **不推的话晨昏时段的月亮（0.2~0.5）永远够不着阈值、永远不发光**。
+     * 物理上月亮本来就比夜空亮几个量级，让它亮过白才是对的。
+     *
+     * <p>取 1.6：alt=20° 时 0.73 × 1.6 ≈ 1.17，刚好过阈值；
+     * 很低的月亮（alt &lt; 8°）仍然不发光 —— 那是合理的，它本来就暗。
+     */
+    static final float GLOW_MOON_GAIN = 1.6f;
 }
