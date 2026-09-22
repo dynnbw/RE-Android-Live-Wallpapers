@@ -1,3 +1,7 @@
+# Python
+__pycache__/
+*.pyc
+
 # IDE / Editor
 .idea/
 .vscode/
