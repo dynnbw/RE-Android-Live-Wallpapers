@@ -156,4 +156,18 @@ final class GrassConstants {
      * <p>逆光本来就有一半是剪影 —— 只加光不减去光，画面就会像罩了一层发光滤镜。
      */
     static final float GRASS_LIGHT_SHADOW_GAIN = 0.45f;
+
+    // ---- HDR + 辉光 ----
+    //
+    // 阈值定得偏高：只让草叶受光那一档和月亮发光，星星、萤火虫这类小亮点不该发。
+    // 取值是上机的起点，不是标准答案 —— 观感不对就调这里。
+
+    /** 亮度阈值。低于它的不发辉光。 */
+    static final float GLOW_THRESHOLD = 0.85f;
+    /** 阈值之上的过渡宽度。硬阈值会在光晕边缘留下可见的台阶。 */
+    static final float GLOW_SOFT_KNEE = 0.25f;
+    /** 模糊半径（像素，半分辨率下）。光晕发硬/发窄先调它，不是加遍数。 */
+    static final float GLOW_RADIUS = 8.0f;
+    /** 辉光叠加强度。 */
+    static final float GLOW_STRENGTH = 0.85f;
 }

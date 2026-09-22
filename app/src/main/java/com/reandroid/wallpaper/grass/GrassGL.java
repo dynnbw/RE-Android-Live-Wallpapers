@@ -30,6 +30,7 @@ import android.view.MotionEvent;
 
 import com.reandroid.utils.AssetLoader;
 import com.reandroid.gles.GLESScene;
+import com.reandroid.gles.GlowRenderer;
 import com.reandroid.gles.GLESWallpaper;
 import com.reandroid.settings.WallpaperSettings;
 
@@ -82,6 +83,7 @@ public class GrassGL extends GLESScene {
     private int mBackgroundProgram;
     private int mSkyProgram;
     private int mGrassProgram;
+    private GlowRenderer mGlowRenderer;
     private int mMoonProgram;
     private int mSunProgram;
 
@@ -297,6 +299,10 @@ public class GrassGL extends GLESScene {
 
     @Override
     public void release() {
+        if (mGlowRenderer != null) {
+            mGlowRenderer.release();
+            mGlowRenderer = null;
+        }
         mWeatherIntegration.release();
         int[] tex = new int[]{
                 mTexNight, mTexSunrise, mTexSunset, mTexSky,
@@ -332,6 +338,9 @@ public class GrassGL extends GLESScene {
         mBackgroundRenderer.setViewport(width, height);
         mWeatherRenderer.setViewport(width, height);
         mStarRenderer.setViewport(width, height);
+        if (mGlowRenderer != null) {
+            mGlowRenderer.resize(width, height);
+        }
     }
 
     @Override
@@ -368,6 +377,12 @@ public class GrassGL extends GLESScene {
         // Rebuild blade index/vertex buffers when blade count changes
         if (sd.bladeIndexRebuildNeeded || mGrassIndexBuffer == null) {
             buildBladeBuffers();
+        }
+
+        // 辉光开启且设备支持时，整个场景先画进 HDR 缓冲；否则一行都不变，直接画到屏幕。
+        final boolean glow = sd.glowEnabled && mGlowRenderer != null && mGlowRenderer.isReady();
+        if (glow) {
+            mGlowRenderer.beginScene();
         }
 
         GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT);
@@ -423,6 +438,15 @@ public class GrassGL extends GLESScene {
         drawWater(sd);
         drawWeatherOverlays(sd, true);
         drawRainStreaks(sd);
+
+        // 场景全部画完之后才做亮部提取、模糊与合成 —— 中间那段绘制一行都不用改。
+        if (glow) {
+            mGlowRenderer.endScene(
+                    GrassConstants.GLOW_THRESHOLD,
+                    GrassConstants.GLOW_SOFT_KNEE,
+                    GrassConstants.GLOW_RADIUS,
+                    GrassConstants.GLOW_STRENGTH);
+        }
 
         long frameCost = SystemClock.uptimeMillis() - frameStart;
         recordFrameCost(frameCost);
@@ -494,6 +518,16 @@ public class GrassGL extends GLESScene {
         mWeatherRenderer.setBackgroundMatrixHandle(mBgMatrixHandle);
         mStarRenderer.setBackgroundMatrixHandle(mBgMatrixHandle);
         mStarRenderer.setRenderDataBuilder(mScene.mRenderDataBuilder);
+
+        // HDR + 辉光：整个场景的中间缓冲。建不起来就整体不启用 ——
+        // 画面与不用它时逐像素相同（增强可以没有，但不能把画面弄坏）。
+        mGlowRenderer = new GlowRenderer();
+        mGlowRenderer.init(mWidth, mHeight,
+                "grass/shaders/GLES/glow_quad_vs.glsl",
+                "grass/shaders/GLES/glow_bright_fs.glsl",
+                "grass/shaders/GLES/glow_blur_fs.glsl",
+                "grass/shaders/GLES/glow_composite_fs.glsl",
+                assetPath -> AssetLoader.readText(mContext, assetPath));
     }
 
     private void createSkyProgram() {

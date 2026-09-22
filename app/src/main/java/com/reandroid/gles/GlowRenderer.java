@@ -43,6 +43,10 @@ public final class GlowRenderer {
 
     private int mWidth, mHeight, mHalfW, mHalfH;
 
+    /** 记住创建参数，尺寸变化时要按新尺寸原样重建。 */
+    private String mVsAsset, mBrightFsAsset, mBlurFsAsset, mCompositeFsAsset;
+    private ShaderSource mShaderSource;
+
     private int mSceneFbo, mSceneTex;
     private int mBloomFboA, mBloomTexA;
     private int mBloomFboB, mBloomTexB;
@@ -80,6 +84,11 @@ public final class GlowRenderer {
                         String brightFsAsset, String blurFsAsset, String compositeFsAsset,
                         ShaderSource source) {
         release();
+        mVsAsset = vsAsset;
+        mBrightFsAsset = brightFsAsset;
+        mBlurFsAsset = blurFsAsset;
+        mCompositeFsAsset = compositeFsAsset;
+        mShaderSource = source;
         mWidth = width;
         mHeight = height;
         mHalfW = GlowParams.halfSize(width);
@@ -185,18 +194,21 @@ public final class GlowRenderer {
     }
 
     /**
-     * 尺寸变化。
+     * 尺寸变化：**按新尺寸重建**。尺寸没变则什么都不做。
      *
-     * <p>缓冲的宽高对不上会把画面拉伸，所以必须处理；而重建要重走着色器与缓冲的创建，
-     * 那条路径比"先停用、等下次 {@link #init} "更容易写出花屏。壁纸尺寸变化极少发生，
-     * 所以这里选停用 —— 是刻意的取舍，不是遗漏。
+     * <p>早先这里是"停用，等下一次 {@link #init} "，理由是"重建路径更容易写出花屏"。
+     * <b>那个判断是错的，而且设备当场就揭穿了</b>：实际生命周期是
+     * {@code initGL()} **之后**紧接着一次 {@code resize()}，于是这一停用等于
+     * 保证辉光永远不会生效 —— 而且不报错，只是画面上什么都没有。
+     *
+     * <p>重建其实就是重跑一遍 {@code init()}（它开头自己会 {@code release()}），
+     * 没有额外的脆弱之处。而尺寸真变了却沿用旧缓冲，画面会被拉伸 —— 那才是真会出问题的。
      */
     public void resize(int width, int height) {
-        if (!mReady) {
+        if (width == mWidth && height == mHeight) {
             return;
         }
-        release();
-        Log.w(TAG, "尺寸变化，辉光已退化成不启用（等下一次 init）");
+        init(width, height, mVsAsset, mBrightFsAsset, mBlurFsAsset, mCompositeFsAsset, mShaderSource);
     }
 
     public void release() {
