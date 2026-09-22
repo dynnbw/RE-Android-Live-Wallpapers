@@ -116,7 +116,7 @@ final class SceneData {
     boolean hasSunData;
     float sunX, sunY, sunAlpha, sunSize;
 
-    /** 太阳本体的 RGB 增益，随高度角变化 —— 低空橙红、高空白偏蓝。见 {@link GrassSunTint}。 */
+    /** 太阳本体的 RGB 增益，随高度角变化 —— 低空橙红、高空白偏蓝。见 {@link GrassSunAppearance}。 */
     final float[] sunTint = new float[]{1.0f, 1.0f, 1.0f};
 
     boolean hasSolarEclipseOcclusion;

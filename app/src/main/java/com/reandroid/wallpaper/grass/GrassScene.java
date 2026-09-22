@@ -569,7 +569,7 @@ final class GrassScene {
         mSceneData.solarEclipseWeight = mSolarEclipseWeight;
         mSceneData.lastSunAltitude = mDayNightSystem.getLastSunAltitude();
         // 低空橙红、高空白偏蓝。原来恒定乘 (1.25,1.61,1.84)，所以永远是白偏蓝。
-        GrassSunTint.fill((float) mSceneData.lastSunAltitude, mSceneData.sunTint);
+        GrassSunAppearance.fill((float) mSceneData.lastSunAltitude, mSceneData.sunTint);
         mSceneData.xDraw = mix(mWidth, 0.0f, mXOffset);
         mSceneData.dt = dt;
         mSceneData.animNowMs = animNowMs;
@@ -634,7 +634,9 @@ final class GrassScene {
         float clampedAlt = clamp((float) mDayNightSystem.getLastSunAltitude(), 0.0f, 90.0f);
         float sunY = mHeight * (1.0f - clampedAlt / 90.0f);
         float sunSize = mWidth * 0.32f;
-        float sunAlpha = clamp((float) ((mDayNightSystem.getLastSunAltitude() + 6.0) / 12.0), 0.0f, 1.0f);
+        // 地平线以上一律实心，只在地平线以下淡出 —— 见 GrassSunAppearance.opacity。
+        // 原来这里是 (alt + 6) / 12，地平线处只有 0.5，低空的太阳于是是半透明的。
+        float sunAlpha = GrassSunAppearance.opacity((float) mDayNightSystem.getLastSunAltitude());
 
         mSceneData.hasSunData = true;
         mSceneData.sunX = sunX;

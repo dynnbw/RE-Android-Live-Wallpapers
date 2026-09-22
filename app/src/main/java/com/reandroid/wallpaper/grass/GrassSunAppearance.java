@@ -1,7 +1,7 @@
 package com.reandroid.wallpaper.grass;
 
 /**
- * 太阳本体的颜色随高度角变化。
+ * 太阳本体**随高度角变化的外观**：颜色与不透明度。
  *
  * <p>原来的实现是恒定乘 {@code vec3(1.25, 1.61, 1.84)} —— 蓝 &gt; 绿 &gt; 红，所以**永远是白偏蓝**。
  * 那个值来自参考实现，是给"太阳高挂"的卡片场景定的，与高度角无关。
@@ -14,9 +14,9 @@ package com.reandroid.wallpaper.grass;
  *
  * <p>纯函数，可 JVM 测试。
  */
-final class GrassSunTint {
+final class GrassSunAppearance {
 
-    private GrassSunTint() {
+    private GrassSunAppearance() {
     }
 
     /** 高空色调：参考实现的原值（白偏蓝）。 */
@@ -45,6 +45,26 @@ final class GrassSunTint {
      * 而实际上一轮太阳在 20° 上下仍然偏暖。
      */
     static final float HIGH_DEG = 25.0f;
+
+    /** 地平线以上一律实心；淡出只发生在地平线以下这么多度之内。 */
+    static final float FADE_BELOW_DEG = 4.0f;
+
+    /**
+     * 太阳本体的不透明度。
+     *
+     * <p>原来的式子（在 {@code GrassScene} 里）是 {@code clamp((alt + 6) / 12, 0, 1)} ——
+     * **地平线处只有 0.5**，于是太阳在低空一路是半透明的。加法混合下 alpha 0.5 就是只贡献
+     * 一半亮度，半透明的橙盘叠在亮蓝天空上看着像"化开了"，而不是一轮实心的红日。
+     *
+     * <p>淡出的职责只是"别在沉下去那一瞬硬切"，不是把一颗已经看得见的太阳调暗。
+     * 所以地平线（0°）以上一律 1.0，只在地平线以下 {@link #FADE_BELOW_DEG} 度内淡出 ——
+     * 那一段太阳本来就已经滑到屏幕下缘、被草叶挡住了。
+     *
+     * @param altitudeDeg 太阳高度角（度）
+     */
+    static float opacity(float altitudeDeg) {
+        return smoothstep(-FADE_BELOW_DEG, 0.0f, altitudeDeg);
+    }
 
     /**
      * 填出当前高度角对应的 RGB 增益。
