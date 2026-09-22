@@ -17,7 +17,7 @@ final class GrassConstants {
     /**
      * 程序化太阳的调参。
      *
-     * <p>参考实现（参考实现 {@code sun_fragment_shader.glsl}）里这几个是 uniform，
+     * <p>参考实现（{@code sun_fragment_shader.glsl}）里这几个是 uniform，
      * 取值在混淆过的 Java 里，**没能提取出来**。这里按本项目既有惯例
      * （{@link #SUN_PHOTOSPHERE_SCALE} 也是这么放的）收成常量，上机按肉眼调。
      */
