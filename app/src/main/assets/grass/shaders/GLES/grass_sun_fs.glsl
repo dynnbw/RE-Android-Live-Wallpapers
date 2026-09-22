@@ -25,13 +25,11 @@ uniform float uDynamicRayAlpha;
 uniform float uFlareBrightness;
 /** 太阳本体（光盘 + 辉光）的增益。1.0 = 原值。 */
 uniform float uCoreGain;
+/** 太阳本体的 RGB 增益，随高度角变化（低空橙红、高空白偏蓝）。 */
+uniform vec3 uSunTint;
 uniform float uQuality;
 uniform float u22Open;
 uniform bool uCloseCircle;
-
-#define uR 1.25
-#define uG 1.61
-#define uB 1.84
 
 // 圆形光斑
 #define CIRCLE_SIZE 0.95
@@ -203,7 +201,7 @@ vec4 getWeatherEffect(vec2 uv) {
 
     // 太阳
     vec2 st3 = clamp(diff + 0.5, 0.0, 1.0);
-    color += circleTex(uSunRamp, st3).rgb * vec3(uR, uG, uB) * 1.02 * uCoreGain;
+    color += circleTex(uSunRamp, st3).rgb * uSunTint * 1.02 * uCoreGain;
 
     vec2 st4 = vec2(length(st3 * 2.0 - 1.0) * 2.8, 0.5);
     vec4 glow = vec4(0.8509803922, 0.6039215686, 0.3490196078, 0.5 / exp(st4.x * st4.x));

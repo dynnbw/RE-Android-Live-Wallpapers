@@ -568,6 +568,8 @@ final class GrassScene {
         System.arraycopy(mDayNightSystem.getAccurateWeights(), 0, mSceneData.accurateWeights, 0, 4);
         mSceneData.solarEclipseWeight = mSolarEclipseWeight;
         mSceneData.lastSunAltitude = mDayNightSystem.getLastSunAltitude();
+        // 低空橙红、高空白偏蓝。原来恒定乘 (1.25,1.61,1.84)，所以永远是白偏蓝。
+        GrassSunTint.fill((float) mSceneData.lastSunAltitude, mSceneData.sunTint);
         mSceneData.xDraw = mix(mWidth, 0.0f, mXOffset);
         mSceneData.dt = dt;
         mSceneData.animNowMs = animNowMs;

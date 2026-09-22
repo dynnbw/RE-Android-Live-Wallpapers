@@ -159,6 +159,7 @@ public class GrassGL extends GLESScene {
     private int mSunDynamicRayAlphaHandle;
     private int mSunFlareBrightnessHandle;
     private int mSunCoreGainHandle;
+    private int mSunTintHandle;
     private int mSunQualityHandle;
     private int mSun22OpenHandle;
     private int mSunCloseCircleHandle;
@@ -565,6 +566,7 @@ public class GrassGL extends GLESScene {
         mSunDynamicRayAlphaHandle = GLES30.glGetUniformLocation(mSunProgram, "uDynamicRayAlpha");
         mSunFlareBrightnessHandle = GLES30.glGetUniformLocation(mSunProgram, "uFlareBrightness");
         mSunCoreGainHandle = GLES30.glGetUniformLocation(mSunProgram, "uCoreGain");
+        mSunTintHandle = GLES30.glGetUniformLocation(mSunProgram, "uSunTint");
         mSunQualityHandle = GLES30.glGetUniformLocation(mSunProgram, "uQuality");
         mSun22OpenHandle = GLES30.glGetUniformLocation(mSunProgram, "u22Open");
         mSunCloseCircleHandle = GLES30.glGetUniformLocation(mSunProgram, "uCloseCircle");
@@ -840,6 +842,7 @@ public class GrassGL extends GLESScene {
         GLES30.glUniform1f(mSunDynamicRayAlphaHandle, GrassConstants.SUN_DYNAMIC_RAY_ALPHA);
         GLES30.glUniform1f(mSunFlareBrightnessHandle, GrassConstants.SUN_FLARE_BRIGHTNESS);
         GLES30.glUniform1f(mSunCoreGainHandle, GrassConstants.SUN_CORE_GAIN);
+        GLES30.glUniform3f(mSunTintHandle, sd.sunTint[0], sd.sunTint[1], sd.sunTint[2]);
         GLES30.glUniform1f(mSunQualityHandle, GrassConstants.SUN_QUALITY);
         GLES30.glUniform1f(mSun22OpenHandle, GrassConstants.SUN_22_OPEN);
         GLES30.glUniform1i(mSunCloseCircleHandle, 0);
