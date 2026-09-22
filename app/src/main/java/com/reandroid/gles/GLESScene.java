@@ -24,38 +24,12 @@ public abstract class GLESScene {
 
     /** Compile a GL shader. Returns 0 on failure. */
     protected int compileShader(int type, String source) {
-        int shader = GLES30.glCreateShader(type);
-        GLES30.glShaderSource(shader, source);
-        GLES30.glCompileShader(shader);
-        int[] compiled = new int[1];
-        GLES30.glGetShaderiv(shader, GLES30.GL_COMPILE_STATUS, compiled, 0);
-        if (compiled[0] == 0) {
-            Log.e(getClass().getSimpleName(), "Shader compile failed: " + GLES30.glGetShaderInfoLog(shader));
-            GLES30.glDeleteShader(shader);
-            return 0;
-        }
-        return shader;
+        return GlProgramUtils.compileShader(getClass().getSimpleName(), type, source);
     }
 
     /** Link a GL program from vertex + fragment source. Returns 0 on failure. */
     protected int createProgram(String vertexSource, String fragmentSource) {
-        int vs = compileShader(GLES30.GL_VERTEX_SHADER, vertexSource);
-        int fs = compileShader(GLES30.GL_FRAGMENT_SHADER, fragmentSource);
-        if (vs == 0 || fs == 0) return 0;
-        int program = GLES30.glCreateProgram();
-        GLES30.glAttachShader(program, vs);
-        GLES30.glAttachShader(program, fs);
-        GLES30.glLinkProgram(program);
-        int[] link = new int[1];
-        GLES30.glGetProgramiv(program, GLES30.GL_LINK_STATUS, link, 0);
-        if (link[0] == 0) {
-            Log.e(getClass().getSimpleName(), "Program link failed: " + GLES30.glGetProgramInfoLog(program));
-            GLES30.glDeleteProgram(program);
-            return 0;
-        }
-        GLES30.glDeleteShader(vs);
-        GLES30.glDeleteShader(fs);
-        return program;
+        return GlProgramUtils.createProgram(getClass().getSimpleName(), vertexSource, fragmentSource);
     }
     protected int mWidth;
     protected int mHeight;
