@@ -5,8 +5,13 @@ package com.reandroid.wallpaper.grass;
  * {@code assets/particle_rain_line_emitter.comp} 与 {@code assets/particle_rain.comp}。
  *
  * <p><b>为什么是 CPU 实现</b>：原件是 ES 3.1 的 compute shader（{@code #version 310 es}
- * + SSBO），而本分支是 ES 3.0 上下文。但状态机本身是纯标量运算，grass 原先也是在 Java 里
- * 逐帧算雨丝位置的，所以逐条搬过来即可 —— 顺带让整台状态机变成可 JVM 测试的纯逻辑。
+ * + SSBO）。本分支的目标现在是 ES 3.2，compute 是有的 —— 但**故意没走那条路**：
+ * 实测这套粒子每帧只上传约 3 KB、约 50 次三角函数，在整个场景里是噪声量级
+ * （光是草叶那一项每帧就有 179 KB），而换成 compute 要付出 SSBO 生命周期、
+ * memory barrier，以及**失去全部测试**的代价 —— GLSL 在这个项目里没法单测，
+ * 而这台状态机的 12 条测试抓到过两个真 bug（槽位回收策略、{@code preWarmFactor} 未归零）。
+ *
+ * <p>状态机本身是纯标量运算，grass 原先也是在 Java 里逐帧算雨丝位置的，所以逐条搬过来即可 —— 顺带让整台状态机变成可 JVM 测试的纯逻辑。
  *
  * <p><b>这一层要解决的问题</b>：原先雨丝的速度全在 300-350、三张贴图尺寸与速度毫无关系，
  * 也就是一堵平墙。参考实现里**速度、尺寸、透明度由同一个 {@code scaleFactor}（深度）决定**
