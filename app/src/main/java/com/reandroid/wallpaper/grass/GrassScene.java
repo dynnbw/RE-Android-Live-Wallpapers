@@ -608,6 +608,7 @@ final class GrassScene {
                         mSceneData.blades, i, mSceneData.lightX, mSceneData.lightY);
             }
         }
+
         mSceneData.xDraw = mix(mWidth, 0.0f, mXOffset);
         mSceneData.dt = dt;
         mSceneData.animNowMs = animNowMs;

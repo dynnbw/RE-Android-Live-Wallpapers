@@ -20,7 +20,7 @@ uniform float uLight;
 uniform float uCrossAngle;   // 横截面法线扫过的张角
 uniform float uHeightDim;    // 叶根（厚）的明暗系数
 uniform float uHeightGain;   // 叶尖（薄）的明暗系数
-uniform vec3  uWarm;         // 透射暖金（乘）
+uniform vec3  uTransmit;     // 透过的光的颜色（**不是乘数**，见下面第 ② 条）
 uniform vec3  uCool;         // 冷影（乘）
 uniform vec3  uRimColor;     // 迎光边暖白（加）
 uniform float uRimGain;
@@ -58,7 +58,17 @@ void main() {
   vec3 color = vColor.rgb * heightTint;
 
   // ② 透射：薄 + 受光 + 偏背光侧（光穿过叶肉的那一侧）
-  color = mix(color, color * uWarm, m * tip * mix(0.65, 1.0, max(-edge, 0.0)));
+  //
+  //    **往"光的颜色"插值，而不是往 color × 暖金插值。**
+  //    后者是给绿草染色 —— 乘数永远保留着叶色，所以再亮也读不出"光是穿透过来的"。
+  //    物理上透射光是「光的颜色 × 叶肉的透射率」，与叶片自身的反射色无关。
+  //    实测这一改让中间档从 +13% 跳到 +50%，那正是"透"的来源。
+  //
+  //    **系数用 sqrt(m) 而不是 m。** 高光走 m、阴影走 (1 - m)，两路是分开的；
+  //    实测 m 的均值只有 0.22（可见度和遮挡各削掉一半），线性用 m 时混合系数太小。
+  float transmit = sqrt(m) * tip * mix(0.85, 1.10, max(-edge, 0.0));
+  vec3 transmitted = uTransmit * mix(0.90, 1.15, tip);   // 薄处透得多、也更亮
+  color = mix(color, transmitted, transmit);
 
   // ③ 迎光边：**只在迎光那一侧**，且随受光缩放 —— 不是每片叶一圈相同的描边
   color += uRimColor * rim * m * max(edge, 0.0) * uRimGain;

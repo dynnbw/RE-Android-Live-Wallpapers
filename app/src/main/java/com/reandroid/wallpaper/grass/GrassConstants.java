@@ -116,14 +116,30 @@ final class GrassConstants {
     //
     // 取值是上机的起点，不是标准答案 —— 观感不对就调这里。
 
+    /**
+     * 可见度半径（像素）：离光源超过它就不再受光，**半径处恰好为 0**。
+     *
+     * <p>黄金时刻太阳总在屏幕上缘附近（{@code sunY = height * (1 - alt/90)}，alt=12° 时
+     * 已到 y≈2080），所以这个值大致等于"从屏幕底边往上铺多远"。
+     */
+    static final float GRASS_LIGHT_RADIUS = 1400.0f;
     /** 横截面法线扫过的张角（弧度）。越大，迎光边越"卷"。 */
     static final float GRASS_LIGHT_CROSS_ANGLE = 2.0f;
     /** 叶根（厚）的明暗系数。 */
     static final float GRASS_LIGHT_HEIGHT_DIM = 0.55f;
     /** 叶尖（薄）的明暗系数。 */
     static final float GRASS_LIGHT_HEIGHT_GAIN = 1.15f;
-    /** 透射暖金。**乘**在叶色上，所以数值可以大于 1。 */
-    static final float[] GRASS_LIGHT_WARM = {1.55f, 1.20f, 0.65f};
+    /**
+     * 透过的光的颜色。
+     *
+     * <p><b>这不是乘数，是"光穿过叶肉之后是什么颜色"。</b> 原先写成乘数
+     * （{@code color × 暖金}），那只是给绿草染色 —— 乘数永远保留着叶色，所以再亮也读不出
+     * "光是穿透过来的"。物理上透射光是「光的颜色 × 叶肉的透射率」，与叶片自身的反射色无关，
+     * 于是改成往这个常量插值。实测这一改让中间档从 +13% 跳到 +50%。
+     *
+     * <p>数值可以大于 1（那是"比白还亮"的透射光）。红比绿高是刻意的 —— 逆光的草偏琥珀。
+     */
+    static final float[] GRASS_LIGHT_TRANSMIT = {1.35f, 1.00f, 0.40f};
     /**
      * 冷影。**乘**上去 —— 暗部偏冷，而不是把原来的绿调暗。
      *

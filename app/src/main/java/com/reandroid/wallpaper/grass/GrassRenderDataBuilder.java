@@ -575,7 +575,14 @@ final class GrassRenderDataBuilder {
                 mBladeXY[0], mBladeXY[1],
                 mBladeXY[size * 2], mBladeXY[size * 2 + 1],
                 sd.lightX, sd.lightY);
-        float beam = GrassBladeLighting.beam(facing, sd.bladeOcclusion(bladeIndex), sd.lightStrength);
+        // 强弱来自"光是不是在这片叶背后"（可见度），朝向只负责因叶而异的调制 + 定哪一侧。
+        // 只靠朝向时实测 mean|beam| 只有 0.05 —— 太阳在屏幕正下方，竖直叶片的横截面轴是水平的。
+        float visibility = GrassBladeLighting.visibility(
+                mBladeXY[0], mBladeXY[1], sd.lightX, sd.lightY,
+                GrassConstants.GRASS_LIGHT_RADIUS);
+        float beam = GrassBladeLighting.beam(
+                facing, visibility, sd.bladeOcclusion(bladeIndex), sd.lightStrength);
+
 
         float hw0 = mBladeHalfWidth[0];
         float baseX = mBladeXY[0];

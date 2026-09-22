@@ -57,8 +57,21 @@ final class GrassBladeLighting {
     /** 遮挡射线的长度（像素）。取得太长会把整片草都算成互相遮挡。 */
     static final float OCCLUSION_RAY_LEN = 260.0f;
 
-    /** 遮挡曲线的软度：阻挡者达到这个数时遮挡降到 1/e。 */
-    static final float OCCLUSION_K = 3.0f;
+    /** 遮挡曲线的软度：阻挡者达到这个数时衰减到 e^{-1} 的位置。 */
+    static final float OCCLUSION_K = 12.0f;
+
+    /**
+     * 遮挡最狠能压掉多少。
+     *
+     * <p>**这个上限是实测逼出来的。** 原先 {@code occ = exp(-blockers/K)} 没有上限，
+     * 实测 782 片密集的草里平均 **8.6** 个阻挡者 → {@code occ ≈ 0.058}，
+     * 把整片草一起压平（{@code mean|beam|} 掉到 0.015，画面上就是"极少数的草上有极细微的效果"）。
+     *
+     * <p>而那个阻挡者数本身是**包围盒重叠**的产物，不是真的几何遮挡 —— 盒子的范围远大于叶片。
+     * 所以这里封顶：宁可让它只是"压暗一档"，也不要让它把效果整体抹掉。
+     * 真实草地里逆光确实一半是剪影，但剪影不该让**受光的那部分也消失**。
+     */
+    static final float OCCLUSION_MAX = 0.5f;
 
     /**
      * 遮挡重算间隔（毫秒）。
@@ -154,23 +167,72 @@ final class GrassBladeLighting {
         return occlusion(blockers);
     }
 
-    /** 由阻挡者数量得到的遮挡系数 ∈ (0,1]。 */
+    /** 由阻挡者数量得到的遮挡系数 ∈ [1 - OCCLUSION_MAX, 1]。 */
     static float occlusion(int blockers) {
         if (blockers <= 0) {
             return 1.0f;
         }
-        return (float) Math.exp(-blockers / OCCLUSION_K);
+        return 1.0f - OCCLUSION_MAX * (1.0f - (float) Math.exp(-blockers / OCCLUSION_K));
+    }
+
+    /**
+     * 朝向调制的下限：叶片横截面轴与光向接近垂直时仍保留这么多。
+     *
+     * <p>**这一条是实测逼出来的。** 只用 {@code |facing|} 当强弱时，实测 782 片叶
+     * （7 万个顶点）的 {@code mean|beam|} 只有 **0.05**、超过 0.3 的只占 **5%** ——
+     * 因为黄金时刻太阳在屏幕**正下方**，而竖直叶片的横截面轴是**水平**的，
+     * 两者点乘自然接近 0，于是九成叶片被抹平。
+     */
+    static final float FACING_FLOOR = 0.35f;
+
+    /**
+     * 可见度：离光源的屏幕距离越远越小，**半径处恰好为 0**。
+     *
+     * <p>这一项曾经被删掉过，理由是"文献里透光模型没有距离项" —— 那条对
+     * **无穷远的平行光**成立，而我们的太阳是屏幕上的一个点。2D 投影里，
+     * "离光源多近"正是"光是不是在这片叶背后"的唯一代理（相机与光源的连线投影成一个点）。
+     * 删掉它之后强弱就只剩朝向，于是塌成了上面那个 0.05。
+     *
+     * <p>用 smoothstep 而不是 {@code 1/(1+d²/r²)}：后者在半径外还留尾巴，
+     * 会把局域特效摊成全局滤镜。
+     */
+    static float visibility(float bladeX, float bladeY,
+                            float lightX, float lightY, float radius) {
+        float dx = lightX - bladeX;
+        float dy = lightY - bladeY;
+        float dist = (float) Math.sqrt(dx * dx + dy * dy);
+        float r = Math.max(radius, 1.0f);
+        float t = MathUtils.clamp(dist / r, 0.0f, 1.0f);
+        return 1.0f - t * t * (3.0f - 2.0f * t);
+    }
+
+    /**
+     * 朝向带来的调制 ∈ [FACING_FLOOR, 1]：**用绝对值并抬高下限**，不塌到 0。
+     *
+     * <p>朝向仍然有用 —— 它逐帧跟着叶片摆动变，是"活的"那一半；只是不能再由它独占强弱。
+     */
+    static float facingGain(float facing) {
+        return FACING_FLOOR + (1.0f - FACING_FLOOR) * Math.abs(facing);
     }
 
     /**
      * 每片叶的受光，带符号 ∈ [-1, 1]。
      *
+     * <p>分解成四件事，各有各的职责：
+     * <ul>
+     *   <li>{@code visibility} —— 位置：光是不是在这片叶背后</li>
+     *   <li>{@code facingGain} —— 因叶而异，且逐帧跟着摆动</li>
+     *   <li>符号 —— 光在叶片的**哪一侧**，决定亮边落在哪条边</li>
+     *   <li>{@code occlusion} —— 有没有被先画的叶子挡住</li>
+     * </ul>
+     *
      * <p>{@code lightStrength} 是总强度（开关 × 高度角曲线 × 天气，来自 {@link GrassBacklight}）。
      * 它为 0 时 {@code beam} **恰好**是 0 —— 这是"关掉就等于今天"的可测形式：
      * 着色器在 {@code uLight <= 0} 时提前返回，整条路径与加特效之前逐像素一致。
      */
-    static float beam(float facing, float occlusion, float lightStrength) {
-        return facing * occlusion * lightStrength;
+    static float beam(float facing, float visibility, float occlusion, float lightStrength) {
+        float side = facing < 0.0f ? -1.0f : 1.0f;
+        return visibility * facingGain(facing) * side * occlusion * lightStrength;
     }
 
     /**

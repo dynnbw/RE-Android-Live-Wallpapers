@@ -164,6 +164,25 @@ public class GrassBladeLightingTest {
         assertEquals(1.0f, GrassBladeLighting.occlusionOf(blades, 9, 900.0f, 780.0f), 0.0f);
     }
 
+    /**
+     * 遮挡**必须有上限**，再多阻挡者也不能把受光整体抹掉。
+     *
+     * <p>这条也是实测逼出来的：没有上限时，782 片密集的草里平均 8.6 个阻挡者
+     * 把 {@code occ} 压到 **0.058**，画面上就是"极少数的草上有极细微的效果"。
+     * 而那个阻挡者数是包围盒重叠的产物，不是真的几何遮挡。
+     */
+    @Test
+    public void occlusionIsBoundedAndNeverKillsTheBeam() {
+        float floor = 1.0f - GrassBladeLighting.OCCLUSION_MAX;
+        for (int blockers = 0; blockers <= 200; blockers++) {
+            float occ = GrassBladeLighting.occlusion(blockers);
+            assertTrue("blockers=" + blockers + " 遮挡越界：" + occ,
+                    occ >= floor - 1.0E-4f && occ <= 1.0f);
+        }
+        assertEquals("0 个阻挡者时必须完全受光", 1.0f,
+                GrassBladeLighting.occlusion(0), 0.0f);
+    }
+
     // ---- 合成 ----
 
     /**
@@ -175,23 +194,73 @@ public class GrassBladeLightingTest {
     @Test
     public void beamIsZeroWhenTheEffectIsOff() {
         assertEquals("关掉时必须是 0", 0.0f,
-                GrassBladeLighting.beam(0.9f, 0.8f, 0.0f), 0.0f);
+                GrassBladeLighting.beam(0.9f, 1.0f, 0.8f, 0.0f), 0.0f);
     }
 
     /** `beam` 必须落在 [-1,1] 且**保留符号** —— 符号决定亮边落在哪条边。 */
     @Test
     public void beamStaysInRangeAndKeepsTheSign() {
         for (float f = -1.0f; f <= 1.0f; f += 0.125f) {
-            for (float s = 0.0f; s <= 1.0f; s += 0.25f) {
-                float beam = GrassBladeLighting.beam(f, 0.7f, s);
-                assertTrue("越界：" + beam, beam >= -1.0f && beam <= 1.0f);
-                if (f > 0.0f && s > 0.0f) {
-                    assertTrue("正朝向应当给正 beam", beam >= 0.0f);
-                }
-                if (f < 0.0f && s > 0.0f) {
-                    assertTrue("负朝向应当给负 beam", beam <= 0.0f);
+            for (float v = 0.0f; v <= 1.0f; v += 0.25f) {
+                for (float s = 0.0f; s <= 1.0f; s += 0.5f) {
+                    float beam = GrassBladeLighting.beam(f, v, 0.7f, s);
+                    assertTrue("越界：" + beam, beam >= -1.0f && beam <= 1.0f);
+                    if (f > 0.0f && s > 0.0f && v > 0.0f) {
+                        assertTrue("正朝向应当给正 beam", beam >= 0.0f);
+                    }
+                    if (f < 0.0f && s > 0.0f && v > 0.0f) {
+                        assertTrue("负朝向应当给负 beam", beam <= 0.0f);
+                    }
                 }
             }
+        }
+    }
+
+    /**
+     * **朝向不能独占强弱。**
+     *
+     * <p>这条是上机实测逼出来的回归。曾经 {@code beam = facing × occ × strength}，
+     * 而黄金时刻太阳在屏幕**正下方**、竖直叶片的横截面轴是**水平**的，两者点乘接近 0 ——
+     * 实测 782 片叶的 {@code mean|beam|} 只有 **0.05**、超过 0.3 的只占 **5%**，
+     * 画面上就是"极少数的草上有极细微的效果"。
+     */
+    @Test
+    public void facingAloneMustNotCollapseTheBeam() {
+        float perpendicular = GrassBladeLighting.beam(0.0f, 1.0f, 1.0f, 1.0f);
+        assertTrue("横截面轴与光向垂直时不该塌成 0，实际 " + perpendicular,
+                perpendicular >= GrassBladeLighting.FACING_FLOOR - 1.0E-4f);
+    }
+
+    /** 可见度：光源处为 1，半径处**恰好** 0，半径外也是 0，中间单调不增。 */
+    @Test
+    public void visibilityReachesExactlyZeroAtTheRadius() {
+        float radius = 1000.0f;
+        assertEquals("光源处应当为 1", 1.0f,
+                GrassBladeLighting.visibility(0.0f, 0.0f, 0.0f, 0.0f, radius), 1.0E-4f);
+        assertEquals("半径处应当恰好为 0", 0.0f,
+                GrassBladeLighting.visibility(0.0f, 0.0f, radius, 0.0f, radius), 0.0f);
+        assertEquals("半径之外也是 0", 0.0f,
+                GrassBladeLighting.visibility(0.0f, 0.0f, radius * 3.0f, 0.0f, radius), 0.0f);
+
+        float prev = 1.0f;
+        for (float d = 0.0f; d <= radius; d += radius / 16.0f) {
+            float v = GrassBladeLighting.visibility(0.0f, 0.0f, d, 0.0f, radius);
+            assertTrue("应当单调不增：" + prev + " -> " + v, v <= prev + 1.0E-4f);
+            prev = v;
+        }
+    }
+
+    /** 朝向调制：垂直时给下限、对齐时给 1，只取绝对值所以不会翻负。 */
+    @Test
+    public void facingGainIsFlooredAndSymmetric() {
+        assertEquals("垂直（最弱）", GrassBladeLighting.FACING_FLOOR,
+                GrassBladeLighting.facingGain(0.0f), 1.0E-4f);
+        assertEquals("完全对齐（最强）", 1.0f, GrassBladeLighting.facingGain(1.0f), 1.0E-4f);
+        assertEquals("反向对齐也只取绝对值", 1.0f,
+                GrassBladeLighting.facingGain(-1.0f), 1.0E-4f);
+        for (float f = -1.0f; f <= 1.0f; f += 0.125f) {
+            float g = GrassBladeLighting.facingGain(f);
+            assertTrue("越界：" + g, g >= GrassBladeLighting.FACING_FLOOR && g <= 1.0f);
         }
     }
 

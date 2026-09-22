@@ -121,7 +121,7 @@ public class GrassGL extends GLESScene {
     private int mGrassCrossAngleHandle;
     private int mGrassHeightDimHandle;
     private int mGrassHeightGainHandle;
-    private int mGrassWarmHandle;
+    private int mGrassTransmitHandle;
     private int mGrassCoolHandle;
     private int mGrassRimColorHandle;
     private int mGrassRimGainHandle;
@@ -403,10 +403,10 @@ public class GrassGL extends GLESScene {
         GLES30.glUniform1f(mGrassCrossAngleHandle, GrassConstants.GRASS_LIGHT_CROSS_ANGLE);
         GLES30.glUniform1f(mGrassHeightDimHandle, GrassConstants.GRASS_LIGHT_HEIGHT_DIM);
         GLES30.glUniform1f(mGrassHeightGainHandle, GrassConstants.GRASS_LIGHT_HEIGHT_GAIN);
-        GLES30.glUniform3f(mGrassWarmHandle,
-                GrassConstants.GRASS_LIGHT_WARM[0],
-                GrassConstants.GRASS_LIGHT_WARM[1],
-                GrassConstants.GRASS_LIGHT_WARM[2]);
+        GLES30.glUniform3f(mGrassTransmitHandle,
+                GrassConstants.GRASS_LIGHT_TRANSMIT[0],
+                GrassConstants.GRASS_LIGHT_TRANSMIT[1],
+                GrassConstants.GRASS_LIGHT_TRANSMIT[2]);
         GLES30.glUniform3f(mGrassCoolHandle,
                 GrassConstants.GRASS_LIGHT_COOL[0],
                 GrassConstants.GRASS_LIGHT_COOL[1],
@@ -543,7 +543,7 @@ public class GrassGL extends GLESScene {
         mGrassCrossAngleHandle = GLES30.glGetUniformLocation(mGrassProgram, "uCrossAngle");
         mGrassHeightDimHandle = GLES30.glGetUniformLocation(mGrassProgram, "uHeightDim");
         mGrassHeightGainHandle = GLES30.glGetUniformLocation(mGrassProgram, "uHeightGain");
-        mGrassWarmHandle = GLES30.glGetUniformLocation(mGrassProgram, "uWarm");
+        mGrassTransmitHandle = GLES30.glGetUniformLocation(mGrassProgram, "uTransmit");
         mGrassCoolHandle = GLES30.glGetUniformLocation(mGrassProgram, "uCool");
         mGrassRimColorHandle = GLES30.glGetUniformLocation(mGrassProgram, "uRimColor");
         mGrassRimGainHandle = GLES30.glGetUniformLocation(mGrassProgram, "uRimGain");
