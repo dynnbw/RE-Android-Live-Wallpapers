@@ -39,6 +39,7 @@ luminousdots_full_log.txt
 # Large local-only resources / notes
 web_version/
 docs/
+tools/
 
 # Local git identity switching config
 git-identity.config.ps1
