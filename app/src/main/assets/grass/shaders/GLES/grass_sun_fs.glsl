@@ -23,6 +23,8 @@ uniform float uRayAlpha;
 uniform float uDynamicRayAlpha;
 /** 成对光环的亮度。参考实现里是硬编码的 0.6。 */
 uniform float uFlareBrightness;
+/** 太阳本体（光盘 + 辉光）的增益。1.0 = 原值。 */
+uniform float uCoreGain;
 uniform float uQuality;
 uniform float u22Open;
 uniform bool uCloseCircle;
@@ -201,11 +203,11 @@ vec4 getWeatherEffect(vec2 uv) {
 
     // 太阳
     vec2 st3 = clamp(diff + 0.5, 0.0, 1.0);
-    color += circleTex(uSunRamp, st3).rgb * vec3(uR, uG, uB) * 1.02;
+    color += circleTex(uSunRamp, st3).rgb * vec3(uR, uG, uB) * 1.02 * uCoreGain;
 
     vec2 st4 = vec2(length(st3 * 2.0 - 1.0) * 2.8, 0.5);
     vec4 glow = vec4(0.8509803922, 0.6039215686, 0.3490196078, 0.5 / exp(st4.x * st4.x));
-    color.rgb += glow.rgb * glow.a;
+    color.rgb += glow.rgb * glow.a * uCoreGain;
 
     // 亮度抑制
     color *= exp(1.0 - length(diff)) / DECAY;

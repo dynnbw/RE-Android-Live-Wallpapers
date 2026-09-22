@@ -32,6 +32,19 @@ final class GrassConstants {
      * 上机觉得还亮就继续往下调这几个数。
      */
 
+    /**
+     * 太阳本体（光盘 + plus 辉光）的增益。**默认 1.0 = 参考实现的原值，不作任何缩放。**
+     *
+     * <p>调这个的前提：太阳本体那两行（{@code circleTex(uSunRamp, …) * vec3(uR,uG,uB) * 1.02}
+     * 与那个 {@code glow}）里的系数**全是字面量**，不受下面任何特效强度影响 ——
+     * 所以"本体保留原值"本身就是成立的，这里给 1.0。
+     *
+     * <p>但本体在中心处的合计只是<b>刚好压在饱和线上</b>（≈1.00），紧挨着的一圈（约 0.94）
+     * 原来是靠光斑与射线补足才显得白得实。特效减半之后那一圈会没那么"实"——
+     * 如果这看着像本体变弱了，把这里调上去（1.1~1.3）比去动特效强度更对症。
+     */
+    static final float SUN_CORE_GAIN = 1.0f;
+
     /** 彩色圆斑强度（参考实现是 1.0）。 */
     static final float SUN_CIRCLE_ALPHA = 0.5f;
     static final float SUN_CIRCLE_OFFSET = 0.35f;
