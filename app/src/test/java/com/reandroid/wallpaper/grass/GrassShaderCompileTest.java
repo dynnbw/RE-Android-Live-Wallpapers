@@ -119,6 +119,28 @@ public class GrassShaderCompileTest {
             "grass_sky_fs.glsl", "grass_sky_vs.glsl",
             "grass_sun_fs.glsl", "grass_sun_vs.glsl",
             "grass_rain_screen_fs.glsl", "grass_rain_screen_vs.glsl",
+            "glow_quad_vs.glsl", "glow_bright_fs.glsl",
+            "glow_blur_fs.glsl", "glow_composite_fs.glsl",
+    };
+
+    /**
+     * vs → 它要配的 fs。
+     *
+     * <p>**不能按后缀推。** 原来这里是 "由 vs 去掉后缀拼出 fs 的名字"，
+     * 那假设了一对一；而 {@code glow_quad_vs} 一个顶点着色器要配三条片元
+     * （亮部提取 / 模糊 / 合成），按后缀推会去找不存在的 {@code glow_quad_fs}
+     * 而直接红。写成显式表之后，一对多就是一目了然的几行。
+     */
+    private static final String[][] LINK_PAIRS = {
+            { "grass_bg_vs.glsl", "grass_bg_fs.glsl" },
+            { "grass_grass_vs.glsl", "grass_grass_fs.glsl" },
+            { "grass_moon_vs.glsl", "grass_moon_fs.glsl" },
+            { "grass_sky_vs.glsl", "grass_sky_fs.glsl" },
+            { "grass_sun_vs.glsl", "grass_sun_fs.glsl" },
+            { "grass_rain_screen_vs.glsl", "grass_rain_screen_fs.glsl" },
+            { "glow_quad_vs.glsl", "glow_bright_fs.glsl" },
+            { "glow_quad_vs.glsl", "glow_blur_fs.glsl" },
+            { "glow_quad_vs.glsl", "glow_composite_fs.glsl" },
     };
 
     @Test
@@ -154,9 +176,9 @@ public class GrassShaderCompileTest {
                 validator != null);
 
         List<String> failures = new ArrayList<>();
-        for (String vs : REQUIRED) {
-            if (!vs.endsWith("_vs.glsl")) continue;
-            String fs = vs.substring(0, vs.length() - "_vs.glsl".length()) + "_fs.glsl";
+        for (String[] pair : LINK_PAIRS) {
+            String vs = pair[0];
+            String fs = pair[1];
             File vsFile = new File(SHADER_DIR, vs);
             File fsFile = new File(SHADER_DIR, fs);
             assertTrue(fs + " 不存在（" + vs + " 没有配对的片段着色器）", fsFile.isFile());
