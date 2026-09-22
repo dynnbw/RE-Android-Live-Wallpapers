@@ -163,4 +163,44 @@ public class GrassBladeLightingTest {
         assertEquals(1.0f, GrassBladeLighting.occlusionOf(blades, -1, 900.0f, 780.0f), 0.0f);
         assertEquals(1.0f, GrassBladeLighting.occlusionOf(blades, 9, 900.0f, 780.0f), 0.0f);
     }
+
+    // ---- 合成 ----
+
+    /**
+     * 关掉时 `beam` **恰好**是 0。
+     *
+     * <p>这是"关掉就等于今天"的可测形式：着色器在 {@code uLight <= 0} 时提前返回，
+     * 所以只要总强度是 0，整条路径与加特效之前逐像素一致。
+     */
+    @Test
+    public void beamIsZeroWhenTheEffectIsOff() {
+        assertEquals("关掉时必须是 0", 0.0f,
+                GrassBladeLighting.beam(0.9f, 0.8f, 0.0f), 0.0f);
+    }
+
+    /** `beam` 必须落在 [-1,1] 且**保留符号** —— 符号决定亮边落在哪条边。 */
+    @Test
+    public void beamStaysInRangeAndKeepsTheSign() {
+        for (float f = -1.0f; f <= 1.0f; f += 0.125f) {
+            for (float s = 0.0f; s <= 1.0f; s += 0.25f) {
+                float beam = GrassBladeLighting.beam(f, 0.7f, s);
+                assertTrue("越界：" + beam, beam >= -1.0f && beam <= 1.0f);
+                if (f > 0.0f && s > 0.0f) {
+                    assertTrue("正朝向应当给正 beam", beam >= 0.0f);
+                }
+                if (f < 0.0f && s > 0.0f) {
+                    assertTrue("负朝向应当给负 beam", beam <= 0.0f);
+                }
+            }
+        }
+    }
+
+    /** 叶尖位置：叶根顶点 0、叶尖顶点 1。它同时是厚度代理（根粗尖细）。 */
+    @Test
+    public void tipFractionRunsFromRootToTip() {
+        assertEquals("叶根", 0.0f, GrassBladeLighting.tipFraction(0, 8), 0.0f);
+        assertEquals("叶尖", 1.0f, GrassBladeLighting.tipFraction(8, 8), 0.0f);
+        assertEquals("中间", 0.5f, GrassBladeLighting.tipFraction(4, 8), 0.0f);
+        assertEquals("size 为 0 不能除零", 0.0f, GrassBladeLighting.tipFraction(3, 0), 0.0f);
+    }
 }

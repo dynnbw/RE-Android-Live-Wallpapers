@@ -161,4 +161,29 @@ final class GrassBladeLighting {
         }
         return (float) Math.exp(-blockers / OCCLUSION_K);
     }
+
+    /**
+     * 每片叶的受光，带符号 ∈ [-1, 1]。
+     *
+     * <p>{@code lightStrength} 是总强度（开关 × 高度角曲线 × 天气，来自 {@link GrassBacklight}）。
+     * 它为 0 时 {@code beam} **恰好**是 0 —— 这是"关掉就等于今天"的可测形式：
+     * 着色器在 {@code uLight <= 0} 时提前返回，整条路径与加特效之前逐像素一致。
+     */
+    static float beam(float facing, float occlusion, float lightStrength) {
+        return facing * occlusion * lightStrength;
+    }
+
+    /**
+     * 叶尖位置 ∈ [0,1]：叶根 0、叶尖 1。
+     *
+     * <p>它同时是**厚度代理**：{@link GrassBladeGeometry#trace} 里的半宽在叶根是
+     * {@code size * scale}、到叶尖线性收到 0，所以这个比值与"此处多厚"成正比。
+     * 薄的地方透光多 —— 这就是"叶片内部要有从根到尖的渐变"那条。
+     */
+    static float tipFraction(int k, int size) {
+        if (size <= 0) {
+            return 0.0f;
+        }
+        return MathUtils.clamp(k / (float) size, 0.0f, 1.0f);
+    }
 }
