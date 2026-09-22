@@ -116,6 +116,16 @@ public class GrassGL extends GLESScene {
     private int mGrassTexHandle;
     private int mGrassMatrixHandle;
     private int mGrassSamplerHandle;
+    // ---- 草叶逆光（第二版）----
+    private int mGrassLightHandle;
+    private int mGrassCrossAngleHandle;
+    private int mGrassHeightDimHandle;
+    private int mGrassHeightGainHandle;
+    private int mGrassWarmHandle;
+    private int mGrassCoolHandle;
+    private int mGrassRimColorHandle;
+    private int mGrassRimGainHandle;
+    private int mGrassShadowGainHandle;
 
     // Moon program handles
     private int mMoonPositionHandle;
@@ -388,6 +398,25 @@ public class GrassGL extends GLESScene {
         useProgram(mGrassProgram);
         setBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ONE_MINUS_SRC_ALPHA);
         GLES30.glUniformMatrix4fv(mGrassMatrixHandle, 1, false, sd.projectionMatrix, 0);
+        // 草叶逆光的常量与总强度。总强度为 0 时着色器提前返回，输出与加特效之前一致。
+        GLES30.glUniform1f(mGrassLightHandle, sd.lightStrength);
+        GLES30.glUniform1f(mGrassCrossAngleHandle, GrassConstants.GRASS_LIGHT_CROSS_ANGLE);
+        GLES30.glUniform1f(mGrassHeightDimHandle, GrassConstants.GRASS_LIGHT_HEIGHT_DIM);
+        GLES30.glUniform1f(mGrassHeightGainHandle, GrassConstants.GRASS_LIGHT_HEIGHT_GAIN);
+        GLES30.glUniform3f(mGrassWarmHandle,
+                GrassConstants.GRASS_LIGHT_WARM[0],
+                GrassConstants.GRASS_LIGHT_WARM[1],
+                GrassConstants.GRASS_LIGHT_WARM[2]);
+        GLES30.glUniform3f(mGrassCoolHandle,
+                GrassConstants.GRASS_LIGHT_COOL[0],
+                GrassConstants.GRASS_LIGHT_COOL[1],
+                GrassConstants.GRASS_LIGHT_COOL[2]);
+        GLES30.glUniform3f(mGrassRimColorHandle,
+                GrassConstants.GRASS_LIGHT_RIM[0],
+                GrassConstants.GRASS_LIGHT_RIM[1],
+                GrassConstants.GRASS_LIGHT_RIM[2]);
+        GLES30.glUniform1f(mGrassRimGainHandle, GrassConstants.GRASS_LIGHT_RIM_GAIN);
+        GLES30.glUniform1f(mGrassShadowGainHandle, GrassConstants.GRASS_LIGHT_SHADOW_GAIN);
 
         drawBlades(sd, grassBrightness, sd.xDraw, nightDesat);
         drawSprites(sd);
@@ -510,6 +539,15 @@ public class GrassGL extends GLESScene {
         mGrassTexHandle = GLES30.glGetAttribLocation(mGrassProgram, "aTexCoord");
         mGrassMatrixHandle = GLES30.glGetUniformLocation(mGrassProgram, "uMVPMatrix");
         mGrassSamplerHandle = GLES30.glGetUniformLocation(mGrassProgram, "uSampler");
+        mGrassLightHandle = GLES30.glGetUniformLocation(mGrassProgram, "uLight");
+        mGrassCrossAngleHandle = GLES30.glGetUniformLocation(mGrassProgram, "uCrossAngle");
+        mGrassHeightDimHandle = GLES30.glGetUniformLocation(mGrassProgram, "uHeightDim");
+        mGrassHeightGainHandle = GLES30.glGetUniformLocation(mGrassProgram, "uHeightGain");
+        mGrassWarmHandle = GLES30.glGetUniformLocation(mGrassProgram, "uWarm");
+        mGrassCoolHandle = GLES30.glGetUniformLocation(mGrassProgram, "uCool");
+        mGrassRimColorHandle = GLES30.glGetUniformLocation(mGrassProgram, "uRimColor");
+        mGrassRimGainHandle = GLES30.glGetUniformLocation(mGrassProgram, "uRimGain");
+        mGrassShadowGainHandle = GLES30.glGetUniformLocation(mGrassProgram, "uShadowGain");
     }
 
     private void createMoonProgram() {
