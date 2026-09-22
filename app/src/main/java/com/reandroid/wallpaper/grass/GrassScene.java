@@ -445,6 +445,14 @@ final class GrassScene {
             mSceneData.moonBrightness = clamp(
                 mSceneData.moonBrightness * GrassWeatherSystem.moonBrightnessScale(mWeatherCondition),
                 0.0f, 1.0f);
+            // 辉光开着时把月亮推进 HDR 区间（> 1 = 比白还亮）。
+            //
+            // **必须放在上面那个 clamp 之后。** 那个 clamp 的上限是 1，早先加在
+            // computeMoonData 里的话会被它原样夹回来 —— 实测 moonBrightness 恒为 1.0，
+            // 增益等于没加（而画面上就是"开不开辉光月亮都一个样"）。
+            if (mGrassGlowEnabled) {
+                mSceneData.moonBrightness *= GrassConstants.GLOW_MOON_GAIN;
+            }
         }
     }
 
@@ -718,11 +726,6 @@ final class GrassScene {
         float moonY = mHeight * (1.0f - clampedAlt / 90.0f);
         float size = mWidth * 0.24f;
         float baseBrightness = clamp((float) ((data.moonAltitudeDeg + 2.0) / 30.0), 0.0f, 1.0f);
-        // 辉光开着时把月亮推进 HDR 区间 —— 上面这条曲线 alt ≥ 28° 才到 1.0，
-        // 而亮部阈值是 0.85，不推的话晨昏的月亮永远够不着、永远不发光。
-        if (mGrassGlowEnabled) {
-            baseBrightness *= GrassConstants.GLOW_MOON_GAIN;
-        }
         MoonEclipse eclipse = computeMoonEclipse(data);
 
         mSceneData.moonVisible = true;
