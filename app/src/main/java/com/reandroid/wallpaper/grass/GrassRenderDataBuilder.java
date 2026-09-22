@@ -169,8 +169,9 @@ final class GrassRenderDataBuilder {
 
         float[] out = mVKGrassVertices;
         int cursor = 0;
-        for (Blade blade : sd.blades) {
-            cursor = appendBladeVertices(sd, blade, grassBrightness, sd.xDraw, nightDesat, out, cursor);
+        for (int i = 0; i < sd.blades.length; i++) {
+            cursor = appendBladeVertices(sd, sd.blades[i], i,
+                    grassBrightness, sd.xDraw, nightDesat, out, cursor);
             if (cursor > out.length) {
                 break;
             }
@@ -539,7 +540,7 @@ final class GrassRenderDataBuilder {
         return (float) Math.toDegrees(Math.atan2(sd.sunY - y, sd.sunX - x)) + 90.0f;
     }
 
-    private int appendBladeVertices(SceneData sd, Blade blade, float brightness,
+    private int appendBladeVertices(SceneData sd, Blade blade, int bladeIndex, float brightness,
             float xOffset, float nightDesat, float[] out, int cursor) {
         float scale = blade.scale * sd.grassWidthScale;
         float xpos = blade.xPos + xOffset;
@@ -567,18 +568,31 @@ final class GrassRenderDataBuilder {
         GrassBladeGeometry.trace(blade, xpos, scale,
                 sd.grassHardnessScale, sd.grassHeightScale, mBladeXY, mBladeHalfWidth);
 
+        // 本片叶的受光，带符号。光源位置来自 SceneData（由 GrassBacklight.lightPosition 选好），
+        // 遮挡由场景限频算好（GrassBladeLighting.OCCLUSION_INTERVAL_MS）。
+        // facing 每帧都重算，所以叶片摆动时亮度**跟着每片叶子动** —— 风与光照的耦合。
+        float facing = GrassBladeLighting.facing(
+                mBladeXY[0], mBladeXY[1],
+                mBladeXY[size * 2], mBladeXY[size * 2 + 1],
+                sd.lightX, sd.lightY);
+        float beam = GrassBladeLighting.beam(facing, sd.bladeOcclusion(bladeIndex), sd.lightStrength);
+
         float hw0 = mBladeHalfWidth[0];
         float baseX = mBladeXY[0];
         float baseY = mBladeXY[1];
-        cursor = putVertex(out, cursor, baseX - hw0, baseY, r, g, b, 1.0f, 0.0f, 0.0f);
-        cursor = putVertex(out, cursor, baseX + hw0, baseY, r, g, b, 1.0f, 1.0f, 0.0f);
+        // vColor.a 装叶尖位置（原来是常数 1），t 装 beam（原来是常数 0）。
+        // 两个通道的约定见 GrassVertexChannelTest —— 改了这里两条片段着色器必须同步。
+        float rootTip = GrassBladeLighting.tipFraction(0, size);
+        cursor = putVertex(out, cursor, baseX - hw0, baseY, r, g, b, rootTip, 0.0f, beam);
+        cursor = putVertex(out, cursor, baseX + hw0, baseY, r, g, b, rootTip, 1.0f, beam);
 
         for (int k = 1; k <= size; k++) {
             float px = mBladeXY[k * 2];
             float py = mBladeXY[k * 2 + 1];
             float hw = mBladeHalfWidth[k];
-            cursor = putVertex(out, cursor, px - hw, py, r, g, b, 1.0f, 0.0f, 0.0f);
-            cursor = putVertex(out, cursor, px + hw, py, r, g, b, 1.0f, 1.0f, 0.0f);
+            float tip = GrassBladeLighting.tipFraction(k, size);
+            cursor = putVertex(out, cursor, px - hw, py, r, g, b, tip, 0.0f, beam);
+            cursor = putVertex(out, cursor, px + hw, py, r, g, b, tip, 1.0f, beam);
         }
         return cursor;
     }

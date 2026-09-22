@@ -116,6 +116,25 @@ final class SceneData {
     boolean hasSunData;
     float sunX, sunY, sunAlpha, sunSize;
 
+    /**
+     * 草叶逆光：选好的光源屏幕位置与总强度。
+     *
+     * <p>位置由 {@link GrassBacklight#lightPosition} 选（太阳 / 月亮 / 兜底），
+     * 强度由 {@link GrassBacklight#effectiveStrength} 算（开关 × 高度角 × 天气）。
+     * <p>强度为 0 时着色器提前返回，画面与加特效之前逐像素一致。
+     */
+    float lightX, lightY, lightStrength;
+    /** 逐叶遮挡，与 {@link #blades} 一一对应；由 GrassScene 限频重算。null = 还没算过。 */
+    float[] bladeOcclusion;
+
+    /** 取第 {@code index} 片叶的遮挡，越界或没算过时返回 1（完全受光）。 */
+    float bladeOcclusion(int index) {
+        if (bladeOcclusion == null || index < 0 || index >= bladeOcclusion.length) {
+            return 1.0f;
+        }
+        return bladeOcclusion[index];
+    }
+
     /** 太阳本体的 RGB 增益，随高度角变化 —— 低空橙红、高空白偏蓝。见 {@link GrassSunAppearance}。 */
     final float[] sunTint = new float[]{1.0f, 1.0f, 1.0f};
 
