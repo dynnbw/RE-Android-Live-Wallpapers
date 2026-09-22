@@ -7,11 +7,17 @@
     <uses-feature android:name="android.software.live_wallpaper" />
 
     <!--
-      全部壁纸都用 OpenGL ES 3 着色器（#version 300 es），不再支持 ES 2。
-      声明成硬性要求，应用商店据此过滤掉不支持 ES3 的设备 —— 否则装上也是黑屏。
+      目标是 OpenGL ES 3.2：全部壁纸用 ESSL 300/310 着色器，雨的粒子走 compute + SSBO。
+
+      不再支持 ES 2，也不向下兼容 3.0/3.1 —— 声明成硬性要求，应用商店据此过滤。
+      这一点必须与实际用到的能力保持一致：如果代码里用了 compute 而这里只声明 3.0，
+      装得上的机器里就会有一部分跑起来是坏的（雨不见了），而且不报错。
+
+      注意 EGL 侧不需要区分小版本：EGL_CONTEXT_CLIENT_VERSION 只认主版本，
+      写 3 拿到的就是驱动支持的最高 3.x（见 EglSetup）。
     -->
     <uses-feature
-        android:glEsVersion="0x00030000"
+        android:glEsVersion="0x00030002"
         android:required="true" />
 
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
