@@ -32,5 +32,6 @@
   "pref_grass_legacy_dandelion_desc": "Pissenlits classiques au lieu des modernes",
   "pref_grass_legacy_firefly": "Lucioles classiques",
   "pref_grass_legacy_firefly_desc": "Lucioles classiques au lieu des modernes",
-  "pref_grass_light": "Herbe en contre-jour"
+  "pref_grass_light": "Herbe en contre-jour",
+  "pref_grass_glow": "Halo lumineux"
 }

@@ -32,5 +32,6 @@
   "pref_grass_legacy_dandelion_desc": "使用原版蒲公英替代现代蒲公英",
   "pref_grass_legacy_firefly": "传统萤火虫",
   "pref_grass_legacy_firefly_desc": "使用原版萤火虫替代现代萤火虫",
-  "pref_grass_light": "草叶逆光"
+  "pref_grass_light": "草叶逆光",
+  "pref_grass_glow": "辉光"
 }

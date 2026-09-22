@@ -42,6 +42,7 @@ public class WallpaperSettings {
     public static final String KEY_GRASS_MOON = "pref_grass_moon";
     public static final String KEY_GRASS_PROCEDURAL_SUN = "pref_grass_procedural_sun";
     public static final String KEY_GRASS_LIGHT = "pref_grass_light";
+    public static final String KEY_GRASS_GLOW = "pref_grass_glow";
     public static final String KEY_GRASS_DANDELION = "pref_grass_dandelion";
     public static final String KEY_GRASS_FIREFLY = "pref_grass_firefly";
     public static final String KEY_GRASS_WEATHER_ENABLED = "pref_grass_weather_enabled";
@@ -191,6 +192,17 @@ public class WallpaperSettings {
         SharedPreferences p = prefs();
         if (p == null) return defValue;
         return p.getBoolean(KEY_GRASS_LIGHT, defValue);
+    }
+
+    /**
+     * HDR + 辉光。
+     *
+     * <p>默认关 —— 项目原则是默认还原 AOSP，美学增强一律做成可关的开关。
+     */
+    public static boolean isGrassGlowEnabled(boolean defValue) {
+        SharedPreferences p = prefs();
+        if (p == null) return defValue;
+        return p.getBoolean(KEY_GRASS_GLOW, defValue);
     }
 
     public static boolean isMoonEnabled(boolean defValue) {

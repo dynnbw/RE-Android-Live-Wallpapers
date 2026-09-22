@@ -81,6 +81,8 @@ final class GrassScene {
     private boolean mMoonEnabled = false;
     /** 草叶逆光开关。默认关 —— 默认还原 AOSP，增强做成开关。 */
     private boolean mGrassLightEnabled = false;
+    /** HDR + 辉光开关。默认关。 */
+    private boolean mGrassGlowEnabled = false;
     /** 光源位置的选择结果，避免每帧新建数组。 */
     private final float[] mLightPosScratch = new float[2];
     /** 上次重算逐叶遮挡的时刻。遮挡变化慢，限频算。 */
@@ -592,6 +594,9 @@ final class GrassScene {
         mSceneData.lightX = mLightPosScratch[0];
         mSceneData.lightY = mLightPosScratch[1];
 
+        // 辉光只发布用户的开关；设备能力由渲染线程再与一次（见 GrassGL.draw）。
+        mSceneData.glowEnabled = mGrassGlowEnabled;
+
         // 逐叶遮挡**限频**重算。叶片摆动只影响朝向，那个每帧算；遮挡要等草长得够多
         // 或光源明显移动，250ms 一次足够，也把 O(n²) 的成本摊掉。
         int bladeCount = mSceneData.blades != null ? mSceneData.blades.length : 0;
@@ -816,6 +821,9 @@ final class GrassScene {
         boolean newGrassLight = p != null
                 ? p.getBoolean(WallpaperSettings.KEY_GRASS_LIGHT, false)
                 : WallpaperSettings.isGrassLightEnabled(false);
+        boolean newGrassGlow = p != null
+                ? p.getBoolean(WallpaperSettings.KEY_GRASS_GLOW, false)
+                : WallpaperSettings.isGrassGlowEnabled(false);
         float newHeightScale = p != null
                 ? clamp(p.getInt(WallpaperSettings.KEY_GRASS_HEIGHT, Math.round(1.0f * 100.0f)) / 100.0f, 0.1f, 10.0f)
                 : WallpaperSettings.getGrassHeightScale(1.0f);
@@ -850,6 +858,7 @@ final class GrassScene {
         hash = 31 * hash + (newMoonEnabled ? 1 : 0);
         hash = 31 * hash + (newProceduralSun ? 1 : 0);
         hash = 31 * hash + (newGrassLight ? 1 : 0);
+        hash = 31 * hash + (newGrassGlow ? 1 : 0);
         hash = 31 * hash + Float.floatToIntBits(newHeightScale);
         hash = 31 * hash + Float.floatToIntBits(newWidthScale);
         hash = 31 * hash + Float.floatToIntBits(newHardnessScale);
@@ -871,6 +880,7 @@ final class GrassScene {
         mMoonEnabled = newMoonEnabled;
         mProceduralSun = newProceduralSun;
         mGrassLightEnabled = newGrassLight;
+        mGrassGlowEnabled = newGrassGlow;
         mGrassHeightScale = newHeightScale;
         mGrassWidthScale = newWidthScale;
         mGrassHardnessScale = newHardnessScale;

@@ -124,6 +124,13 @@ final class SceneData {
      * <p>强度为 0 时着色器提前返回，画面与加特效之前逐像素一致。
      */
     float lightX, lightY, lightStrength;
+    /**
+     * HDR + 辉光开关。
+     *
+     * <p>只反映**用户的开关**；设备能力（{@code GlowRenderer.isReady()}）只有渲染线程知道，
+     * 由 {@code GrassGL.draw()} 再与一次。
+     */
+    boolean glowEnabled;
     /** 逐叶遮挡，与 {@link #blades} 一一对应；由 GrassScene 限频重算。null = 还没算过。 */
     float[] bladeOcclusion;
 

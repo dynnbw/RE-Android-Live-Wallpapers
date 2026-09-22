@@ -123,6 +123,12 @@
     },
     {
       "type": "switch",
+      "key": "pref_grass_glow",
+      "title": "pref_grass_glow",
+      "default": "false"
+    },
+    {
+      "type": "switch",
       "key": "pref_grass_moon",
       "title": "pref_grass_moon",
       "default": "true"
