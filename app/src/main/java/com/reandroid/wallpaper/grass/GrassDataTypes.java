@@ -132,7 +132,6 @@ final class SceneData {
      * <p>注意是**整体**旋转：月面纹理和明暗终止线一起转，不是只转终止线。
      */
     float moonRotationDeg;
-    boolean moonIsDaytime;
     float moonBrightness, moonAlpha, moonContrast, moonSaturation, moonBlueTint;
     MoonEclipse moonEclipse;
 

@@ -8,7 +8,7 @@ layout(binding = 0) uniform sampler2D uMoonBase;
 
 layout(push_constant) uniform MoonPushConstants {
     mat4 uMVP;
-    vec4 p0; // x=phaseDeg y=brightness z=moonAlpha w=isDaytime
+    vec4 p0; // x=phaseDeg y=brightness z=moonAlpha w=dayWeight (1 白天、0 夜里，连续)
     vec4 p1; // x=contrast y=saturation z=blueTint w=eclipseType
     vec4 p2; // x=eclipseFraction y=eclipsePhase z=shadowOffsetX w=shadowOffsetY
     vec4 p3; // x=discRotationDegrees (parallactic angle)
@@ -48,12 +48,14 @@ void main() {
     float phaseMix = mix(0.01, 1.0, lightFactor);
     vec3 color = mix(lit * shadowTint, lit, phaseMix);
 
-    if (uPush.p0.w > 0.5) {
-        float gray = dot(color, vec3(0.299, 0.587, 0.114));
-        color = mix(vec3(gray), color, uPush.p1.y);
-        color = (color - 0.5) * uPush.p1.x + 0.5;
-        color = mix(color, vec3(0.8, 0.9, 1.0), uPush.p1.z);
-    }
+    // p0.w 现在是**连续的白天权重**（1 白天、0 夜里），不再是布尔 ——
+    // 保持与 GLES 侧同一个量、同一种连续加权，别再退回 > 0.5 的硬切。
+    vec3 graded = color;
+    float gray = dot(graded, vec3(0.299, 0.587, 0.114));
+    graded = mix(vec3(gray), graded, uPush.p1.y);
+    graded = (graded - 0.5) * uPush.p1.x + 0.5;
+    graded = mix(graded, vec3(0.8, 0.9, 1.0), uPush.p1.z);
+    color = mix(color, graded, uPush.p0.w);
 
     if (uPush.p1.w > 0.5) {
         float p = clamp(uPush.p2.y, 0.0, 1.0);

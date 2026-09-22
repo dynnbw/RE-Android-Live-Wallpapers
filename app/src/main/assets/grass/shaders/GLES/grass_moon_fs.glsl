@@ -9,7 +9,10 @@ uniform float uPhaseAngle;
 uniform float uRotation;
 uniform float uBrightness;
 uniform float uMoonAlpha;
-uniform int uIsDaytime;
+// 白天权重：1 是白天、0 是夜里。**连续量，不许拿它做真假判断** ——
+// 它原来是 `uniform int uIsDaytime`，配合渲染器里二选一的 setBlendFunc，
+// 太阳高度角一过 0 月面暗部就"啪"地变实。详见文件末尾输出那一段。
+uniform float uDayWeight;
 uniform float uContrast;
 uniform float uSaturation;
 uniform float uBlueTint;
@@ -62,12 +65,15 @@ void main() {
   float phaseMix = mix(0.01, 1.0, lightFactor);
   vec3 color = mix(lit * shadowTint, lit, phaseMix);
 
-  if (uIsDaytime == 1) {
-    float gray = dot(color, vec3(0.299, 0.587, 0.114));
-    color = mix(vec3(gray), color, uSaturation);
-    color = (color - 0.5) * uContrast + 0.5;
-    color = mix(color, vec3(0.8, 0.9, 1.0), uBlueTint);
-  }
+  // 白天的调色（去饱和 / 对比 / 偏蓝），**连续加权**而不是 if。
+  // 这三个量目前都是中性值（1 / 1 / 0），看不出差别；但只要有人把它们调活，
+  // 那句 if 就会以和混合函数一样的方式在日出日落时跳一下。
+  vec3 graded = color;
+  float gray = dot(graded, vec3(0.299, 0.587, 0.114));
+  graded = mix(vec3(gray), graded, uSaturation);
+  graded = (graded - 0.5) * uContrast + 0.5;
+  graded = mix(graded, vec3(0.8, 0.9, 1.0), uBlueTint);
+  color = mix(color, graded, uDayWeight);
 
   if (uEclipseType != 0) {
     float p = clamp(uEclipsePhase, 0.0, 1.0);
@@ -103,5 +109,25 @@ void main() {
     color *= (1.0 - total * 0.65);
   }
 
-  fragColor = vec4(color, alphaMask * uMoonAlpha);
+  // ---- 输出：**预乘 alpha**，昼夜只是在插值 alpha ----
+  //
+  // 白天要的是滤色（GL_ONE, ONE_MINUS_SRC_COLOR）：月面暗部 src≈0，结果≈背景色，
+  // 于是暗部融进天空、看不见。夜里要的是普通混合：暗部实心画出来。
+  //
+  // 这两种观感没法用 glBlendFunc 插值 —— 它是二选一的。但换成**预乘 alpha** 的
+  // GL_ONE, ONE_MINUS_SRC_ALPHA 之后（见 GrassGL.drawMoon），
+  // 两者的差别就**只剩输出 alpha 这一个标量**：
+  //
+  //   白天 a = 亮度的加权和：亮的地方 a≈1 → 结果≈自身，与滤色等价；
+  //                          暗的地方 a≈0 → 结果≈背景，暗部因此看不见 ✓
+  //   夜里 a = 圆盘覆盖率：就是普通 alpha 混合，与改之前**逐像素相同** ✓
+  //
+  // 于是昼夜之间只是这个 alpha 在动，天然连续，没有可跳的地方。
+  // 用亮度而不是逐通道的 src，是因为 alpha 是标量、而 src 是 vec3；
+  // 月亮本来就近似中性色，这个近似看不出来。
+  float coverage = alphaMask * uMoonAlpha;
+  vec3 premul = color * coverage;
+  float alpha = clamp(mix(coverage, dot(premul, vec3(0.299, 0.587, 0.114)), uDayWeight),
+      0.0, 1.0);
+  fragColor = vec4(premul, alpha);
 }

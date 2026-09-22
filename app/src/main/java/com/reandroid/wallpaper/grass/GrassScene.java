@@ -669,8 +669,6 @@ final class GrassScene {
             mSceneData.moonVisible = false;
             return;
         }
-        double sunAlt = mDayNightSystem.getLastSunAltitude();
-        boolean isDaytime = sunAlt > 0.0;
         float moonX = moonXFromHourAngle(data.moonHourAngleDeg);
         float clampedAlt = clamp((float) data.moonAltitudeDeg, 0.0f, 90.0f);
         float moonY = mHeight * (1.0f - clampedAlt / 90.0f);
@@ -684,7 +682,6 @@ final class GrassScene {
         mSceneData.moonX = moonX;
         mSceneData.moonY = moonY;
         mSceneData.moonSize = size;
-        mSceneData.moonIsDaytime = isDaytime;
         mSceneData.moonBrightness = baseBrightness;
         mSceneData.moonAlpha = 1.0f;
         mSceneData.moonContrast = 1.0f;

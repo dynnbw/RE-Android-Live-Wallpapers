@@ -121,7 +121,7 @@ final class GrassRenderDataBuilder {
         out[12] = sd.moonRotationDeg;   // p3.x：整体旋转角
         out[1] = sd.moonBrightness;
         out[2] = sd.moonAlpha;
-        out[3] = sd.moonIsDaytime ? 1.0f : 0.0f;
+        out[3] = sd.dayWeight;          // 与天空同一个量，见 GrassGL.drawMoon
         out[4] = sd.moonContrast;
         out[5] = sd.moonSaturation;
         out[6] = sd.moonBlueTint;

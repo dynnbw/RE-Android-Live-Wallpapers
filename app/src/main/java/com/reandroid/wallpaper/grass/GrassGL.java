@@ -127,7 +127,7 @@ public class GrassGL extends GLESScene {
     private int mMoonRotationHandle;
     private int mMoonBrightnessHandle;
     private int mMoonAlphaHandle;
-    private int mMoonIsDaytimeHandle;
+    private int mMoonDayWeightHandle;
     private int mMoonContrastHandle;
     private int mMoonSaturationHandle;
     private int mMoonBlueTintHandle;
@@ -525,7 +525,7 @@ public class GrassGL extends GLESScene {
         mMoonRotationHandle = GLES30.glGetUniformLocation(mMoonProgram, "uRotation");
         mMoonBrightnessHandle = GLES30.glGetUniformLocation(mMoonProgram, "uBrightness");
         mMoonAlphaHandle = GLES30.glGetUniformLocation(mMoonProgram, "uMoonAlpha");
-        mMoonIsDaytimeHandle = GLES30.glGetUniformLocation(mMoonProgram, "uIsDaytime");
+        mMoonDayWeightHandle = GLES30.glGetUniformLocation(mMoonProgram, "uDayWeight");
         mMoonContrastHandle = GLES30.glGetUniformLocation(mMoonProgram, "uContrast");
         mMoonSaturationHandle = GLES30.glGetUniformLocation(mMoonProgram, "uSaturation");
         mMoonBlueTintHandle = GLES30.glGetUniformLocation(mMoonProgram, "uBlueTint");
@@ -967,12 +967,16 @@ public class GrassGL extends GLESScene {
         if (maskAlpha <= 0.001f) return;
 
         useProgram(mMoonProgram);
-        setBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ONE_MINUS_SRC_ALPHA);
+        // 预乘 alpha，与 drawMoon 一致 —— 着色器现在输出的就是预乘值。
+        // 这一路 uSolarOcclusion = 1，着色器走提前返回、输出 (0,0,0,coverage)，
+        // 黑盘于是两种混合函数算出来一样；这里对齐是为了别留下一个会咬人的不一致。
+        setBlendFunc(GLES30.GL_ONE, GLES30.GL_ONE_MINUS_SRC_ALPHA);
         GLES30.glUniformMatrix4fv(mMoonMatrixHandle, 1, false, sd.projectionMatrix, 0);
         GLES30.glUniform1f(mMoonPhaseHandle, 0.0f);
         GLES30.glUniform1f(mMoonBrightnessHandle, 1.0f);
         GLES30.glUniform1f(mMoonAlphaHandle, maskAlpha);
-        GLES30.glUniform1i(mMoonIsDaytimeHandle, 1);
+        // 日食遮挡与昼夜无关（着色器在那条路上不读它），给 0 保持确定。
+        GLES30.glUniform1f(mMoonDayWeightHandle, 0.0f);
         GLES30.glUniform1f(mMoonContrastHandle, 1.0f);
         GLES30.glUniform1f(mMoonSaturationHandle, 1.0f);
         GLES30.glUniform1f(mMoonBlueTintHandle, 0.0f);
@@ -993,17 +997,20 @@ public class GrassGL extends GLESScene {
 
         useProgram(mMoonProgram);
         MoonEclipse eclipse = sd.moonEclipse;
-        if (sd.moonIsDaytime) {
-            setBlendFunc(GLES30.GL_ONE, GLES30.GL_ONE_MINUS_SRC_COLOR);
-        } else {
-            setBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ONE_MINUS_SRC_ALPHA);
-        }
+        // 月亮**恒用预乘 alpha 的混合函数，昼夜不再切换**。
+        //
+        // 切换就是硬切：太阳高度角一过 0，月面暗部从"滤色融进背景"直接跳成"实心"。
+        // 昼夜的差别现在只体现在着色器输出的 alpha 上（见 grass_moon_fs.glsl 末尾），
+        // 那个 alpha 是连续插值的，所以过渡连续。
+        setBlendFunc(GLES30.GL_ONE, GLES30.GL_ONE_MINUS_SRC_ALPHA);
         GLES30.glUniformMatrix4fv(mMoonMatrixHandle, 1, false, sd.projectionMatrix, 0);
         GLES30.glUniform1f(mMoonPhaseHandle, sd.moonPhaseAngle);
         GLES30.glUniform1f(mMoonRotationHandle, sd.moonRotationDeg);
         GLES30.glUniform1f(mMoonBrightnessHandle, sd.moonBrightness);
         GLES30.glUniform1f(mMoonAlphaHandle, sd.moonAlpha);
-        GLES30.glUniform1i(mMoonIsDaytimeHandle, sd.moonIsDaytime ? 1 : 0);
+        // 白天权重。取 SceneData.dayWeight —— 天空和天气色调用的就是同一个量，
+        // 月亮于是和天空**同步**变，而不是自己按太阳高度角过 0 那一刻跳。
+        GLES30.glUniform1f(mMoonDayWeightHandle, sd.dayWeight);
         GLES30.glUniform1f(mMoonContrastHandle, sd.moonContrast);
         GLES30.glUniform1f(mMoonSaturationHandle, sd.moonSaturation);
         GLES30.glUniform1f(mMoonBlueTintHandle, sd.moonBlueTint);
