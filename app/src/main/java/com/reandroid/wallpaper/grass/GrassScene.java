@@ -79,6 +79,12 @@ final class GrassScene {
     private boolean mNightDesaturateGrass = false;
     private boolean mSunEnabled = false;
     private boolean mMoonEnabled = false;
+    /** 草叶逆光开关。默认关 —— 默认还原 AOSP，增强做成开关。 */
+    private boolean mGrassLightEnabled = false;
+    /** 光源位置的选择结果，避免每帧新建数组。 */
+    private final float[] mLightPosScratch = new float[2];
+    /** 上次重算逐叶遮挡的时刻。遮挡变化慢，限频算。 */
+    private long mLastOcclusionMs;
     private boolean mProceduralSun = true;
     private float mGrassHeightScale = 1.0f;
     private float mGrassWidthScale = 1.0f;
@@ -570,6 +576,38 @@ final class GrassScene {
         mSceneData.lastSunAltitude = mDayNightSystem.getLastSunAltitude();
         // 低空橙红、高空白偏蓝。原来恒定乘 (1.25,1.61,1.84)，所以永远是白偏蓝。
         GrassSunAppearance.fill((float) mSceneData.lastSunAltitude, mSceneData.sunTint);
+
+        // ---- 草叶逆光 ----
+        // 总强度里已经含了开关、太阳高度角曲线和天气压制（见 GrassBacklight），
+        // 所以这里**不要再套一层开关判断**。它为 0 时着色器提前返回，画面与今天一致。
+        mSceneData.lightStrength = GrassBacklight.effectiveStrength(
+                mGrassLightEnabled,
+                (float) mSceneData.lastSunAltitude,
+                mWeatherCondition);
+        GrassBacklight.lightPosition(
+                (float) mSceneData.lastSunAltitude,
+                mSceneData.sunX, mSceneData.sunY,
+                mSceneData.moonVisible, mSceneData.moonX, mSceneData.moonY,
+                mLightPosScratch);
+        mSceneData.lightX = mLightPosScratch[0];
+        mSceneData.lightY = mLightPosScratch[1];
+
+        // 逐叶遮挡**限频**重算。叶片摆动只影响朝向，那个每帧算；遮挡要等草长得够多
+        // 或光源明显移动，250ms 一次足够，也把 O(n²) 的成本摊掉。
+        int bladeCount = mSceneData.blades != null ? mSceneData.blades.length : 0;
+        if (mSceneData.bladeOcclusion == null
+                || mSceneData.bladeOcclusion.length != bladeCount) {
+            mSceneData.bladeOcclusion = new float[bladeCount];
+            mLastOcclusionMs = 0L;
+        }
+        long occlusionNowMs = SystemClock.uptimeMillis();
+        if (occlusionNowMs - mLastOcclusionMs >= GrassBladeLighting.OCCLUSION_INTERVAL_MS) {
+            mLastOcclusionMs = occlusionNowMs;
+            for (int i = 0; i < bladeCount; i++) {
+                mSceneData.bladeOcclusion[i] = GrassBladeLighting.occlusionOf(
+                        mSceneData.blades, i, mSceneData.lightX, mSceneData.lightY);
+            }
+        }
         mSceneData.xDraw = mix(mWidth, 0.0f, mXOffset);
         mSceneData.dt = dt;
         mSceneData.animNowMs = animNowMs;
@@ -774,6 +812,9 @@ final class GrassScene {
         boolean newProceduralSun = p != null
                 ? p.getBoolean(WallpaperSettings.KEY_GRASS_PROCEDURAL_SUN, true)
                 : WallpaperSettings.isProceduralSunEnabled(true);
+        boolean newGrassLight = p != null
+                ? p.getBoolean(WallpaperSettings.KEY_GRASS_LIGHT, false)
+                : WallpaperSettings.isGrassLightEnabled(false);
         float newHeightScale = p != null
                 ? clamp(p.getInt(WallpaperSettings.KEY_GRASS_HEIGHT, Math.round(1.0f * 100.0f)) / 100.0f, 0.1f, 10.0f)
                 : WallpaperSettings.getGrassHeightScale(1.0f);
@@ -807,6 +848,7 @@ final class GrassScene {
         hash = 31 * hash + (newSunEnabled ? 1 : 0);
         hash = 31 * hash + (newMoonEnabled ? 1 : 0);
         hash = 31 * hash + (newProceduralSun ? 1 : 0);
+        hash = 31 * hash + (newGrassLight ? 1 : 0);
         hash = 31 * hash + Float.floatToIntBits(newHeightScale);
         hash = 31 * hash + Float.floatToIntBits(newWidthScale);
         hash = 31 * hash + Float.floatToIntBits(newHardnessScale);
@@ -827,6 +869,7 @@ final class GrassScene {
         mSunEnabled = newSunEnabled;
         mMoonEnabled = newMoonEnabled;
         mProceduralSun = newProceduralSun;
+        mGrassLightEnabled = newGrassLight;
         mGrassHeightScale = newHeightScale;
         mGrassWidthScale = newWidthScale;
         mGrassHardnessScale = newHardnessScale;
