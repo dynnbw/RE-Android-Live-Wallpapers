@@ -147,6 +147,24 @@ final class FallDayNightSystem {
         return MathUtils.smoothStep(STAR_NIGHT_LO, STAR_NIGHT_HI, weights[0]);
     }
 
+    /**
+     * 蓝藻生物光的可见度。
+     *
+     * <p>比星星**早得多**就出现：太阳刚落、天边还亮着的时候，被搅动的水就该有反应，
+     * 而不是要等到满天星。这两条曲线刻意分开。
+     */
+    private static final float ALGAE_NIGHT_LO = 0.18f;
+    private static final float ALGAE_NIGHT_HI = 0.70f;
+
+    float algaeAmount() {
+        return computeAlgaeAmount(mWeights);
+    }
+
+    /** {@link #algaeAmount()} 的算式本体，便于在 JVM 上直接测。 */
+    static float computeAlgaeAmount(float[] weights) {
+        return MathUtils.smoothStep(ALGAE_NIGHT_LO, ALGAE_NIGHT_HI, weights[0]);
+    }
+
     /** {@link #emitterWeight()} 的算式本体，便于在 JVM 上直接测。 */
     static float computeEmitterWeight(float[] weights) {
         return MathUtils.smoothStep(EMITTER_DAY_LO, EMITTER_DAY_HI, weights[3]);

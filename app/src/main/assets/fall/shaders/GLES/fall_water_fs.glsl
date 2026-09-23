@@ -134,10 +134,113 @@ vec3 starField(highp vec2 uv) {
        + starLayer(uv, 100.0, 3.1, 0.94);
 }
 
+/*
+ * 夜里被搅动的水里，蓝藻发出的生物光。
+ *
+ * 依据的是实测的甲藻发光行为（见项目记忆里的文献），三条都反直觉：
+ *
+ *   1. **过阈值才闪，不是"有波纹就亮"。** 触发阈值比环境水流高好几个数量级，
+ *      所以平静的水根本不发光 —— 只有真正被扰动的地方才闪。
+ *      这里用 u_dropPower（这次扰动的强度）过 uAlgaeThreshold 来体现。
+ *   2. **极短。** 实测闪光 50~150ms、衰减常数约 0.14s。所以光只贴在最前面那一段，
+ *      波前过去就没了 —— 不是留下一片余晖。
+ *   3. **是颗粒的，不是一道干净的环。** 每个细胞的阈值不同（文献里的 "cell anxiety"），
+ *      真实的发光尾迹像碎钻。所以强度要乘一层固定的空间哈希。
+ *
+ * 颜色用 474~476nm 的**蓝**（实测发射峰），不是照片上那种青绿 ——
+ * 青绿多半来自水色吸收与相机白平衡。
+ */
+uniform float uAlgaeAmount;
+uniform float uAlgaeGain;
+uniform float uAlgaeThreshold;
+/** 闪光贴在波前后面多宽的一段（网格单位）。spread 每秒走 30 单位，所以宽度÷30 就是时长。 */
+uniform float uAlgaeBand;
+/**
+ * 颗粒用的噪声贴图，以及它每铺满一次覆盖多少网格单位。
+ *
+ * <p>**不能用方格哈希做颗粒。** 一开始是 `hash21(floor(uv * 密度))` ——
+ * 那是均匀的方格，上机看就是"一片细密的均匀点子糊在屏幕上"。
+ * 真实的藻是一团一团的，要用**有机的团状噪声**。
+ * 这张贴图取自本项目的 magicsmoke 壁纸（它自带的噪声图）。
+ */
+uniform sampler2D uAlgaeNoise;
+uniform float uAlgaeNoiseTile;
+uniform float uAlgaeNoiseGain;
+/** 一团藻的颜色范围：疏的地方偏 uAlgaeLow、密的地方偏 uAlgaeHigh。 */
+uniform vec3 uAlgaeLow;
+uniform vec3 uAlgaeHigh;
+/** 每次扰动的强度，与 u_drop 一一对应。 */
+uniform float uAlgaePower[$DROP_SIZE];
+/*
+ * 波纹本身。顶点着色器已经声明过同名的 —— 同名 uniform 在两个阶段共享同一个值，
+ * 所以这里再声明一次就能直接读到，**不需要多传一份**。
+ *
+ * ⚠ **必须显式写 highp。** 顶点着色器的 float 默认就是 highp，而片元是 mediump ——
+ * 同一个 uniform 在两个阶段精度不一致，链接会直接失败：
+ * "Precisions of uniform 'u_dxMul' differ between VERTEX and FRAGMENT shaders."
+ * 症状是水面整个消失（程序没建出来），而且是**上机才报**的。
+ */
+uniform highp float u_dxMul;
+uniform highp vec4 u_drop[$DROP_SIZE];
+uniform highp float u_dropCount;
+
+float hash21(highp vec2 p);   // 定义在下面，星空那一节
+
+vec3 algaeGlow(highp vec2 meshPos) {
+  vec3 acc = vec3(0.0);
+  for (int i = 0; i < $DROP_SIZE; i++) {
+    if (float(i) >= u_dropCount) break;
+    float power = uAlgaePower[i];
+    if (power < uAlgaeThreshold) continue;      // 没惊动这片水
+    vec4 d = u_drop[i];
+    // 与顶点着色器 addDrop() 同一套距离度量（X 方向同样乘 dxMul / u_dxMul）
+    highp vec2 delta = vec2((meshPos.x - d.x) * u_dxMul, meshPos.y - d.y);
+    float dist = length(delta);
+    if (dist > d.w) continue;                   // 波前还没扫到这里
+    /*
+     * 闪光带：**峰值在带中间，两头都归零**。
+     *
+     * 不能写成 smoothstep(d.w - band, d.w, dist) —— 那样它会一直升到波前处取 1，
+     * 而波前之外被上面那句 continue 直接截成 0，接缝处是一道硬边，
+     * 上机看就是一个边缘清晰的"圆盘"。
+     */
+    float t = clamp((dist - (d.w - uAlgaeBand)) / uAlgaeBand, 0.0, 1.0);
+    float band = smoothstep(0.0, 0.35, t) * (1.0 - smoothstep(0.65, 1.0, t));
+    /*
+     * 一团藻的颜色。**这是 magicsmoke 的算法**（用户指定的参考）：
+     * 噪声的**亮度当密度**，颜色在 low→high 之间走，两层不同尺度叠一点。
+     *
+     * 我一开始是"同一个颜色乘一个亮度"—— 那样出来的是一片均匀的网。
+     * 让颜色本身随密度走，每一团藻自带深浅（边缘偏深、中心偏亮），才有团块感。
+     */
+    highp vec2 nuv = meshPos / max(uAlgaeNoiseTile, 1e-4);
+    float n1 = texture(uAlgaeNoise, nuv).r;
+    float n2 = texture(uAlgaeNoise, nuv * 2.37 + vec2(0.37, 0.71)).r;
+    float density = clamp(n1 * uAlgaeNoiseGain, 0.0, 1.0);   // 类比它的 alphaFactor
+    float crowded = clamp(n1 * 0.65 + n2 * 0.35, 0.0, 1.0);
+    vec3 blob = mix(uAlgaeLow, uAlgaeHigh, crowded);   // 不要叫 patch：GLSL ES 3.00 的保留字
+
+    // 过阈值之后的响应是超线性的（实测约 1.9 次方）。这里用一条平滑的 S 曲线：
+    // 弱扰动几乎不亮、强扰动满格。
+    //
+    // **不能再用平方。** 平方会把落叶入水那一档（0.3）压成看不见，
+    // 于是"自动触发的水波纹没有效果"；而它本来就该有反应，只是更弱。
+    float above = smoothstep(uAlgaeThreshold, 1.0, power);
+    acc += blob * (band * above * density);
+  }
+  /*
+   * 软饱和。**不能直接返回 acc** —— 一次滑动会连着激起好几道波纹，
+   * 它们在同一像素上叠加，直接相加就会在密集扰动处爆成一片白。
+   * 这个式子把任意大的叠加压到 (0, 1)：一道满波带是 0.5，叠得再多也只趋近 1。
+   */
+  return acc / (1.0 + acc);
+}
+
 uniform float uAlpha;
 uniform vec4 uColor;
 in highp vec2 vTexCoord;
 in highp vec2 vScreenUv;
+in highp vec2 vMeshPos;
 void main() {
   float m = texture(uMask, vTexCoord).r;
   vec2 skyUV = vec2(0.5, vTexCoord.y);
@@ -155,6 +258,12 @@ void main() {
   // 星空同样加在乘遮罩之前：树天然挡在星星前面，不必另做遮挡
   if (uStarAmount > 0.001) {
     sky += starField(vScreenUv) * uStarAmount;
+  }
+
+  // 蓝藻：和星空一样加在乘遮罩之前 —— 树挡在水面上，光只该出现在水里
+  if (uAlgaeAmount > 0.001) {
+    // 颜色由 low/high 两端给出（见 algaeGlow），这里只负责整体亮度
+    sky += algaeGlow(vMeshPos) * (uAlgaeGain * uAlgaeAmount);
   }
 
   fragColor = vec4(sky * m, 1.0) * uColor;

@@ -61,6 +61,23 @@ public class FallGL extends GLESScene {
 
     /** 亮度阈值。低于它的不发辉光。 */
     private static final float GLOW_THRESHOLD = 0.80f;
+    /**
+     * 蓝藻亮起来时用的阈值。**低得多。**
+     *
+     * <p>蓝藻的光进不了亮部，原因有两层：一是它本来就不该把场景本身推到过曝
+     * （那就变成一块死白），二是**蓝色是低明度色** ——
+     * {@code lum = 0.299R + 0.587G + 0.114B}，一个蓝色通道已经满格的像素，
+     * 明度也只有约 0.5，够不到 0.80。
+     *
+     * <p>所以解法是**把"选中谁"和"有多亮"分开**：阈值降下来负责选中，
+     * 选出来的那部分再由 {@link #GLOW_STRENGTH_ALGAE} 放大到过曝 ——
+     * 源头自己始终不过曝，但仍然有很强的辉光。
+     *
+     * <p>白天不能这么干：白日天空最亮端有 0.93，阈值一降整片都会进辉光。
+     * 蓝藻只在夜里出现，所以这一档跟着蓝藻权重走，白天自动回到
+     * {@link #GLOW_THRESHOLD}。
+     */
+    private static final float GLOW_THRESHOLD_ALGAE = 0.30f;
     /** 阈值之上的过渡宽度。硬阈值会在光晕边缘留下可见的台阶。 */
     private static final float GLOW_SOFT_KNEE = 0.25f;
     /**
@@ -81,6 +98,14 @@ public class FallGL extends GLESScene {
     private static final float GLOW_RADIUS = 9.0f;
     /** 辉光叠加强度。 */
     private static final float GLOW_STRENGTH = 0.70f;
+    /**
+     * 蓝藻亮起来时的叠加强度。**比白天高一档。**
+     *
+     * <p>配合 {@link #GLOW_THRESHOLD_ALGAE}：降阈值只是把蓝藻**选进**亮部，
+     * 选进来的东西本身还是暗的，得在这里放大才有"发光"的样子。
+     * 这就是"亮部单独加亮到过曝、而源头不过曝"的那一半。
+     */
+    private static final float GLOW_STRENGTH_ALGAE = 0.85f;
 
     /**
      * 星星闪烁时间的回绕周期。**必须与着色器里的 {@code STAR_WRAP_S} 一致。**
@@ -88,6 +113,57 @@ public class FallGL extends GLESScene {
      * <p>不是随手定的数：见 {@link #mWStarTimeHandle} 那一处的说明。
      */
     private static final long STAR_WRAP_MS = 30000L;
+
+    // ---- 蓝藻生物光 ----
+    //
+    // 依据实测的甲藻发光行为：过阈值才闪、极短、颗粒状。详见 fall_water_fs.glsl。
+    // 取值都是上机起点，观感不对就调这里。
+
+    /** 峰值亮度。**要大于 1** 才会被辉光取走、铺到叶子上。 */
+    private static final float ALGAE_GAIN = 1.3f;
+    /**
+     * 触发阈值。**要低于落叶入水那一档（0.3）** —— 自动产生的波纹也该有反应，
+     * 只是响应曲线让它更弱。梯度：落叶 0.3 < 轻点 0.5 < 快划 1.0。
+     */
+    private static final float ALGAE_THRESHOLD = 0.20f;
+    /**
+     * 闪光贴在波前后面多宽（网格单位）。
+     *
+     * <p>{@code spread} 每秒走 30 个网格单位，所以 {@code 9 ÷ 30 ≈ 0.3 秒} ——
+     * 这就是闪光的时长。实测甲藻只有 50~150ms，这里为可读性放宽了，
+     * 但**必须远小于波纹本身几秒的寿命**，否则就从"闪一下"变成"留下一片余晖"。
+     */
+    private static final float ALGAE_BAND = 5.0f;
+    /**
+     * 噪声贴图每铺满一次覆盖多少网格单位。
+     *
+     * <p>颗粒**必须用有机的团状噪声**，不能用方格哈希 —— 第一版是
+     * {@code hash21(floor(uv * 密度))}，上机看是"一片细密的均匀点子糊在屏幕上"。
+     * 贴图取自本项目 magicsmoke 壁纸的 noise2.png。这个值越小颗粒越细。
+     */
+    private static final float ALGAE_NOISE_TILE = 6.0f;
+    /**
+     * 噪声的密度增益，类比 magicsmoke 的 `alphaFactor`。
+     *
+     * <p>噪声本身的明度是铺满 0~1 的，直接拿来当密度会显得"到处都有藻"。
+     * 乘一个大于 1 的数、再 clamp，等于把低密度那一半压没，只剩成团的地方。
+     */
+    private static final float ALGAE_NOISE_GAIN = 1.8f;
+    /**
+     * 一团藻的颜色范围（疏 → 密）。**算法取自 magicsmoke**：
+     * 噪声亮度当密度，颜色在两端之间走，而不是"同一个颜色乘亮度"。
+     *
+     * <p>low 是稀疏处的深蓝（几乎融进夜色），high 是密集处的亮蓝白 ——
+     * 于是每一团自带深浅，边缘偏深、中心偏亮。
+     */
+    private static final float[] ALGAE_LOW = {0.03f, 0.07f, 0.42f};
+    private static final float[] ALGAE_HIGH = {0.12f, 0.38f, 1.00f};
+    /** 噪声贴图在 assets 里的路径。 */
+    private static final String ALGAE_NOISE_ASSET = "fall/drawable/algae_noise.png";
+    /** 滑动多快算"满强度"（像素/秒）。 */
+    private static final float TOUCH_FULL_SPEED_PX_S = 2600.0f;
+    /** 轻点（没有位移）的扰动强度，见 onTouchEvent。 */
+    private static final float TAP_POWER = 0.5f;
 
     // ---- 天空里的发光体 ----
 
@@ -159,6 +235,16 @@ public class FallGL extends GLESScene {
     private int mWStarAmountHandle;
     private int mWStarTimeHandle;
     private int mWStarAspectHandle;
+    private int mWAlgaeAmountHandle;
+    private int mWAlgaeGainHandle;
+    private int mWAlgaeThresholdHandle;
+    private int mWAlgaeBandHandle;
+    private int mWAlgaeNoiseHandle;
+    private int mWAlgaeNoiseTileHandle;
+    private int mWAlgaeNoiseGainHandle;
+    private int mWAlgaeLowHandle;
+    private int mWAlgaeHighHandle;
+    private int mWAlgaePowerHandle;
     /** 落叶着色器里的时段染色 uniform。 */
     private int mTintHandle;
     private int mTintAmountHandle;
@@ -177,6 +263,8 @@ public class FallGL extends GLESScene {
     private int[] mLeafTextures;
     /** 河床的树：单通道遮罩（白=天空 黑=树）。 */
     private int mMaskTexture;
+    /** 蓝藻颗粒用的团状噪声（取自 magicsmoke 的 noise2.png）。 */
+    private int mAlgaeNoiseTexture;
 
     /*
      * 河床的天空：pond_sky_fields.txt 的四段色场各生成一条 24x64 竖直色带，
@@ -234,6 +322,8 @@ public class FallGL extends GLESScene {
     private static final float TOUCH_TRIGGER_DISTANCE_THRESHOLD_PX = 42.0f;
     private float mLastTouchTriggerX = -1.0f;
     private float mLastTouchTriggerY = -1.0f;
+    /** 上一次触发波纹的事件时刻，用来算滑动速度（= 扰动强度）。 */
+    private long mLastTouchTimeMs;
 
     public FallGL(Context context, int width, int height) {
         super(width, height);
@@ -265,6 +355,11 @@ public class FallGL extends GLESScene {
             mMaskTexture = 0;
         }
         releaseSkyTextures();
+        if (mAlgaeNoiseTexture != 0) {
+            int[] tex = new int[] { mAlgaeNoiseTexture };
+            GLES30.glDeleteTextures(1, tex, 0);
+            mAlgaeNoiseTexture = 0;
+        }
 
         if (mProgram != 0) {
             GLES30.glDeleteProgram(mProgram);
@@ -345,6 +440,14 @@ public class FallGL extends GLESScene {
             mMaskTexture = createSolidMaskTexture();
         }
         ensureSkyTextures();
+
+        // 蓝藻的颗粒噪声。缺失不致命 —— 拿不到就是没有颗粒，光本身照常
+        try {
+            mAlgaeNoiseTexture = loadTexture(ALGAE_NOISE_ASSET);
+        } catch (Exception e) {
+            Log.e(TAG, "蓝藻噪声贴图加载失败", e);
+            mAlgaeNoiseTexture = 0;
+        }
     }
 
     @Override
@@ -363,27 +466,35 @@ public class FallGL extends GLESScene {
         float y = event.getY();
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
-                mScene.addDrop((int) x, (int) y);
+                /*
+                 * 轻点没有速度，但**不等于没有扰动** —— 手指按下去一样会激起涟漪。
+                 * 给 0 的话它在阈值（0.35）之下，最常用的"点一下"会完全不发光。
+                 * 梯度应当是：落叶 0.3 < 阈值 0.35 < 轻点 0.5 < 快划 1.0。
+                 */
+                mScene.addDrop((int) x, (int) y, TAP_POWER);
                 mLastTouchTriggerX = x;
                 mLastTouchTriggerY = y;
+                mLastTouchTimeMs = event.getEventTime();
                 break;
             case MotionEvent.ACTION_MOVE:
                 if (!mScene.isSwipeRippleEnabled()) {
                     break;
                 }
                 if (mLastTouchTriggerX < 0.0f || mLastTouchTriggerY < 0.0f) {
-                    mScene.addDrop((int) x, (int) y);
+                    mScene.addDrop((int) x, (int) y, TAP_POWER);
                     mLastTouchTriggerX = x;
                     mLastTouchTriggerY = y;
+                    mLastTouchTimeMs = event.getEventTime();
                     break;
                 }
                 float dx = x - mLastTouchTriggerX;
                 float dy = y - mLastTouchTriggerY;
                 float distance = (float) Math.sqrt(dx * dx + dy * dy);
                 if (distance >= TOUCH_TRIGGER_DISTANCE_THRESHOLD_PX) {
-                    mScene.addDrop((int) x, (int) y);
+                    mScene.addDrop((int) x, (int) y, swipePower(distance, event.getEventTime()));
                     mLastTouchTriggerX = x;
                     mLastTouchTriggerY = y;
+                    mLastTouchTimeMs = event.getEventTime();
                 }
                 break;
             case MotionEvent.ACTION_UP:
@@ -394,6 +505,21 @@ public class FallGL extends GLESScene {
             default:
                 break;
         }
+    }
+
+    /**
+     * 这一段滑动的强度 0..1，由速度决定 —— 只有蓝藻用它。
+     *
+     * <p>轻点没有位移，天然是最弱的一档；越快地划过去，水里的藻被惊动得越厉害。
+     * 时间差为 0（同一毫秒内两个事件）时返回 0，而不是除出 Infinity。
+     */
+    private float swipePower(float distancePx, long eventTimeMs) {
+        long dtMs = eventTimeMs - mLastTouchTimeMs;
+        if (dtMs <= 0L) {
+            return 0.0f;
+        }
+        float speed = distancePx / (dtMs * 0.001f);
+        return MathUtils.clamp(speed / TOUCH_FULL_SPEED_PX_S, 0.0f, 1.0f);
     }
 
     /** 滑动水波纹开关（滑动每 42px 触发一次水波纹），供 FallView 查询。 */
@@ -457,7 +583,17 @@ public class FallGL extends GLESScene {
          * 叶子只是被照亮一点，不会糊掉。**"不受辉光影响"的叶子看着像贴上去的。**
          */
         if (glow) {
-            mGlowRenderer.endScene(GLOW_THRESHOLD, GLOW_SOFT_KNEE, GLOW_RADIUS, GLOW_STRENGTH);
+            /*
+             * 阈值与强度都跟着蓝藻权重走：夜里（蓝藻亮着）降到 0.30 并把辉光放大，
+             * 白天回到原来的 0.80 —— 否则白日天空最亮的那一段会整片进辉光。
+             * 两个值必须一起动，见 GLOW_THRESHOLD_ALGAE 的说明。
+             */
+            float algae = mScene.getAlgaeAmount();
+            mGlowRenderer.endScene(
+                    MathUtils.mix(GLOW_THRESHOLD, GLOW_THRESHOLD_ALGAE, algae),
+                    GLOW_SOFT_KNEE,
+                    GLOW_RADIUS,
+                    MathUtils.mix(GLOW_STRENGTH, GLOW_STRENGTH_ALGAE, algae));
         }
 
         /*
@@ -585,6 +721,28 @@ public class FallGL extends GLESScene {
                 (SystemClock.uptimeMillis() % STAR_WRAP_MS) * 0.001f);
         // 星点的形状修正，见着色器里 uStarAspect 的说明
         GLES30.glUniform1f(mWStarAspectHandle, mHeight / (float) Math.max(1, mWidth));
+
+        /*
+         * 蓝藻。强度数组与 u_drop 一一对应 —— **必须每帧整条重传**，
+         * 因为波纹槽位是复用的，上一次的强度会残留在没被覆盖的槽里。
+         */
+        GLES30.glUniform1f(mWAlgaeAmountHandle, mScene.getAlgaeAmount());
+        GLES30.glUniform1f(mWAlgaeGainHandle, ALGAE_GAIN);
+        GLES30.glUniform1f(mWAlgaeThresholdHandle, ALGAE_THRESHOLD);
+        GLES30.glUniform1f(mWAlgaeBandHandle, ALGAE_BAND);
+        GLES30.glUniform1f(mWAlgaeNoiseTileHandle, ALGAE_NOISE_TILE);
+        GLES30.glUniform1f(mWAlgaeNoiseGainHandle, ALGAE_NOISE_GAIN);
+        GLES30.glUniform3f(mWAlgaeLowHandle, ALGAE_LOW[0], ALGAE_LOW[1], ALGAE_LOW[2]);
+        GLES30.glUniform3f(mWAlgaeHighHandle, ALGAE_HIGH[0], ALGAE_HIGH[1], ALGAE_HIGH[2]);
+        // 噪声贴图接在天空色带之后那一个单元
+        int noiseUnit = 1 + mSkyTextures.length;
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE0 + noiseUnit);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mAlgaeNoiseTexture);
+        GLES30.glUniform1i(mWAlgaeNoiseHandle, noiseUnit);
+        float[] algaePower = sceneData.getAlgaePower();
+        if (algaePower.length > 0) {
+            GLES30.glUniform1fv(mWAlgaePowerHandle, algaePower.length, algaePower, 0);
+        }
 
         int indexCount = sceneData.getWaterMeshIndexCount();
         if (indexCount > 0) {
@@ -730,7 +888,14 @@ public class FallGL extends GLESScene {
         int maxDrops = WallpaperSettings.getFallMaxDrops(80);
         String template = AssetLoader.readText(mContext, "fall/shaders/GLES/fall_water_vs.glsl");
         String vertexShader = template.replace("$DROP_SIZE", String.valueOf(maxDrops));
-        String fragmentShader = AssetLoader.readText(mContext, "fall/shaders/GLES/fall_water_fs.glsl");
+        /*
+         * **片元着色器也要替换。** 它一样声明了 u_drop / uAlgaePower 这两个数组 ——
+         * 只替换顶点那边的话，运行时报的是 "$ invalid character"，
+         * 而离线的 glslangValidator 校验（会先代入再验）反而是绿的，把问题盖住了。
+         */
+        String fragmentShader = AssetLoader
+                .readText(mContext, "fall/shaders/GLES/fall_water_fs.glsl")
+                .replace("$DROP_SIZE", String.valueOf(maxDrops));
         int vs = compileShader(GLES30.GL_VERTEX_SHADER, vertexShader);
         int fs = compileShader(GLES30.GL_FRAGMENT_SHADER, fragmentShader);
         if (vs == 0 || fs == 0) {
@@ -768,6 +933,16 @@ public class FallGL extends GLESScene {
         mWStarAmountHandle   = GLES30.glGetUniformLocation(mWaterProgram, "uStarAmount");
         mWStarTimeHandle     = GLES30.glGetUniformLocation(mWaterProgram, "uStarTime");
         mWStarAspectHandle   = GLES30.glGetUniformLocation(mWaterProgram, "uStarAspect");
+        mWAlgaeAmountHandle    = GLES30.glGetUniformLocation(mWaterProgram, "uAlgaeAmount");
+        mWAlgaeGainHandle      = GLES30.glGetUniformLocation(mWaterProgram, "uAlgaeGain");
+        mWAlgaeThresholdHandle = GLES30.glGetUniformLocation(mWaterProgram, "uAlgaeThreshold");
+        mWAlgaeBandHandle      = GLES30.glGetUniformLocation(mWaterProgram, "uAlgaeBand");
+        mWAlgaeNoiseHandle     = GLES30.glGetUniformLocation(mWaterProgram, "uAlgaeNoise");
+        mWAlgaeNoiseTileHandle = GLES30.glGetUniformLocation(mWaterProgram, "uAlgaeNoiseTile");
+        mWAlgaeNoiseGainHandle = GLES30.glGetUniformLocation(mWaterProgram, "uAlgaeNoiseGain");
+        mWAlgaeLowHandle       = GLES30.glGetUniformLocation(mWaterProgram, "uAlgaeLow");
+        mWAlgaeHighHandle      = GLES30.glGetUniformLocation(mWaterProgram, "uAlgaeHigh");
+        mWAlgaePowerHandle     = GLES30.glGetUniformLocation(mWaterProgram, "uAlgaePower");
         mWGlHeightHandle     = GLES30.glGetUniformLocation(mWaterProgram, "u_glHeight");
         mWBgScaleHandle      = GLES30.glGetUniformLocation(mWaterProgram, "u_bgScale");
         mWMeshScaleXHandle   = GLES30.glGetUniformLocation(mWaterProgram, "u_meshScaleX");

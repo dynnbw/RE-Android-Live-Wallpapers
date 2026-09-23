@@ -63,12 +63,12 @@ public class FallAssetsTest {
      * 按字符串拼会漏掉，而漏掉的症状恰好是"测试报红但代码没错"。
      *
      * <p>精度限定词可有可无（{@code uniform highp float uStarTime;}）——
-     * 漏掉这一支会把它当成"没声明"。
+     * 漏掉这一支会把它当成"没声明"。数组下标同理（{@code uniform float uAlgaePower[$DROP_SIZE];}）。
      */
     private static boolean declaresUniform(String glsl, String name) {
         return Pattern.compile(
                         "uniform\\s+(?:(?:lowp|mediump|highp)\\s+)?\\w+\\s+"
-                                + Pattern.quote(name) + "\\s*;")
+                                + Pattern.quote(name) + "(?:\\[[\\w$]+\\])?\\s*;")
                 .matcher(glsl).find();
     }
 
@@ -146,7 +146,11 @@ public class FallAssetsTest {
         String fs = read(WATER_FS);
         for (String name : new String[]{
                 "uEmitterPos", "uEmitterRadius", "uEmitterColor", "uEmitterGain",
-                "uStarAmount", "uStarTime", "uStarAspect"}) {
+                "uStarAmount", "uStarTime", "uStarAspect",
+                "uAlgaeAmount", "uAlgaeGain",
+                "uAlgaeThreshold", "uAlgaeBand", "uAlgaePower",
+                "uAlgaeNoise", "uAlgaeNoiseTile", "uAlgaeNoiseGain",
+                "uAlgaeLow", "uAlgaeHigh"}) {
             assertTrue("水面着色器缺少 uniform " + name, declaresUniform(fs, name));
         }
     }

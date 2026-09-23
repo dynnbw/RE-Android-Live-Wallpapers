@@ -29,6 +29,8 @@ vec2 addDrop(vec4 d, vec2 ripplePos, float dxMul) {
     return ret;
 }
 
+out highp vec2 vMeshPos;
+
 void main() {
     gl_Position = uMVPMatrix * aPosition;
     // 正交投影下 w 恒为 1，除它是个恒等操作；留着是为了将来换成透视投影时不会静默错位
@@ -57,6 +59,8 @@ void main() {
     float posScaledX = (pxAdj + 1.0) * u_meshScaleX;
 
     vec2 ripplePos = vec2(posScaledX, posScaledY);
+    // 网格坐标（和 u_drop 同一套单位）交给片元 —— 蓝藻要在片元里按同一套距离算光
+    vMeshPos = ripplePos;
     vec2 texOffset = vec2(0.0);
     float dxMul = u_dxMul;
 

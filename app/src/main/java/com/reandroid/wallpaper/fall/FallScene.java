@@ -21,6 +21,7 @@ import android.opengl.Matrix;
 import android.util.Log;
 
 import com.reandroid.settings.WallpaperSettings;
+import com.reandroid.utils.MathUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -87,11 +88,20 @@ final class FallScene {
         float spread;
         float x;
         float y;
+        /**
+         * 这次扰动的强度（0..1）。**只给蓝藻看，不影响波纹本身** ——
+         * 波纹的振幅仍然是写死的，观感与加蓝藻之前逐像素一致。
+         *
+         * <p>它存在的理由：文献里甲藻是"过阈值才闪、亮度约 ∝ 强度^1.9"，
+         * 而所有触摸原本都是同一个振幅，阈值就退化成开关。有了强度差异，那套才成立。
+         */
+        float power;
 
         void init() {
             ampS = 0.0f;
             ampE = 0.0f;
             spread = 1.0f;
+            power = 0.0f;
         }
 
         void updateLegacy(float dt) {
@@ -101,12 +111,13 @@ final class FallScene {
             }
         }
 
-        void activateLegacy(float meshX, float meshY, float amplitude) {
+        void activateLegacy(float meshX, float meshY, float amplitude, float power) {
             x = meshX;
             y = meshY;
             ampS = amplitude;
             spread = 0.0f;
             ampE = amplitude;
+            this.power = power;
         }
     }
 
@@ -123,6 +134,8 @@ final class FallScene {
 
         // GPU-computed ripple: per-drop (x, y, ampE, spread), dynamically sized
         private float[] dropData = new float[0];
+        /** 每次扰动的强度，与 {@link #dropData} 一一对应（蓝藻用）。 */
+        private float[] algaePower = new float[0];
         private int activeDropCount;
         private float glHeight;
         private float bgScale;
@@ -141,6 +154,7 @@ final class FallScene {
         int getWaterMeshIndexCount() { return waterMeshIndexCount; }
         float getXOffset() { return xOffset; }
         float[] getDropData() { return dropData; }
+        float[] getAlgaePower() { return algaePower; }
         int getActiveDropCount() { return activeDropCount; }
         float getGlHeight() { return glHeight; }
         float getBgScale() { return bgScale; }
@@ -204,6 +218,8 @@ final class FallScene {
     private float mLeafTintValue = 1.0f;
     /** 本帧夜空星星的可见度（0 = 不画）。 */
     private float mStarAmount;
+    /** 本帧蓝藻生物光的可见度（0 = 不画）。 */
+    private float mAlgaeAmount;
     /**
      * 预览把一整天压进这么长。与 grass 取同一个值 —— 两款壁纸的预览节奏应当一致。
      */
@@ -230,6 +246,9 @@ final class FallScene {
         mIsPreview = preview;
         mDayNightSystem.setPreview(preview);
     }
+
+    /** 落叶落水那一下的扰动强度。压在 ALGAE_THRESHOLD 之下，默认不激起蓝藻。 */
+    private static final float LEAF_DROP_POWER = 0.3f;
 
     private float mLeafSizeMultiplier = 1.0f;
     private float mFallSpeedMultiplier = 1.0f;
@@ -370,6 +389,7 @@ final class FallScene {
             mLeafTintAmount = 0.0f;
             mLeafTintValue = 1.0f;
             mStarAmount = 0.0f;
+            mAlgaeAmount = 0.0f;
             return;
         }
         mDayNightSystem.updateWeights(sceneClockMs());
@@ -378,6 +398,7 @@ final class FallScene {
         mLeafTintAmount = FallDayNightSystem.computeLeafTint(weights, mLeafTint);
         mLeafTintValue = FallDayNightSystem.computeLeafValue(weights);
         mStarAmount = mDayNightSystem.starAmount();
+        mAlgaeAmount = mDayNightSystem.algaeAmount();
     }
 
     /**
@@ -423,7 +444,21 @@ final class FallScene {
         return mStarAmount;
     }
 
+    /** 本帧蓝藻生物光的可见度（0 = 不画）。 */
+    float getAlgaeAmount() {
+        return mAlgaeAmount;
+    }
+
+    /** 不指定强度：按最弱处理（蓝藻那边）。波纹本身与以前完全一样。 */
     void addDrop(int x, int y) {
+        addDrop(x, y, 1.0f);
+    }
+
+    /**
+     * @param power 这次扰动的强度 0..1。**只影响蓝藻的闪光**，波纹的振幅不受它影响 ——
+     *              波纹观感与加蓝藻之前逐像素一致。轻点弱、快划强。
+     */
+    void addDrop(int x, int y, float power) {
         // Lazy-init water drops on first touch (before first frame renders)
         if (mWaterDrops == null || mWaterDropCount <= 0) {
             mWaterDropCount = Math.max(1, getMaxDrops());
@@ -466,7 +501,7 @@ final class FallScene {
         float dropY = ((posY / (mGlHeight * 0.5f)) + 1.0f) * scaleY;
 
         Drop drop = mWaterDrops[minIndex];
-        drop.activateLegacy(dropX, dropY, 1.2f);
+        drop.activateLegacy(dropX, dropY, 1.2f, MathUtils.clamp(power, 0.0f, 1.0f));
         mWaterTexCoordsDirty = true;
     }
 
@@ -767,7 +802,12 @@ final class FallScene {
         }
 
         Drop drop = mWaterDrops[minIndex];
-        drop.activateLegacy(meshX, meshY, amplitude);
+        /*
+         * 落叶砸在水面上也是一次扰动，但比手动去搅弱得多。
+         * 0.3 刻意压在默认阈值（0.35）之下 —— 默认只有人的动作才会激起蓝藻，
+         * 想让落叶也发光就把 ALGAE_THRESHOLD 调到 0.3 以下。
+         */
+        drop.activateLegacy(meshX, meshY, amplitude, LEAF_DROP_POWER);
     }
 
     private void updateWaterMesh(long nowMs) {
@@ -796,7 +836,10 @@ final class FallScene {
         int needed = mWaterDropCount * 4;
         if (d.length < needed) {
             mSceneData.dropData = d = new float[needed];
+            // 强度单独一条数组 —— u_drop 的四个分量已经占满了，塞不进去
+            mSceneData.algaePower = new float[mWaterDropCount];
         }
+        float[] power = mSceneData.algaePower;
         for (int i = 0; i < mWaterDropCount; i++) {
             int off = i * 4;
             Drop drop = mWaterDrops[i];
@@ -814,6 +857,7 @@ final class FallScene {
              */
             d[off + 2] = drop.ampE * rippleScale();
             d[off + 3] = drop.spread * rippleScale();
+            power[i] = drop.power;
         }
 
         // Precompute shader parameters

@@ -273,6 +273,45 @@ public class FallDayNightSystemTest {
         assertEquals(1.0f, FallDayNightSystem.computeStarAmount(weightsAt(-45.0, false)), 1e-6f);
     }
 
+    /** 白天不该有蓝藻生物光。 */
+    @Test
+    public void algaeIsAbsentInDaylight() {
+        assertEquals("正午不该有蓝藻光",
+                0.0f, FallDayNightSystem.computeAlgaeAmount(weightsAt(45.0, false)), 1e-6f);
+    }
+
+    /** 深夜要满。 */
+    @Test
+    public void algaeIsFullInDeepNight() {
+        assertEquals(1.0f, FallDayNightSystem.computeAlgaeAmount(weightsAt(-45.0, false)), 1e-6f);
+    }
+
+    /**
+     * 蓝藻要比星星**早**出现。
+     *
+     * <p>太阳刚落、天边还亮着的时候，被搅动的水就该有反应 —— 不必等到满天星。
+     * 两条曲线是刻意分开的，这条测试就是钉住"分开"。
+     */
+    @Test
+    public void algaeAppearsBeforeStars() {
+        float[] w = weightsAt(-5.0, false);      // 太阳刚落下去一点
+        float algae = FallDayNightSystem.computeAlgaeAmount(w);
+        float stars = FallDayNightSystem.computeStarAmount(w);
+        assertTrue("这时候水面应当已经有反应了，实际 " + algae, algae > 0.3f);
+        assertTrue("这时候还不到满天星的时候，实际 " + stars, stars < 1e-6f);
+    }
+
+    /** 可见度只能落在 0..1。 */
+    @Test
+    public void algaeAmountStaysWithinRange() {
+        for (double alt = -90.0; alt <= 90.0; alt += STEP_DEG) {
+            for (boolean rising : new boolean[]{true, false}) {
+                float a = FallDayNightSystem.computeAlgaeAmount(weightsAt(alt, rising));
+                assertTrue("高度角 " + alt + "° 时蓝藻可见度越界：" + a, a >= 0.0f && a <= 1.0f);
+            }
+        }
+    }
+
     /** 星星的可见度只能是 0..1 —— 越界会把它当成透明度之外的东西用。 */
     @Test
     public void starAmountStaysWithinRange() {
