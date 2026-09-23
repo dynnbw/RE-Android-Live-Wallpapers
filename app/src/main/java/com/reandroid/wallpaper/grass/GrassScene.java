@@ -87,6 +87,14 @@ final class GrassScene {
     private final float[] mLightPosScratch = new float[2];
     /** 上次重算逐叶遮挡的时刻。遮挡变化慢，限频算。 */
     private long mLastOcclusionMs;
+
+    /**
+     * 没有月亮数据时用的高度角。
+     *
+     * <p>深在地平线下，光照曲线据此自然为 0 —— 于是不必再引入一个"有没有月亮"的布尔，
+     * 少一个会和 {@code moonVisible}（那个只管画不画月盘）混淆的状态。
+     */
+    private static final float NO_MOON_ALTITUDE_DEG = -90.0f;
     private boolean mProceduralSun = true;
     private float mGrassHeightScale = 1.0f;
     private float mGrassWidthScale = 1.0f;
@@ -583,15 +591,16 @@ final class GrassScene {
         // 总强度里已经含了开关、太阳高度角曲线和天气压制（见 GrassBacklight），
         // 所以这里**不要再套一层开关判断**。它为 0 时着色器提前返回，画面与今天一致。
         float sunAlt = (float) mSceneData.lastSunAltitude;
-        boolean moonUp = mSceneData.moonVisible;
+        // **用高度角，不用 moonVisible。** 那个布尔在 −2° 就翻，而光照要淡到 −12°；
+        // 读它的话月亮一落下光照就被硬切掉（实测症状正是"月亮消失光照立马消失"）。
         float moonAlt = mSceneData.moonAltitudeDeg;
-        boolean useMoon = GrassBacklight.sourceIsMoon(sunAlt, moonUp, moonAlt);
+        boolean useMoon = GrassBacklight.sourceIsMoon(sunAlt, moonAlt);
 
         mSceneData.lightStrength = GrassBacklight.effectiveStrength(
-                mGrassLightEnabled, sunAlt, moonUp, moonAlt, mWeatherCondition);
+                mGrassLightEnabled, sunAlt, moonAlt, mWeatherCondition);
         // 高光门控：正午 0（不要高光）、黄金时刻 1、月夜 1
         mSceneData.lightHighlight = mGrassLightEnabled
-                ? GrassBacklight.highlight(sunAlt, moonUp, moonAlt)
+                ? GrassBacklight.highlight(sunAlt, moonAlt)
                 : 0.0f;
         // 颜色跟着光源走（正午近白 / 黄金时刻琥珀 / 月亮冷白偏蓝）
         GrassLightColor.transmit(sunAlt, useMoon, mSceneData.lightTransmit);
@@ -718,7 +727,19 @@ final class GrassScene {
     }
 
     private void computeMoonData(Calendar now, MoonCalculator.MoonData data) {
-        if (data == null || data.moonAltitudeDeg <= -2.0) {
+        if (data == null) {
+            mSceneData.moonVisible = false;
+            // 没有月亮数据时给一个深在地平线下的高度角 —— 光照的曲线据此自然为 0，
+            // 不需要另一个"有没有月亮"的布尔。
+            mSceneData.moonAltitudeDeg = NO_MOON_ALTITUDE_DEG;
+            return;
+        }
+        // **高度角要在可见性判断之前存下来。** 两者门限不同，而且必须不同：
+        // 月盘在 −2° 就消失，而光照要一直淡到 −12°（FADE_DEG）。
+        // 早先光照读的是"月亮可见"那个布尔，于是在 −2° 那一刻它正带着 0.93 的强度
+        // 被硬切成 0 —— 画面上就是"月亮一消失，光立马没了"。
+        mSceneData.moonAltitudeDeg = (float) data.moonAltitudeDeg;
+        if (data.moonAltitudeDeg <= -2.0) {
             mSceneData.moonVisible = false;
             return;
         }
@@ -730,7 +751,6 @@ final class GrassScene {
         MoonEclipse eclipse = computeMoonEclipse(data);
 
         mSceneData.moonVisible = true;
-        mSceneData.moonAltitudeDeg = (float) data.moonAltitudeDeg;
         mSceneData.moonPhaseAngle = (float) data.phaseAngleUtcDeg;
         mSceneData.moonRotationDeg = (float) data.parallacticAngleDeg;
         mSceneData.moonX = moonX;
