@@ -7,5 +7,7 @@
   "pref_fall_swipe_ripple": "滑动产生连续水波纹",
   "pref_fall_swipe_ripple_desc": "滑动时连续产生水波纹",
   "pref_fall_day_night": "日夜变换",
-  "pref_fall_day_night_desc": "天空随一天中的时刻变化"
+  "pref_fall_day_night_desc": "天空随一天中的时刻变化",
+  "pref_fall_glow": "辉光",
+  "pref_fall_glow_desc": "让画面最亮的部分洇开"
 }

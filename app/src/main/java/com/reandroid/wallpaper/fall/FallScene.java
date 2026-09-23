@@ -191,6 +191,18 @@ final class FallScene {
     /** 预览模式（把一天压进 {@link #PREVIEW_CYCLE_MS}）。 */
     private boolean mIsPreview;
     /**
+     * 本帧天空发光体的权重（0 = 不画）。
+     *
+     * <p>GL 侧还要再乘一档峰值亮度（辉光开着是远大于 1 的 HDR 值，关着则压在 1 以下）。
+     */
+    private float mEmitterWeight;
+    /** 本帧落叶的染色目标色。逐帧算一次，别每片叶子算一遍。 */
+    private final float[] mLeafTint = {1.0f, 1.0f, 1.0f};
+    /** 本帧落叶染色强度（0 = 原样）。 */
+    private float mLeafTintAmount;
+    /** 本帧落叶的明度缩放（1 = 原样）。夜里靠它变暗。 */
+    private float mLeafTintValue = 1.0f;
+    /**
      * 预览把一整天压进这么长。与 grass 取同一个值 —— 两款壁纸的预览节奏应当一致。
      */
     private static final long PREVIEW_CYCLE_MS = 30000L;
@@ -350,10 +362,18 @@ final class FallScene {
      */
     private void updateSkyWeights() {
         if (!isDayNightEnabled()) {
+            // 关掉时：天空只留黄昏那一条、发光体不画、落叶不染色 —— 与加这套之前一致
             mDayNightSystem.resetToDusk();
+            mEmitterWeight = 0.0f;
+            mLeafTintAmount = 0.0f;
+            mLeafTintValue = 1.0f;
             return;
         }
         mDayNightSystem.updateWeights(sceneClockMs());
+        float[] weights = mDayNightSystem.getWeights();
+        mEmitterWeight = mDayNightSystem.emitterWeight();
+        mLeafTintAmount = FallDayNightSystem.computeLeafTint(weights, mLeafTint);
+        mLeafTintValue = FallDayNightSystem.computeLeafValue(weights);
     }
 
     /**
@@ -372,6 +392,26 @@ final class FallScene {
     /** 天空色带权重 {@code [夜, 晨, 昏, 昼]}，恒和为 1。GL 侧每帧取一次。 */
     float[] getSkyWeights() {
         return mDayNightSystem.getWeights();
+    }
+
+    /** 本帧天空发光体的权重（0 = 不画，正午最大）。 */
+    float getEmitterWeight() {
+        return mEmitterWeight;
+    }
+
+    /** 本帧落叶染色目标色，长度 3。 */
+    float[] getLeafTintRgb() {
+        return mLeafTint;
+    }
+
+    /** 本帧落叶染色强度（0 = 保持原样）。 */
+    float getLeafTintAmount() {
+        return mLeafTintAmount;
+    }
+
+    /** 本帧落叶的明度缩放（1 = 保持原样）。 */
+    float getLeafTintValue() {
+        return mLeafTintValue;
     }
 
     void addDrop(int x, int y) {
@@ -810,6 +850,12 @@ final class FallScene {
     private boolean isDayNightEnabled() {
         if (mPrefs != null) return mPrefs.getBoolean(WallpaperSettings.KEY_FALL_DAY_NIGHT, false);
         return WallpaperSettings.isFallDayNightEnabled(false);
+    }
+
+    /** 辉光开关（默认关）。只决定亮部要不要走 HDR 那一趟，见 FallGL。 */
+    boolean isGlowEnabled() {
+        if (mPrefs != null) return mPrefs.getBoolean(WallpaperSettings.KEY_FALL_GLOW, false);
+        return WallpaperSettings.isFallGlowEnabled(false);
     }
 
     /** 滑动水波纹开关：滑动每 42px 触发一次点击水波纹（默认开启） */

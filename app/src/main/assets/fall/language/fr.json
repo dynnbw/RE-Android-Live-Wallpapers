@@ -7,5 +7,7 @@
   "pref_fall_swipe_ripple": "Vagues continues au glissement",
   "pref_fall_swipe_ripple_desc": "Crée des vagues en continu en glissant",
   "pref_fall_day_night": "Ciel jour et nuit",
-  "pref_fall_day_night_desc": "Le ciel suit l’heure de la journée"
+  "pref_fall_day_night_desc": "Le ciel suit l’heure de la journée",
+  "pref_fall_glow": "Halo lumineux",
+  "pref_fall_glow_desc": "Fait déborder les zones les plus lumineuses"
 }

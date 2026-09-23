@@ -135,4 +135,124 @@ public class FallDayNightSystemTest {
             }
         }
     }
+
+    /**
+     * 落叶染色必须落在合理范围内。
+     *
+     * <p>权重是凸组合（和恒为 1、各项非负），所以结果必定夹在四个锚点之间；
+     * 跑出去就说明权重和不为 1，或者锚点写超了。
+     */
+    @Test
+    public void leafTintStaysInRange() {
+        float[] out = new float[3];
+        for (double alt = -90.0; alt <= 90.0; alt += STEP_DEG) {
+            for (boolean rising : new boolean[]{true, false}) {
+                float amount = FallDayNightSystem.computeLeafTint(weightsAt(alt, rising), out);
+                for (int c = 0; c < 3; c++) {
+                    assertTrue("高度角 " + alt + "° 时通道 " + c + " 越界：" + out[c],
+                            out[c] >= 0.0f && out[c] <= 1.0f);
+                }
+                assertTrue("高度角 " + alt + "° 时染色强度越界：" + amount,
+                        amount >= 0.0f && amount <= 1.0f);
+            }
+        }
+    }
+
+    /** 正午：偏蓝白 —— 蓝通道最高，而且整体是亮的。 */
+    @Test
+    public void daytimeTintIsBrightAndBlue() {
+        float[] out = new float[3];
+        FallDayNightSystem.computeLeafTint(weightsAt(45.0, false), out);
+        assertTrue("白天的染色应当偏蓝，实际 " + out[0] + "/" + out[1] + "/" + out[2],
+                out[2] > out[0] && out[2] > out[1]);
+        assertTrue("白天的染色应当很亮，实际 " + out[0], out[0] > 0.5f);
+    }
+
+    /** 深夜：深蓝 —— 同样蓝通道最高，但整体很暗。 */
+    @Test
+    public void nightTintIsDeepBlue() {
+        float[] out = new float[3];
+        FallDayNightSystem.computeLeafTint(weightsAt(-45.0, false), out);
+        assertTrue("夜里的染色应当偏蓝，实际 " + out[0] + "/" + out[1] + "/" + out[2],
+                out[2] > out[0] && out[2] > out[1]);
+        assertTrue("夜里的染色应当很暗，实际 " + out[2], out[2] < 0.5f);
+    }
+
+    /**
+     * 晨昏的染色强度要明显低于正午。
+     *
+     * <p>那两个时段枫叶本该是暖色的（原版观感），染色只是为了让白天和夜里说得通，
+     * 不该顺手把黄昏的暖调也洗掉。
+     */
+    @Test
+    public void twilightTintsLessThanNoon() {
+        float[] out = new float[3];
+        float dawn = FallDayNightSystem.computeLeafTint(weightsAt(0.0, true), out);
+        float dusk = FallDayNightSystem.computeLeafTint(weightsAt(0.0, false), out);
+        float noon = FallDayNightSystem.computeLeafTint(weightsAt(45.0, false), out);
+        assertTrue("清晨的染色强度应当低于正午", dawn < noon);
+        assertTrue("黄昏的染色强度应当低于正午", dusk < noon);
+    }
+
+    /** 白天不压暗：正午的明度缩放必须是 1。 */
+    @Test
+    public void noonDoesNotDarkenTheLeaves() {
+        assertEquals(1.0f, FallDayNightSystem.computeLeafValue(weightsAt(45.0, false)), 1e-6f);
+    }
+
+    /** 夜里要压暗，而且压得明显。 */
+    @Test
+    public void nightDarkensTheLeaves() {
+        float night = FallDayNightSystem.computeLeafValue(weightsAt(-45.0, false));
+        assertTrue("夜里的叶子应当明显变暗，实际 " + night, night < 0.6f);
+    }
+
+    /** 明度缩放在任何时候都落在 (0, 1] 内 —— 越界会把叶子提亮或推成负色。 */
+    @Test
+    public void leafValueStaysWithinRange() {
+        for (double alt = -90.0; alt <= 90.0; alt += STEP_DEG) {
+            for (boolean rising : new boolean[]{true, false}) {
+                float value = FallDayNightSystem.computeLeafValue(weightsAt(alt, rising));
+                assertTrue("高度角 " + alt + "° 时明度缩放越界：" + value,
+                        value > 0.0f && value <= 1.0f);
+            }
+        }
+    }
+
+    /** 正午的太阳最亮。 */
+    @Test
+    public void emitterIsFullAtNoon() {
+        assertEquals(1.0f,
+                FallDayNightSystem.computeEmitterWeight(weightsAt(45.0, false)), 1e-6f);
+    }
+
+    /**
+     * 清晨与黄昏**都不该有太阳** —— 用户的原话是"太阳应该在纯白天显示，
+     * 黄昏、清晨不要显示"。
+     */
+    @Test
+    public void emitterIsAbsentAtDawnAndDusk() {
+        assertEquals("清晨不该有太阳",
+                0.0f, FallDayNightSystem.computeEmitterWeight(weightsAt(0.0, true)), 1e-6f);
+        assertEquals("黄昏不该有太阳",
+                0.0f, FallDayNightSystem.computeEmitterWeight(weightsAt(0.0, false)), 1e-6f);
+        assertEquals("深夜里不该有太阳",
+                0.0f, FallDayNightSystem.computeEmitterWeight(weightsAt(-40.0, false)), 1e-6f);
+    }
+
+    /** 太阳刚升起那一小段高度角里也要没有 —— 那才是"清晨"。 */
+    @Test
+    public void emitterIsStillAbsentJustAboveTheHorizon() {
+        for (double alt : new double[]{1.0, 2.0, 3.0, 5.0}) {
+            assertEquals("太阳才 " + alt + "° 高时不该有太阳",
+                    0.0f, FallDayNightSystem.computeEmitterWeight(weightsAt(alt, true)), 1e-6f);
+        }
+    }
+
+    /** 但也不能一路收着 —— 太阳升到高处必须满格。 */
+    @Test
+    public void emitterReachesFullOnceTheSkyIsDay() {
+        assertEquals("太阳升到白日带上沿时应当满格",
+                1.0f, FallDayNightSystem.computeEmitterWeight(weightsAt(12.0, true)), 1e-6f);
+    }
 }

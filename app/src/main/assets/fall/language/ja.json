@@ -7,5 +7,7 @@
   "pref_fall_swipe_ripple": "スワイプで連続波紋",
   "pref_fall_swipe_ripple_desc": "スワイプで連続的に波紋を生成",
   "pref_fall_day_night": "昼夜の空",
-  "pref_fall_day_night_desc": "時刻に合わせて空の色が変わります"
+  "pref_fall_day_night_desc": "時刻に合わせて空の色が変わります",
+  "pref_fall_glow": "グロー",
+  "pref_fall_glow_desc": "最も明るい部分をにじませます"
 }

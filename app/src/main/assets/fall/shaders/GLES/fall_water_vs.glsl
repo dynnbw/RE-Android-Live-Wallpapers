@@ -11,6 +11,13 @@ uniform vec4 u_drop[$DROP_SIZE];
 uniform float u_dropCount;
 in vec4 aPosition;
 out highp vec2 vTexCoord;
+/**
+ * 屏幕 UV（0..1）。天空里的发光体按屏幕位置定位，所以需要它。
+ *
+ * 不能用 vTexCoord 顶替：那个被 bgScale 缩过、还带波纹位移，
+ * 拿它当屏幕坐标会把发光体一起缩放/摇晃。
+ */
+out highp vec2 vScreenUv;
 
 vec2 addDrop(vec4 d, vec2 ripplePos, float dxMul) {
     vec2 delta = vec2((d.x - ripplePos.x) * dxMul, d.y - ripplePos.y);
@@ -24,6 +31,8 @@ vec2 addDrop(vec4 d, vec2 ripplePos, float dxMul) {
 
 void main() {
     gl_Position = uMVPMatrix * aPosition;
+    // 正交投影下 w 恒为 1，除它是个恒等操作；留着是为了将来换成透视投影时不会静默错位
+    vScreenUv = gl_Position.xy / gl_Position.w * 0.5 + 0.5;
     vec2 pos = aPosition.xy;
 
     float posScaledY = ((pos.y / (u_glHeight * 0.5)) + 1.0) * u_meshScaleY;

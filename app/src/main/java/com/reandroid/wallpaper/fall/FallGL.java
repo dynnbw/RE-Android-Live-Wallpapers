@@ -33,6 +33,7 @@ import com.reandroid.utils.MathUtils;
 import com.reandroid.utils.AssetLoader;
 import com.reandroid.utils.SkyField;
 import com.reandroid.gles.GLESScene;
+import com.reandroid.gles.GlowRenderer;
 import com.reandroid.settings.WallpaperSettings;
 
 import java.nio.ByteBuffer;
@@ -44,6 +45,89 @@ import java.util.Arrays;
 public class FallGL extends GLESScene {
     private static final String TAG = "FallGL";
     private static final long PERF_SYNC_INTERVAL_MS = 1000L;
+
+    // ---- HDR + 辉光 ----
+    //
+    // ⚠ 阈值是**取舍**，不是硬约束。这套合成是 `场景 + 辉光`，加法、没有色调映射，
+    // 屏幕在 1.0 截断。而白日天空最亮的一端本身就有约 0.93 —— 阈值只要低到
+    // 能收到发光体，就必然也收到天空最亮的那一段。两者不可能干净分开。
+    //
+    // 曾经把阈值抬到 1.0 来求"辉光只来自发光体"，代价是发光体必须亮过 1，
+    // 于是核心被压成一片平白、边界是一道圆弧硬边、颜色也读不出来。**那个取舍不划算。**
+    // 现在两边一起降：阈值 0.80、发光体峰值压到 1 附近不再截断 ——
+    // 颜色留得住，代价是天空最亮的那一小段也会带一点晕（参考图本来也有这层雾）。
+    //
+    // 取值是上机调下来的，观感不对就调这里。
+
+    /** 亮度阈值。低于它的不发辉光。 */
+    private static final float GLOW_THRESHOLD = 0.80f;
+    /** 阈值之上的过渡宽度。硬阈值会在光晕边缘留下可见的台阶。 */
+    private static final float GLOW_SOFT_KNEE = 0.25f;
+    /**
+     * 模糊半径（像素，半分辨率下）。光晕发硬/发窄先调它，不是加遍数。
+     *
+     * <p><b>想让它更黄就调这里，不是把发光体做大。</b> 亮的核在心里必定是白的
+     * （要进辉光就得亮过阈值，亮过 1.0 就被截断成白），
+     * 能读出颜色的只有核心外面那圈晕 —— 而这圈有多宽、多暖，全看模糊铺多开。
+     * 把发光体做大只会把白色区域一起做大。
+     *
+     * <p><b>但这条有个上限，别贪。</b> 模糊是 5 抽头近似，抽头落在
+     * ±1.38·半径 与 ±3.23·半径 处 —— 半径给到 18 时那是屏幕上 ±50px 与 ±116px，
+     * 等于把同一张图在四个方向各叠了一份。**树冠的遮罩边缘对比度最高**，
+     * 重影全部显在那里，树会被打成一片白色星芒，完全看不出是树。
+     * 上机实测 18 就是这样，退回 9（与 grass 同档）后干净。
+     * 真需要更宽的光晕，得给 GlowRenderer 加模糊遍数，而不是继续抬这个值。
+     */
+    private static final float GLOW_RADIUS = 9.0f;
+    /** 辉光叠加强度。 */
+    private static final float GLOW_STRENGTH = 0.70f;
+
+    // ---- 天空里的发光体 ----
+
+    /**
+     * 屏幕 UV 上的位置（0,0 = 左下）。
+     *
+     * <p>放在上方是因为色场的浅色端在屏幕顶部 —— 见 {@code pond_sky_fields.txt}
+     * 里每条色带的走向。摆低会和天空的明暗对不上，读起来像"光在水里"。
+     */
+    private static final float EMITTER_X = 0.45f;
+    /** 竖直位置（0 = 屏幕底、1 = 屏幕顶）。**上机调下来的，不是推导出来的。** */
+    private static final float EMITTER_Y = 0.6f;
+    /**
+     * 横向半轴，占**屏幕宽度**的比例。
+     *
+     * <p>纵向半轴不在这里 —— 它由这一个乘上 {@link #EMITTER_ASPECT} 再按屏幕长宽比折算，
+     * 见 {@code drawWaterQuad}。**不能直接把这个值也当纵向的 UV 半径**：
+     * UV 是逐轴归一化的，竖屏上 x 的 0.36 只有 389px，y 的 0.22 却有 528px，
+     * 于是"横向的 UV 值更大"画出来反而是个**竖**椭圆 —— 上机就是这么栽的。
+     */
+    private static final float EMITTER_HALF_W = 0.55f;
+    /**
+     * 纵向半轴 ÷ 横向半轴，**在屏幕上量**（&lt; 1 才是横扁的）。
+     *
+     * <p>参考图里这一团是横跨、扁的；用户的话是"原图是左右"。
+     */
+    private static final float EMITTER_ASPECT = 0.60f;
+    /**
+     * 黄白。**偏黄要够狠**：中心那一块必定被截断成纯白，
+     * 能读出"黄"的只有它周围那一圈 —— 颜色本身不黄，整团就是白的。
+     */
+    private static final float[] EMITTER_COLOR = {1.00f, 0.74f, 0.30f};
+    /**
+     * 峰值亮度。
+     *
+     * <p><b>与 {@link #GLOW_THRESHOLD} 是一对，改一个必须同时看另一个：</b>
+     * 峰值在阈值之下 → 完全不发辉光；远在阈值之上 → 那一大片被屏幕截断成同一个白，
+     * 平、没有颜色、边界是一道圆弧硬边。
+     *
+     * <p>上机实测过 6.0 与 3.5，两次都是后面那种。原因不是"太亮"那么简单：
+     * 发光体中心那片天空本身已经有约 0.66，峰值一高，
+     * "天空 + 发光体 > 1"的范围就覆盖整个 blob，颜色（黄）全部丢在截断里。
+     *
+     * <p>辉光关掉时**不画**（增益给 0）。不画而不是画暗一点：一个很亮的高斯斑
+     * 没有辉光来收尾，看着就是一块糊在天空上的白渍，比不做还难看。
+     */
+    private static final float EMITTER_GAIN = 1.5f;
     private static final long ANR_FRAME_THRESHOLD_MS = 200L;
     /** assets/fall/drawable/ 下 leaves_N.png 的文件数（绿叶全开时用满）。 */
     private static final int LEAF_TEXTURE_FILES = 20;
@@ -61,6 +145,14 @@ public class FallGL extends GLESScene {
     private int mWAlphaHandle;
     private int mWMaskHandle;
     private int mWColorHandle;
+    private int mWEmitterPosHandle;
+    private int mWEmitterRadiusHandle;
+    private int mWEmitterColorHandle;
+    private int mWEmitterGainHandle;
+    /** 落叶着色器里的时段染色 uniform。 */
+    private int mTintHandle;
+    private int mTintAmountHandle;
+    private int mTintValueHandle;
     private int mWPositionHandle;
     private int mWTexCoordHandle;
     private int mWGlHeightHandle;
@@ -117,6 +209,8 @@ public class FallGL extends GLESScene {
     /** drawLeafQuad 的临时矩阵：每片叶子用两次，不能每帧新分配。 */
     private final float[] mLeafMvMatrix = new float[16];
     private boolean mGLInitialized = false;
+    /** HDR 中间缓冲 + 辉光。建不出来时整体退化成空操作，画面与不用它时相同。 */
+    private GlowRenderer mGlowRenderer;
     private int mFrameCount = 0;
     private final FallScene mScene;
     private final Context mContext;
@@ -171,6 +265,11 @@ public class FallGL extends GLESScene {
             mWaterProgram = 0;
         }
 
+        if (mGlowRenderer != null) {
+            mGlowRenderer.release();
+            mGlowRenderer = null;
+        }
+
         mWaterMeshVertexBuffer = null;
         mWaterMeshTexCoordBuffer = null;
         mGLInitialized = false;
@@ -180,6 +279,9 @@ public class FallGL extends GLESScene {
     public void resize(int width, int height) {
         super.resize(width, height);
         mScene.resize(width, height);
+        if (mGlowRenderer != null) {
+            mGlowRenderer.resize(width, height);
+        }
     }
 
     @Override
@@ -203,6 +305,15 @@ public class FallGL extends GLESScene {
 
         createProgram();
         createWaterProgram();
+
+        // 建不出来（FBO 不完整 / 着色器失败）时它整体退化成空操作，画面照旧
+        mGlowRenderer = new GlowRenderer();
+        mGlowRenderer.init(mWidth, mHeight,
+                "fall/shaders/GLES/glow_quad_vs.glsl",
+                "fall/shaders/GLES/glow_bright_fs.glsl",
+                "fall/shaders/GLES/glow_blur_fs.glsl",
+                "fall/shaders/GLES/glow_composite_fs.glsl",
+                assetPath -> AssetLoader.readText(mContext, assetPath));
 
         try {
             mLeafTextures = loadLeafTextures();
@@ -316,13 +427,27 @@ public class FallGL extends GLESScene {
         FallScene.SceneData sceneData = mScene.getSceneData();
         syncWaterMeshBuffers(sceneData);
 
+        // 整个场景先画进 HDR 中间缓冲，画完再提取亮部、模糊、加回屏幕。
+        // 关掉时这两句都不执行，渲染路径与加辉光之前逐帧相同。
+        final boolean glow = isGlowActive();
+        if (glow) {
+            mGlowRenderer.beginScene();
+        }
+
         GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT | GLES30.GL_DEPTH_BUFFER_BIT);
 
         drawWaterQuad(sceneData);  // uses mWaterProgram internally
-        if (mProgram == 0) return;
-        GLES30.glUseProgram(mProgram);
-        for (FallScene.Leaf leaf : sceneData.getLeaves()) {
-            drawLeaf(leaf, sceneData);
+        drawLeaves(sceneData);
+
+        /*
+         * **辉光在落叶之后合成** —— 光晕会像洗树冠那样也落在落叶上，参考图就是这样。
+         *
+         * 曾经把它挪到落叶之前，因为那时辉光是一大块平的白斑，叶子经过就被糊成白影。
+         * 但那是辉光本身有病，不是合成位置的问题。辉光恢复成正常的渐变之后挪回这里：
+         * 叶子只是被照亮一点，不会糊掉。**"不受辉光影响"的叶子看着像贴上去的。**
+         */
+        if (glow) {
+            mGlowRenderer.endScene(GLOW_THRESHOLD, GLOW_SOFT_KNEE, GLOW_RADIUS, GLOW_STRENGTH);
         }
 
         /*
@@ -338,6 +463,29 @@ public class FallGL extends GLESScene {
 
         long frameCost = SystemClock.uptimeMillis() - frameStart;
         recordFrameCost(frameCost);
+    }
+
+    /** 落叶要不要走 HDR 那一趟：开关、设备能力两者都要满足。 */
+    private boolean isGlowActive() {
+        return mScene.isGlowEnabled() && mGlowRenderer != null && mGlowRenderer.isReady();
+    }
+
+    /**
+     * 落叶。单独一个方法只为一件事：<b>不能从 drawFrame 里提前 return</b> ——
+     * 那会把场景留在 HDR 中间缓冲里没合成，症状是整屏全黑。
+     */
+    private void drawLeaves(FallScene.SceneData sceneData) {
+        if (mProgram == 0) {
+            return;
+        }
+        GLES30.glUseProgram(mProgram);
+        float[] tint = mScene.getLeafTintRgb();
+        GLES30.glUniform3f(mTintHandle, tint[0], tint[1], tint[2]);
+        GLES30.glUniform1f(mTintAmountHandle, mScene.getLeafTintAmount());
+        GLES30.glUniform1f(mTintValueHandle, mScene.getLeafTintValue());
+        for (FallScene.Leaf leaf : sceneData.getLeaves()) {
+            drawLeaf(leaf, sceneData);
+        }
     }
 
     private void syncWaterMeshBuffers(FallScene.SceneData sceneData) {
@@ -400,6 +548,17 @@ public class FallGL extends GLESScene {
             GLES30.glUniform1i(mSkySamplerHandles[i], 1 + i);
             GLES30.glUniform1f(mSkyWeightHandles[i], skyWeights[i]);
         }
+
+        /*
+         * 天空里的发光体。位置固定，亮度 = 日夜权重 × 峰值；辉光关着时整团不画。
+         */
+        GLES30.glUniform2f(mWEmitterPosHandle, EMITTER_X, EMITTER_Y);
+        // 纵向半轴按屏幕长宽比折算成 UV。不折的话竖屏上画出来是竖椭圆，见 EMITTER_HALF_W。
+        float emitterRadiusY = EMITTER_HALF_W * EMITTER_ASPECT * mWidth / (float) mHeight;
+        GLES30.glUniform2f(mWEmitterRadiusHandle, EMITTER_HALF_W, emitterRadiusY);
+        GLES30.glUniform3f(mWEmitterColorHandle, EMITTER_COLOR[0], EMITTER_COLOR[1], EMITTER_COLOR[2]);
+        GLES30.glUniform1f(mWEmitterGainHandle,
+                isGlowActive() ? mScene.getEmitterWeight() * EMITTER_GAIN : 0.0f);
 
         int indexCount = sceneData.getWaterMeshIndexCount();
         if (indexCount > 0) {
@@ -532,6 +691,9 @@ public class FallGL extends GLESScene {
         mAlphaHandle = GLES30.glGetUniformLocation(mProgram, "uAlpha");
         mSamplerHandle = GLES30.glGetUniformLocation(mProgram, "uSampler");
         mColorHandle = GLES30.glGetUniformLocation(mProgram, "uColor");
+        mTintHandle = GLES30.glGetUniformLocation(mProgram, "uTint");
+        mTintAmountHandle = GLES30.glGetUniformLocation(mProgram, "uTintAmount");
+        mTintValueHandle = GLES30.glGetUniformLocation(mProgram, "uValue");
 
         GLES30.glDeleteShader(vs);
         GLES30.glDeleteShader(fs);
@@ -573,6 +735,10 @@ public class FallGL extends GLESScene {
             mSkyWeightHandles[i]  = GLES30.glGetUniformLocation(mWaterProgram, SKY_WEIGHT_UNIFORMS[i]);
         }
         mWColorHandle        = GLES30.glGetUniformLocation(mWaterProgram, "uColor");
+        mWEmitterPosHandle   = GLES30.glGetUniformLocation(mWaterProgram, "uEmitterPos");
+        mWEmitterRadiusHandle = GLES30.glGetUniformLocation(mWaterProgram, "uEmitterRadius");
+        mWEmitterColorHandle = GLES30.glGetUniformLocation(mWaterProgram, "uEmitterColor");
+        mWEmitterGainHandle  = GLES30.glGetUniformLocation(mWaterProgram, "uEmitterGain");
         mWGlHeightHandle     = GLES30.glGetUniformLocation(mWaterProgram, "u_glHeight");
         mWBgScaleHandle      = GLES30.glGetUniformLocation(mWaterProgram, "u_bgScale");
         mWMeshScaleXHandle   = GLES30.glGetUniformLocation(mWaterProgram, "u_meshScaleX");

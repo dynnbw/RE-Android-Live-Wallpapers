@@ -51,6 +51,13 @@
       "title": "pref_fall_day_night",
       "summary": "pref_fall_day_night_desc",
       "default": "false"
+    },
+    {
+      "type": "switch",
+      "key": "pref_fall_glow",
+      "title": "pref_fall_glow",
+      "summary": "pref_fall_glow_desc",
+      "default": "false"
     }
   ]
 }

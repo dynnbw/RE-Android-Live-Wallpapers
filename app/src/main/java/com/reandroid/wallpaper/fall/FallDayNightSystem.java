@@ -110,6 +110,104 @@ final class FallDayNightSystem {
     }
 
     /**
+     * 天空发光体的权重。
+     *
+     * <p><b>只在"真正的白天"出现，清晨与黄昏都不给。</b> 直接取白日那一档、
+     * 并要求它几乎满格才点亮 —— 太阳是白日的太阳，天边刚泛红的时候天上没有它。
+     *
+     * <p>判据挂在**白日权重**上而不是太阳高度角上，是有意的：这样它跟着
+     * {@link #computeWeights} 里那条 {@code DAY_FULL_DEG} 一起走。哪天觉得
+     * "白日来得太早"把那条调宽，发光体出现的时刻会自动跟着挪，
+     * 不会出现"天空已经是一片白日了、太阳却还没出来"这种两套时钟打架的情况。
+     *
+     * <p>两端仍然是平滑的（两个阈值之间过渡），不是硬开关 —— 硬切会在日出那一刻整帧跳一下。
+     */
+    private static final float EMITTER_DAY_LO = 0.72f;
+    private static final float EMITTER_DAY_HI = 1.0f;
+
+    float emitterWeight() {
+        return computeEmitterWeight(mWeights);
+    }
+
+    /** {@link #emitterWeight()} 的算式本体，便于在 JVM 上直接测。 */
+    static float computeEmitterWeight(float[] weights) {
+        return MathUtils.smoothStep(EMITTER_DAY_LO, EMITTER_DAY_HI, weights[3]);
+    }
+
+    /**
+     * 落叶的时段染色锚点，顺序同 {@link #mWeights}：{@code [夜, 晨, 昏, 昼]}。
+     *
+     * <p>颜色是**插值目标**而不是乘数 —— 枫叶是橙红的，蓝通道本来就低，
+     * 乘一个偏蓝的颜色只会把它压灰，永远到不了"偏蓝白"（见 {@code fall_fs.glsl}）。
+     *
+     * <p>晨与昏刻意保持接近中性、量也小：那两个时段枫叶本该是暖色的，
+     * 原版观感就是这样，不该被这套染色洗掉。
+     */
+    private static final float[][] LEAF_TINT = {
+            {0.10f, 0.16f, 0.38f},   // 夜：深蓝
+            {0.72f, 0.70f, 0.70f},   // 晨：近中性
+            {0.88f, 0.74f, 0.58f},   // 昏：暖
+            {0.80f, 0.88f, 1.00f},   // 昼：蓝白
+    };
+    /**
+     * 各档染色的强度，与 {@link #LEAF_TINT} 同序。
+     *
+     * <p>这组数是**上机往回调过两轮**的：第一版 0.50/0.55、第二版 0.26/0.42，
+     * 都还是蓝得太多。叶子还是叶子，染色只该是"受当时天光影响"的一层薄薄的偏移。
+     *
+     * <p>夜里那一档也不靠它变暗 —— 见 {@link #LEAF_VALUE}。
+     */
+    private static final float[] LEAF_TINT_AMOUNT = {0.25f, 0.06f, 0.08f, 0.10f};
+
+    /**
+     * 各档的明度缩放，与 {@link #LEAF_TINT} 同序（1 = 原样）。
+     *
+     * <p>夜里"叶子变暗"就是这一项：直接乘，压的是明度、不动对比。
+     * 想靠往深蓝里混来变暗是行不通的 —— 混得越多，叶子的明暗层次被压得越平，
+     * 最后只剩一块糊掉的色斑，而不是"暗下来的叶子"。
+     *
+     * <p>晨昏接近 1：那两个时段本来就该是暖的、亮的。
+     */
+    private static final float[] LEAF_VALUE = {0.42f, 0.92f, 0.95f, 1.00f};
+
+    /**
+     * 按四档权重混出落叶的染色目标色。权重恒和为 1，所以这是一次凸组合，
+     * 结果必定落在四个锚点围成的范围内。
+     *
+     * @param out 长度 3，写进混好的颜色
+     * @return 混好的染色强度，直接拿去设 {@code uTintAmount}
+     */
+    static float computeLeafTint(float[] weights, float[] out) {
+        float r = 0.0f;
+        float g = 0.0f;
+        float b = 0.0f;
+        float amount = 0.0f;
+        for (int i = 0; i < weights.length; i++) {
+            r += weights[i] * LEAF_TINT[i][0];
+            g += weights[i] * LEAF_TINT[i][1];
+            b += weights[i] * LEAF_TINT[i][2];
+            amount += weights[i] * LEAF_TINT_AMOUNT[i];
+        }
+        out[0] = r;
+        out[1] = g;
+        out[2] = b;
+        return amount;
+    }
+
+    /**
+     * 按四档权重混出落叶的明度缩放，直接拿去设 {@code uValue}。
+     *
+     * <p>与染色分开：染色管"偏什么颜色"，这一项管"暗下去多少"（见 {@link #LEAF_VALUE}）。
+     */
+    static float computeLeafValue(float[] weights) {
+        float value = 0.0f;
+        for (int i = 0; i < weights.length; i++) {
+            value += weights[i] * LEAF_VALUE[i];
+        }
+        return value;
+    }
+
+    /**
      * 四档权重的算式本体 —— 不碰位置、时间、IO，所以能在 JVM 上直接测。
      *
      * <p>分档不是二选一，而是两条连续的斜坡：

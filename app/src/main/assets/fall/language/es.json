@@ -7,5 +7,7 @@
   "pref_fall_swipe_ripple": "Ondas continuas al deslizar",
   "pref_fall_swipe_ripple_desc": "Crea ondas continuamente al deslizar",
   "pref_fall_day_night": "Cielo de día y de noche",
-  "pref_fall_day_night_desc": "El cielo cambia según la hora del día"
+  "pref_fall_day_night_desc": "El cielo cambia según la hora del día",
+  "pref_fall_glow": "Resplandor",
+  "pref_fall_glow_desc": "Hace que las zonas más brillantes se difuminen"
 }
