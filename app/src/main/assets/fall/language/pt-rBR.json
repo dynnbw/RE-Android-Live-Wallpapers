@@ -5,5 +5,7 @@
   "pref_fall_max_drops": "Máx. de ondulações",
   "pref_fall_green_leaves": "Folhas verdes",
   "pref_fall_swipe_ripple": "Ondas contínuas ao deslizar",
-  "pref_fall_swipe_ripple_desc": "Cria ondas continuamente ao deslizar"
+  "pref_fall_swipe_ripple_desc": "Cria ondas continuamente ao deslizar",
+  "pref_fall_day_night": "Céu de dia e de noite",
+  "pref_fall_day_night_desc": "O céu muda conforme a hora do dia"
 }

@@ -186,6 +186,15 @@ final class FallScene {
     private int mVkLeafFloatCount = 0;
     private volatile SharedPreferences mPrefs;
 
+    /** 日夜变换：按当前时刻在四条天空色带之间插值。见 {@link FallDayNightSystem}。 */
+    private final FallDayNightSystem mDayNightSystem = new FallDayNightSystem();
+    /** 预览模式（把一天压进 {@link #PREVIEW_CYCLE_MS}）。 */
+    private boolean mIsPreview;
+    /**
+     * 预览把一整天压进这么长。与 grass 取同一个值 —— 两款壁纸的预览节奏应当一致。
+     */
+    private static final long PREVIEW_CYCLE_MS = 30000L;
+
     FallScene(int width, int height) {
         mWidth = width;
         mHeight = height;
@@ -196,6 +205,16 @@ final class FallScene {
     /** Called by FallGL.start() or first update() to initialize non-GL resources. */
     void ensureResources() {
         prepareNonGLResources();
+    }
+
+    /**
+     * 预览模式（设置页里把一天压进 {@value #PREVIEW_CYCLE_MS} 毫秒）。
+     *
+     * <p>不这么做的话，设置页预览永远停在"现在"这一刻 —— 想看夜晚就得等到晚上。
+     */
+    void setPreview(boolean preview) {
+        mIsPreview = preview;
+        mDayNightSystem.setPreview(preview);
     }
 
     private float mLeafSizeMultiplier = 1.0f;
@@ -320,6 +339,39 @@ final class FallScene {
         updateDrops();
         updateLeaves();
         updateWaterMesh(nowMs);
+        updateSkyWeights();
+    }
+
+    /**
+     * 天空四条色带的权重。
+     *
+     * <p><b>开关关掉时一次天文计算都不做</b>——直接把权重钉在黄昏那一条上，
+     * 连定位查询都不会发生。这是"基线不变"的兜底：关掉开关的画面与加这套之前逐位相同。
+     */
+    private void updateSkyWeights() {
+        if (!isDayNightEnabled()) {
+            mDayNightSystem.resetToDusk();
+            return;
+        }
+        mDayNightSystem.updateWeights(sceneClockMs());
+    }
+
+    /**
+     * 算日夜该用哪个时刻。
+     *
+     * <p>实机是真实时间；预览走压缩时间轴，否则设置页里根本等不到天黑。
+     */
+    private long sceneClockMs() {
+        long realMs = System.currentTimeMillis();
+        if (!mIsPreview) {
+            return realMs;
+        }
+        return mDayNightSystem.compressedClockMs(realMs, PREVIEW_CYCLE_MS);
+    }
+
+    /** 天空色带权重 {@code [夜, 晨, 昏, 昼]}，恒和为 1。GL 侧每帧取一次。 */
+    float[] getSkyWeights() {
+        return mDayNightSystem.getWeights();
     }
 
     void addDrop(int x, int y) {
@@ -752,6 +804,12 @@ final class FallScene {
     private int getMaxDrops() {
         if (mPrefs != null) return mPrefs.getInt(WallpaperSettings.KEY_FALL_MAX_DROPS, DEFAULT_WATER_MESH_DROPS);
         return WallpaperSettings.getFallMaxDrops(DEFAULT_WATER_MESH_DROPS);
+    }
+
+    /** 日夜变换开关（默认关：原版是一片固定的黄昏水面）。 */
+    private boolean isDayNightEnabled() {
+        if (mPrefs != null) return mPrefs.getBoolean(WallpaperSettings.KEY_FALL_DAY_NIGHT, false);
+        return WallpaperSettings.isFallDayNightEnabled(false);
     }
 
     /** 滑动水波纹开关：滑动每 42px 触发一次点击水波纹（默认开启） */

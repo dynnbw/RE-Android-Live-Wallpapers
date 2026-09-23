@@ -29,6 +29,7 @@ public class WallpaperSettings {
     public static final String KEY_FALL_GREEN_LEAVES = "pref_fall_green_leaves";
     public static final String KEY_FALL_MAX_DROPS = "pref_fall_max_drops";
     public static final String KEY_FALL_SWIPE_RIPPLE = "pref_fall_swipe_ripple";
+    public static final String KEY_FALL_DAY_NIGHT = "pref_fall_day_night";
     public static final String KEY_GALAXY_USE_LIGHT2 = "pref_galaxy_use_light2";
     public static final String KEY_GRASS_ENABLED = "pref_grass_enabled";
     public static final String KEY_GRASS_COUNT = "pref_grass_count";
@@ -93,6 +94,12 @@ public class WallpaperSettings {
         SharedPreferences p = prefs();
         if (p == null) return defValue;
         return p.getBoolean(KEY_FALL_SWIPE_RIPPLE, defValue);
+    }
+
+    public static boolean isFallDayNightEnabled(boolean defValue) {
+        SharedPreferences p = prefs();
+        if (p == null) return defValue;
+        return p.getBoolean(KEY_FALL_DAY_NIGHT, defValue);
     }
 
     public static boolean isGalaxyLight2Enabled(boolean defValue) {

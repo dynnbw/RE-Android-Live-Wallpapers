@@ -39,6 +39,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
+import java.util.Arrays;
 
 public class FallGL extends GLESScene {
     private static final String TAG = "FallGL";
@@ -59,7 +60,6 @@ public class FallGL extends GLESScene {
     private int mWMatrixHandle;
     private int mWAlphaHandle;
     private int mWMaskHandle;
-    private int mWSkyHandle;
     private int mWColorHandle;
     private int mWPositionHandle;
     private int mWTexCoordHandle;
@@ -75,8 +75,26 @@ public class FallGL extends GLESScene {
     private int[] mLeafTextures;
     /** 河床的树：单通道遮罩（白=天空 黑=树）。 */
     private int mMaskTexture;
-    /** 河床的天空：由 pond_sky_fields.txt 生成的 24x64 竖直色带。 */
-    private int mSkyTexture;
+
+    /*
+     * 河床的天空：pond_sky_fields.txt 的四段色场各生成一条 24x64 竖直色带，
+     * 按权重加权求和（权重由 FallScene 按时段算出）。
+     *
+     * 下面三张表**必须同序**，而且要与 FallScene#getSkyWeights() 的顺序一致
+     * （{@code [夜, 晨, 昏, 昼]}）—— 它们就是靠下标对齐的，只动一处就会串色。
+     */
+    private static final String[] SKY_SECTIONS = {
+            "SKY_FIELD_NIGHT", "SKY_FIELD_MORNING", "SKY_FIELD_DUSK", "SKY_FIELD_DAY"
+    };
+    private static final String[] SKY_SAMPLER_UNIFORMS = {
+            "uSkyNight", "uSkyMorning", "uSkyDusk", "uSkyDay"
+    };
+    private static final String[] SKY_WEIGHT_UNIFORMS = {
+            "uWeightNight", "uWeightMorning", "uWeightDusk", "uWeightDay"
+    };
+    private final int[] mSkyTextures = new int[SKY_SECTIONS.length];
+    private final int[] mSkySamplerHandles = new int[SKY_SECTIONS.length];
+    private final int[] mSkyWeightHandles = new int[SKY_SECTIONS.length];
     private FloatBuffer mWaterMeshVertexBuffer;
     private FloatBuffer mWaterMeshTexCoordBuffer;
     private FloatBuffer mLeafQuadVertexBuffer;
@@ -137,12 +155,12 @@ public class FallGL extends GLESScene {
             mLeafTextures = null;
         }
 
-        if (mMaskTexture != 0 || mSkyTexture != 0) {
-            int[] tex = new int[] { mMaskTexture, mSkyTexture };
-            GLES30.glDeleteTextures(2, tex, 0);
+        if (mMaskTexture != 0) {
+            int[] tex = new int[] { mMaskTexture };
+            GLES30.glDeleteTextures(1, tex, 0);
             mMaskTexture = 0;
-            mSkyTexture = 0;
         }
+        releaseSkyTextures();
 
         if (mProgram != 0) {
             GLES30.glDeleteProgram(mProgram);
@@ -176,6 +194,8 @@ public class FallGL extends GLESScene {
 
         mGLInitialized = true;
         mScene.ensureResources();
+        // 预览（设置页）里把一天压进 30 秒，否则永远只看得到"现在"这一刻
+        mScene.setPreview(isPreview());
         GLES30.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         GLES30.glEnable(GLES30.GL_BLEND);
         GLES30.glBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ONE_MINUS_SRC_ALPHA);
@@ -193,19 +213,17 @@ public class FallGL extends GLESScene {
         // ensureResources() already set mLeafTextureCount from prefs — don't override
         try {
             mMaskTexture = loadMaskTexture("fall/drawable/pond_mask.png");
-            mSkyTexture = createPondSkyTexture();
+            loadPondSkyTextures();
         } catch (Exception e) {
             Log.e(TAG, "GL线程加载河床纹理失败", e);
             mMaskTexture = 0;
-            mSkyTexture = 0;
+            releaseSkyTextures();
         }
         // 任一缺失都会让水面变成未定义采样，各自退回占位（全白遮罩 = 整屏天空）
         if (mMaskTexture == 0) {
             mMaskTexture = createSolidMaskTexture();
         }
-        if (mSkyTexture == 0) {
-            mSkyTexture = createPlaceholderTexture(256, 256, Color.parseColor("#4A6FA5"));
-        }
+        ensureSkyTextures();
     }
 
     @Override
@@ -373,9 +391,15 @@ public class FallGL extends GLESScene {
         GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
         GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mMaskTexture);
         GLES30.glUniform1i(mWMaskHandle, 0);
-        GLES30.glActiveTexture(GLES30.GL_TEXTURE1);
-        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mSkyTexture);
-        GLES30.glUniform1i(mWSkyHandle, 1);
+
+        // 四条天空色带绑到单元 1..4，权重与 mSkyTextures 同序（见 SKY_SECTIONS 的说明）
+        float[] skyWeights = mScene.getSkyWeights();
+        for (int i = 0; i < mSkyTextures.length; i++) {
+            GLES30.glActiveTexture(GLES30.GL_TEXTURE1 + i);
+            GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mSkyTextures[i]);
+            GLES30.glUniform1i(mSkySamplerHandles[i], 1 + i);
+            GLES30.glUniform1f(mSkyWeightHandles[i], skyWeights[i]);
+        }
 
         int indexCount = sceneData.getWaterMeshIndexCount();
         if (indexCount > 0) {
@@ -544,7 +568,10 @@ public class FallGL extends GLESScene {
         mWMatrixHandle       = GLES30.glGetUniformLocation(mWaterProgram, "uMVPMatrix");
         mWAlphaHandle        = GLES30.glGetUniformLocation(mWaterProgram, "uAlpha");
         mWMaskHandle         = GLES30.glGetUniformLocation(mWaterProgram, "uMask");
-        mWSkyHandle          = GLES30.glGetUniformLocation(mWaterProgram, "uSky");
+        for (int i = 0; i < SKY_SECTIONS.length; i++) {
+            mSkySamplerHandles[i] = GLES30.glGetUniformLocation(mWaterProgram, SKY_SAMPLER_UNIFORMS[i]);
+            mSkyWeightHandles[i]  = GLES30.glGetUniformLocation(mWaterProgram, SKY_WEIGHT_UNIFORMS[i]);
+        }
         mWColorHandle        = GLES30.glGetUniformLocation(mWaterProgram, "uColor");
         mWGlHeightHandle     = GLES30.glGetUniformLocation(mWaterProgram, "u_glHeight");
         mWBgScaleHandle      = GLES30.glGetUniformLocation(mWaterProgram, "u_bgScale");
@@ -622,15 +649,38 @@ public class FallGL extends GLESScene {
         return tex[0];
     }
 
-    /** 从 pond_sky_fields.txt 的 SKY_FIELD_DUSK 段生成 24×64 的竖直天空色带。 */
-    private int createPondSkyTexture() {
+    /**
+     * 从 pond_sky_fields.txt 的四段色场各生成一条 24×64 的竖直天空色带
+     * （清晨 / 白日 / 黄昏 / 夜晚，见 {@link #SKY_SECTIONS}）。
+     *
+     * <p>只有黄昏那一段是原版就有的，其余三段是日夜变换新加的。
+     */
+    private void loadPondSkyTextures() {
         String text = AssetLoader.readText(mContext, "fall/data/pond_sky_fields.txt");
-        int[][] field = SkyField.parseSection(text, "SKY_FIELD_DUSK");
-        if (field == null) {
-            Log.e(TAG, "天空色场解析失败");
-            return 0;
+        for (int i = 0; i < SKY_SECTIONS.length; i++) {
+            int[][] field = SkyField.parseSection(text, SKY_SECTIONS[i]);
+            if (field == null) {
+                Log.e(TAG, "天空色场解析失败: " + SKY_SECTIONS[i]);
+                mSkyTextures[i] = 0;
+                continue;
+            }
+            mSkyTextures[i] = SkyField.createTexture(field, false);
         }
-        return SkyField.createTexture(field, false);
+    }
+
+    /** 缺哪段补哪段：少一条色带就会让那一段时间的水面采样到未定义的纹理。 */
+    private void ensureSkyTextures() {
+        for (int i = 0; i < mSkyTextures.length; i++) {
+            if (mSkyTextures[i] == 0) {
+                mSkyTextures[i] = createPlaceholderTexture(256, 256, Color.parseColor("#4A6FA5"));
+            }
+        }
+    }
+
+    /** 删掉四条天空色带。名字为 0 的项会被 GL 忽略，不必先挑出有效的。 */
+    private void releaseSkyTextures() {
+        GLES30.glDeleteTextures(mSkyTextures.length, mSkyTextures, 0);
+        Arrays.fill(mSkyTextures, 0);
     }
 
     private int createPlaceholderTexture(int width, int height, int color) {
