@@ -120,6 +120,7 @@ public class GrassGL extends GLESScene {
     private int mGrassSamplerHandle;
     // ---- 草叶逆光（第二版）----
     private int mGrassLightHandle;
+    private int mGrassHighlightHandle;
     private int mGrassCrossAngleHandle;
     private int mGrassHeightDimHandle;
     private int mGrassHeightGainHandle;
@@ -418,17 +419,16 @@ public class GrassGL extends GLESScene {
         GLES30.glUniformMatrix4fv(mGrassMatrixHandle, 1, false, sd.projectionMatrix, 0);
         // 草叶逆光的常量与总强度。总强度为 0 时着色器提前返回，输出与加特效之前一致。
         GLES30.glUniform1f(mGrassLightHandle, sd.lightStrength);
+        // 高光门控：正午 0（不要高光）、黄金时刻 1、月夜 1
+        GLES30.glUniform1f(mGrassHighlightHandle, sd.lightHighlight);
         GLES30.glUniform1f(mGrassCrossAngleHandle, GrassConstants.GRASS_LIGHT_CROSS_ANGLE);
         GLES30.glUniform1f(mGrassHeightDimHandle, GrassConstants.GRASS_LIGHT_HEIGHT_DIM);
         GLES30.glUniform1f(mGrassHeightGainHandle, GrassConstants.GRASS_LIGHT_HEIGHT_GAIN);
+        // 颜色由场景按光源与高度角算好（GrassLightColor），不再是常量
         GLES30.glUniform3f(mGrassTransmitHandle,
-                GrassConstants.GRASS_LIGHT_TRANSMIT[0],
-                GrassConstants.GRASS_LIGHT_TRANSMIT[1],
-                GrassConstants.GRASS_LIGHT_TRANSMIT[2]);
+                sd.lightTransmit[0], sd.lightTransmit[1], sd.lightTransmit[2]);
         GLES30.glUniform3f(mGrassCoolHandle,
-                GrassConstants.GRASS_LIGHT_COOL[0],
-                GrassConstants.GRASS_LIGHT_COOL[1],
-                GrassConstants.GRASS_LIGHT_COOL[2]);
+                sd.lightCool[0], sd.lightCool[1], sd.lightCool[2]);
         GLES30.glUniform3f(mGrassRimColorHandle,
                 GrassConstants.GRASS_LIGHT_RIM[0],
                 GrassConstants.GRASS_LIGHT_RIM[1],
@@ -577,6 +577,7 @@ public class GrassGL extends GLESScene {
         mGrassMatrixHandle = GLES30.glGetUniformLocation(mGrassProgram, "uMVPMatrix");
         mGrassSamplerHandle = GLES30.glGetUniformLocation(mGrassProgram, "uSampler");
         mGrassLightHandle = GLES30.glGetUniformLocation(mGrassProgram, "uLight");
+        mGrassHighlightHandle = GLES30.glGetUniformLocation(mGrassProgram, "uHighlight");
         mGrassCrossAngleHandle = GLES30.glGetUniformLocation(mGrassProgram, "uCrossAngle");
         mGrassHeightDimHandle = GLES30.glGetUniformLocation(mGrassProgram, "uHeightDim");
         mGrassHeightGainHandle = GLES30.glGetUniformLocation(mGrassProgram, "uHeightGain");

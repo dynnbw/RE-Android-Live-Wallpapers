@@ -582,14 +582,23 @@ final class GrassScene {
         // ---- 草叶逆光 ----
         // 总强度里已经含了开关、太阳高度角曲线和天气压制（见 GrassBacklight），
         // 所以这里**不要再套一层开关判断**。它为 0 时着色器提前返回，画面与今天一致。
+        float sunAlt = (float) mSceneData.lastSunAltitude;
+        boolean moonUp = mSceneData.moonVisible;
+        float moonAlt = mSceneData.moonAltitudeDeg;
+        boolean useMoon = GrassBacklight.sourceIsMoon(sunAlt, moonUp, moonAlt);
+
         mSceneData.lightStrength = GrassBacklight.effectiveStrength(
-                mGrassLightEnabled,
-                (float) mSceneData.lastSunAltitude,
-                mWeatherCondition);
-        GrassBacklight.lightPosition(
-                (float) mSceneData.lastSunAltitude,
+                mGrassLightEnabled, sunAlt, moonUp, moonAlt, mWeatherCondition);
+        // 高光门控：正午 0（不要高光）、黄金时刻 1、月夜 1
+        mSceneData.lightHighlight = mGrassLightEnabled
+                ? GrassBacklight.highlight(sunAlt, moonUp, moonAlt)
+                : 0.0f;
+        // 颜色跟着光源走（正午近白 / 黄金时刻琥珀 / 月亮冷白偏蓝）
+        GrassLightColor.transmit(sunAlt, useMoon, mSceneData.lightTransmit);
+        GrassLightColor.cool(sunAlt, useMoon, mSceneData.lightCool);
+        GrassBacklight.lightPosition(useMoon,
                 mSceneData.sunX, mSceneData.sunY,
-                mSceneData.moonVisible, mSceneData.moonX, mSceneData.moonY,
+                mSceneData.moonX, mSceneData.moonY,
                 mLightPosScratch);
         mSceneData.lightX = mLightPosScratch[0];
         mSceneData.lightY = mLightPosScratch[1];
@@ -721,6 +730,7 @@ final class GrassScene {
         MoonEclipse eclipse = computeMoonEclipse(data);
 
         mSceneData.moonVisible = true;
+        mSceneData.moonAltitudeDeg = (float) data.moonAltitudeDeg;
         mSceneData.moonPhaseAngle = (float) data.phaseAngleUtcDeg;
         mSceneData.moonRotationDeg = (float) data.parallacticAngleDeg;
         mSceneData.moonX = moonX;

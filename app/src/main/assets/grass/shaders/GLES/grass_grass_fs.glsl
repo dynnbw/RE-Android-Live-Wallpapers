@@ -17,6 +17,11 @@ in highp vec2 vTexCoord;
 // 拿到的值数学上必然相等，整片草一起变金、没有个体差异。2D 光照的经典文章把这个
 // 失败模式说得很直白：没有法线贴图时，光只是把精灵的整体形状均匀照亮。
 uniform float uLight;
+// 高光门控：驱动**透光与迎光边**。0 = 不要高光（正午），1 = 满（黄金时刻、月夜）。
+//
+// 与 uLight 分开是因为它们驱动的东西不同：uLight 管高度渐变与阴影（白天也有），
+// uHighlight 管"逆光的那层金"（正午没有 —— 太阳在头顶，逆光不成立）。
+uniform float uHighlight;
 uniform float uCrossAngle;   // 横截面法线扫过的张角
 uniform float uHeightDim;    // 叶根（厚）的明暗系数
 uniform float uHeightGain;   // 叶尖（薄）的明暗系数
@@ -66,16 +71,17 @@ void main() {
   //
   //    **系数用 sqrt(m) 而不是 m。** 高光走 m、阴影走 (1 - m)，两路是分开的；
   //    实测 m 的均值只有 0.22（可见度和遮挡各削掉一半），线性用 m 时混合系数太小。
-  float transmit = sqrt(m) * tip * mix(0.85, 1.10, max(-edge, 0.0));
+  float transmit = sqrt(m) * tip * mix(0.85, 1.10, max(-edge, 0.0)) * uHighlight;
   vec3 transmitted = uTransmit * mix(0.90, 1.15, tip);   // 薄处透得多、也更亮
   color = mix(color, transmitted, transmit);
 
   // ③ 迎光边：**只在迎光那一侧**，且随受光缩放 —— 不是每片叶一圈相同的描边
-  color += uRimColor * rim * m * max(edge, 0.0) * uRimGain;
+  color += uRimColor * rim * m * max(edge, 0.0) * uRimGain * uHighlight;
 
   // ④ 暖光冷影：不受光处压暗**并偏冷**。只把亮部染暖、暗部不动的话，
   //    读起来就是"同一种颜料被调亮调暗"。
-  color = mix(color, color * uCool, (1.0 - m) * uShadowGain);
+  // 阴影同样跟着 uLight 缩放 —— 夜里总强度是白天的一半，阴影也该淡一半
+  color = mix(color, color * uCool, (1.0 - m) * uShadowGain * uLight);
 
   fragColor = vec4(color, a);
 }

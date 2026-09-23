@@ -140,6 +140,26 @@ final class GrassConstants {
      * <p>数值可以大于 1（那是"比白还亮"的透射光）。红比绿高是刻意的 —— 逆光的草偏琥珀。
      */
     static final float[] GRASS_LIGHT_TRANSMIT = {1.35f, 1.00f, 0.40f};
+
+    // ---- 草叶逆光的颜色（按天上的光源插值，见 GrassLightColor）----
+    //
+    // 三个锚点：正午（太阳高）、黄金时刻（贴地平线）、月亮。
+    // 黄金时刻那一组就是原来那套 —— 保住了既有观感。
+
+    /** 正午的透光色：接近白，只带一点暖。太阳在头顶时"逆光"本来就弱。 */
+    static final float[] GRASS_LIGHT_TRANSMIT_DAY = {1.15f, 1.10f, 0.95f};
+    /** 月光的透光色：**冷白偏蓝**（B > G > R）。 */
+    static final float[] GRASS_LIGHT_TRANSMIT_MOON = {0.70f, 0.85f, 1.20f};
+    /** 正午的阴影色：中性偏冷一点。 */
+    static final float[] GRASS_LIGHT_COOL_DAY = {0.80f, 0.84f, 0.92f};
+    /** 月光的阴影色：更深的冷。 */
+    static final float[] GRASS_LIGHT_COOL_MOON = {0.58f, 0.66f, 0.88f};
+    /**
+     * 太阳色从"黄金时刻"过渡到"正午"的高度角区间（度）。
+     *
+     * <p>地平线附近是琥珀，太阳升到 {@code 30°} 左右就变成接近白的暖色。
+     */
+    static final float GRASS_LIGHT_DAY_DEG = 30.0f;
     /**
      * 冷影。**乘**上去 —— 暗部偏冷，而不是把原来的绿调暗。
      *

@@ -125,6 +125,19 @@ final class SceneData {
      */
     float lightX, lightY, lightStrength;
     /**
+     * 高光门控（透光与迎光边）：0 = 正午不要高光，1 = 黄金时刻 / 月夜。
+     *
+     * <p>与 {@link #lightStrength} 分开 —— 那个管高度渐变与阴影（白天也有，
+     * 夜里减半），这个管"逆光的那层金"（正午没有，太阳在头顶）。
+     */
+    float lightHighlight;
+    /** 透光色，按光源与高度角算好（见 {@code GrassLightColor}）。 */
+    final float[] lightTransmit = {1.35f, 1.00f, 0.40f};
+    /** 阴影色，同上。 */
+    final float[] lightCool = {0.62f, 0.70f, 0.86f};
+    /** 月亮高度角。0 表示不在地平线上。光源切换与强度曲线都要用它。 */
+    float moonAltitudeDeg;
+    /**
      * HDR + 辉光开关。
      *
      * <p>只反映**用户的开关**；设备能力（{@code GlowRenderer.isReady()}）只有渲染线程知道，

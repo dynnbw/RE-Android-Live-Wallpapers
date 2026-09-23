@@ -5,63 +5,157 @@ import com.reandroid.weather.WeatherCondition;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
  * 草叶逆光的强度模型。
  *
- * <p>要守住的核心是**时间窗口**：只在清晨与黄昏出现，正午和深夜都必须恰好为 0。
- * 这条错了不会有任何报错 —— 要么"这个特性从来看不见"，要么"大中午草地莫名其妙在发光"。
+ * <p><b>两个量是分开的，因为它们驱动的东西不同：</b>
+ * <ul>
+ *   <li>{@link GrassBacklight#strength} —— 高度渐变与阴影。白天满、夜里一半、
+ *       两者都不在天上就是 **恰好 0**（"夜里没月亮就没光"）</li>
+ *   <li>{@link GrassBacklight#highlight} —— 透光与迎光边。**正午恰好 0**，
+ *       地平线处 1，夜里月亮升起来也是 1</li>
+ * </ul>
+ *
+ * <p>这条错了不会有任何报错：要么"特性从来看不见"，要么"大中午草地莫名其妙在发光"。
  */
 public class GrassBacklightTest {
 
-    // ---- 高度角曲线 ----
+    private static final float EPS = 1.0E-5f;
 
-    /** 正午、深夜都必须是**恰好 0**，不是"很小"。 */
+    private static float strength(float sunAlt, boolean moonUp, float moonAlt) {
+        return GrassBacklight.strength(sunAlt, moonUp, moonAlt);
+    }
+
+    private static float highlight(float sunAlt, boolean moonUp, float moonAlt) {
+        return GrassBacklight.highlight(sunAlt, moonUp, moonAlt);
+    }
+
+    // ---- 总强度：白天满、夜里一半、都没有就是 0 ----
+
+    /** 白天（太阳在地平线上）是满的。 */
     @Test
-    public void offAtNoonAndAtNight() {
-        assertEquals("正午不该有逆光", 0.0f, GrassBacklight.strength(45.0f), 0.0f);
-        assertEquals("正午不该有逆光", 0.0f, GrassBacklight.strength(90.0f), 0.0f);
-        assertEquals("深夜不该有逆光", 0.0f, GrassBacklight.strength(-40.0f), 0.0f);
-        assertEquals("深夜不该有逆光", 0.0f, GrassBacklight.strength(-GrassBacklight.FADE_DEG), 0.0f);
-        assertEquals("天亮到头也不该有", 0.0f, GrassBacklight.strength(GrassBacklight.FADE_DEG), 0.0f);
+    public void dayIsFull() {
+        assertEquals("地平线上就是满的", 1.0f, strength(0.0f, false, 0.0f), EPS);
+        assertEquals("正午也是满的", 1.0f, strength(60.0f, false, 0.0f), EPS);
+    }
+
+    /** 夜里靠月亮，强度是白天的一半 —— 用户定的就是这个数。 */
+    @Test
+    public void nightWithMoonIsHalfOfDay() {
+        assertEquals("地平线上的月亮", GrassBacklight.NIGHT_LEVEL,
+                strength(-30.0f, true, 0.0f), EPS);
+        assertEquals("高挂的月亮也是同一个上限", GrassBacklight.NIGHT_LEVEL,
+                strength(-30.0f, true, 60.0f), EPS);
+        assertTrue("夜里必须比白天弱", GrassBacklight.NIGHT_LEVEL < GrassBacklight.DAY_LEVEL);
+    }
+
+    /**
+     * **两个光源都不在天上 → 恰好 0。**
+     *
+     * <p>这条就是"夜里没月亮就没光"。写成恰好 0 而不是"很小"：很小会留下一层
+     * 淡淡的底光，而那正是"关了开关还有东西"的观感。
+     */
+    @Test
+    public void noLightSourceMeansExactlyZero() {
+        assertEquals("深夜无月", 0.0f, strength(-40.0f, false, 0.0f), 0.0f);
+        assertEquals("天还没亮到底", 0.0f,
+                strength(-GrassBacklight.FADE_DEG, false, 0.0f), 0.0f);
+        assertEquals("月亮在地平线下", 0.0f,
+                strength(-30.0f, true, -GrassBacklight.FADE_DEG), 0.0f);
+    }
+
+    /** 太阳升起的过程必须连续，不能有跳变 —— 昼夜是连续量在过渡。 */
+    @Test
+    public void strengthIsContinuousAcrossSunrise() {
+        float prev = strength(-GrassBacklight.FADE_DEG - 1.0f, false, 0.0f);
+        for (float alt = -GrassBacklight.FADE_DEG; alt <= 10.0f; alt += 0.25f) {
+            float cur = strength(alt, false, 0.0f);
+            assertTrue("alt=" + alt + " 有跳变：" + prev + " -> " + cur,
+                    Math.abs(cur - prev) < 0.05f);
+            prev = cur;
+        }
+    }
+
+    /** 月亮升起时接手，而且是渐显不是硬切。 */
+    @Test
+    public void theMoonTakesOverGradually() {
+        float low = strength(-30.0f, true, -GrassBacklight.FADE_DEG + 0.5f);
+        float high = strength(-30.0f, true, 0.0f);
+        assertTrue("月亮升起过程中应当渐强：" + low + " -> " + high, high > low);
+        assertEquals("升到地平线时到顶", GrassBacklight.NIGHT_LEVEL, high, EPS);
+    }
+
+    // ---- 高光门控：正午 0、地平线 1、夜里 1 ----
+
+    /** **正午必须恰好 0** —— 太阳在头顶，没有逆光可言。这就是"白天不要高光"。 */
+    @Test
+    public void noHighlightAtNoon() {
+        assertEquals("正午", 0.0f, highlight(45.0f, false, 0.0f), 0.0f);
+        assertEquals("天顶", 0.0f, highlight(90.0f, false, 0.0f), 0.0f);
+        assertEquals("开始渐隐处", 0.0f,
+                highlight(GrassBacklight.FADE_DEG, false, 0.0f), 0.0f);
     }
 
     /** 峰值在地平线，而且是 1.0。 */
     @Test
-    public void peaksAtTheHorizon() {
-        assertEquals("地平线处应为峰值 1.0", 1.0f, GrassBacklight.strength(0.0f), 1.0E-5f);
+    public void highlightPeaksAtTheHorizon() {
+        assertEquals("地平线处应为峰值 1.0", 1.0f, highlight(0.0f, false, 0.0f), EPS);
         for (float alt = -GrassBacklight.FADE_DEG; alt <= GrassBacklight.FADE_DEG; alt += 0.5f) {
             assertTrue("alt=" + alt + " 超过了峰值",
-                    GrassBacklight.strength(alt) <= 1.0f + 1.0E-5f);
-        }
-    }
-
-    /** 两侧单调：太阳升起来越来越弱、落下去也越来越弱，没有回头。 */
-    @Test
-    public void fallsOffMonotonicallyOnBothSides() {
-        float prev = GrassBacklight.strength(0.0f);
-        for (float alt = 0.5f; alt <= GrassBacklight.FADE_DEG; alt += 0.5f) {
-            float cur = GrassBacklight.strength(alt);
-            assertTrue("alt=" + alt + " 向上时强度回升了：" + prev + " -> " + cur, cur <= prev);
-            prev = cur;
-        }
-        prev = GrassBacklight.strength(0.0f);
-        for (float alt = -0.5f; alt >= -GrassBacklight.FADE_DEG; alt -= 0.5f) {
-            float cur = GrassBacklight.strength(alt);
-            assertTrue("alt=" + alt + " 向下时强度回升了：" + prev + " -> " + cur, cur <= prev);
-            prev = cur;
+                    highlight(alt, false, 0.0f) <= 1.0f + EPS);
         }
     }
 
     /** 峰值附近是**平的**，不是尖角 —— 太阳过地平线时不该有个可察觉的折点。 */
     @Test
-    public void peakIsFlatNotPointed() {
-        // 距峰值 1° 处仍然要很接近 1（尖角的话会掉到约 0.92）
-        assertTrue("+1° 处太低了：" + GrassBacklight.strength(1.0f),
-                GrassBacklight.strength(1.0f) > 0.97f);
-        assertTrue("-1° 处太低了：" + GrassBacklight.strength(-1.0f),
-                GrassBacklight.strength(-1.0f) > 0.97f);
+    public void highlightIsFlatAtThePeak() {
+        assertTrue("+1° 处太低了：" + highlight(1.0f, false, 0.0f),
+                highlight(1.0f, false, 0.0f) > 0.97f);
+        assertTrue("-1° 处太低了：" + highlight(-1.0f, false, 0.0f),
+                highlight(-1.0f, false, 0.0f) > 0.97f);
+    }
+
+    /** 两侧单调。 */
+    @Test
+    public void highlightFallsOffMonotonicallyOnBothSides() {
+        float prev = highlight(0.0f, false, 0.0f);
+        for (float alt = 0.5f; alt <= GrassBacklight.FADE_DEG; alt += 0.5f) {
+            float cur = highlight(alt, false, 0.0f);
+            assertTrue("alt=" + alt + " 向上时回升了：" + prev + " -> " + cur, cur <= prev);
+            prev = cur;
+        }
+        prev = highlight(0.0f, false, 0.0f);
+        for (float alt = -0.5f; alt >= -GrassBacklight.FADE_DEG; alt -= 0.5f) {
+            float cur = highlight(alt, false, 0.0f);
+            assertTrue("alt=" + alt + " 向下时回升了：" + prev + " -> " + cur, cur <= prev);
+            prev = cur;
+        }
+    }
+
+    /** **夜里月亮在 → 高光是满的**（冷色的那套逆光）。 */
+    @Test
+    public void moonlightLightsTheHighlight() {
+        assertEquals("月亮升到地平线上", 1.0f, highlight(-30.0f, true, 0.0f), EPS);
+        assertEquals("月亮高挂", 1.0f, highlight(-40.0f, true, 50.0f), EPS);
+    }
+
+    /** 月亮升起时高光渐显，不是硬切 —— 硬切会在那一刻"啪"地跳一下。 */
+    @Test
+    public void highlightFadesInAsTheMoonRises() {
+        float below = highlight(-30.0f, true, -GrassBacklight.FADE_DEG + 0.5f);
+        float above = highlight(-30.0f, true, 0.0f);
+        assertTrue("应当渐显：" + below + " -> " + above, above > below);
+        assertTrue("地平线以下不该有高光", below < 0.1f);
+    }
+
+    /** 白天月亮也在天上时，高光仍按太阳算 —— 不该让月亮把正午的高光点起来。 */
+    @Test
+    public void aDaytimeMoonDoesNotLightTheHighlight() {
+        assertEquals("正午有月亮也不该有高光", 0.0f,
+                highlight(40.0f, true, 30.0f), 0.0f);
     }
 
     // ---- 天气压制 ----
@@ -71,18 +165,18 @@ public class GrassBacklightTest {
     public void weatherSuppressesTheEffect() {
         float clear = GrassBacklight.weatherScale(WeatherCondition.D1_CLEAR);
         float storm = GrassBacklight.weatherScale(WeatherCondition.D6_THUNDERSTORMS);
-        assertEquals("晴天不该被压", 1.0f, clear, 1.0E-5f);
+        assertEquals("晴天不该被压", 1.0f, clear, EPS);
         assertTrue("雷暴里应当几乎为 0：" + storm, storm < 0.10f);
-        assertTrue("雷暴应当比多云压得狠", storm < GrassBacklight.weatherScale(WeatherCondition.D2_CLOUDY));
+        assertTrue("雷暴应当比多云压得狠",
+                storm < GrassBacklight.weatherScale(WeatherCondition.D2_CLOUDY));
     }
 
     /**
      * 每个档位的压制值 —— **这是一张必须逐档登记的表**。
      *
      * <p>写成表驱动而不是"检查落在 [0,1]"：后者对新加的档位是**放行**的
-     * （{@code GrassBacklight.weatherScale} 的 {@code default} 返回 1.0，仍在范围内），
-     * 于是"加了一个天气档位、逆光却按晴天算"会静默通过 ——
-     * 那正是"漏一个档位"的实际后果。
+     * （{@code weatherScale} 的 {@code default} 返回 1.0，仍在范围内），
+     * 于是"加了一个天气档位、逆光却按晴天算"会静默通过。
      *
      * <p>这里 {@code default} 直接抛，新档位一加进来测试就红，并且告诉你该做什么。
      */
@@ -130,8 +224,8 @@ public class GrassBacklightTest {
     public void disabledMeansExactlyZero() {
         for (float alt = -90.0f; alt <= 90.0f; alt += 1.0f) {
             for (WeatherCondition c : WeatherCondition.values()) {
-                assertEquals("关掉时 alt=" + alt + " " + c + " 仍不为 0",
-                        0.0f, GrassBacklight.effectiveStrength(false, alt, c), 0.0f);
+                assertEquals("关掉时 alt=" + alt + " " + c + " 仍不为 0", 0.0f,
+                        GrassBacklight.effectiveStrength(false, alt, true, 40.0f, c), 0.0f);
             }
         }
     }
@@ -139,48 +233,53 @@ public class GrassBacklightTest {
     /** 打开时 = 高度角曲线 × 天气。 */
     @Test
     public void enabledMultipliesTheTwoFactors() {
-        float expected = GrassBacklight.strength(0.0f)
+        float expected = strength(-30.0f, true, 40.0f)
                 * GrassBacklight.weatherScale(WeatherCondition.D1_CLEAR);
         assertEquals(expected, GrassBacklight.effectiveStrength(
-                true, 0.0f, WeatherCondition.D1_CLEAR), 1.0E-6f);
+                true, -30.0f, true, 40.0f, WeatherCondition.D1_CLEAR), 1.0E-6f);
     }
 
     // ---- 光源选择 ----
 
-    /** 太阳在地平线上 → 用太阳。 */
+    /** 白天太阳占优 → 用太阳。 */
     @Test
     public void usesTheSunWhileItIsUp() {
         float[] out = new float[2];
-        GrassBacklight.lightPosition(10.0f, 100f, 200f, true, 800f, 300f, out);
+        boolean moon = GrassBacklight.sourceIsMoon(10.0f, true, 30.0f);
+        GrassBacklight.lightPosition(moon, 100f, 200f, 800f, 300f, out);
+        assertFalse("白天月亮不该抢走光源", moon);
         assertEquals("应当取太阳的 x", 100f, out[0], 0.0f);
         assertEquals("应当取太阳的 y", 200f, out[1], 0.0f);
     }
 
-    /** 太阳落了、月亮可见 → 用月亮（对上黄昏目标图：光晕在月亮上）。 */
+    /** 太阳落了、月亮可见 → 用月亮。 */
     @Test
     public void usesTheMoonAfterSunset() {
         float[] out = new float[2];
-        GrassBacklight.lightPosition(-5.0f, 100f, 2400f, true, 800f, 300f, out);
+        boolean moon = GrassBacklight.sourceIsMoon(-10.0f, true, 20.0f);
+        GrassBacklight.lightPosition(moon, 100f, 2400f, 800f, 300f, out);
+        assertTrue("太阳落山后应当轮到月亮", moon);
         assertEquals("应当取月亮的 x", 800f, out[0], 0.0f);
         assertEquals("应当取月亮的 y", 300f, out[1], 0.0f);
     }
 
     /**
-     * **两者都不在天上 → 退回太阳位置**（新月黄昏）。
+     * 两者都不在天上 → **没有光源**。
      *
-     * <p>不加这条的话，新月那几天的黄昏特性会静默不出现 —— 正是"看着像没做"的一类失效。
-     * 太阳的位置与高度角无关地一直在算，所以这条不花额外代价。
+     * <p>这里与改造前**相反**：原先有一条"退回太阳位置"的兜底（为了让新月那几天的黄昏
+     * 仍有光晕）。现在太阳在地平线下本来就给 0，兜底反而会造出"没有光源却在发光" ——
+     * 而用户要的正是"夜里没月亮就没光"。
      */
     @Test
-    public void fallsBackToTheSunWhenNoBodyIsVisible() {
-        float[] out = new float[2];
-        GrassBacklight.lightPosition(-5.0f, 100f, 2400f, false, 800f, 300f, out);
-        assertEquals("应当退回太阳的 x", 100f, out[0], 0.0f);
-        assertEquals("应当退回太阳的 y", 2400f, out[1], 0.0f);
+    public void noSourceWhenNeitherBodyIsUp() {
+        assertFalse("没有月亮就不该选月亮", GrassBacklight.sourceIsMoon(-30.0f, false, 0.0f));
+        assertEquals("此时强度必须恰好为 0", 0.0f,
+                strength(-30.0f, false, 0.0f), 0.0f);
+        assertFalse("月亮在地平线下也一样", GrassBacklight.sourceIsMoon(-30.0f, true, -20.0f));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void rejectsUndersizedArray() {
-        GrassBacklight.lightPosition(10.0f, 1f, 2f, false, 3f, 4f, new float[1]);
+        GrassBacklight.lightPosition(false, 1f, 2f, 3f, 4f, new float[1]);
     }
 }
