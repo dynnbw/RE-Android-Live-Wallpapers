@@ -123,6 +123,15 @@ final class GrassConstants {
      * 已到 y≈2080），所以这个值大致等于"从屏幕底边往上铺多远"。
      */
     static final float GRASS_LIGHT_RADIUS = 1400.0f;
+    /**
+     * 夜里叶片明度的下限（相对叶片自己的值）。**只在逆光开关打开时生效。**
+     *
+     * <p>原来夜里明度是乘到 0 的 —— 整片草纯黑，而黑底上叠什么都没用（逆光、月光、
+     * 任何颜色都提不出来），所以"夜里没有本色"的根在叶片明度这一侧，不在逆光那侧。
+     *
+     * <p>0.05 是上机调下来的：只要不是纯黑、还能透出一点本色就够，再高夜里会发亮。
+     */
+    static final float GRASS_NIGHT_VALUE_FLOOR = 0.05f;
     /** 横截面法线扫过的张角（弧度）。越大，迎光边越"卷"。 */
     static final float GRASS_LIGHT_CROSS_ANGLE = 2.0f;
     /** 叶根（厚）的明暗系数。 */

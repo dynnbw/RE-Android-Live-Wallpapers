@@ -137,6 +137,8 @@ final class SceneData {
     final float[] lightCool = {0.62f, 0.70f, 0.86f};
     /** 月亮高度角。0 表示不在地平线上。光源切换与强度曲线都要用它。 */
     float moonAltitudeDeg;
+    /** 逆光开关（用户的，不是设备能力）。关着时基线逐像素不变。 */
+    boolean backlightEnabled;
     /**
      * HDR + 辉光开关。
      *

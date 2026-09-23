@@ -548,7 +548,13 @@ final class GrassRenderDataBuilder {
 
         float h = blade.h;
         float s = blade.s;
-        float v = MathUtils.mix(0.0f, blade.b, brightness);
+        // 逆光关着时就是原来那一行，逐像素不变；开着时夜里按**比例**压暗而不是乘到零。
+        // 乘到零整片草纯黑，而黑底上叠什么都没用（逆光、月光都提不出来）——
+        // "夜里没有本色"的根在这里，不在逆光那侧。
+        float v = sd.backlightEnabled
+                ? blade.b * MathUtils.mix(GrassConstants.GRASS_NIGHT_VALUE_FLOOR, 1.0f,
+                        MathUtils.clamp(brightness, 0.0f, 1.0f))
+                : MathUtils.mix(0.0f, blade.b, brightness);
         if (sd.useGrassTint) {
             h = sd.grassTintH;
             s = sd.grassTintS;

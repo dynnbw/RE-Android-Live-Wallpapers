@@ -596,6 +596,8 @@ final class GrassScene {
         float moonAlt = mSceneData.moonAltitudeDeg;
         boolean useMoon = GrassBacklight.sourceIsMoon(sunAlt, moonAlt);
 
+        // 开关本身也要发布 —— 叶片明度那条路要靠它决定走不走基线
+        mSceneData.backlightEnabled = mGrassLightEnabled;
         mSceneData.lightStrength = GrassBacklight.effectiveStrength(
                 mGrassLightEnabled, sunAlt, moonAlt, mWeatherCondition);
         // 高光门控：正午 0（不要高光）、黄金时刻 1、月夜 1
