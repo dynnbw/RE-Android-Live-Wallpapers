@@ -82,6 +82,13 @@ public class FallGL extends GLESScene {
     /** 辉光叠加强度。 */
     private static final float GLOW_STRENGTH = 0.70f;
 
+    /**
+     * 星星闪烁时间的回绕周期。**必须与着色器里的 {@code STAR_WRAP_S} 一致。**
+     *
+     * <p>不是随手定的数：见 {@link #mWStarTimeHandle} 那一处的说明。
+     */
+    private static final long STAR_WRAP_MS = 30000L;
+
     // ---- 天空里的发光体 ----
 
     /**
@@ -149,6 +156,9 @@ public class FallGL extends GLESScene {
     private int mWEmitterRadiusHandle;
     private int mWEmitterColorHandle;
     private int mWEmitterGainHandle;
+    private int mWStarAmountHandle;
+    private int mWStarTimeHandle;
+    private int mWStarAspectHandle;
     /** 落叶着色器里的时段染色 uniform。 */
     private int mTintHandle;
     private int mTintAmountHandle;
@@ -560,6 +570,22 @@ public class FallGL extends GLESScene {
         GLES30.glUniform1f(mWEmitterGainHandle,
                 isGlowActive() ? mScene.getEmitterWeight() * EMITTER_GAIN : 0.0f);
 
+        /*
+         * 夜空星星的时间。
+         *
+         * **必须回绕，不能传绝对时间。** 传 uptime 秒数（上机时约 2956）的话，
+         * 正弦自变量落到几千的量级，低位精度一丢就变成每两三秒一步的阶梯 ——
+         * 上机用 glReadPixels 回读证实过。回绕到 [0, 30) 之后量级只有几十。
+         *
+         * 回绕本身不会跳：着色器里每颗星的速度是基频的整数倍，t 从 30 回到 0 时
+         * 相位正好走完整数圈。**两者必须一起改** —— 周期和倍数任改一个都会在回绕处留下跳变。
+         */
+        GLES30.glUniform1f(mWStarAmountHandle, mScene.getStarAmount());
+        GLES30.glUniform1f(mWStarTimeHandle,
+                (SystemClock.uptimeMillis() % STAR_WRAP_MS) * 0.001f);
+        // 星点的形状修正，见着色器里 uStarAspect 的说明
+        GLES30.glUniform1f(mWStarAspectHandle, mHeight / (float) Math.max(1, mWidth));
+
         int indexCount = sceneData.getWaterMeshIndexCount();
         if (indexCount > 0) {
             if (mWaterIndexBuffer == null || mWaterIndexBuffer.capacity() != sceneData.getWaterMeshIndices().length) {
@@ -739,6 +765,9 @@ public class FallGL extends GLESScene {
         mWEmitterRadiusHandle = GLES30.glGetUniformLocation(mWaterProgram, "uEmitterRadius");
         mWEmitterColorHandle = GLES30.glGetUniformLocation(mWaterProgram, "uEmitterColor");
         mWEmitterGainHandle  = GLES30.glGetUniformLocation(mWaterProgram, "uEmitterGain");
+        mWStarAmountHandle   = GLES30.glGetUniformLocation(mWaterProgram, "uStarAmount");
+        mWStarTimeHandle     = GLES30.glGetUniformLocation(mWaterProgram, "uStarTime");
+        mWStarAspectHandle   = GLES30.glGetUniformLocation(mWaterProgram, "uStarAspect");
         mWGlHeightHandle     = GLES30.glGetUniformLocation(mWaterProgram, "u_glHeight");
         mWBgScaleHandle      = GLES30.glGetUniformLocation(mWaterProgram, "u_bgScale");
         mWMeshScaleXHandle   = GLES30.glGetUniformLocation(mWaterProgram, "u_meshScaleX");

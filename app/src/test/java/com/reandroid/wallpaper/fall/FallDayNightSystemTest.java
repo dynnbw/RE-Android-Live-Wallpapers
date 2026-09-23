@@ -255,4 +255,33 @@ public class FallDayNightSystemTest {
         assertEquals("太阳升到白日带上沿时应当满格",
                 1.0f, FallDayNightSystem.computeEmitterWeight(weightsAt(12.0, true)), 1e-6f);
     }
+
+    /** 白天和晨昏都不该有星星。 */
+    @Test
+    public void starsAreAbsentBeforeItIsProperlyDark() {
+        assertEquals("正午不该有星星",
+                0.0f, FallDayNightSystem.computeStarAmount(weightsAt(45.0, false)), 1e-6f);
+        assertEquals("地平线上不该有星星",
+                0.0f, FallDayNightSystem.computeStarAmount(weightsAt(0.0, false)), 1e-6f);
+        assertEquals("太阳才落下去一点就出星星太早了",
+                0.0f, FallDayNightSystem.computeStarAmount(weightsAt(-3.0, false)), 1e-6f);
+    }
+
+    /** 深夜里星星要满。 */
+    @Test
+    public void starsAreFullInDeepNight() {
+        assertEquals(1.0f, FallDayNightSystem.computeStarAmount(weightsAt(-45.0, false)), 1e-6f);
+    }
+
+    /** 星星的可见度只能是 0..1 —— 越界会把它当成透明度之外的东西用。 */
+    @Test
+    public void starAmountStaysWithinRange() {
+        for (double alt = -90.0; alt <= 90.0; alt += STEP_DEG) {
+            for (boolean rising : new boolean[]{true, false}) {
+                float amount = FallDayNightSystem.computeStarAmount(weightsAt(alt, rising));
+                assertTrue("高度角 " + alt + "° 时星星可见度越界：" + amount,
+                        amount >= 0.0f && amount <= 1.0f);
+            }
+        }
+    }
 }

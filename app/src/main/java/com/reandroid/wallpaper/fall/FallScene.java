@@ -202,6 +202,8 @@ final class FallScene {
     private float mLeafTintAmount;
     /** 本帧落叶的明度缩放（1 = 原样）。夜里靠它变暗。 */
     private float mLeafTintValue = 1.0f;
+    /** 本帧夜空星星的可见度（0 = 不画）。 */
+    private float mStarAmount;
     /**
      * 预览把一整天压进这么长。与 grass 取同一个值 —— 两款壁纸的预览节奏应当一致。
      */
@@ -367,6 +369,7 @@ final class FallScene {
             mEmitterWeight = 0.0f;
             mLeafTintAmount = 0.0f;
             mLeafTintValue = 1.0f;
+            mStarAmount = 0.0f;
             return;
         }
         mDayNightSystem.updateWeights(sceneClockMs());
@@ -374,6 +377,7 @@ final class FallScene {
         mEmitterWeight = mDayNightSystem.emitterWeight();
         mLeafTintAmount = FallDayNightSystem.computeLeafTint(weights, mLeafTint);
         mLeafTintValue = FallDayNightSystem.computeLeafValue(weights);
+        mStarAmount = mDayNightSystem.starAmount();
     }
 
     /**
@@ -412,6 +416,11 @@ final class FallScene {
     /** 本帧落叶的明度缩放（1 = 保持原样）。 */
     float getLeafTintValue() {
         return mLeafTintValue;
+    }
+
+    /** 本帧夜空星星的可见度（0 = 不画）。 */
+    float getStarAmount() {
+        return mStarAmount;
     }
 
     void addDrop(int x, int y) {

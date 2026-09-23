@@ -35,6 +35,9 @@ public class FallAssetsTest {
             new File("src/main/assets/fall/shaders/GLES/fall_water_fs.glsl");
     private static final File LEAF_FS =
             new File("src/main/assets/fall/shaders/GLES/fall_fs.glsl");
+    /** 只为了核对 {@code STAR_WRAP_MS} —— 它与着色器的 STAR_WRAP_S 是一对。 */
+    private static final File FALL_GL =
+            new File("src/main/java/com/reandroid/wallpaper/fall/FallGL.java");
 
     /**
      * 四段色场。顺序与 {@code FallGL.SKY_SECTIONS} 一致 ——
@@ -53,14 +56,19 @@ public class FallAssetsTest {
     }
 
     /**
-     * 着色器里有没有 {@code uniform <类型> <名字>;} 这条声明。
+     * 着色器里有没有 {@code uniform [精度] <类型> <名字>;} 这条声明。
      *
      * <p>按声明找而不是按 {@code "uniform " + name} 找：类型与名字之间的空白数
      * 是随对齐变的（{@code uniform vec2  uEmitterPos;} 就是两个空格），
      * 按字符串拼会漏掉，而漏掉的症状恰好是"测试报红但代码没错"。
+     *
+     * <p>精度限定词可有可无（{@code uniform highp float uStarTime;}）——
+     * 漏掉这一支会把它当成"没声明"。
      */
     private static boolean declaresUniform(String glsl, String name) {
-        return Pattern.compile("uniform\\s+\\w+\\s+" + Pattern.quote(name) + "\\s*;")
+        return Pattern.compile(
+                        "uniform\\s+(?:(?:lowp|mediump|highp)\\s+)?\\w+\\s+"
+                                + Pattern.quote(name) + "\\s*;")
                 .matcher(glsl).find();
     }
 
@@ -137,9 +145,49 @@ public class FallAssetsTest {
     public void waterShaderDeclaresTheEmitterUniforms() throws IOException {
         String fs = read(WATER_FS);
         for (String name : new String[]{
-                "uEmitterPos", "uEmitterRadius", "uEmitterColor", "uEmitterGain"}) {
+                "uEmitterPos", "uEmitterRadius", "uEmitterColor", "uEmitterGain",
+                "uStarAmount", "uStarTime", "uStarAspect"}) {
             assertTrue("水面着色器缺少 uniform " + name, declaresUniform(fs, name));
         }
+    }
+
+    /**
+     * {@code uStarTime} 必须是 highp。
+     *
+     * <p>片元着色器的 float 默认 mediump（约 10 位尾数），而这个要参与正弦的自变量，
+     * 精度不够就会把闪烁量化成台阶 —— 上机实测过：最亮值连续 48 帧不动、然后一步跳 80%。
+     */
+    @Test
+    public void starTimeIsDeclaredHighPrecision() throws IOException {
+        String fs = read(WATER_FS);
+        assertTrue("uStarTime 必须以 highp 声明，否则闪烁会变成阶梯",
+                Pattern.compile("uniform\\s+highp\\s+float\\s+uStarTime\\s*;")
+                        .matcher(fs).find());
+    }
+
+    /**
+     * 闪烁时间的回绕周期，Java 与着色器两边必须一致。
+     *
+     * <p>这是个**跨文件、且失败无声**的约定：周期对不上，回绕那一刻相位不会走完整数圈，
+     * 全天星星会一起跳一下 —— 三十秒才发生一次，很容易被当成"偶发的卡顿"而不去查。
+     */
+    @Test
+    public void starWrapPeriodMatchesBetweenJavaAndShader() throws IOException {
+        java.util.regex.Matcher shader = Pattern
+                .compile("STAR_WRAP_S\\s*=\\s*([0-9.]+)")
+                .matcher(read(WATER_FS));
+        assertTrue("着色器里找不到 STAR_WRAP_S", shader.find());
+        float shaderSeconds = Float.parseFloat(shader.group(1));
+
+        java.util.regex.Matcher java = Pattern
+                .compile("STAR_WRAP_MS\\s*=\\s*(\\d+)L")
+                .matcher(read(FALL_GL));
+        assertTrue("FallGL 里找不到 STAR_WRAP_MS", java.find());
+        long javaMs = Long.parseLong(java.group(1));
+
+        assertEquals("着色器的 STAR_WRAP_S 与 FallGL 的 STAR_WRAP_MS 必须对得上，"
+                        + "否则回绕处星星会一起跳",
+                (long) (shaderSeconds * 1000), javaMs);
     }
 
     /** 落叶的染色 uniform 同理：少了就是"染色没效果"。 */

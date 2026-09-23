@@ -129,6 +129,24 @@ final class FallDayNightSystem {
         return computeEmitterWeight(mWeights);
     }
 
+    /**
+     * 夜空星星的可见度。
+     *
+     * <p>夜那一档过半才开始出现，接近全黑才满 —— 天没黑透时星星不该出来。
+     * 换算成太阳高度角大约是 −5.6° 到 −8.7°，正是民用暮光快结束的那一段。
+     */
+    private static final float STAR_NIGHT_LO = 0.55f;
+    private static final float STAR_NIGHT_HI = 0.95f;
+
+    float starAmount() {
+        return computeStarAmount(mWeights);
+    }
+
+    /** {@link #starAmount()} 的算式本体，便于在 JVM 上直接测。 */
+    static float computeStarAmount(float[] weights) {
+        return MathUtils.smoothStep(STAR_NIGHT_LO, STAR_NIGHT_HI, weights[0]);
+    }
+
     /** {@link #emitterWeight()} 的算式本体，便于在 JVM 上直接测。 */
     static float computeEmitterWeight(float[] weights) {
         return MathUtils.smoothStep(EMITTER_DAY_LO, EMITTER_DAY_HI, weights[3]);
