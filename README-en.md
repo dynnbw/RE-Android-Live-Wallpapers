@@ -96,14 +96,31 @@ Compared to the original AOSP/MediaTek wallpapers:
 
 Three wallpapers — Grass (dynamic meadow), Ocean (ocean weather), Windmill — can change their visuals based on real weather: sunny skies, thicker clouds on overcast days, rain/snow particle effects.
 
-**Setup Steps:**
+Two weather sources are built in. Switch between them via the weather icon in the toolbar → "**Weather Source**":
+
+| Source | Key | Coverage |
+|---|---|---|
+| China Meteorological Administration (weather.com.cn) | **None needed** | Mainland China only |
+| OpenWeather | You apply for one | Worldwide |
+
+### China Meteorological Administration (recommended in mainland China)
+
+Tap the weather icon → "Weather Source" → pick it. **No account, no key.**
+
+> Its observations only exist for mainland stations, and the gate is the **system region**: when that is not mainland China (Hong Kong, Macao and Taiwan included) the entry is greyed out and fetching falls back to OpenWeather.
+> Travelling abroad with the region still set to mainland China yields no data — the last reading stays on screen.
+> Separately, OpenWeather is frequently unreachable from mainland networks (connections time out in practice), so this source is usually the more reliable one there.
+
+### OpenWeather
 
 1. Open the [OpenWeatherMap sign-up page](https://home.openweathermap.org/users/sign_up) and register a free account
 2. After login, go to [API Keys](https://home.openweathermap.org/api_keys) and copy the default key
-3. Open the app → tap the weather icon in the toolbar → "OpenWeather API Key" → paste your key → confirm
+3. Tap the weather icon → "Weather Source" → "**Configure API**" on the OpenWeather row → paste your key → confirm
 4. Return to the main screen — the weather icon should display current weather conditions
 
-> Free tier: 1,000 calls/day. Default update interval is 30 minutes (can be changed to 15/30/60/180 min in "Update Interval"). If you don't register, weather wallpapers still function normally, but won't reflect real weather.
+That row also carries "**Guide**", a step-by-step walkthrough of registering and configuring. Free tier: 1,000 calls/day.
+
+Both sources default to a 30-minute update interval (changeable to 15/30/60/180 min in "Update Interval"). With no usable source (no key filled in and the China source not selected), the weather wallpapers still work — they just don't follow real weather.
 
 **Debugging**: Long-press the weather icon to manually override weather conditions (clear/cloudy/rain/snow etc. — 10 presets), useful for testing how wallpapers look under different weather.
 
@@ -168,7 +185,7 @@ Hardware consumption varies significantly across wallpapers:
 MIUI/HyperOS users need to grant "Live Wallpaper Service" permission in system settings. The app automatically detects MIUI on first launch and shows a guide.
 
 **Q: Weather not showing / showing incorrectly?**
-Check: ① Is the OpenWeather API Key filled in correctly? ② Is location permission granted? ③ Is the network working? (Some regions/ISPs may not reach OpenWeather) ④ Has the free quota run out? (1,000 calls/day) Long-press the weather icon to see the last refresh time.
+Check: ① Is the right source selected? (in mainland China the China Meteorological Administration source needs no key) ② If you picked OpenWeather, is the key filled in? (weather icon → "Weather Source" → OpenWeather → "Configure API") ③ Is location permission granted? ④ Is the network working? — **OpenWeather is often unreachable from mainland networks**, which is why a second source is built in ⑤ Has the free quota run out? (1,000 calls/day) Long-press the weather icon to see the last refresh time.
 
 **Q: Why can't I see the Vulkan toggle?**
 Only Galaxy, Galaxy4, Grass, and Fall have Vulkan backends. If your device doesn't support Vulkan, the toggle will be visible but switching may have no effect or cause crashes.

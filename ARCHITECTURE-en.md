@@ -122,7 +122,9 @@ com.reandroid
 ├── utils/          AssetLoader / GLTextureUtils / MathUtils / RawResourceLoader
 ├── settings/       SettingsActivity / SettingsMainFragment / PluginSettingsActivity
 │                   PreviewPreference / WallpaperSettings / MiuiPermissionHelper
-├── weather/        WeatherManager / WeatherCondition / WeatherState
+├── weather/        WeatherManager (scheduling/cache) + two WeatherSource impls
+│                   OpenWeatherSource / CmaWeatherSource / WeatherHttp
+│                   WeatherCondition / WeatherState
 ├── astronomy/      SunCalculator / DayNightResolver / DeviceLocation
 ├── update/         UpdateHelper / UpdateChecker / UpdateDownloader / VersionInfo
 └── wallpaper/      One Plugin / Engine / GL per wallpaper, most also a Scene (grouped by subpackage)
