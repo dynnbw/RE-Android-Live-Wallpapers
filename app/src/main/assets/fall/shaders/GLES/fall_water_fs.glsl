@@ -166,6 +166,22 @@ uniform float uAlgaeBand;
 uniform sampler2D uAlgaeNoise;
 uniform float uAlgaeNoiseTile;
 uniform float uAlgaeNoiseGain;
+/**
+ * 亮弧场的尺度：方向坐标乘它再去采噪声。**与波纹大小无关**（见 {@link algaeArc}）。
+ *
+ * <p>0.28 是仿真定的：40 组随机种子里，一圈得到 2~6 段弧、亮的比例 21%~76%
+ * （中位 54%），**没有一次整圈全暗**。
+ */
+uniform float uAlgaeArcScale;
+/** 亮弧的门限：低于 LO 的整段不闪，高于 HI 的整段都在闪。 */
+const float ALGAE_ARC_LO = 0.42;
+const float ALGAE_ARC_HI = 0.62;
+/** 场的分层参数，**两份着色器必须逐条相同**（有单测钉着）。 */
+const float ALGAE_LAYER_COARSE = 0.25;
+const float ALGAE_LAYER_FINE = 1.15;
+const float ALGAE_LAYER_ROT1 = 2.399963;
+const float ALGAE_LAYER_ROT2 = 4.799926;
+const float ALGAE_LAYER_FALLOFF = 2.5;
 /** 一团藻的颜色范围：疏的地方偏 uAlgaeLow、密的地方偏 uAlgaeHigh。 */
 uniform vec3 uAlgaeLow;
 uniform vec3 uAlgaeHigh;
@@ -186,25 +202,85 @@ uniform highp float u_dropCount;
 
 float hash21(highp vec2 p);   // 定义在下面，星空那一节
 
+/**
+ * 一层噪声 → **预乘**的颜色（rgb 已经乘过 a）。
+ *
+ * <p>暗的一半走 uAlgaeLow、亮的一半走 uAlgaeHigh，而 alpha 在**两端最强、中灰处归零** ——
+ * 一团藻读作"亮核 + 一圈色 + 中间的空隙"，不是一条连续的渐变。
+ * 这正是 magicsmoke 预设「绿色光晕」的 mode 1（low 0x00ff00、high 0xffffff，中灰透明），
+ * 也就是那个造型的来源：光晕是**围绕亮核的一圈色**，而不是整片都亮。
+ */
+vec4 algaeLayer(float lum, float weight) {
+  float a = abs(lum * 2.0 - 1.0) * weight;
+  vec3 c = lum < 0.5 ? uAlgaeLow : uAlgaeHigh;
+  return vec4(c * a, a);
+}
+
+/** 旋转矩阵。每层转一个角度，是打散同形重复的主要手段。 */
+mat2 rot2(float a) {
+  float c = cos(a);
+  float s = sin(a);
+  return mat2(c, -s, s, c);
+}
+
+/**
+ * 藻的场：返回**预乘的颜色与覆盖度**（rgb 已乘过 a；叶子只取 a）。
+ *
+ * <p>层数、层间的关系全部照搬 magicsmoke 的「绿色光晕」：
+ *
+ *   - 一层很粗的底（它用 0.0875，即整屏还铺不满一次）压住大尺度，
+ *     上面叠几层**尺度几乎相等**的细节层（它用 1.05/1.19/1.33/1.47，
+ *     层间只差 4%），全靠**不同的旋转**把同形重复抹掉。
+ *   - 每深一层再乘一个 {@code 1/ALGAE_LAYER_FALLOFF}（它的 alphaMul 是 2.5）。
+ *
+ * <p>单层的毛病是**同形重复一眼可见** —— 用户的原话是「重复度太高了」。
+ * 除了分层，{@link uAlgaeNoiseTile} 也一并调粗了：它原来让整屏铺 8.3 次，
+ * 比那个预设（1~1.5 次）密得太多。
+ */
+vec4 algaeField(highp vec2 meshPos) {
+  highp vec2 p = meshPos / max(uAlgaeNoiseTile, 1e-4);
+  vec4 acc = algaeLayer(texture(uAlgaeNoise, p * ALGAE_LAYER_COARSE).r, 1.0);
+  acc += algaeLayer(texture(uAlgaeNoise,
+          rot2(ALGAE_LAYER_ROT1) * p + vec2(0.31, 0.77)).r, 1.0 / ALGAE_LAYER_FALLOFF);
+  acc += algaeLayer(texture(uAlgaeNoise,
+          rot2(ALGAE_LAYER_ROT2) * (p * ALGAE_LAYER_FINE) + vec2(0.63, 0.19)).r,
+          1.0 / (ALGAE_LAYER_FALLOFF * ALGAE_LAYER_FALLOFF));
+  // 累加会超过 1（三层权重是 1+0.4+0.16）。夹一下，两边才都还在 0..1 里
+  return min(acc, vec4(1.0));
+}
+
+/**
+ * 这一圈上**哪几段在闪**（0..1）。
+ *
+ * <p>依据是实测里每个细胞的阈值不同（文献里的 "cell anxiety"），触发时刻也就各不相同 ——
+ * 真实的发光从来不是一整圈。用户的原话：「形状还是太接近完美的圆环了，
+ * 实际上甲藻发光时间是不固定的，所以不可能是完美的环状」。
+ *
+ * <p>⚠ **按方向采样，不按位置。** 位置的尺度是死的：场比波纹大的时候，一整圈会同亮同暗 ——
+ * 上机症状是「某些区域无论如何点击都不会发光」，那些区域恰好落在场的暗斑上；
+ * 场比波纹小的时候，断口又细到看不出来。方向与半径无关，大波纹小波纹都得到同样几段弧。
+ *
+ * <p>断口的位置还得各个波纹不一样，所以坐标里加一个由**波纹序号**散列出来的偏移。
+ * 用序号而不是波纹位置：水面这边拿到的是网格坐标、叶子那边拿到的是世界坐标，
+ * 同一个波纹在两个着色器里位置不同 —— 用位置就会算出两套断口，叶子上的光和
+ * 水里的光对不上。序号则是同一个。
+ */
+float algaeArc(int index, highp vec2 delta, float dist) {
+  highp vec2 dir = delta / max(dist, 1e-4);
+  vec2 seed = fract(vec2(float(index) * 0.7548, float(index) * 0.5693));
+  return smoothstep(ALGAE_ARC_LO, ALGAE_ARC_HI,
+          texture(uAlgaeNoise, dir * uAlgaeArcScale + seed).r);
+}
+
 vec3 algaeGlow(highp vec2 meshPos) {
   /*
-   * 噪声**在循环外只取一次** —— 它是水本身的属性（这片水里有多少藻、
-   * 波前在这里鼓出来多少），与是哪个波纹无关。放进循环里等于每个波纹都采一次贴图，
-   * 而那是这里最贵的一项（上机实测帧时间因此涨到几百毫秒）。
+   * 密度与波前的 wobble 都在循环**外**只取一次 —— 它们是水本身的属性
+   * （这片水里有多少藻、波前在这里鼓出来多少），与是哪个波纹无关。
+   * 放进循环里等于每个波纹都采一次贴图，而那是这里最贵的一项
+   * （上机实测帧时间因此涨到几百毫秒）。
    */
-  highp vec2 nuv = meshPos / max(uAlgaeNoiseTile, 1e-4);
-
-  /*
-   * 密度用**两级噪声相乘**。单级时 `clamp(n * 1.8, 0, 1)` 大部分格子都到 1，
-   * 于是整条环是均匀的 —— 用户的原话是「看起来很像普通的光带」。
-   * 两级相乘才出颗粒。
-   */
-  float n1 = texture(uAlgaeNoise, nuv).r;
-  float n2 = texture(uAlgaeNoise, nuv * 3.7 + vec2(0.13, 0.57)).r;
-  float density = smoothstep(0.20, 0.80, n1) * (0.30 + 0.70 * smoothstep(0.30, 0.85, n2));
-  if (density <= 0.004) return vec3(0.0);
-  float crowded = clamp(n1 * 0.65 + n2 * 0.35, 0.0, 1.0);
-  vec3 blob = mix(uAlgaeLow, uAlgaeHigh, crowded);   // 不要叫 patch：GLSL ES 3.00 的保留字
+  vec4 algae = algaeField(meshPos);
+  if (algae.a <= 0.004) return vec3(0.0);
 
   /*
    * 波前的"不完美"：用一个粗尺度的空间噪声把半径顶出去/收回来一点。
@@ -226,6 +302,13 @@ vec3 algaeGlow(highp vec2 meshPos) {
     if (dist > d.w * wobbleScale + uAlgaeBand * 0.30) continue;   // 还没扫到 / 已经过去
 
     /*
+     * 亮弧放在距离剔除**之后**：绝大多数像素这一圈压根没扫到，采贴图的开销就省了。
+     * 只有波前真正扫过的地方才付这一次。
+     */
+    float arcGate = algaeArc(i, delta, dist);
+    if (arcGate <= 0.004) continue;
+
+    /*
      * 闪光带：**峰值靠外沿**，两头归零。
      *
      * 外沿（dist ≈ 波前）是刚被搅动的地方，本来就该最亮 —— 之前把峰值放在
@@ -238,10 +321,10 @@ vec3 algaeGlow(highp vec2 meshPos) {
 
     // 过阈值之后的响应是超线性的（实测约 1.9 次方），这里用一条平滑的 S 曲线
     float above = smoothstep(uAlgaeThreshold, 1.0, power);
-    acc += band * above;
+    acc += band * above * arcGate;
   }
-  // 颜色与密度在循环外统一乘一次
-  return blob * (acc / (1.0 + acc)) * density;
+  // 颜色（已预乘）在循环外统一乘一次
+  return algae.rgb * (acc / (1.0 + acc));
 }
 
 uniform float uAlpha;

@@ -129,7 +129,7 @@ public class FallGL extends GLESScene {
      * <p>（这与**白色发光体**那边是相反的取舍：那个的峰值压到 1 附近是为了保住黄色。
      * 这里保住的是"过曝"本身。）
      */
-    private static final float ALGAE_GAIN = 6.0f;
+    private static final float ALGAE_GAIN = 4.0f;
     /*
      * 触发阈值与波带宽度定义在 FallScene —— 那边要用同一套去算逐叶受光，
      * 两份代码必须对齐。这里只负责把它们喂给着色器。
@@ -140,8 +140,13 @@ public class FallGL extends GLESScene {
      * <p>颗粒**必须用有机的团状噪声**，不能用方格哈希 —— 第一版是
      * {@code hash21(floor(uv * 密度))}，上机看是"一片细密的均匀点子糊在屏幕上"。
      * 贴图取自本项目 magicsmoke 壁纸的 noise2.png。这个值越小颗粒越细。
+     *
+     * <p>**16 是照着参考那边的密度定的。** 它那几层在整个屏幕宽度上只铺
+     * 1.05~1.47 次，而 6 网格单位等于铺 8.3 次 —— 密太多，同形重复一眼可见
+     * （用户的原话就是「重复度太高了」）。16 对应约 3 次，配合多层错开的旋转。
+     * 想更细就调小，想更团就调大。
      */
-    private static final float ALGAE_NOISE_TILE = 6.0f;
+    private static final float ALGAE_NOISE_TILE = 16.0f;
     /**
      * 噪声的密度增益，类比 magicsmoke 的 `alphaFactor`。
      *
@@ -149,6 +154,16 @@ public class FallGL extends GLESScene {
      * 乘一个大于 1 的数、再 clamp，等于把低密度那一半压没，只剩成团的地方。
      */
     private static final float ALGAE_NOISE_GAIN = 1.8f;
+    /**
+     * 亮弧场的尺度：方向坐标乘它再去采噪声。**与波纹大小无关。**
+     *
+     * <p>同一时刻沿波前只有一部分细胞在闪 —— 每个细胞的阈值不同（文献里的 "cell anxiety"），
+     * 触发时刻也就各不相同，所以真实的光从来不是一整圈，而是几段亮弧。
+     *
+     * <p>取 0.28 是仿真定的：40 组随机种子里一圈得到 2~6 段弧、亮的比例 21%~76%
+     * （中位 54%），**没有一次整圈全暗**。值越大弧段越多越碎。
+     */
+    private static final float ALGAE_ARC_SCALE = 0.28f;
     /**
      * 一团藻的颜色范围（疏 → 密）。**算法取自 magicsmoke**：
      * 噪声亮度当密度，颜色在两端之间走，而不是"同一个颜色乘亮度"。
@@ -244,6 +259,8 @@ public class FallGL extends GLESScene {
     private int mWAlgaeNoiseHandle;
     private int mWAlgaeNoiseTileHandle;
     private int mWAlgaeNoiseGainHandle;
+    /** 亮弧场的尺度（见 {@link #ALGAE_ARC_SCALE}），水面与叶子各一份。 */
+    private int mWAlgaeArcScaleHandle;
     private int mWAlgaeLowHandle;
     private int mWAlgaeHighHandle;
     private int mWAlgaePowerHandle;
@@ -264,6 +281,10 @@ public class FallGL extends GLESScene {
     private int mLeafAlgaeNoiseHandle;
     private int mLeafAlgaeNoiseTileHandle;
     private int mLeafAlgaeNoiseGainHandle;
+    private int mLeafAlgaeArcScaleHandle;
+    /** 场里用到的两端颜色。叶子只取覆盖度，但 algaeLayer 要它们。 */
+    private int mLeafAlgaeLowHandle;
+    private int mLeafAlgaeHighHandle;
     private int mLightColorHandle;
     /** 落叶着色器里的时段染色 uniform。 */
     private int mTintHandle;
@@ -463,7 +484,7 @@ public class FallGL extends GLESScene {
 
         // 蓝藻的颗粒噪声。缺失不致命 —— 拿不到就是没有颗粒，光本身照常
         try {
-            mAlgaeNoiseTexture = loadTexture(ALGAE_NOISE_ASSET);
+            mAlgaeNoiseTexture = loadTexture(ALGAE_NOISE_ASSET, true);
         } catch (Exception e) {
             Log.e(TAG, "蓝藻噪声贴图加载失败", e);
             mAlgaeNoiseTexture = 0;
@@ -682,6 +703,9 @@ public class FallGL extends GLESScene {
         GLES30.glUniform1f(mLeafAlgaeBandHandle, FallScene.ALGAE_BAND);
         GLES30.glUniform1f(mLeafAlgaeNoiseTileHandle, ALGAE_NOISE_TILE);
         GLES30.glUniform1f(mLeafAlgaeNoiseGainHandle, ALGAE_NOISE_GAIN);
+        GLES30.glUniform1f(mLeafAlgaeArcScaleHandle, ALGAE_ARC_SCALE);
+        GLES30.glUniform3f(mLeafAlgaeLowHandle, ALGAE_LOW[0], ALGAE_LOW[1], ALGAE_LOW[2]);
+        GLES30.glUniform3f(mLeafAlgaeHighHandle, ALGAE_HIGH[0], ALGAE_HIGH[1], ALGAE_HIGH[2]);
         GLES30.glUniform3f(mLightColorHandle,
                 FallScene.LEAF_LIGHT_COLOR[0], FallScene.LEAF_LIGHT_COLOR[1],
                 FallScene.LEAF_LIGHT_COLOR[2]);
@@ -801,6 +825,7 @@ public class FallGL extends GLESScene {
         GLES30.glUniform1f(mWAlgaeBandHandle, FallScene.ALGAE_BAND);
         GLES30.glUniform1f(mWAlgaeNoiseTileHandle, ALGAE_NOISE_TILE);
         GLES30.glUniform1f(mWAlgaeNoiseGainHandle, ALGAE_NOISE_GAIN);
+        GLES30.glUniform1f(mWAlgaeArcScaleHandle, ALGAE_ARC_SCALE);
         GLES30.glUniform3f(mWAlgaeLowHandle, ALGAE_LOW[0], ALGAE_LOW[1], ALGAE_LOW[2]);
         GLES30.glUniform3f(mWAlgaeHighHandle, ALGAE_HIGH[0], ALGAE_HIGH[1], ALGAE_HIGH[2]);
         // 噪声贴图接在天空色带之后那一个单元
@@ -998,6 +1023,9 @@ public class FallGL extends GLESScene {
         mLeafAlgaeNoiseHandle = GLES30.glGetUniformLocation(mProgram, "uAlgaeNoise");
         mLeafAlgaeNoiseTileHandle = GLES30.glGetUniformLocation(mProgram, "uAlgaeNoiseTile");
         mLeafAlgaeNoiseGainHandle = GLES30.glGetUniformLocation(mProgram, "uAlgaeNoiseGain");
+        mLeafAlgaeArcScaleHandle = GLES30.glGetUniformLocation(mProgram, "uAlgaeArcScale");
+        mLeafAlgaeLowHandle = GLES30.glGetUniformLocation(mProgram, "uAlgaeLow");
+        mLeafAlgaeHighHandle = GLES30.glGetUniformLocation(mProgram, "uAlgaeHigh");
         mLightColorHandle = GLES30.glGetUniformLocation(mProgram, "uLightColor");
 
         GLES30.glDeleteShader(vs);
@@ -1061,6 +1089,7 @@ public class FallGL extends GLESScene {
         mWAlgaeNoiseHandle     = GLES30.glGetUniformLocation(mWaterProgram, "uAlgaeNoise");
         mWAlgaeNoiseTileHandle = GLES30.glGetUniformLocation(mWaterProgram, "uAlgaeNoiseTile");
         mWAlgaeNoiseGainHandle = GLES30.glGetUniformLocation(mWaterProgram, "uAlgaeNoiseGain");
+        mWAlgaeArcScaleHandle = GLES30.glGetUniformLocation(mWaterProgram, "uAlgaeArcScale");
         mWAlgaeLowHandle       = GLES30.glGetUniformLocation(mWaterProgram, "uAlgaeLow");
         mWAlgaeHighHandle      = GLES30.glGetUniformLocation(mWaterProgram, "uAlgaeHigh");
         mWAlgaePowerHandle     = GLES30.glGetUniformLocation(mWaterProgram, "uAlgaePower");
@@ -1079,7 +1108,19 @@ public class FallGL extends GLESScene {
     }
 
 
-    private int loadTexture(String assetPath) {
+    /**
+     * 上传一张贴图。
+     *
+     * <p><b>{@code repeat} 不是可选项，选错了会静默失效。</b> 蓝藻噪声被采样的坐标
+     * **远远超出 [0,1]**（网格坐标跨度 50×83，除以颗粒尺度 6 就是 8.3×13.8 张），
+     * 用 CLAMP_TO_EDGE 的话 99% 的画面都落在贴图外、统统取到边缘那一列像素 ——
+     * 于是"颗粒"和"波前 wobble"在整屏上都是**常数**：环是数学上完美的圆，亮度也均匀。
+     * 上机看到的就是「太接近完美的圆环了」。
+     *
+     * <p>这张噪声本身是可以无缝平铺的（实测环绕缝处的落差不超过自然梯度的 1.3 倍），
+     * 所以直接用 REPEAT。
+     */
+    private int loadTexture(String assetPath, boolean repeat) {
         Bitmap bitmap = AssetLoader.decodeBitmap(mContext, assetPath);
         if (bitmap == null) {
             return 0;
@@ -1090,8 +1131,9 @@ public class FallGL extends GLESScene {
         GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, texture[0]);
         GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR);
         GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
-        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE);
-        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE);
+        int wrap = repeat ? GLES30.GL_REPEAT : GLES30.GL_CLAMP_TO_EDGE;
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, wrap);
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, wrap);
         GLUtils.texImage2D(GLES30.GL_TEXTURE_2D, 0, bitmap, 0);
         bitmap.recycle();
         return texture[0];

@@ -59,6 +59,68 @@ uniform vec2 uAlgaeMetric;
 uniform float uAlgaeAmount;
 uniform sampler2D uAlgaeNoise;
 uniform float uAlgaeNoiseTile;
+/** 亮弧场，与水面同一套常量与来源（见 fall_water_fs.glsl 里 uAlgaeArcScale 的说明）。 */
+uniform float uAlgaeArcScale;
+const float ALGAE_ARC_LO = 0.42;
+const float ALGAE_ARC_HI = 0.62;
+/** 场的分层参数，**两份着色器必须逐条相同**（有单测钉着）。 */
+const float ALGAE_LAYER_COARSE = 0.25;
+const float ALGAE_LAYER_FINE = 1.15;
+const float ALGAE_LAYER_ROT1 = 2.399963;
+const float ALGAE_LAYER_ROT2 = 4.799926;
+const float ALGAE_LAYER_FALLOFF = 2.5;
+/**
+ * 藻的两端颜色。叶子只取场的覆盖度，用不到它们 —— 但 {@link algaeLayer} 要，
+ * 而那个函数必须与水面**逐字相同**才能保证两边的场对得上，所以一并声明。
+ */
+uniform vec3 uAlgaeLow;
+uniform vec3 uAlgaeHigh;
+
+/**
+ * 一层噪声 → **预乘**的颜色（rgb 已经乘过 a）。
+ *
+ * <p>暗的一半走 uAlgaeLow、亮的一半走 uAlgaeHigh，而 alpha 在**两端最强、中灰处归零** ——
+ * 一团藻读作"亮核 + 一圈色 + 中间的空隙"，不是一条连续的渐变。
+ * 这正是 magicsmoke 预设「绿色光晕」的 mode 1（low 0x00ff00、high 0xffffff，中灰透明），
+ * 也就是那个造型的来源：光晕是**围绕亮核的一圈色**，而不是整片都亮。
+ */
+vec4 algaeLayer(float lum, float weight) {
+  float a = abs(lum * 2.0 - 1.0) * weight;
+  vec3 c = lum < 0.5 ? uAlgaeLow : uAlgaeHigh;
+  return vec4(c * a, a);
+}
+
+/** 旋转矩阵。每层转一个角度，是打散同形重复的主要手段。 */
+mat2 rot2(float a) {
+  float c = cos(a);
+  float s = sin(a);
+  return mat2(c, -s, s, c);
+}
+
+/**
+ * 藻的场：返回**预乘的颜色与覆盖度**（rgb 已乘过 a；叶子只取 a）。
+ *
+ * <p>层数、层间的关系全部照搬 magicsmoke 的「绿色光晕」：
+ *
+ *   - 一层很粗的底（它用 0.0875，即整屏还铺不满一次）压住大尺度，
+ *     上面叠几层**尺度几乎相等**的细节层（它用 1.05/1.19/1.33/1.47，
+ *     层间只差 4%），全靠**不同的旋转**把同形重复抹掉。
+ *   - 每深一层再乘一个 {@code 1/ALGAE_LAYER_FALLOFF}（它的 alphaMul 是 2.5）。
+ *
+ * <p>⚠ 这个函数与 fall_water_fs.glsl 里那份**逐字相同**（GLSL 没有 include），
+ * 改一处必须改另一处 —— 两边一旦走样，叶子上的光就跟水里那圈对不上。
+ */
+vec4 algaeField(highp vec2 meshPos) {
+  highp vec2 p = meshPos / max(uAlgaeNoiseTile, 1e-4);
+  vec4 acc = algaeLayer(texture(uAlgaeNoise, p * ALGAE_LAYER_COARSE).r, 1.0);
+  acc += algaeLayer(texture(uAlgaeNoise,
+          rot2(ALGAE_LAYER_ROT1) * p + vec2(0.31, 0.77)).r, 1.0 / ALGAE_LAYER_FALLOFF);
+  acc += algaeLayer(texture(uAlgaeNoise,
+          rot2(ALGAE_LAYER_ROT2) * (p * ALGAE_LAYER_FINE) + vec2(0.63, 0.19)).r,
+          1.0 / (ALGAE_LAYER_FALLOFF * ALGAE_LAYER_FALLOFF));
+  // 累加会超过 1（三层权重是 1+0.4+0.16）。夹一下，两边才都还在 0..1 里
+  return min(acc, vec4(1.0));
+}
 /**
  * 世界 → 网格**坐标**的系数（scaleX, scaleY/halfH）与偏移。
  *
@@ -91,15 +153,17 @@ float algaeGlowOnLeaf(highp vec2 world) {
    * 两边必须采在同一个坐标上，否则环的形状与颗粒对不上。
    */
   highp vec2 meshPos = world * uAlgaeMeshScale + uAlgaeMeshOffset;
-  highp vec2 nuv = meshPos / max(uAlgaeNoiseTile, 1e-4);
 
-  // 密度用两级噪声相乘，才出颗粒（单级时大部分格子都到 1，看着像普通光带）
-  float n1 = texture(uAlgaeNoise, nuv).r;
-  float n2 = texture(uAlgaeNoise, nuv * 3.7 + vec2(0.13, 0.57)).r;
-  float density = smoothstep(0.20, 0.80, n1) * (0.30 + 0.70 * smoothstep(0.30, 0.85, n2));
+  /*
+   * 场与波前的 wobble 都在循环外各采一次 —— 它们是水的属性，与是哪个波纹无关。
+   *
+   * 这里用的是与水面上**同一个** {@link algaeField}，只是只要它的覆盖度 a
+   * （叶子要的是"有多少光打上来"，颜色由 uLightColor 给）——
+   * 函数体逐字相同，就是为了两边不会各走各的。
+   */
+  float density = algaeField(meshPos).a;
   if (density <= 0.004) return 0.0;
 
-  // 波前的不完美：粗尺度空间噪声把半径顶出去/收回来一点（与水面同一套）
   float wobble = texture(uAlgaeNoise, meshPos * 0.04 + vec2(7.3, 1.9)).r;
   float wobbleScale = 0.90 + 0.20 * wobble;
 
@@ -108,16 +172,27 @@ float algaeGlowOnLeaf(highp vec2 world) {
     if (float(i) >= u_dropCount) break;
     float power = uAlgaePower[i];
     if (power < uAlgaeThreshold) continue;      // 没惊动这片水
-    vec4 d = u_drop[i];
-    float dist = length((world - uAlgaeWorld[i]) * uAlgaeMetric);
-    if (dist > d.w * wobbleScale + uAlgaeBand * 0.30) continue;
+    vec4 d4 = u_drop[i];
+    highp vec2 delta = (world - uAlgaeWorld[i]) * uAlgaeMetric;
+    float dist = length(delta);
+    if (dist > d4.w * wobbleScale + uAlgaeBand * 0.30) continue;
+
+    /*
+     * 亮弧：与水面同一套，连散列偏移用的都是**波纹序号** —— 位置在这边是世界坐标、
+     * 在水面那边是网格坐标，拿位置做散列会算出两套断口，叶子上的光就和水里对不上。
+     */
+    highp vec2 dir = delta / max(dist, 1e-4);
+    vec2 seed = fract(vec2(float(i) * 0.7548, float(i) * 0.5693));
+    float arcGate = smoothstep(ALGAE_ARC_LO, ALGAE_ARC_HI,
+            texture(uAlgaeNoise, dir * uAlgaeArcScale + seed).r);
+    if (arcGate <= 0.004) continue;
 
     // 与水面同一条带子：**峰值靠外沿**（刚被搅动的地方最亮），两头归零
-    float t = clamp((dist - (d.w * wobbleScale - uAlgaeBand))
+    float t = clamp((dist - (d4.w * wobbleScale - uAlgaeBand))
             / (uAlgaeBand * 1.30), 0.0, 1.0);
     float band = smoothstep(0.0, 0.75, t) * (1.0 - smoothstep(0.75, 1.0, t));
 
-    acc += band * smoothstep(uAlgaeThreshold, 1.0, power);
+    acc += band * smoothstep(uAlgaeThreshold, 1.0, power) * arcGate;
   }
   return acc / (1.0 + acc);                     // 与水面对称的软饱和
 }

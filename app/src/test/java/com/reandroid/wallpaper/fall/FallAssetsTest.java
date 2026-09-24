@@ -150,9 +150,56 @@ public class FallAssetsTest {
                 "uAlgaeAmount", "uAlgaeGain",
                 "uAlgaeThreshold", "uAlgaeBand", "uAlgaePower",
                 "uAlgaeNoise", "uAlgaeNoiseTile", "uAlgaeNoiseGain",
+                "uAlgaeArcScale",
                 "uAlgaeLow", "uAlgaeHigh"}) {
             assertTrue("水面着色器缺少 uniform " + name, declaresUniform(fs, name));
         }
+    }
+
+    /**
+     * 亮弧场的 uniform 在**两份**着色器里都要有。
+     *
+     * <p>漏了不会有任何报错：{@code glGetUniformLocation} 返回 -1，设值静默失败 ——
+     * 水面那边就是"还是一整圈"（用户报的原症状），叶子那边就是"光被整片吃掉"
+     * （门限恒为未初始化的 0）。
+     */
+    @Test
+    public void algaeArcUniformExistsInBothShaders() throws IOException {
+        for (File file : new File[]{WATER_FS, LEAF_FS}) {
+            String fs = read(file);
+            for (String name : new String[]{"uAlgaeArcScale", "uAlgaeLow", "uAlgaeHigh"}) {
+                assertTrue(file.getName() + " 缺少 uniform " + name,
+                        declaresUniform(fs, name));
+            }
+        }
+    }
+
+    /**
+     * 两份着色器里的 {@code ALGAE_*} 常量必须**逐条相等**。
+     *
+     * <p>GLSL 没有 include，这段逻辑在水面与叶子各留了一份。常量一旦只改一边，
+     * 症状是"叶子上的光和水里那圈对不上" —— 没有报错、也不会崩，只能靠肉眼看出来。
+     */
+    @Test
+    public void algaeConstantsMatchBetweenTheTwoShaders() throws IOException {
+        java.util.regex.Matcher m = Pattern
+                .compile("const\\s+float\\s+(ALGAE_\\w+)\\s*=\\s*([0-9.]+)")
+                .matcher(read(WATER_FS));
+        java.util.Map<String, String> water = new java.util.TreeMap<>();
+        while (m.find()) {
+            water.put(m.group(1), m.group(2));
+        }
+        assertTrue("水面着色器里一个 ALGAE_ 常量都没找到", water.size() >= 4);
+
+        java.util.regex.Matcher n = Pattern
+                .compile("const\\s+float\\s+(ALGAE_\\w+)\\s*=\\s*([0-9.]+)")
+                .matcher(read(LEAF_FS));
+        java.util.Map<String, String> leaf = new java.util.TreeMap<>();
+        while (n.find()) {
+            leaf.put(n.group(1), n.group(2));
+        }
+        assertEquals("两份着色器的 ALGAE_ 常量对不上：叶子上的光会和水里那圈错位",
+                water.toString(), leaf.toString());
     }
 
     /**
