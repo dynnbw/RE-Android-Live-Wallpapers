@@ -122,7 +122,7 @@ final class GeekLogScene {
         log(LEVEL_INFO, "user input: tap (" + x + ", " + y + ")");
     }
 
-    /** 拖动/滑动：每帧 MOVE 事件逐条记录，不做节流（用户要求完整坐标轨迹）。 */
+    /** 拖动/滑动：每帧 MOVE 事件逐条记录，不做节流 —— 要的是完整的坐标轨迹。 */
     void onDrag(int x, int y) {
         log(LEVEL_INFO, "user input: drag (" + x + ", " + y + ")");
     }

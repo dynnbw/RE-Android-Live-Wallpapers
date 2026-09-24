@@ -81,10 +81,10 @@ final class NixieTubeAudioSource {
             mVisualizer.setEnabled(true);
         } catch (Exception e) {
             /*
-             * 这里以前是静默 startMicrophone() 兜底。后果：用户选的是「系统内部音」，
+             * 这里以前是静默 startMicrophone() 兜底。后果：设置里选的是「系统内部音」，
              * 只要 Visualizer 建不起来（例如上一次用过麦克风、音频会话被占），就会去开
              * 麦克风 —— 界面上完全看不出来，而且一直耗电。
-             * 选什么就是什么：起不来就静默，不替用户改选择。
+             * 选了哪个音源就是哪个：起不来就静默，不偷偷换成另一个。
              */
             Log.w(TAG, "System audio unavailable; no capture started", e);
             if (mVisualizer != null) {

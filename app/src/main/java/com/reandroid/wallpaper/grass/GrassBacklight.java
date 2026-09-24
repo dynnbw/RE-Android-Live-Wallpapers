@@ -33,7 +33,7 @@ final class GrassBacklight {
     /** 白天（太阳在地平线上）的总强度。 */
     static final float DAY_LEVEL = 1.0f;
 
-    /** 夜里（月亮在地平线上）的总强度 —— 用户定的是白天的一半。 */
+    /** 夜里（月亮在地平线上）的总强度，取白天的一半。 */
     static final float NIGHT_LEVEL = 0.5f;
 
     /**

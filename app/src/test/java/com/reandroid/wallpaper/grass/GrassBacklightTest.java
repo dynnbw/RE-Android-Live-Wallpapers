@@ -51,7 +51,7 @@ public class GrassBacklightTest {
         assertEquals("正午也是满的", 1.0f, strength(60.0f, false, 0.0f), EPS);
     }
 
-    /** 夜里靠月亮，强度是白天的一半 —— 用户定的就是这个数。 */
+    /** 夜里靠月亮，强度取白天的一半。 */
     @Test
     public void nightWithMoonIsHalfOfDay() {
         assertEquals("地平线上的月亮", GrassBacklight.NIGHT_LEVEL,
@@ -315,7 +315,7 @@ public class GrassBacklightTest {
      *
      * <p>这里与改造前**相反**：原先有一条"退回太阳位置"的兜底（为了让新月那几天的黄昏
      * 仍有光晕）。现在太阳在地平线下本来就给 0，兜底反而会造出"没有光源却在发光" ——
-     * 而用户要的正是"夜里没月亮就没光"。
+     * 这里要的正是不该有的光源一个都不留。
      */
     @Test
     public void noSourceWhenNeitherBodyIsUp() {

@@ -227,8 +227,7 @@ public class FallDayNightSystemTest {
     }
 
     /**
-     * 清晨与黄昏**都不该有太阳** —— 用户的原话是"太阳应该在纯白天显示，
-     * 黄昏、清晨不要显示"。
+     * 清晨与黄昏**都不该有太阳** —— 太阳只在纯白天出现，黄昏与清晨不出现。
      */
     @Test
     public void emitterIsAbsentAtDawnAndDusk() {

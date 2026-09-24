@@ -145,7 +145,7 @@ public class DayNightResolverTest {
      * 没有定位权限时的兜底：纬度赤道、经度按时区反推，于是日出日落落在当地时间 6 点上下。
      *
      * <p>这是 {@code applyFallbackLocation} 存在的全部意义 —— 拿不到位置时，
-     * 天空至少还跟着用户的钟表走，而不是回到写死的值上。
+     * 天空至少还跟着本机时钟走，而不是回到写死的值上。
      */
     @Test
     public void fallbackLandsNearSixOClock() {
