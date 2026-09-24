@@ -132,6 +132,13 @@
     <string name="pref_weather_refresh_now_failed">天氣刷新失敗</string>
     <string name="pref_apply_api_title">申請API</string>
     <string name="pref_weather_update_interval">天氣更新間隔</string>
+    <string name="pref_weather_source_title">天氣資料來源</string>
+    <string name="pref_weather_source_openweather">OpenWeather</string>
+    <string name="pref_weather_source_openweather_note">需要 API 金鑰</string>
+    <string name="pref_weather_source_cma">中國氣象局</string>
+    <string name="pref_weather_source_cma_note">無需金鑰僅中國大陸</string>
+    <string name="pref_weather_source_action_api">設定API</string>
+    <string name="pref_weather_source_action_guide">教學</string>
     <string name="pref_openweather_api_key_title">OpenWeather API 密鑰</string>
     <string name="weather_toolbar_title">天氣設置</string>
     <string name="pref_weather_last_refresh">最後刷新時間: %1$s</string>

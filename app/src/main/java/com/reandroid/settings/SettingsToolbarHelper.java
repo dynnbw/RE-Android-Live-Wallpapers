@@ -7,10 +7,15 @@ import android.graphics.drawable.Drawable;
 import android.text.InputType;
 import android.text.TextUtils;
 import android.view.ContextThemeWrapper;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
@@ -26,6 +31,8 @@ import com.reandroid.wallpaper.R;
 import com.reandroid.weather.WeatherCondition;
 import com.reandroid.weather.WeatherManager;
 import com.reandroid.weather.WeatherState;
+
+import java.util.Locale;
 
 /**
  * 设置页工具栏统一控制器：天气按钮（弹窗/更新间隔/API Key/调试）、
@@ -182,12 +189,8 @@ public class SettingsToolbarHelper {
                 refreshWeatherNow();
                 return true;
             }
-            if (itemId == R.id.action_weather_api_key) {
-                showWeatherApiKeyDialog();
-                return true;
-            }
-            if (itemId == R.id.action_weather_apply_api) {
-                openWeatherApiGuide();
+            if (itemId == R.id.action_weather_source) {
+                showWeatherSourceDialog();
                 return true;
             }
             return false;
@@ -310,6 +313,145 @@ public class SettingsToolbarHelper {
                 })
                 .setNegativeButton(android.R.string.cancel, null)
                 .show();
+    }
+
+    /**
+     * 数据源选择。
+     *
+     * <p>用 {@code setAdapter} 而不是 {@code setSingleChoiceItems}：后者只有一行标题，
+     * 而这里每一路都要带一句说明（"需要密钥" / "仅限中国大陆"）。
+     *
+     * <p>**中国气象局在大陆之外是灰的** —— 那一行的说明就写明了原因。
+     * 取数那边还会再判一次，见 {@link WeatherManager#resolveSource()}。
+     */
+    private void showWeatherSourceDialog() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mActivity);
+        String current = prefs.getString(WeatherManager.KEY_SOURCE, WeatherManager.SOURCE_OPENWEATHER);
+        boolean cmaAllowed = WeatherManager.isSourceAvailable(WeatherManager.SOURCE_CMA, Locale.getDefault());
+
+        String[] ids = { WeatherManager.SOURCE_OPENWEATHER, WeatherManager.SOURCE_CMA };
+        String[] titles = {
+                mActivity.getString(R.string.pref_weather_source_openweather),
+                mActivity.getString(R.string.pref_weather_source_cma) };
+        String[] notes = {
+                mActivity.getString(R.string.pref_weather_source_openweather_note),
+                mActivity.getString(R.string.pref_weather_source_cma_note) };
+        boolean[] enabled = { true, cmaAllowed };
+
+        WeatherSourceAdapter adapter = new WeatherSourceAdapter(
+                mActivity, ids, titles, notes, enabled, current);
+        AlertDialog dialog = new AlertDialog.Builder(mActivity, R.style.ThemeOverlay_WallpaperSettings_AppCompatDialog)
+                .setTitle(R.string.pref_weather_source_title)
+                .setAdapter(adapter, (d, which) -> {
+                    prefs.edit().putString(WeatherManager.KEY_SOURCE, ids[which]).apply();
+                    // 与改密钥同一条路：换源之后立刻重取一次，不然要等下一个周期
+                    restartWeatherManager();
+                    d.dismiss();
+                })
+                .setNegativeButton(android.R.string.cancel, null)
+                .create();
+        // 行内的两个动作要先把这个对话框关掉，否则会叠在它上面
+        adapter.setDialog(dialog);
+        dialog.show();
+    }
+
+    /**
+     * 数据源对话框的列表：主标题 + 一句说明，当前选中的打勾，不可用的置灰。
+     *
+     * <p><b>OpenWeather 那一行还挂两个动作</b>（配置 API / 教程）—— 它们原先是这个弹窗菜单里
+     * 的独立两项，但都是"配置 OpenWeather"这一件事的一部分，放在数据源旁边才讲得通。
+     * 中国气象局没有密钥，也就没有可配置的东西，那一行的动作块是隐藏的。
+     */
+    private final class WeatherSourceAdapter extends BaseAdapter {
+        private final Context mContext;
+        private final String[] mIds;
+        private final String[] mTitles;
+        private final String[] mNotes;
+        private final boolean[] mEnabled;
+        private final String mCurrent;
+        private AlertDialog mDialog;
+
+        WeatherSourceAdapter(Context context, String[] ids, String[] titles, String[] notes,
+                boolean[] enabled, String current) {
+            mContext = context;
+            mIds = ids;
+            mTitles = titles;
+            mNotes = notes;
+            mEnabled = enabled;
+            mCurrent = current;
+        }
+
+        void setDialog(AlertDialog dialog) {
+            mDialog = dialog;
+        }
+
+        @Override
+        public int getCount() {
+            return mTitles.length;
+        }
+
+        @Override
+        public Object getItem(int position) {
+            return mTitles[position];
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
+
+        /** 两行都不可点，只有整行可用时才算可点 —— 否则置灰那行仍会被点中。 */
+        @Override
+        public boolean areAllItemsEnabled() {
+            return false;
+        }
+
+        @Override
+        public boolean isEnabled(int position) {
+            return mEnabled[position];
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            View row = convertView != null ? convertView
+                    : LayoutInflater.from(mContext)
+                            .inflate(R.layout.dialog_weather_source_item, parent, false);
+            TextView title = row.findViewById(R.id.weather_source_title);
+            TextView note = row.findViewById(R.id.weather_source_note);
+            View actions = row.findViewById(R.id.weather_source_actions);
+
+            boolean selected = mIds[position].equals(mCurrent);
+            title.setText(selected ? "✓ " + mTitles[position] : mTitles[position]);
+            note.setText(mNotes[position]);
+
+            // 动作只挂在 OpenWeather 那一行；点它们不该顺带把这一行选中
+            boolean withActions = WeatherManager.SOURCE_OPENWEATHER.equals(mIds[position]);
+            actions.setVisibility(withActions ? View.VISIBLE : View.GONE);
+            if (withActions) {
+                TextView configure = row.findViewById(R.id.weather_source_action_api);
+                configure.setText(R.string.pref_weather_source_action_api);
+                configure.setOnClickListener(v -> {
+                    dismissSelf();
+                    showWeatherApiKeyDialog();
+                });
+                TextView guide = row.findViewById(R.id.weather_source_action_guide);
+                guide.setText(R.string.pref_weather_source_action_guide);
+                guide.setOnClickListener(v -> {
+                    dismissSelf();
+                    openWeatherApiGuide();
+                });
+            }
+
+            // 置灰：整行一起淡下去，和"点不动"这件事对上
+            row.setAlpha(mEnabled[position] ? 1.0f : 0.4f);
+            return row;
+        }
+
+        private void dismissSelf() {
+            if (mDialog != null && mDialog.isShowing()) {
+                mDialog.dismiss();
+            }
+        }
     }
 
     private void refreshWeatherNow() {
@@ -512,6 +654,8 @@ public class SettingsToolbarHelper {
                     String apiKey = mainPrefs.getString("openweather_api_key", "");
                     String frameRate = mainPrefs.getString(KEY_GLOBAL_FRAME_RATE, "");
                     String weatherInterval = mainPrefs.getString("weather_update_minutes", "");
+                    // 数据源也是全局设置：漏了它，用户重置一次就被悄悄拨回 OpenWeather
+                    String weatherSource = mainPrefs.getString(WeatherManager.KEY_SOURCE, "");
 
                     mainPrefs.edit().clear().apply();
                     java.io.File prefsDir = new java.io.File(mActivity.getApplicationInfo().dataDir, "shared_prefs");
@@ -531,6 +675,7 @@ public class SettingsToolbarHelper {
                             .putString("openweather_api_key", apiKey)
                             .putString(KEY_GLOBAL_FRAME_RATE, frameRate)
                             .putString("weather_update_minutes", weatherInterval)
+                            .putString(WeatherManager.KEY_SOURCE, weatherSource)
                             .apply();
                     android.widget.Toast.makeText(mActivity, R.string.reset_all_settings_done,
                             android.widget.Toast.LENGTH_SHORT).show();

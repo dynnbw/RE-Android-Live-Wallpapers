@@ -111,6 +111,13 @@
     <!-- नेक्सस उन्नत सेटिंग्स -->
 
     <string name="pref_weather_update_interval">मौसम अद्यतन अंतराल</string>
+    <string name="pref_weather_source_title">मौसम डेटा स्रोत</string>
+    <string name="pref_weather_source_openweather">OpenWeather</string>
+    <string name="pref_weather_source_openweather_note">API कुंजी आवश्यक</string>
+    <string name="pref_weather_source_cma">चीन मौसम विज्ञान प्रशासन</string>
+    <string name="pref_weather_source_cma_note">कुंजी आवश्यक नहीं, केवल मुख्य भूमि चीन</string>
+    <string name="pref_weather_source_action_api">API सेट करें</string>
+    <string name="pref_weather_source_action_guide">गाइड</string>
     <string name="pref_weather_refresh_now">मौसम अभी ताज़ा करें</string>
     <string name="pref_weather_refresh_now_success">मौसम ताज़ा पूरा हुआ</string>
     <string name="pref_weather_refresh_now_failed">मौसम ताज़ा विफल</string>

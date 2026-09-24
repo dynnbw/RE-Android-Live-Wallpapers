@@ -110,6 +110,13 @@
     <string name="pref_weather_refresh_now_failed">날씨 새로고침 실패</string>
     <string name="pref_apply_api_title">API 신청</string>
     <string name="pref_weather_update_interval">날씨 업데이트 간격</string>
+    <string name="pref_weather_source_title">날씨 데이터 소스</string>
+    <string name="pref_weather_source_openweather">OpenWeather</string>
+    <string name="pref_weather_source_openweather_note">API 키 필요</string>
+    <string name="pref_weather_source_cma">중국기상국</string>
+    <string name="pref_weather_source_cma_note">키 불필요, 중국 본토 전용</string>
+    <string name="pref_weather_source_action_api">API 설정</string>
+    <string name="pref_weather_source_action_guide">가이드</string>
     <string name="pref_openweather_api_key_title">OpenWeather API 키</string>
     <string name="weather_toolbar_title">날씨 설정</string>
     <string name="pref_weather_last_refresh">마지막 새로고침 시간: %1$s</string>

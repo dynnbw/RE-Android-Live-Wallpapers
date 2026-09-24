@@ -121,6 +121,13 @@
     <!-- Nexus advanced settings -->
 
     <string name="pref_weather_update_interval">Wetteraktualisierungsintervall</string>
+    <string name="pref_weather_source_title">Wetterdatenquelle</string>
+    <string name="pref_weather_source_openweather">OpenWeather</string>
+    <string name="pref_weather_source_openweather_note">API-Schlüssel erforderlich</string>
+    <string name="pref_weather_source_cma">Chinesische Wetterbehörde</string>
+    <string name="pref_weather_source_cma_note">Kein Schlüssel nötig, nur Festlandchina</string>
+    <string name="pref_weather_source_action_api">API einrichten</string>
+    <string name="pref_weather_source_action_guide">Anleitung</string>
     <string name="pref_weather_refresh_now">Wetter jetzt aktualisieren</string>
     <string name="pref_weather_refresh_now_success">Wetteraktualisierung abgeschlossen</string>
     <string name="pref_weather_refresh_now_failed">Wetteraktualisierung fehlgeschlagen</string>

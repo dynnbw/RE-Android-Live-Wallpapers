@@ -11,15 +11,15 @@
         android:title="@string/pref_weather_update_interval"
         app:showAsAction="never" />
     <item
+        android:id="@+id/action_weather_source"
+        android:title="@string/pref_weather_source_title"
+        app:showAsAction="never" />
+    <item
         android:id="@+id/action_weather_refresh_now"
         android:title="@string/pref_weather_refresh_now"
         app:showAsAction="never" />
-    <item
-        android:id="@+id/action_weather_api_key"
-        android:title="@string/pref_openweather_api_key_title"
-        app:showAsAction="never" />
-    <item
-        android:id="@+id/action_weather_apply_api"
-        android:title="@string/pref_apply_api_title"
-        app:showAsAction="never" />
+    <!--
+       「配置 API」与「教程」不在这里 —— 它们是"配置 OpenWeather"这件事的一部分，
+       现在挂在数据源对话框里 OpenWeather 那一行上，见 dialog_weather_source_item.xml。
+    -->
 </menu>

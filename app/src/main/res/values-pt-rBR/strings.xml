@@ -113,6 +113,13 @@
     <!-- Configurações avançadas do Nexus -->
 
     <string name="pref_weather_update_interval">Intervalo de atualização do clima</string>
+    <string name="pref_weather_source_title">Fonte de dados meteorológicos</string>
+    <string name="pref_weather_source_openweather">OpenWeather</string>
+    <string name="pref_weather_source_openweather_note">Requer uma chave de API</string>
+    <string name="pref_weather_source_cma">Administração Meteorológica da China</string>
+    <string name="pref_weather_source_cma_note">Sem chave, somente China continental</string>
+    <string name="pref_weather_source_action_api">Configurar API</string>
+    <string name="pref_weather_source_action_guide">Guia</string>
     <string name="pref_weather_refresh_now">Atualizar clima agora</string>
     <string name="pref_weather_refresh_now_success">Atualização do clima concluída</string>
     <string name="pref_weather_refresh_now_failed">Falha na atualização do clima</string>

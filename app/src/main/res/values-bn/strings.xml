@@ -108,6 +108,13 @@
     <!-- নেক্সাস উন্নত সেটিংস -->
 
     <string name="pref_weather_update_interval">আবহাওয়া আপডেট ব্যবধান</string>
+    <string name="pref_weather_source_title">আবহাওয়া ডেটা সূত্র</string>
+    <string name="pref_weather_source_openweather">OpenWeather</string>
+    <string name="pref_weather_source_openweather_note">API কী প্রয়োজন</string>
+    <string name="pref_weather_source_cma">চীন আবহাওয়া প্রশাসন</string>
+    <string name="pref_weather_source_cma_note">কী প্রয়োজন নেই, শুধু মূল ভূখণ্ড চীন</string>
+    <string name="pref_weather_source_action_api">API সেট করুন</string>
+    <string name="pref_weather_source_action_guide">গাইড</string>
     <string name="pref_weather_refresh_now">এখনই আবহাওয়া রিফ্রেশ করুন</string>
     <string name="pref_weather_refresh_now_success">আবহাওয়া রিফ্রেশ সম্পূর্ণ</string>
     <string name="pref_weather_refresh_now_failed">আবহাওয়া রিফ্রেশ ব্যর্থ</string>

@@ -108,6 +108,13 @@
     <!-- Расширенные настройки Nexus -->
 
     <string name="pref_weather_update_interval">Интервал обновления погоды</string>
+    <string name="pref_weather_source_title">Источник данных о погоде</string>
+    <string name="pref_weather_source_openweather">OpenWeather</string>
+    <string name="pref_weather_source_openweather_note">Требуется API-ключ</string>
+    <string name="pref_weather_source_cma">Метеослужба Китая</string>
+    <string name="pref_weather_source_cma_note">Ключ не нужен, только материковый Китай</string>
+    <string name="pref_weather_source_action_api">Настроить API</string>
+    <string name="pref_weather_source_action_guide">Руководство</string>
     <string name="pref_weather_refresh_now">Обновить погоду сейчас</string>
     <string name="pref_weather_refresh_now_success">Обновление погоды завершено</string>
     <string name="pref_weather_refresh_now_failed">Не удалось обновить погоду</string>

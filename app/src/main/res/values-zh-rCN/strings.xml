@@ -138,6 +138,13 @@
     <string name="pref_weather_refresh_now_failed">天气刷新失败</string>
     <string name="pref_apply_api_title">申请API</string>
     <string name="pref_weather_update_interval">天气更新间隔</string>
+    <string name="pref_weather_source_title">天气数据源</string>
+    <string name="pref_weather_source_openweather">OpenWeather</string>
+    <string name="pref_weather_source_openweather_note">需要 API 密钥</string>
+    <string name="pref_weather_source_cma">中国气象局</string>
+    <string name="pref_weather_source_cma_note">无需密钥仅中国内陆</string>
+    <string name="pref_weather_source_action_api">配置API</string>
+    <string name="pref_weather_source_action_guide">教程</string>
     <string name="pref_openweather_api_key_title">OpenWeather API 密钥</string>
     <string name="weather_toolbar_title">天气设置</string>
         <string name="pref_weather_last_refresh">最后刷新时间: %1$s</string>

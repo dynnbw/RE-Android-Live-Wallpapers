@@ -16,17 +16,7 @@ import androidx.preference.PreferenceManager;
 
 import com.reandroid.wallpaper.R;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
@@ -35,12 +25,48 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * 天气的调度与缓存。
+ *
+ * <p>取数本身在 {@link WeatherSource} 的两个实现里（OpenWeather / 中国气象局），
+ * 这里只管：用哪一路、什么时候取、取到存哪、通知谁、以及**取不到时保留上一次的状态**。
+ *
+ * <p>位置解析也留在这里 —— 它是两路数据共用的输入，不属于任何一路。
+ */
 public class WeatherManager {
     public interface Listener {
         void onWeatherUpdated(WeatherState state);
     }
 
     private static final String TAG = "WeatherManager";
+
+    /**
+     * 数据源选择，值是下面两个 {@code SOURCE_*} 之一。
+     *
+     * <p>放在这里而不是 {@code WallpaperSettings}：写它的是设置界面、读它的是本类，
+     * 而 {@code WallpaperSettings} 里目前一个天气的键都没有（密钥、更新间隔也都是裸字面量）。
+     */
+    public static final String KEY_SOURCE = "weather_source";
+
+    /*
+     * 两个数据源的 id。设置界面也要用，所以从各实现里引出来 —— 实现本身是包内可见的，
+     * 界面上只认这两个常量与下面的 isSourceAvailable()。
+     */
+    public static final String SOURCE_OPENWEATHER = OpenWeatherSource.ID;
+    public static final String SOURCE_CMA = CmaWeatherSource.ID;
+
+    /**
+     * 这个数据源在当前地区能不能用。
+     *
+     * <p>只有中国气象局有地区限制（只在大陆成立，见 {@link CmaWeatherSource}）。
+     * 界面靠它决定那一行要不要置灰，取数前再判一次。
+     */
+    public static boolean isSourceAvailable(String sourceId, Locale locale) {
+        if (SOURCE_CMA.equals(sourceId)) {
+            return CmaWeatherSource.isAvailableIn(locale);
+        }
+        return true;
+    }
     private static final String KEY_LAST_CONDITION = "last_condition";
     private static final String KEY_LAST_IS_NIGHT = "last_is_night";
     private static final String KEY_LAST_TEMP_MIN = "last_temp_min";
@@ -236,19 +262,18 @@ public class WeatherManager {
         }
     }
 
-    private WeatherState fetchWeather() throws IOException, JSONException {
+    /**
+     * 取一次天气。
+     *
+     * <p>这个类只负责"用哪个源、拿不到怎么办、拿到之后存哪、通知谁"。
+     * URL、密钥、解析全在各自的 {@link WeatherSource} 里。
+     *
+     * <p><b>失败一律抛，由调用方决定保留旧状态</b> —— 以前这里有六处静默返回旧值，
+     * 结果"没更新"和"更新成功"在外面分不出来。
+     */
+    private WeatherState fetchWeather() throws Exception {
         if (!isNetworkAvailable()) {
-            return mLastState;
-        }
-        String apiKey = mPrefs.getString("openweather_api_key", "");
-        if (apiKey == null || apiKey.trim().isEmpty()) {
-            apiKey = mContext.getString(R.string.openweather_api_key);
-        }
-        if (apiKey == null || apiKey.trim().isEmpty()
-            || apiKey.contains("YOUR_API_KEY")
-            || apiKey.contains("YOUR_OPENWEATHER_API_KEY")) {
-            Log.w(TAG, "Missing OpenWeather API key");
-            return mLastState;
+            throw new IOException("没有网络");
         }
 
         // Check debug location override first (shared with Grass wallpaper)
@@ -266,7 +291,7 @@ public class WeatherManager {
             } else {
                 double[] stored = getStoredLatLon();
                 if (stored == null) {
-                    return mLastState;
+                    throw new IOException("拿不到位置（没有权限、也没有存过坐标）");
                 }
                 lat = stored[0];
                 lon = stored[1];
@@ -276,156 +301,51 @@ public class WeatherManager {
                 .putString(KEY_LAST_LON, String.format(Locale.US, "%.6f", lon))
                 .apply();
 
-        String lang = buildOpenWeatherLang();
-        String urlStr = String.format(Locale.US,
-                "https://api.openweathermap.org/data/2.5/weather?lat=%.6f&lon=%.6f&appid=%s&units=metric&lang=%s&mode=json",
-                lat, lon, apiKey, lang);
-
-        HttpURLConnection connection = null;
-        InputStream input = null;
-        try {
-            URL url = new URL(urlStr);
-            connection = (HttpURLConnection) url.openConnection();
-            connection.setConnectTimeout(10000);
-            connection.setReadTimeout(10000);
-            connection.setUseCaches(false);
-            connection.setRequestProperty("Accept", "application/json");
-
-            int status = connection.getResponseCode();
-            input = status >= 200 && status < 300 ? connection.getInputStream() : connection.getErrorStream();
-            if (input == null) return mLastState;
-            String json = readAll(input);
-            if (json == null || json.isEmpty()) return mLastState;
-            WeatherState state = parseWeather(json);
-            return state != null ? state : mLastState;
-        } finally {
-            if (input != null) {
-                try {
-                    input.close();
-                } catch (IOException ignored) {
-                }
-            }
-            if (connection != null) {
-                connection.disconnect();
-            }
-        }
+        WeatherSource source = resolveSource();
+        WeatherState state = source.fetch(lat, lon);
+        /*
+         * 成功也留一行。这是全应用唯一一条联网取数的路，而"到底走了哪个源、
+         * 解出了什么"以前在日志里完全没有 —— 出问题时只能靠猜。
+         */
+        Log.i(TAG, "天气已更新（" + source.id() + "）：" + state.condition);
+        return state;
     }
 
-    private WeatherState parseWeather(String json) throws JSONException {
-        JSONObject root = new JSONObject(json);
-        if (!isSuccessResponse(root)) {
-            Log.w(TAG, "OpenWeather API error: " + root.optString("message", "unknown"));
-            return null;
+    /**
+     * 本帧该用哪一路数据。
+     *
+     * <p>中国气象局**只在大陆成立**（实测：出了国界那个站就没有实时观测了，见
+     * {@code CmaWeatherSource}）。所以这里再判一次 —— 在大陆选中它、然后出了国，
+     * 若不拦就会一直取不到数据、界面停在旧值上，看起来像坏了。
+     */
+    private WeatherSource resolveSource() {
+        String id = mPrefs.getString(KEY_SOURCE, SOURCE_OPENWEATHER);
+        if (SOURCE_CMA.equals(id) && isSourceAvailable(id, Locale.getDefault())) {
+            return new CmaWeatherSource();
         }
-        JSONArray weatherArr = root.optJSONArray("weather");
-        int weatherId = 800;
-        if (weatherArr != null && weatherArr.length() > 0) {
-            weatherId = weatherArr.getJSONObject(0).optInt("id", 800);
+        if (SOURCE_CMA.equals(id)) {
+            Log.w(TAG, "中国气象局仅限大陆，本次回退 OpenWeather");
         }
-
-        JSONObject main = root.optJSONObject("main");
-        float tempMin = main != null ? (float) main.optDouble("temp_min", 0.0) : 0.0f;
-        float tempMax = main != null ? (float) main.optDouble("temp_max", 0.0) : 0.0f;
-
-        JSONObject sys = root.optJSONObject("sys");
-        long sunrise = sys != null ? sys.optLong("sunrise", 0L) : 0L;
-        long sunset = sys != null ? sys.optLong("sunset", 0L) : 0L;
-        long dt = root.optLong("dt", System.currentTimeMillis() / 1000L);
-        int timezone = root.optInt("timezone", 0);
-
-        boolean isNight = resolveIsNight(dt, sunrise, sunset, timezone);
-
-        WeatherCondition condition = mapCondition(weatherId, tempMax, tempMin);
-        return new WeatherState(condition, isNight, tempMin, tempMax, sunrise, sunset, dt);
+        return new OpenWeatherSource(resolveApiKey(), Locale.getDefault());
     }
 
-    private boolean isSuccessResponse(JSONObject root) {
-        if (!root.has("cod")) {
-            return true;
+    /**
+     * API 密钥：先看用户在设置里填的，再看资源里的占位值。
+     *
+     * <p>占位串的比对很脆（俄语那份翻译成"ВАШ_КЛЮЧ_OPENWEATHER_API"，就绕过了下面两个
+     * 哨兵），所以这里只当"没配"处理、交给 {@link OpenWeatherSource} 抛，
+     * 不再靠它决定要不要发请求。
+     */
+    private String resolveApiKey() {
+        String apiKey = mPrefs.getString("openweather_api_key", "");
+        if (apiKey == null || apiKey.trim().isEmpty()) {
+            apiKey = mContext.getString(R.string.openweather_api_key);
         }
-        try {
-            int code = root.optInt("cod", 200);
-            if (code != 200) {
-                return false;
-            }
-            return true;
-        } catch (Exception e) {
-            Log.w(TAG, "Failed to parse weather response code as int, falling back to string", e);
-            String code = root.optString("cod", "200");
-            return "200".equals(code);
+        if (apiKey != null && (apiKey.contains("YOUR_API_KEY")
+                || apiKey.contains("YOUR_OPENWEATHER_API_KEY"))) {
+            return "";
         }
-    }
-
-    private boolean resolveIsNight(long dtUtc, long sunriseUtc, long sunsetUtc, int timezoneSeconds) {
-        long buffer = 30 * 60L;
-        if (sunriseUtc > 0 && sunsetUtc > 0) {
-            return dtUtc < (sunriseUtc - buffer) || dtUtc >= (sunsetUtc + buffer);
-        }
-
-        long localSeconds = dtUtc + timezoneSeconds;
-        if (localSeconds <= 0) {
-            localSeconds = System.currentTimeMillis() / 1000L;
-        }
-        int localMinutes = (int) ((localSeconds % 86400L) / 60L);
-        int sunriseMinutes = 6 * 60;
-        int sunsetMinutes = 18 * 60;
-        int bufferMinutes = 30;
-        return localMinutes < (sunriseMinutes - bufferMinutes)
-                || localMinutes >= (sunsetMinutes + bufferMinutes);
-    }
-
-    private WeatherCondition mapCondition(int weatherId, float tempMax, float tempMin) {
-        if (weatherId >= 200 && weatherId < 300) {
-            return WeatherCondition.D6_THUNDERSTORMS;
-        }
-        if (weatherId == 511 || (weatherId >= 611 && weatherId <= 616)) {
-            return WeatherCondition.D9_SLEET;
-        }
-        if (weatherId >= 300 && weatherId < 600) {
-            return WeatherCondition.D5_RAIN_SHOWERS;
-        }
-        if (weatherId >= 600 && weatherId < 700) {
-            return WeatherCondition.D7_FLURRIES_SNOW;
-        }
-        if (weatherId >= 700 && weatherId < 800) {
-            return WeatherCondition.D4_FOG;
-        }
-        if (weatherId == 800) {
-            if (isFreezing(tempMax, tempMin)) {
-                return WeatherCondition.D8_ICE_COLD;
-            }
-            return WeatherCondition.D1_CLEAR;
-        }
-        if (weatherId == 801 || weatherId == 802) {
-            if (isFreezing(tempMax, tempMin)) {
-                return WeatherCondition.D8_ICE_COLD;
-            }
-            return WeatherCondition.D2_CLOUDY;
-        }
-        if (weatherId == 803 || weatherId == 804) {
-            if (isFreezing(tempMax, tempMin)) {
-                return WeatherCondition.D8_ICE_COLD;
-            }
-            return WeatherCondition.D3_DREARY;
-        }
-        return WeatherCondition.D2_CLOUDY;
-    }
-
-    private boolean isFreezing(float tempMax, float tempMin) {
-        return tempMax <= 0.0f || tempMin <= 0.0f;
-    }
-
-    private String buildOpenWeatherLang() {
-        Locale locale = Locale.getDefault();
-        String language = locale.getLanguage();
-        String country = locale.getCountry();
-        if ("zh".equalsIgnoreCase(language)) {
-            if ("TW".equalsIgnoreCase(country) || "HK".equalsIgnoreCase(country) || "MO".equalsIgnoreCase(country)) {
-                return "zh_tw";
-            }
-            return "zh_cn";
-        }
-        return language.toLowerCase(Locale.US);
+        return apiKey;
     }
 
     private WeatherState loadStateFromPrefs() {
@@ -502,15 +422,5 @@ public class WeatherManager {
         } catch (Exception e) {
             return null;
         }
-    }
-
-    private String readAll(InputStream input) throws IOException {
-        StringBuilder sb = new StringBuilder();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
-        String line;
-        while ((line = reader.readLine()) != null) {
-            sb.append(line);
-        }
-        return sb.toString();
     }
 }

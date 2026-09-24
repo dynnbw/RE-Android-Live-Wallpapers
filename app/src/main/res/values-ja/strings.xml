@@ -91,6 +91,13 @@
     <string name="pref_weather_refresh_now_failed">天気の更新に失敗しました</string>
     <string name="pref_apply_api_title">API申請</string>
     <string name="pref_weather_update_interval">天気更新間隔</string>
+    <string name="pref_weather_source_title">天気データソース</string>
+    <string name="pref_weather_source_openweather">OpenWeather</string>
+    <string name="pref_weather_source_openweather_note">APIキーが必要</string>
+    <string name="pref_weather_source_cma">中国気象局</string>
+    <string name="pref_weather_source_cma_note">キー不要、中国本土のみ</string>
+    <string name="pref_weather_source_action_api">API設定</string>
+    <string name="pref_weather_source_action_guide">ガイド</string>
     <string name="pref_openweather_api_key_title">OpenWeather APIキー</string>
     <string name="weather_toolbar_title">天気設定</string>
     <string name="pref_weather_last_refresh">最終更新時間：%1$s</string>
