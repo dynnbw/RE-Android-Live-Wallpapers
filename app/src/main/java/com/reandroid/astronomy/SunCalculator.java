@@ -73,55 +73,92 @@ public class SunCalculator {
     }
 
     /**
-     * 计算太阳高度角（单位：度）
+     * 太阳位置计算共用的中间量。
+     *
+     * <p><b>存在的理由是"避免同一个量有两份定义"。</b> 时差方程与黄赤交角原本在
+     * {@link #computeSunAltitude} 和 {@link #computeHourAngle} 里各写了一份，而两份并不一致：
+     * 前者用随时角修正的 ε（{@code 23.439291 − 0.0130042·t}，另加章动项），后者写死成 J2000
+     * 的那个常数。今天两者差不到 0.01°，看不出问题，但"改一处忘一处"迟早要出岔子 ——
+     * 现在 ε 与 eqTime 各只有一处定义，两边必然同步。
      */
-    public double computeSunAltitude(Calendar calendar) {
+    private static final class SunTerms {
+        /** 儒略世纪数。 */
+        final double t;
+        /** 平黄经 l0（度，已归一到 [0,360)）。 */
+        final double meanLongitude;
+        /** 平近点角 m（度）。 */
+        final double meanAnomaly;
+        /** 地球轨道偏心率 e。 */
+        final double eccentricity;
+        /** 黄赤交角 ε（度，含章动修正）。 */
+        final double obliquity;
+
+        SunTerms(long millis) {
+            t = ((millis / 86400000.0 + 2440587.5) - 2451545.0) / 36525.0;
+            double l0 = (280.46646 + 36000.76983 * t + 0.0003032 * t * t) % 360.0;
+            meanLongitude = l0 < 0 ? l0 + 360.0 : l0;
+            meanAnomaly = 357.52911 + 35999.05029 * t - 0.0001537 * t * t;
+            eccentricity = 0.016708634 - 0.000042037 * t - 0.0000001267 * t * t;
+            double omega = 125.04 - 1934.136 * t;
+            obliquity = 23.439291 - 0.0130042 * t + 0.00256 * Math.cos(Math.toRadians(omega));
+        }
+
+        /** 时差方程（分钟）—— 真太阳时与平太阳时之差。 */
+        double equationOfTimeMinutes() {
+            double y = Math.tan(Math.toRadians(obliquity / 2.0));
+            y *= y;
+            return 4.0 * Math.toDegrees(
+                    y * Math.sin(2.0 * Math.toRadians(meanLongitude))
+                            - 2.0 * eccentricity * Math.sin(Math.toRadians(meanAnomaly))
+                            + 4.0 * eccentricity * y * Math.sin(Math.toRadians(meanAnomaly))
+                                    * Math.cos(2.0 * Math.toRadians(meanLongitude))
+                            - 0.5 * y * y * Math.sin(4.0 * Math.toRadians(meanLongitude))
+                            - 1.25 * eccentricity * eccentricity * Math.sin(2.0 * Math.toRadians(meanAnomaly))
+            );
+        }
+    }
+
+    /**
+     * 太阳时角（度，范围 [-180, 180]）—— 两处共用的最后一步。
+     *
+     * <p>由本地钟表时间 + 时差 + 经度 - 时区偏移得到真太阳时，再折成时角。
+     */
+    private double hourAngleOf(Calendar calendar, double equationOfTimeMinutes) {
         long millis = calendar.getTimeInMillis();
-
-        // Julian Day
-        double jd = millis / 86400000.0 + 2440587.5;
-        double t = (jd - 2451545.0) / 36525.0;
-
-        double l0 = (280.46646 + 36000.76983 * t + 0.0003032 * t * t) % 360.0;
-        if (l0 < 0) l0 += 360.0;
-        double m = 357.52911 + 35999.05029 * t - 0.0001537 * t * t;
-        double e = 0.016708634 - 0.000042037 * t - 0.0000001267 * t * t;
-
-        double c = (1.914602 - 0.004817 * t - 0.000014 * t * t) * Math.sin(Math.toRadians(m))
-                + (0.019993 - 0.000101 * t) * Math.sin(Math.toRadians(2 * m))
-                + 0.000289 * Math.sin(Math.toRadians(3 * m));
-
-        double trueLong = l0 + c;
-        double omega = 125.04 - 1934.136 * t;
-        double lambda = trueLong - 0.00569 - 0.00478 * Math.sin(Math.toRadians(omega));
-
-        double epsilon0 = 23.439291 - 0.0130042 * t;
-        double epsilon = epsilon0 + 0.00256 * Math.cos(Math.toRadians(omega));
-
-        double sinDecl = Math.sin(Math.toRadians(epsilon)) * Math.sin(Math.toRadians(lambda));
-        double decl = Math.toDegrees(Math.asin(sinDecl));
-
-        double y = Math.tan(Math.toRadians(epsilon / 2.0));
-        y *= y;
-        double eqTime = 4.0 * Math.toDegrees(
-                y * Math.sin(2.0 * Math.toRadians(l0))
-                        - 2.0 * e * Math.sin(Math.toRadians(m))
-                        + 4.0 * e * y * Math.sin(Math.toRadians(m)) * Math.cos(2.0 * Math.toRadians(l0))
-                        - 0.5 * y * y * Math.sin(4.0 * Math.toRadians(l0))
-                        - 1.25 * e * e * Math.sin(2.0 * Math.toRadians(m))
-        );
-
-        int hour = calendar.get(Calendar.HOUR_OF_DAY);
-        int minute = calendar.get(Calendar.MINUTE);
-        int second = calendar.get(Calendar.SECOND);
-        double localMinutes = hour * 60.0 + minute + second / 60.0;
+        double localMinutes = calendar.get(Calendar.HOUR_OF_DAY) * 60.0
+                + calendar.get(Calendar.MINUTE)
+                + calendar.get(Calendar.SECOND) / 60.0;
         double tzOffsetHours = mTimeZone.getOffset(millis) / 3600000.0;
 
-        double trueSolarTime = (localMinutes + eqTime + 4.0 * mLongitude - 60.0 * tzOffsetHours) % 1440.0;
+        double trueSolarTime = (localMinutes + equationOfTimeMinutes + 4.0 * mLongitude
+                - 60.0 * tzOffsetHours) % 1440.0;
         if (trueSolarTime < 0) trueSolarTime += 1440.0;
 
         double hourAngle = trueSolarTime / 4.0 - 180.0;
         if (hourAngle < -180.0) hourAngle += 360.0;
+        return hourAngle;
+    }
+
+    /**
+     * 计算太阳高度角（单位：度）
+     */
+    public double computeSunAltitude(Calendar calendar) {
+        long millis = calendar.getTimeInMillis();
+        SunTerms terms = new SunTerms(millis);
+
+        double c = (1.914602 - 0.004817 * terms.t - 0.000014 * terms.t * terms.t)
+                * Math.sin(Math.toRadians(terms.meanAnomaly))
+                + (0.019993 - 0.000101 * terms.t) * Math.sin(Math.toRadians(2 * terms.meanAnomaly))
+                + 0.000289 * Math.sin(Math.toRadians(3 * terms.meanAnomaly));
+
+        double trueLong = terms.meanLongitude + c;
+        double omega = 125.04 - 1934.136 * terms.t;
+        double lambda = trueLong - 0.00569 - 0.00478 * Math.sin(Math.toRadians(omega));
+
+        double sinDecl = Math.sin(Math.toRadians(terms.obliquity)) * Math.sin(Math.toRadians(lambda));
+        double decl = Math.toDegrees(Math.asin(sinDecl));
+
+        double hourAngle = hourAngleOf(calendar, terms.equationOfTimeMinutes());
 
         double latRad = Math.toRadians(mLatitude);
         double declRad = Math.toRadians(decl);
@@ -138,38 +175,7 @@ public class SunCalculator {
      * 计算太阳时角（单位：度，范围 [-180, 180]）
      */
     public double computeHourAngle(Calendar calendar) {
-        long millis = calendar.getTimeInMillis();
-
-        double jd = millis / 86400000.0 + 2440587.5;
-        double t = (jd - 2451545.0) / 36525.0;
-
-        double l0 = (280.46646 + 36000.76983 * t + 0.0003032 * t * t) % 360.0;
-        if (l0 < 0) l0 += 360.0;
-        double m = 357.52911 + 35999.05029 * t - 0.0001537 * t * t;
-        double e = 0.016708634 - 0.000042037 * t - 0.0000001267 * t * t;
-
-        double y = Math.tan(Math.toRadians(23.439291 / 2.0));
-        y *= y;
-        double eqTime = 4.0 * Math.toDegrees(
-                y * Math.sin(2.0 * Math.toRadians(l0))
-                        - 2.0 * e * Math.sin(Math.toRadians(m))
-                        + 4.0 * e * y * Math.sin(Math.toRadians(m)) * Math.cos(2.0 * Math.toRadians(l0))
-                        - 0.5 * y * y * Math.sin(4.0 * Math.toRadians(l0))
-                        - 1.25 * e * e * Math.sin(2.0 * Math.toRadians(m))
-        );
-
-        int hour = calendar.get(Calendar.HOUR_OF_DAY);
-        int minute = calendar.get(Calendar.MINUTE);
-        int second = calendar.get(Calendar.SECOND);
-        double localMinutes = hour * 60.0 + minute + second / 60.0;
-        double tzOffsetHours = mTimeZone.getOffset(millis) / 3600000.0;
-
-        double trueSolarTime = (localMinutes + eqTime + 4.0 * mLongitude - 60.0 * tzOffsetHours) % 1440.0;
-        if (trueSolarTime < 0) trueSolarTime += 1440.0;
-
-        double hourAngle = trueSolarTime / 4.0 - 180.0;
-        if (hourAngle < -180.0) hourAngle += 360.0;
-        return hourAngle;
+        return hourAngleOf(calendar, new SunTerms(calendar.getTimeInMillis()).equationOfTimeMinutes());
     }
 
     /**
