@@ -119,21 +119,21 @@ public class FallGL extends GLESScene {
     // 依据实测的甲藻发光行为：过阈值才闪、极短、颗粒状。详见 fall_water_fs.glsl。
     // 取值都是上机起点，观感不对就调这里。
 
-    /** 峰值亮度。**要大于 1** 才会被辉光取走、铺到叶子上。 */
-    private static final float ALGAE_GAIN = 1.3f;
     /**
-     * 触发阈值。**要低于落叶入水那一档（0.3）** —— 自动产生的波纹也该有反应，
-     * 只是响应曲线让它更弱。梯度：落叶 0.3 < 轻点 0.5 < 快划 1.0。
-     */
-    private static final float ALGAE_THRESHOLD = 0.20f;
-    /**
-     * 闪光贴在波前后面多宽（网格单位）。
+     * 峰值亮度。
      *
-     * <p>{@code spread} 每秒走 30 个网格单位，所以 {@code 9 ÷ 30 ≈ 0.3 秒} ——
-     * 这就是闪光的时长。实测甲藻只有 50~150ms，这里为可读性放宽了，
-     * 但**必须远小于波纹本身几秒的寿命**，否则就从"闪一下"变成"留下一片余晖"。
+     * <p>**最亮处是刻意过曝的** —— 用户的原话：「蓝藻最亮的部分在视觉上就需要过曝」。
+     * 蓝眼泪的照片里最亮处本来就是白的，所以峰值要推进截断区：蓝色通道先被截成 1，
+     * 亮度再往上顶，最后读作"白得发亮、边缘一圈蓝"。
+     *
+     * <p>（这与**白色发光体**那边是相反的取舍：那个的峰值压到 1 附近是为了保住黄色。
+     * 这里保住的是"过曝"本身。）
      */
-    private static final float ALGAE_BAND = 5.0f;
+    private static final float ALGAE_GAIN = 6.0f;
+    /*
+     * 触发阈值与波带宽度定义在 FallScene —— 那边要用同一套去算逐叶受光，
+     * 两份代码必须对齐。这里只负责把它们喂给着色器。
+     */
     /**
      * 噪声贴图每铺满一次覆盖多少网格单位。
      *
@@ -160,6 +160,8 @@ public class FallGL extends GLESScene {
     private static final float[] ALGAE_HIGH = {0.12f, 0.38f, 1.00f};
     /** 噪声贴图在 assets 里的路径。 */
     private static final String ALGAE_NOISE_ASSET = "fall/drawable/algae_noise.png";
+    /** 叶片局部坐标的旋转方向，见 drawLeafQuad 里的说明。 */
+    private static final float LEAF_AXIS_ROTATION_SIGN = 1.0f;
     /** 滑动多快算"满强度"（像素/秒）。 */
     private static final float TOUCH_FULL_SPEED_PX_S = 2600.0f;
     /** 轻点（没有位移）的扰动强度，见 onTouchEvent。 */
@@ -245,6 +247,24 @@ public class FallGL extends GLESScene {
     private int mWAlgaeLowHandle;
     private int mWAlgaeHighHandle;
     private int mWAlgaePowerHandle;
+    /** 落叶着色器里的逐像素受光 uniform。 */
+    private int mLeafCenterHandle;
+    private int mLeafAxisXHandle;
+    private int mLeafAxisYHandle;
+    private int mLeafAlgaeAmountHandle;
+    private int mLeafDropHandle;
+    private int mLeafDropCountHandle;
+    private int mLeafAlgaePowerHandle;
+    private int mLeafAlgaeWorldHandle;
+    private int mLeafAlgaeThresholdHandle;
+    private int mLeafAlgaeBandHandle;
+    private int mLeafAlgaeMetricHandle;
+    private int mLeafAlgaeMeshScaleHandle;
+    private int mLeafAlgaeMeshOffsetHandle;
+    private int mLeafAlgaeNoiseHandle;
+    private int mLeafAlgaeNoiseTileHandle;
+    private int mLeafAlgaeNoiseGainHandle;
+    private int mLightColorHandle;
     /** 落叶着色器里的时段染色 uniform。 */
     private int mTintHandle;
     private int mTintAmountHandle;
@@ -629,8 +649,57 @@ public class FallGL extends GLESScene {
         GLES30.glUniform3f(mTintHandle, tint[0], tint[1], tint[2]);
         GLES30.glUniform1f(mTintAmountHandle, mScene.getLeafTintAmount());
         GLES30.glUniform1f(mTintValueHandle, mScene.getLeafTintValue());
-        for (FallScene.Leaf leaf : sceneData.getLeaves()) {
-            drawLeaf(leaf, sceneData);
+        FallScene.Leaf[] leaves = sceneData.getLeaves();
+        /*
+         * 每帧只设一次：世界→网格的度量、波带宽度、蓝光颜色。
+         *
+         * **Y 那一项要除 halfH。** 网格的换算是
+         * {@code meshY = (worldY / halfH + 1) * scaleY}，所以世界 ΔY 到网格 ΔY 的系数
+         * 是 {@code scaleY / halfH}，只写 scaleY 会差 1.67 倍，光在竖直方向整体错位。
+         */
+        float halfWorldH = sceneData.getGlHeight() * 0.5f;
+        /*
+         * 叶子的受光与水面是**同一套算法**（遍历所有波纹累加），所以这一整套参数
+         * 必须与 drawWaterQuad 那边保持一致 —— 否则"水里那圈光"和"叶子被照到哪"会对不上。
+         */
+        GLES30.glUniform1f(mLeafAlgaeAmountHandle, mScene.getAlgaeAmount());
+        GLES30.glUniform2f(mLeafAlgaeMetricHandle,
+                sceneData.getMeshScaleX() * sceneData.getDxMul(),
+                sceneData.getMeshScaleY() / Math.max(1e-4f, halfWorldH));
+        /*
+         * 世界→网格**坐标**的系数与偏移 —— 叶子要采到和水面同一张噪声。
+         *
+         * 第一项不含 dxMul（那个只进距离度量），偏移里含 xOffset*2
+         * （addDrop 加的、drawLeafQuad 减的），两样都不能省。
+         */
+        float meshScaleX = sceneData.getMeshScaleX();
+        float meshScaleY = sceneData.getMeshScaleY();
+        float halfWorldHForMesh = Math.max(1e-4f, sceneData.getGlHeight() * 0.5f);
+        GLES30.glUniform2f(mLeafAlgaeMeshScaleHandle, meshScaleX, meshScaleY / halfWorldHForMesh);
+        GLES30.glUniform2f(mLeafAlgaeMeshOffsetHandle,
+                (sceneData.getXOffset() * 2.0f + 1.0f) * meshScaleX, meshScaleY);
+        GLES30.glUniform1f(mLeafAlgaeThresholdHandle, FallScene.ALGAE_THRESHOLD);
+        GLES30.glUniform1f(mLeafAlgaeBandHandle, FallScene.ALGAE_BAND);
+        GLES30.glUniform1f(mLeafAlgaeNoiseTileHandle, ALGAE_NOISE_TILE);
+        GLES30.glUniform1f(mLeafAlgaeNoiseGainHandle, ALGAE_NOISE_GAIN);
+        GLES30.glUniform3f(mLightColorHandle,
+                FallScene.LEAF_LIGHT_COLOR[0], FallScene.LEAF_LIGHT_COLOR[1],
+                FallScene.LEAF_LIGHT_COLOR[2]);
+
+        int dropCount = sceneData.getActiveDropCount();
+        GLES30.glUniform1f(mLeafDropCountHandle, (float) dropCount);
+        if (dropCount > 0) {
+            GLES30.glUniform4fv(mLeafDropHandle, dropCount, sceneData.getDropData(), 0);
+            GLES30.glUniform1fv(mLeafAlgaePowerHandle, dropCount, sceneData.getAlgaePower(), 0);
+            GLES30.glUniform2fv(mLeafAlgaeWorldHandle, dropCount, sceneData.getAlgaeWorld(), 0);
+        }
+        // 噪声贴图接在叶子贴图之后那一个单元
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE1);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mAlgaeNoiseTexture);
+        GLES30.glUniform1i(mLeafAlgaeNoiseHandle, 1);
+
+        for (int i = 0; i < leaves.length; i++) {
+            drawLeaf(leaves[i], i, sceneData);
         }
     }
 
@@ -728,8 +797,8 @@ public class FallGL extends GLESScene {
          */
         GLES30.glUniform1f(mWAlgaeAmountHandle, mScene.getAlgaeAmount());
         GLES30.glUniform1f(mWAlgaeGainHandle, ALGAE_GAIN);
-        GLES30.glUniform1f(mWAlgaeThresholdHandle, ALGAE_THRESHOLD);
-        GLES30.glUniform1f(mWAlgaeBandHandle, ALGAE_BAND);
+        GLES30.glUniform1f(mWAlgaeThresholdHandle, FallScene.ALGAE_THRESHOLD);
+        GLES30.glUniform1f(mWAlgaeBandHandle, FallScene.ALGAE_BAND);
         GLES30.glUniform1f(mWAlgaeNoiseTileHandle, ALGAE_NOISE_TILE);
         GLES30.glUniform1f(mWAlgaeNoiseGainHandle, ALGAE_NOISE_GAIN);
         GLES30.glUniform3f(mWAlgaeLowHandle, ALGAE_LOW[0], ALGAE_LOW[1], ALGAE_LOW[2]);
@@ -760,7 +829,7 @@ public class FallGL extends GLESScene {
         }
     }
 
-    private void drawLeaf(FallScene.Leaf leaf, FallScene.SceneData sceneData) {
+    private void drawLeaf(FallScene.Leaf leaf, int index, FallScene.SceneData sceneData) {
         if (mLeafTextures == null || mLeafTextures.length == 0) {
             return;
         }
@@ -775,8 +844,9 @@ public class FallGL extends GLESScene {
 
             float shadowOffset = leaf.altitude * 0.2f;
             int texture = mLeafTextures[leaf.leafTextureIndex % mLeafTextures.length];
+            // 影子是剪影，与光无关，传 -1 让片元跳过整段
             drawLeafQuad(leaf.x - shadowOffset, leaf.y - shadowOffset, leaf.scale * sizeMul, leaf.angle,
-                    texture, shadowAlpha, true, sceneData);
+                    texture, shadowAlpha, true, sceneData, -1);
         }
 
         float leafAlpha = 1.0f;
@@ -789,12 +859,38 @@ public class FallGL extends GLESScene {
 
         int texture = mLeafTextures[leaf.leafTextureIndex % mLeafTextures.length];
         drawLeafQuad(leaf.x, leaf.y, leaf.scale * sizeMul, leaf.angle, texture, leafAlpha, false,
-                sceneData);
+                sceneData, index);
     }
 
     private void drawLeafQuad(float x, float y, float scale, float rotation, int texture, float alpha,
-            boolean silhouette, FallScene.SceneData sceneData) {
+            boolean silhouette, FallScene.SceneData sceneData, int leafIndex) {
         float drawX = x - sceneData.getXOffset() * 2.0f;
+
+        /*
+         * 逐像素受光需要的三个量：叶片中心，以及**两个半轴向量**。
+         * 它们已经含了缩放与旋转，所以着色器里一次三角函数都不用 ——
+         * 像素的世界坐标就是 center + axisX*localX + axisY*localY。
+         */
+        /*
+         * 旋转方向与 android.opengl.Matrix.rotateM 一致（绕 +Z、正角逆时针）。
+         *
+         * ⚠ 曾经因为"误差随叶片角度增大"判定这里符号反了 —— **那个判据是错的**：
+         * 当时真正的原因是着色器的 Y 是镜像的（见 fall_fs.glsl 里关于 v 朝下的说明），
+         * 而 Y 镜像造成的误差同样会随叶片旋转改变方向，特征与符号反一模一样。
+         *
+         * 真正的判据是：**角度为 0 时误差是否为零**。符号反在 0 度时无误差，
+         * 但 Y 镜像在 0 度时是纯粹的上下颠倒 —— 两者能分开。
+         *
+         * 留这个常量是为了万一还要翻：改这一个数即可。
+         */
+        float rad = (float) Math.toRadians(rotation) * LEAF_AXIS_ROTATION_SIGN;
+        float cos = (float) Math.cos(rad);
+        float sin = (float) Math.sin(rad);
+        float half = FallScene.LEAF_SIZE * scale;
+        GLES30.glUniform2f(mLeafCenterHandle, drawX, y);
+        GLES30.glUniform2f(mLeafAxisXHandle, cos * half, sin * half);
+        GLES30.glUniform2f(mLeafAxisYHandle, -sin * half, cos * half);
+
         Matrix.setIdentityM(mModelMatrix, 0);
         Matrix.translateM(mModelMatrix, 0, drawX, y, 0);
         Matrix.rotateM(mModelMatrix, 0, rotation, 0, 0, 1);
@@ -850,7 +946,15 @@ public class FallGL extends GLESScene {
 
     private void createProgram() {
         String vertexShader = AssetLoader.readText(mContext, "fall/shaders/GLES/fall_vs.glsl");
-        String fragmentShader = AssetLoader.readText(mContext, "fall/shaders/GLES/fall_fs.glsl");
+        /*
+         * **叶子着色器也要替换 $DROP_SIZE。** 它现在同样声明了 u_drop / uAlgaePower /
+         * uAlgaeWorld 三个数组（受光要在叶片上逐波纹累加）。漏替换的话运行时
+         * 报 "$ invalid character"，而且**离线的 glslangValidator 会先代入再验、
+         * 反而是绿的** —— 水面那边就是这么栽过一次的。
+         */
+        String fragmentShader = AssetLoader
+                .readText(mContext, "fall/shaders/GLES/fall_fs.glsl")
+                .replace("$DROP_SIZE", String.valueOf(WallpaperSettings.getFallMaxDrops(80)));
         int vs = compileShader(GLES30.GL_VERTEX_SHADER, vertexShader);
         int fs = compileShader(GLES30.GL_FRAGMENT_SHADER, fragmentShader);
         if (vs == 0 || fs == 0) {
@@ -878,6 +982,23 @@ public class FallGL extends GLESScene {
         mTintHandle = GLES30.glGetUniformLocation(mProgram, "uTint");
         mTintAmountHandle = GLES30.glGetUniformLocation(mProgram, "uTintAmount");
         mTintValueHandle = GLES30.glGetUniformLocation(mProgram, "uValue");
+        mLeafCenterHandle = GLES30.glGetUniformLocation(mProgram, "uLeafCenter");
+        mLeafAxisXHandle = GLES30.glGetUniformLocation(mProgram, "uLeafAxisX");
+        mLeafAxisYHandle = GLES30.glGetUniformLocation(mProgram, "uLeafAxisY");
+        mLeafAlgaeAmountHandle = GLES30.glGetUniformLocation(mProgram, "uAlgaeAmount");
+        mLeafDropHandle = GLES30.glGetUniformLocation(mProgram, "u_drop");
+        mLeafDropCountHandle = GLES30.glGetUniformLocation(mProgram, "u_dropCount");
+        mLeafAlgaePowerHandle = GLES30.glGetUniformLocation(mProgram, "uAlgaePower");
+        mLeafAlgaeWorldHandle = GLES30.glGetUniformLocation(mProgram, "uAlgaeWorld");
+        mLeafAlgaeThresholdHandle = GLES30.glGetUniformLocation(mProgram, "uAlgaeThreshold");
+        mLeafAlgaeBandHandle = GLES30.glGetUniformLocation(mProgram, "uAlgaeBand");
+        mLeafAlgaeMetricHandle = GLES30.glGetUniformLocation(mProgram, "uAlgaeMetric");
+        mLeafAlgaeMeshScaleHandle = GLES30.glGetUniformLocation(mProgram, "uAlgaeMeshScale");
+        mLeafAlgaeMeshOffsetHandle = GLES30.glGetUniformLocation(mProgram, "uAlgaeMeshOffset");
+        mLeafAlgaeNoiseHandle = GLES30.glGetUniformLocation(mProgram, "uAlgaeNoise");
+        mLeafAlgaeNoiseTileHandle = GLES30.glGetUniformLocation(mProgram, "uAlgaeNoiseTile");
+        mLeafAlgaeNoiseGainHandle = GLES30.glGetUniformLocation(mProgram, "uAlgaeNoiseGain");
+        mLightColorHandle = GLES30.glGetUniformLocation(mProgram, "uLightColor");
 
         GLES30.glDeleteShader(vs);
         GLES30.glDeleteShader(fs);

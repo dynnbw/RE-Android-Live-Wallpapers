@@ -187,7 +187,34 @@ uniform highp float u_dropCount;
 float hash21(highp vec2 p);   // 定义在下面，星空那一节
 
 vec3 algaeGlow(highp vec2 meshPos) {
-  vec3 acc = vec3(0.0);
+  /*
+   * 噪声**在循环外只取一次** —— 它是水本身的属性（这片水里有多少藻、
+   * 波前在这里鼓出来多少），与是哪个波纹无关。放进循环里等于每个波纹都采一次贴图，
+   * 而那是这里最贵的一项（上机实测帧时间因此涨到几百毫秒）。
+   */
+  highp vec2 nuv = meshPos / max(uAlgaeNoiseTile, 1e-4);
+
+  /*
+   * 密度用**两级噪声相乘**。单级时 `clamp(n * 1.8, 0, 1)` 大部分格子都到 1，
+   * 于是整条环是均匀的 —— 用户的原话是「看起来很像普通的光带」。
+   * 两级相乘才出颗粒。
+   */
+  float n1 = texture(uAlgaeNoise, nuv).r;
+  float n2 = texture(uAlgaeNoise, nuv * 3.7 + vec2(0.13, 0.57)).r;
+  float density = smoothstep(0.20, 0.80, n1) * (0.30 + 0.70 * smoothstep(0.30, 0.85, n2));
+  if (density <= 0.004) return vec3(0.0);
+  float crowded = clamp(n1 * 0.65 + n2 * 0.35, 0.0, 1.0);
+  vec3 blob = mix(uAlgaeLow, uAlgaeHigh, crowded);   // 不要叫 patch：GLSL ES 3.00 的保留字
+
+  /*
+   * 波前的"不完美"：用一个粗尺度的空间噪声把半径顶出去/收回来一点。
+   *
+   * 用**位置**而不是角度 —— 按角度采样会在 ±π 处留下一道接缝（噪声在角度上不周期）。
+   */
+  float wobble = texture(uAlgaeNoise, meshPos * 0.04 + vec2(7.3, 1.9)).r;
+  float wobbleScale = 0.90 + 0.20 * wobble;
+
+  float acc = 0.0;
   for (int i = 0; i < $DROP_SIZE; i++) {
     if (float(i) >= u_dropCount) break;
     float power = uAlgaePower[i];
@@ -196,44 +223,25 @@ vec3 algaeGlow(highp vec2 meshPos) {
     // 与顶点着色器 addDrop() 同一套距离度量（X 方向同样乘 dxMul / u_dxMul）
     highp vec2 delta = vec2((meshPos.x - d.x) * u_dxMul, meshPos.y - d.y);
     float dist = length(delta);
-    if (dist > d.w) continue;                   // 波前还没扫到这里
-    /*
-     * 闪光带：**峰值在带中间，两头都归零**。
-     *
-     * 不能写成 smoothstep(d.w - band, d.w, dist) —— 那样它会一直升到波前处取 1，
-     * 而波前之外被上面那句 continue 直接截成 0，接缝处是一道硬边，
-     * 上机看就是一个边缘清晰的"圆盘"。
-     */
-    float t = clamp((dist - (d.w - uAlgaeBand)) / uAlgaeBand, 0.0, 1.0);
-    float band = smoothstep(0.0, 0.35, t) * (1.0 - smoothstep(0.65, 1.0, t));
-    /*
-     * 一团藻的颜色。**这是 magicsmoke 的算法**（用户指定的参考）：
-     * 噪声的**亮度当密度**，颜色在 low→high 之间走，两层不同尺度叠一点。
-     *
-     * 我一开始是"同一个颜色乘一个亮度"—— 那样出来的是一片均匀的网。
-     * 让颜色本身随密度走，每一团藻自带深浅（边缘偏深、中心偏亮），才有团块感。
-     */
-    highp vec2 nuv = meshPos / max(uAlgaeNoiseTile, 1e-4);
-    float n1 = texture(uAlgaeNoise, nuv).r;
-    float n2 = texture(uAlgaeNoise, nuv * 2.37 + vec2(0.37, 0.71)).r;
-    float density = clamp(n1 * uAlgaeNoiseGain, 0.0, 1.0);   // 类比它的 alphaFactor
-    float crowded = clamp(n1 * 0.65 + n2 * 0.35, 0.0, 1.0);
-    vec3 blob = mix(uAlgaeLow, uAlgaeHigh, crowded);   // 不要叫 patch：GLSL ES 3.00 的保留字
+    if (dist > d.w * wobbleScale + uAlgaeBand * 0.30) continue;   // 还没扫到 / 已经过去
 
-    // 过阈值之后的响应是超线性的（实测约 1.9 次方）。这里用一条平滑的 S 曲线：
-    // 弱扰动几乎不亮、强扰动满格。
-    //
-    // **不能再用平方。** 平方会把落叶入水那一档（0.3）压成看不见，
-    // 于是"自动触发的水波纹没有效果"；而它本来就该有反应，只是更弱。
+    /*
+     * 闪光带：**峰值靠外沿**，两头归零。
+     *
+     * 外沿（dist ≈ 波前）是刚被搅动的地方，本来就该最亮 —— 之前把峰值放在
+     * 带子正中是错的。但也不能直接取到波前处才截断：那样接缝是一道硬边，
+     * 上机看就是个边缘清晰的"圆盘"。所以峰值落在 0.75，外侧再留 0.25 淡出。
+     */
+    float t = clamp((dist - (d.w * wobbleScale - uAlgaeBand))
+            / (uAlgaeBand * 1.30), 0.0, 1.0);
+    float band = smoothstep(0.0, 0.75, t) * (1.0 - smoothstep(0.75, 1.0, t));
+
+    // 过阈值之后的响应是超线性的（实测约 1.9 次方），这里用一条平滑的 S 曲线
     float above = smoothstep(uAlgaeThreshold, 1.0, power);
-    acc += blob * (band * above * density);
+    acc += band * above;
   }
-  /*
-   * 软饱和。**不能直接返回 acc** —— 一次滑动会连着激起好几道波纹，
-   * 它们在同一像素上叠加，直接相加就会在密集扰动处爆成一片白。
-   * 这个式子把任意大的叠加压到 (0, 1)：一道满波带是 0.5，叠得再多也只趋近 1。
-   */
-  return acc / (1.0 + acc);
+  // 颜色与密度在循环外统一乘一次
+  return blob * (acc / (1.0 + acc)) * density;
 }
 
 uniform float uAlpha;
@@ -260,12 +268,25 @@ void main() {
     sky += starField(vScreenUv) * uStarAmount;
   }
 
-  // 蓝藻：和星空一样加在乘遮罩之前 —— 树挡在水面上，光只该出现在水里
+
+
+  vec3 color = sky * m;
+
+  /*
+   * 蓝藻**加在乘遮罩之后**，与星空正好相反。
+   *
+   * 区别在于它们各自"在哪一层"：
+   *   - **星星**是被反射的夜空的一部分 → 树的倒影该挡住它们 → 乘遮罩之前 ✓
+   *   - **蓝藻**是水面自己发出来的光，和水面的倒影在同一个平面、而且在倒影前面
+   *     → 树不该挡住它 → 乘遮罩之后 ✓
+   *
+   * （用户的原话：「甲藻发光似乎会被树的遮罩遮盖，可能是绘制顺序问题」。）
+   */
   if (uAlgaeAmount > 0.001) {
     // 颜色由 low/high 两端给出（见 algaeGlow），这里只负责整体亮度
-    sky += algaeGlow(vMeshPos) * (uAlgaeGain * uAlgaeAmount);
+    color += algaeGlow(vMeshPos) * (uAlgaeGain * uAlgaeAmount);
   }
 
-  fragColor = vec4(sky * m, 1.0) * uColor;
+  fragColor = vec4(color, 1.0) * uColor;
   fragColor.a *= uAlpha;
 }

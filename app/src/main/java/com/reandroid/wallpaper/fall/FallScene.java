@@ -136,6 +136,13 @@ final class FallScene {
         private float[] dropData = new float[0];
         /** 每次扰动的强度，与 {@link #dropData} 一一对应（蓝藻用）。 */
         private float[] algaePower = new float[0];
+        /**
+         * 每个波纹在**世界**坐标里的位置，与 {@link #algaePower} 一一对应（每波纹 2 个）。
+         *
+         * <p>叶子用的是世界坐标，而 {@code u_drop} 存的是网格坐标 —— 这里先换好，
+         * 免得着色器里再塞 meshScale / halfH / offset 四个 uniform。
+         */
+        private float[] algaeWorld = new float[0];
         private int activeDropCount;
         private float glHeight;
         private float bgScale;
@@ -155,6 +162,7 @@ final class FallScene {
         float getXOffset() { return xOffset; }
         float[] getDropData() { return dropData; }
         float[] getAlgaePower() { return algaePower; }
+        float[] getAlgaeWorld() { return algaeWorld; }
         int getActiveDropCount() { return activeDropCount; }
         float getGlHeight() { return glHeight; }
         float getBgScale() { return bgScale; }
@@ -247,8 +255,35 @@ final class FallScene {
         mDayNightSystem.setPreview(preview);
     }
 
-    /** 落叶落水那一下的扰动强度。压在 ALGAE_THRESHOLD 之下，默认不激起蓝藻。 */
+    /**
+     * 落叶落水那一下的扰动强度。
+     *
+     * <p>刚好在 {@link #ALGAE_THRESHOLD}（0.20）之上、远低于轻点（0.5）与快划（1.0）——
+     * 所以叶子入水会有反应，但响应曲线把它压到最弱的一档，被人手搅起来的那圈才是主角。
+     */
     private static final float LEAF_DROP_POWER = 0.3f;
+
+    // ---- 蓝藻：着色器与逐叶受光**共用**的常量 ----
+    //
+    // 两份代码必须用同一套，否则"叶子被照亮"会和"水里那一圈光"对不上。
+    // 放在场景侧（逻辑归 Scene，渲染归 GL），FallGL 引用这里的值去设 uniform。
+
+    /**
+     * 触发阈值。**要低于落叶入水那一档（0.3）** —— 自动产生的波纹也该有反应，
+     * 只是响应曲线让它更弱。梯度：落叶 0.3 < 轻点 0.5 < 快划 1.0。
+     */
+    static final float ALGAE_THRESHOLD = 0.20f;
+    /** 闪光贴在波前后面多宽（网格单位）。spread 每秒走 30 单位，所以约 0.17 秒。 */
+    static final float ALGAE_BAND = 5.0f;
+    /**
+     * 蓝藻打在叶子上的**光色**（增益已经乘进去）。
+     *
+     * <p>片元里是 {@code rgb *= (1 + uLightColor * band * above)} —— 所以这几个数
+     * 直接就是"照亮时各通道能提亮多少"。蓝远大于红，叶子才会偏蓝。
+     *
+     * <p>比水里的 low/high 更中性一点，免得把叶色整片染死。
+     */
+    static final float[] LEAF_LIGHT_COLOR = {0.55f, 1.05f, 1.75f};
 
     private float mLeafSizeMultiplier = 1.0f;
     private float mFallSpeedMultiplier = 1.0f;
@@ -380,6 +415,9 @@ final class FallScene {
      *
      * <p><b>开关关掉时一次天文计算都不做</b>——直接把权重钉在黄昏那一条上，
      * 连定位查询都不会发生。这是"基线不变"的兜底：关掉开关的画面与加这套之前逐位相同。
+     *
+     * <p>顺带算出本帧的蓝藻可见度 {@code mAlgaeAmount}：水面的光和叶子上的受光都乘它，
+     * 所以两边的开关是同一个 —— 不存在"叶子亮着但水里没有"的中间态。
      */
     private void updateSkyWeights() {
         if (!isDayNightEnabled()) {
@@ -802,11 +840,6 @@ final class FallScene {
         }
 
         Drop drop = mWaterDrops[minIndex];
-        /*
-         * 落叶砸在水面上也是一次扰动，但比手动去搅弱得多。
-         * 0.3 刻意压在默认阈值（0.35）之下 —— 默认只有人的动作才会激起蓝藻，
-         * 想让落叶也发光就把 ALGAE_THRESHOLD 调到 0.3 以下。
-         */
         drop.activateLegacy(meshX, meshY, amplitude, LEAF_DROP_POWER);
     }
 
@@ -838,8 +871,12 @@ final class FallScene {
             mSceneData.dropData = d = new float[needed];
             // 强度单独一条数组 —— u_drop 的四个分量已经占满了，塞不进去
             mSceneData.algaePower = new float[mWaterDropCount];
+            mSceneData.algaeWorld = new float[mWaterDropCount * 2];
         }
         float[] power = mSceneData.algaePower;
+        float[] algaeWorld = mSceneData.algaeWorld;
+        float halfH = mGlHeight * 0.5f;
+        float offsetX2 = mSceneData.xOffset * 2.0f;
         for (int i = 0; i < mWaterDropCount; i++) {
             int off = i * 4;
             Drop drop = mWaterDrops[i];
@@ -858,6 +895,9 @@ final class FallScene {
             d[off + 2] = drop.ampE * rippleScale();
             d[off + 3] = drop.spread * rippleScale();
             power[i] = drop.power;
+            // 网格 → 世界（addDrop 的逆运算），叶子那边用的是世界坐标
+            algaeWorld[i * 2] = drop.x / mSceneData.meshScaleX - 1.0f - offsetX2;
+            algaeWorld[i * 2 + 1] = (drop.y / mSceneData.meshScaleY - 1.0f) * halfH;
         }
 
         // Precompute shader parameters
