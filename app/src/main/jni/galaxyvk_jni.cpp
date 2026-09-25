@@ -8,7 +8,9 @@ constexpr uint32_t kMaxParticleCount = 20000;
 struct PushConstants {
     float mvp[16];
     float alpha;
-    float padding[3];
+    // 每单位归一化半径的扭曲量，见 GalaxyScene.twistFor()。
+    float twist;
+    float padding[2];
 };
 
 struct ParticleVertex {
@@ -136,7 +138,7 @@ public:
     }
 
     void render(JNIEnv* env, jfloatArray mvpMatrixArray, jfloatArray positionsArray,
-            jfloatArray colorsArray, jint particleCount, jfloat alpha) {
+            jfloatArray colorsArray, jint particleCount, jfloat alpha, jfloat twist) {
         std::lock_guard<std::mutex> lock(mutex_);
         if (!isReadyLocked()) {
             if (!recoverRenderStateLocked()) {
@@ -154,6 +156,7 @@ public:
         PushConstants pushConstants{};
         env->GetFloatArrayRegion(mvpMatrixArray, 0, 16, pushConstants.mvp);
         pushConstants.alpha = alpha;
+        pushConstants.twist = twist;
 
         vkWaitForFences(device_, 1, &inFlightFence_, VK_TRUE, UINT64_MAX);
 
@@ -1288,11 +1291,12 @@ Java_com_reandroid_wallpaper_galaxy_GalaxyVKNative_nOnSurfaceDestroyed(
 extern "C" JNIEXPORT void JNICALL
 Java_com_reandroid_wallpaper_galaxy_GalaxyVKNative_nRenderFrame(
         JNIEnv* env, jclass, jlong handle, jfloatArray mvpMatrix, jfloatArray particlePositions,
-        jfloatArray particleColors, jint particleCount, jfloat particleAlphaMultiplier) {
+        jfloatArray particleColors, jint particleCount, jfloat particleAlphaMultiplier,
+        jfloat twist) {
     auto* renderer = asRenderer(handle);
     if (renderer != nullptr) {
         renderer->render(env, mvpMatrix, particlePositions, particleColors, particleCount,
-                particleAlphaMultiplier);
+                particleAlphaMultiplier, twist);
     }
 }
 

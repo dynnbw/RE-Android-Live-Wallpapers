@@ -99,7 +99,8 @@ public class GalaxyVKPluginEngine extends BaseVKPluginEngine {
                 sceneData.getParticlePositions(),
                 colorsDirty ? sceneData.getParticleColors() : null,
                 sceneData.getParticleCount(),
-                sceneData.getParticleAlphaMultiplier());
+                sceneData.getParticleAlphaMultiplier(),
+                sceneData.getTwist());
     }
 
     @Override

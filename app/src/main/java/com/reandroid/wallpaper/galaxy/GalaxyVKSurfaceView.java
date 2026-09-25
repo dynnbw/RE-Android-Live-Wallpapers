@@ -87,7 +87,8 @@ class GalaxyVKSurfaceView extends VKSurfaceView<GalaxyScene> {
                 sceneData.getParticlePositions(),
                 colorsDirty ? sceneData.getParticleColors() : null,
                 sceneData.getParticleCount(),
-                sceneData.getParticleAlphaMultiplier());
+                sceneData.getParticleAlphaMultiplier(),
+                sceneData.getTwist());
     }
 
     @Override

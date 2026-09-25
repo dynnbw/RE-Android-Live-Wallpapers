@@ -27,7 +27,7 @@ final class GalaxyVKNative {
     static native void nOnSurfaceDestroyed(long handle);
 
     static native void nRenderFrame(long handle, float[] mvpMatrix, float[] particlePositions,
-            float[] particleColors, int particleCount, float particleAlphaMultiplier);
+            float[] particleColors, int particleCount, float particleAlphaMultiplier, float twist);
 
     static native void nSetLightTexture(long handle, int[] argbPixels, int width, int height);
 

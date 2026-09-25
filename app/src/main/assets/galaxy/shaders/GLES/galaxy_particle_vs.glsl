@@ -1,6 +1,7 @@
 #version 300 es
 uniform mat4 uMVPMatrix;
 uniform float uAlphaMultiplier;
+uniform float uTwist;
 in vec3 aPosition;
 in vec4 aColor;
 out vec4 vColor;
@@ -9,7 +10,7 @@ void main() {
   float angle = aPosition.x;
   float x = dist * sin(angle);
   float y = dist * cos(angle) * 0.892;
-  float p = dist * 5.5;
+  float p = dist * uTwist;
   float s = cos(p);
   float t = sin(p);
   vec4 pos;

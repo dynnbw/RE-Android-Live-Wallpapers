@@ -53,6 +53,18 @@ final class GalaxyScene {
     private static final float ELLIPSE_TWIST = 0.023333333f;
     private static final float PI = 3.1415f;
     private static final float TWO_PI = 6.283f;
+
+    /** 顶点着色器里那个扭曲系数的原值（原版 {@code float p = dist * 5.5;}）。 */
+    static final float TWIST_BASE = 5.5f;
+
+    /**
+     * 扭曲的基准屏宽。
+     *
+     * <p>取 640 —— 与当年的预览图对照后定的档位，也就是这个壁纸原本该有的缠绕程度
+     * （总扭曲 295.4°）。详见 {@link #twistFor(int)}。
+     */
+    static final int TWIST_REFERENCE_WIDTH = 640;
+
     private int mGalaxyRadius = 300;
     private float mThicknessMultiplier = 0.4f;
 
@@ -402,6 +414,7 @@ final class GalaxyScene {
         mSceneData.particleSpeeds = particleSpeeds;
         mSceneData.particleCount = mParticleCount;
         mSceneData.particleAlphaMultiplier = mParticleAlphaPercent / 100.0f;
+        mSceneData.twist = twistFor(mWidth);
         mParticleDataDirty = false;
         mParticleBuffersDirty = true;
         mParticlePositionsDirty = false;
@@ -687,6 +700,22 @@ final class GalaxyScene {
         return maxStart + (maxStart - maxStop) * ((value - minStart) / (minStop - minStart));
     }
 
+    /**
+     * 每单位归一化半径的扭曲量 —— 着色器里的 {@code p = dist * uTwist}。
+     *
+     * <p>着色器拿到的 {@code dist} 是按**屏幕宽度**归一化的
+     * （{@code scale = galaxyRadius / (width / 2)}，见 {@link #rebuildParticleData()}），
+     * 所以原版写死的 {@code dist * 5.5} 等于让整个盘面的总扭曲变成
+     * {@code 5.5 * 600 / width} 弧度：320 宽是 3.3 个半周期，1080 宽只剩 0.97 个，1440 宽 0.73 个。
+     * 而椭圆每 π 才重复一次形状，不满一个半周期就只剩一个被压扁的椭圆 —— 旋臂消失。
+     *
+     * <p>把宽度除掉，总扭曲就固定在与基准宽度相同的那一档，任何屏幕上都一样。
+     * 盘面在屏幕上的像素尺寸、转速、亮度都不受这里影响（它们本来就与宽度无关）。
+     */
+    static float twistFor(int width) {
+        return TWIST_BASE * Math.max(1, width) / TWIST_REFERENCE_WIDTH;
+    }
+
     private int encodeEllipseTwist(float twist) {
         return Math.round(MathUtils.clamp(twist, MIN_ELLIPSE_TWIST, MAX_ELLIPSE_TWIST) * 1000.0f)
                 + ELLIPSE_TWIST_STORAGE_OFFSET;
@@ -726,6 +755,7 @@ final class GalaxyScene {
         private final float[] mvpMatrix = new float[16];
         private int particleCount;
         private float particleAlphaMultiplier = 1.0f;
+        private float twist = TWIST_BASE;
 
         float[] getParticlePositions() {
             return particlePositions;
@@ -745,6 +775,11 @@ final class GalaxyScene {
 
         float getParticleAlphaMultiplier() {
             return particleAlphaMultiplier;
+        }
+
+        /** 见 {@link #twistFor(int)}。 */
+        float getTwist() {
+            return twist;
         }
     }
 }

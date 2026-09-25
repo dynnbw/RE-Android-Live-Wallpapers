@@ -362,9 +362,11 @@ public class GalaxyGL extends GLESScene {
         int mvpHandle = GLES30.glGetUniformLocation(mParticleProgram, "uMVPMatrix");
         int samplerHandle = GLES30.glGetUniformLocation(mParticleProgram, "uTexture");
         int alphaHandle = GLES30.glGetUniformLocation(mParticleProgram, "uAlphaMultiplier");
+        int twistHandle = GLES30.glGetUniformLocation(mParticleProgram, "uTwist");
 
         GLES30.glUniformMatrix4fv(mvpHandle, 1, false, sceneData.getMvpMatrix(), 0);
         GLES30.glUniform1f(alphaHandle, sceneData.getParticleAlphaMultiplier());
+        GLES30.glUniform1f(twistHandle, sceneData.getTwist());
 
         GLES30.glEnableVertexAttribArray(posHandle);
         GLES30.glEnableVertexAttribArray(colorHandle);

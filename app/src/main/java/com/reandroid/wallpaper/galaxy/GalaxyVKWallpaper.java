@@ -98,7 +98,8 @@ public class GalaxyVKWallpaper extends WallpaperService {
                     sceneData.getParticlePositions(),
                     colorsDirty ? sceneData.getParticleColors() : null,
                     sceneData.getParticleCount(),
-                    sceneData.getParticleAlphaMultiplier());
+                    sceneData.getParticleAlphaMultiplier(),
+                    sceneData.getTwist());
         }
 
         @Override

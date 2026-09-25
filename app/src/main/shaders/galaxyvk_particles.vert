@@ -3,6 +3,7 @@
 layout(push_constant) uniform PushConstants {
     mat4 uMvpMatrix;
     float uAlphaMultiplier;
+    float uTwist;
 } pc;
 
 layout(location = 0) in vec3 aPosition;
@@ -15,7 +16,7 @@ void main() {
     float angle = aPosition.x;
     float x = dist * sin(angle);
     float y = dist * cos(angle) * 0.892;
-    float p = dist * 5.5;
+    float p = dist * pc.uTwist;
     float s = cos(p);
     float t = sin(p);
 
