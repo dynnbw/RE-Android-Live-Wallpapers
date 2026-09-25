@@ -140,6 +140,14 @@ final class SceneData {
     /** 逆光开关（用户的，不是设备能力）。关着时基线逐像素不变。 */
     boolean backlightEnabled;
     /**
+     * 黄昏影调曲线的强度（0 = 不压，1 = 全量）。
+     *
+     * <p>作用在**合成后的整帧**上（草叶、天空、云雨都一起），只压中间调、黑白两端不动。
+     * 挂在**特效**开关下，与 {@link #glowEnabled} 同进同出。黎明不给：逆光分不出早晚，
+     * 这个量是专门把黄昏挑出来的 —— 见 {@code GrassBacklight.duskToneAmount}。
+     */
+    float duskTone;
+    /**
      * HDR + 辉光开关。
      *
      * <p>只反映**用户的开关**；设备能力（{@code GlowRenderer.isReady()}）只有渲染线程知道，

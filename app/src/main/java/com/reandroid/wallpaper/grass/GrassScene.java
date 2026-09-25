@@ -616,6 +616,11 @@ final class GrassScene {
 
         // 辉光只发布用户的开关；设备能力由渲染线程再与一次（见 GrassGL.draw）。
         mSceneData.glowEnabled = mGrassGlowEnabled;
+        // 黄昏影调挂在**特效**这个开关下（与辉光同一个）：它作用在整帧上，走的也是
+        // 同一条离屏路径。逆光本身分不出黎明与黄昏，所以这里用只在下沉时段非零的
+        // 黄昏权重单独挑出黄昏。
+        mSceneData.duskTone = GrassBacklight.duskToneAmount(
+                mGrassGlowEnabled, mSceneData.accurateWeights[2]);
 
         // 逐叶遮挡**限频**重算。叶片摆动只影响朝向，那个每帧算；遮挡要等草长得够多
         // 或光源明显移动，250ms 一次足够，也把 O(n²) 的成本摊掉。

@@ -118,6 +118,28 @@ final class GrassBacklight {
     }
 
     /**
+     * 黄昏影调曲线的强度（0 = 不压，1 = 全量）。
+     *
+     * <p>它挂在**特效**那个开关下（与辉光同一个），不是逆光那个 —— 曲线作用在
+     * 合成后的整帧上，走的也是辉光那条离屏路径。
+     *
+     * <p><b>为什么要单独把黄昏挑出来：</b>逆光本身是**黎明与黄昏对称**的 ——
+     * {@link #strength} 与 {@link #highlight} 都只看太阳高度角，分不出太阳是刚升起还是将落下。
+     * 所以"只压黄昏的中间调"这件事得另找信号，这里用天空那条**只在下沉时段非零**的黄昏权重。
+     *
+     * <p>开关关掉时恰好返回 0，与其它量一样，是"关掉就等于今天"的一部分。
+     *
+     * @param enabled      特效开关
+     * @param sunsetWeight 天空的黄昏权重，0..1（{@code SceneData.accurateWeights[2]}）
+     */
+    static float duskToneAmount(boolean enabled, float sunsetWeight) {
+        if (!enabled) {
+            return 0.0f;
+        }
+        return MathUtils.clamp(sunsetWeight, 0.0f, 1.0f);
+    }
+
+    /**
      * 选出光源的屏幕位置，写进 {@code out[0..1]}。
      *
      * <p>规则：谁贡献的强度大就用谁。太阳落山之后（或更低）就轮到月亮。

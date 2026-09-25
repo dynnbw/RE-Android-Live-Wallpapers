@@ -329,4 +329,43 @@ public class GrassBacklightTest {
     public void rejectsUndersizedArray() {
         GrassBacklight.lightPosition(false, 1f, 2f, 3f, 4f, new float[1]);
     }
+
+    // ---- 黄昏影调（挂在**特效**开关下，与辉光同一个）----
+
+    /**
+     * 特效关掉时**恰好是 0**，哪怕正在黄昏。
+     *
+     * <p>这是"关掉就等于今天"在这一项上的形式：0 传给合成着色器后那段判断直接不进。
+     */
+    @Test
+    public void duskToneIsOffWhenDisabled() {
+        assertEquals("特效关掉时黄昏也不能压", 0.0f,
+                GrassBacklight.duskToneAmount(false, 1.0f), 0.0f);
+        assertEquals(0.0f, GrassBacklight.duskToneAmount(false, 0.5f), 0.0f);
+    }
+
+    /** 强度就是黄昏权重本身：黄昏淡入时曲线跟着淡入，不会"啪"地打开。 */
+    @Test
+    public void duskToneFollowsTheSunsetWeight() {
+        assertEquals(0.0f, GrassBacklight.duskToneAmount(true, 0.0f), 1.0E-6f);
+        assertEquals(0.5f, GrassBacklight.duskToneAmount(true, 0.5f), 1.0E-6f);
+        assertEquals(1.0f, GrassBacklight.duskToneAmount(true, 1.0f), 1.0E-6f);
+    }
+
+    /**
+     * 清晨**不给** —— 逆光的强度曲线只看太阳高度角，分不出早晚，
+     * 所以"只有黄昏"必须靠黄昏权重这个额外信号来挑。早上那个权重是 0。
+     */
+    @Test
+    public void morningDoesNotGetIt() {
+        float sunsetWeightInTheMorning = 0.0f;
+        assertEquals("清晨的草不该被压暗", 0.0f,
+                GrassBacklight.duskToneAmount(true, sunsetWeightInTheMorning), 0.0f);
+    }
+
+    @Test
+    public void duskToneClampsItsInput() {
+        assertEquals(1.0f, GrassBacklight.duskToneAmount(true, 1.7f), 1.0E-6f);
+        assertEquals(0.0f, GrassBacklight.duskToneAmount(true, -0.3f), 1.0E-6f);
+    }
 }

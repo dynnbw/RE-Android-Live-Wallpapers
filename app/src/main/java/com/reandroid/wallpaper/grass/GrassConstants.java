@@ -186,6 +186,16 @@ final class GrassConstants {
      */
     static final float GRASS_LIGHT_SHADOW_GAIN = 0.45f;
 
+    /**
+     * 黄昏影调曲线的指数：1 = 恒等，越大中间调压得越狠。
+     *
+     * <p>曲线在 {@code glow_composite_fs.glsl} 里对**合成后的整帧**做，只压中间调
+     * （0 与 1 恒等，>1 的逆光溢光原样留住）。0.5 处 {@code pow(0.5,1.45)≈0.36}。
+     *
+     * <p>强度由黄昏权重决定（见 {@code GrassBacklight.duskToneAmount}），这里只是形状。
+     */
+    static final float DUSK_TONE_GAMMA = 1.45f;
+
     // ---- HDR + 辉光 ----
     //
     // 阈值的上下各有一条线，0.75 就卡在中间：

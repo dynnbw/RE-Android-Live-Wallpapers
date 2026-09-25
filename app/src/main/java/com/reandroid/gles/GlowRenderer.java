@@ -60,6 +60,10 @@ public final class GlowRenderer {
     private int mBrightScene, mBrightTexel, mBrightThreshold, mBrightKnee;
     private int mBlurSource, mBlurStep;
     private int mCompositeScene, mCompositeBloom, mCompositeStrength;
+    private int mCompositeTone, mCompositeToneGamma;
+    /** 合成时叠的影调曲线强度。0 = 不压，也就与没有这个功能时逐位相同。 */
+    private float mTone;
+    private float mToneGamma = 1.0f;
 
     /** 是否可用。false 时所有绘制方法都是空操作。 */
     private boolean mReady;
@@ -148,6 +152,8 @@ public final class GlowRenderer {
         mCompositeScene = GLES30.glGetUniformLocation(mCompositeProgram, "uScene");
         mCompositeBloom = GLES30.glGetUniformLocation(mCompositeProgram, "uBloom");
         mCompositeStrength = GLES30.glGetUniformLocation(mCompositeProgram, "uStrength");
+        mCompositeTone = GLES30.glGetUniformLocation(mCompositeProgram, "uTone");
+        mCompositeToneGamma = GLES30.glGetUniformLocation(mCompositeProgram, "uToneGamma");
     }
 
     private static int createTexture(int w, int h) {
@@ -247,6 +253,24 @@ public final class GlowRenderer {
      * @param radius    模糊半径（像素，半分辨率下）
      * @param strength  辉光叠加强度
      */
+    /**
+     * 合成时叠一条影调曲线（{@code pow} 型，只压中间调）。
+     *
+     * <p><b>默认 0 = 不压</b>，也就是与没有这个功能时逐位相同 —— 不调用它就什么都不变，
+     * 所以其它壁纸不受影响。走这条离屏路径的调用方**每帧都要设**：黄昏过去之后要回到 0，
+     * 否则上一帧的值会一直压在画面上。
+     *
+     * <p>曲线本身写在各自的 {@code glow_composite_fs.glsl} 里（每个壁纸一份自己的拷贝），
+     * 这里只负责把强度和指数递过去。
+     *
+     * @param amount 0 = 不压，1 = 全量
+     * @param gamma  曲线指数，1 = 恒等，越大中间调压得越狠
+     */
+    public void setTone(float amount, float gamma) {
+        mTone = Math.max(0.0f, amount);
+        mToneGamma = Math.max(0.0001f, gamma);
+    }
+
     public void endScene(float threshold, float softKnee, float radius, float strength) {
         if (!mReady) {
             return;
@@ -297,6 +321,8 @@ public final class GlowRenderer {
         GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mBloomTexA);
         GLES30.glUniform1i(mCompositeBloom, 1);
         GLES30.glUniform1f(mCompositeStrength, strength);
+        GLES30.glUniform1f(mCompositeTone, mTone);
+        GLES30.glUniform1f(mCompositeToneGamma, mToneGamma);
         GLES30.glDrawArrays(GLES30.GL_TRIANGLE_STRIP, 0, 4);
 
         // 收摊：纹理单元与顶点属性都还回去，别让下一帧的场景绘制继承这里的绑定。

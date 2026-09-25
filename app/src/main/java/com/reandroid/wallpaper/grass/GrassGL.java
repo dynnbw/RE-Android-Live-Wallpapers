@@ -385,6 +385,9 @@ public class GrassGL extends GLESScene {
         final boolean glow = sd.glowEnabled && mGlowRenderer != null && mGlowRenderer.isReady();
         if (glow) {
             mGlowRenderer.beginScene();
+            // 黄昏影调搭在这条离屏路径上（见 GrassScene），**每帧都要设**：
+            // 黄昏过去之后必须回到 0，否则上一帧的值会一直压在画面上。
+            mGlowRenderer.setTone(sd.duskTone, GrassConstants.DUSK_TONE_GAMMA);
         }
 
         GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT);
