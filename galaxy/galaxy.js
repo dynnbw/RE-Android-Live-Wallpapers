@@ -12,6 +12,21 @@
   var ELLIPSE_RATIO = 0.892;
   var PARTICLE_COUNT = 12000;
   var ALPHA_MULTIPLIER = 1.0;
+  var TWIST_BASE = 5.5;
+  // 扭曲的基准屏宽：640，与当年的预览图一致（总扭曲 295°）。见 twistFor()。
+  var TWIST_REFERENCE_WIDTH = 640;
+
+  /**
+   * 每单位归一化半径的扭曲量，也就是着色器里的 p = dist * uTwist。
+   *
+   * 着色器拿到的 dist 是按**窗口宽度**归一化的，所以原版写死的 5.5 会让盘面的
+   * 总扭曲变成 5.5 * 600 / width 弧度：320 宽是 3.3 个半周期，1440 宽只剩 0.73 个。
+   * 椭圆每 PI 才重复一次形状，不满一个半周期就只剩一个被压扁的椭圆 —— 旋臂消失。
+   * 把宽度除掉，总扭曲就固定在与基准宽度相同的那一档，拖窗口也不会变。
+   */
+  function twistFor(w) {
+    return TWIST_BASE * Math.max(1, w) / TWIST_REFERENCE_WIDTH;
+  }
 
   // ── State ──
   var width, height;
@@ -188,12 +203,12 @@
     );
 
     particleProgram = createProgram(
-      'uniform mat4 uMVPMatrix; uniform float uAlphaMultiplier;' +
+      'uniform mat4 uMVPMatrix; uniform float uAlphaMultiplier; uniform float uTwist;' +
       'attribute vec3 aPosition; attribute vec4 aColor; varying vec4 vColor;' +
       'void main() {' +
       '  float dist = aPosition.y; float angle = aPosition.x;' +
       '  float x = dist * sin(angle); float y = dist * cos(angle) * ' + ELLIPSE_RATIO.toFixed(6) + ';' +
-      '  float p = dist * 5.5; float s = cos(p); float t = sin(p);' +
+      '  float p = dist * uTwist; float s = cos(p); float t = sin(p);' +
       '  vec4 pos;' +
       '  pos.x = t * x + s * y;' +
       '  pos.y = s * x - t * y;' +
@@ -323,6 +338,7 @@
 
     gl.uniformMatrix4fv(gl.getUniformLocation(particleProgram, 'uMVPMatrix'), false, mvp);
     gl.uniform1f(gl.getUniformLocation(particleProgram, 'uAlphaMultiplier'), ALPHA_MULTIPLIER);
+    gl.uniform1f(gl.getUniformLocation(particleProgram, 'uTwist'), twistFor(width));
 
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, texFlare);
