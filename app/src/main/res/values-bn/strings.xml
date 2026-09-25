@@ -113,6 +113,8 @@
     <string name="pref_weather_source_openweather_note">API কী প্রয়োজন</string>
     <string name="pref_weather_source_cma">চীন আবহাওয়া প্রশাসন</string>
     <string name="pref_weather_source_cma_note">কী প্রয়োজন নেই, শুধু মূল ভূখণ্ড চীন</string>
+    <string name="pref_weather_source_openmeteo">Open-Meteo</string>
+    <string name="pref_weather_source_openmeteo_note">কী প্রয়োজন নেই, সারা বিশ্বে</string>
     <string name="pref_weather_source_action_api">API সেট করুন</string>
     <string name="pref_weather_source_action_guide">গাইড</string>
     <string name="pref_weather_refresh_now">এখনই আবহাওয়া রিফ্রেশ করুন</string>

@@ -143,6 +143,8 @@
     <string name="pref_weather_source_openweather_note">需要 API 密钥</string>
     <string name="pref_weather_source_cma">中国气象局</string>
     <string name="pref_weather_source_cma_note">无需密钥仅中国内陆</string>
+    <string name="pref_weather_source_openmeteo">Open-Meteo</string>
+    <string name="pref_weather_source_openmeteo_note">无需密钥全球可用</string>
     <string name="pref_weather_source_action_api">配置API</string>
     <string name="pref_weather_source_action_guide">教程</string>
     <string name="pref_openweather_api_key_title">OpenWeather API 密钥</string>

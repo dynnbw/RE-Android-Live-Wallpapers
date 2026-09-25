@@ -96,6 +96,8 @@
     <string name="pref_weather_source_openweather_note">APIキーが必要</string>
     <string name="pref_weather_source_cma">中国気象局</string>
     <string name="pref_weather_source_cma_note">キー不要、中国本土のみ</string>
+    <string name="pref_weather_source_openmeteo">Open-Meteo</string>
+    <string name="pref_weather_source_openmeteo_note">キー不要、世界中で利用可</string>
     <string name="pref_weather_source_action_api">API設定</string>
     <string name="pref_weather_source_action_guide">ガイド</string>
     <string name="pref_openweather_api_key_title">OpenWeather APIキー</string>

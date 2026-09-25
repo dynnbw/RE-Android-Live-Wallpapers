@@ -113,6 +113,8 @@
     <string name="pref_weather_source_openweather_note">Требуется API-ключ</string>
     <string name="pref_weather_source_cma">Метеослужба Китая</string>
     <string name="pref_weather_source_cma_note">Ключ не нужен, только материковый Китай</string>
+    <string name="pref_weather_source_openmeteo">Open-Meteo</string>
+    <string name="pref_weather_source_openmeteo_note">Без ключа, по всему миру</string>
     <string name="pref_weather_source_action_api">Настроить API</string>
     <string name="pref_weather_source_action_guide">Руководство</string>
     <string name="pref_weather_refresh_now">Обновить погоду сейчас</string>

@@ -126,6 +126,8 @@
     <string name="pref_weather_source_openweather_note">API-Schlüssel erforderlich</string>
     <string name="pref_weather_source_cma">Chinesische Wetterbehörde</string>
     <string name="pref_weather_source_cma_note">Kein Schlüssel nötig, nur Festlandchina</string>
+    <string name="pref_weather_source_openmeteo">Open-Meteo</string>
+    <string name="pref_weather_source_openmeteo_note">Kein Schlüssel nötig, weltweit</string>
     <string name="pref_weather_source_action_api">API einrichten</string>
     <string name="pref_weather_source_action_guide">Anleitung</string>
     <string name="pref_weather_refresh_now">Wetter jetzt aktualisieren</string>

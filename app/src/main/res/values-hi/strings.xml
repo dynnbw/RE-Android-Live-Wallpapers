@@ -116,6 +116,8 @@
     <string name="pref_weather_source_openweather_note">API कुंजी आवश्यक</string>
     <string name="pref_weather_source_cma">चीन मौसम विज्ञान प्रशासन</string>
     <string name="pref_weather_source_cma_note">कुंजी आवश्यक नहीं, केवल मुख्य भूमि चीन</string>
+    <string name="pref_weather_source_openmeteo">Open-Meteo</string>
+    <string name="pref_weather_source_openmeteo_note">कुंजी आवश्यक नहीं, दुनिया भर में</string>
     <string name="pref_weather_source_action_api">API सेट करें</string>
     <string name="pref_weather_source_action_guide">गाइड</string>
     <string name="pref_weather_refresh_now">मौसम अभी ताज़ा करें</string>

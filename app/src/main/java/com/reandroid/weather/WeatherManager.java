@@ -41,7 +41,11 @@ public class WeatherManager {
     private static final String TAG = "WeatherManager";
 
     /**
-     * 数据源选择，值是下面两个 {@code SOURCE_*} 之一。
+     * 数据源选择，值是下面几个 {@code SOURCE_*} 之一。
+     *
+     * <p>**默认 Open-Meteo** —— 它既不要密钥、又全球可用，而另外两路各有一个门槛
+     * （中国气象局只在大陆、OpenWeather 要自己申请密钥且国内网络连不上）。
+     * 默认落在它上面，是不做任何配置时唯一能真取到数的那条。
      *
      * <p>放在这里而不是 {@code WallpaperSettings}：写它的是设置界面、读它的是本类，
      * 而 {@code WallpaperSettings} 里目前一个天气的键都没有（密钥、更新间隔也都是裸字面量）。
@@ -50,10 +54,11 @@ public class WeatherManager {
 
     /*
      * 两个数据源的 id。设置界面也要用，所以从各实现里引出来 —— 实现本身是包内可见的，
-     * 界面上只认这两个常量与下面的 isSourceAvailable()。
+     * 界面上只认这几个常量与下面的 isSourceAvailable()。
      */
     public static final String SOURCE_OPENWEATHER = OpenWeatherSource.ID;
     public static final String SOURCE_CMA = CmaWeatherSource.ID;
+    public static final String SOURCE_OPENMETEO = OpenMeteoSource.ID;
 
     /**
      * 这个数据源在当前地区能不能用。
@@ -316,17 +321,25 @@ public class WeatherManager {
      *
      * <p>中国气象局**只在大陆成立**（实测：出了国界那个站就没有实时观测了，见
      * {@code CmaWeatherSource}）。所以这里再判一次 —— 在大陆选中它、然后出了国，
-     * 若不拦就会一直取不到数据、界面停在旧值上，看起来像坏了。
+     * 若不拦就会一直取不到数据、界面停在旧值上，看起来像坏了；这种情况回退到
+     * **Open-Meteo**，因为它是唯一不需要密钥的那一路（回退到一个要密钥的源，
+     * 对没配过密钥的人等于什么都没回退）。
+     *
+     * <p>认不出的取值（含空串 —— 老版本的 prefs、或重置之后残留）一律当默认那路。
      */
     private WeatherSource resolveSource() {
-        String id = mPrefs.getString(KEY_SOURCE, SOURCE_OPENWEATHER);
-        if (SOURCE_CMA.equals(id) && isSourceAvailable(id, Locale.getDefault())) {
-            return new CmaWeatherSource();
-        }
+        String id = mPrefs.getString(KEY_SOURCE, SOURCE_OPENMETEO);
         if (SOURCE_CMA.equals(id)) {
-            Log.w(TAG, "中国气象局仅限大陆，本次回退 OpenWeather");
+            if (isSourceAvailable(id, Locale.getDefault())) {
+                return new CmaWeatherSource();
+            }
+            Log.w(TAG, "中国气象局仅限大陆，本次回退 Open-Meteo");
+            return new OpenMeteoSource();
         }
-        return new OpenWeatherSource(resolveApiKey(), Locale.getDefault());
+        if (SOURCE_OPENWEATHER.equals(id)) {
+            return new OpenWeatherSource(resolveApiKey(), Locale.getDefault());
+        }
+        return new OpenMeteoSource();
     }
 
     /**

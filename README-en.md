@@ -96,16 +96,21 @@ Compared to the original AOSP/MediaTek wallpapers:
 
 Three wallpapers — Grass (dynamic meadow), Ocean (ocean weather), Windmill — can change their visuals based on real weather: sunny skies, thicker clouds on overcast days, rain/snow particle effects.
 
-Two weather sources are built in. Switch between them via the weather icon in the toolbar → "**Weather Source**":
+Three weather sources are built in. Switch between them via the weather icon in the toolbar → "**Weather Source**":
 
 | Source | Key | Coverage |
 |---|---|---|
+| Open-Meteo | **None needed** | Worldwide |
 | China Meteorological Administration (weather.com.cn) | **None needed** | Mainland China only |
 | OpenWeather | You apply for one | Worldwide |
 
-### China Meteorological Administration (recommended in mainland China)
+### Open-Meteo (default)
 
-Tap the weather icon → "Weather Source" → pick it. **No account, no key.**
+This is the default; switch sources from the weather icon → "Weather Source". **No account, no key.** One request returns the current weather, the day's high and low, and sunrise and sunset.
+
+### China Meteorological Administration (mainland China)
+
+This is the default; switch sources from the weather icon → "Weather Source". **No account, no key.**
 
 > Its observations only exist for mainland stations, and the gate is the **system region**: when that is not mainland China (Hong Kong, Macao and Taiwan included) the entry is greyed out and fetching falls back to OpenWeather.
 > Travelling abroad with the region still set to mainland China yields no data — the last reading stays on screen.
@@ -185,7 +190,7 @@ Hardware consumption varies significantly across wallpapers:
 MIUI/HyperOS users need to grant "Live Wallpaper Service" permission in system settings. The app automatically detects MIUI on first launch and shows a guide.
 
 **Q: Weather not showing / showing incorrectly?**
-Check: ① Is the right source selected? (in mainland China the China Meteorological Administration source needs no key) ② If you picked OpenWeather, is the key filled in? (weather icon → "Weather Source" → OpenWeather → "Configure API") ③ Is location permission granted? ④ Is the network working? — **OpenWeather is often unreachable from mainland networks**, which is why a second source is built in ⑤ Has the free quota run out? (1,000 calls/day) Long-press the weather icon to see the last refresh time.
+Check: ① Is the right source selected? (Open-Meteo and the China Meteorological Administration source both need no key — the former worldwide, the latter in the mainland) ② If you picked OpenWeather, is the key filled in? (weather icon → "Weather Source" → OpenWeather → "Configure API") ③ Is location permission granted? ④ Is the network working? — **OpenWeather is often unreachable from mainland networks**, which is why the other two sources are built in ⑤ Has the free quota run out? (1,000 calls/day) Long-press the weather icon to see the last refresh time.
 
 **Q: Why can't I see the Vulkan toggle?**
 Only Galaxy, Galaxy4, Grass, and Fall have Vulkan backends. If your device doesn't support Vulkan, the toggle will be visible but switching may have no effect or cause crashes.

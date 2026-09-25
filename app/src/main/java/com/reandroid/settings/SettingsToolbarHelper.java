@@ -326,17 +326,21 @@ public class SettingsToolbarHelper {
      */
     private void showWeatherSourceDialog() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mActivity);
-        String current = prefs.getString(WeatherManager.KEY_SOURCE, WeatherManager.SOURCE_OPENWEATHER);
+        String current = prefs.getString(WeatherManager.KEY_SOURCE, WeatherManager.SOURCE_OPENMETEO);
         boolean cmaAllowed = WeatherManager.isSourceAvailable(WeatherManager.SOURCE_CMA, Locale.getDefault());
 
-        String[] ids = { WeatherManager.SOURCE_OPENWEATHER, WeatherManager.SOURCE_CMA };
+        String[] ids = { WeatherManager.SOURCE_OPENMETEO, WeatherManager.SOURCE_CMA,
+                WeatherManager.SOURCE_OPENWEATHER };
         String[] titles = {
-                mActivity.getString(R.string.pref_weather_source_openweather),
-                mActivity.getString(R.string.pref_weather_source_cma) };
+                mActivity.getString(R.string.pref_weather_source_openmeteo),
+                mActivity.getString(R.string.pref_weather_source_cma),
+                mActivity.getString(R.string.pref_weather_source_openweather) };
         String[] notes = {
-                mActivity.getString(R.string.pref_weather_source_openweather_note),
-                mActivity.getString(R.string.pref_weather_source_cma_note) };
-        boolean[] enabled = { true, cmaAllowed };
+                mActivity.getString(R.string.pref_weather_source_openmeteo_note),
+                mActivity.getString(R.string.pref_weather_source_cma_note),
+                mActivity.getString(R.string.pref_weather_source_openweather_note) };
+        // 只有中国气象局有地区限制；另外两路全球可用
+        boolean[] enabled = { true, cmaAllowed, true };
 
         WeatherSourceAdapter adapter = new WeatherSourceAdapter(
                 mActivity, ids, titles, notes, enabled, current);
@@ -654,7 +658,7 @@ public class SettingsToolbarHelper {
                     String apiKey = mainPrefs.getString("openweather_api_key", "");
                     String frameRate = mainPrefs.getString(KEY_GLOBAL_FRAME_RATE, "");
                     String weatherInterval = mainPrefs.getString("weather_update_minutes", "");
-                    // 数据源也是全局设置：漏了它，用户重置一次就被悄悄拨回 OpenWeather
+                    // 数据源也是全局设置：漏了它，用户重置一次就被悄悄拨回默认那路
                     String weatherSource = mainPrefs.getString(WeatherManager.KEY_SOURCE, "");
 
                     mainPrefs.edit().clear().apply();
@@ -671,12 +675,19 @@ public class SettingsToolbarHelper {
                         }
                     }
                     // Restore preserved settings
-                    mainPrefs.edit()
+                    android.content.SharedPreferences.Editor restore = mainPrefs.edit()
                             .putString("openweather_api_key", apiKey)
                             .putString(KEY_GLOBAL_FRAME_RATE, frameRate)
-                            .putString("weather_update_minutes", weatherInterval)
-                            .putString(WeatherManager.KEY_SOURCE, weatherSource)
-                            .apply();
+                            .putString("weather_update_minutes", weatherInterval);
+                    /*
+                     * **空串不能写回去。** 从没选过数据源时读出来就是空串，写回去等于把
+                     * 这一项钉成"认不出的取值"—— 使用者之后要靠默认值才能拿到 Open-Meteo。
+                     * 不写，这个键就还是没设过，默认值照常生效。
+                     */
+                    if (!weatherSource.isEmpty()) {
+                        restore.putString(WeatherManager.KEY_SOURCE, weatherSource);
+                    }
+                    restore.apply();
                     android.widget.Toast.makeText(mActivity, R.string.reset_all_settings_done,
                             android.widget.Toast.LENGTH_SHORT).show();
                     mActivity.recreate();

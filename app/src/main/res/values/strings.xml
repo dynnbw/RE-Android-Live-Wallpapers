@@ -148,6 +148,8 @@
     <string name="pref_weather_source_openweather_note">Requires an API key</string>
     <string name="pref_weather_source_cma">China Meteorological Administration</string>
     <string name="pref_weather_source_cma_note">No key needed, mainland China only</string>
+    <string name="pref_weather_source_openmeteo">Open-Meteo</string>
+    <string name="pref_weather_source_openmeteo_note">No key needed, worldwide</string>
     <string name="pref_weather_source_action_api">Configure API</string>
     <string name="pref_weather_source_action_guide">Guide</string>
     <string name="pref_weather_refresh_now">Refresh weather now</string>

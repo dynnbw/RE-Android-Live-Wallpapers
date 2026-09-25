@@ -137,6 +137,8 @@
     <string name="pref_weather_source_openweather_note">需要 API 金鑰</string>
     <string name="pref_weather_source_cma">中國氣象局</string>
     <string name="pref_weather_source_cma_note">無需金鑰僅中國大陸</string>
+    <string name="pref_weather_source_openmeteo">Open-Meteo</string>
+    <string name="pref_weather_source_openmeteo_note">無需金鑰全球可用</string>
     <string name="pref_weather_source_action_api">設定API</string>
     <string name="pref_weather_source_action_guide">教學</string>
     <string name="pref_openweather_api_key_title">OpenWeather API 密鑰</string>
