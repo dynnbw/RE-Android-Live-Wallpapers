@@ -112,6 +112,12 @@ final class GrassWeatherIntegration {
                 }
             }
 
+            if (weatherEnabled && weatherRunning && !isPreview) {
+                // 壁纸可见（有帧）时每帧问一次：缓存过期就取。过期判定在管理器里，
+                // 所以这里只是一次整数比较，不产生请求。
+                weatherManager.refreshIfStale();
+            }
+
             if (!weatherEnabled) {
                 clearWeatherStatePending.set(true);
                 pendingWeatherState.set(null);

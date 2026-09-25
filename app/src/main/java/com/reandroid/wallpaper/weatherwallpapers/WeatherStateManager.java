@@ -81,6 +81,9 @@ public class WeatherStateManager {
     public synchronized void update(long timeMs, boolean preview) {
         if (preview) {
             updatePreviewCycle(timeMs);
+        } else if (mWeatherManager != null) {
+            // 可见（有帧）时问一次：缓存过期就取。判定在管理器内部，不产生多余请求。
+            mWeatherManager.refreshIfStale();
         }
         refreshLocation();
         long nowMs = preview

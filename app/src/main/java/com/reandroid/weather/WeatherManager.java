@@ -93,6 +93,16 @@ public class WeatherManager {
     private final Listener mListener;
     private final Handler mMainHandler;
 
+    /**
+     * 上一次**尝试**取数的时刻（毫秒，失败也算）。
+     *
+     * <p>可见的壁纸会每帧问一次"过期了吗"，而源不通时每次尝试都要拖到超时 ——
+     * 没有这个节流就会被问成洪水（每帧一个请求）。取到数与没取到数都记，
+     * 否则失败的源会被无限重试。
+     */
+    private volatile long mLastAttemptMs;
+    private static final long MIN_ATTEMPT_INTERVAL_MS = 60000L;
+
     private volatile WeatherState mLastState;
     private volatile WeatherState mOverrideState;
     private ScheduledExecutorService mExecutor;
@@ -174,7 +184,56 @@ public class WeatherManager {
         if (mLastState != null) {
             dispatchWeatherUpdated(getLastState(), mListener);
         }
-        scheduleNext(0L);
+        /*
+         * **不再"启动即取"**，按缓存的时效决定起跳时间：
+         * 过期的（或压根没有缓存）立刻取，刚取过的不白跑一次请求。
+         * "打开主程序就刷新"由此自动成立 —— 打开时 start() 会走到这里。
+         */
+        scheduleNext(msUntilStale());
+    }
+
+    /**
+     * 缓存过期就立刻取一次，没过期什么都不做。
+     *
+     * <p>用在**用户看得见**的时刻：壁纸重新可见、主程序打开。只有这两个时刻才知道有人在看，
+     * 也才是值得花一次请求的时刻 —— 息屏期间不叫醒、不耗电。定时器那条路留着，
+     * 管的是"一直看着"的情形。
+     */
+    public synchronized void refreshIfStale() {
+        long nowMs = System.currentTimeMillis();
+        if (nowMs - mLastAttemptMs < MIN_ATTEMPT_INTERVAL_MS) {
+            return;   // 刚试过（哪怕刚失败），别被每帧问成洪水
+        }
+        WeatherState state = getLastState();
+        if (state != null && !isStale(state.updateUtc, nowMs / 1000L, getUpdateMinutes())) {
+            return;
+        }
+        refreshNow(null);
+    }
+
+    /**
+     * 缓存是不是过期了。
+     *
+     * <p>纯函数，所以能在 JVM 上测。没有缓存（{@code updateUtc <= 0}）一律算过期；
+     * 判据用 {@code >=}：刚好到点就该取。
+     */
+    static boolean isStale(long updateUtc, long nowUtc, int intervalMinutes) {
+        if (updateUtc <= 0L) {
+            return true;
+        }
+        return nowUtc - updateUtc >= Math.max(1, intervalMinutes) * 60L;
+    }
+
+    /** 距离"缓存过期"还有多少毫秒；已经过期就是 0。 */
+    private long msUntilStale() {
+        WeatherState state = getLastState();
+        int minutes = getUpdateMinutes();
+        long nowSeconds = System.currentTimeMillis() / 1000L;
+        if (state == null || isStale(state.updateUtc, nowSeconds, minutes)) {
+            return 0L;
+        }
+        long dueMs = (state.updateUtc + minutes * 60L) * 1000L;
+        return Math.max(0L, dueMs - System.currentTimeMillis());
     }
 
     public synchronized void stop() {
@@ -202,6 +261,7 @@ public class WeatherManager {
         final ScheduledExecutorService finalExecutor = executor;
         try {
             finalExecutor.execute(() -> {
+                mLastAttemptMs = System.currentTimeMillis();
                 WeatherState state = null;
                 try {
                     state = fetchWeather();
@@ -243,6 +303,7 @@ public class WeatherManager {
     private void fetchAndSchedule() {
         if (!mRunning.get()) return;
         long nextDelay = TimeUnit.MINUTES.toMillis(getUpdateMinutes());
+        mLastAttemptMs = System.currentTimeMillis();
         try {
             WeatherState state = fetchWeather();
             if (state != null) {
