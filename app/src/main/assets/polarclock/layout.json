@@ -16,7 +16,7 @@
       "type": "list",
       "key": "palette",
       "title": "palette",
-      "default": "gray",
+      "default": "palette_gray",
       "values": [
         "palette_gray",
         "palette_white_c",
