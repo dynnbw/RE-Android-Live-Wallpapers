@@ -24,8 +24,21 @@ final class PolarClockScene {
     static final String PREF_SHOW_SECONDS = "show_seconds";
     static final String PREF_VARIABLE_LINE_WIDTH = "variable_line_width";
     static final String PREF_PALETTE = "palette";
+    static final String PREF_RING_THICKNESS = "ring_thickness";
 
-    // 环厚度与间隙（单位：像素），原本散在 GL 类里。
+    /**
+     * 环厚档位：把「环相对钟面多粗」钉在当年某块屏的比例上，或保持原版行为。
+     *
+     * <p>原版环厚是写死的像素而半径随屏幕走，于是小屏上环很粗、大屏上细得只剩一圈线，
+     * 两端都不是谁设定过的观感。三档各挑一块当年的屏复现它的比例，{@link #RING_THICKNESS_SCREEN}
+     * 则原样保留那个"随屏幕变"的行为（默认）。
+     */
+    static final String RING_THICKNESS_SCREEN = "screen";
+    static final String RING_THICKNESS_REF480 = "ref480";
+    static final String RING_THICKNESS_REF640 = "ref640";
+    static final String RING_THICKNESS_REF720 = "ref720";
+
+    // 环厚度与间隙（单位：像素），原本散在 GL 类里。选了档位后会整体乘一个系数。
     static final float SMALL_RING_THICKNESS = 8.0f;
     static final float MEDIUM_RING_THICKNESS = 16.0f;
     static final float LARGE_RING_THICKNESS = 32.0f;
@@ -38,6 +51,7 @@ final class PolarClockScene {
     boolean showSeconds = true;
     boolean variableLineWidth = true;
     String paletteId = "";
+    String ringThickness = RING_THICKNESS_SCREEN;
 
     /**
      * 日期字段。GL 侧从 Time/Calendar 取出后填入。
@@ -75,6 +89,31 @@ final class PolarClockScene {
         showSeconds = prefs.getBoolean(PREF_SHOW_SECONDS, true);
         variableLineWidth = prefs.getBoolean(PREF_VARIABLE_LINE_WIDTH, true);
         paletteId = prefs.getString(PREF_PALETTE, "");
+        ringThickness = prefs.getString(PREF_RING_THICKNESS, RING_THICKNESS_SCREEN);
+    }
+
+    /** 档位对应的参考屏宽；{@code 0} 表示不锁定（随屏）。 */
+    static int referenceWidthFor(String value) {
+        if (RING_THICKNESS_REF480.equals(value)) return 480;
+        if (RING_THICKNESS_REF640.equals(value)) return 640;
+        if (RING_THICKNESS_REF720.equals(value)) return 720;
+        return 0;
+    }
+
+    /**
+     * 整份布局的缩放系数：把参考屏那年的布局等比放大到当前屏。
+     *
+     * <p>取 {@code 当前 min(宽,高) / 参考宽} 而不是按外圈半径之比，是因为外圈半径
+     * （{@code min/2 - 24}）本身带着那个 24 的内缩，两个比例并不相等；只有整体等比
+     * 缩放，环厚 ÷ 外圈半径才会严格等于参考屏那一档。代入可见：
+     * {@code 外圈半径 = k * (参考宽/2 - 24)}，与参考屏只差一个 k。
+     *
+     * <p>{@link #RING_THICKNESS_SCREEN} 与认不出的取值一律返回 1，即原版行为。
+     */
+    static float ringScaleFor(String value, float minDimension) {
+        int refWidth = referenceWidthFor(value);
+        if (refWidth <= 0 || minDimension <= 0.0f) return 1.0f;
+        return minDimension / refWidth;
     }
 
     /** 复用的日期字段容器，GL 侧填完再交给 layout。 */
@@ -102,34 +141,48 @@ final class PolarClockScene {
      */
     Ring[] layout(float viewWidth, float viewHeight, long timeMs) {
         DateFields d = mDateFields;
-        float size = Math.min(viewWidth, viewHeight) * 0.5f - DEFAULT_RING_THICKNESS;
-        float lastRingThickness = DEFAULT_RING_THICKNESS;
+        /*
+         * 档位只在这里生效：厚度与间隙一起乘 k，整份布局成为参考屏那份的等比副本
+         * （间隙跟着缩是必须的，否则环会互相压住）。k=1 时下面七个数与常量逐位相同，
+         * 所以默认档不可能带来任何回归。
+         */
+        float minDimension = Math.min(viewWidth, viewHeight);
+        float k = ringScaleFor(ringThickness, minDimension);
+        float defaultThickness = DEFAULT_RING_THICKNESS * k;
+        float smallThickness = SMALL_RING_THICKNESS * k;
+        float mediumThickness = MEDIUM_RING_THICKNESS * k;
+        float largeThickness = LARGE_RING_THICKNESS * k;
+        float smallGap = SMALL_GAP * k;
+        float largeGap = LARGE_GAP * k;
+
+        float size = minDimension * 0.5f - defaultThickness;
+        float lastRingThickness = defaultThickness;
         mRingCount = 0;
 
         if (showSeconds) {
             float angle = secondsAngle(timeMs);
-            if (variableLineWidth) lastRingThickness = SMALL_RING_THICKNESS;
+            if (variableLineWidth) lastRingThickness = smallThickness;
             addRing(RING_SECONDS, size, lastRingThickness, angle);
         }
 
-        size -= (SMALL_GAP + lastRingThickness);
+        size -= (smallGap + lastRingThickness);
         float angleMinutes = minutesAngle(d.minute, d.second);
-        if (variableLineWidth) lastRingThickness = MEDIUM_RING_THICKNESS;
+        if (variableLineWidth) lastRingThickness = mediumThickness;
         addRing(RING_MINUTES, size, lastRingThickness, angleMinutes);
 
-        size -= (SMALL_GAP + lastRingThickness);
+        size -= (smallGap + lastRingThickness);
         float angleHours = hoursAngle(d.hour, d.minute);
-        if (variableLineWidth) lastRingThickness = LARGE_RING_THICKNESS;
+        if (variableLineWidth) lastRingThickness = largeThickness;
         addRing(RING_HOURS, size, lastRingThickness, angleHours);
 
-        size -= (LARGE_GAP + lastRingThickness);
+        size -= (largeGap + lastRingThickness);
         float angleDays = daysAngle(d.monthDay, d.maxMonthDay);
-        if (variableLineWidth) lastRingThickness = MEDIUM_RING_THICKNESS;
+        if (variableLineWidth) lastRingThickness = mediumThickness;
         addRing(RING_DAYS, size, lastRingThickness, angleDays);
 
-        size -= (SMALL_GAP + lastRingThickness);
+        size -= (smallGap + lastRingThickness);
         float angleMonths = monthsAngle(d.month);
-        if (variableLineWidth) lastRingThickness = LARGE_RING_THICKNESS;
+        if (variableLineWidth) lastRingThickness = largeThickness;
         addRing(RING_MONTHS, size, lastRingThickness, angleMonths);
 
         return mRings;

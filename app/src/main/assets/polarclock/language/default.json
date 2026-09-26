@@ -9,5 +9,10 @@
   "palette_label_palette_halloween": "Pumpkin Pie",
   "palette_label_palette_violet": "Midnight",
   "palette_label_palette_oceanic": "Blue Laser",
-  "palette_label_palette_zenburn": "Alien Fruit Salad"
+  "palette_label_palette_zenburn": "Alien Fruit Salad",
+  "ring_thickness": "Ring thickness",
+  "ring_thickness_label_screen": "Follow the screen",
+  "ring_thickness_label_ref480": "Thick",
+  "ring_thickness_label_ref640": "Classic",
+  "ring_thickness_label_ref720": "Thin"
 }

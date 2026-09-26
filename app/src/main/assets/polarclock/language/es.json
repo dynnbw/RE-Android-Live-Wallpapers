@@ -9,5 +9,10 @@
   "palette_label_palette_halloween": "Pastel de calabaza",
   "palette_label_palette_violet": "Medianoche",
   "palette_label_palette_oceanic": "Láser azul",
-  "palette_label_palette_zenburn": "Ensalada de frutas alienígena"
+  "palette_label_palette_zenburn": "Ensalada de frutas alienígena",
+  "ring_thickness": "Grosor de los anillos",
+  "ring_thickness_label_screen": "Según la pantalla",
+  "ring_thickness_label_ref480": "Grueso",
+  "ring_thickness_label_ref640": "Clásico",
+  "ring_thickness_label_ref720": "Fino"
 }

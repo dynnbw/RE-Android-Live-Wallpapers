@@ -9,5 +9,10 @@
   "palette_label_palette_halloween": "Kürbiskuchen",
   "palette_label_palette_violet": "Mitternacht",
   "palette_label_palette_oceanic": "Blauer Laser",
-  "palette_label_palette_zenburn": "Alien Obstsalat"
+  "palette_label_palette_zenburn": "Alien Obstsalat",
+  "ring_thickness": "Ringdicke",
+  "ring_thickness_label_screen": "Wie der Bildschirm",
+  "ring_thickness_label_ref480": "Dick",
+  "ring_thickness_label_ref640": "Klassisch",
+  "ring_thickness_label_ref720": "Dünn"
 }

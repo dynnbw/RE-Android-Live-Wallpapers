@@ -9,5 +9,10 @@
   "palette_label_palette_halloween": "호박 파이",
   "palette_label_palette_violet": "미드나잇",
   "palette_label_palette_oceanic": "블루 레이저",
-  "palette_label_palette_zenburn": "외계인 과일 샐러드"
+  "palette_label_palette_zenburn": "외계인 과일 샐러드",
+  "ring_thickness": "고리 두께",
+  "ring_thickness_label_screen": "화면에 맞춤",
+  "ring_thickness_label_ref480": "굵게",
+  "ring_thickness_label_ref640": "기본",
+  "ring_thickness_label_ref720": "얇게"
 }

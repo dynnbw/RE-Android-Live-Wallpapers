@@ -9,5 +9,10 @@
   "palette_label_palette_halloween": "南瓜派",
   "palette_label_palette_violet": "午夜",
   "palette_label_palette_oceanic": "蓝色激光",
-  "palette_label_palette_zenburn": "外星水果沙拉"
+  "palette_label_palette_zenburn": "外星水果沙拉",
+  "ring_thickness": "圆环粗细",
+  "ring_thickness_label_screen": "跟随屏幕",
+  "ring_thickness_label_ref480": "粗",
+  "ring_thickness_label_ref640": "经典",
+  "ring_thickness_label_ref720": "细"
 }

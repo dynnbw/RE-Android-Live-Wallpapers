@@ -9,5 +9,10 @@
   "palette_label_palette_halloween": "पम्पकिन पाई",
   "palette_label_palette_violet": "मिडनाइट",
   "palette_label_palette_oceanic": "ब्लू लेज़र",
-  "palette_label_palette_zenburn": "एलियन फ्रूट सलाद"
+  "palette_label_palette_zenburn": "एलियन फ्रूट सलाद",
+  "ring_thickness": "रिंग की मोटाई",
+  "ring_thickness_label_screen": "स्क्रीन के अनुसार",
+  "ring_thickness_label_ref480": "मोटी",
+  "ring_thickness_label_ref640": "क्लासिक",
+  "ring_thickness_label_ref720": "पतली"
 }

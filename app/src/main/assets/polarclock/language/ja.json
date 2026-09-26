@@ -9,5 +9,10 @@
   "palette_label_palette_halloween": "パンプキンパイ",
   "palette_label_palette_violet": "ミッドナイト",
   "palette_label_palette_oceanic": "ブルーレーザー",
-  "palette_label_palette_zenburn": "エイリアンフルーツサラダ"
+  "palette_label_palette_zenburn": "エイリアンフルーツサラダ",
+  "ring_thickness": "リングの太さ",
+  "ring_thickness_label_screen": "画面に合わせる",
+  "ring_thickness_label_ref480": "太い",
+  "ring_thickness_label_ref640": "標準",
+  "ring_thickness_label_ref720": "細い"
 }

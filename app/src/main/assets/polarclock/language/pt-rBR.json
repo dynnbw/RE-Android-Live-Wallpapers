@@ -9,5 +9,10 @@
   "palette_label_palette_halloween": "Torta de abóbora",
   "palette_label_palette_violet": "Meia-noite",
   "palette_label_palette_oceanic": "Laser azul",
-  "palette_label_palette_zenburn": "Salada de frutas alienígena"
+  "palette_label_palette_zenburn": "Salada de frutas alienígena",
+  "ring_thickness": "Espessura dos anéis",
+  "ring_thickness_label_screen": "Conforme a tela",
+  "ring_thickness_label_ref480": "Grosso",
+  "ring_thickness_label_ref640": "Clássico",
+  "ring_thickness_label_ref720": "Fino"
 }

@@ -9,5 +9,10 @@
   "palette_label_palette_halloween": "Тыквенный пирог",
   "palette_label_palette_violet": "Полночь",
   "palette_label_palette_oceanic": "Синий лазер",
-  "palette_label_palette_zenburn": "Инопланетный фруктовый салат"
+  "palette_label_palette_zenburn": "Инопланетный фруктовый салат",
+  "ring_thickness": "Толщина колец",
+  "ring_thickness_label_screen": "По экрану",
+  "ring_thickness_label_ref480": "Толстые",
+  "ring_thickness_label_ref640": "Классические",
+  "ring_thickness_label_ref720": "Тонкие"
 }

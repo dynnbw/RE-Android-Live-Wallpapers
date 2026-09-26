@@ -37,6 +37,24 @@
         "palette_label_palette_oceanic",
         "palette_label_palette_zenburn"
       ]
+    },
+    {
+      "type": "list",
+      "key": "ring_thickness",
+      "title": "ring_thickness",
+      "default": "screen",
+      "values": [
+        "screen",
+        "ref480",
+        "ref640",
+        "ref720"
+      ],
+      "labels": [
+        "ring_thickness_label_screen",
+        "ring_thickness_label_ref480",
+        "ring_thickness_label_ref640",
+        "ring_thickness_label_ref720"
+      ]
     }
   ]
 }

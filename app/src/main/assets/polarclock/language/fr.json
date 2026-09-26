@@ -9,5 +9,10 @@
   "palette_label_palette_halloween": "Tarte à la citrouille",
   "palette_label_palette_violet": "Minuit",
   "palette_label_palette_oceanic": "Laser bleu",
-  "palette_label_palette_zenburn": "Salade de fruits extraterrestre"
+  "palette_label_palette_zenburn": "Salade de fruits extraterrestre",
+  "ring_thickness": "Épaisseur des anneaux",
+  "ring_thickness_label_screen": "Selon l'écran",
+  "ring_thickness_label_ref480": "Épais",
+  "ring_thickness_label_ref640": "Classique",
+  "ring_thickness_label_ref720": "Fin"
 }

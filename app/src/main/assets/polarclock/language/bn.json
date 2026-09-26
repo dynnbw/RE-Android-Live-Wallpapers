@@ -9,5 +9,10 @@
   "palette_label_palette_halloween": "পাম্পকিন পাই",
   "palette_label_palette_violet": "মিডনাইট",
   "palette_label_palette_oceanic": "ব্লু লেজার",
-  "palette_label_palette_zenburn": "এলিয়েন ফ্রুট সালাদ"
+  "palette_label_palette_zenburn": "এলিয়েন ফ্রুট সালাদ",
+  "ring_thickness": "রিংয়ের পুরুত্ব",
+  "ring_thickness_label_screen": "স্ক্রিন অনুযায়ী",
+  "ring_thickness_label_ref480": "মোটা",
+  "ring_thickness_label_ref640": "ক্লাসিক",
+  "ring_thickness_label_ref720": "পাতলা"
 }
