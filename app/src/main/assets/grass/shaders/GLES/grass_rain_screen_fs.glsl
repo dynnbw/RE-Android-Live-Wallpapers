@@ -16,6 +16,14 @@ uniform float uSpeedY;
 uniform float uAspect;
 /** 最靠近镜头那一层（参考实现里单独处理的那层）。 */
 uniform float uBaseAlpha;
+/**
+ * 累加后允许的最大不透明度。
+ *
+ * <p>各层 alpha 是**相加**的（满强度下近景 0.8 + 0.35 + 0.30 + 0.25 ≈ 1.7），而屏幕底部
+ * 不受高度衰减，于是底部直接饱和成不透明白 —— 夜里草地暗，这层白尤其顶。压一个上限
+ * 让雨丝保持"看得出是一根根"的状态，而不是糊成一片白纱。
+ */
+uniform float uMaxAlpha;
 uniform float uBaseScale;
 /** 其余各层；由 GrassRainStreakLayers 在 Java 侧算好。 */
 uniform float uLayerAlpha[5];
@@ -117,5 +125,6 @@ void main() {
     color.a *= mix(1.0, 0.5, smoothstep(0.1, 1.0, uv.y));
   }
 
-  fragColor = color;
+  // 只在出口压一次上限：各层累加过程照旧，免得改变每层 clamp 的既有行为。
+  fragColor = vec4(color.rgb, min(color.a, uMaxAlpha));
 }

@@ -85,6 +85,25 @@ final class GrassConstants {
     static final float RAIN_BASE_ALPHA = 0.8f;
     static final float RAIN_BASE_SCALE = 1.0f;
 
+    /**
+     * 累加后允许的最大不透明度（着色器出口处压一次）。
+     *
+     * <p>满强度下各层 alpha 相加约 1.7，而屏幕**底部**不受高度衰减，于是直接饱和成
+     * 不透明白；夜里草地暗，这层白就顶出来了。压低上限让雨丝保持分得出一根根。
+     * 1.0 = 不限制（改前行为）。
+     */
+    static final float RAIN_MAX_ALPHA = 0.8f;
+
+    /**
+     * 夜间雨丝亮度的下限比例（按场景昼夜亮度在 [此值, 1] 之间插值）。
+     *
+     * <p>雨丝是纯白 `vec4(1,1,1,a)`，白天压在亮草地上不显，夜里压在暗草上就成了
+     * 最亮的东西 —— 这正是"夜晚更明显"。跟着 {@code SceneData.newB}（草叶用的同一个
+     * 昼夜亮度）收一点，但不收到看不见：真实的雨在夜里也是看得见的。
+     * 1.0 = 不随昼夜变化（改前行为）。
+     */
+    static final float RAIN_NIGHT_FLOOR = 0.45f;
+
     static final int LEGACY_MAX_NORMAL = 10;
     static final int LEGACY_MAX_EXTRAS = 50;
     static final float LEGACY_SPEED = 0.1f;

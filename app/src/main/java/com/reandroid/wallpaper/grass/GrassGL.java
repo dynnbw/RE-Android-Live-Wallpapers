@@ -205,6 +205,7 @@ public class GrassGL extends GLESScene {
     private int mRainScreenSpeedYHandle;
     private int mRainScreenBaseAlphaHandle;
     private int mRainScreenBaseScaleHandle;
+    private int mRainScreenMaxAlphaHandle;
     private int mRainScreenLayerAlphaHandle;
     private int mRainScreenLayerScaleHandle;
     private final float[] mRainLayerAlpha = new float[GrassRainStreakLayers.MAX_LAYERS];
@@ -1059,6 +1060,7 @@ public class GrassGL extends GLESScene {
         mRainScreenSpeedYHandle = GLES30.glGetUniformLocation(mRainScreenProgram, "uSpeedY");
         mRainScreenBaseAlphaHandle = GLES30.glGetUniformLocation(mRainScreenProgram, "uBaseAlpha");
         mRainScreenBaseScaleHandle = GLES30.glGetUniformLocation(mRainScreenProgram, "uBaseScale");
+        mRainScreenMaxAlphaHandle = GLES30.glGetUniformLocation(mRainScreenProgram, "uMaxAlpha");
         mRainScreenLayerAlphaHandle = GLES30.glGetUniformLocation(mRainScreenProgram, "uLayerAlpha");
         mRainScreenLayerScaleHandle = GLES30.glGetUniformLocation(mRainScreenProgram, "uLayerScale");
     }
@@ -1074,6 +1076,12 @@ public class GrassGL extends GLESScene {
         float intensity = GrassWeatherSystem.rainIntensity(sd.weatherCondition);
         float opacity = GrassRainStreakLayers.opacity(intensity);
         if (opacity <= 0.0f) return;
+        /*
+         * 雨丝是纯白的，白天压在亮草地上不显，夜里压在暗草上就成了画面里最亮的东西。
+         * 跟着场景昼夜亮度（草叶用的是同一个值）收一点，但不收到看不见。
+         */
+        opacity *= MathUtils.mix(GrassConstants.RAIN_NIGHT_FLOOR, 1.0f,
+                MathUtils.clamp(sd.newB, 0.0f, 1.0f));
 
         GrassRainStreakLayers.fill(intensity, GrassRainStreakLayers.DEFAULT_FILTER,
                 mRainLayerAlpha, mRainLayerScale);
@@ -1090,6 +1098,7 @@ public class GrassGL extends GLESScene {
         GLES30.glUniform1f(mRainScreenSpeedYHandle, GrassConstants.RAIN_SPEED_Y);
         GLES30.glUniform1f(mRainScreenBaseAlphaHandle, GrassConstants.RAIN_BASE_ALPHA);
         GLES30.glUniform1f(mRainScreenBaseScaleHandle, GrassConstants.RAIN_BASE_SCALE);
+        GLES30.glUniform1f(mRainScreenMaxAlphaHandle, GrassConstants.RAIN_MAX_ALPHA);
         GLES30.glUniform1fv(mRainScreenLayerAlphaHandle, GrassRainStreakLayers.MAX_LAYERS,
                 mRainLayerAlpha, 0);
         GLES30.glUniform1fv(mRainScreenLayerScaleHandle, GrassRainStreakLayers.MAX_LAYERS,
