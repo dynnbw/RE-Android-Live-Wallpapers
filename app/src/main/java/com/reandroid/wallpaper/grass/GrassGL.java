@@ -116,6 +116,8 @@ public class GrassGL extends GLESScene {
     private int mGrassPositionHandle;
     private int mGrassColorHandle;
     private int mGrassTexHandle;
+    /** 逐叶的萤火虫遮挡（第 9 个分量），见 GrassFireflyShadow。 */
+    private int mGrassShadowHandle;
     private int mGrassMatrixHandle;
     private int mGrassSamplerHandle;
     // ---- 草叶逆光（第二版）----
@@ -129,6 +131,29 @@ public class GrassGL extends GLESScene {
     private int mGrassRimColorHandle;
     private int mGrassRimGainHandle;
     private int mGrassShadowGainHandle;
+    // ---- 萤火虫照亮草叶 ----
+    private int mGrassFireflyHandle;
+    private int mGrassFireflyTintHandle;
+    private int mGrassFireflyGainHandle;
+    private int mGrassFireflyRadiusHandle;
+    /** 把被夜色压过的叶片颜色还原成本色的增益，见 {@link #fireflyAlbedoBoost}。 */
+    private int mGrassFireflyBoostHandle;
+    /** 光源数组（每只 3 个 float），见 {@link GrassFireflyLight}。 */
+    private final float[] mFireflyLights = new float[GrassConstants.FIREFLY_LIGHT_MAX * 3];
+    /**
+     * 这一帧的萤火虫精灵批。
+     *
+     * <p>草叶要先画，而光源要从萤火虫批里取，所以这个批在 {@code drawBlades} 之前就得建好
+     * （见 {@link #prepareFireflyLights}）。**建一次、两处用** —— 建两次会推进传统萤火虫的
+     * 状态机，flare 计时走双倍。
+     */
+    private float[] mFireflyBatch;
+    private int mFireflyBatchFloats;
+    /** 闪光那一批，与 {@link #mFireflyBatch} 互补（传统萤火虫按是否正在闪光劈开）。 */
+    private float[] mFireflyFlareBatch;
+    private int mFireflyFlareBatchFloats;
+    /** 上次重算逐叶萤火虫遮挡的时刻，见 {@link #updateFireflyShadow}。 */
+    private long mLastFireflyShadowMs;
 
     // Moon program handles
     private int mMoonPositionHandle;
@@ -439,7 +464,9 @@ public class GrassGL extends GLESScene {
                 GrassConstants.GRASS_LIGHT_RIM[2]);
         GLES30.glUniform1f(mGrassRimGainHandle, GrassConstants.GRASS_LIGHT_RIM_GAIN);
         GLES30.glUniform1f(mGrassShadowGainHandle, GrassConstants.GRASS_LIGHT_SHADOW_GAIN);
+        prepareFireflyLights(sd);
 
+        // 必须在 drawBlades 之前：光源要从萤火虫批里取
         drawBlades(sd, grassBrightness, sd.xDraw, nightDesat);
         drawSprites(sd);
         drawWater(sd);
@@ -578,6 +605,7 @@ public class GrassGL extends GLESScene {
         mGrassPositionHandle = GLES30.glGetAttribLocation(mGrassProgram, "aPosition");
         mGrassColorHandle = GLES30.glGetAttribLocation(mGrassProgram, "aColor");
         mGrassTexHandle = GLES30.glGetAttribLocation(mGrassProgram, "aTexCoord");
+        mGrassShadowHandle = GLES30.glGetAttribLocation(mGrassProgram, "aFireflyShadow");
         mGrassMatrixHandle = GLES30.glGetUniformLocation(mGrassProgram, "uMVPMatrix");
         mGrassSamplerHandle = GLES30.glGetUniformLocation(mGrassProgram, "uSampler");
         mGrassLightHandle = GLES30.glGetUniformLocation(mGrassProgram, "uLight");
@@ -590,6 +618,11 @@ public class GrassGL extends GLESScene {
         mGrassRimColorHandle = GLES30.glGetUniformLocation(mGrassProgram, "uRimColor");
         mGrassRimGainHandle = GLES30.glGetUniformLocation(mGrassProgram, "uRimGain");
         mGrassShadowGainHandle = GLES30.glGetUniformLocation(mGrassProgram, "uShadowGain");
+        mGrassFireflyHandle = GLES30.glGetUniformLocation(mGrassProgram, "uFirefly");
+        mGrassFireflyTintHandle = GLES30.glGetUniformLocation(mGrassProgram, "uFireflyTint");
+        mGrassFireflyGainHandle = GLES30.glGetUniformLocation(mGrassProgram, "uFireflyGain");
+        mGrassFireflyRadiusHandle = GLES30.glGetUniformLocation(mGrassProgram, "uFireflyRadius");
+        mGrassFireflyBoostHandle = GLES30.glGetUniformLocation(mGrassProgram, "uFireflyAlbedoBoost");
     }
 
     private void createMoonProgram() {
@@ -858,7 +891,7 @@ public class GrassGL extends GLESScene {
 
     private void buildBladeBuffers() {
         int vertexTotal = mScene.mVertexCount * 2; // 2 vertices per segment
-        int stride = 8; // x,y + r,g,b,a + s,t
+        int stride = GrassRenderDataBuilder.FLOATS_PER_GRASS_VERTEX;
 
         mGrassVertexBuffer = ByteBuffer.allocateDirect(vertexTotal * stride * 4)
                 .order(ByteOrder.nativeOrder()).asFloatBuffer();
@@ -1212,13 +1245,109 @@ public class GrassGL extends GLESScene {
         GLES30.glDisableVertexAttribArray(mMoonTexHandle);
     }
 
+    /**
+     * 建萤火虫精灵批，并把从它里面取出的光源传给草叶着色器。
+     *
+     * <p>位置必须在 {@code drawBlades} 之前 —— 草要照着萤火虫的光画，而光源是从批里取的。
+     * 批本身**每帧只建这一次**，{@code drawSprites} 直接用缓存：传统萤火虫那条路会推进
+     * 粒子状态，建两次 flare 计时就走双倍（见 {@code GrassRenderDataBuilder} 里的记录）。
+     *
+     * <p>开关取 {@code sd.glowEnabled}（用户的「特效」开关）而**不与设备能力再与一次** ——
+     * 这一层不需要离屏缓冲，设备做不了辉光模糊也照样点得亮。
+     */
+    private void prepareFireflyLights(SceneData sd) {
+        GrassRenderDataBuilder b = mScene.mRenderDataBuilder;
+        final int spriteStride = GrassRenderDataBuilder.FLOATS_PER_SPRITE_VERTEX;
+        // 两个批都在这里建：本体 + 闪光。drawSprites 直接用缓存（它们是**一次性的**，
+        // 传统萤火虫那条路会推进粒子状态，建两次 flare 计时就走双倍）。
+        mFireflyBatch = b.buildFireflySpriteVertices(sd);
+        mFireflyBatchFloats = b.getFireflyVertexCount() * spriteStride;
+        mFireflyFlareBatch = b.buildFireflyFlareSpriteVertices(sd);
+        mFireflyFlareBatchFloats = b.getFireflyFlareVertexCount() * spriteStride;
+
+        float gain = sd.glowEnabled ? GrassConstants.FIREFLY_LIGHT_GAIN : 0.0f;
+        GLES30.glUniform1f(mGrassFireflyGainHandle, gain);
+        if (gain <= 0.0f) {
+            // 关着时着色器那一行是恒等（逐位不变），光源数组一个字节都不用传。
+            return;
+        }
+
+        // 两个批都要收：传统萤火虫按"是否正在闪光"把它们劈成互斥的两半，只收本体的话，
+        // 萤火虫最亮的那一刻恰好从这个批里消失 —— 地上的光会跟着灭，与直觉正相反。
+        int lightCount = GrassFireflyLight.clear(mFireflyLights);
+        lightCount = GrassFireflyLight.append(mFireflyBatch, mFireflyBatchFloats,
+                mFireflyLights, lightCount);
+        lightCount = GrassFireflyLight.append(mFireflyFlareBatch, mFireflyFlareBatchFloats,
+                mFireflyLights, lightCount);
+        GLES30.glUniform3fv(mGrassFireflyHandle, GrassConstants.FIREFLY_LIGHT_MAX,
+                mFireflyLights, 0);
+        GLES30.glUniform1f(mGrassFireflyRadiusHandle, GrassConstants.FIREFLY_LIGHT_RADIUS);
+        GLES30.glUniform3f(mGrassFireflyTintHandle,
+                GrassConstants.FIREFLY_LIGHT_TINT[0],
+                GrassConstants.FIREFLY_LIGHT_TINT[1],
+                GrassConstants.FIREFLY_LIGHT_TINT[2]);
+        GLES30.glUniform1f(mGrassFireflyBoostHandle, fireflyAlbedoBoost(sd));
+
+        updateFireflyShadow(sd, lightCount);
+    }
+
+    /**
+     * 把叶片颜色还原成**本色**的增益 = 当帧夜色系数的倒数（封顶）。
+     *
+     * <p>顶点里的颜色是「本色 × 夜色系数」（见 {@code GrassRenderDataBuilder.bladeValueScale}），
+     * 而萤火虫的光必须照在**本色**上，否则夜里底色是黑的，加出来只剩灯自己的颜色。
+     * 两处用的是同一个函数，所以系数不会各算各的。
+     */
+    private static float fireflyAlbedoBoost(SceneData sd) {
+        float scale = GrassRenderDataBuilder.bladeValueScale(
+                sd, GrassRenderDataBuilder.bladeBrightness(sd));
+        if (!(scale > 0.0f)) {
+            return GrassConstants.FIREFLY_LIGHT_MAX_BOOST;
+        }
+        return Math.min(1.0f / scale, GrassConstants.FIREFLY_LIGHT_MAX_BOOST);
+    }
+
+    /**
+     * 逐叶的萤火虫遮挡（近处的草挡住远处草的光）。
+     *
+     * <p><b>限频</b>，与太阳那套同一个理由与同一个间隔：遮挡是 O(叶数²) 的包围盒测试，
+     * 而它会变的原因只有"萤火虫在动"—— 它们每秒只走十几个像素（{@code Firefly.vx}
+     * 的量级就是 10），250 毫秒里挪不到 3 个像素，逐帧重算纯属浪费。
+     *
+     * <p>结果写进 {@code sd}。写在这里而不是场景里，是因为**光源列表只在这边有**
+     * （它是从画出去的那一份精灵批里取的，见 {@link #prepareFireflyLights}）。
+     * 另算一份光源就又多一个可能与画面不一致的地方。
+     */
+    private void updateFireflyShadow(SceneData sd, int lightCount) {
+        Blade[] blades = sd.blades;
+        if (blades == null || blades.length == 0) {
+            return;
+        }
+        long nowMs = SystemClock.uptimeMillis();
+        if (nowMs - mLastFireflyShadowMs < GrassBladeLighting.OCCLUSION_INTERVAL_MS
+                && sd.bladeFireflyShadow != null
+                && sd.bladeFireflyShadow.length == blades.length) {
+            return;
+        }
+        mLastFireflyShadowMs = nowMs;
+
+        if (sd.bladeFireflyShadow == null
+                || sd.bladeFireflyShadow.length != blades.length) {
+            sd.bladeFireflyShadow = new float[blades.length];
+        }
+        GrassFireflyShadow.compute(blades, mFireflyLights, lightCount,
+                GrassConstants.FIREFLY_LIGHT_RADIUS, sd.bladeFireflyShadow);
+        // 顶点数组是"外观没变就不重建"的，得让它知道阴影换了一版
+        sd.fireflyShadowVersion++;
+    }
+
     private void drawBlades(SceneData sd, float brightness, float xOffset, float nightDesat) {
         if (!sd.grassEnabled || sd.blades == null) return;
         if (mGrassVertexBuffer == null || mGrassIndexBuffer == null) return;
 
         float[] sharedVerts = mScene.mRenderDataBuilder.buildGrassVertexArray(sd);
         int sharedVertCount = mScene.mRenderDataBuilder.getGrassVertexCount();
-        int floatCount = sharedVertCount * 8;
+        int floatCount = sharedVertCount * GrassRenderDataBuilder.FLOATS_PER_GRASS_VERTEX;
         if (sharedVerts == null || floatCount <= 0 || floatCount > sharedVerts.length) {
             return;
         }
@@ -1233,14 +1362,18 @@ public class GrassGL extends GLESScene {
         GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mTexAA);
         GLES30.glUniform1i(mGrassSamplerHandle, 0);
 
+        final int stride = GrassRenderDataBuilder.GRASS_VERTEX_STRIDE_BYTES;
         GLES30.glEnableVertexAttribArray(mGrassPositionHandle);
-        GLES30.glVertexAttribPointer(mGrassPositionHandle, 2, GLES30.GL_FLOAT, false, 32, mGrassVertexBuffer);
+        GLES30.glVertexAttribPointer(mGrassPositionHandle, 2, GLES30.GL_FLOAT, false, stride, mGrassVertexBuffer);
         mGrassVertexBuffer.position(2);
         GLES30.glEnableVertexAttribArray(mGrassColorHandle);
-        GLES30.glVertexAttribPointer(mGrassColorHandle, 4, GLES30.GL_FLOAT, false, 32, mGrassVertexBuffer);
+        GLES30.glVertexAttribPointer(mGrassColorHandle, 4, GLES30.GL_FLOAT, false, stride, mGrassVertexBuffer);
         mGrassVertexBuffer.position(6);
         GLES30.glEnableVertexAttribArray(mGrassTexHandle);
-        GLES30.glVertexAttribPointer(mGrassTexHandle, 2, GLES30.GL_FLOAT, false, 32, mGrassVertexBuffer);
+        GLES30.glVertexAttribPointer(mGrassTexHandle, 2, GLES30.GL_FLOAT, false, stride, mGrassVertexBuffer);
+        mGrassVertexBuffer.position(8);
+        GLES30.glEnableVertexAttribArray(mGrassShadowHandle);
+        GLES30.glVertexAttribPointer(mGrassShadowHandle, 1, GLES30.GL_FLOAT, false, stride, mGrassVertexBuffer);
 
         mGrassIndexBuffer.position(0);
         GLES30.glDrawElements(GLES30.GL_TRIANGLES, mScene.mIndexCount, GLES30.GL_UNSIGNED_SHORT, mGrassIndexBuffer);
@@ -1248,6 +1381,7 @@ public class GrassGL extends GLESScene {
         GLES30.glDisableVertexAttribArray(mGrassPositionHandle);
         GLES30.glDisableVertexAttribArray(mGrassColorHandle);
         GLES30.glDisableVertexAttribArray(mGrassTexHandle);
+        GLES30.glDisableVertexAttribArray(mGrassShadowHandle);
     }
 
     // ---- Sprite drawing ----
@@ -1307,18 +1441,17 @@ public class GrassGL extends GLESScene {
             mSpriteRenderer.drawBatch(mTexDandelion, dandelion, dandelionFloats, 1.0f);
         }
 
-        // 传统萤火虫分两张贴图（本体 / 闪光），现代萤火虫只有一张
-        float[] firefly = b.buildFireflySpriteVertices(sd);
-        int fireflyFloats = b.getFireflyVertexCount() * stride;
+        // 传统萤火虫分两张贴图（本体 / 闪光），现代萤火虫只有一张。
+        // 两个批都已经在 prepareFireflyLights 里建好了（草叶要照着它们的光画），这里直接用
+        // 缓存：再建一次会推进传统萤火虫的状态机，flare 计时走双倍。
         int fireflyTexture = sd.legacyFireflyEnabled ? mTexFirefly1 : mTexFirefly;
-        if (fireflyTexture != 0 && fireflyFloats > 0) {
-            mSpriteRenderer.drawBatch(fireflyTexture, firefly, fireflyFloats, 1.0f);
+        if (fireflyTexture != 0 && mFireflyBatchFloats > 0) {
+            mSpriteRenderer.drawBatch(fireflyTexture, mFireflyBatch, mFireflyBatchFloats, 1.0f);
         }
 
-        float[] flare = b.buildFireflyFlareSpriteVertices(sd);
-        int flareFloats = b.getFireflyFlareVertexCount() * stride;
-        if (mTexFirefly2 != 0 && flareFloats > 0) {
-            mSpriteRenderer.drawBatch(mTexFirefly2, flare, flareFloats, 1.0f);
+        if (mTexFirefly2 != 0 && mFireflyFlareBatchFloats > 0) {
+            mSpriteRenderer.drawBatch(mTexFirefly2, mFireflyFlareBatch,
+                    mFireflyFlareBatchFloats, 1.0f);
         }
     }
 

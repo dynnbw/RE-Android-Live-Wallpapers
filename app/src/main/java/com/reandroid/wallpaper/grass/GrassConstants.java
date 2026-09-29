@@ -104,6 +104,54 @@ final class GrassConstants {
      */
     static final float RAIN_NIGHT_FLOOR = 0.45f;
 
+    /**
+     * 萤火虫照亮草叶。
+     *
+     * <p>挂在**特效**开关（{@code pref_grass_glow}）下，与 HDR 辉光、黄昏影调同进同出，
+     * 没有自己的开关 —— 先例是 {@code GrassBacklight.duskToneAmount}。
+     *
+     * <p>取值是上机的起点，不是标准答案。四个都是旋钮。
+     */
+    /**
+     * 片元着色器里最多同时算几只。
+     *
+     * <p>这是个**定长循环**（GLES 的 uniform 数组不能动态下标循环上界），所以它同时
+     * 也是性能旋钮：真机上掉帧就先减它，再减 {@link #FIREFLY_LIGHT_RADIUS}。
+     *
+     * <p>取 16 是为了盖住萤火虫数量的**默认值**（{@code pref_grass_firefly_count}）——
+     * 只要不超过它，就永远不会走到"挑哪几只"那一步，也就没有挑错的可能。超过时按
+     * "谁更靠下"取，见 {@code GrassFireflyLight}（不按亮度：亮度在振荡，会导致光斑硬切）。
+     */
+    static final int FIREFLY_LIGHT_MAX = 16;
+    /** 光斑半径（像素）。比萤火虫本体（约 36~72 像素）大一个量级，才像一片光而不是一个点。 */
+    static final float FIREFLY_LIGHT_RADIUS = 220.0f;
+    /**
+     * 光斑颜色。暖黄（R 满、B 低）。
+     *
+     * <p>萤火虫真实的发光是**黄绿**（约 560 nm），但这里刻意压绿提红：光最终要落在**绿草**上，
+     * 而草的绿已经由叶片自己的颜色出了，灯再偏绿就只剩亮度、没有"灯"味。
+     *
+     * <p>它是**乘**在本色上的（见 {@code uFireflyAlbedoBoost}），不是往底色上加白光 ——
+     * 所以颜色主要由草的本色决定，这个值只负责"灯是什么色温"。
+     */
+    static final float[] FIREFLY_LIGHT_TINT = {1.00f, 0.85f, 0.45f};
+    /**
+     * 总强度。0 = 关（此时着色器那一行是恒等，逐位不变）。
+     *
+     * <p><b>比加色那个版本大得多是正常的。</b> 现在是 {@code 本色 × 这个数}，而草的本色
+     * 本身只有零点几（绿通道大约 0.2~0.6），加色版本是直接往画面上加 0.55 —— 两者不是一个
+     * 量纲。观感不对就调这里。
+     */
+    static final float FIREFLY_LIGHT_GAIN = 0.35f;
+    /**
+     * 本色还原增益的上限。
+     *
+     * <p>夜色系数可以低到 {@link #GRASS_NIGHT_VALUE_FLOOR}（0.1），取倒数就是 10 倍；
+     * 万一系数更小（逆光与萤火虫都关着时它是 0），倒数会飞掉。封顶之后最坏情况是"光斑偏暗"，
+     * 而不是一屏白。0 系数下本色也是 0，本来就没得照。
+     */
+    static final float FIREFLY_LIGHT_MAX_BOOST = 10.0f;
+
     static final int LEGACY_MAX_NORMAL = 10;
     static final int LEGACY_MAX_EXTRAS = 50;
     static final float LEGACY_SPEED = 0.1f;

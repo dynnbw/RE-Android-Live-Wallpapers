@@ -134,6 +134,28 @@ final class GrassBladeLighting {
      * （见 {@link #OCCLUSION_INTERVAL_MS}）。
      */
     static float occlusionOf(Blade[] blades, int selfIndex, float lightX, float lightY) {
+        return occlusionAlong(blades, selfIndex, lightX, lightY, true);
+    }
+
+    /**
+     * 光源在**前方**时的遮挡 —— 萤火虫用的就是这一条。
+     *
+     * <p>太阳那一条（{@link #occlusionOf}）数的是**先画的**叶片，因为太阳远在草地之后，
+     * 先画（离相机远）的叶子离太阳更近、先把光挡掉。
+     *
+     * <p>萤火虫正相反：它画在草**之后**（{@code drawSprites} 在 {@code drawBlades} 之后），
+     * 也就是离镜头最近的那一层，光是从**前**方来的。于是挡光的换成**后画的**叶片 ——
+     * 近处的草把影子投在远处的草上。两条只是方向不同，式子完全一样。
+     */
+    static float occlusionFromFrontOf(Blade[] blades, int selfIndex, float lightX, float lightY) {
+        return occlusionAlong(blades, selfIndex, lightX, lightY, false);
+    }
+
+    /**
+     * @param countFarther true = 数先画的（远的，太阳）；false = 数后画的（近的，萤火虫）
+     */
+    private static float occlusionAlong(Blade[] blades, int selfIndex,
+                                        float lightX, float lightY, boolean countFarther) {
         if (blades == null || selfIndex < 0 || selfIndex >= blades.length) {
             return 1.0f;
         }
@@ -152,9 +174,12 @@ final class GrassBladeLighting {
         float ex = self.xPos + dx / len * reach;
         float ey = self.yPos + dy / len * reach;
 
+        int first = countFarther ? 0 : selfIndex + 1;
+        int last = countFarther ? selfIndex : blades.length;
+
         float[] box = new float[4];
         int blockers = 0;
-        for (int i = 0; i < selfIndex; i++) {
+        for (int i = first; i < last; i++) {
             Blade other = blades[i];
             if (other == null) {
                 continue;

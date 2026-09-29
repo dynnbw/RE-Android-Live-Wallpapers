@@ -165,6 +165,32 @@ final class SceneData {
         return bladeOcclusion[index];
     }
 
+    /**
+     * 逐叶的**萤火虫**遮挡（近处的草挡住远处草的光），与 {@link #blades} 一一对应。
+     *
+     * <p>与 {@link #bladeOcclusion} 分开两个数组：光源不同（太阳 vs 萤火虫）、方向也相反，
+     * 合成一个数就没有意义了。由 GrassGL 限频重算（光源列表在那里，见 GrassFireflyLight），
+     * 再经 {@code GrassRenderDataBuilder} 写进顶点。
+     */
+    float[] bladeFireflyShadow;
+
+    /**
+     * {@link #bladeFireflyShadow} 的版本号，每次重算加一。
+     *
+     * <p>顶点数组是按"外观没变就不重建"缓存的（见 {@code computeGrassAppearanceKey}），
+     * 而阴影会**自己变**（萤火虫在动）。不加这一项，风一停叶片不再摆动，阴影就会被
+     * 冻在上一次的样子。
+     */
+    int fireflyShadowVersion;
+
+    /** 取第 {@code index} 片叶的萤火虫遮挡，越界或没算过时返回 1（不受影响）。 */
+    float bladeFireflyShadow(int index) {
+        if (bladeFireflyShadow == null || index < 0 || index >= bladeFireflyShadow.length) {
+            return 1.0f;
+        }
+        return bladeFireflyShadow[index];
+    }
+
     /** 太阳本体的 RGB 增益，随高度角变化 —— 低空橙红、高空白偏蓝。见 {@link GrassSunAppearance}。 */
     final float[] sunTint = new float[]{1.0f, 1.0f, 1.0f};
 

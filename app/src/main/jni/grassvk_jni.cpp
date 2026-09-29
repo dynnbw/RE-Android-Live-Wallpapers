@@ -19,8 +19,12 @@ struct GrassVertex {
     float x, y;
     float r, g, b, a;
     float s, t;
+    // 逐叶的萤火虫遮挡。Vulkan 这条管线不使用（那里根本没有光照），但**几何是两条
+    // 渲染路径共用的同一份**，格式必须逐字对上 —— 见 FLOATS_PER_GRASS_VERTEX。
+    // 多余的分量只要 stride 盖得住就是合法的，所以属性描述仍然是 3 个。
+    float fireflyShadow;
 };
-static_assert(sizeof(GrassVertex) == 32, "GrassVertex must be 32 bytes");
+static_assert(sizeof(GrassVertex) == 36, "GrassVertex must be 36 bytes");
 
 struct SpriteVertex {
     float x, y;

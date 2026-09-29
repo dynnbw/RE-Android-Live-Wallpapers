@@ -136,6 +136,43 @@ final class GrassRenderDataBuilder {
         return out;
     }
 
+    /**
+     * 这一帧草叶的明度基准（0..1）。
+     *
+     * <p>抽出来是因为**除这里之外还有人要它**：萤火虫的光要按它把"夜色压过的颜色"还原成
+     * 本色（见 {@link #bladeValueScale} 与 {@code GrassGL} 里那个增益）。各写一份的话，
+     * 两处的昼夜曲线一旦不同步，萤火虫的光就会整体偏亮或偏暗 —— 不报错，只是不对。
+     */
+    static float bladeBrightness(SceneData sd) {
+        float eclipseImpact = MathUtils.clamp(sd.solarEclipseWeight, 0.0f, 1.0f);
+        if (sd.nightDesaturateGrass) {
+            return MathUtils.mix(1.0f, 0.72f, eclipseImpact);
+        }
+        return sd.newB * MathUtils.mix(1.0f, 0.62f, eclipseImpact);
+    }
+
+    /**
+     * 夜色对叶片明度的压制系数（相对本色）：顶点里那个颜色 = **本色 × 这个数**。
+     *
+     * <p>着色器要用它的倒数把本色还原回来，所以两处必须同一个来源。
+     *
+     * <p><b>为什么"有特效时"要保一个下限。</b> 原来是乘到 0 的 —— 夜里整片草纯黑，
+     * 而**黑底上叠什么都没用**：萤火虫的光是加在叶片颜色上的，底色是 0 就只剩灯自己的
+     * 颜色，草的本色一点也读不出来。逆光开关那边早就踩过同一个坑
+     * （{@code GRASS_NIGHT_VALUE_FLOOR} 的注释），这里只是把同一个下限也用在特效上。
+     *
+     * <p>条件里带上 {@code fireflyEnabled}：没有萤火虫的时候不必动夜里的底色，
+     * 免得"开了特效但没开萤火虫"的人白白看到一片发灰的草。
+     */
+    static float bladeValueScale(SceneData sd, float brightness) {
+        boolean keepOwnColour = sd.backlightEnabled || (sd.glowEnabled && sd.fireflyEnabled);
+        if (!keepOwnColour) {
+            return brightness;
+        }
+        return MathUtils.mix(GrassConstants.GRASS_NIGHT_VALUE_FLOOR, 1.0f,
+                MathUtils.clamp(brightness, 0.0f, 1.0f));
+    }
+
     float[] buildGrassVertexArray(SceneData sd) {
         if (!sd.grassEnabled || sd.blades == null || sd.blades.length == 0) {
             mVKGrassFloatCount = 0;
@@ -145,17 +182,14 @@ final class GrassRenderDataBuilder {
         }
 
         float eclipseImpact = MathUtils.clamp(sd.solarEclipseWeight, 0.0f, 1.0f);
-        float grassBrightness = sd.newB;
+        float grassBrightness = bladeBrightness(sd);
         float nightDesat = 0.0f;
         if (sd.nightDesaturateGrass) {
-            grassBrightness = MathUtils.mix(1.0f, 0.72f, eclipseImpact);
             float baseNightDesat = sd.accurateWeights[0];
             nightDesat = MathUtils.clamp(baseNightDesat + eclipseImpact * 0.85f, 0.0f, 1.0f);
-        } else {
-            grassBrightness *= MathUtils.mix(1.0f, 0.62f, eclipseImpact);
         }
 
-        final int stride = 8;
+        final int stride = FLOATS_PER_GRASS_VERTEX;
         int required = Math.max(0, vertexCount * 2) * stride;
         if (mVKGrassVertices.length < required) {
             mVKGrassVertices = new float[required];
@@ -209,7 +243,7 @@ final class GrassRenderDataBuilder {
     }
 
     int getGrassVertexCount() {
-        return mVKGrassFloatCount / 8;
+        return mVKGrassFloatCount / FLOATS_PER_GRASS_VERTEX;
     }
 
     float[] buildSunSpriteVertices(SceneData sd) {
@@ -548,13 +582,9 @@ final class GrassRenderDataBuilder {
 
         float h = blade.h;
         float s = blade.s;
-        // 逆光关着时就是原来那一行，逐像素不变；开着时夜里按**比例**压暗而不是乘到零。
-        // 乘到零整片草纯黑，而黑底上叠什么都没用（逆光、月光都提不出来）——
-        // "夜里没有本色"的根在这里，不在逆光那侧。
-        float v = sd.backlightEnabled
-                ? blade.b * MathUtils.mix(GrassConstants.GRASS_NIGHT_VALUE_FLOOR, 1.0f,
-                        MathUtils.clamp(brightness, 0.0f, 1.0f))
-                : MathUtils.mix(0.0f, blade.b, brightness);
+        // 顶点里的颜色 = **本色 × 夜色系数**，系数由 bladeValueScale 给（逐帧同一个值）。
+        // 萤火虫的光靠这个关系把本色还原回来 —— 见那里与 grass_grass_fs.glsl 里的说明。
+        float v = blade.b * GrassRenderDataBuilder.bladeValueScale(sd, brightness);
         if (sd.useGrassTint) {
             h = sd.grassTintH;
             s = sd.grassTintS;
@@ -595,17 +625,25 @@ final class GrassRenderDataBuilder {
         float baseY = mBladeXY[1];
         // vColor.a 装叶尖位置（原来是常数 1），t 装 beam（原来是常数 0）。
         // 两个通道的约定见 GrassVertexChannelTest —— 改了这里两条片段着色器必须同步。
+        // 萤火虫的逐叶遮挡：近处的草把影子投在远处的草上（与太阳那条方向相反，
+        // 见 GrassBladeLighting.occlusionFromFrontOf）。由 GrassGL 限频算好。
+        float fireflyShadow = sd.bladeFireflyShadow(bladeIndex);
+
         float rootTip = GrassBladeLighting.tipFraction(0, size);
-        cursor = putVertex(out, cursor, baseX - hw0, baseY, r, g, b, rootTip, 0.0f, beam);
-        cursor = putVertex(out, cursor, baseX + hw0, baseY, r, g, b, rootTip, 1.0f, beam);
+        cursor = putVertex(out, cursor, baseX - hw0, baseY, r, g, b, rootTip, 0.0f, beam,
+                fireflyShadow);
+        cursor = putVertex(out, cursor, baseX + hw0, baseY, r, g, b, rootTip, 1.0f, beam,
+                fireflyShadow);
 
         for (int k = 1; k <= size; k++) {
             float px = mBladeXY[k * 2];
             float py = mBladeXY[k * 2 + 1];
             float hw = mBladeHalfWidth[k];
             float tip = GrassBladeLighting.tipFraction(k, size);
-            cursor = putVertex(out, cursor, px - hw, py, r, g, b, tip, 0.0f, beam);
-            cursor = putVertex(out, cursor, px + hw, py, r, g, b, tip, 1.0f, beam);
+            cursor = putVertex(out, cursor, px - hw, py, r, g, b, tip, 0.0f, beam,
+                    fireflyShadow);
+            cursor = putVertex(out, cursor, px + hw, py, r, g, b, tip, 1.0f, beam,
+                    fireflyShadow);
         }
         return cursor;
     }
@@ -624,12 +662,16 @@ final class GrassRenderDataBuilder {
         key = 31 * key + Math.round(sd.grassTintH * 512.0f);
         key = 31 * key + Math.round(sd.grassTintS * 512.0f);
         key = 31 * key + Math.round(sd.grassTintV * 512.0f);
+        // 萤火虫阴影变了就要重建顶点数组。**不能只靠 bladeAnglesDirty** —— 那是"风停了
+        // 就不摆"的量，风一静阴影就被冻在上一次的样子。这里用一个版本号，谁重算谁加一。
+        key = 31 * key + sd.fireflyShadowVersion;
         return key;
     }
 
     private int putVertex(float[] out, int cursor,
-            float x, float y, float r, float g, float b, float a, float s, float t) {
-        if (cursor + 8 > out.length) return out.length + 1;
+            float x, float y, float r, float g, float b, float a, float s, float t,
+            float fireflyShadow) {
+        if (cursor + FLOATS_PER_GRASS_VERTEX > out.length) return out.length + 1;
         out[cursor++] = x;
         out[cursor++] = y;
         out[cursor++] = r;
@@ -638,6 +680,7 @@ final class GrassRenderDataBuilder {
         out[cursor++] = a;
         out[cursor++] = s;
         out[cursor++] = t;
+        out[cursor++] = fireflyShadow;
         return cursor;
     }
 
@@ -673,6 +716,19 @@ final class GrassRenderDataBuilder {
 
     /** 精灵顶点格式：x, y, u, v, a。GLES 与 Vulkan 共用同一套。 */
     static final int FLOATS_PER_SPRITE_VERTEX = 5;
+
+    /**
+     * 草叶顶点格式：x, y, r, g, b, 叶尖位置, u, 逐叶受光, 萤火虫阴影。
+     *
+     * <p>GLES 与 Vulkan **共用同一份几何**，所以这个数改了另一侧也要跟着改：
+     * Vulkan 那边是 {@code GrassVertex} 与它的 {@code static_assert}
+     * （{@code grassvk_jni.cpp}）。Vulkan 的着色器不读第 9 个分量，那条管线只声明前
+     * 三个属性 —— 顶点属性多出来是合法的，只要 stride 盖得住。
+     */
+    static final int FLOATS_PER_GRASS_VERTEX = 9;
+
+    /** 草叶顶点步长（字节），{@code glVertexAttribPointer} 要用。 */
+    static final int GRASS_VERTEX_STRIDE_BYTES = FLOATS_PER_GRASS_VERTEX * 4;
 
     private int putSpriteVertex(float[] out, int cursor, float x, float y, float u, float v, float a) {
         if (cursor + FLOATS_PER_SPRITE_VERTEX > out.length) return out.length + 1;
