@@ -259,7 +259,12 @@ public abstract class BasePluginEngine implements WallpaperEngine {
     @Override
     public void onOffsetsChanged(float xOffset, float yOffset, float xStep, float yStep,
                                   int xPixels, int yPixels) {
-        if (mScene != null) mScene.setOffset(xOffset, yOffset, xPixels, yPixels);
+        if (mScene != null) {
+            // 步长要单独播下去：setOffset 的四个参数里没有它，而"这个桌面到底能不能滚"
+            // 只有它说得清（不滚动的桌面固定上报 xOffset=0，与"两页桌面的第 1 页"无法区分）。
+            mScene.setScrollStep(xStep);
+            mScene.setOffset(xOffset, yOffset, xPixels, yPixels);
+        }
     }
 
     @Override

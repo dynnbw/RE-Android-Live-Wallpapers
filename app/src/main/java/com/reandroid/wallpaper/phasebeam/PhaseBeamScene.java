@@ -47,6 +47,8 @@ final class PhaseBeamScene {
     float mBrightness = 1.0f;
     boolean mRecolorEnabled = false;
     boolean mCanScroll = true;
+    /** 桌面能不能随屏滚动；见 {@link #setScrollStep(float)}。 */
+    boolean mScrollable = true;
     String mTheme = "phasebeam";
     float mSpeedMultiplier = 1.0f;
 
@@ -105,9 +107,23 @@ final class PhaseBeamScene {
     }
 
     void setOffset(float xOffset) {
-        if (mCanScroll) {
-            mXOffset = xOffset;
-        }
+        if (!mCanScroll) return;
+        /*
+         * 不滚动的桌面会固定上报 xOffset=0，而气泡生成在 x∈[0,3]、屏幕只有 [-1,1]，
+         * 全靠偏移量把它们推进画面 —— 照单全收就只剩右半边有气泡、左半边空着。
+         *
+         * xOffset=0 单独看有歧义（两页桌面的第 1 页也是 0），所以只在桌面**自己说了
+         * 它不滚动**时才回退到居中（预览用的那一档）；桌面报了什么非 0 的值一律照旧尊重。
+         */
+        mXOffset = (!mScrollable && xOffset == 0.0f) ? 0.5f : xOffset;
+    }
+
+    /**
+     * 桌面能不能随屏滚动，由 {@code onOffsetsChanged} 的步长参数告知。
+     * 默认按"能"处理 —— 没有这个信息的调用路径维持原行为。
+     */
+    void setScrollStep(float xStep) {
+        mScrollable = xStep > 0.0f;
     }
 
     void reloadPreferences(Resources resources) {

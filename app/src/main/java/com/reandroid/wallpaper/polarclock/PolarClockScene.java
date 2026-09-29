@@ -196,6 +196,20 @@ final class PolarClockScene {
         r.angle = angle;
     }
 
+    /**
+     * 桌面报来的偏移量折算成实际该用的值。
+     *
+     * <p>表盘中心画在 {@code 宽 * (1 - 偏移)} 处，偏移 0.5 才是居中。桌面不支持随屏
+     * 滚动时会固定上报 0，于是中心被推到屏幕右边缘、只剩左半边 —— 实测澎湃 3 的小米
+     * 桌面正是如此（步长报 -1，见 {@code GLESScene.setScrollStep}）。
+     *
+     * <p>{@code xOffset = 0} 单独看有歧义（两页桌面的第 1 页也是 0），所以只在桌面
+     * **自己说了它不滚动**时才回退；桌面报了什么非 0 的值一律照旧尊重。
+     */
+    static float effectiveOffsetX(boolean launcherScrolls, float xOffset) {
+        return (!launcherScrolls && xOffset == 0.0f) ? 0.5f : xOffset;
+    }
+
     /** 秒环：一分钟走一圈，直接用毫秒取余，不看日历字段。 */
     static float secondsAngle(long timeMs) {
         return (float) (timeMs % 60000L) / 60000.0f;

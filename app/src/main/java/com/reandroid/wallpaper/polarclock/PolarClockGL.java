@@ -65,7 +65,12 @@ public class PolarClockGL extends GLESScene {
     // 用于获取当前时间的日历实例
     private Time mCalendar;
     // X轴偏移量（预览模式下使用）
-    private float mOffsetX = 0.0f;
+    /**
+     * X 轴偏移，0.5 为居中（表盘中心画在 {@code 宽 * (1 - 偏移)}）。
+     * 初值取居中而不是 0：第一帧到第一次回调之间也要是正常构图，
+     * 否则会先在右边缘闪一下。
+     */
+    private float mOffsetX = 0.5f;
 
     // OpenGL程序和句柄
     private int mProgram;               // GL着色器程序ID
@@ -184,7 +189,7 @@ public class PolarClockGL extends GLESScene {
     public void setOffset(float xOffset, float yOffset, int xPixels, int yPixels) {
         // 非预览模式下更新X轴偏移
         if (!mPreview) {
-            mOffsetX = xOffset;
+            mOffsetX = PolarClockScene.effectiveOffsetX(canScrollLauncher(), xOffset);
         }
     }
 

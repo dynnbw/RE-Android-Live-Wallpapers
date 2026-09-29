@@ -152,6 +152,23 @@ public class PolarClockSceneTest {
                 Float.isNaN(v) || Float.isInfinite(v));
     }
 
+    /**
+     * 桌面不支持随屏滚动时的偏移回退。
+     *
+     * <p>表盘中心画在 {@code 宽 * (1 - 偏移)}，偏移 0 会把中心推到屏幕右边缘、只剩
+     * 左半边。实测澎湃 3 的小米桌面正是报 {@code xOffset=0, xStep=-1}。
+     */
+    @Test
+    public void offsetFallsBackWhenTheLauncherCannotScroll() {
+        assertEquals("不滚动的桌面 + 上报 0 → 居中",
+                0.5f, PolarClockScene.effectiveOffsetX(false, 0.0f), EPS);
+        assertEquals("能滚动的桌面报 0 是第 1 页，原样保留",
+                0.0f, PolarClockScene.effectiveOffsetX(true, 0.0f), EPS);
+        assertEquals("非 0 的偏移一律照收",
+                0.7f, PolarClockScene.effectiveOffsetX(false, 0.7f), EPS);
+        assertEquals(0.25f, PolarClockScene.effectiveOffsetX(true, 0.25f), EPS);
+    }
+
     // ─────────── 环厚档位 ───────────
 
     /** 参考屏的宽度与它当年的外圈半径。改这两个数就是改"仿的是哪块屏"。 */

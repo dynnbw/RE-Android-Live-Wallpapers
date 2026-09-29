@@ -88,6 +88,12 @@ public class PhaseBeamGL extends GLESScene {
         mScene.setOffset(xOffset);
     }
 
+    @Override
+    public void setScrollStep(float xStep) {
+        super.setScrollStep(xStep);
+        mScene.setScrollStep(xStep);
+    }
+
     /** Called by settings UI to reload preferences at runtime */
     public void reloadPreferences() {
         mScene.reloadPreferences(mResources);
