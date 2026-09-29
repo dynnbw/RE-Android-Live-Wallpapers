@@ -88,6 +88,13 @@ public abstract class GLESWallpaper extends WallpaperService {
     }
 
     private class GLESEngine extends Engine implements Runnable {
+        /** 连续这么多帧呈现失败才放弃渲染（每次失败都会先尝试重建 EGL surface）。 */
+        private static final int MAX_SWAP_FAILURES = 30;
+        /** 重建 surface 前后的退避，避免失败时空转烧 CPU。 */
+        private static final long RETRY_SLEEP_MS = 200L;
+        /** 等渲染线程退出的上限；跑在主线程上，所以取短。 */
+        private static final long JOIN_TIMEOUT_MS = 500L;
+
         private volatile Thread mThread;
         private volatile boolean mRunning = false;
         private boolean mVisible = false;
@@ -117,11 +124,13 @@ public abstract class GLESWallpaper extends WallpaperService {
             // 若直接读字段，join 期间线程退出会导致 mThread.isAlive() NPE。
             Thread thread = mThread;
             if (thread != null) {
-                try { thread.join(2000); } catch (InterruptedException ignored) {}
+                // 上限取短：这个 join 跑在主线程上（onVisibilityChanged / onDestroy），
+                // 而实测主线程在这条路径上被按住过 500-668ms。
+                try { thread.join(JOIN_TIMEOUT_MS); } catch (InterruptedException ignored) {}
                 if (thread.isAlive()) {
                     // 超时未退出：保留引用，由渲染线程退出时自行清理，
                     // 避免旧线程未结束时又启动新线程导致并发渲染/EGL互相销毁。
-                    Log.w(TAG, "Render thread did not exit within 2s");
+                    Log.w(TAG, "渲染线程 " + JOIN_TIMEOUT_MS + "ms 内未退出");
                 }
             }
             synchronized (mSceneLock) {
@@ -359,6 +368,7 @@ public abstract class GLESWallpaper extends WallpaperService {
                 long targetFrameTimeMs = 1000 / targetFps;
                 logD("目标FPS: " + targetFps);
 
+                int swapFailures = 0;
                 while (mRunning) {
                     long now = System.currentTimeMillis();
                     try {
@@ -371,10 +381,39 @@ public abstract class GLESWallpaper extends WallpaperService {
                     }
                     if (!EGL14.eglSwapBuffers(display, eglSurface)) {
                         int error = EGL14.eglGetError();
-                        Log.e(TAG, "eglSwapBuffers失败: 0x" + Integer.toHexString(error));
-                        mRunning = false;
-                        break;
+                        swapFailures++;
+                        Log.e(TAG, "eglSwapBuffers失败(" + swapFailures + "/" + MAX_SWAP_FAILURES
+                                + "): 0x" + Integer.toHexString(error));
+                        if (swapFailures >= MAX_SWAP_FAILURES) {
+                            mRunning = false;
+                            break;
+                        }
+                        /*
+                         * 一次失败多半只是 surface 换了（旋转、多窗口、桌面重启），旧句柄
+                         * 已经失效。重建后再试 —— 别当场结束循环，循环一停就只能等下一次
+                         * surface / 可见性回调才能复活，那正是"卡住"的来源。
+                         */
+                        EGL14.eglMakeCurrent(display, EGL14.EGL_NO_SURFACE,
+                                EGL14.EGL_NO_SURFACE, EGL14.EGL_NO_CONTEXT);
+                        if (eglSurface != EGL14.EGL_NO_SURFACE) {
+                            EGL14.eglDestroySurface(display, eglSurface);
+                        }
+                        eglSurface = EGL14.EGL_NO_SURFACE;
+                        Surface retrySurface = mHolder == null ? null : mHolder.getSurface();
+                        if (retrySurface != null && retrySurface.isValid()) {
+                            eglSurface = EGL14.eglCreateWindowSurface(display, config,
+                                    retrySurface, new int[] {EGL14.EGL_NONE}, 0);
+                        }
+                        if (eglSurface == EGL14.EGL_NO_SURFACE) {
+                            // 没有可用 surface，等系统回调；别空转烧 CPU。
+                            try { Thread.sleep(RETRY_SLEEP_MS); } catch (InterruptedException ignored) {}
+                            continue;
+                        }
+                        EGL14.eglMakeCurrent(display, eglSurface, eglSurface, context);
+                        try { Thread.sleep(RETRY_SLEEP_MS); } catch (InterruptedException ignored) {}
+                        continue;
                     }
+                    swapFailures = 0;
                     long frameTime = System.currentTimeMillis() - now;
                     long sleep = Math.max(1, targetFrameTimeMs - frameTime);
                     try { Thread.sleep(sleep); } catch (InterruptedException ignored) {}

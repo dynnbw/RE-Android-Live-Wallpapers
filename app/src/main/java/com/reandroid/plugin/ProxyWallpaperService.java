@@ -59,6 +59,25 @@ public class ProxyWallpaperService extends WallpaperService {
         private final Object mLock = new Object();
         private final FrameRateManager mFrameRate = new FrameRateManager(TAG);
 
+        /**
+         * 平台报过不可见、但之后仍有回调（偏移 / surface / 触摸 / 指令）在驱动我们。
+         *
+         * <p>MIUI 的可见性事件是成串来的：实测打开一次应用，0.56 秒内回调 26 次，
+         * 甚至出现同一毫秒内 true/false 成对。只要最后一个事件是 false 而壁纸其实
+         * 正在显示，渲染循环就会永久停在 {@code mLock.wait()} 上 —— 表现就是
+         * "壁纸卡住，进一次应用再退出来才动"。而其它回调说明系统正在用我们，那就该画。
+         */
+        private volatile boolean mDriven;
+
+        /** 仅用于状态变化时打一行日志，别每帧刷。 */
+        private boolean mRendering;
+
+        /** 停泊的上限：就算没有任何事件，也会醒来重新判断一次，不会无限期卡住。 */
+        private static final long PARK_TIMEOUT_MS = 2000L;
+
+        /** destroyEngine 等渲染线程退出的上限（跑在主线程上，所以取短）。 */
+        private static final long JOIN_TIMEOUT_MS = 500L;
+
         @Override
         public void onCreate(SurfaceHolder surfaceHolder) {
             super.onCreate(surfaceHolder);
@@ -114,7 +133,12 @@ public class ProxyWallpaperService extends WallpaperService {
             if (mRenderThread != null) {
                 synchronized (mLock) { mLock.notifyAll(); }
                 mRenderThread.interrupt();
-                long deadline = System.currentTimeMillis() + 2000L;
+                /*
+                 * 上限取得短：这个 join 跑在**主线程**上（可见性/surface 回调都是），
+                 * 而实测主线程在这条路径上被按住过 500-668ms。线程没退干净不算致命 ——
+                 * 下面的注释说明了它会自行清理；把主线程卡住才是更糟的那个。
+                 */
+                long deadline = System.currentTimeMillis() + JOIN_TIMEOUT_MS;
                 while (mRenderThread.isAlive() && System.currentTimeMillis() < deadline) {
                     try {
                         mRenderThread.join(Math.max(1L, deadline - System.currentTimeMillis()));
@@ -123,7 +147,7 @@ public class ProxyWallpaperService extends WallpaperService {
                     }
                 }
                 if (mRenderThread.isAlive()) {
-                    Log.w(TAG, "Render thread did not exit within 2s");
+                    Log.w(TAG, "渲染线程 " + JOIN_TIMEOUT_MS + "ms 内未退出，交给它自行清理");
                 }
                 mRenderThread = null;
             }
@@ -157,6 +181,10 @@ public class ProxyWallpaperService extends WallpaperService {
         public void onVisibilityChanged(boolean visible) {
             Log.d(TAG, "onVisibilityChanged visible=" + visible + " engine=" + (mEngine != null));
             mVisible = visible;
+            if (!visible) {
+                // 一次"权威的隐藏"清掉驱动标记，下次重新累积。
+                mDriven = false;
+            }
             if (visible) {
                 synchronized (mLock) { mLock.notifyAll(); }
                 // Detect plugin ID change (user switched to a different wallpaper
@@ -197,7 +225,10 @@ public class ProxyWallpaperService extends WallpaperService {
             Log.d(TAG, "ProxyEngine.onSurfaceChanged: " + width + "x" + height
                     + " engine=" + (mEngine != null));
             mLastFormat = format; mLastWidth = width; mLastHeight = height;
+            // 系统在给我们配 surface，等于说这块画面在用（见 mDriven）。
+            mDriven = true;
             synchronized (mLock) {
+                mLock.notifyAll();
                 if (mEngine != null) {
                     try {
                         mEngine.setPreview(isPreview());
@@ -219,7 +250,10 @@ public class ProxyWallpaperService extends WallpaperService {
         public void onOffsetsChanged(float xOffset, float yOffset,
                                      float xOffsetStep, float yOffsetStep,
                                      int xPixelOffset, int yPixelOffset) {
+            // 桌面在滚动就是在用它 —— 顺带把可能停泊住的渲染循环叫醒（见 mDriven）。
+            mDriven = true;
             synchronized (mLock) {
+                mLock.notifyAll();
                 if (mEngine != null) {
                     try {
                         mEngine.onOffsetsChanged(xOffset, yOffset, xOffsetStep, yOffsetStep,
@@ -233,7 +267,10 @@ public class ProxyWallpaperService extends WallpaperService {
 
         @Override
         public void onTouchEvent(MotionEvent event) {
+            // 摸得到就说明它在屏幕上（见 mDriven）。
+            mDriven = true;
             synchronized (mLock) {
+                mLock.notifyAll();
                 if (mEngine != null) {
                     try {
                         mEngine.onTouchEvent(event);
@@ -269,7 +306,11 @@ public class ProxyWallpaperService extends WallpaperService {
                     Log.d(TAG, "Render thread started, engine=" + (mEngine != null));
                     int frameCount = 0;
                     while (mRunning) {
-                        if (mVisible) {
+                        if (mVisible || mDriven) {
+                            if (!mRendering) {
+                                mRendering = true;
+                                Log.d(TAG, "渲染恢复: visible=" + mVisible + " driven=" + mDriven);
+                            }
                             long frameStart = System.currentTimeMillis();
                             mFrameRate.syncPerfSettingsIfNeeded(frameStart);
                             synchronized (mLock) {
@@ -292,8 +333,15 @@ public class ProxyWallpaperService extends WallpaperService {
                             long sleepMs = Math.max(1L, mFrameRate.getTargetFrameMs() - frameCost);
                             try { Thread.sleep(sleepMs); } catch (InterruptedException ignored) {}
                         } else {
+                            if (mRendering) {
+                                mRendering = false;
+                                Log.d(TAG, "渲染停泊: 平台报不可见且无其它回调");
+                            }
                             synchronized (mLock) {
-                                try { mLock.wait(); } catch (InterruptedException ignored) {}
+                                try {
+                                    mLock.wait(PARK_TIMEOUT_MS);
+                                } catch (InterruptedException ignored) {
+                                }
                             }
                         }
                     }

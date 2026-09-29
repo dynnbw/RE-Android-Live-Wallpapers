@@ -113,12 +113,32 @@ public class SettingsMainFragment extends PreferenceFragmentCompat {
         });
     }
 
+    /**
+     * 这个 assets 条目是不是一个插件目录。
+     *
+     * <p>{@code am.list("")} 会把**文件**也列出来（发布包里就混进过一个 {@code OWNERS}），
+     * 拿它去拼 {@code info.json} 只会抛 FileNotFoundException。先确认目录里真有
+     * info.json 再当插件，这样那个异常就重新变得有意义 —— 它只会在**真的**有插件
+     * 的 info.json 却读不动时出现。
+     */
+    private static boolean hasInfoJson(AssetManager am, String dir) {
+        try {
+            for (String child : am.list(dir)) {
+                if ("info.json".equals(child)) return true;
+            }
+        } catch (Exception ignored) {
+            // 不是目录、或读不动 —— 都不是插件，安静跳过。
+        }
+        return false;
+    }
+
     private void addDynamicEntries(PreferenceScreen screen) {
         AssetManager am = requireContext().getAssets();
         try {
             String[] dirs = am.list("");
             if (dirs == null) return;
             for (String dir : dirs) {
+                if (!hasInfoJson(am, dir)) continue;
                 String jsonPath = dir + "/info.json";
                 String fragmentClass = null;
                 String label = null;
