@@ -26,7 +26,6 @@ import java.util.Locale;
  */
 public final class DebugExporter {
     private static final String TAG = "DebugExporter";
-    private static final int LOGCAT_MAX_LINES = 2000;
 
     private DebugExporter() {}
 
@@ -80,7 +79,17 @@ public final class DebugExporter {
 
         try (FileWriter writer = new FileWriter(file)) {
             writeHeader(writer, context);
-            writer.write("\n--- LOGCAT (last " + LOGCAT_MAX_LINES + " lines) ---\n\n");
+            /*
+             * 全量导出，不截断。
+             *
+             * logcat -d 转储的是环形缓冲，而缓冲按**大小**封顶（默认 256 KB/个），
+             * 不随时间无界增长 —— 实测一台机器的全量就是 ~2000 行 / 264 KB，发得动。
+             *
+             * 以前这里截前 2000 行，本意是"只要最近的"，可 logcat 是**从旧到新**输出、
+             * 代码又是从头读的，于是留下的是**最旧**的 2000 行：缓冲一满，出事那一段
+             * 恰好被切掉。索性不截。
+             */
+            writer.write("\n--- LOGCAT (whole buffer) ---\n\n");
             writeLogcat(writer);
         } catch (Exception e) {
             Log.e(TAG, "Failed to collect debug logs", e);
@@ -114,11 +123,9 @@ public final class DebugExporter {
                     new String[]{"logcat", "-d", "-v", "threadtime"});
             reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
             String line;
-            int count = 0;
-            while ((line = reader.readLine()) != null && count < LOGCAT_MAX_LINES) {
+            while ((line = reader.readLine()) != null) {
                 writer.write(line);
                 writer.write('\n');
-                count++;
             }
         } finally {
             if (reader != null) {
