@@ -89,8 +89,8 @@
     <string name="wallpaper_vis1">視覺化器</string>
     <string name="wallpaper_vis2">聲波</string>
     <string name="wallpaper_vis3">頻譜</string>
-    <string name="wallpaper_vis4">音量表</string>
-    <string name="wallpaper_vis5">多重可視化</string>
+    <string name="wallpaper_vis4">VU 表</string>
+    <string name="wallpaper_vis5">繽紛</string>
     <string name="wallpaper_vis6">環形頻譜</string>
 
     <!-- Polar clock: title of settings activity -->

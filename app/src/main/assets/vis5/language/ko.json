@@ -1,6 +1,6 @@
 {
-  "title": "다중 시각화",
-  "settings_entry": "다중 시각화",
+  "title": "다수",
+  "settings_entry": "다수",
   "pref_vis5_wave_mode": "파형 모드",
   "musicvis_wave_mode_label_0": "PCM 파형",
   "musicvis_wave_mode_label_1": "FFT 스펙트럼",

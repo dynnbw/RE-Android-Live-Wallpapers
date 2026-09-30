@@ -64,8 +64,8 @@
     <string name="wallpaper_vis1">Visualizador</string>
     <string name="wallpaper_vis2">Forma de onda</string>
     <string name="wallpaper_vis3">Espectro</string>
-    <string name="wallpaper_vis4">Medidor VU</string>
-    <string name="wallpaper_vis5">Múltiple</string>
+    <string name="wallpaper_vis4">Indicador de volumen</string>
+    <string name="wallpaper_vis5">Varios</string>
     <string name="wallpaper_vis6">Espectro circular</string>
 
     <!-- Polar clock: title of settings activity -->

@@ -89,8 +89,8 @@
     <string name="wallpaper_vis1">可视化器</string>
     <string name="wallpaper_vis2">声波</string>
     <string name="wallpaper_vis3">频谱</string>
-    <string name="wallpaper_vis4">音量表</string>
-    <string name="wallpaper_vis5">多重可视化</string>
+    <string name="wallpaper_vis4">VU 计</string>
+    <string name="wallpaper_vis5">缤纷</string>
 
     <!-- Wallpaper showing luminous dots -->
     <string name="wallpaper_luminousdots">发光点</string>

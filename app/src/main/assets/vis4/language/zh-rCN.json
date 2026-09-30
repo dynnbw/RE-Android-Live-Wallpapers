@@ -1,6 +1,6 @@
 {
-  "title": "音量表",
-  "settings_entry": "VU计",
+  "title": "VU 计",
+  "settings_entry": "VU 计",
   "musicvis_bg_color_label_#000000": "黑色",
   "musicvis_bg_color_label_#300303": "暗红",
   "musicvis_bg_color_label_#50330": "暗蓝",

@@ -1,6 +1,6 @@
 {
-  "title": "볼륨 미터",
-  "settings_entry": "볼륨 미터",
+  "title": "VU 미터",
+  "settings_entry": "VU 미터",
   "musicvis_bg_color_label_#000000": "검정",
   "musicvis_bg_color_label_#300303": "진한 빨강",
   "musicvis_bg_color_label_#50330": "진한 파랑",
