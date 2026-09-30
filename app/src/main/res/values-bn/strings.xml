@@ -60,6 +60,7 @@
     <string name="wallpaper_nebula">নীহারিকা</string>
 
     <!-- মিউজিক ভিজুয়ালাইজেশন ওয়ালপেপার -->
+    <string name="wallpaper_vis1">ভিজুয়ালাইজার</string>
     <string name="wallpaper_vis2">ওয়েভফর্ম</string>
     <string name="wallpaper_vis3">স্পেকট্রাম</string>
     <string name="wallpaper_vis4">ভিইউ মিটার</string>

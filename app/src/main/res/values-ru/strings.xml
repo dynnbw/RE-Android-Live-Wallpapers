@@ -60,6 +60,7 @@
     <string name="wallpaper_nebula">Туманность</string>
 
     <!-- Обои музыкальной визуализации -->
+    <string name="wallpaper_vis1">Визуализатор</string>
     <string name="wallpaper_vis2">Форма волны</string>
     <string name="wallpaper_vis3">Спектр</string>
     <string name="wallpaper_vis4">VU-метр</string>

@@ -86,6 +86,7 @@
     <string name="wallpaper_nebula">星云</string>
 
     <!-- Music visualization wallpapers -->
+    <string name="wallpaper_vis1">可视化器</string>
     <string name="wallpaper_vis2">声波</string>
     <string name="wallpaper_vis3">频谱</string>
     <string name="wallpaper_vis4">音量表</string>

@@ -61,6 +61,7 @@
     <string name="wallpaper_nebula">Nebulosa</string>
 
     <!-- Music visualization wallpapers -->
+    <string name="wallpaper_vis1">Visualizador</string>
     <string name="wallpaper_vis2">Forma de onda</string>
     <string name="wallpaper_vis3">Espectro</string>
     <string name="wallpaper_vis4">Medidor VU</string>

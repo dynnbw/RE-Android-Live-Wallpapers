@@ -60,6 +60,7 @@
     <string name="wallpaper_nebula">Nébuleuse</string>
 
     <!-- Fonds d’écran de visualisation musicale -->
+    <string name="wallpaper_vis1">Visualiseur</string>
     <string name="wallpaper_vis2">Forme d’onde</string>
     <string name="wallpaper_vis3">Spectre</string>
     <string name="wallpaper_vis4">VU-mètre</string>

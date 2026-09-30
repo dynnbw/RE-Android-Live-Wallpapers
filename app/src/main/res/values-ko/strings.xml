@@ -69,6 +69,7 @@
     <string name="wallpaper_nebula">성운</string>
 
     <!-- Music visualization wallpapers -->
+    <string name="wallpaper_vis1">비주얼라이저</string>
     <string name="wallpaper_vis2">음파</string>
     <string name="wallpaper_vis3">주파수 스펙트럼</string>
     <string name="wallpaper_vis4">볼륨 미터</string>
