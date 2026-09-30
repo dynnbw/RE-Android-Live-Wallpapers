@@ -28,6 +28,8 @@ public abstract class AudioVisBase {
     // Rendering mode
     protected boolean mUseTriangleStrip = true;
     protected boolean mHasPrefInit = false;
+    /** 横向比例是否跟随屏幕短边（见 baseScale()）；false = AOSP 原版把“屏幕短边 = 480 行”写死。 */
+    protected boolean mFitScreen = false;
 
     // HSL recolor
     public boolean mRecolorEnabled;
@@ -56,6 +58,7 @@ public abstract class AudioVisBase {
     protected void readPrefs(SharedPreferences p) {
         mFftSize = safeParseInt(p.getString("musicvis_fft_size", "512"), 512);
         mUseTriangleStrip = p.getBoolean("musicvis_use_triangle_strip", true);
+        mFitScreen = p.getBoolean("musicvis_fit_screen", false);
         mRecolorEnabled = p.getBoolean("musicvis_recolor", false);
         mRecolorDynamic = "dynamic".equals(p.getString("musicvis_recolor_mode", "static"));
         // 取色器(颜色取代原来的 色调/饱和度/亮度 三个滑块):默认 #FF0000
@@ -87,6 +90,23 @@ public abstract class AudioVisBase {
 
     protected static int safeGetInt(SharedPreferences p, String k, int d) {
         try { return p.getInt(k, d); } catch (ClassCastException e) { return d; }
+    }
+
+    /**
+     * 横向比例基准：每个模型单位占多少归一化宽度。
+     *
+     * <p>AOSP 原版把「屏幕短边 = 480 行」写死了：{@code 0.004165f ≈ 2/480}，于是竖屏恒有约 480 条可见，
+     * 其余约 544 条落在视口外
+     *
+     * <p>打开「适应屏幕」后改成 {@code 2 / min(短边像素, 1024)}：每个采样约占 1 物理像素，
+     * 屏幕上放得下多少采样就显示多少 —— 短边 ≥ 1024 的机型上 1024 条全部可见；
+     * 短边 480 的屏仍等于原版（0.004165）；短边 < 1024 时每条仍 ≥ 1 像素，不会出现摩尔纹。
+     */
+    protected float baseScale() {
+        if (!mFitScreen) {
+            return 0.004165f;
+        }
+        return 2f / Math.min(Math.min(mWidth, mHeight), 1024);
     }
 
     // ---- lifecycle ----

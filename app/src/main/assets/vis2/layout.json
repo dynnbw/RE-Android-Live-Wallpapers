@@ -24,6 +24,13 @@
     },
     {
       "type": "switch",
+      "key": "musicvis_fit_screen",
+      "title": "musicvis_fit_screen",
+      "summary": "musicvis_fit_screen_summary",
+      "default": "false"
+    },
+    {
+      "type": "switch",
       "key": "musicvis_recolor",
       "title": "musicvis_recolor",
       "default": "false"

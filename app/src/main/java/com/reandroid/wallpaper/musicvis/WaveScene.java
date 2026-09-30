@@ -625,7 +625,9 @@ public final class WaveScene extends AudioVisBase {
         }
         Mat4.orthoM(mProj, left, right, bottom, top, -1f, 1f);
 
-        float scale = 0.004165f * (1.0f + 2f * Math.abs((float) Math.sin(Math.toRadians(mYRotation))));
+        // 基准比例默认是 AOSP 的 0.004165f(≈2/480，竖屏恒有约 480 条可见、其余在屏外)；
+        // 打开 musicvis_fit_screen 后按屏幕短边缩放，采样与物理像素约 1:1。见 AudioVisBase#baseScale。
+        float scale = baseScale() * (1.0f + 2f * Math.abs((float) Math.sin(Math.toRadians(mYRotation))));
         Mat4.setIdentityM(mModel);
         Mat4.rotateM(mModel, mYRotation, 0f, 0f, 1f);
         Mat4.scaleM(mModel, scale, scale, scale);
