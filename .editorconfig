@@ -1,0 +1,20 @@
+root = true
+
+# 仓库现有风格：4 空格、无制表符、UTF-8。
+#
+# **刻意不写 end_of_line**：这个仓库在 Windows 上检出时行尾是 CRLF（git 的 autocrlf
+# 负责转换，仓库里存的是 LF）。在这里写死 lf 会让编辑器与 git 对着干，凭空制造整文件
+# 的行尾改动。
+
+[*]
+charset = utf-8
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+[*.{json,yml,yaml}]
+indent_size = 2
+
+[*.{md,markdown}]
+trim_trailing_whitespace = false

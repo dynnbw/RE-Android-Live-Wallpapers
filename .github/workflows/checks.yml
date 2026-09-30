@@ -20,6 +20,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          # 格式检查要比对"本次改动"，需要完整历史与 origin/main
+          fetch-depth: 0
 
       - name: Install glslangValidator
         run: |
@@ -33,3 +36,27 @@ jobs:
 
       - name: Run checks
         run: python3 scripts/ci_checks.py
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      # 比较基准：PR 用目标分支的 sha，push 用上一个提交（新分支时是全零，退回 origin/main）
+      - name: Pick the comparison base
+        id: base
+        run: |
+          if [ -n "${{ github.event.pull_request.base.sha }}" ]; then
+            echo "ref=${{ github.event.pull_request.base.sha }}" >> "$GITHUB_OUTPUT"
+          elif [ -n "${{ github.event.before }}" ] \
+               && [ "${{ github.event.before }}" != "0000000000000000000000000000000000000000" ]; then
+            echo "ref=${{ github.event.before }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "ref=origin/main" >> "$GITHUB_OUTPUT"
+          fi
+
+      # 只查**本次改动过**的 Java 文件（棘轮）—— 历史遗留的格式不会被拿来报红，
+      # 但新写/改到的代码必须符合 AOSP 风格与 4 空格。见 scripts/format.py。
+      - name: Check formatting
+        run: python3 scripts/format.py --base "${{ steps.base.outputs.ref }}"
