@@ -1,0 +1,35 @@
+name: checks
+
+# 只做代码检查，**不构建** —— 不装 Android SDK / NDK、不跑 Gradle，所以几十秒就出结果。
+# 查的是"错了会静默发布出去、构建却照样成功"的那几类，见 scripts/ci_checks.py 的开头。
+#
+# 仓库里的单元测试（包括着色器闸门）要 Gradle 才能跑，刻意不在这里 —— 那些仍然本地跑。
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install glslangValidator
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y glslang-tools
+
+      # 装不上就**直接失败**，不要让它悄悄跳过着色器那一步：本仓库的
+      # GrassShaderCompileTest 正是栽在"工具找不到 → Assume 跳过 → 报绿"上。
+      - name: Verify glslangValidator is present
+        run: glslangValidator --version
+
+      - name: Run checks
+        run: python3 scripts/ci_checks.py
