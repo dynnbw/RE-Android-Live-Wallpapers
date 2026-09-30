@@ -28,8 +28,10 @@ public class MusicVisVisualizerGL extends GLESScene {
 
     private int mProgram;
     private int mPosLoc;
+    private int mCornerLoc;
     private int mMvpLoc;
     private int mColorLoc;
+    private int mFeatherLoc;
     private FloatBuffer mVertexBuffer;
 
     private final float[] mProj = new float[16];
@@ -85,6 +87,9 @@ public class MusicVisVisualizerGL extends GLESScene {
         if (mProgram == 0) {
             return;
         }
+        // 点的边缘有柔化（原版 setAntiAlias），要靠混合叠出来
+        GLES30.glEnable(GLES30.GL_BLEND);
+        GLES30.glBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ONE_MINUS_SRC_ALPHA);
 
         mScene.updateTrace();
         final int floats = mScene.vertexFloats();
@@ -99,11 +104,21 @@ public class MusicVisVisualizerGL extends GLESScene {
         GLES30.glUseProgram(mProgram);
         GLES30.glUniformMatrix4fv(mMvpLoc, 1, false, mProj, 0);
         GLES30.glUniform4fv(mColorLoc, 1, LINE_COLOR, 0);
+        GLES30.glUniform1f(mFeatherLoc, mScene.feather());
+
+        // 一个采样一个点（两个三角形），顶点是 (x, y, 角 x, 角 y)，见 VisualizerScene.buildDots
+        final int stride = 4 * 4;
+        mVertexBuffer.position(0);
         GLES30.glEnableVertexAttribArray(mPosLoc);
-        GLES30.glVertexAttribPointer(mPosLoc, 2, GLES30.GL_FLOAT, false, 0, mVertexBuffer);
-        // 带子：每个采样两个顶点（上下两条边），见 VisualizerScene.buildRibbon
-        GLES30.glDrawArrays(GLES30.GL_TRIANGLE_STRIP, 0, floats / 2);
+        GLES30.glVertexAttribPointer(mPosLoc, 2, GLES30.GL_FLOAT, false, stride, mVertexBuffer);
+        mVertexBuffer.position(2);
+        GLES30.glEnableVertexAttribArray(mCornerLoc);
+        GLES30.glVertexAttribPointer(mCornerLoc, 2, GLES30.GL_FLOAT, false, stride, mVertexBuffer);
+
+        GLES30.glDrawArrays(GLES30.GL_TRIANGLES, 0, floats / 4);
+
         GLES30.glDisableVertexAttribArray(mPosLoc);
+        GLES30.glDisableVertexAttribArray(mCornerLoc);
     }
 
     private void initGLIfNeeded() {
@@ -117,11 +132,14 @@ public class MusicVisVisualizerGL extends GLESScene {
             return;
         }
         mPosLoc = GLES30.glGetAttribLocation(mProgram, "aPosition");
+        mCornerLoc = GLES30.glGetAttribLocation(mProgram, "aCorner");
         mMvpLoc = GLES30.glGetUniformLocation(mProgram, "uMVP");
         mColorLoc = GLES30.glGetUniformLocation(mProgram, "uColor");
+        mFeatherLoc = GLES30.glGetUniformLocation(mProgram, "uFeather");
 
         mVertexBuffer = ByteBuffer
-                .allocateDirect(VisualizerScene.CAPTURE_SIZE * 4 * 4)
+                .allocateDirect(VisualizerScene.CAPTURE_SIZE
+                        * VisualizerScene.FLOATS_PER_DOT * 4)
                 .order(ByteOrder.nativeOrder())
                 .asFloatBuffer();
         updateProjection();
