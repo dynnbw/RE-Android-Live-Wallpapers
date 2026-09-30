@@ -20,9 +20,6 @@ import java.nio.FloatBuffer;
  */
 public class MusicVisVisualizerGL extends GLESScene {
 
-    /** 原版 {@code paint.setColor(0xffffffff)} —— 纯白的线，没有贴图。 */
-    private static final float[] LINE_COLOR = {1.0f, 1.0f, 1.0f, 1.0f};
-
     private final Context mContext;
     private final VisualizerScene mScene;
 
@@ -82,7 +79,9 @@ public class MusicVisVisualizerGL extends GLESScene {
     public void drawFrame(long timeMs) {
         initGLIfNeeded();
 
-        GLES30.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);   // 原版 c.drawColor(0xff000000)
+        // 背景色走 musicvis_bg_color，与 vis2/vis3 同一个字段；默认 #000000 = 原版的
+        // c.drawColor(0xff000000)
+        GLES30.glClearColor(mScene.mBgColor[0], mScene.mBgColor[1], mScene.mBgColor[2], 1.0f);
         GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT);
         if (mProgram == 0) {
             return;
@@ -103,7 +102,8 @@ public class MusicVisVisualizerGL extends GLESScene {
 
         GLES30.glUseProgram(mProgram);
         GLES30.glUniformMatrix4fv(mMvpLoc, 1, false, mProj, 0);
-        GLES30.glUniform4fv(mColorLoc, 1, LINE_COLOR, 0);
+        GLES30.glUniform4f(mColorLoc,
+                mScene.lineColor()[0], mScene.lineColor()[1], mScene.lineColor()[2], 1.0f);
         GLES30.glUniform1f(mFeatherLoc, mScene.feather());
 
         // 一个采样一个点（两个三角形），顶点是 (x, y, 角 x, 角 y)，见 VisualizerScene.buildDots

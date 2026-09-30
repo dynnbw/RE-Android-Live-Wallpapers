@@ -1,4 +1,20 @@
 {
   "title": "Визуализатор",
-  "settings_entry": "Визуализатор"
+  "settings_entry": "Визуализатор",
+  "musicvis_recolor": "Перекрашивание",
+  "musicvis_recolor_color": "Цвет",
+  "musicvis_recolor_mode": "Режим перекрашивания",
+  "musicvis_recolor_mode_label_static": "Статический",
+  "musicvis_recolor_mode_label_dynamic": "Аудио-управляемый",
+  "musicvis_bg_color": "Цвет фона",
+  "musicvis_hue": "Оттенок",
+  "musicvis_saturation": "Насыщенность",
+  "musicvis_brightness": "Яркость",
+  "musicvis_bg_color_label_#000000": "Чёрный",
+  "musicvis_bg_color_label_#300303": "Тёмно-красный",
+  "musicvis_bg_color_label_#50330": "Тёмно-синий",
+  "musicvis_bg_color_label_#2F4F4F": "Тёмно-зелёный",
+  "musicvis_bg_color_label_#FFE4DE": "Розовый",
+  "musicvis_bg_color_label_#F0FFFF": "Светло-зелёный",
+  "musicvis_bg_color_label_#EDDEFF": "Светло-фиолетовый"
 }

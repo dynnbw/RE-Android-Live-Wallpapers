@@ -323,6 +323,57 @@ public class VisualizerSceneTest {
         }
     }
 
+    // ─────────── 颜色 ───────────
+
+    /**
+     * **没开着色就是原版的纯白**（{@code paint.setColor(0xffffffff)}）。
+     *
+     * <p>这一支不碰任何 android 类，所以默认行为能在 JVM 里验；开了着色那一支走
+     * {@code MathUtils.hsbToRgb}（内部调 {@code android.graphics.Color}），只能上机看。
+     */
+    @Test
+    public void withoutRecolorTheDotsStayWhite() {
+        VisualizerScene scene = new VisualizerScene(480, 800, null);
+        scene.updateTrace();
+
+        float[] c = scene.lineColor();
+        assertEquals("点的颜色不再是原版的纯白", 1.0f, c[0], 0.0f);
+        assertEquals(1.0f, c[1], 0.0f);
+        assertEquals(1.0f, c[2], 0.0f);
+    }
+
+    @Test
+    public void meanAbsIsTheAverageMagnitude() {
+        assertEquals(0.0f, VisualizerScene.meanAbs(null, 10), 0.0f);
+        assertEquals(0.0f, VisualizerScene.meanAbs(new int[]{5, -5}, 0), 0.0f);
+        assertEquals(5.0f, VisualizerScene.meanAbs(new int[]{5, -5, 5, -5}, 4), 0.0f);
+        // 只看前 n 个，且 n 超过长度时按长度算（与"不多读"同一个口径）
+        assertEquals(10.0f, VisualizerScene.meanAbs(new int[]{10, -10, 99}, 2), 0.0f);
+        assertEquals(3.0f, VisualizerScene.meanAbs(new int[]{3}, 100), 0.0f);
+    }
+
+    /**
+     * 动态着色：**声音越响转得越快**，静音时完全不动。
+     *
+     * <p>与 vis2/vis3 同一个路子（{@code WaveScene.updateDynamicHue}），只是满量程不同
+     * （它们是 800，这里是采样的 ±127）。
+     */
+    @Test
+    public void theDynamicHueOnlyAdvancesWithSound() {
+        assertEquals("静音时色相不该动", 0.25f, VisualizerScene.nextHue(0.25f, 0.0f), 1.0E-6f);
+
+        float quiet = VisualizerScene.nextHue(0.0f, 10.0f);
+        float loud = VisualizerScene.nextHue(0.0f, 127.0f);
+        assertTrue("响的时候反而转得慢", loud > quiet);
+        assertEquals("满量程时应当走满一步", VisualizerScene.DYNAMIC_HUE_STEP, loud, 1.0E-6f);
+
+        // 超过满量程也封顶，不会一步跳很远
+        assertEquals(VisualizerScene.DYNAMIC_HUE_STEP,
+                VisualizerScene.nextHue(0.0f, 9999.0f), 1.0E-6f);
+        // 绕回 0..1
+        assertTrue(VisualizerScene.nextHue(0.999f, 127.0f) < 1.0f);
+    }
+
     @Test
     public void resizeChangesTheGeometry() {
         VisualizerScene scene = new VisualizerScene(1080, 2400, null);

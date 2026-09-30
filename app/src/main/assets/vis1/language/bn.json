@@ -1,4 +1,20 @@
 {
   "title": "ভিজুয়ালাইজার",
-  "settings_entry": "ভিজুয়ালাইজার"
+  "settings_entry": "ভিজুয়ালাইজার",
+  "musicvis_recolor": "পুনরায় রঙ করুন",
+  "musicvis_recolor_color": "রঙ",
+  "musicvis_recolor_mode": "পুনরায় রঙ করার মোড",
+  "musicvis_recolor_mode_label_static": "স্থির",
+  "musicvis_recolor_mode_label_dynamic": "অডিও-চালিত",
+  "musicvis_bg_color": "পটভূমির রঙ",
+  "musicvis_hue": "রঙের ছটা",
+  "musicvis_saturation": "সম্পৃক্তি",
+  "musicvis_brightness": "উজ্জ্বলতা",
+  "musicvis_bg_color_label_#000000": "কালো",
+  "musicvis_bg_color_label_#300303": "গাঢ় লাল",
+  "musicvis_bg_color_label_#50330": "গাঢ় নীল",
+  "musicvis_bg_color_label_#2F4F4F": "গাঢ় সবুজ",
+  "musicvis_bg_color_label_#FFE4DE": "গোলাপি",
+  "musicvis_bg_color_label_#F0FFFF": "হালকা সবুজ",
+  "musicvis_bg_color_label_#EDDEFF": "হালকা বেগুনি"
 }

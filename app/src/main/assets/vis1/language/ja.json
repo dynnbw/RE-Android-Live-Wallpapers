@@ -1,4 +1,20 @@
 {
   "title": "ビジュアライザ",
-  "settings_entry": "ビジュアライザ"
+  "settings_entry": "ビジュアライザ",
+  "musicvis_recolor": "再着色",
+  "musicvis_recolor_color": "色",
+  "musicvis_recolor_mode": "再着色モード",
+  "musicvis_recolor_mode_label_static": "静的",
+  "musicvis_recolor_mode_label_dynamic": "オーディオ駆動",
+  "musicvis_bg_color": "背景色",
+  "musicvis_hue": "色相",
+  "musicvis_saturation": "彩度",
+  "musicvis_brightness": "輝度",
+  "musicvis_bg_color_label_#000000": "黒",
+  "musicvis_bg_color_label_#300303": "暗赤",
+  "musicvis_bg_color_label_#50330": "暗青",
+  "musicvis_bg_color_label_#2F4F4F": "暗緑",
+  "musicvis_bg_color_label_#FFE4DE": "ピンク",
+  "musicvis_bg_color_label_#F0FFFF": "薄緑",
+  "musicvis_bg_color_label_#EDDEFF": "薄紫"
 }

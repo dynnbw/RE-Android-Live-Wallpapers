@@ -1,4 +1,20 @@
 {
   "title": "Visualiseur",
-  "settings_entry": "Visualiseur"
+  "settings_entry": "Visualiseur",
+  "musicvis_recolor": "Recolorier",
+  "musicvis_recolor_color": "Couleur",
+  "musicvis_recolor_mode": "Mode de recolorisation",
+  "musicvis_recolor_mode_label_static": "Statique",
+  "musicvis_recolor_mode_label_dynamic": "Piloté par audio",
+  "musicvis_bg_color": "Couleur d'arrière-plan",
+  "musicvis_hue": "Teinte",
+  "musicvis_saturation": "Saturation",
+  "musicvis_brightness": "Luminosité",
+  "musicvis_bg_color_label_#000000": "Noir",
+  "musicvis_bg_color_label_#300303": "Rouge foncé",
+  "musicvis_bg_color_label_#50330": "Bleu foncé",
+  "musicvis_bg_color_label_#2F4F4F": "Vert foncé",
+  "musicvis_bg_color_label_#FFE4DE": "Rose",
+  "musicvis_bg_color_label_#F0FFFF": "Vert clair",
+  "musicvis_bg_color_label_#EDDEFF": "Violet clair"
 }

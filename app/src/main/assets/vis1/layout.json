@@ -1,3 +1,61 @@
 {
-  "prefs": []
+  "prefs": [
+    {
+      "type": "switch",
+      "key": "musicvis_recolor",
+      "title": "musicvis_recolor",
+      "default": "false"
+    },
+    {
+      "type": "color",
+      "key": "musicvis_recolor_color",
+      "title": "musicvis_recolor_color",
+      "default": "#FF0000",
+      "labels": [
+        "musicvis_hue",
+        "musicvis_saturation",
+        "musicvis_brightness"
+      ],
+      "dependency": "musicvis_recolor"
+    },
+    {
+      "type": "list",
+      "key": "musicvis_recolor_mode",
+      "title": "musicvis_recolor_mode",
+      "default": "static",
+      "values": [
+        "static",
+        "dynamic"
+      ],
+      "labels": [
+        "musicvis_recolor_mode_label_static",
+        "musicvis_recolor_mode_label_dynamic"
+      ],
+      "dependency": "musicvis_recolor"
+    },
+    {
+      "type": "list",
+      "key": "musicvis_bg_color",
+      "title": "musicvis_bg_color",
+      "default": "#000000",
+      "values": [
+        "#000000",
+        "#300303",
+        "#50330",
+        "#2F4F4F",
+        "#FFE4DE",
+        "#F0FFFF",
+        "#EDDEFF"
+      ],
+      "labels": [
+        "musicvis_bg_color_label_#000000",
+        "musicvis_bg_color_label_#300303",
+        "musicvis_bg_color_label_#50330",
+        "musicvis_bg_color_label_#2F4F4F",
+        "musicvis_bg_color_label_#FFE4DE",
+        "musicvis_bg_color_label_#F0FFFF",
+        "musicvis_bg_color_label_#EDDEFF"
+      ]
+    }
+  ]
 }

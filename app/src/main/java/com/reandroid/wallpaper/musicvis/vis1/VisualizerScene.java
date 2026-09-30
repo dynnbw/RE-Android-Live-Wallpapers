@@ -2,6 +2,7 @@ package com.reandroid.wallpaper.musicvis.vis1;
 
 import android.content.Context;
 
+import com.reandroid.utils.MathUtils;
 import com.reandroid.wallpaper.musicvis.AudioCapture;
 import com.reandroid.wallpaper.musicvis.AudioVisBase;
 
@@ -49,6 +50,19 @@ public final class VisualizerScene extends AudioVisBase {
 
     /** 边缘柔化宽度，单位是"半径 = 1"的角坐标；由 {@link #buildDots} 按点的大小算好。 */
     private float mFeather = 1.0f;
+
+    /**
+     * 点的颜色（归一化 RGB）。**默认是原版的纯白** —— {@code paint.setColor(0xffffffff)}。
+     *
+     * <p>开了着色（{@code musicvis_recolor}）就改成取色器给的颜色，与 vis2/vis3 同一套设置。
+     */
+    private final float[] mLineColor = {1.0f, 1.0f, 1.0f};
+
+    /** 动态着色每帧推进的色相上限（信号满量程时）。上机起点，不是标准答案。 */
+    static final float DYNAMIC_HUE_STEP = 0.01f;
+
+    /** 采样满量程。{@code getFormattedData(1,1)} 是字节差，极值 ±127。 */
+    static final float SAMPLE_FULL_SCALE = 127.0f;
 
     /**
      * 拿不到音频时用的数据 —— 原版是 {@code Arrays.fill(mVizData, 0)}，
@@ -119,8 +133,66 @@ public final class VisualizerScene extends AudioVisBase {
     void updateTrace() {
         int[] data = mAudioCapture != null ? mAudioCapture.getFormattedData(1, 1) : null;
         data = dataOrSilence(data, mSilence);
+        int n = visibleSamples(mWidth, data.length);
         mFeather = featherFor(mWidth, data.length);
         mVertexCount = buildDots(data, mWidth, mHeight, mVertices);
+        updateLineColor(data, n);
+    }
+
+    // ---- 颜色 ----
+
+    /** 点的颜色（归一化 RGB，三个 float）。 */
+    float[] lineColor() {
+        return mLineColor;
+    }
+
+    /**
+     * 算出这一帧点的颜色。
+     *
+     * <p>没开着色就回到原版的纯白 —— 这一支**不碰任何 android 类**，所以默认行为能在 JVM 里测。
+     * 开了着色才走 {@link MathUtils#hsbToRgb}（与 grass 同一个换算，那里会调
+     * {@code android.graphics.Color}，只能上机验）。
+     */
+    private void updateLineColor(int[] data, int n) {
+        if (!mRecolorEnabled) {
+            mLineColor[0] = 1.0f;
+            mLineColor[1] = 1.0f;
+            mLineColor[2] = 1.0f;
+            return;
+        }
+        if (mRecolorDynamic && n > 0) {
+            mHue = nextHue(mHue, meanAbs(data, n));
+        }
+        int rgb = MathUtils.hsbToRgb(mHue,
+                MathUtils.clamp(mSaturation, 0.0f, 1.0f),
+                MathUtils.clamp(mBrightness, 0.0f, 1.0f));
+        mLineColor[0] = android.graphics.Color.red(rgb) / 255.0f;
+        mLineColor[1] = android.graphics.Color.green(rgb) / 255.0f;
+        mLineColor[2] = android.graphics.Color.blue(rgb) / 255.0f;
+    }
+
+    /**
+     * 动态着色的色相推进：**声音越响转得越快**，与 vis2/vis3 是一个路子
+     * （见 {@code WaveScene.updateDynamicHue}，那里按它自己的满量程 800 归一）。
+     *
+     * @param meanAbsSample 这一段采样的平均绝对值
+     */
+    static float nextHue(float hue, float meanAbsSample) {
+        float norm = MathUtils.clamp(meanAbsSample / SAMPLE_FULL_SCALE, 0.0f, 1.0f);
+        return (hue + norm * DYNAMIC_HUE_STEP) % 1.0f;
+    }
+
+    /** 前 {@code n} 个采样的平均绝对值。 */
+    static float meanAbs(int[] data, int n) {
+        if (data == null || n <= 0) {
+            return 0.0f;
+        }
+        int limit = Math.min(n, data.length);
+        long sum = 0;
+        for (int i = 0; i < limit; i++) {
+            sum += Math.abs(data[i]);
+        }
+        return limit == 0 ? 0.0f : (float) ((double) sum / limit);
     }
 
     /**
