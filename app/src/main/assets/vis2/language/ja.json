@@ -1,4 +1,6 @@
 {
+  "musicvis_fit_screen": "サンプルを多く表示",
+  "musicvis_fit_screen_summary": "波形を画面の短辺に合わせて拡大縮小",
   "musicvis_use_triangle_strip": "クラシック版三角形ストリップメッシュを使用",
   "musicvis_recolor": "再着色",
   "musicvis_recolor_mode": "再着色モード",

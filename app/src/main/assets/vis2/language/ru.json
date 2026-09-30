@@ -1,4 +1,6 @@
 {
+  "musicvis_fit_screen": "Показывать больше сэмплов",
+  "musicvis_fit_screen_summary": "Масштаб волны по короткой стороне экрана",
   "musicvis_use_triangle_strip": "Использовать устаревшую треугольно-полосную сетку",
   "musicvis_recolor": "Перекрашивание",
   "musicvis_recolor_mode": "Режим перекрашивания",

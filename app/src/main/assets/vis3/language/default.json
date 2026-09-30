@@ -1,6 +1,6 @@
 {
-  "musicvis_fit_screen": "show more samples",
-  "musicvis_fit_screen_summary": "On: scale the waveform to the screen's short side so 1 sample is about 1 physical pixel - on screens 1024 px and wider all 1024 samples fit on screen. Off: AOSP original, about 480 samples stretched across the width.",
+  "musicvis_fit_screen": "Show more samples",
+  "musicvis_fit_screen_summary": "Scale the waveform to the screen's short side",
   "musicvis_fft_size": "resolution",
   "musicvis_use_triangle_strip": "Use legacy triangle strip mesh",
   "musicvis_recolor": "Recolor",

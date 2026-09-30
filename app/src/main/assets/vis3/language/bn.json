@@ -1,4 +1,6 @@
 {
+  "musicvis_fit_screen": "আরও স্যাম্পল দেখান",
+  "musicvis_fit_screen_summary": "তরঙ্গরেখা স্ক্রিনের ছোট দিক অনুযায়ী মাপে আঁকা হয়",
   "musicvis_use_triangle_strip": "লিগ্যাসি ত্রিভুজ স্ট্রিপ মেশ ব্যবহার করুন",
   "musicvis_fft_size": "রেজোলিউশন",
   "musicvis_recolor": "পুনরায় রঙ করুন",

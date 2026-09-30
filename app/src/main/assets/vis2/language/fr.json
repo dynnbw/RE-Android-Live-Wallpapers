@@ -1,4 +1,6 @@
 {
+  "musicvis_fit_screen": "Afficher plus d'échantillons",
+  "musicvis_fit_screen_summary": "Met la forme d'onde à l'échelle du petit côté de l'écran",
   "musicvis_use_triangle_strip": "Utiliser le maillage hérité en bandes de triangles",
   "musicvis_recolor": "Recolorier",
   "musicvis_recolor_mode": "Mode de recolorisation",

@@ -1,4 +1,6 @@
 {
+  "musicvis_fit_screen": "Mehr Samples anzeigen",
+  "musicvis_fit_screen_summary": "Wellenform an die kurze Bildschirmseite skaliert",
   "musicvis_use_triangle_strip": "Altes Dreiecksstreifen-Mesh verwenden",
   "musicvis_fft_size": "Auflösung",
   "musicvis_recolor": "Neu einfärben",
