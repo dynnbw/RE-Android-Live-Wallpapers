@@ -52,14 +52,17 @@
   // 常量：逐条对应 MusicVisWaveGL / WaveScene（vis3 = FFT）
   // ---------------------------------------------------------------
   var LINE_COUNT = 1024;            // WaveScene.LINE_COUNT
-  var FFT_SIZE = 512;               // musicvis_fft_size 默认 "512"
+  var FFT_SIZE = 1024;              // musicvis_fft_size 的**最大**档（手机端可选 256/512/768/1024）
   var HALF = LINE_COUNT / 2;        // 512：线的 x 从 -512 到 511
   var FADEOUT_LENGTH = 100, FADEOUT_FACTOR = 0.95, FADEIN_LENGTH = 15;
   var FRAME_MS = 1000 / 50;         // 原版 GenericWaveRS: mHandler.postDelayed(mDrawCube, 20)
 
-  // 模型比例：AOSP 把"屏幕短边 = 480 行"写死（≈2/480）。musicvis_fit_screen 默认关，
-  // 所以这里也是定值 —— 竖屏恒有约 480 条可见，其余落在视口外。
-  var BASE_SCALE = 0.004165;
+  // 横向比例，对应 AudioVisBase.baseScale()。
+  // AOSP 把"屏幕短边 = 480 行"写死（0.004165 ≈ 2/480），于是竖屏只有约 480 条可见、
+  // 其余落在视口外。手机端的「显示更多采样」(musicvis_fit_screen) 打开后改成按屏幕短边缩放、
+  // 采样与物理像素约 1:1 —— 网页默认就按**打开**来，跟手机端那个设置对齐。
+  var FIT_SCREEN = true;
+  var AOSP_BASE_SCALE = 0.004165;   // fit_screen 关掉时用的原版定值
 
   // 冰纹理（64×1 的竖向渐变），从 app 的 musicvis/drawable/musicvis_ice.png 原样取出
   var ICE_PNG = 'iVBORw0KGgoAAAANSUhEUgAAAEAAAAABCAIAAADhDz9AAAAAAXNSR0IArs4c6QAAAAZiS0dEAP8A'
@@ -318,7 +321,7 @@
     if (audioCtx.state === 'suspended') audioCtx.resume();
     if (!analyser) {
       analyser = audioCtx.createAnalyser();
-      analyser.fftSize = FFT_SIZE * 2;              // 时域拿到 1024 点，取前 512
+      analyser.fftSize = FFT_SIZE * 2;              // 时域拿到 2048 点，取前 1024
       analyser.smoothingTimeConstant = 0;
       timeData = new Float32Array(analyser.fftSize);
       captureData = new Int32Array(FFT_SIZE);
@@ -593,6 +596,12 @@
 
   var proj = new Float32Array(16), model = new Float32Array(16), mvp = new Float32Array(16);
 
+  /** AudioVisBase.baseScale()：每个模型单位占多少归一化宽度。跟着画布走，所以每帧算。 */
+  function baseScale() {
+    if (!FIT_SCREEN) return AOSP_BASE_SCALE;
+    return 2 / Math.min(Math.min(width, height), 1024);
+  }
+
   function updateMvp() {
     var aspect;
     if (width > height) {
@@ -602,7 +611,7 @@
       aspect = height / width;
       ortho(proj, -1, 1, -aspect, aspect, -1, 1);
     }
-    var scale = BASE_SCALE * (1 + 2 * Math.abs(Math.sin(yRotation * Math.PI / 180)));
+    var scale = baseScale() * (1 + 2 * Math.abs(Math.sin(yRotation * Math.PI / 180)));
     var c = Math.cos(yRotation * Math.PI / 180), s = Math.sin(yRotation * Math.PI / 180);
     // model = scale * rotateZ(yRotation)
     model[0] = c * scale; model[1] = s * scale; model[2] = 0; model[3] = 0;
