@@ -26,6 +26,8 @@
   button[aria-pressed="true"] { background:#2f4a2f; border-color:#4a7a4a; }
   /* 只有采集出问题（被拒、没勾音频、等授权）时才会出现这一行 */
   .warn { color:var(--warn); margin:6px 0 0; }
+  /* 调试读数要在壁纸上也读得清 —— 默认 12px 在高分屏上太小 */
+  #s-dbg { font-size:14px; line-height:1.5; word-break:break-all; }
 </style>
 </head>
 <body>
@@ -794,6 +796,27 @@
     // musicvis_use_triangle_strip 默认**开**：相邻两条线之间会连成四边形（带子），
     // 关掉才是 1024 根互不相连的竖线。
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, LINE_COUNT * 2);
+
+    drawDebugFrame();
+  }
+
+  /**
+   * 调试框：沿着**绘制缓冲**的四条边画一圈红框（用 scissor + clear，不碰着色器）。
+   *
+   * 宿主把视口裁掉时，数字是看不出方向的 —— 这圈红框会：四条边都看得见 = 缓冲整块都在显示；
+   * 某一边（通常是右/下）看不见 = 那边被裁掉了。配合 offsetx/scale 调就能一步到位。
+   */
+  function drawDebugFrame() {
+    if (!debugOn) return;
+    var t = Math.max(2, Math.round(Math.min(width, height) * 0.004));   // 边框粗细，跟着分辨率走
+    gl.enable(gl.SCISSOR_TEST);
+    gl.clearColor(1, 0, 0, 1);
+    gl.scissor(0, 0, width, t);            gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.scissor(0, height - t, width, t);   gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.scissor(0, 0, t, height);           gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.scissor(width - t, 0, t, height);   gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.disable(gl.SCISSOR_TEST);
+    gl.clearColor(0, 0, 0, 1);             // 复位，别影响下一帧的背景色
   }
 
   // 调试读数：把几个尺寸摆到画面上。宿主里"只显示一角"这类问题，看这几个数就能定位
