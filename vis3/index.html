@@ -611,7 +611,11 @@
       aspect = height / width;
       ortho(proj, -1, 1, -aspect, aspect, -1, 1);
     }
-    var scale = baseScale() * (1 + 2 * Math.abs(Math.sin(yRotation * Math.PI / 180)));
+    // 原版这一行还有一项 `× (1 + 2|sin(角度)|)` —— 转过 90° 时把画面放大到 3 倍。
+    // 网页上去掉了：倾角一旦被 ±45° 夹子钉住，这一项也会一起钉在 2.41 倍，画面就成了
+    // "一条被斜放又被撑大的频谱"，看起来就是变形。去掉之后模型矩阵只剩 R(θ)·S(基准)，
+    // 是**纯刚性旋转** —— 形状只转不变。
+    var scale = baseScale();
     var c = Math.cos(yRotation * Math.PI / 180), s = Math.sin(yRotation * Math.PI / 180);
     // model = scale * rotateZ(yRotation)
     model[0] = c * scale; model[1] = s * scale; model[2] = 0; model[3] = 0;
