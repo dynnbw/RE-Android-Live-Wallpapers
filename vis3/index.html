@@ -174,7 +174,7 @@
 
   var IDLE_WAVE = 0, IDLE_SIMULATE = 1, IDLE_FLAT = 2;
   var idleMode = IDLE_WAVE;                        // musicvis_idle_mode 默认 "wave"
-  var idle = 0, waveCounter = 0, yRotation = 0;
+  var idle = 0, waveCounter = 0;
 
   var fadeoutcounter = 0, fadeincounter = 0;
   var wave1pos = 0, wave1amp = 0, wave2pos = 0, wave2amp = 0;
@@ -611,17 +611,18 @@
       aspect = height / width;
       ortho(proj, -1, 1, -aspect, aspect, -1, 1);
     }
-    // 原版这一行还有一项 `× (1 + 2|sin(角度)|)` —— 转过 90° 时把画面放大到 3 倍。
-    // 网页上去掉了：倾角一旦被 ±45° 夹子钉住，这一项也会一起钉在 2.41 倍，画面就成了
-    // "一条被斜放又被撑大的频谱"，看起来就是变形。去掉之后模型矩阵只剩 R(θ)·S(基准)，
-    // 是**纯刚性旋转** —— 形状只转不变。
+    // 模型矩阵就是**基准缩放**，没有旋转 —— 等价于原版在 `yrot = 0` 时的那一份 R·S。
+    //
+    // 原版还有两样，网页上都不要：
+    //   * `rsMatrixRotate(..., yrot)` —— 手机上那个旋转只在滑动过程中一闪而过，
+    //     静止时 xOffset 落在 360° 的整数倍上，看起来永远是水平的；网页没有"滑动"这个
+    //     语境，把它固定成任意一个角度都是原版从未有过的画面，怎么调都像变形。
+    //   * `× (1 + 2|sin(yrot)|)` —— 随旋转一起放大到 3 倍，不转时恒为 1。
     var scale = baseScale();
-    var c = Math.cos(yRotation * Math.PI / 180), s = Math.sin(yRotation * Math.PI / 180);
-    // model = scale * rotateZ(yRotation)
-    model[0] = c * scale; model[1] = s * scale; model[2] = 0; model[3] = 0;
-    model[4] = -s * scale; model[5] = c * scale; model[6] = 0; model[7] = 0;
-    model[8] = 0; model[9] = 0; model[10] = scale; model[11] = 0;
-    model[12] = 0; model[13] = 0; model[14] = 0; model[15] = 1;
+    model[0] = scale; model[1] = 0;     model[2] = 0;     model[3] = 0;
+    model[4] = 0;     model[5] = scale; model[6] = 0;     model[7] = 0;
+    model[8] = 0;     model[9] = 0;     model[10] = scale; model[11] = 0;
+    model[12] = 0;    model[13] = 0;    model[14] = 0;     model[15] = 1;
 
     for (var col = 0; col < 4; col++) {
       for (var row = 0; row < 4; row++) {
@@ -711,30 +712,10 @@
     b.addEventListener('click', function () { setSource(b.dataset.src); });
   });
 
-  // 桌面滚动 → 旋转。app 里是 onOffsetsChanged 给的 xOffset：mYRotation = xOffset * 4 * 360。
-  // 算式照用，只是把倍数收成 1（一屏 = 一圈），再把结果**夹在 ±MAX_TILT_DEG**：
-  // 转过 45° 就不再转，钉在那里。以中点为 0 是为了让正负两头都到得了
-  // （照原式写成 pointerX * N * 360 的话是纯正数，夹完只剩 +45，往左拖没有反应）。
-  //
-  // 注意它不只管旋转：这个角度同时是 updateMvp 里缩放 1 + 2|sin(角度)| 的输入，
-  // 所以夹到 ±45 也就把缩放夹在 1 倍 … 2.41 倍。
-  var SPIN_TURNS = 1;
-  var MAX_TILT_DEG = 45;
-  var pointerX = 0.5;                     // 0.5 → 0°，不倾斜也不缩放
-  function spinFrom(f) { return (f - 0.5) * SPIN_TURNS * 360; }
-  function tiltFrom(f) {
-    var a = spinFrom(f);
-    return a > MAX_TILT_DEG ? MAX_TILT_DEG : (a < -MAX_TILT_DEG ? -MAX_TILT_DEG : a);
-  }
-  function applyPointer(clientX) {
-    var rect = canvas.getBoundingClientRect();
-    var f = rect.width > 0 ? (clientX - rect.left) / rect.width : 0.5;
-    pointerX = Math.max(0, Math.min(1, f));
-    yRotation = tiltFrom(pointerX);
-  }
-  canvas.addEventListener('pointermove', function (e) { applyPointer(e.clientX); });
-  canvas.addEventListener('pointerdown', function (e) { applyPointer(e.clientX); });
-  yRotation = tiltFrom(pointerX);
+  // 这里**没有**鼠标/触摸交互。原版那个旋转来自启动器的 onOffsetsChanged：
+  // xOffset 只取 0 / 0.25 / 0.5 / 0.75 / 1，乘完 ×4×360 是 360 的整数倍 ——
+  // 静止时永远水平，倾斜只在滑动那一下一闪而过。网页没有"滑动"这个语境，
+  // 把指针映射成任意一个固定角度都是原版从未有过的画面（怎么调都像变形），所以直接不做。
 
   window.addEventListener('keydown', function (e) {
     if (e.key === 'h' || e.key === 'H') {
