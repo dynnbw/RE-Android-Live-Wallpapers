@@ -450,7 +450,11 @@
   //     索引越小频率越低；取值一般 0.00–1.00（官方说偶尔会 >1，要自己夹）。
   //   * 大约 30 次/秒回调一次。
   //   * **只能注册一次，而且不能放在 window.onload 里**（会漏事件）—— 本页的脚本就在
-  //     </body> 之前、且只调一次，符合要求。
+  //     文档末尾、且只调一次，符合要求。
+  //     （这里**不能写成"body 的结束标签之前"的标签字面**：HTML 解析器不会因此断掉脚本，
+  //     但 Live Server 这类工具靠"往 body 结束标签前面插一段脚本"工作，那个标签字面一旦
+  //     出现在 JS 里，它就会把注入的脚本塞进我们的 JS 中间 —— 报 Unexpected token '<'。
+  //     踩过一次，见 _logic.js 里的守卫。）
   //   * 壁纸工程那边还要在 project.json 里开 `"supportsaudioprocessing": true`。
   // 它给的是**各频段音量**（幅度谱），不是时域也不是复数，所以直接当成实部、虚部记 0；
   // 算法里本来就要 (re²+im²)，正好等于幅度的平方。
@@ -755,7 +759,7 @@
 
   // Wallpaper Engine 的音频接口只在 WE 里存在。检测到就亮出按钮、注册监听，
   // 并**默认用它** —— WE 抓的是系统输出，与原版用 Visualizer 抓全局输出正是同一路，
-  // 比麦克风/屏幕共享都更接近原版。注册只能一次，而且就在这里（</body> 之前）调。
+  // 比麦克风/屏幕共享都更接近原版。注册只能一次，而且就在这里（文档末尾）调。
   var WE_AVAILABLE = typeof window.wallpaperRegisterAudioListener === 'function';
   var SOURCES = ['idle', 'synth'];
   if (WE_AVAILABLE) {
