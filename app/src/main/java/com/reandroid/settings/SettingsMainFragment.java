@@ -19,8 +19,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.preference.Preference;
-import androidx.preference.PreferenceGroup;
 import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.PreferenceGroup;
 import androidx.preference.PreferenceScreen;
 import androidx.preference.PreferenceViewHolder;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -67,7 +67,8 @@ public class SettingsMainFragment extends PreferenceFragmentCompat {
         super.onViewCreated(view, savedInstanceState);
 
         RecyclerView listView = getListView();
-        GridLayoutManager layoutManager = new GridLayoutManager(requireContext(), WALLPAPER_GRID_SPAN_COUNT);
+        GridLayoutManager layoutManager =
+                new GridLayoutManager(requireContext(), WALLPAPER_GRID_SPAN_COUNT);
         layoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
             @Override
             public int getSpanSize(int position) {
@@ -87,7 +88,8 @@ public class SettingsMainFragment extends PreferenceFragmentCompat {
             private final int gridMiddleSpacingPx = dpToPx(GRID_MIDDLE_SPACING_DP);
 
             @Override
-            public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
+            public void getItemOffsets(
+                    Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
                 int position = parent.getChildAdapterPosition(view);
                 if (position == RecyclerView.NO_POSITION) {
                     outRect.set(0, 0, 0, 0);
@@ -102,7 +104,11 @@ public class SettingsMainFragment extends PreferenceFragmentCompat {
 
                 Preference preference = screen.getPreference(position);
                 if (isFullWidthPreference(preference)) {
-                    outRect.set(fullWidthSpacingPx, fullWidthSpacingPx, fullWidthSpacingPx, fullWidthSpacingPx);
+                    outRect.set(
+                            fullWidthSpacingPx,
+                            fullWidthSpacingPx,
+                            fullWidthSpacingPx,
+                            fullWidthSpacingPx);
                     return;
                 }
 
@@ -152,7 +158,10 @@ public class SettingsMainFragment extends PreferenceFragmentCompat {
                     pluginClass = json.optString("plugin", null);
                     useLegacySettings = json.optBoolean("useLegacySettings", false);
                     hidden = json.optBoolean("hidden", false);
-                } catch (Exception e) { Log.w(TAG, "Failed to parse info.json", e); continue; }
+                } catch (Exception e) {
+                    Log.w(TAG, "Failed to parse info.json", e);
+                    continue;
+                }
                 // 隐藏入口：info.json 中 "hidden": true 时不在列表显示
                 if (hidden) continue;
 
@@ -177,7 +186,9 @@ public class SettingsMainFragment extends PreferenceFragmentCompat {
                 }
                 screen.addPreference(entry);
             }
-        } catch (Exception e) { Log.w(TAG, "Failed to build wallpaper list", e); }
+        } catch (Exception e) {
+            Log.w(TAG, "Failed to build wallpaper list", e);
+        }
     }
 
     private void applyHomeLayouts() {
@@ -231,7 +242,8 @@ public class SettingsMainFragment extends PreferenceFragmentCompat {
         try {
             startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
         } catch (Exception e) {
-            Toast.makeText(requireContext(), R.string.no_browser_found, Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), R.string.no_browser_found, Toast.LENGTH_SHORT)
+                    .show();
         }
     }
 

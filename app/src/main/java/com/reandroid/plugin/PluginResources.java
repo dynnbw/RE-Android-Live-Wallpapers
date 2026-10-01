@@ -181,7 +181,8 @@ public final class PluginResources {
      * @param resValue    {@code @string/} 解析出来的值，没有就 null
      * @param pluginId    最后的兜底
      */
-    static String labelFrom(String plainLabel, String bundleTitle, String resValue, String pluginId) {
+    static String labelFrom(
+            String plainLabel, String bundleTitle, String resValue, String pluginId) {
         if (plainLabel != null && !plainLabel.isEmpty()) return plainLabel;
         if (bundleTitle != null && !bundleTitle.isEmpty()) return bundleTitle;
         if (resValue != null && !resValue.isEmpty()) return resValue;

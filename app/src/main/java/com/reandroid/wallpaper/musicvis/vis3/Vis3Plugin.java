@@ -1,10 +1,19 @@
 package com.reandroid.wallpaper.musicvis.vis3;
+
 import android.content.Context;
+
 import com.reandroid.plugin.WallpaperEngine;
 import com.reandroid.plugin.WallpaperPlugin;
 import com.reandroid.plugin.WallpaperPluginHost;
+
 public class Vis3Plugin implements WallpaperPlugin {
-    public String getId() { return "vis3"; }
-    public WallpaperEngine createEngine(Context c, WallpaperPluginHost h) { return new Vis3Engine(c, h); }
+    public String getId() {
+        return "vis3";
+    }
+
+    public WallpaperEngine createEngine(Context c, WallpaperPluginHost h) {
+        return new Vis3Engine(c, h);
+    }
+
     public void release() {}
 }

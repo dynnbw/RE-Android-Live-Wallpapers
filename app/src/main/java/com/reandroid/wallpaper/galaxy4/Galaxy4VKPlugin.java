@@ -7,10 +7,20 @@ import com.reandroid.plugin.WallpaperPlugin;
 import com.reandroid.plugin.WallpaperPluginHost;
 
 public class Galaxy4VKPlugin implements WallpaperPlugin {
-    static { android.util.Log.e("Galaxy4VKPlugin", "*** PLUGIN STATIC INIT ***"); }
-    @Override public String getId() { return "galaxy4_vk"; }
-    @Override public WallpaperEngine createEngine(Context ctx, WallpaperPluginHost host) {
+    static {
+        android.util.Log.e("Galaxy4VKPlugin", "*** PLUGIN STATIC INIT ***");
+    }
+
+    @Override
+    public String getId() {
+        return "galaxy4_vk";
+    }
+
+    @Override
+    public WallpaperEngine createEngine(Context ctx, WallpaperPluginHost host) {
         return new Galaxy4VKPluginEngine(ctx, host);
     }
-    @Override public void release() {}
+
+    @Override
+    public void release() {}
 }

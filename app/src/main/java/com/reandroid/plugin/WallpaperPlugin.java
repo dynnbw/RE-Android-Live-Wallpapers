@@ -11,7 +11,6 @@ public interface WallpaperPlugin {
     /** Unique identifier (matches assets/{id}/ directory name). */
     String getId();
 
-
     /** Create the rendering engine for this wallpaper. */
     WallpaperEngine createEngine(Context context, WallpaperPluginHost host);
 

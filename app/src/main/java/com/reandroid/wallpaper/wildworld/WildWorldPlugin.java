@@ -18,6 +18,5 @@ public class WildWorldPlugin implements WallpaperPlugin {
     }
 
     @Override
-    public void release() {
-    }
+    public void release() {}
 }
