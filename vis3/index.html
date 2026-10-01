@@ -26,8 +26,12 @@
   button[aria-pressed="true"] { background:#2f4a2f; border-color:#4a7a4a; }
   /* 只有采集出问题（被拒、没勾音频、等授权）时才会出现这一行 */
   .warn { color:var(--warn); margin:6px 0 0; }
-  /* 调试读数要在壁纸上也读得清 —— 默认 12px 在高分屏上太小 */
-  #s-dbg { font-size:14px; line-height:1.5; word-break:break-all; }
+  /* 调试读数自成一块（不跟 HUD 共存亡），字号也放大些 —— 壁纸上要读得清 */
+  #s-dbg {
+    position:fixed; left:12px; bottom:12px; max-width:calc(100vw - 24px);
+    padding:6px 8px; color:var(--warn); font-size:14px; line-height:1.5; word-break:break-all;
+    background:rgba(12,12,12,.82); border:1px solid var(--line); border-radius:6px;
+  }
 </style>
 </head>
 <body>
@@ -46,9 +50,11 @@
   </div>
 
   <p class="warn" id="s-note" hidden></p>
-  <!-- 只有 URL 上带 ?debug=1 时才出现，见下面的 resize / loop -->
-  <p class="warn" id="s-dbg" hidden></p>
 </div>
+
+<!-- 调试读数**不在 HUD 里**：Wallpaper Engine 下整块 HUD 会被藏起来（壁纸不该有按钮，
+   那边一切都走 WE 自己的属性 API），而诊断信息仍然要看得到。 -->
+<p id="s-dbg" hidden></p>
 
 <script>
 (function () {
@@ -557,13 +563,8 @@
     var hi = Math.trunc(FFT_SIZE / 4) - 2;          // 与 updateWaveData 里的 len−1 一致
     captureData.fill(0);
     for (var b = 1; b <= hi; b++) {
-      // 64 段要铺到 254 个箱上，**线性插值**而不是就近取整：就近取整会让相邻三四个箱
-      // 共用同一个值，频谱上看成一级级的台阶（"柱子宽度不对"的样子）。
-      var pos = (b - 1) / (hi - 1) * (WE_BANDS - 1);
-      var i0 = Math.floor(pos);
-      var i1 = i0 + 1 < WE_BANDS ? i0 + 1 : WE_BANDS - 1;
-      var m = weAudio[i0] + (weAudio[i1] - weAudio[i0]) * (pos - i0);
-      if (m < 0) m = 0;
+      // 64 段铺到 254 个箱上，**就近取整**（试过线性插值，观感反而更糊，退回取整）
+      var m = weAudio[Math.round((b - 1) / (hi - 1) * (WE_BANDS - 1))];
       var re = Math.round(Math.sqrt(m * WE_TARGET / (Math.trunc(b / 16) + 1)));
       captureData[b * 2] = re > 127 ? 127 : re;     // 当实部用，虚部留 0
     }
@@ -895,6 +896,14 @@
   if (WE_AVAILABLE || WE_FORCE_SHOW) {
     var weBtn = document.querySelector('button[data-src="we"]');
     if (weBtn) weBtn.hidden = false;
+  }
+
+  // 在 Wallpaper Engine 里**整块左上角界面都藏掉**：WE 只认它自己的 API（属性面板），
+  // 壁纸上摆一排点不了的按钮没有意义。数据源默认就是 'we'，不需要交互。
+  // 调试读数在 HUD 之外（见 HTML），不受影响。浏览器里一切照旧。
+  if (WE_AVAILABLE) {
+    var hud = document.getElementById('hud');
+    if (hud) hud.hidden = true;
   }
   if (WE_FORCE_SHOW && !WE_AVAILABLE) {
     showNote('?audio=1: window.wallpaperRegisterAudioListener is missing. ' +
