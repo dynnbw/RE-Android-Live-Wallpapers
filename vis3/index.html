@@ -471,6 +471,20 @@
   // 算法里本来就要 (re²+im²)，正好等于幅度的平方。
   //
   // 回调写成不依赖具体长度的：拿到 128 就左右取平均，拿到别的长度就线性重采样到 64 段。
+  // 接口在不在，以及调试开关 —— 都得赶在读设置、建场景之前定下来
+  var WE_AVAILABLE = typeof window.wallpaperRegisterAudioListener === 'function';
+
+  // 调试读数（尺寸 / 音频接口状态）。两种开法：
+  //   * 浏览器里：URL 加 `?debug=1`
+  //   * **Wallpaper Engine 里：没法挂 URL 参数** —— 走壁纸属性，也就是下面这个监听器，
+  //     配合 project.json 里声明的一条 bool 属性（见 README，属性名就叫 debug）。
+  var debugOn = /[?&]debug=1(&|$)/.test(location.search);
+  window.wallpaperPropertyListener = {
+    applyUserProperties: function (props) {
+      if (props && props.debug) debugOn = !!props.debug.value;
+    }
+  };
+
   var WE_BANDS = 64;
   var WE_TIMEOUT_MS = 500;      // 超过这么久没回调，就当成"此刻没有声音"
   var weAudio = null;           // Float32Array(WE_BANDS)
@@ -752,21 +766,23 @@
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, LINE_COUNT * 2);
   }
 
-  // ?debug=1：把几个尺寸摆到画面上。宿主里"只显示一角"这类问题，看这几个数就能定位
-  // —— 是 window 报得比 canvas 大，还是 canvas 缓冲比视口大。
-  var DBG = /[?&]debug=1(&|$)/.test(location.search);
+  // 调试读数：把几个尺寸摆到画面上。宿主里"只显示一角"这类问题，看这几个数就能定位
+  // —— 是 window 报得比 canvas 大，还是 canvas 缓冲比视口大。顺带写上音频接口在不在，
+  // 这样"WE 里看不到那个按钮"也能一并回答。（开关见上面：URL 的 ?debug=1，或 WE 属性。）
   var sDbg = document.getElementById('s-dbg');
   var lastDbg = 0;
 
   function updateDebug(now) {
-    if (!DBG || now - lastDbg < 500) return;
+    if (!debugOn || now - lastDbg < 500) return;
     lastDbg = now;
     sDbg.hidden = false;
     sDbg.textContent = 'debug: window ' + window.innerWidth + '×' + window.innerHeight +
       ' · canvas CSS ' + canvas.clientWidth + '×' + canvas.clientHeight +
       ' · dpr ' + (window.devicePixelRatio || 1) +
       ' · buffer ' + canvas.width + '×' + canvas.height +
-      ' · viewport ' + gl.drawingBufferWidth + '×' + gl.drawingBufferHeight;
+      ' · viewport ' + gl.drawingBufferWidth + '×' + gl.drawingBufferHeight +
+      ' · we-audio ' + (WE_AVAILABLE ? 'yes' : 'no') +
+      ' · source ' + source;
   }
 
   // 原版 GenericWaveRS 是 postDelayed(mDrawCube, 20) → 50 FPS
@@ -790,10 +806,10 @@
   // Wallpaper Engine 的音频接口只在 WE 里存在。检测到就亮出按钮、注册监听，
   // 并**默认用它** —— WE 抓的是系统输出，与原版用 Visualizer 抓全局输出正是同一路，
   // 比麦克风/屏幕共享都更接近原版。注册只能一次，而且就在这里（文档末尾）调。
-  var WE_AVAILABLE = typeof window.wallpaperRegisterAudioListener === 'function';
-  // 调试开关：URL 上带 ?audio=1 就**强行显示**那个按钮 —— 在 WE 里看不到它时，用它来分辨
-  // "接口根本没被注入"（按下去会说明原因）和"按钮被藏起来了/文件是旧的"。
-  var WE_FORCE_SHOW = /[?&]audio=1(&|$)/.test(location.search);
+  // 调试开关：URL 带 ?audio=1（浏览器里用）就**强行显示**那个按钮 —— 用来分辨
+  // "接口根本没被注入"（按下去会说明原因）和"按钮被藏起来了 / 文件是旧的"。
+  // WE 里挂不了 URL 参数，那边开 debug 属性时会一并把按钮显出来。
+  var WE_FORCE_SHOW = /[?&]audio=1(&|$)/.test(location.search) || debugOn;
   var SOURCES = ['idle', 'synth'];
   if (WE_AVAILABLE) {
     window.wallpaperRegisterAudioListener(onWallpaperAudio);
