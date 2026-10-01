@@ -761,12 +761,23 @@
   // 并**默认用它** —— WE 抓的是系统输出，与原版用 Visualizer 抓全局输出正是同一路，
   // 比麦克风/屏幕共享都更接近原版。注册只能一次，而且就在这里（文档末尾）调。
   var WE_AVAILABLE = typeof window.wallpaperRegisterAudioListener === 'function';
+  // 调试开关：URL 上带 ?audio=1 就**强行显示**那个按钮 —— 在 WE 里看不到它时，用它来分辨
+  // "接口根本没被注入"（按下去会说明原因）和"按钮被藏起来了/文件是旧的"。
+  var WE_FORCE_SHOW = /[?&]audio=1(&|$)/.test(location.search);
   var SOURCES = ['idle', 'synth'];
   if (WE_AVAILABLE) {
-    var weBtn = document.querySelector('button[data-src="we"]');
-    if (weBtn) weBtn.hidden = false;
     window.wallpaperRegisterAudioListener(onWallpaperAudio);
     SOURCES.push('we');
+  }
+  if (WE_AVAILABLE || WE_FORCE_SHOW) {
+    var weBtn = document.querySelector('button[data-src="we"]');
+    if (weBtn) weBtn.hidden = false;
+  }
+  if (WE_FORCE_SHOW && !WE_AVAILABLE) {
+    showNote('?audio=1: window.wallpaperRegisterAudioListener is missing. ' +
+      'Either this page is not running inside Wallpaper Engine, or the wallpaper\'s ' +
+      'project.json does not set "supportsaudioprocessing": true — Wallpaper Engine only ' +
+      'injects the audio API for projects that opt in.');
   }
   SOURCES.push('display', 'mic', 'silent');
 
@@ -791,6 +802,11 @@
           : 'Requesting microphone permission…');
         openCapture(next).catch(function () { showNote(captureState); });
       }
+    } else if (next === 'we' && !WE_AVAILABLE) {
+      // 只可能出现在 ?audio=1 强行显示的时候
+      showNote('Not running inside Wallpaper Engine, or the wallpaper\'s project.json does not ' +
+        'set "supportsaudioprocessing": true — Wallpaper Engine only injects the audio API for ' +
+        'projects that opt in.');
     } else {
       showNote('');
     }
