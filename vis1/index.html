@@ -34,11 +34,11 @@
 
 <div id="hud">
   <div class="row">
-    <button data-src="synth"  aria-pressed="true">合成信号</button>
+    <button data-src="synth"  aria-pressed="true">Test tone</button>
     <button data-src="display" aria-pressed="false"
-            title="抓系统输出：选浏览器标签页 + 勾「分享标签页音频」，或（Windows）选整个屏幕 + 勾「分享系统音频」">系统输出</button>
-    <button data-src="mic"    aria-pressed="false">麦克风</button>
-    <button data-src="silent" aria-pressed="false">静音</button>
+            title="Capture system output: pick a browser tab and tick &quot;Share tab audio&quot;, or (on Windows) pick Entire screen and tick &quot;Share system audio&quot;">System output</button>
+    <button data-src="mic"    aria-pressed="false">Microphone</button>
+    <button data-src="silent" aria-pressed="false">Silence</button>
   </div>
 
   <p class="warn" id="s-note" hidden></p>
@@ -189,8 +189,8 @@
     var md = navigator.mediaDevices;
     var req = md && (kind === 'display' ? md.getDisplayMedia : md.getUserMedia);
     if (!req) {
-      captureState = '这个浏览器/上下文不支持 ' +
-        (kind === 'display' ? 'getDisplayMedia' : 'getUserMedia') + '（用 file:// 打开时较常见）';
+      captureState = 'No ' + (kind === 'display' ? 'getDisplayMedia' : 'getUserMedia') +
+        ' in this browser/context (common when opened from file://)';
       return Promise.reject(new Error(captureState));
     }
     closeCapture();
@@ -202,8 +202,8 @@
       if (kind === 'display') {
         if (!stream.getAudioTracks().length) {
           stream.getTracks().forEach(function (t) { t.stop(); });
-          var noAudio = new Error('选中的来源没有音频 —— 要在弹窗里勾上「分享标签页音频」' +
-            '（Windows 下选“整个屏幕”则是「分享系统音频」）');
+          var noAudio = new Error('The source you picked has no audio — tick "Share tab audio" ' +
+            'in the picker (on Windows, picking "Entire screen" gives "Share system audio")');
           noAudio.explained = true;
           throw noAudio;
         }
@@ -214,8 +214,8 @@
       var ctx = ensureAudio();
       srcNode = ctx.createMediaStreamSource(stream);
       srcNode.connect(analyser);                     // 不接 destination，避免啸叫
-      captureState = (kind === 'display' ? '系统输出已就绪' : '麦克风已就绪') +
-        '（来源：' + (stream.getAudioTracks()[0].label || '未命名') + '）';
+      captureState = (kind === 'display' ? 'System output ready' : 'Microphone ready') +
+        ' (source: ' + (stream.getAudioTracks()[0].label || 'unnamed') + ')';
       // 用户在浏览器那条共享提示上按「停止共享」时跟着停，别僵在那里
       stream.getAudioTracks()[0].onended = function () {
         closeCapture();
@@ -224,9 +224,9 @@
     }).catch(function (err) {
       // 一定要覆盖掉 setSource 里那句"正在等…"，否则用户一取消，面板就永远停在"等待"上
       captureState = err && err.explained ? err.message
-        : (kind === 'display' ? '系统输出没有打开' : '麦克风没有打开') +
-          '：' + (err && err.message ? err.message : err) +
-          (kind === 'display' ? '（自己点了取消就是这个 NotAllowedError）' : '');
+        : (kind === 'display' ? 'System output failed' : 'Microphone failed') +
+          ': ' + (err && err.message ? err.message : err) +
+          (kind === 'display' ? ' (NotAllowedError means the picker was cancelled)' : '');
       throw err;
     });
   }
@@ -356,8 +356,8 @@
         showNote('');
       } else {
         showNote(next === 'display'
-          ? '正在等你在弹窗里选来源（要勾上「分享标签页音频 / 系统音频」）…'
-          : '正在请求麦克风权限…');
+          ? 'Waiting for you to pick a source (tick "Share tab audio / system audio")…'
+          : 'Requesting microphone permission…');
         openCapture(next).catch(function () { showNote(captureState); });
       }
     } else {
