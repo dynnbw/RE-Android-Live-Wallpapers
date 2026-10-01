@@ -64,6 +64,12 @@
   var FIT_SCREEN = true;
   var AOSP_BASE_SCALE = 0.004165;   // fit_screen 关掉时用的原版定值
 
+  // 真实音频（麦克风 / 系统输出）那条 FFT 的增益。手机端 Visualizer 的 8 位 FFT 自带一层
+  // 归一化，我们复刻不出来；只按"满量程正弦 = 127"标定的话，音乐的单个 bin 只有个位数，
+  // 算法里再平方一次（re²+im²），柱子就基本贴地了。**这个是靠观感调的，不是推导出来的**：
+  // 柱子一直顶满就调小，还是几乎不动就调大。
+  var FFT_GAIN = 4;
+
   // 冰纹理（64×1 的竖向渐变），从 app 的 musicvis/drawable/musicvis_ice.png 原样取出
   var ICE_PNG = 'iVBORw0KGgoAAAANSUhEUgAAAEAAAAABCAIAAADhDz9AAAAAAXNSR0IArs4c6QAAAAZiS0dEAP8A'
     + '/wD/oL2nkwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9kKHQ4lKijwRJ8AAAAZdEVYdENvbW1lbnQA'
@@ -419,8 +425,10 @@
         }
       }
     }
-    // 满量程正弦 → 峰值 |X| = n/2，换算到 8 位格式的 127，与 app 喂进算法的量级一致
-    var scale = 254 / n;
+    // 满量程正弦 → 峰值 |X| = n/2，换算到 8 位格式的 127，与 app 喂进算法的量级一致。
+    // 再乘 FFT_GAIN：手机那边 Visualizer 给的 8 位 FFT 自带一层我们复刻不出来的归一化，
+    // 单靠"满量程正弦 = 127"标定的话，音乐的单个 bin 只有个位数，平方之后几乎贴地。
+    var scale = 254 / n * FFT_GAIN;
     for (i = 0; i < n / 2; i++) {
       var re = Math.round(fftRe[i] * scale), im = Math.round(fftIm[i] * scale);
       if (re > 127) re = 127; else if (re < -127) re = -127;
@@ -596,10 +604,23 @@
 
   var proj = new Float32Array(16), model = new Float32Array(16), mvp = new Float32Array(16);
 
-  /** AudioVisBase.baseScale()：每个模型单位占多少归一化宽度。跟着画布走，所以每帧算。 */
+  /** 正交投影的 x 跨度（模型单位）：竖屏是 2，横屏是 2·w/h。 */
+  function orthoSpanX() {
+    return width > height ? 2 * width / height : 2;
+  }
+
+  /**
+   * 每个模型单位占多少归一化宽度，对应 AudioVisBase.baseScale()。
+   *
+   * 手机端「显示更多采样」是 `2 / min(短边, 1024)` —— 让 1024 条铺满**短边**。
+   * 竖屏时短边就是宽度，完全正确；但**横屏时短边是高度**，1024 条只铺满 2.0 个模型单位，
+   * 而正交的 x 跨 `[−w/h, w/h]`（1920×1080 是 3.56），两侧就空出黑边。
+   * 网页的窗口常是横的，所以改成按 **x 的跨度**归一：`xSpan / 1024`，1024 条恰好铺满整宽。
+   * 竖屏时两者数值完全相同（都是 2/1024）。
+   */
   function baseScale() {
     if (!FIT_SCREEN) return AOSP_BASE_SCALE;
-    return 2 / Math.min(Math.min(width, height), 1024);
+    return orthoSpanX() / LINE_COUNT;
   }
 
   function updateMvp() {
