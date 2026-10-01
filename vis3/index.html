@@ -478,10 +478,37 @@
   //   * 浏览器里：URL 加 `?debug=1`
   //   * **Wallpaper Engine 里：没法挂 URL 参数** —— 走壁纸属性，也就是下面这个监听器，
   //     配合 project.json 里声明的一条 bool 属性（见 README，属性名就叫 debug）。
+  // 手动缩放 / 平移：宿主的视口我们猜不准（WE 里出现过"只显示左侧一条边"，而
+  // window 与 canvas 都报同一个数），与其继续猜，不如给两个旋钮，由使用者调到合适。
+  //   scale   = 1 表示原样；> 1 放大，< 1 缩小
+  //   offsetx = 以**视口宽度**为单位的横向平移，1 = 右移一整屏
+  var VIEW_SCALE_MIN = 0.1, VIEW_SCALE_MAX = 4;
+  var viewScale = 1, viewOffsetX = 0;
+
+  function clamp(v, lo, hi) {
+    if (!(v === v)) return lo;                 // NaN
+    return v < lo ? lo : (v > hi ? hi : v);
+  }
+
+  function urlNumber(name, def) {
+    var m = new RegExp('[?&]' + name + '=(-?[0-9]*\\.?[0-9]+)').exec(location.search);
+    return m ? parseFloat(m[1]) : def;
+  }
+  viewScale = clamp(urlNumber('scale', 1), VIEW_SCALE_MIN, VIEW_SCALE_MAX);
+  viewOffsetX = clamp(urlNumber('offsetx', 0), -2, 2);
+
   var debugOn = /[?&]debug=1(&|$)/.test(location.search);
   window.wallpaperPropertyListener = {
     applyUserProperties: function (props) {
-      if (props && props.debug) debugOn = !!props.debug.value;
+      if (!props) return;
+      // WE 里挂不了 URL 参数，两个旋钮走壁纸属性（百分比形式，见 README 的 project.json）
+      if (props.debug) debugOn = !!props.debug.value;
+      if (props.scale && typeof props.scale.value === 'number') {
+        viewScale = clamp(props.scale.value / 100, VIEW_SCALE_MIN, VIEW_SCALE_MAX);
+      }
+      if (props.offsetx && typeof props.offsetx.value === 'number') {
+        viewOffsetX = clamp(props.offsetx.value / 100, -2, 2);
+      }
     }
   };
 
@@ -719,11 +746,14 @@
     //     静止时 xOffset 落在 360° 的整数倍上，看起来永远是水平的；网页没有"滑动"这个
     //     语境，把它固定成任意一个角度都是原版从未有过的画面，怎么调都像变形。
     //   * `× (1 + 2|sin(yrot)|)` —— 随旋转一起放大到 3 倍，不转时恒为 1。
-    var scale = baseScale();
+    // 基准缩放 × 手动倍率；横向平移以视口宽度为单位（1 = 一整屏）。
+    // 平移放在缩放**之后**，所以它不受倍率影响，两个旋钮互不干扰。
+    var scale = baseScale() * viewScale;
     model[0] = scale; model[1] = 0;     model[2] = 0;     model[3] = 0;
     model[4] = 0;     model[5] = scale; model[6] = 0;     model[7] = 0;
     model[8] = 0;     model[9] = 0;     model[10] = scale; model[11] = 0;
-    model[12] = 0;    model[13] = 0;    model[14] = 0;     model[15] = 1;
+    model[12] = viewOffsetX * orthoSpanX() / 2;
+    model[13] = 0;    model[14] = 0;    model[15] = 1;
 
     for (var col = 0; col < 4; col++) {
       for (var row = 0; row < 4; row++) {
@@ -782,7 +812,8 @@
       ' · buffer ' + canvas.width + '×' + canvas.height +
       ' · viewport ' + gl.drawingBufferWidth + '×' + gl.drawingBufferHeight +
       ' · we-audio ' + (WE_AVAILABLE ? 'yes' : 'no') +
-      ' · source ' + source;
+      ' · source ' + source +
+      ' · scale ' + viewScale.toFixed(2) + ' · offsetx ' + viewOffsetX.toFixed(2);
   }
 
   // 原版 GenericWaveRS 是 postDelayed(mDrawCube, 20) → 50 FPS
