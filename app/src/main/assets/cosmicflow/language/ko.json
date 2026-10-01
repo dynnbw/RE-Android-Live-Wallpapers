@@ -1,12 +1,12 @@
 {
   "title": "코스믹 플로우",
   "cosmicflow_theme": "테마",
-  "cosmicflow_theme_label_silk": "Silk",
-  "cosmicflow_theme_label_turquoise": "Turquoise",
-  "cosmicflow_theme_label_emerald": "Emerald",
-  "cosmicflow_theme_label_sapphire": "Sapphire",
-  "cosmicflow_theme_label_gold": "Gold",
-  "cosmicflow_theme_label_ruby": "Ruby",
-  "cosmicflow_theme_label_amethyst": "Amethyst",
-  "cosmicflow_theme_label_amber": "Amber"
+  "cosmicflow_theme_label_silk": "실크",
+  "cosmicflow_theme_label_turquoise": "터키석",
+  "cosmicflow_theme_label_emerald": "에메랄드",
+  "cosmicflow_theme_label_sapphire": "사파이어",
+  "cosmicflow_theme_label_gold": "골드",
+  "cosmicflow_theme_label_ruby": "루비",
+  "cosmicflow_theme_label_amethyst": "자수정",
+  "cosmicflow_theme_label_amber": "호박"
 }

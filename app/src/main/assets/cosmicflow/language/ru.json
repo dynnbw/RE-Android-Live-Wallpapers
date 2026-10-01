@@ -1,12 +1,12 @@
 {
   "title": "Космический поток",
   "cosmicflow_theme": "Тема",
-  "cosmicflow_theme_label_silk": "Silk",
-  "cosmicflow_theme_label_turquoise": "Turquoise",
-  "cosmicflow_theme_label_emerald": "Emerald",
-  "cosmicflow_theme_label_sapphire": "Sapphire",
-  "cosmicflow_theme_label_gold": "Gold",
-  "cosmicflow_theme_label_ruby": "Ruby",
-  "cosmicflow_theme_label_amethyst": "Amethyst",
-  "cosmicflow_theme_label_amber": "Amber"
+  "cosmicflow_theme_label_silk": "Шёлк",
+  "cosmicflow_theme_label_turquoise": "Бирюзовый",
+  "cosmicflow_theme_label_emerald": "Изумрудный",
+  "cosmicflow_theme_label_sapphire": "Сапфировый",
+  "cosmicflow_theme_label_gold": "Золотой",
+  "cosmicflow_theme_label_ruby": "Рубиновый",
+  "cosmicflow_theme_label_amethyst": "Аметистовый",
+  "cosmicflow_theme_label_amber": "Янтарный"
 }

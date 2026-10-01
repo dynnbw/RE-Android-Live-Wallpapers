@@ -1,12 +1,12 @@
 {
   "title": "Cosmic Flow",
   "cosmicflow_theme": "Tema",
-  "cosmicflow_theme_label_silk": "Silk",
-  "cosmicflow_theme_label_turquoise": "Turquoise",
-  "cosmicflow_theme_label_emerald": "Emerald",
-  "cosmicflow_theme_label_sapphire": "Sapphire",
-  "cosmicflow_theme_label_gold": "Gold",
-  "cosmicflow_theme_label_ruby": "Ruby",
-  "cosmicflow_theme_label_amethyst": "Amethyst",
-  "cosmicflow_theme_label_amber": "Amber"
+  "cosmicflow_theme_label_silk": "Seda",
+  "cosmicflow_theme_label_turquoise": "Turquesa",
+  "cosmicflow_theme_label_emerald": "Esmeralda",
+  "cosmicflow_theme_label_sapphire": "Zafiro",
+  "cosmicflow_theme_label_gold": "Oro",
+  "cosmicflow_theme_label_ruby": "Rubí",
+  "cosmicflow_theme_label_amethyst": "Amatista",
+  "cosmicflow_theme_label_amber": "Ámbar"
 }

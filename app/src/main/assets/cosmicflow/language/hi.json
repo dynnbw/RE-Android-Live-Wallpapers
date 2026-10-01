@@ -1,12 +1,12 @@
 {
-  "title": "Cosmic Flow",
+  "title": "कॉस्मिक फ़्लो",
   "cosmicflow_theme": "थीम",
-  "cosmicflow_theme_label_silk": "Silk",
-  "cosmicflow_theme_label_turquoise": "Turquoise",
-  "cosmicflow_theme_label_emerald": "Emerald",
-  "cosmicflow_theme_label_sapphire": "Sapphire",
-  "cosmicflow_theme_label_gold": "Gold",
-  "cosmicflow_theme_label_ruby": "Ruby",
-  "cosmicflow_theme_label_amethyst": "Amethyst",
-  "cosmicflow_theme_label_amber": "Amber"
+  "cosmicflow_theme_label_silk": "रेशम",
+  "cosmicflow_theme_label_turquoise": "फ़िरोज़ी",
+  "cosmicflow_theme_label_emerald": "पन्ना",
+  "cosmicflow_theme_label_sapphire": "नीलम",
+  "cosmicflow_theme_label_gold": "स्वर्ण",
+  "cosmicflow_theme_label_ruby": "माणिक",
+  "cosmicflow_theme_label_amethyst": "जामुनिया",
+  "cosmicflow_theme_label_amber": "एम्बर"
 }
