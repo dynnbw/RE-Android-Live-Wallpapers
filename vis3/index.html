@@ -700,9 +700,9 @@
 
   // 桌面滚动 → 旋转。app 里是 onOffsetsChanged 给的 xOffset：mYRotation = xOffset * 4 * 360，
   // 但那个 xOffset 是**整个桌面跨度**的 0…1 —— 五页手机滑一页只走 0.25，也就是一页约转一圈。
-  // 在网页上照抄就成了"拖过一屏转四整圈"，太凶；这里收成 ±60° 的摆动。
-  // 注意它同时是 updateMvp 里那个缩放脉动 1 + 2|sin(角度)| 的输入：±60° 处约 2.7 倍。
-  var MAX_SWING_DEG = 60;
+  // 在网页上照抄就成了"拖过一屏转四整圈"，太凶；这里收成 ±45° 的摆动。
+  // 注意它同时是 updateMvp 里那个缩放脉动 1 + 2|sin(角度)| 的输入：±45° 处约 2.4 倍。
+  var MAX_SWING_DEG = 45;
   var pointerX = 0.5;                     // 0.5 → 角度 0，不旋转、不缩放
   function swingFrom(f) { return (f - 0.5) * 2 * MAX_SWING_DEG; }
   function applyPointer(clientX) {
