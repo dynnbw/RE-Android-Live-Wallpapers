@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Visualizer &mdash; Waveform &middot; WebGL</title>
+<style>
+  :root { --fg:#e8e8e8; --dim:#8a8a8a; --line:#2a2a2a; --warn:#ffcc66; }
+  * { box-sizing: border-box; }
+  html, body { margin:0; padding:0; height:100%; background:#000; overflow:hidden; }
+  body { font:12px/1.55 ui-monospace, SFMono-Regular, Menlo, Consolas, "Cascadia Mono", monospace; color:var(--fg); }
+  #gl { position:fixed; inset:0; width:100%; height:100%; display:block; background:#000; }
+  #hud {
+    position:fixed; left:12px; top:12px; max-width:min(430px, calc(100vw - 24px));
+    max-height:calc(100vh - 24px); overflow:auto; padding:10px 12px;
+    background:rgba(12,12,12,.82); border:1px solid var(--line); border-radius:8px;
+    backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
+  }
+  #hud.hidden { display:none; }
+  .row { display:flex; flex-wrap:wrap; gap:6px; }
+  button {
+    font:inherit; color:var(--fg); background:#1b1b1b; border:1px solid #333;
+    border-radius:6px; padding:3px 8px; cursor:pointer;
+  }
+  button:hover { background:#242424; }
+  button[aria-pressed="true"] { background:#2f4a2f; border-color:#4a7a4a; }
+  /* 只有采集出问题（被拒、没勾音频、等授权）时才会出现这一行 */
+  .warn { color:var(--warn); margin:6px 0 0; }
+  code { color:#9fd; }
+</style>
+</head>
+<body>
+<canvas id="gl"></canvas>
+
+<div id="hud">
+  <div class="row">
+    <button data-src="synth"  aria-pressed="true">合成信号</button>
+    <button data-src="display" aria-pressed="false"
+            title="抓系统输出：选浏览器标签页 + 勾「分享标签页音频」，或（Windows）选整个屏幕 + 勾「分享系统音频」">系统输出</button>
+    <button data-src="mic"    aria-pressed="false">麦克风</button>
+    <button data-src="silent" aria-pressed="false">静音</button>
+  </div>
+
+  <p class="warn" id="s-note" hidden></p>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ---------------------------------------------------------------
+  // 常量：逐条对应 AOSP packages/wallpapers/MusicVisualization
+  //   src/com/android/musicvis/vis1/Visualization1.java
+  // ---------------------------------------------------------------
+  var SAMPLE_COUNT = 1024;        // new AudioCapture(TYPE_PCM, 1024)
+  var CENTER_BYTE  = 128;         // ((int) mRawVizData[i] & 0xFF) - 128
+  var POINT_DIAM   = 2.0;         // Paint.setStrokeWidth(2)
+  var FRAME_MS     = 1000 / 25;   // mHandler.postDelayed(mDrawCube, 1000 / 25)
+
+  var canvas = document.getElementById('gl');
+  var gl = canvas.getContext('webgl', { antialias: true, alpha: false, preserveDrawingBuffer: false })
+        || canvas.getContext('experimental-webgl', { antialias: true, alpha: false });
+  if (!gl) {
+    document.body.innerHTML = '<p style="color:#f88;padding:20px;font:14px monospace">' +
+      '这个浏览器拿不到 WebGL 上下文，看不了这个演示。</p>';
+    return;
+  }
+
+  // ---------------------------------------------------------------
+  // 着色器
+  // ---------------------------------------------------------------
+  var VS = [
+    'attribute float aCol;',            // 列号（设备像素）
+    'attribute float aAmp;',            // ((raw & 0xFF) - 128)，同样按“设备像素”用
+    'uniform vec2 uRes;',
+    'uniform float uCenterY;',
+    'uniform float uPointSize;',
+    'uniform float uColScale;',         // 采样间距（设备像素）；屏宽 ≤ 1024 时是 1
+    'void main() {',
+    '  float x = (aCol + 0.5) * uColScale;',  // 原版 c.drawPoint(i, ...)：列号即 x（间距 1）
+    '  float y = uCenterY + aAmp;',     // 原版 mCenterY + mVizData[i]
+    '  gl_Position = vec4(x / uRes.x * 2.0 - 1.0, 1.0 - y / uRes.y * 2.0, 0.0, 1.0);',
+    '  gl_PointSize = uPointSize;',
+    '}'
+  ].join('\n');
+
+  var FS = [
+    'precision mediump float;',
+    'uniform float uShade;',
+    'void main() {',
+    '  vec2 d = gl_PointCoord - vec2(0.5, 0.5);',
+    '  if (dot(d, d) > 0.25) discard;', // 圆点，对应 Paint 的 round cap
+    '  gl_FragColor = vec4(uShade, uShade, uShade, 1.0);',
+    '}'
+  ].join('\n');
+
+  function compile(type, src) {
+    var s = gl.createShader(type);
+    gl.shaderSource(s, src);
+    gl.compileShader(s);
+    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+      throw new Error(gl.getShaderInfoLog(s) || 'shader compile failed');
+    }
+    return s;
+  }
+
+  var prog, loc;
+  try {
+    prog = gl.createProgram();
+    gl.attachShader(prog, compile(gl.VERTEX_SHADER, VS));
+    gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, FS));
+    gl.linkProgram(prog);
+    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
+      throw new Error(gl.getProgramInfoLog(prog) || 'link failed');
+    }
+  } catch (e) {
+    document.body.innerHTML = '<p style="color:#f88;padding:20px;font:14px monospace">' +
+      '着色器编译失败：' + String(e.message || e) + '</p>';
+    return;
+  }
+  gl.useProgram(prog);
+  loc = {
+    aCol:      gl.getAttribLocation(prog, 'aCol'),
+    aAmp:      gl.getAttribLocation(prog, 'aAmp'),
+    uRes:      gl.getUniformLocation(prog, 'uRes'),
+    uCenterY:  gl.getUniformLocation(prog, 'uCenterY'),
+    uPointSize:gl.getUniformLocation(prog, 'uPointSize'),
+    uColScale: gl.getUniformLocation(prog, 'uColScale'),
+    uShade:    gl.getUniformLocation(prog, 'uShade')
+  };
+
+  // 列坐标：静态，0 … 1023
+  var colBuf = gl.createBuffer();
+  var colData = new Float32Array(SAMPLE_COUNT);
+  for (var i = 0; i < SAMPLE_COUNT; i++) colData[i] = i;
+  gl.bindBuffer(gl.ARRAY_BUFFER, colBuf);
+  gl.bufferData(gl.ARRAY_BUFFER, colData, gl.STATIC_DRAW);
+
+  // 幅度：每帧更新（原版 mVizData 就是这类数据）
+  var ampBuf = gl.createBuffer();
+  var ampData = new Float32Array(SAMPLE_COUNT);
+  gl.bindBuffer(gl.ARRAY_BUFFER, ampBuf);
+  gl.bufferData(gl.ARRAY_BUFFER, ampData, gl.DYNAMIC_DRAW);
+
+  gl.enableVertexAttribArray(loc.aCol);
+  gl.enableVertexAttribArray(loc.aAmp);
+  gl.clearColor(0, 0, 0, 1);   // 原版 c.drawColor(0xff000000)
+
+  // ---------------------------------------------------------------
+  // 数据源
+  // ---------------------------------------------------------------
+  var source = 'synth';        // synth | display | mic | silent
+  var audioCtx = null, analyser = null, timeData = null, srcNode = null;
+  var openKind = '';           // 当前**打开着**的采集：'' | 'display' | 'mic'
+  var openStream = null;
+  var captureState = '';       // 给面板显示的一句话状态
+
+  function ensureAudio() {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();   // 挂起时 analyser 只会返回一片 128
+    if (!analyser) {
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = SAMPLE_COUNT * 2;         // 2048 → 时域 2048 点，取前 1024
+      analyser.smoothingTimeConstant = 0;
+      timeData = new Uint8Array(analyser.fftSize);
+    }
+    return audioCtx;
+  }
+
+  function closeCapture() {
+    if (srcNode) { try { srcNode.disconnect(); } catch (e) { /* 已经断开 */ } srcNode = null; }
+    if (openStream) {
+      openStream.getTracks().forEach(function (t) { t.stop(); });
+      openStream = null;
+    }
+    openKind = '';
+  }
+
+  /**
+   * 打开一个采集源。kind = 'display'（系统输出）| 'mic'（麦克风）。
+   *
+   * 原版用 android.media.audiofx.Visualizer 抓的是**系统全局输出**，所以优先用它；
+   * 网页里唯一能碰到系统输出的是 getDisplayMedia（屏幕/标签页共享），它抓的是**选定来源**
+   * 的输出 —— 选"浏览器标签页"并勾上"分享标签页音频"最接近原版。
+   * 注意 Chrome 不允许只请求音频，必须同时要 video，所以拿到后立刻把视频轨停掉。
+   */
+  function openCapture(kind) {
+    if (openKind === kind) return Promise.resolve();
+    var md = navigator.mediaDevices;
+    var req = md && (kind === 'display' ? md.getDisplayMedia : md.getUserMedia);
+    if (!req) {
+      captureState = '这个浏览器/上下文不支持 ' +
+        (kind === 'display' ? 'getDisplayMedia' : 'getUserMedia') + '（用 file:// 打开时较常见）';
+      return Promise.reject(new Error(captureState));
+    }
+    closeCapture();
+    var wants = kind === 'display'
+      ? { video: true, audio: true }        // Chrome 不接受"只要音频"的屏幕共享，必须带 video
+      : { audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } };
+
+    return req.call(md, wants).then(function (stream) {
+      if (kind === 'display') {
+        if (!stream.getAudioTracks().length) {
+          stream.getTracks().forEach(function (t) { t.stop(); });
+          var noAudio = new Error('选中的来源没有音频 —— 要在弹窗里勾上「分享标签页音频」' +
+            '（Windows 下选“整个屏幕”则是「分享系统音频」）');
+          noAudio.explained = true;
+          throw noAudio;
+        }
+        stream.getVideoTracks().forEach(function (t) { t.stop(); });   // 视频没用，别白耗编码
+      }
+      openKind = kind;
+      openStream = stream;
+      var ctx = ensureAudio();
+      srcNode = ctx.createMediaStreamSource(stream);
+      srcNode.connect(analyser);                     // 不接 destination，避免啸叫
+      captureState = (kind === 'display' ? '系统输出已就绪' : '麦克风已就绪') +
+        '（来源：' + (stream.getAudioTracks()[0].label || '未命名') + '）';
+      // 用户在浏览器那条共享提示上按「停止共享」时跟着停，别僵在那里
+      stream.getAudioTracks()[0].onended = function () {
+        closeCapture();
+        if (source === kind) setSource('synth');
+      };
+    }).catch(function (err) {
+      // 一定要覆盖掉 setSource 里那句"正在等…"，否则用户一取消，面板就永远停在"等待"上
+      captureState = err && err.explained ? err.message
+        : (kind === 'display' ? '系统输出没有打开' : '麦克风没有打开') +
+          '：' + (err && err.message ? err.message : err) +
+          (kind === 'display' ? '（自己点了取消就是这个 NotAllowedError）' : '');
+      throw err;
+    });
+  }
+
+  function fillSynth(tMs) {
+    // 不是原版的东西：造一段像音乐的 8bit PCM（真数据走 openCapture）。
+    // 多正弦叠加 + 包络 + 量化噪点 + 周期性重音，量化到 0..255（和 Visualizer 同格式）。
+    var t = tMs / 1000;
+    var beat = Math.pow(Math.max(0, Math.sin(t * Math.PI * 2 * 1.7)), 6);
+    var env = 0.42 + 0.30 * Math.sin(t * 0.9) + 0.38 * beat;
+    for (var i = 0; i < SAMPLE_COUNT; i++) {
+      var x = i / SAMPLE_COUNT;
+      var v = 0;
+      v += 0.55 * Math.sin(6.2831853 * (5.0 * x + t * 0.55));
+      v += 0.30 * Math.sin(6.2831853 * (11.0 * x - t * 0.90));
+      v += 0.16 * Math.sin(6.2831853 * (23.0 * x + t * 1.35));
+      v += 0.07 * (Math.random() - 0.5);
+      var raw = 128 + env * v * 118;
+      if (raw < 0) raw = 0; else if (raw > 255) raw = 255;
+      ampData[i] = (raw | 0) - CENTER_BYTE;
+    }
+  }
+
+  function fillSilent() {
+    // 原版：mAudioCapture == null 时 Arrays.fill(mVizData, 0) → 中线上一条直线；
+    // 有采集但静音时 Visualizer 返回 128 → 同样为 0。
+    for (var i = 0; i < SAMPLE_COUNT; i++) ampData[i] = 0;
+  }
+
+  function fillCapture() {
+    // AnalyserNode 的时域数据是 0–255 无符号、中心 128，与 Visualizer 的 PCM 格式一致
+    analyser.getByteTimeDomainData(timeData);
+    for (var i = 0; i < SAMPLE_COUNT; i++) ampData[i] = timeData[i] - CENTER_BYTE;
+  }
+
+  // ---------------------------------------------------------------
+  // 尺寸 / 状态
+  // ---------------------------------------------------------------
+  var sNote = document.getElementById('s-note');
+  var paused = false;
+
+  function resize() {
+    var dpr = window.devicePixelRatio || 1;
+    var w = Math.max(1, Math.round(window.innerWidth  * dpr));
+    var h = Math.max(1, Math.round(window.innerHeight * dpr));
+    if (canvas.width !== w || canvas.height !== h) {
+      canvas.width = w; canvas.height = h;   // 后备缓冲＝设备像素：幅度就按设备像素算（与原版一致）
+      gl.viewport(0, 0, w, h);
+    }
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  var lastDraw = 0;
+
+  function bindAmp(buf) {
+    gl.bindBuffer(gl.ARRAY_BUFFER, ampBuf);
+    gl.bufferSubData(gl.ARRAY_BUFFER, 0, buf);
+    gl.vertexAttribPointer(loc.aAmp, 1, gl.FLOAT, false, 0, 0);
+  }
+
+  function draw() {
+    var w = canvas.width, h = canvas.height;
+
+    // 原版：for (i = 0; i < mWidth; i++) → 一列一个点，取缓冲区最前面的采样（左对齐）
+    var drawCount = Math.min(w, SAMPLE_COUNT);
+    // 采样间距（设备像素）。屏宽 ≤ 1024 时 drawCount == w，间距恰好是 1，
+    // 与原版“一个采样一个像素、x = i”逐点对应；更宽时原版越界崩，没有原版可对照，
+    // 这里把采样横向拉开铺满整宽（曾经裁到 1024 列就完事，右半边是空的，那是错的）。
+    var colScale = w / drawCount;
+
+    gl.uniform2f(loc.uRes, w, h);
+    gl.uniform1f(loc.uCenterY, h / 2);     // mCenterY = height / 2.0f
+    gl.uniform1f(loc.uColScale, colScale);
+    gl.bindBuffer(gl.ARRAY_BUFFER, colBuf);
+    gl.vertexAttribPointer(loc.aCol, 1, gl.FLOAT, false, 0, 0);
+
+    gl.clear(gl.COLOR_BUFFER_BIT);         // 原版 c.drawColor(0xff000000)
+
+    // 白色，对应 Paint.setColor(0xffffffff)。
+    // 点径 = 2 × 采样间距：间距为 1 时正好是原版的 strokeWidth 2。它必须跟着间距放大，
+    // 否则间距一拉开点就散成一颗颗珠子，而原版那 2 像素的点是**挨着**的、连成一条线。
+    gl.uniform1f(loc.uShade, 1.0);
+    gl.uniform1f(loc.uPointSize, POINT_DIAM * colScale);
+    bindAmp(ampData);
+    gl.drawArrays(gl.POINTS, 0, drawCount);
+  }
+
+  // ---------------------------------------------------------------
+  // 主循环：原版 25 FPS 的 postDelayed，这里用 rAF + 时间门限
+  // ---------------------------------------------------------------
+  function loop(now) {
+    requestAnimationFrame(loop);
+    if (paused) return;
+    if (now - lastDraw < FRAME_MS) return;
+    lastDraw = now;
+
+    if (source === 'synth') {
+      fillSynth(now);
+    } else if (source === 'silent') {
+      fillSilent();
+    } else if (analyser) {
+      fillCapture();
+    }
+    // 采集源但还没就绪（正等授权/等用户选来源）：保持上一帧，面板下方会说明在等什么
+    draw();
+  }
+  requestAnimationFrame(loop);
+
+  // ---------------------------------------------------------------
+  // 交互
+  // ---------------------------------------------------------------
+  var btns = Array.prototype.slice.call(document.querySelectorAll('button[data-src]'));
+  var SOURCES = ['synth', 'display', 'mic', 'silent'];
+
+  /** 面板上只有这一行会说话，而且只在采集出问题时出现（正常时它是空的、不占位置）。 */
+  function showNote(text) {
+    sNote.hidden = !text;
+    sNote.textContent = text || '';
+  }
+
+  function setSource(next) {
+    source = next;
+    btns.forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.src === next)); });
+    if (next === 'display' || next === 'mic') {
+      if (openKind === next) {
+        showNote('');
+      } else {
+        showNote(next === 'display'
+          ? '正在等你在弹窗里选来源（要勾上「分享标签页音频 / 系统音频」）…'
+          : '正在请求麦克风权限…');
+        openCapture(next).catch(function () { showNote(captureState); });
+      }
+    } else {
+      showNote('');
+    }
+  }
+
+  btns.forEach(function (b) {
+    b.addEventListener('click', function () { setSource(b.dataset.src); });
+  });
+
+  window.addEventListener('keydown', function (e) {
+    if (e.key === 'h' || e.key === 'H') {
+      document.getElementById('hud').classList.toggle('hidden');
+    } else if (e.key === 'm' || e.key === 'M') {
+      setSource(SOURCES[(SOURCES.indexOf(source) + 1) % SOURCES.length]);
+    } else if (e.key === ' ') {
+      paused = !paused;          // 面板上没有这个开关（只留键盘），方便按住一帧看
+      e.preventDefault();
+    }
+  });
+
+  setSource('synth');
+})();
+</script>
+</body>
+</html>

@@ -29,7 +29,9 @@
         <span class="win-title" id="previewTitle">PREVIEW &mdash; Fall</span>
       </div>
       <div class="preview-body">
-        <iframe id="livePreview" src="fall/" title="Live wallpaper preview" allow="autoplay"></iframe>
+        <!-- microphone / display-capture：vis1 演示要抓麦克风与系统输出，没有这两项
+             权限策略会在 iframe 里把 getUserMedia / getDisplayMedia 直接挡掉 -->
+        <iframe id="livePreview" src="fall/" title="Live wallpaper preview" allow="autoplay; microphone; display-capture"></iframe>
       </div>
     </div>
 
@@ -56,6 +58,13 @@
             <div class="tile-thumb"><img src="galaxy/icon.jpg" alt="Galaxy wallpaper preview"><span class="tile-badge">WebGL</span><span class="tile-badge tile-badge-pc">PC</span></div>
           </div>
           <div class="tile-caption">Galaxy &middot; Spiral Nebula</div>
+        </a>
+
+        <a class="tile tile-demo" href="javascript:void(0)" onclick="showPreview('vis1/','Visualizer — Waveform')">
+          <div class="tile-frame">
+            <div class="tile-thumb"><img src="vis1/icon.jpg" alt="Visualizer waveform preview"><span class="tile-badge">WebGL</span><span class="tile-badge tile-badge-pc">PC</span></div>
+          </div>
+          <div class="tile-caption">Visualizer &middot; Waveform</div>
         </a>
 
         <div class="tile tile-static">
@@ -168,7 +177,9 @@
         <span class="demo-title" id="demoTitle">Demo</span>
         <button class="demo-close" id="demoClose">&times;</button>
       </div>
-      <iframe id="demoIframe" src="" allow="autoplay" allowfullscreen></iframe>
+      <!-- microphone / display-capture：vis1 演示要抓麦克风与系统输出，没有这两项
+           权限策略会在 iframe 里把 getUserMedia / getDisplayMedia 直接挡掉 -->
+      <iframe id="demoIframe" src="" allow="autoplay; microphone; display-capture" allowfullscreen></iframe>
     </div>
   </div>
 

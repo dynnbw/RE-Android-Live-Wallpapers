@@ -51,7 +51,7 @@
 
   <section id="demos">
     <div class="section-title">WebGL Previews</div>
-    <div class="section-sub">Try 3 of the 30 wallpapers live in your browser before installing.</div>
+    <div class="section-sub">Try 4 of the 30 wallpapers live in your browser before installing.</div>
     <div class="demos">
       <div class="card card-fall">
         <div class="card-media">
@@ -100,6 +100,22 @@
 </div>
         </div>
       </div>
+
+      <div class="card">
+        <div class="card-media">
+          <img src="vis1/icon.jpg" alt="Visualizer waveform preview">
+          <div class="overlay"></div>
+          <div class="live-badge">WebGL</div>
+        </div>
+        <div class="card-body">
+          <div class="tags"><span class="tag gl">OpenGL ES</span></div>
+          <h2>Visualizer &mdash; Waveform</h2>
+          <p>One white dot per sample, single-sided around the centre line. Follows system audio output, a microphone, or a built-in test signal.</p>
+          <div class="actions">
+            <a class="btn btn-demo" href="javascript:void(0)" onclick="openDemo('vis1/','Visualizer &mdash; Waveform')">Run Demo</a>
+</div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -123,7 +139,9 @@
         <span class="demo-title" id="demoTitle">Demo</span>
         <button class="demo-close" id="demoClose">&times;</button>
       </div>
-      <iframe id="demoIframe" src="" allow="autoplay" allowfullscreen></iframe>
+      <!-- microphone / display-capture：vis1 演示要抓麦克风与系统输出，没有这两项
+           权限策略会在 iframe 里把 getUserMedia / getDisplayMedia 直接挡掉 -->
+      <iframe id="demoIframe" src="" allow="autoplay; microphone; display-capture" allowfullscreen></iframe>
     </div>
   </div>
 
