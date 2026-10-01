@@ -698,18 +698,22 @@
     b.addEventListener('click', function () { setSource(b.dataset.src); });
   });
 
-  // 桌面滚动 → 旋转。app 里是 onOffsetsChanged 给的 xOffset：
-  //   mYRotation = xOffset * 4 * 360  （FFT 比 PCM 多一倍）—— 横向移过一整屏 = 转四整圈
-  var pointerX = 0.5;
+  // 桌面滚动 → 旋转。app 里是 onOffsetsChanged 给的 xOffset：mYRotation = xOffset * 4 * 360，
+  // 但那个 xOffset 是**整个桌面跨度**的 0…1 —— 五页手机滑一页只走 0.25，也就是一页约转一圈。
+  // 在网页上照抄就成了"拖过一屏转四整圈"，太凶；这里收成 ±60° 的摆动。
+  // 注意它同时是 updateMvp 里那个缩放脉动 1 + 2|sin(角度)| 的输入：±60° 处约 2.7 倍。
+  var MAX_SWING_DEG = 60;
+  var pointerX = 0.5;                     // 0.5 → 角度 0，不旋转、不缩放
+  function swingFrom(f) { return (f - 0.5) * 2 * MAX_SWING_DEG; }
   function applyPointer(clientX) {
     var rect = canvas.getBoundingClientRect();
     var f = rect.width > 0 ? (clientX - rect.left) / rect.width : 0.5;
     pointerX = Math.max(0, Math.min(1, f));
-    yRotation = pointerX * 4 * 360;
+    yRotation = swingFrom(pointerX);
   }
   canvas.addEventListener('pointermove', function (e) { applyPointer(e.clientX); });
   canvas.addEventListener('pointerdown', function (e) { applyPointer(e.clientX); });
-  yRotation = pointerX * 4 * 360;
+  yRotation = swingFrom(pointerX);
 
   window.addEventListener('keydown', function (e) {
     if (e.key === 'h' || e.key === 'H') {
