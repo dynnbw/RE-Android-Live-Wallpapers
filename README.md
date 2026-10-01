@@ -28,6 +28,10 @@ python3 -m http.server 8080
 - **鼠标 / 触摸：** 横向移动切换视角
 - **ESC** 或点击遮罩背景关闭演示窗口
 - **Visualizer 演示：** 面板上四个按钮切换数据源 —— **Test tone / System output / Microphone / Silence**。
+
+- **Spectrum 演示：** 数据源多一个 **Wallpaper Engine** —— 只在 WE 里出现，用的是 WE 的
+  `wallpaperRegisterAudioListener`（抓系统输出，与原版同一路），进 WE 后默认就用它。
+  壁纸工程要在 `project.json` 里开 `"supportsaudioprocessing": true` 才收得到音频。
   「System output」会弹出共享窗口：选**标签页**并勾上「分享标签页音频」，或（Windows）选**整个屏幕**并勾「分享系统音频」。
   快捷键：`M` 轮换数据源、`H` 隐藏面板、`空格` 暂停。
 

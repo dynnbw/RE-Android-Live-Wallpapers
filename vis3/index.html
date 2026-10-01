@@ -39,6 +39,8 @@
             title="Capture system output: pick a browser tab and tick &quot;Share tab audio&quot;, or (on Windows) pick Entire screen and tick &quot;Share system audio&quot;">System output</button>
     <button data-src="mic"     aria-pressed="false">Microphone</button>
     <button data-src="silent"  aria-pressed="false">Silence</button>
+    <!-- 只有跑在 Wallpaper Engine 里才有 —— 载入时检测到接口才显示（见下面的 WE 部分） -->
+    <button data-src="we"      aria-pressed="false" hidden>Wallpaper Engine</button>
   </div>
 
   <p class="warn" id="s-note" hidden></p>
@@ -317,10 +319,12 @@
   // ---------------------------------------------------------------
   // 数据源（与 vis1 演示同一套：麦克风 / 屏幕共享的音频）
   // ---------------------------------------------------------------
-  var source = 'idle';    // idle | synth | display | mic | silent
+  var source = 'idle';    // idle | synth | we | display | mic | silent
   var audioCtx = null, analyser = null, timeData = null, srcNode = null;
   var openKind = '', openStream = null, captureState = '';
-  var captureData = null;      // Int32Array(FFT_SIZE)：实部/虚部交错，和 Visualizer 的 8 位格式同位
+  // Int32Array(FFT_SIZE)：实部/虚部交错，和 Visualizer 的 8 位格式同位。
+  // 一开始就分配 —— Wallpaper Engine 那条路也要用它，而那条路不经过 ensureAudio()。
+  var captureData = new Int32Array(FFT_SIZE);
 
   function ensureAudio() {
     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -330,7 +334,6 @@
       analyser.fftSize = FFT_SIZE * 2;              // 时域拿到 2048 点，取前 1024
       analyser.smoothingTimeConstant = 0;
       timeData = new Float32Array(analyser.fftSize);
-      captureData = new Int32Array(FFT_SIZE);
     }
     return audioCtx;
   }
@@ -439,8 +442,56 @@
     return out;
   }
 
+  // ---------------------------------------------------------------
+  // Wallpaper Engine 的音频接口
+  // ---------------------------------------------------------------
+  // 网页壁纸里 WE 会提供 window.wallpaperRegisterAudioListener(cb)：
+  //   * 回调收到一个数组，官方文档是 **128 个元素** —— 0–63 左声道、64–127 右声道，
+  //     索引越小频率越低；取值一般 0.00–1.00（官方说偶尔会 >1，要自己夹）。
+  //   * 大约 30 次/秒回调一次。
+  //   * **只能注册一次，而且不能放在 window.onload 里**（会漏事件）—— 本页的脚本就在
+  //     </body> 之前、且只调一次，符合要求。
+  //   * 壁纸工程那边还要在 project.json 里开 `"supportsaudioprocessing": true`。
+  // 它给的是**各频段音量**（幅度谱），不是时域也不是复数，所以直接当成实部、虚部记 0；
+  // 算法里本来就要 (re²+im²)，正好等于幅度的平方。
+  //
+  // 回调写成不依赖具体长度的：拿到 128 就左右取平均，拿到别的长度就线性重采样到 64 段。
+  var WE_BANDS = 64;
+  var WE_TIMEOUT_MS = 500;      // 超过这么久没回调，就当成"此刻没有声音"
+  var weAudio = null;           // Float32Array(WE_BANDS)
+  var weAudioAt = 0;
+
+  function onWallpaperAudio(array) {
+    if (!array || !array.length) return;
+    if (!weAudio) weAudio = new Float32Array(WE_BANDS);
+    var stereo = array.length >= WE_BANDS * 2;
+    var bands = stereo ? WE_BANDS : array.length;
+    for (var i = 0; i < WE_BANDS; i++) {
+      var v = stereo
+        ? (array[i] + array[i + WE_BANDS]) * 0.5
+        : array[Math.min(bands - 1, Math.floor(i * bands / WE_BANDS))];
+      if (!(v > 0)) v = 0;       // 顺带挡掉 NaN 与负值
+      if (v > 1) v = 1;
+      weAudio[i] = v;
+    }
+    weAudioAt = performance.now();
+  }
+
+  /** 把 WE 的 64 段铺到算法真正读的那一串箱上（1 … len−2）。 */
+  function wallpaperEngineData() {
+    if (!weAudio || performance.now() - weAudioAt > WE_TIMEOUT_MS) return null;
+    var hi = Math.trunc(FFT_SIZE / 4) - 2;          // 与 updateWaveData 里的 len−1 一致
+    captureData.fill(0);
+    for (var b = 1; b <= hi; b++) {
+      var m = weAudio[Math.round((b - 1) / (hi - 1) * (WE_BANDS - 1))];
+      captureData[b * 2] = Math.round(m * 127);     // 当实部用，虚部留 0
+    }
+    return captureData;
+  }
+
   /** 真实的采集数据；null = 没有数据（len 0 → 交给 idle / 合成那一路）。 */
   function currentData() {
+    if (source === 'we') return wallpaperEngineData();
     if (source !== 'display' && source !== 'mic') return null;
     if (!analyser) return null;
     analyser.getFloatTimeDomainData(timeData);
@@ -701,7 +752,19 @@
   // ---------------------------------------------------------------
   var sNote = document.getElementById('s-note');
   var btns = Array.prototype.slice.call(document.querySelectorAll('button[data-src]'));
-  var SOURCES = ['idle', 'synth', 'display', 'mic', 'silent'];
+
+  // Wallpaper Engine 的音频接口只在 WE 里存在。检测到就亮出按钮、注册监听，
+  // 并**默认用它** —— WE 抓的是系统输出，与原版用 Visualizer 抓全局输出正是同一路，
+  // 比麦克风/屏幕共享都更接近原版。注册只能一次，而且就在这里（</body> 之前）调。
+  var WE_AVAILABLE = typeof window.wallpaperRegisterAudioListener === 'function';
+  var SOURCES = ['idle', 'synth'];
+  if (WE_AVAILABLE) {
+    var weBtn = document.querySelector('button[data-src="we"]');
+    if (weBtn) weBtn.hidden = false;
+    window.wallpaperRegisterAudioListener(onWallpaperAudio);
+    SOURCES.push('we');
+  }
+  SOURCES.push('display', 'mic', 'silent');
 
   function showNote(text) {
     sNote.hidden = !text;
@@ -746,7 +809,7 @@
     }
   });
 
-  setSource('idle');
+  setSource(WE_AVAILABLE ? 'we' : 'idle');
 })();
 </script>
 </body>
