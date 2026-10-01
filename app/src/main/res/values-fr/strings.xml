@@ -12,60 +12,37 @@
     
 
     <!-- Fond d’écran montrant l’aperçu de l’appareil photo -->
-    <string name="wallpaper_walkaround">Vision transparente</string>
 
     <!-- Fond d’écran avec herbe et ciel -->
-    <string name="wallpaper_grass">Herbe</string>
     <string name="wallpaper_grass_vk">Herbe Vulkan</string>
 
-    <string name="wallpaper_aurora1">Aurore boréale</string>
-    <string name="wallpaper_aurora2">Aurore boréale 2</string>
 
     <!-- Fond d’écran de galaxie -->
-    <string name="wallpaper_galaxy">Galaxie</string>
-    <string name="wallpaper_nightsky">Ciel nocturne</string>
-    <string name="wallpaper_microbes">Microbes</string>
     <string name="wallpaper_galaxy_vk">Galaxie Vulkan</string>
 
     <!-- Fond d’écran Galaxie 4 -->
-    <string name="wallpaper_galaxy4">Trou noir</string>
 
     <!-- Fond d’écran feuilles flottant sur l’eau -->
-    <string name="wallpaper_fall">Feuilles d’eau</string>
     <string name="wallpaper_fall_vk">Feuilles d’eau Vulkan</string>
 
     <!-- Fond d’écran monde sauvage -->
-    <string name="wallpaper_wildworld">Monde sauvage</string>
 
     <!-- Fond d’écran feux d’artifice -->
-    <string name="wallpaper_fireworks">Feux d’artifice</string>
 
     <!-- Fond d’écran moulins à vent -->
-    <string name="wallpaper_windmill">Moulins à vent</string>
 
     <!-- Fond d’écran météo océanique -->
-    <string name="wallpaper_ocean">Météo océanique</string>
 
     <!-- Fond d’écran grand fond marin -->
-    <string name="wallpaper_deepsea">Grand fond</string>
 
     <!-- Fond d’écran horloge polaire -->
-    <string name="wallpaper_clock">Horloge polaire</string>
 
     <!-- Fond d’écran Nexus -->
-    <string name="wallpaper_nexus">Nexus</string>
 
     <!-- Fond d’écran champ de bruit -->
-    <string name="wallpaper_noisefield">Bulles</string>
     <string name="wallpaper_nebula">Nébuleuse</string>
 
     <!-- Fonds d’écran de visualisation musicale -->
-    <string name="wallpaper_vis1">Visualiseur</string>
-    <string name="wallpaper_vis2">Forme d’onde</string>
-    <string name="wallpaper_vis3">Spectre</string>
-    <string name="wallpaper_vis4">VU-mètre</string>
-    <string name="wallpaper_vis5">Multitude</string>
-    <string name="wallpaper_vis6">Spectre circulaire</string>
 
     <!-- Horloge polaire : titre de l’activité des paramètres -->
     <string name="clock_settings">Paramètres de l’horloge polaire</string>
@@ -161,12 +138,8 @@
     <!-- Préférences du fond d’écran Galaxie 4 -->
 
     <!-- Fond d’écran Phase Beam -->
-    <string name="wallpaper_phasebeam">Faisceau de phase</string>
 
     <!-- Cube wallpaper -->
-    <string name="wallpaper_cube">Cube</string>
-    <string name="wallpaper_earth">Terre</string>
-    <string name="wallpaper_silk">Soie fluide</string>
 
 
     <!-- Paramètres globaux de fréquence d’images -->
@@ -183,17 +156,14 @@
     <string name="grass_color_white">Blanc</string>
 
     <!-- Fond d’écran Fumée magique -->
-    <string name="wallpaper_magicsmoke">Fumée magique</string>
     <string name="pref_fireworks_custom_background_title">Image d’arrière-plan personnalisée</string>
     <string name="pref_fireworks_custom_background_summary">Appuyez pour sélectionner une image d’arrière-plan personnalisée</string>
     <string name="pref_fireworks_reset_background_title">Rétablir l’arrière-plan par défaut</string>
     <string name="pref_fireworks_reset_background_summary">Supprimer l’arrière-plan personnalisé et utiliser celui par défaut</string>
 
     <!-- Fond d’écran Spirale Holo -->
-    <string name="wallpaper_holospiral">Spirale Holo</string>
 
     <!-- Fond d’écran Mer bleue -->
-    <string name="wallpaper_bluesea">Mer bleue</string>
 
     <string name="openweather_api_key">YOUR_OPENWEATHER_API_KEY</string>
 
@@ -242,23 +212,17 @@
     <string name="reset_current_settings_title">Restaurer les paramètres par défaut</string>
     <string name="reset_current_settings_summary">Restaurer les paramètres de ce fond d’écran aux valeurs par défaut</string>
     <string name="reset_action_confirm">Restaurer</string>
-    <string name="wallpaper_forest">Forêt</string>
 
     <string name="pref_use_vulkan_title">Moteur de rendu Vulkan</string>
     <string name="pref_use_vulkan_summary">Utiliser Vulkan pour de meilleures performances (réappliquer le fond d écran)</string>
     <string name="pref_disabled_prefix">[Désactivé]</string>
-    <string name="wallpaper_cosmicflow">Cosmic Flow</string>
-    <string name="wallpaper_droid">Shake Them All</string>
 
     <!-- Luminous dots wallpaper -->
-    <string name="wallpaper_luminousdots">Points lumineux</string>
 
     <!-- Nixie tube wallpaper -->
-    <string name="wallpaper_nixietube">Tube Nixie</string>
     <string name="wallpaper_nixietube_desc">Affichage à tube lumineux : horloge élégante par défaut, vumètre pendant la lecture audio</string>
 
     <!-- GeekLog wallpaper -->
-    <string name="wallpaper_geeklog">Journal geek</string>
     <!-- 壁纸磁贴占位格（反馈入口）：壁纸数量为奇数时补在最后一格 -->
     <string name="grid_feedback_title">Retours et demandes de portage</string>
     <string name="grid_feedback_caption">Ouvrir un ticket sur GitHub</string>

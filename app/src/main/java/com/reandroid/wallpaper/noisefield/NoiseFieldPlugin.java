@@ -18,11 +18,6 @@ public class NoiseFieldPlugin implements WallpaperPlugin {
     }
 
     @Override
-    public String getDisplayName(Context context) {
-        return "Bubbles";
-    }
-
-    @Override
     public WallpaperEngine createEngine(Context context, WallpaperPluginHost host) {
         return new NoiseFieldEngine(context, host);
     }

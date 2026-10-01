@@ -13,11 +13,6 @@ public class PhaseBeamPlugin implements WallpaperPlugin {
     }
 
     @Override
-    public String getDisplayName(Context context) {
-        return "Phase Beam";
-    }
-
-    @Override
     public WallpaperEngine createEngine(Context context, WallpaperPluginHost host) {
         return new PhaseBeamEngine(context, host);
     }

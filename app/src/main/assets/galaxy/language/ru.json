@@ -1,4 +1,5 @@
 {
+  "title": "Галактика",
   "galaxy_radius": "Размер галактики",
   "galaxy_parallax": "Сила параллакса",
   "galaxy_particle_count": "Количество частиц",

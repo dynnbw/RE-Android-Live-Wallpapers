@@ -52,7 +52,6 @@ Located at `assets/{pluginId}/info.json`:
 
 ```json
 {
-  "label": "@string/wallpaper_xxx",
   "plugin": "com.reandroid.wallpaper.xxx.XxxPlugin",
   "pluginVk": "com.reandroid.wallpaper.xxx.XxxVKPlugin",
   "previewClass": "com.reandroid.wallpaper.xxx.XxxGL",
@@ -63,7 +62,7 @@ Located at `assets/{pluginId}/info.json`:
 
 | Field | Required | Description |
 | --- | --- | --- |
-| `label` | ✓ | Wallpaper display name (can reference `@string/`) |
+| `label` | | Display name. **Normally omitted** — the name comes from this plugin's own `language/<locale>.json` under `title`. A plain string here wins over that; `@string/` falls back to resources (still supported, though nothing uses it now — the manifest's test launchers were switched to literals). With none of the three, the plugin id is shown. |
 | `plugin` | ✓ | GLES plugin fully-qualified class name |
 | `pluginVk` | | Vulkan plugin fully-qualified class name (when present, VK toggle appears in settings) |
 | `previewClass` | | Class for the real-time preview in settings — a GL class, or a Scene class (vis2/vis3 point straight at their Scene) |

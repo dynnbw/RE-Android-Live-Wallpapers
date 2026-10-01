@@ -1,5 +1,4 @@
 {
-  "label": "@string/wallpaper_cube",
   "plugin": "com.reandroid.wallpaper.cube.CubePlugin",
   "previewClass": "com.reandroid.wallpaper.cube.CubeGL"
 }

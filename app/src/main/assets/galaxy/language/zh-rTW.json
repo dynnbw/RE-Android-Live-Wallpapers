@@ -1,4 +1,5 @@
 {
+  "title": "星系",
   "galaxy_radius": "星系大小",
   "galaxy_parallax": "視差強度",
   "galaxy_particle_count": "粒子數量",

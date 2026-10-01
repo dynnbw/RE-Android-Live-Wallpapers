@@ -1,4 +1,5 @@
 {
+  "title": "NixieTube",
   "nixie_audio_enabled": "Audio Reactive",
   "nixie_audio_source": "Audio Source",
   "nixie_audio_source_label_0": "System Audio",

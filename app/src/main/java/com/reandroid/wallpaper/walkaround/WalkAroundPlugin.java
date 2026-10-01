@@ -13,11 +13,6 @@ public class WalkAroundPlugin implements WallpaperPlugin {
     }
 
     @Override
-    public String getDisplayName(Context context) {
-        return "Walk Around";
-    }
-
-    @Override
     public WallpaperEngine createEngine(Context context, WallpaperPluginHost host) {
         return new WalkAroundEngine(context, host);
     }

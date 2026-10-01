@@ -143,17 +143,48 @@ public final class PluginResources {
     }
 
     /**
-     * Resolve a wallpaper display label: "@string/name" → localized string,
-     * plain label → as-is, missing → pluginId fallback.
+     * 壁纸显示名。
+     *
+     * <p><b>名字的主要来源是这个壁纸自己的 assets</b>（{@code language/<locale>.json} 的
+     * {@code title}）—— 这样新增或改动一个壁纸，不必再去动 res 和十几个语言文件。
+     *
+     * <p>三条兜底各有各的用处：
+     * <ul>
+     *   <li>{@code info.json} 里的**字面文字**：个别插件就想硬写一个名字，不进语言包。</li>
+     *   <li>{@code @string/} 引用：**清单里那 8 个壁纸只能走这条** ——
+     *       {@code AndroidManifest} 的 label 只能来自 res（系统壁纸选择器读的就是它）。</li>
+     *   <li>插件 id：什么都没有时不至于显示空白。</li>
+     * </ul>
      */
     public static String resolveLabel(Context context, String pluginId, JSONObject info) {
         String label = info != null ? info.optString("label", null) : null;
         String ref = parseLabelRef(label);
+        String plain = ref == null ? label : null;
+
+        String resValue = null;
         if (ref != null) {
             int id = context.getResources().getIdentifier(ref, "string", context.getPackageName());
-            if (id != 0) return context.getString(id);
-            return ref;
+            resValue = id != 0 ? context.getString(id) : ref;
         }
-        return label != null ? label : pluginId;
+
+        JSONObject bundle = loadLanguageForLocale(context, pluginId);
+        String bundleTitle = bundle != null ? bundle.optString("title", null) : null;
+
+        return labelFrom(plain, bundleTitle, resValue, pluginId);
+    }
+
+    /**
+     * 名字的取舍顺序（纯函数，单测直接跑它：{@link #resolveLabel} 要 Context，进不了 JVM 单测）。
+     *
+     * @param plainLabel  info.json 里的字面名字，没有就 null
+     * @param bundleTitle 插件自己语言包里的 title，没有就 null
+     * @param resValue    {@code @string/} 解析出来的值，没有就 null
+     * @param pluginId    最后的兜底
+     */
+    static String labelFrom(String plainLabel, String bundleTitle, String resValue, String pluginId) {
+        if (plainLabel != null && !plainLabel.isEmpty()) return plainLabel;
+        if (bundleTitle != null && !bundleTitle.isEmpty()) return bundleTitle;
+        if (resValue != null && !resValue.isEmpty()) return resValue;
+        return pluginId;
     }
 }

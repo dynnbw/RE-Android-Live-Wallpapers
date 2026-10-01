@@ -51,7 +51,6 @@ WallpaperPluginHost      → 宿主机服务：getSharedPreferences() / getConte
 
 ```json
 {
-  "label": "@string/wallpaper_xxx",
   "plugin": "com.reandroid.wallpaper.xxx.XxxPlugin",
   "pluginVk": "com.reandroid.wallpaper.xxx.XxxVKPlugin",
   "previewClass": "com.reandroid.wallpaper.xxx.XxxGL",
@@ -62,7 +61,7 @@ WallpaperPluginHost      → 宿主机服务：getSharedPreferences() / getConte
 
 | 字段 | 必需 | 说明 |
 | --- | --- | --- |
-| `label` | ✔ | 壁纸显示名称（可 `@string/` 引用） |
+| `label` | | 壁纸显示名。**通常不写** —— 名字取自本插件自己的 `language/<locale>.json` 的 `title`。写**字面文字**则优先用它；写 `@string/` 则回退去查 res（保留这个能力，但现在没有插件在用 —— 清单里那几个测试入口已改成字面文字）。三者都没有时显示插件 id。 |
 | `plugin` | ✔ | GLES 插件类全限定名 |
 | `pluginVk` | | Vulkan 插件类全限定名（有此字段时设置页显示 VK 开关） |
 | `previewClass` | | 设置页实时预览的 GL 类，也可以是 Scene 类（vis2/vis3 就是直接指向 Scene） |

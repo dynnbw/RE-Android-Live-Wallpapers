@@ -14,11 +14,6 @@ public class GalaxyPlugin implements WallpaperPlugin {
     }
 
     @Override
-    public String getDisplayName(Context context) {
-        return "Galaxy";
-    }
-
-    @Override
     public WallpaperEngine createEngine(Context context, WallpaperPluginHost host) {
         return new GalaxyEngine(context, host);
     }

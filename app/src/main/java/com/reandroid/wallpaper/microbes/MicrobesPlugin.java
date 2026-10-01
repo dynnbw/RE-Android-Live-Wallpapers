@@ -13,11 +13,6 @@ public class MicrobesPlugin implements WallpaperPlugin {
     }
 
     @Override
-    public String getDisplayName(Context context) {
-        return "Microbes";
-    }
-
-    @Override
     public WallpaperEngine createEngine(Context context, WallpaperPluginHost host) {
         return new MicrobesEngine(context, host);
     }

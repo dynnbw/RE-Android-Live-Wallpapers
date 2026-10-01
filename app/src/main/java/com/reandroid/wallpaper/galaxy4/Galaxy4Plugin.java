@@ -18,11 +18,6 @@ public class Galaxy4Plugin implements WallpaperPlugin {
     }
 
     @Override
-    public String getDisplayName(Context context) {
-        return "Black Hole";
-    }
-
-    @Override
     public WallpaperEngine createEngine(Context context, WallpaperPluginHost host) {
         return new Galaxy4Engine(context, host);
     }

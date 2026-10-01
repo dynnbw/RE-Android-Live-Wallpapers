@@ -12,60 +12,37 @@
     
 
     <!-- ক্যামেরা প্রিভিউ দেখানো ওয়ালপেপার -->
-    <string name="wallpaper_walkaround">স্বচ্ছ দৃশ্য</string>
 
     <!-- ঘাস ও আকাশের ওয়ালপেপার -->
-    <string name="wallpaper_grass">ঘাস</string>
     <string name="wallpaper_grass_vk">ঘাস ভালকান</string>
 
-    <string name="wallpaper_aurora1">অরোরা</string>
-    <string name="wallpaper_aurora2">অরোরা ২</string>
 
     <!-- গ্যালাক্সি ওয়ালপেপার -->
-    <string name="wallpaper_galaxy">গ্যালাক্সি</string>
-    <string name="wallpaper_nightsky">রাতের আকাশ</string>
-    <string name="wallpaper_microbes">অণুজীব</string>
     <string name="wallpaper_galaxy_vk">গ্যালাক্সি ভালকান</string>
 
     <!-- গ্যালাক্সি ৪ ওয়ালপেপার -->
-    <string name="wallpaper_galaxy4">ব্ল্যাক হোল</string>
 
     <!-- জলে ভাসমান পাতার ওয়ালপেপার -->
-    <string name="wallpaper_fall">জলপাতা</string>
     <string name="wallpaper_fall_vk">জলপাতা ভালকান</string>
 
     <!-- বন্য বিশ্ব ওয়ালপেপার -->
-    <string name="wallpaper_wildworld">বন্য বিশ্ব</string>
 
     <!-- আতশবাজি ওয়ালপেপার -->
-    <string name="wallpaper_fireworks">আতশবাজি</string>
 
     <!-- বায়ুকল ওয়ালপেপার -->
-    <string name="wallpaper_windmill">বায়ুকল</string>
 
     <!-- সমুদ্রের আবহাওয়া ওয়ালপেপার -->
-    <string name="wallpaper_ocean">সমুদ্র আবহাওয়া</string>
 
     <!-- গভীর সমুদ্র ওয়ালপেপার -->
-    <string name="wallpaper_deepsea">গভীর সমুদ্র</string>
 
     <!-- পোলার ঘড়ি ওয়ালপেপার -->
-    <string name="wallpaper_clock">পোলার ঘড়ি</string>
 
     <!-- নেক্সাস ওয়ালপেপার -->
-    <string name="wallpaper_nexus">নেক্সাস</string>
 
     <!-- নয়েজ ফিল্ড ওয়ালপেপার -->
-    <string name="wallpaper_noisefield">বুদবুদ</string>
     <string name="wallpaper_nebula">নীহারিকা</string>
 
     <!-- মিউজিক ভিজুয়ালাইজেশন ওয়ালপেপার -->
-    <string name="wallpaper_vis1">ভিজুয়ালাইজার</string>
-    <string name="wallpaper_vis2">ওয়েভফর্ম</string>
-    <string name="wallpaper_vis3">স্পেকট্রাম</string>
-    <string name="wallpaper_vis4">ভিইউ মিটার</string>
-    <string name="wallpaper_vis5">একাধিক</string>
-    <string name="wallpaper_vis6">বৃত্তাকার স্পেকট্রাম</string>
 
     <!-- পোলার ঘড়ি: সেটিংস অ্যাক্টিভিটির শিরোনাম -->
     <string name="clock_settings">পোলার ঘড়ি সেটিংস</string>
@@ -161,12 +138,8 @@
     <!-- গ্যালাক্সি ৪ ওয়ালপেপার পছন্দগুলি -->
 
     <!-- ফেজ বিম ওয়ালপেপার -->
-    <string name="wallpaper_phasebeam">ফেজ বিম</string>
 
     <!-- Cube wallpaper -->
-    <string name="wallpaper_cube">কিউব</string>
-    <string name="wallpaper_earth">পৃথিবী</string>
-    <string name="wallpaper_silk">প্রবাহিত রেশম</string>
 
 
     <!-- বৈশ্বিক ফ্রেম রেট সেটিংস -->
@@ -183,17 +156,14 @@
     <string name="grass_color_white">সাদা</string>
 
     <!-- জাদুকরী ধোঁয়া ওয়ালপেপার -->
-    <string name="wallpaper_magicsmoke">জাদুকরী ধোঁয়া</string>
     <string name="pref_fireworks_custom_background_title">কাস্টম পটভূমি ছবি</string>
     <string name="pref_fireworks_custom_background_summary">একটি কাস্টম পটভূমি ছবি নির্বাচন করতে ট্যাপ করুন</string>
     <string name="pref_fireworks_reset_background_title">ডিফল্ট পটভূমিতে রিসেট করুন</string>
     <string name="pref_fireworks_reset_background_summary">কাস্টম পটভূমি সরান এবং ডিফল্টটি ব্যবহার করুন</string>
 
     <!-- হলো সর্পিল ওয়ালপেপার -->
-    <string name="wallpaper_holospiral">হলো সর্পিল</string>
 
     <!-- নীল সমুদ্র ওয়ালপেপার -->
-    <string name="wallpaper_bluesea">নীল সমুদ্র</string>
 
     <string name="openweather_api_key">আপনার_ওপেনওয়েদার_এপিআই_কী</string>
 
@@ -242,23 +212,17 @@
     <string name="reset_current_settings_title">ডিফল্ট সেটিংস পুনরুদ্ধার করুন</string>
     <string name="reset_current_settings_summary">এই ওয়ালপেপারের সেটিংস ডিফল্টে পুনরুদ্ধার করুন</string>
     <string name="reset_action_confirm">পুনরুদ্ধার করুন</string>
-    <string name="wallpaper_forest">বন</string>
 
     <string name="pref_use_vulkan_title">Vulkan রেন্ডারার</string>
     <string name="pref_use_vulkan_summary">ভালো পারফরম্যান্সের জন্য Vulkan ব্যবহার করুন (ওয়ালপেপার পুনরায় প্রয়োগ করুন)</string>
     <string name="pref_disabled_prefix">[নিষ্ক্রিয়]</string>
-    <string name="wallpaper_cosmicflow">Cosmic Flow</string>
-    <string name="wallpaper_droid">Shake Them All</string>
 
     <!-- Luminous dots wallpaper -->
-    <string name="wallpaper_luminousdots">আলোকিত বিন্দু</string>
 
     <!-- Nixie tube wallpaper -->
-    <string name="wallpaper_nixietube">নিক্সি টিউব</string>
     <string name="wallpaper_nixietube_desc">গ্লো-টিউব ডিসপ্লে: ডিফল্টে এলিগ্যান্ট ঘড়ি, অডিও বাজলে VU মিটার</string>
 
     <!-- GeekLog wallpaper -->
-    <string name="wallpaper_geeklog">গিক লগ</string>
     <!-- 壁纸磁贴占位格（反馈入口）：壁纸数量为奇数时补在最后一格 -->
     <string name="grid_feedback_title">ফিডব্যাক ও অনুরোধ</string>
     <string name="grid_feedback_caption">GitHub-এ issue খুলুন</string>

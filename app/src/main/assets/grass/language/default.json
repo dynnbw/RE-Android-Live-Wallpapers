@@ -1,4 +1,5 @@
 {
+  "title": "Grass",
   "pref_grass_enabled": "Show grass",
   "pref_grass_weather_enabled": "Enable weather effects",
   "pref_grass_weather_rain_count": "Rain particle count",

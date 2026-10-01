@@ -18,11 +18,6 @@ public class BlueSeaPlugin implements WallpaperPlugin {
     }
 
     @Override
-    public String getDisplayName(Context context) {
-        return "Blue Sea";
-    }
-
-    @Override
     public WallpaperEngine createEngine(Context context, WallpaperPluginHost host) {
         return new BlueSeaEngine(context, host);
     }

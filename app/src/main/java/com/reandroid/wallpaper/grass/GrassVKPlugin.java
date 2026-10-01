@@ -7,7 +7,6 @@ import com.reandroid.plugin.WallpaperPluginHost;
 
 public class GrassVKPlugin implements WallpaperPlugin {
     @Override public String getId() { return "grass_vk"; }
-    @Override public String getDisplayName(Context c) { return "Grass (Vulkan)"; }
     @Override public WallpaperEngine createEngine(Context c, WallpaperPluginHost host) {
         return new GrassVKPluginEngine(c, host);
     }

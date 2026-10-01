@@ -14,60 +14,37 @@
     
 
     <!-- Papel de parede mostrando a visualização da câmera -->
-    <string name="wallpaper_walkaround">Ver Através</string>
 
     <!-- Papel de parede mostrando grama e céu -->
-    <string name="wallpaper_grass">Grama</string>
     <string name="wallpaper_grass_vk">Grama Vulkan</string>
 
-    <string name="wallpaper_aurora1">Aurora</string>
-    <string name="wallpaper_aurora2">Aurora 2</string>
 
     <!-- Papel de parede mostrando uma galáxia -->
-    <string name="wallpaper_galaxy">Galáxia</string>
-    <string name="wallpaper_nightsky">Céu Noturno</string>
-    <string name="wallpaper_microbes">Micróbios</string>
     <string name="wallpaper_galaxy_vk">Galáxia Vulkan</string>
 
     <!-- Papel de parede mostrando Galáxia 4 -->
-    <string name="wallpaper_galaxy4">Buraco Negro</string>
 
     <!-- Papel de parede mostrando folhas flutuando na água -->
-    <string name="wallpaper_fall">Folhas na Água</string>
     <string name="wallpaper_fall_vk">Folhas na Água Vulkan</string>
 
     <!-- Papel de parede mostrando mundo selvagem -->
-    <string name="wallpaper_wildworld">Mundo Selvagem</string>
 
     <!-- Papel de parede mostrando fogos de artifício -->
-    <string name="wallpaper_fireworks">Fogos de Artifício</string>
 
     <!-- Papel de parede mostrando moinhos de vento -->
-    <string name="wallpaper_windmill">Moinhos de Vento</string>
 
     <!-- Papel de parede mostrando clima oceânico -->
-    <string name="wallpaper_ocean">Clima Oceânico</string>
 
     <!-- Papel de parede mostrando mar profundo -->
-    <string name="wallpaper_deepsea">Mar Profundo</string>
 
     <!-- Papel de parede mostrando um relógio -->
-    <string name="wallpaper_clock">Relógio Polar</string>
 
     <!-- Papel de parede mostrando nexus -->
-    <string name="wallpaper_nexus">Nexus</string>
 
     <!-- Papel de parede mostrando campo de ruído -->
-    <string name="wallpaper_noisefield">Balões</string>
     <string name="wallpaper_nebula">Nebulosa</string>
 
     <!-- Papéis de parede de visualização de música -->
-    <string name="wallpaper_vis1">Visualizador</string>
-    <string name="wallpaper_vis2">Forma de Onda</string>
-    <string name="wallpaper_vis3">Espectro</string>
-    <string name="wallpaper_vis4">Medidor VU</string>
-    <string name="wallpaper_vis5">Múltiplos</string>
-    <string name="wallpaper_vis6">Espectro circular</string>
 
     <!-- Relógio polar: título da atividade de configurações -->
     <string name="clock_settings">Configurações do Relógio Polar</string>
@@ -166,12 +143,8 @@
     <!-- Preferências do papel de parede Galáxia 4 -->
 
     <!-- Papel de parede Phase Beam -->
-    <string name="wallpaper_phasebeam">Feixe de Fase</string>
 
     <!-- Cube wallpaper -->
-    <string name="wallpaper_cube">Cubo</string>
-    <string name="wallpaper_earth">Terra</string>
-    <string name="wallpaper_silk">Seda fluida</string>
 
 
     <!-- Configurações globais de taxa de quadros -->
@@ -188,17 +161,14 @@
     <string name="grass_color_white">Branco</string>
 
     <!-- Papel de parede Fumaça Mágica -->
-    <string name="wallpaper_magicsmoke">Fumaça Mágica</string>
     <string name="pref_fireworks_custom_background_title">Imagem de fundo personalizada</string>
     <string name="pref_fireworks_custom_background_summary">Toque para selecionar uma imagem de fundo personalizada</string>
     <string name="pref_fireworks_reset_background_title">Restaurar para o fundo padrão</string>
     <string name="pref_fireworks_reset_background_summary">Remover o fundo personalizado e usar o padrão</string>
 
     <!-- Papel de parede Espiral Holo -->
-    <string name="wallpaper_holospiral">Espiral Holo</string>
 
     <!-- Papel de parede Mar Azul -->
-    <string name="wallpaper_bluesea">Mar Azul</string>
 
     <string name="openweather_api_key">YOUR_OPENWEATHER_API_KEY</string>
 
@@ -247,23 +217,17 @@
     <string name="reset_current_settings_title">Restaurar configurações padrão</string>
     <string name="reset_current_settings_summary">Restaurar as configurações deste papel de parede para os padrões</string>
     <string name="reset_action_confirm">Restaurar</string>
-    <string name="wallpaper_forest">Floresta</string>
 
     <string name="pref_use_vulkan_title">Renderizador Vulkan</string>
     <string name="pref_use_vulkan_summary">Usar Vulkan para melhor desempenho (reaplicar papel de parede)</string>
     <string name="pref_disabled_prefix">[Desativado]</string>
-    <string name="wallpaper_cosmicflow">Cosmic Flow</string>
-    <string name="wallpaper_droid">Shake Them All</string>
 
     <!-- Luminous dots wallpaper -->
-    <string name="wallpaper_luminousdots">Pontos luminosos</string>
 
     <!-- Nixie tube wallpaper -->
-    <string name="wallpaper_nixietube">Tubo Nixie</string>
     <string name="wallpaper_nixietube_desc">Visor de tubo de descarga: relógio elegante por padrão, VU meter quando o áudio toca</string>
 
     <!-- GeekLog wallpaper -->
-    <string name="wallpaper_geeklog">Registro Geek</string>
     <!-- 壁纸磁贴占位格（反馈入口）：壁纸数量为奇数时补在最后一格 -->
     <string name="grid_feedback_title">Feedback e pedidos de porte</string>
     <string name="grid_feedback_caption">Abrir uma issue no GitHub</string>

@@ -13,11 +13,6 @@ public class GeekLogPlugin implements WallpaperPlugin {
     }
 
     @Override
-    public String getDisplayName(Context context) {
-        return "GeekLog";
-    }
-
-    @Override
     public WallpaperEngine createEngine(Context context, WallpaperPluginHost host) {
         return new GeekLogEngine(context, host);
     }

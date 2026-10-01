@@ -1,4 +1,5 @@
 {
+  "title": "Earth",
   "earth_spin_speed": "Idle rotation speed",
   "earth_spin_speed_summary": "How fast the Earth spins on its own; 0 stops it",
   "earth_sky": "Star field",

@@ -1,4 +1,5 @@
 {
+  "title": "草原",
   "pref_grass_enabled": "草原を表示",
   "pref_grass_weather_enabled": "天気効果を有効にする",
   "pref_grass_weather_rain_count": "雨粒の数（パフォーマンスに影響）",

@@ -1,4 +1,5 @@
 {
+  "title": "Herbe",
   "pref_grass_enabled": "Afficher l’herbe",
   "pref_grass_weather_enabled": "Activer les effets météo",
   "pref_grass_weather_rain_count": "Nombre de particules de pluie",

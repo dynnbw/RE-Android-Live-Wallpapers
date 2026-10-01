@@ -25,56 +25,29 @@
     <string name="app_name">REAndroid 라이브 배경화면</string>
 
     <!-- Wallpapers -->
-    <string name="wallpaper_walkaround">투시</string>
 
     <string name="wallpaper_flsorescence">형광</string>
 
-    <string name="wallpaper_grass">하늘과 풀밭</string>
     <string name="wallpaper_grass_vk">하늘과 풀밭 Vulkan</string>
 
-    <string name="wallpaper_galaxy">은하수</string>
-    <string name="wallpaper_nightsky">밤하늘</string>
-    <string name="wallpaper_microbes">미생물</string>
 
-    <string name="wallpaper_galaxy4">블랙홀</string>
 
-    <string name="wallpaper_phasebeam">레이저 광선</string>
 
     <!-- Cube wallpaper -->
-    <string name="wallpaper_cube">큐브</string>
-    <string name="wallpaper_earth">지구</string>
-    <string name="wallpaper_silk">흐르는 실크</string>
 
-    <string name="wallpaper_fall">수면 위 낙엽</string>
 
-    <string name="wallpaper_wildworld">야생 세계</string>
 
-    <string name="wallpaper_fireworks">불꽃놀이</string>
 
-    <string name="wallpaper_windmill">회전하는 풍차</string>
 
-    <string name="wallpaper_ocean">해양 날씨</string>
 
-    <string name="wallpaper_deepsea">깊은 바다</string>
 
-    <string name="wallpaper_clock">극지 시계</string>
 
-    <string name="wallpaper_aurora1">북극광</string>
-    <string name="wallpaper_aurora2">북극광 2</string>
 
-    <string name="wallpaper_nexus">교차하는 빛의 장막</string>
 
-    <string name="wallpaper_noisefield">거품</string>
 
     <string name="wallpaper_nebula">성운</string>
 
     <!-- Music visualization wallpapers -->
-    <string name="wallpaper_vis1">비주얼라이저</string>
-    <string name="wallpaper_vis2">음파</string>
-    <string name="wallpaper_vis3">주파수 스펙트럼</string>
-    <string name="wallpaper_vis4">VU 미터</string>
-    <string name="wallpaper_vis5">다수</string>
-    <string name="wallpaper_vis6">원형 스펙트럼</string>
 
     <!-- Polar clock -->
     <string name="clock_settings">극지 시계 설정</string>
@@ -137,13 +110,10 @@
     <string name="grass_color_white">흰색</string>
 
     <!-- Magic smoke wallpaper -->
-    <string name="wallpaper_magicsmoke">마법의 연기</string>
 
     <!-- Holo spiral wallpaper -->
-    <string name="wallpaper_holospiral">후광 나선</string>
 
     <!-- Blue sea wallpaper -->
-    <string name="wallpaper_bluesea">푸른 바다</string>
 
     <!-- General preferences -->
     <string name="pref_open_wallpaper_picker">배경화면으로 설정</string>
@@ -262,7 +232,6 @@
     <string name="pref_weather_api_guide_link_text">https://openweathermap.org/</string>
     <string name="pref_weather_api_guide_open_web_button">OpenWeather 공식 웹사이트 열기</string>
 
-    <string name="wallpaper_forest">숲</string>
     <string-array name="cube_shapenames">
         <item>정육면체</item>
         <item>십이면체</item>
@@ -277,18 +246,13 @@
     <string name="pref_use_vulkan_title">Vulkan 렌더러</string>
     <string name="pref_use_vulkan_summary">더 나은 성능을 위해 Vulkan 사용 (배경화면 다시 적용)</string>
     <string name="pref_disabled_prefix">[비활성화]</string>
-    <string name="wallpaper_cosmicflow">코스믹 플로우</string>
-    <string name="wallpaper_droid">Shake Them All</string>
 
     <!-- Luminous dots wallpaper -->
-    <string name="wallpaper_luminousdots">빛나는 도트</string>
 
     <!-- Nixie tube wallpaper -->
-    <string name="wallpaper_nixietube">닉시관</string>
     <string name="wallpaper_nixietube_desc">발광관 표시: 기본은 우아한 시계, 오디오 재생 시 VU 미터</string>
 
     <!-- GeekLog wallpaper -->
-    <string name="wallpaper_geeklog">긱 로그</string>
     <!-- 壁纸磁贴占位格（反馈入口）：壁纸数量为奇数时补在最后一格 -->
     <string name="grid_feedback_title">피드백 및 이식 요청</string>
     <string name="grid_feedback_caption">GitHub에서 이슈 생성</string>

@@ -1,4 +1,5 @@
 {
+  "title": "Tubo Nixie",
   "nixie_audio_enabled": "Reactivo al audio",
   "nixie_audio_source": "Fuente de audio",
   "nixie_audio_source_label_0": "Audio del sistema",

@@ -1,4 +1,5 @@
 {
+  "title": "닉시관",
   "nixie_audio_enabled": "오디오 반응",
   "nixie_audio_source": "오디오 소스",
   "nixie_audio_source_label_0": "시스템 오디오",

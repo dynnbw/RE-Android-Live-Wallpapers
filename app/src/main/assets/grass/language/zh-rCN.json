@@ -1,4 +1,5 @@
 {
+  "title": "天空草地",
   "pref_grass_enabled": "显示草地",
   "pref_grass_weather_enabled": "启用天气效果",
   "pref_grass_weather_rain_count": "雨滴数量（影响性能）",

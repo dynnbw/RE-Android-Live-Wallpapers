@@ -1,5 +1,4 @@
 {
-  "label": "@string/wallpaper_microbes",
   "plugin": "com.reandroid.wallpaper.microbes.MicrobesPlugin",
   "previewClass": "com.reandroid.wallpaper.microbes.MicrobesGL"
 }

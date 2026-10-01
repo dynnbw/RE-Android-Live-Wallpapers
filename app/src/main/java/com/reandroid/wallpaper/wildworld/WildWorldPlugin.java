@@ -13,11 +13,6 @@ public class WildWorldPlugin implements WallpaperPlugin {
     }
 
     @Override
-    public String getDisplayName(Context context) {
-        return "Wild World";
-    }
-
-    @Override
     public WallpaperEngine createEngine(Context context, WallpaperPluginHost host) {
         return new WildWorldEngine(context, host);
     }

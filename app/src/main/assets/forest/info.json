@@ -1,5 +1,4 @@
 {
-  "label": "@string/wallpaper_forest",
   "plugin": "com.reandroid.wallpaper.forest.ForestPlugin",
   "previewClass": "com.reandroid.wallpaper.forest.ForestGL"
 }

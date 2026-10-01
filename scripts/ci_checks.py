@@ -149,22 +149,41 @@ def check_language_keys():
 
 
 def check_labels():
-    """info.json 里的 @string/x 必须在 res 里有定义，否则列表里那格没有名字。"""
+    """每个壁纸的名字要**解析得到** —— 显示不出来是构建不会报错的那类问题。
+
+    解析顺序与 {@code PluginResources.resolveLabel} 一致：插件自己语言包的 {@code title}
+    （名字的主要来源）→ {@code info.json} 里的字面 label → {@code @string/} 去 res 查。
+    三者都没有时界面显示的是插件 id，这里就算不合格。
+    """
     defined = set()
     for path in glob.glob(RES + "/values*/strings.xml"):
         for element in ET.parse(path).getroot():
             if element.get("name"):
                 defined.add(element.get("name"))
+
     count = 0
     for info in glob.glob(ASSETS + "/*/info.json"):
         count += 1
+        plugin_dir = os.path.dirname(info)
         label = json.load(io.open(info, encoding="utf-8")).get("label", "")
+
+        if label and not label.startswith("@string/"):
+            continue                                   # 字面文字，够用
         if label.startswith("@string/"):
-            name = label[len("@string/"):]
-            if name not in defined:
-                fail("label", "%s 的 label=%s 在 res/values*/strings.xml 里没有定义"
-                     % (info, label))
-    print("壁纸标签：%d 个 info.json" % count)
+            if label[len("@string/"):] in defined:
+                continue                               # @string/ 能在 res 里查到
+            fail("label", "%s 的 label=%s 在 res/values*/strings.xml 里没有定义"
+                 % (info, label))
+            continue
+
+        default = os.path.join(plugin_dir, "language", "default.json")
+        title = None
+        if os.path.exists(default):
+            title = json.load(io.open(default, encoding="utf-8")).get("title")
+        if not title:
+            fail("label", "%s 既没有 label，language/default.json 里也没有 title —— "
+                 "界面上会显示插件 id" % info)
+    print("壁纸名字：%d 个 info.json" % count)
 
 
 def check_shaders():

@@ -6,56 +6,29 @@
     <string name="app_name">REAndroid ライブ壁紙</string>
 
     <!-- Wallpapers -->
-    <string name="wallpaper_walkaround">シースルー</string>
 
     <string name="wallpaper_flsorescence">蛍光</string>
 
-    <string name="wallpaper_grass">草原</string>
     <string name="wallpaper_grass_vk">草原 Vulkan</string>
 
-    <string name="wallpaper_galaxy">銀河</string>
-    <string name="wallpaper_nightsky">夜空</string>
-    <string name="wallpaper_microbes">微生物</string>
 
-    <string name="wallpaper_galaxy4">ブラックホール</string>
 
-    <string name="wallpaper_phasebeam">パルスビーム</string>
 
     <!-- Cube wallpaper -->
-    <string name="wallpaper_cube">キューブ</string>
-    <string name="wallpaper_earth">地球</string>
-    <string name="wallpaper_silk">流れるシルク</string>
 
-    <string name="wallpaper_fall">水面の落ち葉</string>
 
-    <string name="wallpaper_wildworld">野生の世界</string>
 
-    <string name="wallpaper_fireworks">花火</string>
 
-    <string name="wallpaper_windmill">回る風車</string>
 
-    <string name="wallpaper_ocean">海洋天気</string>
 
-    <string name="wallpaper_deepsea">深海</string>
 
-    <string name="wallpaper_clock">ポーラークロック</string>
 
-    <string name="wallpaper_aurora1">オーロラ</string>
-    <string name="wallpaper_aurora2">オーロラ 2</string>
 
-    <string name="wallpaper_nexus">ネクサス</string>
 
-    <string name="wallpaper_noisefield">泡</string>
 
     <string name="wallpaper_nebula">星雲</string>
 
     <!-- Music visualization wallpapers -->
-    <string name="wallpaper_vis1">ビジュアライザ</string>
-    <string name="wallpaper_vis2">波形</string>
-    <string name="wallpaper_vis3">スペクトル</string>
-    <string name="wallpaper_vis4">音量メーター</string>
-    <string name="wallpaper_vis5">マルチビジュアライズ</string>
-    <string name="wallpaper_vis6">円形スペクトル</string>
 
     <!-- Polar clock -->
     <string name="clock_settings">極地時計の設定</string>
@@ -109,13 +82,10 @@
     <!-- Flsorescence preferences -->
 
     <!-- Magic smoke wallpaper -->
-    <string name="wallpaper_magicsmoke">魔法の煙</string>
 
     <!-- Holo spiral wallpaper -->
-    <string name="wallpaper_holospiral">光輪スパイラル</string>
 
     <!-- Blue sea wallpaper -->
-    <string name="wallpaper_bluesea">ブルーシー</string>
 
     <!-- General preferences -->
     <string name="pref_open_wallpaper_picker">壁紙に設定</string>
@@ -232,7 +202,6 @@
     <string name="pref_weather_api_guide_link_text">https://openweathermap.org/</string>
     <string name="pref_weather_api_guide_open_web_button">OpenWeather公式サイトを開く</string>
 
-    <string name="wallpaper_forest">森</string>
     <string-array name="cube_shapenames">
         <item>立方体</item>
         <item>十二面体</item>
@@ -247,18 +216,13 @@
     <string name="pref_use_vulkan_title">Vulkan レンダラー</string>
     <string name="pref_use_vulkan_summary">Vulkan を使用してパフォーマンスを向上（壁紙を再適用）</string>
     <string name="pref_disabled_prefix">[無効]</string>
-    <string name="wallpaper_cosmicflow">コズミックフロー</string>
-    <string name="wallpaper_droid">Shake Them All</string>
 
     <!-- Luminous dots wallpaper -->
-    <string name="wallpaper_luminousdots">光の粒</string>
 
     <!-- Nixie tube wallpaper -->
-    <string name="wallpaper_nixietube">ニキシー管</string>
     <string name="wallpaper_nixietube_desc">ニキシー管ディスプレイ：通常はエレガントな時計、音声再生時は VU メーター</string>
 
     <!-- GeekLog wallpaper -->
-    <string name="wallpaper_geeklog">ギークログ</string>
     <!-- 壁纸磁贴占位格（反馈入口）：壁纸数量为奇数时补在最后一格 -->
     <string name="grid_feedback_title">フィードバック・移植リクエスト</string>
     <string name="grid_feedback_caption">GitHub で Issue を作成</string>

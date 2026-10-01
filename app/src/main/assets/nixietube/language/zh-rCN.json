@@ -1,4 +1,5 @@
 {
+  "title": "辉光管",
   "nixie_audio_enabled": "音频响应",
   "nixie_audio_source": "音频来源",
   "nixie_audio_source_label_0": "系统音频",

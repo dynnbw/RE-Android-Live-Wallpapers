@@ -1,9 +1,5 @@
 {
-  "label": "@string/wallpaper_ocean",
   "plugin": "com.reandroid.wallpaper.weatherwallpapers.ocean.OceanPlugin",
   "previewClass": "com.reandroid.wallpaper.weatherwallpapers.ocean.OceanWeatherGL",
-  "permissions": [
-    "ACCESS_FINE_LOCATION",
-    "ACCESS_COARSE_LOCATION"
-  ]
+  "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"]
 }

@@ -1,4 +1,5 @@
 {
+  "title": "地球",
   "earth_spin_speed": "空闲自转速度",
   "earth_spin_speed_summary": "地球自行旋转的快慢；0 为静止",
   "earth_sky": "星空背景",

@@ -18,11 +18,6 @@ public class CosmicPlugin implements WallpaperPlugin {
     }
 
     @Override
-    public String getDisplayName(Context context) {
-        return "Cosmic Flow";
-    }
-
-    @Override
     public WallpaperEngine createEngine(Context context, WallpaperPluginHost host) {
         return new CosmicEngine(context, host);
     }

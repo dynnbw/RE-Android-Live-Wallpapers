@@ -18,11 +18,6 @@ public class PolarClockPlugin implements WallpaperPlugin {
     }
 
     @Override
-    public String getDisplayName(Context context) {
-        return "Polar Clock";
-    }
-
-    @Override
     public WallpaperEngine createEngine(Context context, WallpaperPluginHost host) {
         return new PolarClockEngine(context, host);
     }

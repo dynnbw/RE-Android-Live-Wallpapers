@@ -1,4 +1,5 @@
 {
+  "title": "輝光管",
   "nixie_audio_enabled": "音頻反應",
   "nixie_audio_source": "音頻來源",
   "nixie_audio_source_label_0": "系統音頻",

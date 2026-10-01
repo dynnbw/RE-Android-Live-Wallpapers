@@ -18,11 +18,6 @@ public class HoloSpiralPlugin implements WallpaperPlugin {
     }
 
     @Override
-    public String getDisplayName(Context context) {
-        return "Holo Spiral";
-    }
-
-    @Override
     public WallpaperEngine createEngine(Context context, WallpaperPluginHost host) {
         return new HoloSpiralEngine(context, host);
     }

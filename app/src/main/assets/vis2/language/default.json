@@ -1,4 +1,5 @@
 {
+  "title": "Waveform",
   "musicvis_fit_screen": "Show more samples",
   "musicvis_fit_screen_summary": "Scale the waveform to the screen's short side",
   "musicvis_use_triangle_strip": "Use legacy triangle strip mesh",

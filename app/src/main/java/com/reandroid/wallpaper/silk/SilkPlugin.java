@@ -19,11 +19,6 @@ public class SilkPlugin implements WallpaperPlugin {
     }
 
     @Override
-    public String getDisplayName(Context context) {
-        return "Flowing Silk";
-    }
-
-    @Override
     public WallpaperEngine createEngine(Context context, WallpaperPluginHost host) {
         return new SilkEngine(context, host);
     }

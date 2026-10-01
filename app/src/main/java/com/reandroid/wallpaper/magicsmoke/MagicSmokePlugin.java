@@ -18,11 +18,6 @@ public class MagicSmokePlugin implements WallpaperPlugin {
     }
 
     @Override
-    public String getDisplayName(Context context) {
-        return "Magic Smoke";
-    }
-
-    @Override
     public WallpaperEngine createEngine(Context context, WallpaperPluginHost host) {
         return new MagicSmokeEngine(context, host);
     }

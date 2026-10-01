@@ -18,11 +18,6 @@ public class Aurora2Plugin implements WallpaperPlugin {
     }
 
     @Override
-    public String getDisplayName(Context context) {
-        return "Aurora 2";
-    }
-
-    @Override
     public WallpaperEngine createEngine(Context context, WallpaperPluginHost host) {
         return new Aurora2Engine(context, host);
     }

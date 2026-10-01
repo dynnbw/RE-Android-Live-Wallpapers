@@ -1,4 +1,5 @@
 {
+  "title": "Никси-лампа",
   "nixie_audio_enabled": "Реакция на звук",
   "nixie_audio_source": "Источник звука",
   "nixie_audio_source_label_0": "Системный звук",

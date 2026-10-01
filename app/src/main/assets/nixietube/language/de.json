@@ -1,4 +1,5 @@
 {
+  "title": "Nixie-Röhre",
   "nixie_audio_enabled": "Audio-reaktiv",
   "nixie_audio_source": "Audioquelle",
   "nixie_audio_source_label_0": "Systemaudio",

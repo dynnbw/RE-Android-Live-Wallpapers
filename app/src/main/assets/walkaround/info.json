@@ -1,8 +1,5 @@
 {
-  "label": "@string/wallpaper_walkaround",
   "plugin": "com.reandroid.wallpaper.walkaround.WalkAroundPlugin",
   "previewClass": "com.reandroid.wallpaper.walkaround.WalkAroundGL",
-  "permissions": [
-    "CAMERA"
-  ]
+  "permissions": ["CAMERA"]
 }

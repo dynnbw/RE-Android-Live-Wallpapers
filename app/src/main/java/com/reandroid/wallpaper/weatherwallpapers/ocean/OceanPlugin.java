@@ -18,11 +18,6 @@ public class OceanPlugin implements WallpaperPlugin {
     }
 
     @Override
-    public String getDisplayName(Context context) {
-        return "Ocean Weather";
-    }
-
-    @Override
     public WallpaperEngine createEngine(Context context, WallpaperPluginHost host) {
         return new OceanEngine(context, host);
     }

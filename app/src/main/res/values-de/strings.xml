@@ -14,61 +14,38 @@
     
 
     <!-- Wallpaper showing the camera preview -->
-    <string name="wallpaper_walkaround">Durchblick</string>
 
     <!-- Wallpaper showing grass and the sky -->
-    <string name="wallpaper_grass">Gras</string>
     <string name="wallpaper_grass_vk">Gras Vulkan</string>
 
-    <string name="wallpaper_aurora1">Nordlicht</string>
-    <string name="wallpaper_aurora2">Nordlicht 2</string>
 
     <!-- Wallpaper showing a galaxy -->
-    <string name="wallpaper_galaxy">Galaxie</string>
-    <string name="wallpaper_nightsky">Nachthimmel</string>
-    <string name="wallpaper_microbes">Mikroben</string>
     <string name="wallpaper_galaxy_vk">Galaxie Vulkan</string>
 
     <!-- Wallpaper showing Black Hole -->
 
-    <string name="wallpaper_galaxy4">Schwarzes Loch</string>
 
     <!-- Wallpaper showing leaves floating on water -->
-    <string name="wallpaper_fall">Wasserblätter</string>
     <string name="wallpaper_fall_vk">Wasserblätter Vulkan</string>
 
     <!-- Wallpaper showing wild world -->
-    <string name="wallpaper_wildworld">Wilde Welt</string>
 
     <!-- Wallpaper showing fireworks -->
-    <string name="wallpaper_fireworks">Feuerwerk</string>
 
     <!-- Wallpaper showing windmills -->
-    <string name="wallpaper_windmill">Windmühlen</string>
 
     <!-- Wallpaper showing ocean weather -->
-    <string name="wallpaper_ocean">Ozeanwetter</string>
 
     <!-- Wallpaper showing deep sea -->
-    <string name="wallpaper_deepsea">Tiefsee</string>
 
     <!-- Wallpaper showing a clock -->
-    <string name="wallpaper_clock">Polaruhr</string>
 
     <!-- Wallpaper showing nexus -->
-    <string name="wallpaper_nexus">Nexus</string>
 
     <!-- Wallpaper showing noise field -->
-    <string name="wallpaper_noisefield">Blasen</string>
     <string name="wallpaper_nebula">Nebel</string>
 
     <!-- Music visualization wallpapers -->
-    <string name="wallpaper_vis1">Visualisierer</string>
-    <string name="wallpaper_vis2">Wellenform</string>
-    <string name="wallpaper_vis3">Spektrum</string>
-    <string name="wallpaper_vis4">Aussteuerungsmesser</string>
-    <string name="wallpaper_vis5">Viele</string>
-    <string name="wallpaper_vis6">Kreisförmiges Spektrum</string>
 
     <!-- Polar clock: title of settings activity -->
     <string name="clock_settings">Einstellungen der Polaruhr</string>
@@ -174,12 +151,8 @@
     <!-- Black Hole wallpaper preferences -->
 
     <!-- Phase Beam wallpaper -->
-    <string name="wallpaper_phasebeam">Phasenstrahl</string>
 
     <!-- Cube wallpaper -->
-    <string name="wallpaper_cube">Würfel</string>
-    <string name="wallpaper_earth">Erde</string>
-    <string name="wallpaper_silk">Fließende Seide</string>
 
 
 
@@ -197,17 +170,14 @@
     <string name="grass_color_white">Weiß</string>
 
     <!-- Magic Smoke Wallpaper -->
-    <string name="wallpaper_magicsmoke">Magischer Rauch</string>
     <string name="pref_fireworks_custom_background_title">Benutzerdefiniertes Hintergrundbild</string>
     <string name="pref_fireworks_custom_background_summary">Tippen, um ein benutzerdefiniertes Hintergrundbild auszuwählen</string>
     <string name="pref_fireworks_reset_background_title">Auf Standardhintergrund zurücksetzen</string>
     <string name="pref_fireworks_reset_background_summary">Benutzerdefinierten Hintergrund entfernen und den Standard verwenden</string>
 
     <!-- Holo Spiral Wallpaper -->
-    <string name="wallpaper_holospiral">Holo-Spirale</string>
 
     <!-- Blue Sea Wallpaper -->
-    <string name="wallpaper_bluesea">Blaues Meer</string>
 
 
     <string name="openweather_api_key">YOUR_OPENWEATHER_API_KEY</string>
@@ -257,23 +227,17 @@
     <string name="reset_current_settings_title">Standardeinstellungen wiederherstellen</string>
     <string name="reset_current_settings_summary">Die Einstellungen dieses Hintergrunds auf Standard zurücksetzen</string>
     <string name="reset_action_confirm">Wiederherstellen</string>
-    <string name="wallpaper_forest">Wald</string>
 
     <string name="pref_use_vulkan_title">Vulkan-Renderer</string>
     <string name="pref_use_vulkan_summary">Vulkan für bessere Leistung verwenden (Tapete neu anwenden)</string>
     <string name="pref_disabled_prefix">[Deaktiviert]</string>
-    <string name="wallpaper_cosmicflow">Cosmic Flow</string>
-    <string name="wallpaper_droid">Shake Them All</string>
 
     <!-- Luminous dots wallpaper -->
-    <string name="wallpaper_luminousdots">Leuchtende Punkte</string>
 
     <!-- Nixie tube wallpaper -->
-    <string name="wallpaper_nixietube">Nixie-Röhre</string>
     <string name="wallpaper_nixietube_desc">Glow-Tube-Anzeige: standardmäßig eine elegante Uhr, bei Audiowiedergabe ein VU-Meter</string>
 
     <!-- GeekLog wallpaper -->
-    <string name="wallpaper_geeklog">Geek-Log</string>
     <!-- 壁纸磁贴占位格（反馈入口）：壁纸数量为奇数时补在最后一格 -->
     <string name="grid_feedback_title">Feedback &amp; Portierungswünsche</string>
     <string name="grid_feedback_caption">Issue auf GitHub öffnen</string>

@@ -26,6 +26,7 @@ import androidx.preference.PreferenceViewHolder;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.reandroid.plugin.PluginResources;
 import com.reandroid.utils.IoUtils;
 import com.reandroid.wallpaper.R;
 
@@ -141,28 +142,23 @@ public class SettingsMainFragment extends PreferenceFragmentCompat {
                 if (!hasInfoJson(am, dir)) continue;
                 String jsonPath = dir + "/info.json";
                 String fragmentClass = null;
-                String label = null;
+                JSONObject json = null;
                 String pluginClass = null;
                 boolean useLegacySettings = false;
                 boolean hidden = false;
                 try (InputStream is = am.open(jsonPath)) {
-                    JSONObject json = new JSONObject(new String(IoUtils.readAllBytes(is), "UTF-8"));
+                    json = new JSONObject(new String(IoUtils.readAllBytes(is), "UTF-8"));
                     fragmentClass = json.optString("fragment", null);
-                    label = json.optString("label", null);
                     pluginClass = json.optString("plugin", null);
                     useLegacySettings = json.optBoolean("useLegacySettings", false);
                     hidden = json.optBoolean("hidden", false);
                 } catch (Exception e) { Log.w(TAG, "Failed to parse info.json", e); continue; }
                 // 隐藏入口：info.json 中 "hidden": true 时不在列表显示
-                if (label == null || hidden) continue;
+                if (hidden) continue;
 
-                // Resolve @string/ references
-                String title = label;
-                if (label.startsWith("@string/")) {
-                    int id = getResources().getIdentifier(
-                            label.substring(8), "string", requireContext().getPackageName());
-                    if (id != 0) title = getString(id);
-                }
+                // 名字来自这个壁纸自己的 assets（language/<locale>.json 的 title），
+                // 不再是 info.json 里的 @string/ 引用 —— 见 PluginResources.resolveLabel
+                String title = PluginResources.resolveLabel(requireContext(), dir, json);
 
                 Preference entry = new WallpaperGridPreference(requireContext());
                 entry.setTitle(title);

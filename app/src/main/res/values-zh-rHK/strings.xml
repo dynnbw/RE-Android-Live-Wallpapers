@@ -29,69 +29,42 @@
     
 
     <!-- Wallpaper showing the camera preview -->
-    <string name="wallpaper_walkaround">透視</string>
 
     <!-- Flsorescence (荧光) Wallpaper -->
     <string name="wallpaper_flsorescence">熒光</string>
 
     <!-- Wallpaper showing grass and the sky -->
-    <string name="wallpaper_grass">天空草地</string>
     <string name="wallpaper_grass_vk">天空草地 Vulkan</string>
 
     <!-- Wallpaper showing a galaxy -->
-    <string name="wallpaper_galaxy">星系</string>
-    <string name="wallpaper_nightsky">夜空</string>
-    <string name="wallpaper_microbes">微生物</string>
 
     <!-- Wallpaper showing Black Hole -->
-    <string name="wallpaper_galaxy4">黑洞</string>
 
     <!-- Wallpaper showing phase beam -->
-    <string name="wallpaper_phasebeam">鐳光</string>
 
     <!-- Cube wallpaper -->
-    <string name="wallpaper_cube">立方體</string>
-    <string name="wallpaper_earth">地球</string>
-    <string name="wallpaper_silk">絲語流年</string>
 
     <!-- Wallpaper showing leaves floating on water -->
-    <string name="wallpaper_fall">水面落葉</string>
 
     <!-- Wallpaper showing wild world -->
-    <string name="wallpaper_wildworld">野生世界</string>
 
     <!-- Wallpaper showing fireworks -->
-    <string name="wallpaper_fireworks">煙火</string>
 
     <!-- Wallpaper showing windmills -->
-    <string name="wallpaper_windmill">旋轉風車</string>
 
     <!-- Wallpaper showing ocean weather -->
-    <string name="wallpaper_ocean">海洋天氣</string>
 
     <!-- Wallpaper showing deep sea -->
-    <string name="wallpaper_deepsea">深海</string>
 
     <!-- Wallpaper showing a clock -->
-    <string name="wallpaper_clock">極地時鐘</string>
 
-    <string name="wallpaper_aurora1">北極光</string>
-    <string name="wallpaper_aurora2">北極光2</string>
 
     <!-- Wallpaper showing nexus -->
-    <string name="wallpaper_nexus">交錯光幕</string>
 
     <!-- Wallpaper showing noise field -->
-    <string name="wallpaper_noisefield">泡泡</string>
     <string name="wallpaper_nebula">星雲</string>
 
     <!-- Music visualization wallpapers -->
-    <string name="wallpaper_vis1">視覺化器</string>
-    <string name="wallpaper_vis2">聲波</string>
-    <string name="wallpaper_vis3">頻譜</string>
-    <string name="wallpaper_vis4">VU 表</string>
-    <string name="wallpaper_vis5">繽紛</string>
-    <string name="wallpaper_vis6">環形頻譜</string>
 
     <!-- Polar clock: title of settings activity -->
     <string name="clock_settings">極地時鐘設置</string>
@@ -158,13 +131,10 @@
     <string name="grass_color_white">白色</string>
 
     <!-- 魔法煙霧壁紙 -->
-    <string name="wallpaper_magicsmoke">魔法煙霧</string>
 
     <!-- 光環螺旋壁紙 -->
-    <string name="wallpaper_holospiral">光環螺旋</string>
 
     <!-- 藍色海洋壁紙 -->
-    <string name="wallpaper_bluesea">藍色海洋</string>
 
     <string name="pref_open_wallpaper_picker">設定壁紙</string>
     <string name="pref_open_wallpaper_picker_failed">不支持壁紙預覽</string>
@@ -277,23 +247,17 @@
     <string name="pref_weather_api_guide_illustration">API 教程插圖</string>
     <string name="pref_weather_api_guide_link_text">https://openweathermap.org/</string>
     <string name="pref_weather_api_guide_open_web_button">打開 OpenWeather 官網</string>
-    <string name="wallpaper_forest">森林</string>
 
     <string name="pref_use_vulkan_title">Vulkan 渲染器</string>
     <string name="pref_use_vulkan_summary">使用 Vulkan 獲得更好效能（重新套用牆紙生效）</string>
     <string name="pref_disabled_prefix">[已禁用]</string>
-    <string name="wallpaper_cosmicflow">宇宙流動</string>
-    <string name="wallpaper_droid">墜落的安卓機械人</string>
 
     <!-- Luminous dots wallpaper -->
-    <string name="wallpaper_luminousdots">光點</string>
 
     <!-- Nixie tube wallpaper -->
-    <string name="wallpaper_nixietube">輝光管</string>
     <string name="wallpaper_nixietube_desc">輝光管陣列：預設為優雅桌面時鐘，音訊響起時變身分貝儀</string>
 
     <!-- GeekLog wallpaper -->
-    <string name="wallpaper_geeklog">極客日誌</string>
     <!-- 壁纸磁贴占位格（反馈入口）：壁纸数量为奇数时补在最后一格 -->
     <string name="grid_feedback_title">反饋與移植請求</string>
     <string name="grid_feedback_caption">在 GitHub 提 Issue</string>

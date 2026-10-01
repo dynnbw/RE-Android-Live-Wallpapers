@@ -12,60 +12,37 @@
     
 
     <!-- Обои с предпросмотром камеры -->
-    <string name="wallpaper_walkaround">В объективе</string>
 
     <!-- Обои с травой и небом -->
-    <string name="wallpaper_grass">Трава</string>
     <string name="wallpaper_grass_vk">Трава Vulkan</string>
 
-    <string name="wallpaper_aurora1">Северное сияние</string>
-    <string name="wallpaper_aurora2">Северное сияние 2</string>
 
     <!-- Обои с галактикой -->
-    <string name="wallpaper_galaxy">Галактика</string>
-    <string name="wallpaper_nightsky">Ночное небо</string>
-    <string name="wallpaper_microbes">Микробы</string>
     <string name="wallpaper_galaxy_vk">Галактика Vulkan</string>
 
     <!-- Обои Галактика 4 -->
-    <string name="wallpaper_galaxy4">Чёрная дыра</string>
 
     <!-- Обои с листьями на воде -->
-    <string name="wallpaper_fall">Водяные листья</string>
     <string name="wallpaper_fall_vk">Водяные листья Vulkan</string>
 
     <!-- Обои Дикий мир -->
-    <string name="wallpaper_wildworld">Дикий мир</string>
 
     <!-- Обои Фейерверки -->
-    <string name="wallpaper_fireworks">Фейерверки</string>
 
     <!-- Обои Ветряные мельницы -->
-    <string name="wallpaper_windmill">Ветряные мельницы</string>
 
     <!-- Обои Океанская погода -->
-    <string name="wallpaper_ocean">Океанская погода</string>
 
     <!-- Обои Глубокое море -->
-    <string name="wallpaper_deepsea">Глубокое море</string>
 
     <!-- Обои Полярные часы -->
-    <string name="wallpaper_clock">Полярные часы</string>
 
     <!-- Обои Nexus -->
-    <string name="wallpaper_nexus">Нейроны</string>
 
     <!-- Обои Шумовое поле -->
-    <string name="wallpaper_noisefield">Пузыри</string>
     <string name="wallpaper_nebula">Туманность</string>
 
     <!-- Обои музыкальной визуализации -->
-    <string name="wallpaper_vis1">Визуализатор</string>
-    <string name="wallpaper_vis2">Форма волны</string>
-    <string name="wallpaper_vis3">Спектр</string>
-    <string name="wallpaper_vis4">VU-метр</string>
-    <string name="wallpaper_vis5">Всё сразу</string>
-    <string name="wallpaper_vis6">Круговой спектр</string>
 
     <!-- Настройки полярных часов -->
     <string name="clock_settings">Настройки полярных часов</string>
@@ -161,12 +138,8 @@
     <!-- Настройки обоев Галактика 4 -->
 
     <!-- Обои Блики и лучи -->
-    <string name="wallpaper_phasebeam">Блики и лучи</string>
 
     <!-- Cube wallpaper -->
-    <string name="wallpaper_cube">Куб</string>
-    <string name="wallpaper_earth">Земля</string>
-    <string name="wallpaper_silk">Струящийся шёлк</string>
 
 
     <!-- Глобальные настройки частоты кадров -->
@@ -183,17 +156,14 @@
     <string name="grass_color_white">Белый</string>
 
     <!-- Обои Волшебный дым -->
-    <string name="wallpaper_magicsmoke">Волшебный дым</string>
     <string name="pref_fireworks_custom_background_title">Пользовательское фоновое изображение</string>
     <string name="pref_fireworks_custom_background_summary">Нажмите, чтобы выбрать пользовательское фоновое изображение</string>
     <string name="pref_fireworks_reset_background_title">Сбросить на фон по умолчанию</string>
     <string name="pref_fireworks_reset_background_summary">Удалить пользовательский фон и использовать стандартный</string>
 
     <!-- Обои Голографическая спираль -->
-    <string name="wallpaper_holospiral">Голографическая спираль</string>
 
     <!-- Обои Синее море -->
-    <string name="wallpaper_bluesea">Синее море</string>
 
     <string name="openweather_api_key">ВАШ_КЛЮЧ_OPENWEATHER_API</string>
 
@@ -242,23 +212,17 @@
     <string name="reset_current_settings_title">Восстановить настройки по умолчанию</string>
     <string name="reset_current_settings_summary">Восстановить настройки текущих обоев до значений по умолчанию</string>
     <string name="reset_action_confirm">Восстановить</string>
-    <string name="wallpaper_forest">Лес</string>
 
     <string name="pref_use_vulkan_title">Vulkan рендерер</string>
     <string name="pref_use_vulkan_summary">Использовать Vulkan для лучшей производительности (переприменить обои)</string>
     <string name="pref_disabled_prefix">[Отключено]</string>
-    <string name="wallpaper_cosmicflow">Космический поток</string>
-    <string name="wallpaper_droid">Shake Them All</string>
 
     <!-- Luminous dots wallpaper -->
-    <string name="wallpaper_luminousdots">Блестящие точки</string>
 
     <!-- Nixie tube wallpaper -->
-    <string name="wallpaper_nixietube">Никси-лампа</string>
     <string name="wallpaper_nixietube_desc">Газоразрядный индикатор: по умолчанию изящные часы, при воспроизведении звука — VU-метр</string>
 
     <!-- GeekLog wallpaper -->
-    <string name="wallpaper_geeklog">Гик-лог</string>
     <!-- 壁纸磁贴占位格（反馈入口）：壁纸数量为奇数时补在最后一格 -->
     <string name="grid_feedback_title">Отзывы и запросы</string>
     <string name="grid_feedback_caption">Создать issue на GitHub</string>

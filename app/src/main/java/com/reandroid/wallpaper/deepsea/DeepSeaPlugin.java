@@ -18,11 +18,6 @@ public class DeepSeaPlugin implements WallpaperPlugin {
     }
 
     @Override
-    public String getDisplayName(Context context) {
-        return "Deep Sea";
-    }
-
-    @Override
     public WallpaperEngine createEngine(Context context, WallpaperPluginHost host) {
         return new DeepSeaEngine(context, host);
     }

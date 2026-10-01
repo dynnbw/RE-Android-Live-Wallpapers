@@ -1,5 +1,4 @@
 {
-  "label": "@string/wallpaper_holospiral",
   "plugin": "com.reandroid.wallpaper.holospiral.HoloSpiralPlugin",
   "previewClass": "com.reandroid.wallpaper.holospiral.HoloSpiralGL"
 }
