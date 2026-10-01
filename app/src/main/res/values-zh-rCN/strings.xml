@@ -36,7 +36,7 @@
     <string name="about_official_website">开源项目</string>
     <string name="about_official_website_url">https://github.com/dynnbw/RE-Android-Live-Wallpapers</string>
     <string name="about_qq">QQ频道</string>
-    <!-- 未翻译: about_qq_url -->
+    <!-- 沿用默认: about_qq_url -->
     <string name="about_thanks">致谢</string>
     <string name="about_thanks_original">感谢原作者</string>
     <string name="about_thanks_original_detail">原作者：MediaTek、Google、Samsung</string>
@@ -66,14 +66,14 @@
     <string name="grid_feedback_caption">在 GitHub 提 Issue</string>
     <!-- 壁纸磁贴占位格（反馈入口）：壁纸数量为奇数时补在最后一格 -->
     <string name="grid_feedback_title">反馈与移植请求</string>
-    <!-- 未翻译: grid_feedback_url -->
+    <!-- 沿用默认: grid_feedback_url -->
     <string name="miui_permission_go_settings">去设置</string>
     <string name="miui_permission_message">小米系统需要手动授予"动态壁纸服务"权限，否则无法正常打开壁纸预览。\n\n点击确定后，请在权限管理页面找到"动态壁纸服务"并开启。</string>
     <string name="miui_permission_open_failed">无法打开设置页面</string>
     <string name="miui_permission_title">需要授予权限</string>
     <string name="no_browser_found">未找到浏览器</string>
     <string name="no_email_found">未找到邮件应用</string>
-    <!-- 未翻译: openweather_api_key -->
+    <!-- 沿用默认: openweather_api_key -->
     <string name="pref_apply_api_title">申请API</string>
     <string name="pref_fireworks_custom_background_summary">点击选择自定义背景图片</string>
     <string name="pref_fireworks_custom_background_title">自定义背景图片</string>
@@ -113,9 +113,9 @@
     <string name="pref_weather_api_guide_step_verify1">三、验证你的邮箱\n1. 提交注册后，页面会提示：We have sent the confirmation link to xxx@xx.com. Please check your email.</string>
     <string name="pref_weather_api_guide_step_verify2">2. 登录你填写的邮箱，找到来自 OpenWeather 的验证邮件，点击邮件中的 Verify your email 按钮完成验证。</string>
     <string name="pref_weather_api_guide_step_verify3">如果未收到邮件，请检查垃圾邮件或广告邮件文件夹。</string>
-    <!-- 未翻译: pref_weather_debug_override -->
-    <!-- 未翻译: pref_weather_debug_restore -->
-    <!-- 未翻译: pref_weather_debug_title -->
+    <string name="pref_weather_debug_override">已应用天气覆盖：%1$s</string>
+    <string name="pref_weather_debug_restore">已恢复正常天气逻辑</string>
+    <string name="pref_weather_debug_title">天气调试</string>
     <string name="pref_weather_last_refresh">最后刷新时间: %1$s</string>
     <string name="pref_weather_last_refresh_unknown">最后刷新时间: 未知</string>
     <string name="pref_weather_refresh_now">立即刷新天气</string>

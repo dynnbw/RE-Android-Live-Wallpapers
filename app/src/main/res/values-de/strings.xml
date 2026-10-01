@@ -36,58 +36,58 @@
     <string name="about_official_website">Open Source</string>
     <string name="about_official_website_url">https://github.com/dynnbw/RE-Android-Live-Wallpapers</string>
     <string name="about_qq">QQ-Kanal</string>
-    <!-- 未翻译: about_qq_url -->
+    <!-- 沿用默认: about_qq_url -->
     <string name="about_thanks">Danksagungen</string>
     <string name="about_thanks_original">Danke an die ursprünglichen Autoren</string>
     <string name="about_thanks_original_detail">Original: MediaTek, Google, Samsung</string>
     <string name="about_title">Über</string>
-    <!-- 未翻译: action_clear_debug_log -->
-    <!-- 未翻译: action_debug_location_override -->
-    <!-- 未翻译: action_export_debug_log -->
+    <string name="action_clear_debug_log">Protokollpuffer leeren</string>
+    <string name="action_debug_location_override">Debug-Standort überschreiben</string>
+    <string name="action_export_debug_log">Debug-Protokoll exportieren</string>
     <string name="app_name">REAndroid Live Wallpapers</string>
     <string name="app_version_summary">Version: %1$s</string>
     <string name="check_for_updates">Nach Updates suchen</string>
     <string name="clock_settings">Einstellungen der Polaruhr</string>
     <string name="config_open_browser_failed">Browser kann nicht geöffnet werden</string>
-    <!-- 未翻译: debug_location_clear -->
-    <!-- 未翻译: debug_location_cleared -->
-    <!-- 未翻译: debug_location_format -->
-    <!-- 未翻译: debug_location_hint -->
-    <!-- 未翻译: debug_location_invalid -->
-    <!-- 未翻译: debug_location_message -->
-    <!-- 未翻译: debug_location_set -->
-    <!-- 未翻译: debug_location_title -->
-    <!-- 未翻译: deepsea_custom_background_summary -->
-    <!-- 未翻译: deepsea_custom_background_title -->
-    <!-- 未翻译: deepsea_reset_background_summary -->
-    <!-- 未翻译: deepsea_reset_background_title -->
+    <string name="debug_location_clear">Leeren</string>
+    <string name="debug_location_cleared">Debug-Standort geleert</string>
+    <string name="debug_location_format">Format: Breite, Länge</string>
+    <string name="debug_location_hint">Breite, Länge (z. B. 51.5074, -0.1278)</string>
+    <string name="debug_location_invalid">Ungültige Zahlen</string>
+    <string name="debug_location_message">Überschreibt die GPS-Koordinaten für die Sonnen- und Mondberechnung.\nLeer lassen für automatische Ortung.</string>
+    <string name="debug_location_set">Debug-Standort gesetzt: %1$s, %2$s</string>
+    <string name="debug_location_title">Debug-Standort überschreiben</string>
+    <string name="deepsea_custom_background_summary">Hintergrundbild auswählen</string>
+    <string name="deepsea_custom_background_title">Eigener Hintergrund</string>
+    <string name="deepsea_reset_background_summary">Eigenen Hintergrund entfernen und den eingebauten verwenden</string>
+    <string name="deepsea_reset_background_title">Hintergrund zurücksetzen</string>
     <string name="fireworks_background_reset_toast">Standardhintergrund wiederhergestellt</string>
     <string name="fireworks_custom_background_set_toast">Benutzerdefinierter Hintergrund festgelegt. Hintergrund erneut anwenden, um zu aktivieren.</string>
     <string name="grid_feedback_caption">Issue auf GitHub öffnen</string>
     <!-- 壁纸磁贴占位格（反馈入口）：壁纸数量为奇数时补在最后一格 -->
     <string name="grid_feedback_title">Feedback &amp; Portierungswünsche</string>
-    <!-- 未翻译: grid_feedback_url -->
+    <!-- 沿用默认: grid_feedback_url -->
     <string name="miui_permission_go_settings">Zu den Einstellungen</string>
     <string name="miui_permission_message">MIUI erfordert die manuelle Aktivierung der Berechtigung „Live-Hintergrunddienst“, um die Vorschau zu öffnen.\n\nTippen Sie auf OK, und aktivieren Sie sie dann in der Berechtigungsverwaltung.</string>
     <string name="miui_permission_open_failed">Einstellungen können nicht geöffnet werden</string>
     <string name="miui_permission_title">Berechtigung erforderlich</string>
     <string name="no_browser_found">Kein Browser gefunden</string>
     <string name="no_email_found">Keine E-Mail-App gefunden</string>
-    <string name="openweather_api_key">YOUR_OPENWEATHER_API_KEY</string>
+    <!-- 沿用默认: openweather_api_key -->
     <string name="pref_apply_api_title">API beantragen</string>
-    <!-- 未翻译: pref_fireworks_custom_background_summary -->
-    <!-- 未翻译: pref_fireworks_custom_background_title -->
-    <!-- 未翻译: pref_fireworks_grass_night_summary -->
-    <!-- 未翻译: pref_fireworks_grass_night_title -->
-    <!-- 未翻译: pref_fireworks_reset_background_summary -->
-    <!-- 未翻译: pref_fireworks_reset_background_title -->
+    <string name="pref_fireworks_custom_background_summary">Tippen, um ein eigenes Hintergrundbild zu wählen</string>
+    <string name="pref_fireworks_custom_background_title">Eigenes Hintergrundbild</string>
+    <string name="pref_fireworks_grass_night_summary">Sternenhimmel über wiegendem Gras; Feuerwerk hinter dem Gras</string>
+    <string name="pref_fireworks_grass_night_title">Gras bei Nacht</string>
+    <string name="pref_fireworks_reset_background_summary">Eigenen Hintergrund entfernen und den Standard verwenden</string>
+    <string name="pref_fireworks_reset_background_title">Auf Standardhintergrund zurücksetzen</string>
     <string name="pref_global_frame_rate">Globale Bildrate</string>
     <string name="pref_microbes_color_mode_modern">Neu</string>
     <string name="pref_microbes_color_mode_original">Original</string>
-    <!-- 未翻译: pref_nexus_custom_background_summary -->
-    <!-- 未翻译: pref_nexus_custom_background_title -->
-    <!-- 未翻译: pref_nexus_reset_background_summary -->
-    <!-- 未翻译: pref_nexus_reset_background_title -->
+    <string name="pref_nexus_custom_background_summary">Hintergrundbild auswählen</string>
+    <string name="pref_nexus_custom_background_title">Eigener Hintergrund</string>
+    <string name="pref_nexus_reset_background_summary">Eigenen Hintergrund entfernen und den eingebauten verwenden</string>
+    <string name="pref_nexus_reset_background_title">Hintergrund zurücksetzen</string>
     <string name="pref_open_wallpaper_chooser">Hintergrundauswahl öffnen</string>
     <string name="pref_open_wallpaper_picker">Als Hintergrundbild festlegen</string>
     <string name="pref_open_wallpaper_picker_failed">Hintergrundvorschau nicht unterstützt</string>

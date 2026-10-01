@@ -36,58 +36,58 @@
     <string name="about_official_website">ओपन सोर्स</string>
     <string name="about_official_website_url">https://github.com/dynnbw/RE-Android-Live-Wallpapers</string>
     <string name="about_qq">QQ चैनल</string>
-    <!-- 未翻译: about_qq_url -->
+    <!-- 沿用默认: about_qq_url -->
     <string name="about_thanks">आभार</string>
     <string name="about_thanks_original">मूल लेखकों के लिए धन्यवाद</string>
     <string name="about_thanks_original_detail">मूल: मीडियाटेक, गूगल, सैमसंग</string>
     <string name="about_title">परिचय</string>
-    <!-- 未翻译: action_clear_debug_log -->
-    <!-- 未翻译: action_debug_location_override -->
-    <!-- 未翻译: action_export_debug_log -->
+    <string name="action_clear_debug_log">लॉग बफ़र साफ़ करें</string>
+    <string name="action_debug_location_override">डिबग स्थान ओवरराइड</string>
+    <string name="action_export_debug_log">डिबग लॉग निर्यात करें</string>
     <string name="app_name">आरईएंड्रॉइड लाइव वॉलपेपर</string>
     <string name="app_version_summary">संस्करण: %1$s</string>
     <string name="check_for_updates">अपडेट जांचें</string>
     <string name="clock_settings">ध्रुवीय घड़ी सेटिंग्स</string>
     <string name="config_open_browser_failed">ब्राउज़र खोलने में असमर्थ</string>
-    <!-- 未翻译: debug_location_clear -->
-    <!-- 未翻译: debug_location_cleared -->
-    <!-- 未翻译: debug_location_format -->
-    <!-- 未翻译: debug_location_hint -->
-    <!-- 未翻译: debug_location_invalid -->
-    <!-- 未翻译: debug_location_message -->
-    <!-- 未翻译: debug_location_set -->
-    <!-- 未翻译: debug_location_title -->
-    <!-- 未翻译: deepsea_custom_background_summary -->
-    <!-- 未翻译: deepsea_custom_background_title -->
-    <!-- 未翻译: deepsea_reset_background_summary -->
-    <!-- 未翻译: deepsea_reset_background_title -->
+    <string name="debug_location_clear">साफ़ करें</string>
+    <string name="debug_location_cleared">डिबग स्थान साफ़ किया गया</string>
+    <string name="debug_location_format">प्रारूप: अक्षांश, देशांतर</string>
+    <string name="debug_location_hint">अक्षांश, देशांतर (जैसे 51.5074, -0.1278)</string>
+    <string name="debug_location_invalid">अमान्य संख्याएँ</string>
+    <string name="debug_location_message">सूर्य/चंद्र गणना के लिए GPS निर्देशांक बदलें।\nखाली छोड़ने पर स्वतः स्थान पर लौट आएगा।</string>
+    <string name="debug_location_set">डिबग स्थान सेट: %1$s, %2$s</string>
+    <string name="debug_location_title">डिबग स्थान ओवरराइड</string>
+    <string name="deepsea_custom_background_summary">पृष्ठभूमि छवि चुनें</string>
+    <string name="deepsea_custom_background_title">कस्टम पृष्ठभूमि</string>
+    <string name="deepsea_reset_background_summary">कस्टम पृष्ठभूमि हटाकर अंतर्निहित का उपयोग करें</string>
+    <string name="deepsea_reset_background_title">पृष्ठभूमि रीसेट करें</string>
     <string name="fireworks_background_reset_toast">डिफ़ॉल्ट पृष्ठभूमि पुनर्स्थापित</string>
     <string name="fireworks_custom_background_set_toast">अनुकूलित पृष्ठभूमि सेट है। प्रभावी होने के लिए वॉलपेपर पुनः लागू करें।</string>
     <string name="grid_feedback_caption">GitHub पर issue बनाएँ</string>
     <!-- 壁纸磁贴占位格（反馈入口）：壁纸数量为奇数时补在最后一格 -->
     <string name="grid_feedback_title">फ़ीडबैक और अनुरोध</string>
-    <!-- 未翻译: grid_feedback_url -->
+    <!-- 沿用默认: grid_feedback_url -->
     <string name="miui_permission_go_settings">सेटिंग्स पर जाएँ</string>
     <string name="miui_permission_message">पूर्वावलोकन खोलने के लिए MIUI को "लाइव वॉलपेपर सेवा" अनुमति को मैन्युअल रूप से सक्षम करने की आवश्यकता है।\n\nठीक टैप करें, फिर इसे अनुमति प्रबंधन में सक्षम करें।</string>
     <string name="miui_permission_open_failed">सेटिंग्स खोलने में असमर्थ</string>
     <string name="miui_permission_title">अनुमति आवश्यक है</string>
     <string name="no_browser_found">कोई ब्राउज़र नहीं मिला</string>
     <string name="no_email_found">कोई ईमेल ऐप नहीं मिला</string>
-    <string name="openweather_api_key">आपकी_ओपनवेदर_एपीआई_कुंजी</string>
+    <!-- 沿用默认: openweather_api_key -->
     <string name="pref_apply_api_title">एपीआई के लिए आवेदन करें</string>
-    <!-- 未翻译: pref_fireworks_custom_background_summary -->
-    <!-- 未翻译: pref_fireworks_custom_background_title -->
-    <!-- 未翻译: pref_fireworks_grass_night_summary -->
-    <!-- 未翻译: pref_fireworks_grass_night_title -->
-    <!-- 未翻译: pref_fireworks_reset_background_summary -->
-    <!-- 未翻译: pref_fireworks_reset_background_title -->
+    <string name="pref_fireworks_custom_background_summary">कस्टम पृष्ठभूमि छवि चुनने के लिए टैप करें</string>
+    <string name="pref_fireworks_custom_background_title">कस्टम पृष्ठभूमि छवि</string>
+    <string name="pref_fireworks_grass_night_summary">तारों भरा आसमान और झूलती घास; घास के पीछे आतिशबाज़ी</string>
+    <string name="pref_fireworks_grass_night_title">रात का घास दृश्य</string>
+    <string name="pref_fireworks_reset_background_summary">कस्टम पृष्ठभूमि हटाकर डिफ़ॉल्ट का उपयोग करें</string>
+    <string name="pref_fireworks_reset_background_title">डिफ़ॉल्ट पृष्ठभूमि पर रीसेट करें</string>
     <string name="pref_global_frame_rate">वैश्विक फ्रेम दर</string>
     <string name="pref_microbes_color_mode_modern">नया</string>
     <string name="pref_microbes_color_mode_original">मूल</string>
-    <!-- 未翻译: pref_nexus_custom_background_summary -->
-    <!-- 未翻译: pref_nexus_custom_background_title -->
-    <!-- 未翻译: pref_nexus_reset_background_summary -->
-    <!-- 未翻译: pref_nexus_reset_background_title -->
+    <string name="pref_nexus_custom_background_summary">पृष्ठभूमि छवि चुनें</string>
+    <string name="pref_nexus_custom_background_title">कस्टम पृष्ठभूमि</string>
+    <string name="pref_nexus_reset_background_summary">कस्टम पृष्ठभूमि हटाकर अंतर्निहित का उपयोग करें</string>
+    <string name="pref_nexus_reset_background_title">पृष्ठभूमि रीसेट करें</string>
     <string name="pref_open_wallpaper_chooser">वॉलपेपर चयनकर्ता खोलें</string>
     <string name="pref_open_wallpaper_picker">वॉलपेपर के रूप में सेट करें</string>
     <string name="pref_open_wallpaper_picker_failed">वॉलपेपर पूर्वावलोकन समर्थित नहीं है</string>

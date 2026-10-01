@@ -36,58 +36,58 @@
     <string name="about_official_website">Открытый исходный код</string>
     <string name="about_official_website_url">https://github.com/dynnbw/RE-Android-Live-Wallpapers</string>
     <string name="about_qq">QQ Канал</string>
-    <!-- 未翻译: about_qq_url -->
+    <!-- 沿用默认: about_qq_url -->
     <string name="about_thanks">Благодарности</string>
     <string name="about_thanks_original">Спасибо оригинальным авторам</string>
     <string name="about_thanks_original_detail">Оригинальные: MediaTek, Google, Samsung</string>
     <string name="about_title">О программе</string>
-    <!-- 未翻译: action_clear_debug_log -->
-    <!-- 未翻译: action_debug_location_override -->
-    <!-- 未翻译: action_export_debug_log -->
+    <string name="action_clear_debug_log">Очистить буфер журнала</string>
+    <string name="action_debug_location_override">Переопределить отладочное местоположение</string>
+    <string name="action_export_debug_log">Экспортировать журнал отладки</string>
     <string name="app_name">REAndroid Живые обои</string>
     <string name="app_version_summary">Версия: %1$s</string>
     <string name="check_for_updates">Проверить обновления</string>
     <string name="clock_settings">Настройки полярных часов</string>
     <string name="config_open_browser_failed">Не удалось открыть браузер</string>
-    <!-- 未翻译: debug_location_clear -->
-    <!-- 未翻译: debug_location_cleared -->
-    <!-- 未翻译: debug_location_format -->
-    <!-- 未翻译: debug_location_hint -->
-    <!-- 未翻译: debug_location_invalid -->
-    <!-- 未翻译: debug_location_message -->
-    <!-- 未翻译: debug_location_set -->
-    <!-- 未翻译: debug_location_title -->
-    <!-- 未翻译: deepsea_custom_background_summary -->
-    <!-- 未翻译: deepsea_custom_background_title -->
-    <!-- 未翻译: deepsea_reset_background_summary -->
-    <!-- 未翻译: deepsea_reset_background_title -->
+    <string name="debug_location_clear">Очистить</string>
+    <string name="debug_location_cleared">Отладочное местоположение очищено</string>
+    <string name="debug_location_format">Формат: широта, долгота</string>
+    <string name="debug_location_hint">широта, долгота (напр. 51.5074, -0.1278)</string>
+    <string name="debug_location_invalid">Некорректные числа</string>
+    <string name="debug_location_message">Переопределяет координаты GPS для расчёта солнца и луны.\nОставьте пустым для автоопределения.</string>
+    <string name="debug_location_set">Отладочное местоположение задано: %1$s, %2$s</string>
+    <string name="debug_location_title">Переопределение отладочного местоположения</string>
+    <string name="deepsea_custom_background_summary">Выбрать фоновое изображение</string>
+    <string name="deepsea_custom_background_title">Свой фон</string>
+    <string name="deepsea_reset_background_summary">Убрать свой фон и вернуть встроенный</string>
+    <string name="deepsea_reset_background_title">Сбросить фон</string>
     <string name="fireworks_background_reset_toast">Фон по умолчанию восстановлен</string>
     <string name="fireworks_custom_background_set_toast">Пользовательский фон установлен. Повторно примените обои, чтобы изменения вступили в силу.</string>
     <string name="grid_feedback_caption">Создать issue на GitHub</string>
     <!-- 壁纸磁贴占位格（反馈入口）：壁纸数量为奇数时补在最后一格 -->
     <string name="grid_feedback_title">Отзывы и запросы</string>
-    <!-- 未翻译: grid_feedback_url -->
+    <!-- 沿用默认: grid_feedback_url -->
     <string name="miui_permission_go_settings">Перейти в настройки</string>
     <string name="miui_permission_message">MIUI требует вручную включить разрешение «Служба живых обоев», чтобы открыть предпросмотр.\n\nНажмите ОК, затем включите его в управлении разрешениями.</string>
     <string name="miui_permission_open_failed">Не удалось открыть настройки</string>
     <string name="miui_permission_title">Требуется разрешение</string>
     <string name="no_browser_found">Браузер не найден</string>
     <string name="no_email_found">Почтовое приложение не найдено</string>
-    <string name="openweather_api_key">ВАШ_КЛЮЧ_OPENWEATHER_API</string>
+    <!-- 沿用默认: openweather_api_key -->
     <string name="pref_apply_api_title">Получить API</string>
-    <!-- 未翻译: pref_fireworks_custom_background_summary -->
-    <!-- 未翻译: pref_fireworks_custom_background_title -->
-    <!-- 未翻译: pref_fireworks_grass_night_summary -->
-    <!-- 未翻译: pref_fireworks_grass_night_title -->
-    <!-- 未翻译: pref_fireworks_reset_background_summary -->
-    <!-- 未翻译: pref_fireworks_reset_background_title -->
+    <string name="pref_fireworks_custom_background_summary">Нажмите, чтобы выбрать своё фоновое изображение</string>
+    <string name="pref_fireworks_custom_background_title">Своё фоновое изображение</string>
+    <string name="pref_fireworks_grass_night_summary">Звёздное небо и колышущаяся трава; фейерверк за травой</string>
+    <string name="pref_fireworks_grass_night_title">Ночная трава</string>
+    <string name="pref_fireworks_reset_background_summary">Убрать свой фон и вернуть стандартный</string>
+    <string name="pref_fireworks_reset_background_title">Сбросить на стандартный фон</string>
     <string name="pref_global_frame_rate">Глобальная частота кадров</string>
     <string name="pref_microbes_color_mode_modern">Новый</string>
     <string name="pref_microbes_color_mode_original">Оригинал</string>
-    <!-- 未翻译: pref_nexus_custom_background_summary -->
-    <!-- 未翻译: pref_nexus_custom_background_title -->
-    <!-- 未翻译: pref_nexus_reset_background_summary -->
-    <!-- 未翻译: pref_nexus_reset_background_title -->
+    <string name="pref_nexus_custom_background_summary">Выбрать фоновое изображение</string>
+    <string name="pref_nexus_custom_background_title">Свой фон</string>
+    <string name="pref_nexus_reset_background_summary">Убрать свой фон и вернуть встроенный</string>
+    <string name="pref_nexus_reset_background_title">Сбросить фон</string>
     <string name="pref_open_wallpaper_chooser">Открыть выбор обоев</string>
     <string name="pref_open_wallpaper_picker">Установить обои</string>
     <string name="pref_open_wallpaper_picker_failed">Предпросмотр обоев не поддерживается</string>

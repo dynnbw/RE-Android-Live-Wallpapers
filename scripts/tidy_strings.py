@@ -118,6 +118,14 @@ KEEP_COMMENTS = {
     ],
 }
 
+# 语言无关的值：**只写在默认文件里**，各语言留一行"沿用默认"占位。
+# 否则改一次链接要在 13 个文件里各改一遍，而且迟早漏掉几个。
+DEFAULT_ONLY = {
+    "about_qq_url",          # 一个网址
+    "grid_feedback_url",     # 一个网址
+    "openweather_api_key",   # 一个占位 token，本来就该照抄
+}
+
 # 本项目自己的版权头。这 8 个语言文件的内容是我们自己翻译的（不是 AOSP 派生），
 # 所以挂本项目的 Apache 头；AOSP 派生的那 5 个文件保留它们原来的头。
 # **行数与 AOSP 那份保持一致**，13 个文件才能逐行对齐。
@@ -164,6 +172,10 @@ def build(locale, canonical, header, entries, missing_policy, header_lines):
     for key, comment in canonical:
         for line in comment:
             out.append("    " + line)
+        if locale != "default" and key in DEFAULT_ONLY:
+            # 语言无关的值不复制到各语言：留一行占位，运行时回退到默认文件。
+            out.append("    <!-- 沿用默认: %s -->" % key)
+            continue
         value = have.get(key)
         if value is None:
             if missing_policy == "original":

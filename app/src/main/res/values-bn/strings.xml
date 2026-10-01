@@ -36,58 +36,58 @@
     <string name="about_official_website">ওপেন সোর্স</string>
     <string name="about_official_website_url">https://github.com/dynnbw/RE-Android-Live-Wallpapers</string>
     <string name="about_qq">QQ চ্যানেল</string>
-    <!-- 未翻译: about_qq_url -->
+    <!-- 沿用默认: about_qq_url -->
     <string name="about_thanks">ধন্যবাদ</string>
     <string name="about_thanks_original">মূল লেখকদের ধন্যবাদ</string>
     <string name="about_thanks_original_detail">মূল: মিডিয়াটেক, গুগল, স্যামসাং</string>
     <string name="about_title">পরিচিতি</string>
-    <!-- 未翻译: action_clear_debug_log -->
-    <!-- 未翻译: action_debug_location_override -->
-    <!-- 未翻译: action_export_debug_log -->
+    <string name="action_clear_debug_log">লগ বাফার পরিষ্কার করুন</string>
+    <string name="action_debug_location_override">ডিবাগ অবস্থান ওভাররাইড</string>
+    <string name="action_export_debug_log">ডিবাগ লগ রপ্তানি করুন</string>
     <string name="app_name">আরইঅ্যানড্রয়েড লাইভ ওয়ালপেপার</string>
     <string name="app_version_summary">সংস্করণ: %1$s</string>
     <string name="check_for_updates">Check for Updates</string>
     <string name="clock_settings">পোলার ঘড়ি সেটিংস</string>
     <string name="config_open_browser_failed">ব্রাউজার খুলতে অক্ষম</string>
-    <!-- 未翻译: debug_location_clear -->
-    <!-- 未翻译: debug_location_cleared -->
-    <!-- 未翻译: debug_location_format -->
-    <!-- 未翻译: debug_location_hint -->
-    <!-- 未翻译: debug_location_invalid -->
-    <!-- 未翻译: debug_location_message -->
-    <!-- 未翻译: debug_location_set -->
-    <!-- 未翻译: debug_location_title -->
-    <!-- 未翻译: deepsea_custom_background_summary -->
-    <!-- 未翻译: deepsea_custom_background_title -->
-    <!-- 未翻译: deepsea_reset_background_summary -->
-    <!-- 未翻译: deepsea_reset_background_title -->
+    <string name="debug_location_clear">পরিষ্কার করুন</string>
+    <string name="debug_location_cleared">ডিবাগ অবস্থান পরিষ্কার করা হয়েছে</string>
+    <string name="debug_location_format">বিন্যাস: অক্ষাংশ, দ্রাঘিমাংশ</string>
+    <string name="debug_location_hint">অক্ষাংশ, দ্রাঘিমাংশ (যেমন 51.5074, -0.1278)</string>
+    <string name="debug_location_invalid">অবৈধ সংখ্যা</string>
+    <string name="debug_location_message">সূর্য/চাঁদের হিসাবের জন্য GPS স্থানাঙ্ক বদলান।\nখালি রাখলে স্বয়ংক্রিয় অবস্থানে ফিরে যাবে।</string>
+    <string name="debug_location_set">ডিবাগ অবস্থান সেট: %1$s, %2$s</string>
+    <string name="debug_location_title">ডিবাগ অবস্থান ওভাররাইড</string>
+    <string name="deepsea_custom_background_summary">একটি পটভূমি ছবি বাছুন</string>
+    <string name="deepsea_custom_background_title">কাস্টম পটভূমি</string>
+    <string name="deepsea_reset_background_summary">কাস্টম পটভূমি মুছে অন্তর্নির্মিতটি ব্যবহার করুন</string>
+    <string name="deepsea_reset_background_title">পটভূমি রিসেট করুন</string>
     <string name="fireworks_background_reset_toast">ডিফল্ট পটভূমি পুনরুদ্ধার করা হয়েছে</string>
     <string name="fireworks_custom_background_set_toast">কাস্টম পটভূমি সেট করা হয়েছে। কার্যকর করতে ওয়ালপেপার পুনরায় প্রয়োগ করুন।</string>
     <string name="grid_feedback_caption">GitHub-এ issue খুলুন</string>
     <!-- 壁纸磁贴占位格（反馈入口）：壁纸数量为奇数时补在最后一格 -->
     <string name="grid_feedback_title">ফিডব্যাক ও অনুরোধ</string>
-    <!-- 未翻译: grid_feedback_url -->
+    <!-- 沿用默认: grid_feedback_url -->
     <string name="miui_permission_go_settings">সেটিংসে যান</string>
     <string name="miui_permission_message">প্রিভিউ খুলতে MIUI-তে ম্যানুয়ালি "লাইভ ওয়ালপেপার পরিষেবা" অনুমতি সক্ষম করা প্রয়োজন।\n\nঠিক আছে ট্যাপ করুন, তারপর অনুমতি ব্যবস্থাপনায় এটি সক্ষম করুন।</string>
     <string name="miui_permission_open_failed">সেটিংস খুলতে অক্ষম</string>
     <string name="miui_permission_title">অনুমতি প্রয়োজন</string>
     <string name="no_browser_found">কোন ব্রাউজার পাওয়া যায়নি</string>
     <string name="no_email_found">কোন ইমেইল অ্যাপ পাওয়া যায়নি</string>
-    <string name="openweather_api_key">আপনার_ওপেনওয়েদার_এপিআই_কী</string>
+    <!-- 沿用默认: openweather_api_key -->
     <string name="pref_apply_api_title">এপিআই এর জন্য আবেদন করুন</string>
-    <!-- 未翻译: pref_fireworks_custom_background_summary -->
-    <!-- 未翻译: pref_fireworks_custom_background_title -->
-    <!-- 未翻译: pref_fireworks_grass_night_summary -->
-    <!-- 未翻译: pref_fireworks_grass_night_title -->
-    <!-- 未翻译: pref_fireworks_reset_background_summary -->
-    <!-- 未翻译: pref_fireworks_reset_background_title -->
+    <string name="pref_fireworks_custom_background_summary">কাস্টম পটভূমি ছবি বাছতে ট্যাপ করুন</string>
+    <string name="pref_fireworks_custom_background_title">কাস্টম পটভূমি ছবি</string>
+    <string name="pref_fireworks_grass_night_summary">তারাভরা আকাশ ও দোলায়মান ঘাস; ঘাসের পিছনে আতশবাজি</string>
+    <string name="pref_fireworks_grass_night_title">রাতের ঘাস দৃশ্য</string>
+    <string name="pref_fireworks_reset_background_summary">কাস্টম পটভূমি মুছে ডিফল্টটি ব্যবহার করুন</string>
+    <string name="pref_fireworks_reset_background_title">ডিফল্ট পটভূমিতে রিসেট করুন</string>
     <string name="pref_global_frame_rate">বৈশ্বিক ফ্রেম রেট</string>
     <string name="pref_microbes_color_mode_modern">নতুন</string>
     <string name="pref_microbes_color_mode_original">মূল</string>
-    <!-- 未翻译: pref_nexus_custom_background_summary -->
-    <!-- 未翻译: pref_nexus_custom_background_title -->
-    <!-- 未翻译: pref_nexus_reset_background_summary -->
-    <!-- 未翻译: pref_nexus_reset_background_title -->
+    <string name="pref_nexus_custom_background_summary">একটি পটভূমি ছবি বাছুন</string>
+    <string name="pref_nexus_custom_background_title">কাস্টম পটভূমি</string>
+    <string name="pref_nexus_reset_background_summary">কাস্টম পটভূমি মুছে অন্তর্নির্মিতটি ব্যবহার করুন</string>
+    <string name="pref_nexus_reset_background_title">পটভূমি রিসেট করুন</string>
     <string name="pref_open_wallpaper_chooser">ওয়ালপেপার নির্বাচক খুলুন</string>
     <string name="pref_open_wallpaper_picker">ওয়ালপেপার হিসেবে সেট করুন</string>
     <string name="pref_open_wallpaper_picker_failed">ওয়ালপেপার প্রিভিউ সমর্থিত নয়</string>

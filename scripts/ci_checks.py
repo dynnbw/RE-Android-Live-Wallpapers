@@ -259,7 +259,8 @@ def check_strings_alignment():
         m = re.search(r'<string name="([^"]+)"', line)
         if m:
             return m.group(1)
-        m = re.search(r'<!--\s*未翻译:\s*([a-z0-9_]+)\s*-->', line)
+        # 两种占位：缺翻译的，和"值只在默认文件里、这里沿用"的（如网址）
+        m = re.search(r'<!--\s*(?:未翻译|沿用默认):\s*([a-z0-9_]+)\s*-->', line)
         return m.group(1) if m else None
 
     def layout(path):

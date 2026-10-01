@@ -36,58 +36,58 @@
     <string name="about_official_website">オープンソース</string>
     <string name="about_official_website_url">https://github.com/dynnbw/RE-Android-Live-Wallpapers</string>
     <string name="about_qq">QQチャンネル</string>
-    <!-- 未翻译: about_qq_url -->
+    <!-- 沿用默认: about_qq_url -->
     <string name="about_thanks">謝辞</string>
     <string name="about_thanks_original">原作者に感謝</string>
     <string name="about_thanks_original_detail">原作者：MediaTek、Google、Samsung</string>
     <string name="about_title">このアプリについて</string>
-    <!-- 未翻译: action_clear_debug_log -->
-    <!-- 未翻译: action_debug_location_override -->
-    <!-- 未翻译: action_export_debug_log -->
+    <string name="action_clear_debug_log">ログバッファをクリア</string>
+    <string name="action_debug_location_override">デバッグ位置の上書き</string>
+    <string name="action_export_debug_log">デバッグログを書き出す</string>
     <string name="app_name">REAndroid ライブ壁紙</string>
     <string name="app_version_summary">バージョン：%1$s</string>
     <string name="check_for_updates">アップデートを確認</string>
     <string name="clock_settings">極地時計の設定</string>
     <string name="config_open_browser_failed">ブラウザを開けませんでした</string>
-    <!-- 未翻译: debug_location_clear -->
-    <!-- 未翻译: debug_location_cleared -->
-    <!-- 未翻译: debug_location_format -->
-    <!-- 未翻译: debug_location_hint -->
-    <!-- 未翻译: debug_location_invalid -->
-    <!-- 未翻译: debug_location_message -->
-    <!-- 未翻译: debug_location_set -->
-    <!-- 未翻译: debug_location_title -->
-    <!-- 未翻译: deepsea_custom_background_summary -->
-    <!-- 未翻译: deepsea_custom_background_title -->
-    <!-- 未翻译: deepsea_reset_background_summary -->
-    <!-- 未翻译: deepsea_reset_background_title -->
+    <string name="debug_location_clear">クリア</string>
+    <string name="debug_location_cleared">デバッグ位置をクリアしました</string>
+    <string name="debug_location_format">形式：緯度, 経度</string>
+    <string name="debug_location_hint">緯度, 経度（例：51.5074, -0.1278）</string>
+    <string name="debug_location_invalid">数値が不正です</string>
+    <string name="debug_location_message">太陽と月の計算に使う GPS の緯度経度を上書きします。\n空欄にすると自動測位に戻ります。</string>
+    <string name="debug_location_set">デバッグ位置を設定しました：%1$s, %2$s</string>
+    <string name="debug_location_title">デバッグ位置の上書き</string>
+    <string name="deepsea_custom_background_summary">背景画像を選択</string>
+    <string name="deepsea_custom_background_title">カスタム背景</string>
+    <string name="deepsea_reset_background_summary">カスタム背景を消して内蔵の背景に戻す</string>
+    <string name="deepsea_reset_background_title">背景をリセット</string>
     <string name="fireworks_background_reset_toast">デフォルト背景に戻りました</string>
     <string name="fireworks_custom_background_set_toast">カスタム背景が設定されました。適用するには壁紙を再設定してください</string>
     <string name="grid_feedback_caption">GitHub で Issue を作成</string>
     <!-- 壁纸磁贴占位格（反馈入口）：壁纸数量为奇数时补在最后一格 -->
     <string name="grid_feedback_title">フィードバック・移植リクエスト</string>
-    <!-- 未翻译: grid_feedback_url -->
+    <!-- 沿用默认: grid_feedback_url -->
     <string name="miui_permission_go_settings">設定へ移動</string>
     <string name="miui_permission_message">MIUIシステムでは壁紙プレビューを開くために「ライブ壁紙サービス」権限を手動で付与する必要があります。\n\nOKをタップした後、権限管理ページで「ライブ壁紙サービス」を見つけて有効にしてください。</string>
     <string name="miui_permission_open_failed">設定画面を開けませんでした</string>
     <string name="miui_permission_title">権限が必要です</string>
     <string name="no_browser_found">ブラウザが見つかりません</string>
     <string name="no_email_found">メールアプリが見つかりません</string>
-    <!-- 未翻译: openweather_api_key -->
+    <!-- 沿用默认: openweather_api_key -->
     <string name="pref_apply_api_title">API申請</string>
-    <!-- 未翻译: pref_fireworks_custom_background_summary -->
-    <!-- 未翻译: pref_fireworks_custom_background_title -->
-    <!-- 未翻译: pref_fireworks_grass_night_summary -->
-    <!-- 未翻译: pref_fireworks_grass_night_title -->
-    <!-- 未翻译: pref_fireworks_reset_background_summary -->
-    <!-- 未翻译: pref_fireworks_reset_background_title -->
+    <string name="pref_fireworks_custom_background_summary">タップしてカスタム背景画像を選択</string>
+    <string name="pref_fireworks_custom_background_title">カスタム背景画像</string>
+    <string name="pref_fireworks_grass_night_summary">星の夜空と揺れる草。草の後ろで花火が弾けます</string>
+    <string name="pref_fireworks_grass_night_title">夜の草地</string>
+    <string name="pref_fireworks_reset_background_summary">カスタム背景を消して既定の背景に戻す</string>
+    <string name="pref_fireworks_reset_background_title">既定の背景に戻す</string>
     <string name="pref_global_frame_rate">全体フレームレート</string>
     <string name="pref_microbes_color_mode_modern">新バージョン</string>
     <string name="pref_microbes_color_mode_original">クラシック版</string>
-    <!-- 未翻译: pref_nexus_custom_background_summary -->
-    <!-- 未翻译: pref_nexus_custom_background_title -->
-    <!-- 未翻译: pref_nexus_reset_background_summary -->
-    <!-- 未翻译: pref_nexus_reset_background_title -->
+    <string name="pref_nexus_custom_background_summary">背景画像を選択</string>
+    <string name="pref_nexus_custom_background_title">カスタム背景</string>
+    <string name="pref_nexus_reset_background_summary">カスタム背景を消して内蔵の背景に戻す</string>
+    <string name="pref_nexus_reset_background_title">背景をリセット</string>
     <string name="pref_open_wallpaper_chooser">壁紙選択を開く</string>
     <string name="pref_open_wallpaper_picker">壁紙に設定</string>
     <string name="pref_open_wallpaper_picker_failed">壁紙プレビューに対応していません</string>
@@ -113,9 +113,9 @@
     <string name="pref_weather_api_guide_step_verify1">三、メール認証\n1. 登録後、「We have sent the confirmation link to xxx@xx.com. Please check your email.」と表示されます。</string>
     <string name="pref_weather_api_guide_step_verify2">2. 登録したメールアドレスにログインし、OpenWeatherからの確認メール内の「Verify your email」ボタンをクリックして認証を完了します。</string>
     <string name="pref_weather_api_guide_step_verify3">メールが届かない場合は、迷惑メールフォルダを確認してください。</string>
-    <!-- 未翻译: pref_weather_debug_override -->
-    <!-- 未翻译: pref_weather_debug_restore -->
-    <!-- 未翻译: pref_weather_debug_title -->
+    <string name="pref_weather_debug_override">天気の上書きを適用しました：%1$s</string>
+    <string name="pref_weather_debug_restore">通常の天気ロジックに戻りました</string>
+    <string name="pref_weather_debug_title">天気のデバッグ</string>
     <string name="pref_weather_last_refresh">最終更新時間：%1$s</string>
     <string name="pref_weather_last_refresh_unknown">最終更新時間：不明</string>
     <string name="pref_weather_refresh_now">今すぐ天気を更新</string>

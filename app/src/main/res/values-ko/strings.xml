@@ -36,27 +36,27 @@
     <string name="about_official_website">오픈소스</string>
     <string name="about_official_website_url">https://github.com/dynnbw/RE-Android-Live-Wallpapers</string>
     <string name="about_qq">QQ 채널</string>
-    <!-- 未翻译: about_qq_url -->
+    <!-- 沿用默认: about_qq_url -->
     <string name="about_thanks">감사</string>
     <string name="about_thanks_original">원작자 감사</string>
     <string name="about_thanks_original_detail">원작자: MediaTek, Google, Samsung</string>
     <string name="about_title">정보</string>
-    <!-- 未翻译: action_clear_debug_log -->
-    <!-- 未翻译: action_debug_location_override -->
-    <!-- 未翻译: action_export_debug_log -->
+    <string name="action_clear_debug_log">로그 버퍼 비우기</string>
+    <string name="action_debug_location_override">디버그 위치 재정의</string>
+    <string name="action_export_debug_log">디버그 로그 내보내기</string>
     <string name="app_name">REAndroid 라이브 배경화면</string>
     <string name="app_version_summary">버전: %1$s</string>
     <string name="check_for_updates">업데이트 확인</string>
     <string name="clock_settings">극지 시계 설정</string>
     <string name="config_open_browser_failed">브라우저를 열 수 없음</string>
-    <!-- 未翻译: debug_location_clear -->
-    <!-- 未翻译: debug_location_cleared -->
-    <!-- 未翻译: debug_location_format -->
-    <!-- 未翻译: debug_location_hint -->
-    <!-- 未翻译: debug_location_invalid -->
-    <!-- 未翻译: debug_location_message -->
-    <!-- 未翻译: debug_location_set -->
-    <!-- 未翻译: debug_location_title -->
+    <string name="debug_location_clear">지우기</string>
+    <string name="debug_location_cleared">디버그 위치를 지웠습니다</string>
+    <string name="debug_location_format">형식: 위도, 경도</string>
+    <string name="debug_location_hint">위도, 경도 (예: 51.5074, -0.1278)</string>
+    <string name="debug_location_invalid">숫자가 올바르지 않습니다</string>
+    <string name="debug_location_message">태양/달 계산에 쓸 GPS 위도·경도를 재정의합니다.\n비워 두면 자동 위치로 돌아갑니다.</string>
+    <string name="debug_location_set">디버그 위치 설정됨: %1$s, %2$s</string>
+    <string name="debug_location_title">디버그 위치 재정의</string>
     <string name="deepsea_custom_background_summary">배경 이미지 선택</string>
     <string name="deepsea_custom_background_title">사용자 정의 배경</string>
     <string name="deepsea_reset_background_summary">사용자 정의 배경을 지우고 내장 배경을 사용합니다</string>
@@ -66,19 +66,19 @@
     <string name="grid_feedback_caption">GitHub에서 이슈 생성</string>
     <!-- 壁纸磁贴占位格（反馈入口）：壁纸数量为奇数时补在最后一格 -->
     <string name="grid_feedback_title">피드백 및 이식 요청</string>
-    <!-- 未翻译: grid_feedback_url -->
+    <!-- 沿用默认: grid_feedback_url -->
     <string name="miui_permission_go_settings">설정으로 이동</string>
     <string name="miui_permission_message">MIUI 시스템에서는 배경화면 미리보기를 정상적으로 열려면 \"라이브 배경화면 서비스\" 권한을 수동으로 부여해야 합니다.\n\n확인을 누른 후 권한 관리 페이지에서 \"라이브 배경화면 서비스\"를 찾아 활성화하세요.</string>
     <string name="miui_permission_open_failed">설정 페이지를 열 수 없음</string>
     <string name="miui_permission_title">권한 필요</string>
     <string name="no_browser_found">브라우저를 찾을 수 없음</string>
     <string name="no_email_found">이메일 앱을 찾을 수 없음</string>
-    <!-- 未翻译: openweather_api_key -->
+    <!-- 沿用默认: openweather_api_key -->
     <string name="pref_apply_api_title">API 신청</string>
     <string name="pref_fireworks_custom_background_summary">클릭하여 사용자 정의 배경 이미지 선택</string>
     <string name="pref_fireworks_custom_background_title">사용자 정의 배경 이미지</string>
-    <!-- 未翻译: pref_fireworks_grass_night_summary -->
-    <!-- 未翻译: pref_fireworks_grass_night_title -->
+    <string name="pref_fireworks_grass_night_summary">별이 빛나는 밤하늘과 흔들리는 풀; 풀 뒤에서 불꽃이 터집니다</string>
+    <string name="pref_fireworks_grass_night_title">밤 풍경</string>
     <string name="pref_fireworks_reset_background_summary">사용자 정의 배경을 지우고 기본 배경을 사용합니다</string>
     <string name="pref_fireworks_reset_background_title">기본 배경 복원</string>
     <string name="pref_global_frame_rate">전역 프레임 수</string>
@@ -113,9 +113,9 @@
     <string name="pref_weather_api_guide_step_verify1">3. 이메일 인증\n1. 등록 제출 후 페이지에 \"We have sent the confirmation link to xxx@xx.com. Please check your email.\" 메시지가 표시됩니다.</string>
     <string name="pref_weather_api_guide_step_verify2">2. 입력한 이메일에 로그인하여 OpenWeather에서 보낸 인증 이메일을 찾고, 이메일의 \"Verify your email\" 버튼을 클릭하여 인증을 완료합니다.</string>
     <string name="pref_weather_api_guide_step_verify3">이메일을 받지 못한 경우 스팸 또는 광고 메일 폴더를 확인하세요.</string>
-    <!-- 未翻译: pref_weather_debug_override -->
-    <!-- 未翻译: pref_weather_debug_restore -->
-    <!-- 未翻译: pref_weather_debug_title -->
+    <string name="pref_weather_debug_override">날씨 재정의 적용됨: %1$s</string>
+    <string name="pref_weather_debug_restore">정상 날씨 로직으로 돌아왔습니다</string>
+    <string name="pref_weather_debug_title">날씨 디버그</string>
     <string name="pref_weather_last_refresh">마지막 새로고침 시간: %1$s</string>
     <string name="pref_weather_last_refresh_unknown">마지막 새로고침 시간: 알 수 없음</string>
     <string name="pref_weather_refresh_now">지금 날씨 새로고침</string>

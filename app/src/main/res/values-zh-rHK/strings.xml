@@ -36,27 +36,27 @@
     <string name="about_official_website">開源項目</string>
     <string name="about_official_website_url">https://github.com/dynnbw/RE-Android-Live-Wallpapers</string>
     <string name="about_qq">QQ頻道</string>
-    <!-- 未翻译: about_qq_url -->
+    <!-- 沿用默认: about_qq_url -->
     <string name="about_thanks">致謝</string>
     <string name="about_thanks_original">感謝原作者</string>
     <string name="about_thanks_original_detail">原作者：MediaTek、Google、Samsung</string>
     <string name="about_title">關於</string>
-    <!-- 未翻译: action_clear_debug_log -->
-    <!-- 未翻译: action_debug_location_override -->
-    <!-- 未翻译: action_export_debug_log -->
+    <string name="action_clear_debug_log">清空日誌緩衝</string>
+    <string name="action_debug_location_override">偵錯位置覆寫</string>
+    <string name="action_export_debug_log">匯出偵錯日誌</string>
     <string name="app_name">REAndroid 動態壁紙</string>
     <string name="app_version_summary">版本：%1$s</string>
     <string name="check_for_updates">檢查更新</string>
     <string name="clock_settings">極地時鐘設置</string>
     <string name="config_open_browser_failed">無法打開瀏覽器</string>
-    <!-- 未翻译: debug_location_clear -->
-    <!-- 未翻译: debug_location_cleared -->
-    <!-- 未翻译: debug_location_format -->
-    <!-- 未翻译: debug_location_hint -->
-    <!-- 未翻译: debug_location_invalid -->
-    <!-- 未翻译: debug_location_message -->
-    <!-- 未翻译: debug_location_set -->
-    <!-- 未翻译: debug_location_title -->
+    <string name="debug_location_clear">清除</string>
+    <string name="debug_location_cleared">已清除偵錯位置</string>
+    <string name="debug_location_format">格式：緯度, 經度</string>
+    <string name="debug_location_hint">緯度, 經度（例如 51.5074, -0.1278）</string>
+    <string name="debug_location_invalid">數字無效</string>
+    <string name="debug_location_message">覆寫用於日月計算的 GPS 經緯度。\n留空則恢復自動定位。</string>
+    <string name="debug_location_set">已設定偵錯位置：%1$s, %2$s</string>
+    <string name="debug_location_title">偵錯位置覆寫</string>
     <string name="deepsea_custom_background_summary">選擇背景圖片</string>
     <string name="deepsea_custom_background_title">自定義背景</string>
     <string name="deepsea_reset_background_summary">清除自定義背景並使用內置背景</string>
@@ -66,14 +66,14 @@
     <string name="grid_feedback_caption">在 GitHub 提 Issue</string>
     <!-- 壁纸磁贴占位格（反馈入口）：壁纸数量为奇数时补在最后一格 -->
     <string name="grid_feedback_title">反饋與移植請求</string>
-    <!-- 未翻译: grid_feedback_url -->
+    <!-- 沿用默认: grid_feedback_url -->
     <string name="miui_permission_go_settings">去設置</string>
     <string name="miui_permission_message">小米系統需要手動授予「動態壁紙服務」權限，否則無法正常打開壁紙預覽。\n\n點擊確定後，請在權限管理頁面找到「動態壁紙服務」並開啟。</string>
     <string name="miui_permission_open_failed">無法打開設置頁面</string>
     <string name="miui_permission_title">需要授予權限</string>
     <string name="no_browser_found">未找到瀏覽器</string>
     <string name="no_email_found">未找到郵件應用</string>
-    <!-- 未翻译: openweather_api_key -->
+    <!-- 沿用默认: openweather_api_key -->
     <string name="pref_apply_api_title">申請API</string>
     <string name="pref_fireworks_custom_background_summary">點擊選擇自定義背景圖片</string>
     <string name="pref_fireworks_custom_background_title">自定義背景圖片</string>
@@ -113,9 +113,9 @@
     <string name="pref_weather_api_guide_step_verify1">三、驗證你的郵箱\n1. 提交註冊後，頁面會提示：We have sent the confirmation link to xxx@xx.com. Please check your email.</string>
     <string name="pref_weather_api_guide_step_verify2">2. 登錄你填寫的郵箱，找到來自 OpenWeather 的驗證郵件，點擊郵件中的 Verify your email 按鈕完成驗證。</string>
     <string name="pref_weather_api_guide_step_verify3">如果未收到郵件，請檢查垃圾郵件或廣告郵件文件夾。</string>
-    <!-- 未翻译: pref_weather_debug_override -->
-    <!-- 未翻译: pref_weather_debug_restore -->
-    <!-- 未翻译: pref_weather_debug_title -->
+    <string name="pref_weather_debug_override">已套用天氣覆寫：%1$s</string>
+    <string name="pref_weather_debug_restore">已恢復正常天氣邏輯</string>
+    <string name="pref_weather_debug_title">天氣偵錯</string>
     <string name="pref_weather_last_refresh">最後刷新時間: %1$s</string>
     <string name="pref_weather_last_refresh_unknown">最後刷新時間: 未知</string>
     <string name="pref_weather_refresh_now">立即刷新天氣</string>
