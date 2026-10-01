@@ -698,24 +698,24 @@
     b.addEventListener('click', function () { setSource(b.dataset.src); });
   });
 
-  // 桌面滚动 → 旋转。app 里是 onOffsetsChanged 给的 xOffset：mYRotation = xOffset * 4 * 360。
-  // 那个 xOffset 是**整个桌面跨度**的 0…1 —— 五页手机滑**一页**只走 0.25，也就是一页转一圈。
-  // 所以算式照用，只是把"一整屏"当成"滑过一页"：TURNS = 1（＝ app 里一页的效果）。
+  // 桌面滚动 → 倾斜。app 里是 onOffsetsChanged 给的 xOffset：mYRotation = xOffset * 4 * 360，
+  // 那是**整个桌面跨度**的 0…1，一路转下去（滑一页约转一圈）。网页不做整圈旋转 ——
+  // 只把指针的横向位置映射成 **±MAX_TILT_DEG 的倾斜**：最左 −45°、正中 0°、最右 +45°。
   //
-  // 这个角度同时是 updateMvp 里缩放脉动 1 + 2|sin(角度)| 的输入，所以它必须是**周期性**的、
-  // 一路转下去的。曾经把它做成 ±45° 的来回摆动：角度只在 0…45° 之间，|sin| 就随鼠标位置
-  // 单调变大，于是往两边拖时画面一味放大 —— 看着像被拉伸（扭曲），而不是在转。
-  var SWING_TURNS = 1;
-  var pointerX = 0;                       // 0 → 0°，与最左边一致
+  // 注意这个角度不只管旋转：它同时是 updateMvp 里那个缩放 1 + 2|sin(角度)| 的输入，
+  // 所以"倾斜范围"实际上也决定了"缩放范围" —— ±45° 对应 1 倍 … 2.41 倍。
+  var MAX_TILT_DEG = 45;
+  var pointerX = 0.5;                     // 0.5 → 0°，不倾斜也不缩放
+  function tiltFrom(f) { return (f - 0.5) * 2 * MAX_TILT_DEG; }
   function applyPointer(clientX) {
     var rect = canvas.getBoundingClientRect();
-    var f = rect.width > 0 ? (clientX - rect.left) / rect.width : 0;
+    var f = rect.width > 0 ? (clientX - rect.left) / rect.width : 0.5;
     pointerX = Math.max(0, Math.min(1, f));
-    yRotation = pointerX * SWING_TURNS * 360;
+    yRotation = tiltFrom(pointerX);
   }
   canvas.addEventListener('pointermove', function (e) { applyPointer(e.clientX); });
   canvas.addEventListener('pointerdown', function (e) { applyPointer(e.clientX); });
-  yRotation = pointerX * SWING_TURNS * 360;
+  yRotation = tiltFrom(pointerX);
 
   window.addEventListener('keydown', function (e) {
     if (e.key === 'h' || e.key === 'H') {
