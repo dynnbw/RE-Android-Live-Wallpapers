@@ -25,8 +25,8 @@
     <string name="about_bilibili_url">https://space.bilibili.com/470023065</string>
     <string name="about_developer">開発者</string>
     <string name="about_disclaimer">免責事項</string>
-    <string name="about_disclaimer_detail">本プロジェクトは非商用・学習交流目的のみ提供されます。すべての権利は原作者に帰属します。</string>
-    <string name="about_disclaimer_title">学習・交流目的のみ</string>
+    <string name="about_disclaimer_detail">Apache License 2.0 の下で公開されています。本製品の一部は他者の作品に基づいており、その権利はそれぞれの権利者に帰属します。</string>
+    <string name="about_disclaimer_title">ライセンスと帰属</string>
     <string name="about_email">メールアドレス</string>
     <string name="about_email_address">3471348199@qq.com</string>
     <string name="about_email_address_alt">xujiekai508@gmail.com</string>

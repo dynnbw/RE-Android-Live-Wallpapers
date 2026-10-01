@@ -25,8 +25,8 @@
     <string name="about_bilibili_url">https://space.bilibili.com/470023065</string>
     <string name="about_developer">Entwickler</string>
     <string name="about_disclaimer">Haftungsausschluss</string>
-    <string name="about_disclaimer_detail">Dieses Projekt ist nur für nichtkommerzielle, Bildungszwecke bestimmt. Alle Rechte liegen bei den ursprünglichen Urheberrechtsinhabern.</string>
-    <string name="about_disclaimer_title">Nur zum Lernen und Austausch</string>
+    <string name="about_disclaimer_detail">Veröffentlicht unter der Apache License 2.0. Teile dieses Produkts basieren auf Werken anderer; deren Rechte verbleiben bei den jeweiligen Rechteinhabern.</string>
+    <string name="about_disclaimer_title">Lizenz und Namensnennung</string>
     <string name="about_email">E-Mail</string>
     <string name="about_email_address">3471348199@qq.com</string>
     <string name="about_email_address_alt">xujiekai508@gmail.com</string>

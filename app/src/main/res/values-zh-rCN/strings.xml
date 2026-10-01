@@ -25,8 +25,8 @@
     <string name="about_bilibili_url">https://space.bilibili.com/470023065</string>
     <string name="about_developer">开发者</string>
     <string name="about_disclaimer">免责声明</string>
-    <string name="about_disclaimer_detail">本项目仅供非商业、学习交流使用，所有权归原著作权人所有。</string>
-    <string name="about_disclaimer_title">仅供学习与交流</string>
+    <string name="about_disclaimer_detail">本项目依 Apache License 2.0 发布。部分内容基于他人作品，其权利归各自所有者所有。</string>
+    <string name="about_disclaimer_title">许可证与归属</string>
     <string name="about_email">邮箱</string>
     <string name="about_email_address">3471348199@qq.com</string>
     <string name="about_email_address_alt">xujiekai508@gmail.com</string>
