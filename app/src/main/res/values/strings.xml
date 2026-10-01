@@ -17,275 +17,133 @@
 */
 -->
 
-<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-
-    <!-- Application name -->
-    <string name="wallpapers">REAndroid Live Wallpapers</string>
+<resources>
+    <string name="about_app_info">App Info</string>
+    <string name="about_author">Author</string>
+    <string name="about_author_detail">念. and contributors</string>
+    <string name="about_bilibili">Bilibili</string>
+    <string name="about_bilibili_url">https://space.bilibili.com/470023065</string>
+    <string name="about_developer">Developer</string>
+    <string name="about_disclaimer">Disclaimer</string>
+    <string name="about_disclaimer_detail">This project is for non-commercial, educational use only. All rights belong to the original copyright holders.</string>
+    <string name="about_disclaimer_title">For learning and communication only</string>
+    <string name="about_email">Email</string>
+    <string name="about_email_address">3471348199@qq.com</string>
+    <string name="about_email_address_alt">xujiekai508@gmail.com</string>
+    <string name="about_feedback">Feedback</string>
+    <string name="about_feedback_contact">For feedback, please use the above contact information.</string>
+    <string name="about_links">Links and Contact</string>
+    <string name="about_official_website">Open-source project</string>
+    <string name="about_official_website_url">https://github.com/dynnbw/RE-Android-Live-Wallpapers</string>
+    <string name="about_qq">QQ Channel</string>
+    <string name="about_qq_url">https://pd.qq.com/s/9u3d97cok</string>
+    <string name="about_thanks">Acknowledgements</string>
+    <string name="about_thanks_original">Thanks to the original authors</string>
+    <string name="about_thanks_original_detail">Original: MediaTek、Google、Samsung</string>
+    <string name="about_title">About</string>
+    <string name="action_clear_debug_log">Clear log buffer</string>
+    <string name="action_debug_location_override">Debug location override</string>
+    <string name="action_export_debug_log">Export debug log</string>
     <string name="app_name">REAndroid Live Wallpapers</string>
-
-
-    <!-- Flsorescence (荧光) Wallpaper -->
-    <string name="wallpaper_flsorescence">Flsorescence</string>
-
-    <!-- Wallpapers: -->
-    
-
-    <!-- Wallpaper showing the camera preview -->
-
-    <!-- Wallpaper showing grass and the sky -->
-    <string name="wallpaper_grass_vk">Grass Vulkan</string>
-
-
-    <!-- Wallpaper showing a galaxy -->
-    <string name="wallpaper_galaxy_vk">Galaxy Vulkan</string>
-
-    <!-- Wallpaper showing Black Hole -->
-
-
-    <!-- Wallpaper showing leaves floating on water -->
-    <string name="wallpaper_fall_vk">Water Leaves Vulkan</string>
-
-    <!-- Wallpaper showing wild world -->
-
-    <!-- Wallpaper showing fireworks -->
-
-    <!-- Wallpaper showing windmills -->
-
-    <!-- Wallpaper showing ocean weather -->
-
-    <!-- Wallpaper showing deep sea -->
-
-    <!-- Wallpaper showing a clock -->
-
-    <!-- Wallpaper showing nexus -->
-
-    <!-- Wallpaper showing noise field -->
-    <string name="wallpaper_nebula">Nebula</string>
-
-    <!-- Music visualization wallpapers -->
-
-    <!-- Wallpaper showing luminous dots -->
-    <string name="wallpaper_nixietube_desc">Glow-tube display: elegant clock by default, VU meter when audio plays</string>
-
-    <!-- Polar clock: title of settings activity -->
+    <string name="app_version_summary">Version: %1$s</string>
+    <string name="check_for_updates">Check for Updates</string>
     <string name="clock_settings">Polar clock settings</string>
-    <!-- Polar clock: label for "show seconds" pref -->
-    <!-- Polar clock: label for "variable widths" pref -->
-    <!-- Polar clock: label for "palette" pref -->
-
-    <!-- Polar clock: palette name -->
-    <string name="palette_gray">Iron</string>
-    <!-- Polar clock: palette name -->
-    <string name="palette_violet">Midnight</string>
-    <!-- Polar clock: palette name -->
-    <string name="palette_matrix">Green Screen</string>
-    <!-- Polar clock: palette name -->
-    <string name="palette_white_c">Polar Bear (dynamic)</string>
-    <!-- Polar clock: palette name -->
-    <string name="palette_black_c">Black Hole (dynamic)</string>
-    <!-- Polar clock: palette name -->
-    <string name="palette_halloween">Pumpkin Pie</string>
-    <!-- Polar clock: palette name -->
-    <string name="palette_zenburn">Alien Fruit Salad</string>
-    <!-- Polar clock: palette name -->
-    <string name="palette_oceanic">Blue Laser</string>
-
-    <!-- Settings UI -->
-    <string name="settings_title">Live Wallpaper Settings</string>
-
-
+    <string name="config_open_browser_failed">Unable to open browser</string>
+    <string name="debug_location_clear">Clear</string>
+    <string name="debug_location_cleared">Debug location cleared</string>
+    <string name="debug_location_format">Format: lat, lng</string>
+    <string name="debug_location_hint">lat, lng (e.g. 51.5074, -0.1278)</string>
+    <string name="debug_location_invalid">Invalid numbers</string>
+    <string name="debug_location_message">Override GPS lat/lng for sun/moon calculation.\nLeave empty to use real GPS.</string>
+    <string name="debug_location_set">Debug location set: %1$s, %2$s</string>
+    <string name="debug_location_title">Debug Location Override</string>
+    <string name="deepsea_custom_background_summary">Select a background image</string>
+    <string name="deepsea_custom_background_title">Custom background</string>
+    <string name="deepsea_reset_background_summary">Clear custom background and use built-in</string>
+    <string name="deepsea_reset_background_title">Reset background</string>
+    <string name="fireworks_background_reset_toast">Default background restored</string>
+    <string name="fireworks_custom_background_set_toast">Custom background set. Reapply wallpaper to take effect.</string>
+    <string name="grid_feedback_caption">Open an issue on GitHub</string>
+    <!-- 壁纸磁贴占位格（反馈入口）：壁纸数量为奇数时补在最后一格 -->
+    <string name="grid_feedback_title">Feedback &amp; Requests</string>
+    <string name="grid_feedback_url">https://github.com/dynnbw/RE-Android-Live-Wallpapers/issues</string>
+    <string name="miui_permission_go_settings">Go to settings</string>
+    <string name="miui_permission_message">MIUI requires enabling the "Live wallpaper service" permission manually to open preview.\n\nTap OK, then enable it in permission management.</string>
+    <string name="miui_permission_open_failed">Unable to open settings</string>
+    <string name="miui_permission_title">Permission required</string>
+    <string name="no_browser_found">No browser found</string>
+    <string name="no_email_found">No email app found</string>
+    <string name="openweather_api_key">YOUR_OPENWEATHER_API_KEY</string>
+    <string name="pref_apply_api_title">Apply for API</string>
+    <string name="pref_fireworks_custom_background_summary">Tap to select a custom background image</string>
+    <string name="pref_fireworks_custom_background_title">Custom background image</string>
+    <string name="pref_fireworks_grass_night_summary">Night sky with stars and swaying grass; fireworks burst behind the grass</string>
+    <string name="pref_fireworks_grass_night_title">Grass night scene</string>
+    <string name="pref_fireworks_reset_background_summary">Remove the custom background and use the default one</string>
+    <string name="pref_fireworks_reset_background_title">Reset to default background</string>
+    <string name="pref_global_frame_rate">Global Frame Rate</string>
+    <string name="pref_microbes_color_mode_modern">New</string>
+    <string name="pref_microbes_color_mode_original">Original</string>
+    <string name="pref_nexus_custom_background_summary">Select a background image</string>
+    <string name="pref_nexus_custom_background_title">Custom background</string>
+    <string name="pref_nexus_reset_background_summary">Clear custom background and use built-in</string>
+    <string name="pref_nexus_reset_background_title">Reset background</string>
+    <string name="pref_open_wallpaper_chooser">Open wallpaper chooser</string>
     <string name="pref_open_wallpaper_picker">Set as wallpaper</string>
     <string name="pref_open_wallpaper_picker_failed">Wallpaper preview not supported</string>
-    <string name="pref_open_wallpaper_chooser">Open wallpaper chooser</string>
-    <string name="pref_live_preview">Live preview</string>
-    <string name="pref_microbes_color_mode_original">Original</string>
-    <string name="pref_microbes_color_mode_modern">New</string>
-    <string name="pref_nexus_custom_background_title">Custom background</string>
-    <string name="pref_nexus_custom_background_summary">Select a background image</string>
-    <string name="pref_nexus_reset_background_title">Reset background</string>
-    <string name="pref_nexus_reset_background_summary">Clear custom background and use built-in</string>
-    <string name="nexus_bg_pyramid">Default</string>
-    <string name="nexus_bg_pyramid_1">Style 1</string>
-    <string name="nexus_bg_pyramid_2">Style 2</string>
-    <string name="nexus_bg_pyramid_3">Style 3</string>
-    <string name="nexus_bg_pyramid_4">Style 4</string>
-
-    <!-- Deep Sea settings -->
-    <string name="deepsea_custom_background_title">Custom background</string>
-    <string name="deepsea_custom_background_summary">Select a background image</string>
-    <string name="deepsea_reset_background_title">Reset background</string>
-    <string name="deepsea_reset_background_summary">Clear custom background and use built-in</string>
-
-    <!-- Nexus advanced settings -->
-
-    <string name="pref_weather_update_interval">Weather update interval</string>
-    <string name="pref_weather_source_title">Weather data source</string>
-    <string name="pref_weather_source_openweather">OpenWeather</string>
-    <string name="pref_weather_source_openweather_note">Requires an API key</string>
-    <string name="pref_weather_source_cma">China Meteorological Administration</string>
-    <string name="pref_weather_source_cma_note">No key needed, mainland China only</string>
-    <string name="pref_weather_source_openmeteo">Open-Meteo</string>
-    <string name="pref_weather_source_openmeteo_note">No key needed, worldwide</string>
-    <string name="pref_weather_source_action_api">Configure API</string>
-    <string name="pref_weather_source_action_guide">Guide</string>
-    <string name="pref_weather_refresh_now">Refresh weather now</string>
-    <string name="pref_weather_refresh_now_success">Weather refresh complete</string>
-    <string name="pref_weather_refresh_now_failed">Weather refresh failed</string>
     <string name="pref_openweather_api_key_title">OpenWeather API key</string>
-    <string name="pref_apply_api_title">Apply for API</string>
+    <string name="pref_use_vulkan_summary">Use Vulkan for better performance (reapply wallpaper to take effect)</string>
+    <string name="pref_use_vulkan_title">Vulkan Renderer</string>
+    <string name="pref_weather_api_guide_common">Step 6: Troubleshooting\n- Verify the key is copied completely without extra spaces or line breaks.\n- A new API key may take 10–30 minutes to activate; wait and try again.\n- Make sure location permission is enabled in the app.</string>
+    <string name="pref_weather_api_guide_illustration">API tutorial illustration</string>
     <string name="pref_weather_api_guide_intro">OpenWeather API key setup and configuration guide.</string>
+    <string name="pref_weather_api_guide_link_text">https://openweathermap.org/</string>
+    <string name="pref_weather_api_guide_open_web_button">Open OpenWeather website</string>
     <string name="pref_weather_api_guide_prepare">Step 1: Preparation\n- An email address that can receive verification messages\n- A network environment that can reach the OpenWeather website</string>
-    <string name="pref_weather_api_guide_step_register1">Step 2: Register an OpenWeather account\n1. Open https://openweathermap.org/ and tap the orange Login button at the top right (see image 1).</string>
-    <string name="pref_weather_api_guide_step_register2">2. On the sign-in page, tap Create an Account.</string>
-    <string name="pref_weather_api_guide_step_register3">3. Fill the registration form (see image 3):\n    Username: custom name for account identification\n    Enter email: your valid email address for verification and account recovery\n    Password: set your password\n    Repeat password: enter the same password again\nSubmit the form to register.</string>
-    <string name="pref_weather_api_guide_step_verify1">Step 3: Verify your email\n1. After registration, the page shows: We have sent the confirmation link to xxx@xx.com. Please check your email. 2. Open your email, find the message from OpenWeather, and tap the Verify your email button to complete verification. (see image 5)\nIf you do not receive the email, check spam or promotions folders.</string>
-    <string name="pref_weather_api_guide_step_verify2">2. Open your email, find the message from OpenWeather, and tap the Verify your email button to complete verification.</string>
-    <string name="pref_weather_api_guide_step_verify3">If you do not receive the email, check spam or promotions folders.</string>
-    <string name="pref_weather_api_guide_step_key1">Step 4: Get your API key\n1. After verification, return to OpenWeather and sign in.\n2. In your account dashboard, open API Keys from the navigation menu.</string>
-    <string name="pref_weather_api_guide_step_key2">3. On the API management page, copy the default generated key (usually named Default, status Active), or enter a name and tap Generate to create a new key.</string>
-    <string name="pref_weather_api_guide_step_key3">Important: free keys are limited to 60 calls per minute and 1000 per day, which is enough for personal wallpaper use. Do not share your key publicly to avoid misuse and account throttling.</string>
     <string name="pref_weather_api_guide_step_config1">Step 5: Configure the API key in the wallpaper app\n1. Open the wallpaper app and tap the cloud icon at the top right.</string>
     <string name="pref_weather_api_guide_step_config2">2. Select OpenWeather API key from the popup menu.</string>
     <string name="pref_weather_api_guide_step_config3">3. Paste the copied API key into the input box and tap Confirm to save.</string>
     <string name="pref_weather_api_guide_step_config4">4. Tap Refresh Weather Now to test. If the wallpaper loads weather information normally, the configuration is successful.</string>
-    <string name="pref_weather_api_guide_common">Step 6: Troubleshooting\n- Verify the key is copied completely without extra spaces or line breaks.\n- A new API key may take 10–30 minutes to activate; wait and try again.\n- Make sure location permission is enabled in the app.</string>
-    <string name="pref_weather_api_guide_illustration">API tutorial illustration</string>
-    <string name="pref_weather_api_guide_link_text">https://openweathermap.org/</string>
-    <string name="pref_weather_api_guide_open_web_button">Open OpenWeather website</string>
+    <string name="pref_weather_api_guide_step_key1">Step 4: Get your API key\n1. After verification, return to OpenWeather and sign in.\n2. In your account dashboard, open API Keys from the navigation menu.</string>
+    <string name="pref_weather_api_guide_step_key2">3. On the API management page, copy the default generated key (usually named Default, status Active), or enter a name and tap Generate to create a new key.</string>
+    <string name="pref_weather_api_guide_step_key3">Important: free keys are limited to 60 calls per minute and 1000 per day, which is enough for personal wallpaper use. Do not share your key publicly to avoid misuse and account throttling.</string>
+    <string name="pref_weather_api_guide_step_register1">Step 2: Register an OpenWeather account\n1. Open https://openweathermap.org/ and tap the orange Login button at the top right (see image 1).</string>
+    <string name="pref_weather_api_guide_step_register2">2. On the sign-in page, tap Create an Account.</string>
+    <string name="pref_weather_api_guide_step_register3">3. Fill the registration form (see image 3):\n Username: custom name for account identification\n Enter email: your valid email address for verification and account recovery\n Password: set your password\n Repeat password: enter the same password again\nSubmit the form to register.</string>
+    <string name="pref_weather_api_guide_step_verify1">Step 3: Verify your email\n1. After registration, the page shows: We have sent the confirmation link to xxx@xx.com. Please check your email. 2. Open your email, find the message from OpenWeather, and tap the Verify your email button to complete verification. (see image 5)\nIf you do not receive the email, check spam or promotions folders.</string>
+    <string name="pref_weather_api_guide_step_verify2">2. Open your email, find the message from OpenWeather, and tap the Verify your email button to complete verification.</string>
+    <string name="pref_weather_api_guide_step_verify3">If you do not receive the email, check spam or promotions folders.</string>
+    <string name="pref_weather_debug_override">Weather override applied: %1$s</string>
+    <string name="pref_weather_debug_restore">Returned to normal weather logic</string>
+    <string name="pref_weather_debug_title">Weather debug</string>
     <string name="pref_weather_last_refresh">Last refresh: %1$s</string>
     <string name="pref_weather_last_refresh_unknown">Last refresh: unknown</string>
-    <string name="pref_weather_debug_title">Weather debug</string>
-    <string name="pref_weather_debug_restore">Returned to normal weather logic</string>
-    <string name="pref_weather_debug_override">Weather override applied: %1$s</string>
-    <string name="weather_toolbar_title">Weather settings</string>
-
-    <string name="miui_permission_title">Permission required</string>
-    <string name="miui_permission_message">MIUI requires enabling the "Live wallpaper service"
-        permission manually to open preview.\n\nTap OK, then enable it in permission management.</string>
-    <string name="miui_permission_go_settings">Go to settings</string>
-    <string name="miui_permission_continue">Continue</string>
-    <string name="miui_permission_open_failed">Unable to open settings</string>
-    <string name="about_title">About</string>
-
-    <!-- Galaxy wallpaper preferences -->
-
-    <!-- Black Hole wallpaper preferences -->
-
-    <!-- Phase Beam wallpaper -->
-
-    <string name="phasebeam_theme_phasebeam">Phase Beam (blue)</string>
-    <string name="phasebeam_theme_sunbeam">Sunbeam (warm)</string>
-
-    <!-- GeekLog wallpaper -->
-
-    <!-- Cube wallpaper -->
-
-
-    <!-- Global frame rate settings -->
-    <string name="pref_global_frame_rate">Global Frame Rate</string>
-
-    <string name="grass_color_default">Default</string>
-    <string name="grass_color_green">Green</string>
-    <string name="grass_color_blue">Blue</string>
-    <string name="grass_color_red">Red</string>
-    <string name="grass_color_pink">Pink</string>
-    <string name="grass_color_purple">Purple</string>
-    <string name="grass_color_yellow">Yellow</string>
-    <string name="grass_color_black">Black</string>
-    <string name="grass_color_white">White</string>
-
-    <!-- Magic Smoke Wallpaper -->
-    <string name="pref_fireworks_custom_background_title">Custom background image</string>
-    <string name="pref_fireworks_custom_background_summary">Tap to select a custom background image</string>
-    <string name="pref_fireworks_reset_background_title">Reset to default background</string>
-    <string name="pref_fireworks_reset_background_summary">Remove the custom background and use the default one</string>
-    <string name="pref_fireworks_grass_night_title">Grass night scene</string>
-    <string name="pref_fireworks_grass_night_summary">Night sky with stars and swaying grass; fireworks burst behind the grass</string>
-
-    <!-- Holo Spiral Wallpaper -->
-
-    <!-- Blue Sea Wallpaper -->
-
-
-    <string name="openweather_api_key">YOUR_OPENWEATHER_API_KEY</string>
-
-    <!-- About/关于界面专用 -->
-    <string name="about_app_info">App Info</string>
-    <string name="about_project_intro">Project Introduction</string>
-    <string name="about_links">Links and Contact</string>
-    <string name="about_official_website">Open-source project</string>
-    <string name="about_official_website_url">https://github.com/dynnbw/RE-Android-Live-Wallpapers</string>
-    <string name="about_email">Email</string>
-    <string name="about_email_address">3471348199@qq.com</string>
-    <string name="about_email_address_alt">xujiekai508@gmail.com</string>
-    <string name="about_qq">QQ Channel</string>
-    <string name="about_qq_url">https://pd.qq.com/s/9u3d97cok</string>
-    <string name="about_bilibili">Bilibili</string>
-    <string name="about_bilibili_url">https://space.bilibili.com/470023065</string>
-    <string name="about_feedback">Feedback</string>
-    <string name="about_feedback_contact">For feedback, please use the above contact information.</string>
-    <string name="about_thanks">Acknowledgements</string>
-    <string name="about_thanks_original">Thanks to the original authors</string>
-    <string name="about_thanks_original_detail">Original: MediaTek、Google、Samsung</string>
-
-    <string name="about_developer">Developer</string>
-    <string name="about_author">Author</string>
-    <string name="about_author_detail">念. and contributors</string>
-    <string name="about_disclaimer">Disclaimer</string>
-    <string name="about_disclaimer_title">For learning and communication only</string>
-    <string name="about_disclaimer_detail">This project is for non-commercial, educational use only.
-        All rights belong to the original copyright holders.</string>
-    <string name="app_version_summary">Version: %1$s</string>
-    <string name="no_browser_found">No browser found</string>
-    <string name="no_email_found">No email app found</string>
-
-    <!-- 版本更新 -->
-    <string name="check_for_updates">Check for Updates</string>
+    <string name="pref_weather_refresh_now">Refresh weather now</string>
+    <string name="pref_weather_refresh_now_failed">Weather refresh failed</string>
+    <string name="pref_weather_refresh_now_success">Weather refresh complete</string>
+    <string name="pref_weather_source_action_api">Configure API</string>
+    <string name="pref_weather_source_action_guide">Guide</string>
+    <string name="pref_weather_source_cma">China Meteorological Administration</string>
+    <string name="pref_weather_source_cma_note">No key needed, mainland China only</string>
+    <string name="pref_weather_source_openmeteo">Open-Meteo</string>
+    <string name="pref_weather_source_openmeteo_note">No key needed, worldwide</string>
+    <string name="pref_weather_source_openweather">OpenWeather</string>
+    <string name="pref_weather_source_openweather_note">Requires an API key</string>
+    <string name="pref_weather_source_title">Weather data source</string>
+    <string name="pref_weather_update_interval">Weather update interval</string>
+    <string name="reset_action_confirm">Restore</string>
+    <string name="reset_all_settings_done">All settings restored to defaults</string>
+    <string name="reset_all_settings_message">Restore all wallpaper and global settings to their default values?</string>
+    <string name="reset_all_settings_title">Restore all defaults</string>
+    <string name="reset_current_settings_summary">Restore this wallpaper settings to defaults</string>
+    <string name="reset_current_settings_title">Restore default settings</string>
+    <string name="settings_title">Live Wallpaper Settings</string>
     <string name="up_to_date_message">You\'re up to date (v%1$s)</string>
     <string name="update_available_title">New Version v%1$s</string>
     <string name="update_button">Download</string>
-    <string name="update_later_button">Later</string>
     <string name="update_check_failed">Failed to check for updates: %1$s</string>
     <string name="update_downloading_title">Downloading update…</string>
-    <string name="config_open_browser_failed">Unable to open browser</string>
-    <string name="fireworks_custom_background_set_toast">Custom background set. Reapply wallpaper to take effect.</string>
-    <string name="fireworks_background_reset_toast">Default background restored</string>
-    <string name="reset_all_settings_title">Restore all defaults</string>
-    <string name="reset_all_settings_message">Restore all wallpaper and global settings to their default values?</string>
-    <string name="reset_all_settings_done">All settings restored to defaults</string>
-    <string name="reset_current_settings_title">Restore default settings</string>
-    <string name="reset_current_settings_summary">Restore this wallpaper settings to defaults</string>
-    <string name="reset_action_confirm">Restore</string>
-    <string name="musicvis_bg_black">Black</string>
-    <string name="musicvis_bg_dark_red">Dark red</string>
-    <string name="musicvis_bg_dark_blue">Dark blue</string>
-    <string name="musicvis_bg_dark_green">Dark green</string>
-    <string name="musicvis_bg_pink">Pink</string>
-    <string name="musicvis_bg_light_green">Light green</string>
-    <string name="musicvis_bg_light_purple">Light purple</string>
-    <string name="musicvis_recolor_mode_static">Static</string>
-    <string name="musicvis_recolor_mode_dynamic">Audio-driven</string>
-
-    <string name="pref_use_vulkan_title">Vulkan Renderer</string>
-    <string name="pref_use_vulkan_summary">Use Vulkan for better performance (reapply wallpaper to take effect)</string>
-    <string name="pref_disabled_prefix">[Disabled]</string>
-
-    <!-- Debug -->
-    <string name="action_export_debug_log">Export debug log</string>
-    <string name="action_clear_debug_log">Clear log buffer</string>
-    <string name="action_debug_location_override">Debug location override</string>
-
-    <!-- Debug location override -->
-    <string name="debug_location_title">Debug Location Override</string>
-    <string name="debug_location_message">Override GPS lat/lng for sun/moon calculation.\nLeave empty to use real GPS.</string>
-    <string name="debug_location_hint">lat, lng (e.g. 51.5074, -0.1278)</string>
-    <string name="debug_location_set">Debug location set: %1$s, %2$s</string>
-    <string name="debug_location_cleared">Debug location cleared</string>
-    <string name="debug_location_invalid">Invalid numbers</string>
-    <string name="debug_location_format">Format: lat, lng</string>
-    <string name="debug_location_clear">Clear</string>
-    <!-- 壁纸磁贴占位格（反馈入口）：壁纸数量为奇数时补在最后一格 -->
-    <string name="grid_feedback_title">Feedback &amp; Requests</string>
-    <string name="grid_feedback_caption">Open an issue on GitHub</string>
-    <string name="grid_feedback_url">https://github.com/dynnbw/RE-Android-Live-Wallpapers/issues</string>
+    <string name="update_later_button">Later</string>
+    <string name="wallpapers">REAndroid Live Wallpapers</string>
+    <string name="weather_toolbar_title">Weather settings</string>
 </resources>

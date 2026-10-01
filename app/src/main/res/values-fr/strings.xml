@@ -1,229 +1,149 @@
-<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+<!--
+    Copyright (C) 2026 The Reborn Android Live Wallpapers authors
 
-    <!-- Nom de l’application -->
-    <string name="wallpapers">REAndroid Fonds d’écran animés</string>
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+    本文件是本项目自己的译文，不是 AOSP 派生 —— 带 AOSP 版权头的是另外几个语言文件。
+
+-->
+
+<resources>
+    <string name="about_app_info">Informations sur l’application</string>
+    <string name="about_author">Auteur</string>
+    <string name="about_author_detail">念. et contributeurs</string>
+    <string name="about_bilibili">Bilibili</string>
+    <string name="about_bilibili_url">https://space.bilibili.com/470023065</string>
+    <string name="about_developer">Développeur</string>
+    <string name="about_disclaimer">Avertissement légal</string>
+    <string name="about_disclaimer_detail">Ce projet est uniquement destiné à un usage éducatif non commercial. Tous les droits appartiennent aux titulaires des droits d’auteur d’origine.</string>
+    <string name="about_disclaimer_title">Uniquement pour l’apprentissage et les échanges</string>
+    <string name="about_email">E-mail</string>
+    <string name="about_email_address">3471348199@qq.com</string>
+    <string name="about_email_address_alt">xujiekai508@gmail.com</string>
+    <string name="about_feedback">Retour d’information</string>
+    <string name="about_feedback_contact">Pour tout retour, utilisez les coordonnées ci-dessus.</string>
+    <string name="about_links">Liens et contact</string>
+    <string name="about_official_website">Open Source</string>
+    <string name="about_official_website_url">https://github.com/dynnbw/RE-Android-Live-Wallpapers</string>
+    <string name="about_qq">Canal QQ</string>
+    <!-- 未翻译: about_qq_url -->
+    <string name="about_thanks">Remerciements</string>
+    <string name="about_thanks_original">Merci aux auteurs originaux</string>
+    <string name="about_thanks_original_detail">Original : MediaTek, Google, Samsung</string>
+    <string name="about_title">À propos</string>
+    <!-- 未翻译: action_clear_debug_log -->
+    <!-- 未翻译: action_debug_location_override -->
+    <!-- 未翻译: action_export_debug_log -->
     <string name="app_name">REAndroid Fonds d’écran animés</string>
-
-
-    <!-- Papier peint Flsorescence (荧光) -->
-    <string name="wallpaper_flsorescence">Fluorescence</string>
-
-    <!-- Fonds d’écran -->
-    
-
-    <!-- Fond d’écran montrant l’aperçu de l’appareil photo -->
-
-    <!-- Fond d’écran avec herbe et ciel -->
-    <string name="wallpaper_grass_vk">Herbe Vulkan</string>
-
-
-    <!-- Fond d’écran de galaxie -->
-    <string name="wallpaper_galaxy_vk">Galaxie Vulkan</string>
-
-    <!-- Fond d’écran Galaxie 4 -->
-
-    <!-- Fond d’écran feuilles flottant sur l’eau -->
-    <string name="wallpaper_fall_vk">Feuilles d’eau Vulkan</string>
-
-    <!-- Fond d’écran monde sauvage -->
-
-    <!-- Fond d’écran feux d’artifice -->
-
-    <!-- Fond d’écran moulins à vent -->
-
-    <!-- Fond d’écran météo océanique -->
-
-    <!-- Fond d’écran grand fond marin -->
-
-    <!-- Fond d’écran horloge polaire -->
-
-    <!-- Fond d’écran Nexus -->
-
-    <!-- Fond d’écran champ de bruit -->
-    <string name="wallpaper_nebula">Nébuleuse</string>
-
-    <!-- Fonds d’écran de visualisation musicale -->
-
-    <!-- Horloge polaire : titre de l’activité des paramètres -->
+    <string name="app_version_summary">Version : %1$s</string>
+    <string name="check_for_updates">Rechercher les mises à jour</string>
     <string name="clock_settings">Paramètres de l’horloge polaire</string>
-
-    <!-- Noms des palettes -->
-    <string name="palette_gray">Fer</string>
-    <string name="palette_violet">Minuit</string>
-    <string name="palette_matrix">Écran vert</string>
-    <string name="palette_white_c">Ours polaire (dynamique)</string>
-    <string name="palette_black_c">Trou noir (dynamique)</string>
-    <string name="palette_halloween">Tarte à la citrouille</string>
-    <string name="palette_zenburn">Salade de fruits extraterrestre</string>
-    <string name="palette_oceanic">Laser bleu</string>
-
-    <!-- Interface des paramètres -->
-    <string name="settings_title">Paramètres des fonds d’écran animés</string>
-
-
+    <string name="config_open_browser_failed">Impossible d’ouvrir le navigateur</string>
+    <!-- 未翻译: debug_location_clear -->
+    <!-- 未翻译: debug_location_cleared -->
+    <!-- 未翻译: debug_location_format -->
+    <!-- 未翻译: debug_location_hint -->
+    <!-- 未翻译: debug_location_invalid -->
+    <!-- 未翻译: debug_location_message -->
+    <!-- 未翻译: debug_location_set -->
+    <!-- 未翻译: debug_location_title -->
+    <!-- 未翻译: deepsea_custom_background_summary -->
+    <!-- 未翻译: deepsea_custom_background_title -->
+    <!-- 未翻译: deepsea_reset_background_summary -->
+    <!-- 未翻译: deepsea_reset_background_title -->
+    <string name="fireworks_background_reset_toast">Arrière-plan par défaut restauré</string>
+    <string name="fireworks_custom_background_set_toast">Arrière-plan personnalisé défini. Réappliquez le fond d’écran pour que cela prenne effet.</string>
+    <string name="grid_feedback_caption">Ouvrir un ticket sur GitHub</string>
+    <!-- 壁纸磁贴占位格（反馈入口）：壁纸数量为奇数时补在最后一格 -->
+    <string name="grid_feedback_title">Retours et demandes de portage</string>
+    <!-- 未翻译: grid_feedback_url -->
+    <string name="miui_permission_go_settings">Aller aux paramètres</string>
+    <string name="miui_permission_message">MIUI nécessite d’activer manuellement l’autorisation "Service de fond d’écran animé" pour ouvrir l’aperçu.\n\nAppuyez sur OK, puis activez-la dans la gestion des autorisations.</string>
+    <string name="miui_permission_open_failed">Impossible d’ouvrir les paramètres</string>
+    <string name="miui_permission_title">Autorisation requise</string>
+    <string name="no_browser_found">Aucun navigateur trouvé</string>
+    <string name="no_email_found">Aucune application de messagerie trouvée</string>
+    <string name="openweather_api_key">YOUR_OPENWEATHER_API_KEY</string>
+    <string name="pref_apply_api_title">Demander une API</string>
+    <!-- 未翻译: pref_fireworks_custom_background_summary -->
+    <!-- 未翻译: pref_fireworks_custom_background_title -->
+    <!-- 未翻译: pref_fireworks_grass_night_summary -->
+    <!-- 未翻译: pref_fireworks_grass_night_title -->
+    <!-- 未翻译: pref_fireworks_reset_background_summary -->
+    <!-- 未翻译: pref_fireworks_reset_background_title -->
+    <string name="pref_global_frame_rate">Fréquence d’images globale</string>
+    <string name="pref_microbes_color_mode_modern">Nouveau</string>
+    <string name="pref_microbes_color_mode_original">Original</string>
+    <!-- 未翻译: pref_nexus_custom_background_summary -->
+    <!-- 未翻译: pref_nexus_custom_background_title -->
+    <!-- 未翻译: pref_nexus_reset_background_summary -->
+    <!-- 未翻译: pref_nexus_reset_background_title -->
+    <string name="pref_open_wallpaper_chooser">Ouvrir le sélecteur de fonds d’écran</string>
     <string name="pref_open_wallpaper_picker">Définir comme fond d’écran</string>
     <string name="pref_open_wallpaper_picker_failed">Aperçu du fond d’écran non pris en charge</string>
-    <string name="pref_open_wallpaper_chooser">Ouvrir le sélecteur de fonds d’écran</string>
-    <string name="pref_live_preview">Aperçu en direct</string>
-    <string name="pref_microbes_color_mode_original">Original</string>
-    <string name="pref_microbes_color_mode_modern">Nouveau</string>
-    <string name="pref_nexus_custom_background_title">Arrière-plan personnalisé</string>
-    <string name="pref_nexus_custom_background_summary">Sélectionner une image d’arrière-plan</string>
-    <string name="pref_nexus_reset_background_title">Réinitialiser l’arrière-plan</string>
-    <string name="pref_nexus_reset_background_summary">Effacer l’arrière-plan personnalisé et utiliser l’arrière-plan intégré</string>
-    <string name="nexus_bg_pyramid">Pyramide</string>
-    <string name="nexus_bg_pyramid_1">Pyramide 1</string>
-    <string name="nexus_bg_pyramid_2">Pyramide 2</string>
-    <string name="nexus_bg_pyramid_3">Pyramide 3</string>
-    <string name="nexus_bg_pyramid_4">Pyramide 4</string>
-
-    <!-- Paramètres Grand fond -->
-    <string name="deepsea_custom_background_title">Arrière-plan personnalisé</string>
-    <string name="deepsea_custom_background_summary">Sélectionner une image d’arrière-plan</string>
-    <string name="deepsea_reset_background_title">Réinitialiser l’arrière-plan</string>
-    <string name="deepsea_reset_background_summary">Effacer l’arrière-plan personnalisé et utiliser l’arrière-plan intégré</string>
-
-    <!-- Paramètres avancés Nexus -->
-
-    <string name="pref_weather_update_interval">Intervalle de mise à jour météo</string>
-    <string name="pref_weather_source_title">Source de données météo</string>
-    <string name="pref_weather_source_openweather">OpenWeather</string>
-    <string name="pref_weather_source_openweather_note">Nécessite une clé API</string>
-    <string name="pref_weather_source_cma">Administration météorologique chinoise</string>
-    <string name="pref_weather_source_cma_note">Sans clé, Chine continentale uniquement</string>
-    <string name="pref_weather_source_openmeteo">Open-Meteo</string>
-    <string name="pref_weather_source_openmeteo_note">Sans clé, dans le monde entier</string>
-    <string name="pref_weather_source_action_api">Configurer l\'API</string>
-    <string name="pref_weather_source_action_guide">Guide</string>
-    <string name="pref_weather_refresh_now">Actualiser la météo maintenant</string>
-    <string name="pref_weather_refresh_now_success">Actualisation météo terminée</string>
-    <string name="pref_weather_refresh_now_failed">Échec de l’actualisation météo</string>
     <string name="pref_openweather_api_key_title">Clé API OpenWeather</string>
-    <string name="pref_apply_api_title">Demander une API</string>
+    <string name="pref_use_vulkan_summary">Utiliser Vulkan pour de meilleures performances (réappliquer le fond d écran)</string>
+    <string name="pref_use_vulkan_title">Moteur de rendu Vulkan</string>
+    <string name="pref_weather_api_guide_common">Étape 6 : Dépannage\n- Vérifiez que la clé est copiée entièrement sans espaces ni sauts de ligne supplémentaires.\n- Une nouvelle clé API peut prendre 10 à 30 minutes pour s’activer ; attendez et réessayez.\n- Assurez-vous que l’autorisation de localisation est activée dans l’application.</string>
+    <string name="pref_weather_api_guide_illustration">Illustration du tutoriel API</string>
     <string name="pref_weather_api_guide_intro">Guide de configuration de la clé API OpenWeather.</string>
+    <string name="pref_weather_api_guide_link_text">https://openweathermap.org/</string>
+    <string name="pref_weather_api_guide_open_web_button">Ouvrir le site OpenWeather</string>
     <string name="pref_weather_api_guide_prepare">Étape 1 : Préparation\n- Une adresse e-mail pouvant recevoir des messages de vérification\n- Un environnement réseau pouvant accéder au site OpenWeather</string>
-    <string name="pref_weather_api_guide_step_register1">Étape 2 : Créer un compte OpenWeather\n1. Ouvrez https://openweathermap.org/ et appuyez sur le bouton orange "Login" en haut à droite (voir image 1).</string>
-    <string name="pref_weather_api_guide_step_register2">2. Sur la page de connexion, appuyez sur "Create an Account".</string>
-    <string name="pref_weather_api_guide_step_register3">3. Remplissez le formulaire d’inscription (voir image 3) :\n    Nom d’utilisateur : nom personnalisé pour l’identification du compte\n    E-mail : votre adresse e-mail valide pour la vérification et la récupération du compte\n    Mot de passe : définissez votre mot de passe\n    Répéter le mot de passe : saisissez à nouveau le même mot de passe\nSoumettez le formulaire pour vous inscrire.</string>
-    <string name="pref_weather_api_guide_step_verify1">Étape 3 : Vérifiez votre e-mail\n1. Après l’inscription, la page affiche : Nous avons envoyé le lien de confirmation à xxx@xx.com. Veuillez vérifier votre e-mail. 2. Ouvrez votre e-mail, trouvez le message d’OpenWeather et appuyez sur le bouton "Verify your email" pour terminer la vérification (voir image 5).\nSi vous ne recevez pas l’e-mail, vérifiez vos dossiers de spam ou promotions.</string>
-    <string name="pref_weather_api_guide_step_verify2">2. Ouvrez votre e-mail, trouvez le message d’OpenWeather et appuyez sur le bouton "Verify your email" pour terminer la vérification.</string>
-    <string name="pref_weather_api_guide_step_verify3">Si vous ne recevez pas l’e-mail, vérifiez vos dossiers de spam ou promotions.</string>
-    <string name="pref_weather_api_guide_step_key1">Étape 4 : Obtenez votre clé API\n1. Après vérification, revenez sur OpenWeather et connectez-vous.\n2. Dans votre tableau de bord, ouvrez "API Keys" dans le menu de navigation.</string>
-    <string name="pref_weather_api_guide_step_key2">3. Sur la page de gestion des API, copiez la clé générée par défaut (généralement nommée "Default", statut "Active"), ou saisissez un nom et appuyez sur "Generate" pour créer une nouvelle clé.</string>
-    <string name="pref_weather_api_guide_step_key3">Important : les clés gratuites sont limitées à 60 appels par minute et 1000 par jour, ce qui est suffisant pour un usage personnel. Ne partagez pas votre clé publiquement pour éviter les abus et le bridage du compte.</string>
     <string name="pref_weather_api_guide_step_config1">Étape 5 : Configurer la clé API dans l’application de fonds d’écran\n1. Ouvrez l’application de fonds d’écran et appuyez sur l’icône de nuage en haut à droite.</string>
     <string name="pref_weather_api_guide_step_config2">2. Sélectionnez "Clé API OpenWeather" dans le menu contextuel.</string>
     <string name="pref_weather_api_guide_step_config3">3. Collez la clé API copiée dans la zone de saisie et appuyez sur "Confirmer" pour enregistrer.</string>
     <string name="pref_weather_api_guide_step_config4">4. Appuyez sur "Actualiser la météo maintenant" pour tester. Si le fond d’écran charge normalement les informations météo, la configuration est réussie.</string>
-    <string name="pref_weather_api_guide_common">Étape 6 : Dépannage\n- Vérifiez que la clé est copiée entièrement sans espaces ni sauts de ligne supplémentaires.\n- Une nouvelle clé API peut prendre 10 à 30 minutes pour s’activer ; attendez et réessayez.\n- Assurez-vous que l’autorisation de localisation est activée dans l’application.</string>
-    <string name="pref_weather_api_guide_illustration">Illustration du tutoriel API</string>
-    <string name="pref_weather_api_guide_link_text">https://openweathermap.org/</string>
-    <string name="pref_weather_api_guide_open_web_button">Ouvrir le site OpenWeather</string>
+    <string name="pref_weather_api_guide_step_key1">Étape 4 : Obtenez votre clé API\n1. Après vérification, revenez sur OpenWeather et connectez-vous.\n2. Dans votre tableau de bord, ouvrez "API Keys" dans le menu de navigation.</string>
+    <string name="pref_weather_api_guide_step_key2">3. Sur la page de gestion des API, copiez la clé générée par défaut (généralement nommée "Default", statut "Active"), ou saisissez un nom et appuyez sur "Generate" pour créer une nouvelle clé.</string>
+    <string name="pref_weather_api_guide_step_key3">Important : les clés gratuites sont limitées à 60 appels par minute et 1000 par jour, ce qui est suffisant pour un usage personnel. Ne partagez pas votre clé publiquement pour éviter les abus et le bridage du compte.</string>
+    <string name="pref_weather_api_guide_step_register1">Étape 2 : Créer un compte OpenWeather\n1. Ouvrez https://openweathermap.org/ et appuyez sur le bouton orange "Login" en haut à droite (voir image 1).</string>
+    <string name="pref_weather_api_guide_step_register2">2. Sur la page de connexion, appuyez sur "Create an Account".</string>
+    <string name="pref_weather_api_guide_step_register3">3. Remplissez le formulaire d’inscription (voir image 3) :\n Nom d’utilisateur : nom personnalisé pour l’identification du compte\n E-mail : votre adresse e-mail valide pour la vérification et la récupération du compte\n Mot de passe : définissez votre mot de passe\n Répéter le mot de passe : saisissez à nouveau le même mot de passe\nSoumettez le formulaire pour vous inscrire.</string>
+    <string name="pref_weather_api_guide_step_verify1">Étape 3 : Vérifiez votre e-mail\n1. Après l’inscription, la page affiche : Nous avons envoyé le lien de confirmation à xxx@xx.com. Veuillez vérifier votre e-mail. 2. Ouvrez votre e-mail, trouvez le message d’OpenWeather et appuyez sur le bouton "Verify your email" pour terminer la vérification (voir image 5).\nSi vous ne recevez pas l’e-mail, vérifiez vos dossiers de spam ou promotions.</string>
+    <string name="pref_weather_api_guide_step_verify2">2. Ouvrez votre e-mail, trouvez le message d’OpenWeather et appuyez sur le bouton "Verify your email" pour terminer la vérification.</string>
+    <string name="pref_weather_api_guide_step_verify3">Si vous ne recevez pas l’e-mail, vérifiez vos dossiers de spam ou promotions.</string>
+    <string name="pref_weather_debug_override">Remplacement météo appliqué : %1$s</string>
+    <string name="pref_weather_debug_restore">Retour à la logique météo normale</string>
+    <string name="pref_weather_debug_title">Débogage météo</string>
     <string name="pref_weather_last_refresh">Dernière actualisation : %1$s</string>
     <string name="pref_weather_last_refresh_unknown">Dernière actualisation : inconnue</string>
-    <string name="pref_weather_debug_title">Débogage météo</string>
-    <string name="pref_weather_debug_restore">Retour à la logique météo normale</string>
-    <string name="pref_weather_debug_override">Remplacement météo appliqué : %1$s</string>
-    <string name="weather_toolbar_title">Paramètres météo</string>
-
-    <string name="miui_permission_title">Autorisation requise</string>
-    <string name="miui_permission_message">MIUI nécessite d’activer manuellement l’autorisation "Service de fond d’écran animé" pour ouvrir l’aperçu.\n\nAppuyez sur OK, puis activez-la dans la gestion des autorisations.</string>
-    <string name="miui_permission_go_settings">Aller aux paramètres</string>
-    <string name="miui_permission_continue">Continuer</string>
-    <string name="miui_permission_open_failed">Impossible d’ouvrir les paramètres</string>
-    <string name="about_title">À propos</string>
-
-    <!-- Préférences du fond d’écran Galaxie -->
-
-    <!-- Préférences du fond d’écran Galaxie 4 -->
-
-    <!-- Fond d’écran Phase Beam -->
-
-    <!-- Cube wallpaper -->
-
-
-    <!-- Paramètres globaux de fréquence d’images -->
-    <string name="pref_global_frame_rate">Fréquence d’images globale</string>
-
-    <string name="grass_color_default">Par défaut</string>
-    <string name="grass_color_green">Vert</string>
-    <string name="grass_color_blue">Bleu</string>
-    <string name="grass_color_red">Rouge</string>
-    <string name="grass_color_pink">Rose</string>
-    <string name="grass_color_purple">Violet</string>
-    <string name="grass_color_yellow">Jaune</string>
-    <string name="grass_color_black">Noir</string>
-    <string name="grass_color_white">Blanc</string>
-
-    <!-- Fond d’écran Fumée magique -->
-    <string name="pref_fireworks_custom_background_title">Image d’arrière-plan personnalisée</string>
-    <string name="pref_fireworks_custom_background_summary">Appuyez pour sélectionner une image d’arrière-plan personnalisée</string>
-    <string name="pref_fireworks_reset_background_title">Rétablir l’arrière-plan par défaut</string>
-    <string name="pref_fireworks_reset_background_summary">Supprimer l’arrière-plan personnalisé et utiliser celui par défaut</string>
-
-    <!-- Fond d’écran Spirale Holo -->
-
-    <!-- Fond d’écran Mer bleue -->
-
-    <string name="openweather_api_key">YOUR_OPENWEATHER_API_KEY</string>
-
-    <!-- Écran À propos -->
-    <string name="about_app_info">Informations sur l’application</string>
-    <string name="about_project_intro">Présentation du projet</string>
-    <string name="about_links">Liens et contact</string>
-    <string name="about_official_website">Open Source</string>
-    <string name="about_official_website_url">https://github.com/dynnbw/RE-Android-Live-Wallpapers</string>
-    <string name="about_email">E-mail</string>
-    <string name="about_email_address">3471348199@qq.com</string>
-    <string name="about_email_address_alt">xujiekai508@gmail.com</string>
-    <string name="about_qq">Canal QQ</string>
-    
-    <string name="about_bilibili">Bilibili</string>
-    <string name="about_bilibili_url">https://space.bilibili.com/470023065</string>
-    <string name="about_feedback">Retour d’information</string>
-    <string name="about_feedback_contact">Pour tout retour, utilisez les coordonnées ci-dessus.</string>
-    <string name="about_thanks">Remerciements</string>
-    <string name="about_thanks_original">Merci aux auteurs originaux</string>
-    <string name="about_thanks_original_detail">Original : MediaTek, Google, Samsung</string>
-
-    <string name="about_developer">Développeur</string>
-    <string name="about_author">Auteur</string>
-    <string name="about_author_detail">念. et contributeurs</string>
-    <string name="about_disclaimer">Avertissement légal</string>
-    <string name="about_disclaimer_title">Uniquement pour l’apprentissage et les échanges</string>
-    <string name="about_disclaimer_detail">Ce projet est uniquement destiné à un usage éducatif non commercial. Tous les droits appartiennent aux titulaires des droits d’auteur d’origine.</string>
-    <string name="app_version_summary">Version : %1$s</string>
-    <string name="no_browser_found">Aucun navigateur trouvé</string>
-    <string name="no_email_found">Aucune application de messagerie trouvée</string>
-    <!-- 版本更新 -->
-    <string name="check_for_updates">Rechercher les mises à jour</string>
+    <string name="pref_weather_refresh_now">Actualiser la météo maintenant</string>
+    <string name="pref_weather_refresh_now_failed">Échec de l’actualisation météo</string>
+    <string name="pref_weather_refresh_now_success">Actualisation météo terminée</string>
+    <string name="pref_weather_source_action_api">Configurer l\'API</string>
+    <string name="pref_weather_source_action_guide">Guide</string>
+    <string name="pref_weather_source_cma">Administration météorologique chinoise</string>
+    <string name="pref_weather_source_cma_note">Sans clé, Chine continentale uniquement</string>
+    <string name="pref_weather_source_openmeteo">Open-Meteo</string>
+    <string name="pref_weather_source_openmeteo_note">Sans clé, dans le monde entier</string>
+    <string name="pref_weather_source_openweather">OpenWeather</string>
+    <string name="pref_weather_source_openweather_note">Nécessite une clé API</string>
+    <string name="pref_weather_source_title">Source de données météo</string>
+    <string name="pref_weather_update_interval">Intervalle de mise à jour météo</string>
+    <string name="reset_action_confirm">Restaurer</string>
+    <string name="reset_all_settings_done">Tous les paramètres ont été rétablis par défaut</string>
+    <string name="reset_all_settings_message">Restaurer tous les paramètres des fonds d’écran et globaux à leurs valeurs par défaut ?</string>
+    <string name="reset_all_settings_title">Restaurer tous les paramètres par défaut</string>
+    <string name="reset_current_settings_summary">Restaurer les paramètres de ce fond d’écran aux valeurs par défaut</string>
+    <string name="reset_current_settings_title">Restaurer les paramètres par défaut</string>
+    <string name="settings_title">Paramètres des fonds d’écran animés</string>
     <string name="up_to_date_message">Vous utilisez la dernière version (v%1$s)</string>
     <string name="update_available_title">Nouvelle version v%1$s</string>
     <string name="update_button">Télécharger</string>
-    <string name="update_later_button">Plus tard</string>
     <string name="update_check_failed">Échec de la recherche de mises à jour : %1$s</string>
     <string name="update_downloading_title">Téléchargement de la mise à jour…</string>
-    <string name="config_open_browser_failed">Impossible d’ouvrir le navigateur</string>
-    <string name="fireworks_custom_background_set_toast">Arrière-plan personnalisé défini. Réappliquez le fond d’écran pour que cela prenne effet.</string>
-    <string name="fireworks_background_reset_toast">Arrière-plan par défaut restauré</string>
-    <string name="reset_all_settings_title">Restaurer tous les paramètres par défaut</string>
-    <string name="reset_all_settings_message">Restaurer tous les paramètres des fonds d’écran et globaux à leurs valeurs par défaut ?</string>
-    <string name="reset_all_settings_done">Tous les paramètres ont été rétablis par défaut</string>
-    <string name="reset_current_settings_title">Restaurer les paramètres par défaut</string>
-    <string name="reset_current_settings_summary">Restaurer les paramètres de ce fond d’écran aux valeurs par défaut</string>
-    <string name="reset_action_confirm">Restaurer</string>
-
-    <string name="pref_use_vulkan_title">Moteur de rendu Vulkan</string>
-    <string name="pref_use_vulkan_summary">Utiliser Vulkan pour de meilleures performances (réappliquer le fond d écran)</string>
-    <string name="pref_disabled_prefix">[Désactivé]</string>
-
-    <!-- Luminous dots wallpaper -->
-
-    <!-- Nixie tube wallpaper -->
-    <string name="wallpaper_nixietube_desc">Affichage à tube lumineux : horloge élégante par défaut, vumètre pendant la lecture audio</string>
-
-    <!-- GeekLog wallpaper -->
-    <!-- 壁纸磁贴占位格（反馈入口）：壁纸数量为奇数时补在最后一格 -->
-    <string name="grid_feedback_title">Retours et demandes de portage</string>
-    <string name="grid_feedback_caption">Ouvrir un ticket sur GitHub</string>
+    <string name="update_later_button">Plus tard</string>
+    <string name="wallpapers">REAndroid Fonds d’écran animés</string>
+    <string name="weather_toolbar_title">Paramètres météo</string>
 </resources>

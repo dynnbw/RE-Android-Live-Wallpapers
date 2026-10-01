@@ -243,6 +243,46 @@ def check_shaders():
           % (checked, linked, skipped))
 
 
+def check_strings_alignment():
+    """13 个 strings.xml 必须**逐行对齐**：同一行提到的是同一个键。
+
+    整理一次之后靠这条守住，否则下一次往某一个语言里加一条字符串，行号又会错开，
+    "并排改 13 个文件"就没了。规则与 scripts/tidy_strings.py 一致：
+    一行要么是 `<string name="x">`，要么是缺翻译时的 `<!-- 未翻译: x -->` 占位 ——
+    两种写法都算"这一行提到 x"。版权头那几行不参与比对。
+    """
+    files = sorted(glob.glob(RES + "/values*/strings.xml"))
+    if len(files) < 2:
+        return
+
+    def key_at(line):
+        m = re.search(r'<string name="([^"]+)"', line)
+        if m:
+            return m.group(1)
+        m = re.search(r'<!--\s*未翻译:\s*([a-z0-9_]+)\s*-->', line)
+        return m.group(1) if m else None
+
+    def layout(path):
+        return [key_at(l) for l in io.open(path, encoding="utf-8").read().split("\n")]
+
+    base_path = RES + "/values/strings.xml"
+    base = layout(base_path)
+    for path in files:
+        if path == base_path:
+            continue
+        other = layout(path)
+        if len(other) != len(base):
+            fail("strings", "%s 有 %d 行，默认文件有 %d 行 —— 两个文件不再逐行对齐"
+                 % (path, len(other), len(base)))
+            continue
+        for i, (want, got) in enumerate(zip(base, other)):
+            if want and got != want:
+                fail("strings", "%s 第 %d 行是 %s，默认文件那一行是 %s"
+                     % (path, i + 1, got or "（空）", want))
+                break
+    print("strings 对齐：%d 个文件 × %d 行" % (len(files), len(base)))
+
+
 def check_no_secrets():
     tracked = subprocess.run(["git", "ls-files"], capture_output=True,
                              text=True).stdout.split()
@@ -257,6 +297,7 @@ def main():
     check_xml()
     check_language_keys()
     check_labels()
+    check_strings_alignment()
     check_shaders()
     check_no_secrets()
 

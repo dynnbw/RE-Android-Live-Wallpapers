@@ -1,229 +1,149 @@
-<resources xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+<!--
+    Copyright (C) 2026 The Reborn Android Live Wallpapers authors
 
-    <!-- Application name -->
-    <string name="wallpapers">REAndroid ライブ壁紙</string>
-    <string name="app_name">REAndroid ライブ壁紙</string>
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
 
-    <!-- Wallpapers -->
+         http://www.apache.org/licenses/LICENSE-2.0
 
-    <string name="wallpaper_flsorescence">蛍光</string>
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
 
-    <string name="wallpaper_grass_vk">草原 Vulkan</string>
+    本文件是本项目自己的译文，不是 AOSP 派生 —— 带 AOSP 版权头的是另外几个语言文件。
 
+-->
 
-
-
-    <!-- Cube wallpaper -->
-
-
-
-
-
-
-
-
-
-
-
-    <string name="wallpaper_nebula">星雲</string>
-
-    <!-- Music visualization wallpapers -->
-
-    <!-- Polar clock -->
-    <string name="clock_settings">極地時計の設定</string>
-    <string name="palette_gray">アイアングレー</string>
-    <string name="palette_violet">ミッドナイト</string>
-    <string name="palette_matrix">グリーンスクリーン</string>
-    <string name="palette_white_c">シロクマ（動的）</string>
-    <string name="palette_black_c">ブラックホール（動的）</string>
-    <string name="palette_halloween">パンプキンパイ</string>
-    <string name="palette_zenburn">異国情緒のフルーツサラダ</string>
-    <string name="palette_oceanic">ブルーレーザー</string>
-
-    <!-- Settings UI -->
-    <string name="settings_title">壁紙設定</string>
-
-    <!-- Fall leaves preferences -->
-
-    <!-- Grass preferences -->
-
-    <!-- Phase beam preferences -->
-    <string name="phasebeam_theme_phasebeam">Phase Beam（ブルー）</string>
-    <string name="phasebeam_theme_sunbeam">Sunbeam（暖色）</string>
-
-    <!-- Galaxy preferences -->
-
-    <!-- Black Hole preferences -->
-
-    <!-- Global settings -->
-    <string name="pref_global_frame_rate">全体フレームレート</string>
-
-    <!-- Weather settings -->
-    <string name="pref_weather_refresh_now">今すぐ天気を更新</string>
-    <string name="pref_weather_refresh_now_success">天気の更新が完了しました</string>
-    <string name="pref_weather_refresh_now_failed">天気の更新に失敗しました</string>
-    <string name="pref_apply_api_title">API申請</string>
-    <string name="pref_weather_update_interval">天気更新間隔</string>
-    <string name="pref_weather_source_title">天気データソース</string>
-    <string name="pref_weather_source_openweather">OpenWeather</string>
-    <string name="pref_weather_source_openweather_note">APIキーが必要</string>
-    <string name="pref_weather_source_cma">中国気象局</string>
-    <string name="pref_weather_source_cma_note">キー不要、中国本土のみ</string>
-    <string name="pref_weather_source_openmeteo">Open-Meteo</string>
-    <string name="pref_weather_source_openmeteo_note">キー不要、世界中で利用可</string>
-    <string name="pref_weather_source_action_api">API設定</string>
-    <string name="pref_weather_source_action_guide">ガイド</string>
-    <string name="pref_openweather_api_key_title">OpenWeather APIキー</string>
-    <string name="weather_toolbar_title">天気設定</string>
-    <string name="pref_weather_last_refresh">最終更新時間：%1$s</string>
-    <string name="pref_weather_last_refresh_unknown">最終更新時間：不明</string>
-
-    <!-- Flsorescence preferences -->
-
-    <!-- Magic smoke wallpaper -->
-
-    <!-- Holo spiral wallpaper -->
-
-    <!-- Blue sea wallpaper -->
-
-    <!-- General preferences -->
-    <string name="pref_open_wallpaper_picker">壁紙に設定</string>
-    <string name="pref_open_wallpaper_picker_failed">壁紙プレビューに対応していません</string>
-    <string name="pref_microbes_color_mode_original">クラシック版</string>
-    <string name="pref_microbes_color_mode_modern">新バージョン</string>
-    <string name="pref_open_wallpaper_chooser">壁紙選択を開く</string>
-    <string name="pref_live_preview">リアルタイムプレビュー</string>
-
-    <!-- Nexus preferences -->
-    <string name="pref_nexus_custom_background_title">カスタム背景</string>
-    <string name="pref_nexus_custom_background_summary">背景画像を選択</string>
-    <string name="pref_nexus_reset_background_title">デフォルト背景に戻す</string>
-    <string name="pref_nexus_reset_background_summary">カスタム背景をクリアし、内蔵背景を使用します</string>
-    <string name="nexus_bg_pyramid">デフォルト</string>
-    <string name="nexus_bg_pyramid_1">クラシック版 1</string>
-    <string name="nexus_bg_pyramid_2">クラシック版 2</string>
-    <string name="nexus_bg_pyramid_3">クラシック版 3</string>
-    <string name="nexus_bg_pyramid_4">ミニマル</string>
-
-    <!-- Nexus advanced preferences -->
-
-    <!-- Walkaround preferences -->
-
-    <!-- Music visualization preferences -->
-
-    <!-- MIUI permission -->
-    <string name="miui_permission_title">権限が必要です</string>
-    <string name="miui_permission_message">MIUIシステムでは壁紙プレビューを開くために「ライブ壁紙サービス」権限を手動で付与する必要があります。\n\nOKをタップした後、権限管理ページで「ライブ壁紙サービス」を見つけて有効にしてください。</string>
-    <string name="miui_permission_go_settings">設定へ移動</string>
-    <string name="miui_permission_continue">続行</string>
-    <string name="miui_permission_open_failed">設定画面を開けませんでした</string>
-
-    <!-- About -->
-    <string name="about_title">このアプリについて</string>
+<resources>
     <string name="about_app_info">アプリ情報</string>
-    <string name="about_project_intro">プロジェクト紹介</string>
-    <string name="about_links">リンクと連絡先</string>
-    <string name="about_official_website">オープンソース</string>
-    <string name="about_official_website_url">https://github.com/dynnbw/RE-Android-Live-Wallpapers</string>
+    <string name="about_author">作者</string>
+    <string name="about_author_detail">念.</string>
+    <string name="about_bilibili">Bilibiliホーム</string>
+    <string name="about_bilibili_url">https://space.bilibili.com/470023065</string>
+    <string name="about_developer">開発者</string>
+    <string name="about_disclaimer">免責事項</string>
+    <string name="about_disclaimer_detail">本プロジェクトは非商用・学習交流目的のみ提供されます。すべての権利は原作者に帰属します。</string>
+    <string name="about_disclaimer_title">学習・交流目的のみ</string>
     <string name="about_email">メールアドレス</string>
     <string name="about_email_address">3471348199@qq.com</string>
     <string name="about_email_address_alt">xujiekai508@gmail.com</string>
-    <string name="about_qq">QQチャンネル</string>
-    
     <string name="about_feedback">フィードバック</string>
-    <string name="about_bilibili">Bilibiliホーム</string>
-    <string name="about_bilibili_url">https://space.bilibili.com/470023065</string>
     <string name="about_feedback_contact">フィードバックは上記の連絡先までお寄せください</string>
+    <string name="about_links">リンクと連絡先</string>
+    <string name="about_official_website">オープンソース</string>
+    <string name="about_official_website_url">https://github.com/dynnbw/RE-Android-Live-Wallpapers</string>
+    <string name="about_qq">QQチャンネル</string>
+    <!-- 未翻译: about_qq_url -->
     <string name="about_thanks">謝辞</string>
     <string name="about_thanks_original">原作者に感謝</string>
     <string name="about_thanks_original_detail">原作者：MediaTek、Google、Samsung</string>
-    <string name="about_developer">開発者</string>
-    <string name="about_author">作者</string>
-    <string name="about_author_detail">念.</string>
-    <string name="about_disclaimer">免責事項</string>
-    <string name="about_disclaimer_title">学習・交流目的のみ</string>
-    <string name="about_disclaimer_detail">本プロジェクトは非商用・学習交流目的のみ提供されます。すべての権利は原作者に帰属します。</string>
+    <string name="about_title">このアプリについて</string>
+    <!-- 未翻译: action_clear_debug_log -->
+    <!-- 未翻译: action_debug_location_override -->
+    <!-- 未翻译: action_export_debug_log -->
+    <string name="app_name">REAndroid ライブ壁紙</string>
     <string name="app_version_summary">バージョン：%1$s</string>
+    <string name="check_for_updates">アップデートを確認</string>
+    <string name="clock_settings">極地時計の設定</string>
+    <string name="config_open_browser_failed">ブラウザを開けませんでした</string>
+    <!-- 未翻译: debug_location_clear -->
+    <!-- 未翻译: debug_location_cleared -->
+    <!-- 未翻译: debug_location_format -->
+    <!-- 未翻译: debug_location_hint -->
+    <!-- 未翻译: debug_location_invalid -->
+    <!-- 未翻译: debug_location_message -->
+    <!-- 未翻译: debug_location_set -->
+    <!-- 未翻译: debug_location_title -->
+    <!-- 未翻译: deepsea_custom_background_summary -->
+    <!-- 未翻译: deepsea_custom_background_title -->
+    <!-- 未翻译: deepsea_reset_background_summary -->
+    <!-- 未翻译: deepsea_reset_background_title -->
+    <string name="fireworks_background_reset_toast">デフォルト背景に戻りました</string>
+    <string name="fireworks_custom_background_set_toast">カスタム背景が設定されました。適用するには壁紙を再設定してください</string>
+    <string name="grid_feedback_caption">GitHub で Issue を作成</string>
+    <!-- 壁纸磁贴占位格（反馈入口）：壁纸数量为奇数时补在最后一格 -->
+    <string name="grid_feedback_title">フィードバック・移植リクエスト</string>
+    <!-- 未翻译: grid_feedback_url -->
+    <string name="miui_permission_go_settings">設定へ移動</string>
+    <string name="miui_permission_message">MIUIシステムでは壁紙プレビューを開くために「ライブ壁紙サービス」権限を手動で付与する必要があります。\n\nOKをタップした後、権限管理ページで「ライブ壁紙サービス」を見つけて有効にしてください。</string>
+    <string name="miui_permission_open_failed">設定画面を開けませんでした</string>
+    <string name="miui_permission_title">権限が必要です</string>
     <string name="no_browser_found">ブラウザが見つかりません</string>
     <string name="no_email_found">メールアプリが見つかりません</string>
-    <!-- 版本更新 -->
-    <string name="check_for_updates">アップデートを確認</string>
-    <string name="up_to_date_message">最新です (v%1$s)</string>
-    <string name="update_available_title">新しいバージョン v%1$s</string>
-    <string name="update_button">ダウンロード</string>
-    <string name="update_later_button">後で</string>
-    <string name="update_check_failed">アップデートの確認に失敗しました: %1$s</string>
-    <string name="update_downloading_title">アップデートをダウンロード中…</string>
-
-    <!-- Warning messages -->
-    <string name="config_open_browser_failed">ブラウザを開けませんでした</string>
-
-    <!-- Fireworks preferences -->
-    <string name="fireworks_custom_background_set_toast">カスタム背景が設定されました。適用するには壁紙を再設定してください</string>
-    <string name="fireworks_background_reset_toast">デフォルト背景に戻りました</string>
-    <string name="pref_fireworks_custom_background_title">カスタム背景画像</string>
-    <string name="pref_fireworks_custom_background_summary">クリックしてカスタム背景画像を選択</string>
-    <string name="pref_fireworks_reset_background_title">デフォルト背景に戻す</string>
-    <string name="pref_fireworks_reset_background_summary">カスタム背景をクリアし、デフォルト背景を使用します</string>
-
-    <!-- Reset settings -->
-    <string name="reset_all_settings_title">すべての設定をデフォルトに戻す</string>
-    <string name="reset_all_settings_message">すべての壁紙と全体設定をデフォルト値にリセットしますか？</string>
-    <string name="reset_all_settings_done">すべてのデフォルト設定に戻しました</string>
-    <string name="reset_current_settings_title">現在の壁紙の設定をデフォルトに戻す</string>
-    <string name="reset_current_settings_summary">現在の壁紙の設定をデフォルトに戻します</string>
-    <string name="reset_action_confirm">リセット</string>
-
-    <!-- Deep sea preferences -->
-    <string name="deepsea_custom_background_title">カスタム背景</string>
-    <string name="deepsea_custom_background_summary">背景画像を選択</string>
-    <string name="deepsea_reset_background_title">デフォルト背景に戻す</string>
-    <string name="deepsea_reset_background_summary">カスタム背景をクリアし、内蔵背景を使用します</string>
-
-    <!-- Weather API guide -->
+    <!-- 未翻译: openweather_api_key -->
+    <string name="pref_apply_api_title">API申請</string>
+    <!-- 未翻译: pref_fireworks_custom_background_summary -->
+    <!-- 未翻译: pref_fireworks_custom_background_title -->
+    <!-- 未翻译: pref_fireworks_grass_night_summary -->
+    <!-- 未翻译: pref_fireworks_grass_night_title -->
+    <!-- 未翻译: pref_fireworks_reset_background_summary -->
+    <!-- 未翻译: pref_fireworks_reset_background_title -->
+    <string name="pref_global_frame_rate">全体フレームレート</string>
+    <string name="pref_microbes_color_mode_modern">新バージョン</string>
+    <string name="pref_microbes_color_mode_original">クラシック版</string>
+    <!-- 未翻译: pref_nexus_custom_background_summary -->
+    <!-- 未翻译: pref_nexus_custom_background_title -->
+    <!-- 未翻译: pref_nexus_reset_background_summary -->
+    <!-- 未翻译: pref_nexus_reset_background_title -->
+    <string name="pref_open_wallpaper_chooser">壁紙選択を開く</string>
+    <string name="pref_open_wallpaper_picker">壁紙に設定</string>
+    <string name="pref_open_wallpaper_picker_failed">壁紙プレビューに対応していません</string>
+    <string name="pref_openweather_api_key_title">OpenWeather APIキー</string>
+    <string name="pref_use_vulkan_summary">Vulkan を使用してパフォーマンスを向上（壁紙を再適用）</string>
+    <string name="pref_use_vulkan_title">Vulkan レンダラー</string>
+    <string name="pref_weather_api_guide_common">六、よくある質問\n設定後天気が取得できない場合：\n- キーが正しくコピーされているか確認（余分なスペースや改行がないか）\n- 新しく生成したAPIキーは有効になるまで10～30分かかることがあります。しばらく待ってから再テストしてください。\n- アプリの位置情報権限が有効か確認してください。</string>
+    <string name="pref_weather_api_guide_illustration">APIチュートリアル図</string>
     <string name="pref_weather_api_guide_intro">OpenWeather APIキーの取得と設定の完全チュートリアルです。</string>
+    <string name="pref_weather_api_guide_link_text">https://openweathermap.org/</string>
+    <string name="pref_weather_api_guide_open_web_button">OpenWeather公式サイトを開く</string>
     <string name="pref_weather_api_guide_prepare">一、事前準備\n- メールを受信できるメールアドレス\n- OpenWeather公式サイトにアクセスできるネットワーク環境</string>
-    <string name="pref_weather_api_guide_step_register1">二、OpenWeatherアカウント登録\n1. OpenWeather公式サイト（https://openweathermap.org/）を開き、右上のオレンジ色のLoginボタンをクリック</string>
-    <string name="pref_weather_api_guide_step_register2">2. ログインページで「Create an Account」をクリック</string>
-    <string name="pref_weather_api_guide_step_register3">3. 登録フォームに情報を入力：\n    Username：ユーザー名（アカウント識別用）\n    Enter email：有効なメールアドレス\n    Password：パスワード設定\n    Repeat password：パスワード再入力\n完了後、登録を送信します。</string>
-    <string name="pref_weather_api_guide_step_verify1">三、メール認証\n1. 登録後、「We have sent the confirmation link to xxx@xx.com. Please check your email.」と表示されます。</string>
-    <string name="pref_weather_api_guide_step_verify2">2. 登録したメールアドレスにログインし、OpenWeatherからの確認メール内の「Verify your email」ボタンをクリックして認証を完了します。</string>
-    <string name="pref_weather_api_guide_step_verify3">メールが届かない場合は、迷惑メールフォルダを確認してください。</string>
-    <string name="pref_weather_api_guide_step_key1">四、専用APIキーの取得\n1. メール認証後、OpenWeatherサイトに戻りアカウントにログインします。\n2. ダッシュボードのナビゲーションバーから「API keys」を選択</string>
-    <string name="pref_weather_api_guide_step_key2">3. API管理ページで、デフォルト生成されたAPIキー（通常「Default」、ステータス「Active」）が表示されます。そのままコピーするか、名前を入力して「Generate」をクリックして新規作成します。</string>
-    <string name="pref_weather_api_guide_step_key3">重要：無料版APIキーには呼び出し制限があります（毎分60回、毎日1000回まで）。個人の壁紙利用には十分です。APIキーを公開しないでください。悪用による制限を防ぎます。</string>
     <string name="pref_weather_api_guide_step_config1">五、壁紙アプリでAPIキーを設定\n1. 壁紙アプリを開き、右上の雲アイコン（天気設定入口）をクリック</string>
     <string name="pref_weather_api_guide_step_config2">2. ポップアップメニューから「OpenWeather APIキー」を選択</string>
     <string name="pref_weather_api_guide_step_config3">3. 入力ボックスにコピーしたAPIキーを貼り付け、「OK」をクリックして保存します。</string>
     <string name="pref_weather_api_guide_step_config4">4. 設定後「今すぐ天気を更新」をクリックしてテストします。壁紙が天気情報を正常に読み込めれば設定成功です。</string>
-    <string name="pref_weather_api_guide_common">六、よくある質問\n設定後天気が取得できない場合：\n- キーが正しくコピーされているか確認（余分なスペースや改行がないか）\n- 新しく生成したAPIキーは有効になるまで10～30分かかることがあります。しばらく待ってから再テストしてください。\n- アプリの位置情報権限が有効か確認してください。</string>
-    <string name="pref_weather_api_guide_illustration">APIチュートリアル図</string>
-    <string name="pref_weather_api_guide_link_text">https://openweathermap.org/</string>
-    <string name="pref_weather_api_guide_open_web_button">OpenWeather公式サイトを開く</string>
-
-    <string-array name="cube_shapenames">
-        <item>立方体</item>
-        <item>十二面体</item>
-        <item>正四面体</item>
-        <item>正八面体</item>
-        <item>正二十面体</item>
-        <item>星形十二面体</item>
-        <item>立方八面体</item>
-        <item>切頂立方体</item>
-    </string-array>
-
-    <string name="pref_use_vulkan_title">Vulkan レンダラー</string>
-    <string name="pref_use_vulkan_summary">Vulkan を使用してパフォーマンスを向上（壁紙を再適用）</string>
-    <string name="pref_disabled_prefix">[無効]</string>
-
-    <!-- Luminous dots wallpaper -->
-
-    <!-- Nixie tube wallpaper -->
-    <string name="wallpaper_nixietube_desc">ニキシー管ディスプレイ：通常はエレガントな時計、音声再生時は VU メーター</string>
-
-    <!-- GeekLog wallpaper -->
-    <!-- 壁纸磁贴占位格（反馈入口）：壁纸数量为奇数时补在最后一格 -->
-    <string name="grid_feedback_title">フィードバック・移植リクエスト</string>
-    <string name="grid_feedback_caption">GitHub で Issue を作成</string>
+    <string name="pref_weather_api_guide_step_key1">四、専用APIキーの取得\n1. メール認証後、OpenWeatherサイトに戻りアカウントにログインします。\n2. ダッシュボードのナビゲーションバーから「API keys」を選択</string>
+    <string name="pref_weather_api_guide_step_key2">3. API管理ページで、デフォルト生成されたAPIキー（通常「Default」、ステータス「Active」）が表示されます。そのままコピーするか、名前を入力して「Generate」をクリックして新規作成します。</string>
+    <string name="pref_weather_api_guide_step_key3">重要：無料版APIキーには呼び出し制限があります（毎分60回、毎日1000回まで）。個人の壁紙利用には十分です。APIキーを公開しないでください。悪用による制限を防ぎます。</string>
+    <string name="pref_weather_api_guide_step_register1">二、OpenWeatherアカウント登録\n1. OpenWeather公式サイト（https://openweathermap.org/）を開き、右上のオレンジ色のLoginボタンをクリック</string>
+    <string name="pref_weather_api_guide_step_register2">2. ログインページで「Create an Account」をクリック</string>
+    <string name="pref_weather_api_guide_step_register3">3. 登録フォームに情報を入力：\n Username：ユーザー名（アカウント識別用）\n Enter email：有効なメールアドレス\n Password：パスワード設定\n Repeat password：パスワード再入力\n完了後、登録を送信します。</string>
+    <string name="pref_weather_api_guide_step_verify1">三、メール認証\n1. 登録後、「We have sent the confirmation link to xxx@xx.com. Please check your email.」と表示されます。</string>
+    <string name="pref_weather_api_guide_step_verify2">2. 登録したメールアドレスにログインし、OpenWeatherからの確認メール内の「Verify your email」ボタンをクリックして認証を完了します。</string>
+    <string name="pref_weather_api_guide_step_verify3">メールが届かない場合は、迷惑メールフォルダを確認してください。</string>
+    <!-- 未翻译: pref_weather_debug_override -->
+    <!-- 未翻译: pref_weather_debug_restore -->
+    <!-- 未翻译: pref_weather_debug_title -->
+    <string name="pref_weather_last_refresh">最終更新時間：%1$s</string>
+    <string name="pref_weather_last_refresh_unknown">最終更新時間：不明</string>
+    <string name="pref_weather_refresh_now">今すぐ天気を更新</string>
+    <string name="pref_weather_refresh_now_failed">天気の更新に失敗しました</string>
+    <string name="pref_weather_refresh_now_success">天気の更新が完了しました</string>
+    <string name="pref_weather_source_action_api">API設定</string>
+    <string name="pref_weather_source_action_guide">ガイド</string>
+    <string name="pref_weather_source_cma">中国気象局</string>
+    <string name="pref_weather_source_cma_note">キー不要、中国本土のみ</string>
+    <string name="pref_weather_source_openmeteo">Open-Meteo</string>
+    <string name="pref_weather_source_openmeteo_note">キー不要、世界中で利用可</string>
+    <string name="pref_weather_source_openweather">OpenWeather</string>
+    <string name="pref_weather_source_openweather_note">APIキーが必要</string>
+    <string name="pref_weather_source_title">天気データソース</string>
+    <string name="pref_weather_update_interval">天気更新間隔</string>
+    <string name="reset_action_confirm">リセット</string>
+    <string name="reset_all_settings_done">すべてのデフォルト設定に戻しました</string>
+    <string name="reset_all_settings_message">すべての壁紙と全体設定をデフォルト値にリセットしますか？</string>
+    <string name="reset_all_settings_title">すべての設定をデフォルトに戻す</string>
+    <string name="reset_current_settings_summary">現在の壁紙の設定をデフォルトに戻します</string>
+    <string name="reset_current_settings_title">現在の壁紙の設定をデフォルトに戻す</string>
+    <string name="settings_title">壁紙設定</string>
+    <string name="up_to_date_message">最新です (v%1$s)</string>
+    <string name="update_available_title">新しいバージョン v%1$s</string>
+    <string name="update_button">ダウンロード</string>
+    <string name="update_check_failed">アップデートの確認に失敗しました: %1$s</string>
+    <string name="update_downloading_title">アップデートをダウンロード中…</string>
+    <string name="update_later_button">後で</string>
+    <string name="wallpapers">REAndroid ライブ壁紙</string>
+    <string name="weather_toolbar_title">天気設定</string>
 </resources>

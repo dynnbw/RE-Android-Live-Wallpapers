@@ -1,232 +1,149 @@
-<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+<!--
+    Copyright (C) 2026 The Reborn Android Live Wallpapers authors
 
-    <!-- एप्लिकेशन का नाम -->
-    <string name="wallpapers">आरईएंड्रॉइड लाइव वॉलपेपर</string>
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+    本文件是本项目自己的译文，不是 AOSP 派生 —— 带 AOSP 版权头的是另外几个语言文件。
+
+-->
+
+<resources>
+    <string name="about_app_info">ऐप जानकारी</string>
+    <string name="about_author">लेखक</string>
+    <string name="about_author_detail">念. और योगदानकर्ता</string>
+    <string name="about_bilibili">बिलिबिली</string>
+    <string name="about_bilibili_url">https://space.bilibili.com/470023065</string>
+    <string name="about_developer">डेवलपर</string>
+    <string name="about_disclaimer">अस्वीकरण</string>
+    <string name="about_disclaimer_detail">यह परियोजना केवल गैर-व्यावसायिक, शैक्षिक उपयोग के लिए है। सभी अधिकार मूल कॉपीराइट धारकों के हैं।</string>
+    <string name="about_disclaimer_title">केवल सीखने और संचार के लिए</string>
+    <string name="about_email">ईमेल</string>
+    <string name="about_email_address">3471348199@qq.com</string>
+    <string name="about_email_address_alt">xujiekai508@gmail.com</string>
+    <string name="about_feedback">प्रतिक्रिया</string>
+    <string name="about_feedback_contact">प्रतिक्रिया के लिए, कृपया उपरोक्त संपर्क जानकारी का उपयोग करें।</string>
+    <string name="about_links">लिंक और संपर्क</string>
+    <string name="about_official_website">ओपन सोर्स</string>
+    <string name="about_official_website_url">https://github.com/dynnbw/RE-Android-Live-Wallpapers</string>
+    <string name="about_qq">QQ चैनल</string>
+    <!-- 未翻译: about_qq_url -->
+    <string name="about_thanks">आभार</string>
+    <string name="about_thanks_original">मूल लेखकों के लिए धन्यवाद</string>
+    <string name="about_thanks_original_detail">मूल: मीडियाटेक, गूगल, सैमसंग</string>
+    <string name="about_title">परिचय</string>
+    <!-- 未翻译: action_clear_debug_log -->
+    <!-- 未翻译: action_debug_location_override -->
+    <!-- 未翻译: action_export_debug_log -->
     <string name="app_name">आरईएंड्रॉइड लाइव वॉलपेपर</string>
-
-
-    <!-- फ्लोरोसेंस (फ्लोरोसेंस) वॉलपेपर -->
-    <string name="wallpaper_flsorescence">प्रतिदीप्ति</string>
-
-    <!-- वॉलपेपर -->
-    
-
-    <!-- कैमरा पूर्वावलोकन दिखाने वाला वॉलपेपर -->
-
-    <!-- घास और आकाश वॉलपेपर -->
-    <string name="wallpaper_grass_vk">घास वल्कन</string>
-
-
-    <!-- आकाशगंगा वॉलपेपर -->
-    <string name="wallpaper_galaxy_vk">आकाशगंगा वल्कन</string>
-
-    <!-- आकाशगंगा 4 वॉलपेपर -->
-
-    <!-- पानी पर तैरते पत्तों वाला वॉलपेपर -->
-    <string name="wallpaper_fall_vk">जल पत्ते वल्कन</string>
-
-    <!-- जंगली दुनिया वॉलपेपर -->
-
-    <!-- आतिशबाजी वॉलपेपर -->
-
-    <!-- पवनचक्की वॉलपेपर -->
-
-    <!-- समुद्री मौसम वॉलपेपर -->
-
-    <!-- गहरा समुद्र वॉलपेपर -->
-
-    <!-- ध्रुवीय घड़ी वॉलपेपर -->
-
-    <!-- नेक्सस वॉलपेपर -->
-
-    <!-- शोर क्षेत्र वॉलपेपर -->
-    <string name="wallpaper_nebula">निहारिका</string>
-
-    <!-- संगीत दृश्यावली वॉलपेपर -->
-
-    <!-- ध्रुवीय घड़ी: सेटिंग्स गतिविधि का शीर्षक -->
+    <string name="app_version_summary">संस्करण: %1$s</string>
+    <string name="check_for_updates">अपडेट जांचें</string>
     <string name="clock_settings">ध्रुवीय घड़ी सेटिंग्स</string>
-    <!-- ध्रुवीय घड़ी: "सेकंड दिखाएं" प्राथमिकता के लिए लेबल -->
-    <!-- ध्रुवीय घड़ी: "परिवर्तनशील रिंग चौड़ाई" प्राथमिकता के लिए लेबल -->
-    <!-- ध्रुवीय घड़ी: "पैलेट" प्राथमिकता के लिए लेबल -->
-
-    <!-- ध्रुवीय घड़ी: पैलेट नाम -->
-    <string name="palette_gray">लोहा</string>
-    <string name="palette_violet">मध्यरात्रि</string>
-    <string name="palette_matrix">हरी स्क्रीन</string>
-    <string name="palette_white_c">ध्रुवीय भालू (गतिशील)</string>
-    <string name="palette_black_c">ब्लैक होल (गतिशील)</string>
-    <string name="palette_halloween">कद्दू पाई</string>
-    <string name="palette_zenburn">एलियन फ्रूट सलाद</string>
-    <string name="palette_oceanic">नीला लेजर</string>
-
-    <!-- सेटिंग्स यूआई -->
-    <string name="settings_title">लाइव वॉलपेपर सेटिंग्स</string>
-
-
+    <string name="config_open_browser_failed">ब्राउज़र खोलने में असमर्थ</string>
+    <!-- 未翻译: debug_location_clear -->
+    <!-- 未翻译: debug_location_cleared -->
+    <!-- 未翻译: debug_location_format -->
+    <!-- 未翻译: debug_location_hint -->
+    <!-- 未翻译: debug_location_invalid -->
+    <!-- 未翻译: debug_location_message -->
+    <!-- 未翻译: debug_location_set -->
+    <!-- 未翻译: debug_location_title -->
+    <!-- 未翻译: deepsea_custom_background_summary -->
+    <!-- 未翻译: deepsea_custom_background_title -->
+    <!-- 未翻译: deepsea_reset_background_summary -->
+    <!-- 未翻译: deepsea_reset_background_title -->
+    <string name="fireworks_background_reset_toast">डिफ़ॉल्ट पृष्ठभूमि पुनर्स्थापित</string>
+    <string name="fireworks_custom_background_set_toast">अनुकूलित पृष्ठभूमि सेट है। प्रभावी होने के लिए वॉलपेपर पुनः लागू करें।</string>
+    <string name="grid_feedback_caption">GitHub पर issue बनाएँ</string>
+    <!-- 壁纸磁贴占位格（反馈入口）：壁纸数量为奇数时补在最后一格 -->
+    <string name="grid_feedback_title">फ़ीडबैक और अनुरोध</string>
+    <!-- 未翻译: grid_feedback_url -->
+    <string name="miui_permission_go_settings">सेटिंग्स पर जाएँ</string>
+    <string name="miui_permission_message">पूर्वावलोकन खोलने के लिए MIUI को "लाइव वॉलपेपर सेवा" अनुमति को मैन्युअल रूप से सक्षम करने की आवश्यकता है।\n\nठीक टैप करें, फिर इसे अनुमति प्रबंधन में सक्षम करें।</string>
+    <string name="miui_permission_open_failed">सेटिंग्स खोलने में असमर्थ</string>
+    <string name="miui_permission_title">अनुमति आवश्यक है</string>
+    <string name="no_browser_found">कोई ब्राउज़र नहीं मिला</string>
+    <string name="no_email_found">कोई ईमेल ऐप नहीं मिला</string>
+    <string name="openweather_api_key">आपकी_ओपनवेदर_एपीआई_कुंजी</string>
+    <string name="pref_apply_api_title">एपीआई के लिए आवेदन करें</string>
+    <!-- 未翻译: pref_fireworks_custom_background_summary -->
+    <!-- 未翻译: pref_fireworks_custom_background_title -->
+    <!-- 未翻译: pref_fireworks_grass_night_summary -->
+    <!-- 未翻译: pref_fireworks_grass_night_title -->
+    <!-- 未翻译: pref_fireworks_reset_background_summary -->
+    <!-- 未翻译: pref_fireworks_reset_background_title -->
+    <string name="pref_global_frame_rate">वैश्विक फ्रेम दर</string>
+    <string name="pref_microbes_color_mode_modern">नया</string>
+    <string name="pref_microbes_color_mode_original">मूल</string>
+    <!-- 未翻译: pref_nexus_custom_background_summary -->
+    <!-- 未翻译: pref_nexus_custom_background_title -->
+    <!-- 未翻译: pref_nexus_reset_background_summary -->
+    <!-- 未翻译: pref_nexus_reset_background_title -->
+    <string name="pref_open_wallpaper_chooser">वॉलपेपर चयनकर्ता खोलें</string>
     <string name="pref_open_wallpaper_picker">वॉलपेपर के रूप में सेट करें</string>
     <string name="pref_open_wallpaper_picker_failed">वॉलपेपर पूर्वावलोकन समर्थित नहीं है</string>
-    <string name="pref_open_wallpaper_chooser">वॉलपेपर चयनकर्ता खोलें</string>
-    <string name="pref_live_preview">लाइव पूर्वावलोकन</string>
-    <string name="pref_microbes_color_mode_original">मूल</string>
-    <string name="pref_microbes_color_mode_modern">नया</string>
-    <string name="pref_nexus_custom_background_title">अनुकूलित पृष्ठभूमि</string>
-    <string name="pref_nexus_custom_background_summary">पृष्ठभूमि छवि चुनें</string>
-    <string name="pref_nexus_reset_background_title">पृष्ठभूमि रीसेट करें</string>
-    <string name="pref_nexus_reset_background_summary">अनुकूलित पृष्ठभूमि साफ़ करें और अंतर्निहित का उपयोग करें</string>
-    <string name="nexus_bg_pyramid">पिरामिड</string>
-    <string name="nexus_bg_pyramid_1">पिरामिड 1</string>
-    <string name="nexus_bg_pyramid_2">पिरामिड 2</string>
-    <string name="nexus_bg_pyramid_3">पिरामिड 3</string>
-    <string name="nexus_bg_pyramid_4">पिरामिड 4</string>
-
-    <!-- गहरा समुद्र सेटिंग्स -->
-    <string name="deepsea_custom_background_title">अनुकूलित पृष्ठभूमि</string>
-    <string name="deepsea_custom_background_summary">पृष्ठभूमि छवि चुनें</string>
-    <string name="deepsea_reset_background_title">पृष्ठभूमि रीसेट करें</string>
-    <string name="deepsea_reset_background_summary">अनुकूलित पृष्ठभूमि साफ़ करें और अंतर्निहित का उपयोग करें</string>
-
-    <!-- नेक्सस उन्नत सेटिंग्स -->
-
-    <string name="pref_weather_update_interval">मौसम अद्यतन अंतराल</string>
-    <string name="pref_weather_source_title">मौसम डेटा स्रोत</string>
-    <string name="pref_weather_source_openweather">OpenWeather</string>
-    <string name="pref_weather_source_openweather_note">API कुंजी आवश्यक</string>
-    <string name="pref_weather_source_cma">चीन मौसम विज्ञान प्रशासन</string>
-    <string name="pref_weather_source_cma_note">कुंजी आवश्यक नहीं, केवल मुख्य भूमि चीन</string>
-    <string name="pref_weather_source_openmeteo">Open-Meteo</string>
-    <string name="pref_weather_source_openmeteo_note">कुंजी आवश्यक नहीं, दुनिया भर में</string>
-    <string name="pref_weather_source_action_api">API सेट करें</string>
-    <string name="pref_weather_source_action_guide">गाइड</string>
-    <string name="pref_weather_refresh_now">मौसम अभी ताज़ा करें</string>
-    <string name="pref_weather_refresh_now_success">मौसम ताज़ा पूरा हुआ</string>
-    <string name="pref_weather_refresh_now_failed">मौसम ताज़ा विफल</string>
     <string name="pref_openweather_api_key_title">ओपनवेदर एपीआई कुंजी</string>
-    <string name="pref_apply_api_title">एपीआई के लिए आवेदन करें</string>
+    <string name="pref_use_vulkan_summary">बेहतर प्रदर्शन के लिए Vulkan का उपयोग करें (वॉलपेपर फिर से लागू करें)</string>
+    <string name="pref_use_vulkan_title">Vulkan रेंडरर</string>
+    <string name="pref_weather_api_guide_common">चरण 6: समस्या निवारण\n- सत्यापित करें कि कुंजी पूरी तरह से बिना अतिरिक्त रिक्त स्थान या लाइन ब्रेक के कॉपी की गई है।\n- एक नई एपीआई कुंजी सक्रिय होने में 10-30 मिनट लग सकते हैं; प्रतीक्षा करें और पुनः प्रयास करें।\n- सुनिश्चित करें कि ऐप में स्थान अनुमति सक्षम है।</string>
+    <string name="pref_weather_api_guide_illustration">एपीआई ट्यूटोरियल चित्रण</string>
     <string name="pref_weather_api_guide_intro">ओपनवेदर एपीआई कुंजी सेटअप और कॉन्फ़िगरेशन गाइड।</string>
+    <string name="pref_weather_api_guide_link_text">https://openweathermap.org/</string>
+    <string name="pref_weather_api_guide_open_web_button">ओपनवेदर वेबसाइट खोलें</string>
     <string name="pref_weather_api_guide_prepare">चरण 1: तैयारी\n- एक ईमेल पता जो सत्यापन संदेश प्राप्त कर सकता हो\n- एक नेटवर्क वातावरण जो ओपनवेदर वेबसाइट तक पहुँच सके</string>
-    <string name="pref_weather_api_guide_step_register1">चरण 2: ओपनवेदर खाता पंजीकृत करें\n1. https://openweathermap.org/ खोलें और शीर्ष दाएं पर नारंगी लॉगिन बटन टैप करें (चित्र 1 देखें)।</string>
-    <string name="pref_weather_api_guide_step_register2">2. साइन-इन पेज पर, "खाता बनाएं" टैप करें।</string>
-    <string name="pref_weather_api_guide_step_register3">3. पंजीकरण फॉर्म भरें (चित्र 3 देखें):\n    उपयोगकर्ता नाम: खाता पहचान के लिए अनुकूलित नाम\n    ईमेल दर्ज करें: सत्यापन और खाता पुनर्प्राप्ति के लिए आपका वैध ईमेल पता\n    पासवर्ड: अपना पासवर्ड सेट करें\n    पासवर्ड दोहराएँ: वही पासवर्ड फिर से दर्ज करें\nपंजीकरण के लिए फॉर्म जमा करें।</string>
-    <string name="pref_weather_api_guide_step_verify1">चरण 3: अपने ईमेल की पुष्टि करें\n1. पंजीकरण के बाद, पृष्ठ दिखाता है: हमने पुष्टिकरण लिंक xxx@xx.com पर भेज दिया है। कृपया अपना ईमेल देखें। 2. अपना ईमेल खोलें, ओपनवेदर का संदेश ढूंढें, और पुष्टि पूरी करने के लिए "अपने ईमेल की पुष्टि करें" बटन टैप करें (चित्र 5 देखें)\nयदि आपको ईमेल नहीं मिलता है, तो स्पैम या प्रचार फ़ोल्डर देखें।</string>
-    <string name="pref_weather_api_guide_step_verify2">2. अपना ईमेल खोलें, ओपनवेदर का संदेश ढूंढें, और पुष्टि पूरी करने के लिए "अपने ईमेल की पुष्टि करें" बटन टैप करें।</string>
-    <string name="pref_weather_api_guide_step_verify3">यदि आपको ईमेल नहीं मिलता है, तो स्पैम या प्रचार फ़ोल्डर देखें।</string>
-    <string name="pref_weather_api_guide_step_key1">चरण 4: अपनी एपीआई कुंजी प्राप्त करें\n1. सत्यापन के बाद, ओपनवेदर पर लौटें और साइन इन करें।\n2. अपने खाता डैशबोर्ड में, नेविगेशन मेनू से "एपीआई कुंजियाँ" खोलें।</string>
-    <string name="pref_weather_api_guide_step_key2">3. एपीआई प्रबंधन पृष्ठ पर, डिफ़ॉल्ट रूप से उत्पन्न कुंजी कॉपी करें (आमतौर पर नाम "डिफ़ॉल्ट", स्थिति "सक्रिय"), या एक नाम दर्ज करें और नई कुंजी बनाने के लिए "जनरेट करें" टैप करें।</string>
-    <string name="pref_weather_api_guide_step_key3">महत्वपूर्ण: मुफ्त कुंजियाँ प्रति मिनट 60 कॉल और प्रति दिन 1000 तक सीमित हैं, जो व्यक्तिगत वॉलपेपर उपयोग के लिए पर्याप्त है। दुरुपयोग और खाता सीमित करने से बचने के लिए अपनी कुंजी सार्वजनिक रूप से साझा न करें।</string>
     <string name="pref_weather_api_guide_step_config1">चरण 5: वॉलपेपर ऐप में एपीआई कुंजी कॉन्फ़िगर करें\n1. वॉलपेपर ऐप खोलें और शीर्ष दाएं पर बादल आइकन टैप करें।</string>
     <string name="pref_weather_api_guide_step_config2">2. पॉपअप मेनू से "ओपनवेदर एपीआई कुंजी" चुनें।</string>
     <string name="pref_weather_api_guide_step_config3">3. कॉपी की गई एपीआई कुंजी को इनपुट बॉक्स में पेस्ट करें और सहेजने के लिए "पुष्टि करें" टैप करें।</string>
     <string name="pref_weather_api_guide_step_config4">4. परीक्षण करने के लिए "मौसम अभी ताज़ा करें" टैप करें। यदि वॉलपेपर सामान्य रूप से मौसम जानकारी लोड करता है, तो कॉन्फ़िगरेशन सफल है।</string>
-    <string name="pref_weather_api_guide_common">चरण 6: समस्या निवारण\n- सत्यापित करें कि कुंजी पूरी तरह से बिना अतिरिक्त रिक्त स्थान या लाइन ब्रेक के कॉपी की गई है।\n- एक नई एपीआई कुंजी सक्रिय होने में 10-30 मिनट लग सकते हैं; प्रतीक्षा करें और पुनः प्रयास करें।\n- सुनिश्चित करें कि ऐप में स्थान अनुमति सक्षम है।</string>
-    <string name="pref_weather_api_guide_illustration">एपीआई ट्यूटोरियल चित्रण</string>
-    <string name="pref_weather_api_guide_link_text">https://openweathermap.org/</string>
-    <string name="pref_weather_api_guide_open_web_button">ओपनवेदर वेबसाइट खोलें</string>
+    <string name="pref_weather_api_guide_step_key1">चरण 4: अपनी एपीआई कुंजी प्राप्त करें\n1. सत्यापन के बाद, ओपनवेदर पर लौटें और साइन इन करें।\n2. अपने खाता डैशबोर्ड में, नेविगेशन मेनू से "एपीआई कुंजियाँ" खोलें।</string>
+    <string name="pref_weather_api_guide_step_key2">3. एपीआई प्रबंधन पृष्ठ पर, डिफ़ॉल्ट रूप से उत्पन्न कुंजी कॉपी करें (आमतौर पर नाम "डिफ़ॉल्ट", स्थिति "सक्रिय"), या एक नाम दर्ज करें और नई कुंजी बनाने के लिए "जनरेट करें" टैप करें।</string>
+    <string name="pref_weather_api_guide_step_key3">महत्वपूर्ण: मुफ्त कुंजियाँ प्रति मिनट 60 कॉल और प्रति दिन 1000 तक सीमित हैं, जो व्यक्तिगत वॉलपेपर उपयोग के लिए पर्याप्त है। दुरुपयोग और खाता सीमित करने से बचने के लिए अपनी कुंजी सार्वजनिक रूप से साझा न करें।</string>
+    <string name="pref_weather_api_guide_step_register1">चरण 2: ओपनवेदर खाता पंजीकृत करें\n1. https://openweathermap.org/ खोलें और शीर्ष दाएं पर नारंगी लॉगिन बटन टैप करें (चित्र 1 देखें)।</string>
+    <string name="pref_weather_api_guide_step_register2">2. साइन-इन पेज पर, "खाता बनाएं" टैप करें।</string>
+    <string name="pref_weather_api_guide_step_register3">3. पंजीकरण फॉर्म भरें (चित्र 3 देखें):\n उपयोगकर्ता नाम: खाता पहचान के लिए अनुकूलित नाम\n ईमेल दर्ज करें: सत्यापन और खाता पुनर्प्राप्ति के लिए आपका वैध ईमेल पता\n पासवर्ड: अपना पासवर्ड सेट करें\n पासवर्ड दोहराएँ: वही पासवर्ड फिर से दर्ज करें\nपंजीकरण के लिए फॉर्म जमा करें।</string>
+    <string name="pref_weather_api_guide_step_verify1">चरण 3: अपने ईमेल की पुष्टि करें\n1. पंजीकरण के बाद, पृष्ठ दिखाता है: हमने पुष्टिकरण लिंक xxx@xx.com पर भेज दिया है। कृपया अपना ईमेल देखें। 2. अपना ईमेल खोलें, ओपनवेदर का संदेश ढूंढें, और पुष्टि पूरी करने के लिए "अपने ईमेल की पुष्टि करें" बटन टैप करें (चित्र 5 देखें)\nयदि आपको ईमेल नहीं मिलता है, तो स्पैम या प्रचार फ़ोल्डर देखें।</string>
+    <string name="pref_weather_api_guide_step_verify2">2. अपना ईमेल खोलें, ओपनवेदर का संदेश ढूंढें, और पुष्टि पूरी करने के लिए "अपने ईमेल की पुष्टि करें" बटन टैप करें।</string>
+    <string name="pref_weather_api_guide_step_verify3">यदि आपको ईमेल नहीं मिलता है, तो स्पैम या प्रचार फ़ोल्डर देखें।</string>
+    <string name="pref_weather_debug_override">मौसम अधिलेखन लागू: %1$s</string>
+    <string name="pref_weather_debug_restore">सामान्य मौसम तर्क पर लौटा</string>
+    <string name="pref_weather_debug_title">मौसम डिबग</string>
     <string name="pref_weather_last_refresh">अंतिम ताजा: %1$s</string>
     <string name="pref_weather_last_refresh_unknown">अंतिम ताजा: अज्ञात</string>
-    <string name="pref_weather_debug_title">मौसम डिबग</string>
-    <string name="pref_weather_debug_restore">सामान्य मौसम तर्क पर लौटा</string>
-    <string name="pref_weather_debug_override">मौसम अधिलेखन लागू: %1$s</string>
-    <string name="weather_toolbar_title">मौसम सेटिंग्स</string>
-
-    <string name="miui_permission_title">अनुमति आवश्यक है</string>
-    <string name="miui_permission_message">पूर्वावलोकन खोलने के लिए MIUI को "लाइव वॉलपेपर सेवा" अनुमति को मैन्युअल रूप से सक्षम करने की आवश्यकता है।\n\nठीक टैप करें, फिर इसे अनुमति प्रबंधन में सक्षम करें।</string>
-    <string name="miui_permission_go_settings">सेटिंग्स पर जाएँ</string>
-    <string name="miui_permission_continue">जारी रखें</string>
-    <string name="miui_permission_open_failed">सेटिंग्स खोलने में असमर्थ</string>
-    <string name="about_title">परिचय</string>
-
-    <!-- आकाशगंगा वॉलपेपर प्राथमिकताएँ -->
-
-    <!-- आकाशगंगा 4 वॉलपेपर प्राथमिकताएँ -->
-
-    <!-- फेज़ बीम वॉलपेपर -->
-
-    <!-- Cube wallpaper -->
-
-
-    <!-- वैश्विक फ्रेम दर सेटिंग्स -->
-    <string name="pref_global_frame_rate">वैश्विक फ्रेम दर</string>
-
-    <string name="grass_color_default">डिफ़ॉल्ट</string>
-    <string name="grass_color_green">हरा</string>
-    <string name="grass_color_blue">नीला</string>
-    <string name="grass_color_red">लाल</string>
-    <string name="grass_color_pink">गुलाबी</string>
-    <string name="grass_color_purple">बैंगनी</string>
-    <string name="grass_color_yellow">पीला</string>
-    <string name="grass_color_black">काला</string>
-    <string name="grass_color_white">सफेद</string>
-
-    <!-- जादुई धुआँ वॉलपेपर -->
-    <string name="pref_fireworks_custom_background_title">अनुकूलित पृष्ठभूमि छवि</string>
-    <string name="pref_fireworks_custom_background_summary">अनुकूलित पृष्ठभूमि छवि चुनने के लिए टैप करें</string>
-    <string name="pref_fireworks_reset_background_title">डिफ़ॉल्ट पृष्ठभूमि पर रीसेट करें</string>
-    <string name="pref_fireworks_reset_background_summary">अनुकूलित पृष्ठभूमि हटाएँ और डिफ़ॉल्ट का उपयोग करें</string>
-
-    <!-- होलो सर्पिल वॉलपेपर -->
-
-    <!-- नीला समुद्र वॉलपेपर -->
-
-    <string name="openweather_api_key">आपकी_ओपनवेदर_एपीआई_कुंजी</string>
-
-    <!-- परिचय/अबाउट स्क्रीन -->
-    <string name="about_app_info">ऐप जानकारी</string>
-    <string name="about_project_intro">परियोजना परिचय</string>
-    <string name="about_links">लिंक और संपर्क</string>
-    <string name="about_official_website">ओपन सोर्स</string>
-    <string name="about_official_website_url">https://github.com/dynnbw/RE-Android-Live-Wallpapers</string>
-    <string name="about_email">ईमेल</string>
-    <string name="about_email_address">3471348199@qq.com</string>
-    <string name="about_email_address_alt">xujiekai508@gmail.com</string>
-    <string name="about_qq">QQ चैनल</string>
-    
-    <string name="about_bilibili">बिलिबिली</string>
-    <string name="about_bilibili_url">https://space.bilibili.com/470023065</string>
-    <string name="about_feedback">प्रतिक्रिया</string>
-    <string name="about_feedback_contact">प्रतिक्रिया के लिए, कृपया उपरोक्त संपर्क जानकारी का उपयोग करें।</string>
-    <string name="about_thanks">आभार</string>
-    <string name="about_thanks_original">मूल लेखकों के लिए धन्यवाद</string>
-    <string name="about_thanks_original_detail">मूल: मीडियाटेक, गूगल, सैमसंग</string>
-
-    <string name="about_developer">डेवलपर</string>
-    <string name="about_author">लेखक</string>
-    <string name="about_author_detail">念. और योगदानकर्ता</string>
-    <string name="about_disclaimer">अस्वीकरण</string>
-    <string name="about_disclaimer_title">केवल सीखने और संचार के लिए</string>
-    <string name="about_disclaimer_detail">यह परियोजना केवल गैर-व्यावसायिक, शैक्षिक उपयोग के लिए है। सभी अधिकार मूल कॉपीराइट धारकों के हैं।</string>
-    <string name="app_version_summary">संस्करण: %1$s</string>
-    <string name="no_browser_found">कोई ब्राउज़र नहीं मिला</string>
-    <string name="no_email_found">कोई ईमेल ऐप नहीं मिला</string>
-    <!-- 版本更新 -->
-    <string name="check_for_updates">अपडेट जांचें</string>
+    <string name="pref_weather_refresh_now">मौसम अभी ताज़ा करें</string>
+    <string name="pref_weather_refresh_now_failed">मौसम ताज़ा विफल</string>
+    <string name="pref_weather_refresh_now_success">मौसम ताज़ा पूरा हुआ</string>
+    <string name="pref_weather_source_action_api">API सेट करें</string>
+    <string name="pref_weather_source_action_guide">गाइड</string>
+    <string name="pref_weather_source_cma">चीन मौसम विज्ञान प्रशासन</string>
+    <string name="pref_weather_source_cma_note">कुंजी आवश्यक नहीं, केवल मुख्य भूमि चीन</string>
+    <string name="pref_weather_source_openmeteo">Open-Meteo</string>
+    <string name="pref_weather_source_openmeteo_note">कुंजी आवश्यक नहीं, दुनिया भर में</string>
+    <string name="pref_weather_source_openweather">OpenWeather</string>
+    <string name="pref_weather_source_openweather_note">API कुंजी आवश्यक</string>
+    <string name="pref_weather_source_title">मौसम डेटा स्रोत</string>
+    <string name="pref_weather_update_interval">मौसम अद्यतन अंतराल</string>
+    <string name="reset_action_confirm">पुनर्स्थापित करें</string>
+    <string name="reset_all_settings_done">सभी सेटिंग्स डिफ़ॉल्ट पर पुनर्स्थापित</string>
+    <string name="reset_all_settings_message">सभी वॉलपेपर और वैश्विक सेटिंग्स को उनके डिफ़ॉल्ट मानों पर पुनर्स्थापित करें?</string>
+    <string name="reset_all_settings_title">सभी डिफ़ॉल्ट पुनर्स्थापित करें</string>
+    <string name="reset_current_settings_summary">इस वॉलपेपर की सेटिंग्स को डिफ़ॉल्ट पर पुनर्स्थापित करें</string>
+    <string name="reset_current_settings_title">डिफ़ॉल्ट सेटिंग्स पुनर्स्थापित करें</string>
+    <string name="settings_title">लाइव वॉलपेपर सेटिंग्स</string>
     <string name="up_to_date_message">आप अपडेट हैं (v%1$s)</string>
     <string name="update_available_title">नया संस्करण v%1$s</string>
     <string name="update_button">डाउनलोड करें</string>
-    <string name="update_later_button">बाद में</string>
     <string name="update_check_failed">अपडेट जांच विफल: %1$s</string>
     <string name="update_downloading_title">अपडेट डाउनलोड हो रहा है…</string>
-    <string name="config_open_browser_failed">ब्राउज़र खोलने में असमर्थ</string>
-    <string name="fireworks_custom_background_set_toast">अनुकूलित पृष्ठभूमि सेट है। प्रभावी होने के लिए वॉलपेपर पुनः लागू करें।</string>
-    <string name="fireworks_background_reset_toast">डिफ़ॉल्ट पृष्ठभूमि पुनर्स्थापित</string>
-    <string name="reset_all_settings_title">सभी डिफ़ॉल्ट पुनर्स्थापित करें</string>
-    <string name="reset_all_settings_message">सभी वॉलपेपर और वैश्विक सेटिंग्स को उनके डिफ़ॉल्ट मानों पर पुनर्स्थापित करें?</string>
-    <string name="reset_all_settings_done">सभी सेटिंग्स डिफ़ॉल्ट पर पुनर्स्थापित</string>
-    <string name="reset_current_settings_title">डिफ़ॉल्ट सेटिंग्स पुनर्स्थापित करें</string>
-    <string name="reset_current_settings_summary">इस वॉलपेपर की सेटिंग्स को डिफ़ॉल्ट पर पुनर्स्थापित करें</string>
-    <string name="reset_action_confirm">पुनर्स्थापित करें</string>
-
-    <string name="pref_use_vulkan_title">Vulkan रेंडरर</string>
-    <string name="pref_use_vulkan_summary">बेहतर प्रदर्शन के लिए Vulkan का उपयोग करें (वॉलपेपर फिर से लागू करें)</string>
-    <string name="pref_disabled_prefix">[अक्षम]</string>
-
-    <!-- Luminous dots wallpaper -->
-
-    <!-- Nixie tube wallpaper -->
-    <string name="wallpaper_nixietube_desc">ग्लो-ट्यूब डिस्प्ले: डिफ़ॉल्ट रूप से सुंदर घड़ी, ऑडियो चलने पर VU मीटर</string>
-
-    <!-- GeekLog wallpaper -->
-    <!-- 壁纸磁贴占位格（反馈入口）：壁纸数量为奇数时补在最后一格 -->
-    <string name="grid_feedback_title">फ़ीडबैक और अनुरोध</string>
-    <string name="grid_feedback_caption">GitHub पर issue बनाएँ</string>
+    <string name="update_later_button">बाद में</string>
+    <string name="wallpapers">आरईएंड्रॉइड लाइव वॉलपेपर</string>
+    <string name="weather_toolbar_title">मौसम सेटिंग्स</string>
 </resources>

@@ -17,248 +17,133 @@
 */
  -->
 
-<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-
-    <!-- General -->
-    
-    <!-- Application name -->
-    <string name="wallpapers">REAndroid 動態壁紙</string>
+<resources>
+    <string name="about_app_info">應用信息</string>
+    <string name="about_author">作者</string>
+    <string name="about_author_detail">念.</string>
+    <string name="about_bilibili">Bilibili主頁</string>
+    <string name="about_bilibili_url">https://space.bilibili.com/470023065</string>
+    <string name="about_developer">開發者</string>
+    <string name="about_disclaimer">免責聲明</string>
+    <string name="about_disclaimer_detail">本項目僅供非商業、學習交流使用，所有權歸原著作權人所有。</string>
+    <string name="about_disclaimer_title">僅供學習與交流</string>
+    <string name="about_email">郵箱</string>
+    <string name="about_email_address">3471348199@qq.com</string>
+    <string name="about_email_address_alt">xujiekai508@gmail.com</string>
+    <string name="about_feedback">反饋</string>
+    <string name="about_feedback_contact">反饋請通過上述聯繫方式</string>
+    <string name="about_links">鏈接與聯繫方式</string>
+    <string name="about_official_website">開源項目</string>
+    <string name="about_official_website_url">https://github.com/dynnbw/RE-Android-Live-Wallpapers</string>
+    <string name="about_qq">QQ頻道</string>
+    <!-- 未翻译: about_qq_url -->
+    <string name="about_thanks">致謝</string>
+    <string name="about_thanks_original">感謝原作者</string>
+    <string name="about_thanks_original_detail">原作者：MediaTek、Google、Samsung</string>
+    <string name="about_title">關於</string>
+    <!-- 未翻译: action_clear_debug_log -->
+    <!-- 未翻译: action_debug_location_override -->
+    <!-- 未翻译: action_export_debug_log -->
     <string name="app_name">REAndroid 動態壁紙</string>
-
-    <!-- Wallpapers: -->
-    
-
-    <!-- Wallpaper showing the camera preview -->
-
-    <!-- Flsorescence (荧光) Wallpaper -->
-    <string name="wallpaper_flsorescence">熒光</string>
-
-    <!-- Wallpaper showing grass and the sky -->
-    <string name="wallpaper_grass_vk">天空草地 Vulkan</string>
-
-    <!-- Wallpaper showing a galaxy -->
-
-    <!-- Wallpaper showing Black Hole -->
-
-    <!-- Wallpaper showing phase beam -->
-
-    <!-- Cube wallpaper -->
-
-    <!-- Wallpaper showing leaves floating on water -->
-
-    <!-- Wallpaper showing wild world -->
-
-    <!-- Wallpaper showing fireworks -->
-
-    <!-- Wallpaper showing windmills -->
-
-    <!-- Wallpaper showing ocean weather -->
-
-    <!-- Wallpaper showing deep sea -->
-
-    <!-- Wallpaper showing a clock -->
-
-
-    <!-- Wallpaper showing nexus -->
-
-    <!-- Wallpaper showing noise field -->
-    <string name="wallpaper_nebula">星雲</string>
-
-    <!-- Music visualization wallpapers -->
-
-    <!-- Polar clock: title of settings activity -->
+    <string name="app_version_summary">版本：%1$s</string>
+    <string name="check_for_updates">檢查更新</string>
     <string name="clock_settings">極地時鐘設置</string>
-    <!-- Polar clock: label for "show seconds" pref -->
-    <!-- Polar clock: label for "variable widths" pref -->
-    <!-- Polar clock: label for "palette" pref -->
-
-    <!-- Polar clock: palette name -->
-    <string name="palette_gray">鐵灰色</string>
-    <!-- Polar clock: palette name -->
-    <string name="palette_violet">午夜</string>
-    <!-- Polar clock: palette name -->
-    <string name="palette_matrix">綠屏</string>
-    <!-- Polar clock: palette name -->
-    <string name="palette_white_c">北極熊（動態）</string>
-    <!-- Polar clock: palette name -->
-    <string name="palette_black_c">黑洞（動態）</string>
-    <!-- Polar clock: palette name -->
-    <string name="palette_halloween">南瓜派</string>
-    <!-- Polar clock: palette name -->
-    <string name="palette_zenburn">異國水果沙拉</string>
-    <!-- Polar clock: palette name -->
-    <string name="palette_oceanic">藍色激光</string>
-
-    <!-- Settings UI -->
-    <string name="settings_title">壁紙設置</string>
-
-
-
-
-    <!-- Galaxy 壁紙偏好設置 -->
-
-    <!-- Black Hole 壁紙偏好設置 -->
-
-    <!-- 全局幀數設置 -->
-    <string name="pref_global_frame_rate">全局幀數</string>
-    <string name="pref_weather_refresh_now">立即刷新天氣</string>
-    <string name="pref_weather_refresh_now_success">天氣刷新完成</string>
-    <string name="pref_weather_refresh_now_failed">天氣刷新失敗</string>
+    <string name="config_open_browser_failed">無法打開瀏覽器</string>
+    <!-- 未翻译: debug_location_clear -->
+    <!-- 未翻译: debug_location_cleared -->
+    <!-- 未翻译: debug_location_format -->
+    <!-- 未翻译: debug_location_hint -->
+    <!-- 未翻译: debug_location_invalid -->
+    <!-- 未翻译: debug_location_message -->
+    <!-- 未翻译: debug_location_set -->
+    <!-- 未翻译: debug_location_title -->
+    <string name="deepsea_custom_background_summary">選擇背景圖片</string>
+    <string name="deepsea_custom_background_title">自定義背景</string>
+    <string name="deepsea_reset_background_summary">清除自定義背景並使用內置背景</string>
+    <string name="deepsea_reset_background_title">恢復默認背景</string>
+    <string name="fireworks_background_reset_toast">已恢復默認背景</string>
+    <string name="fireworks_custom_background_set_toast">自定義背景已設置，請重新設置壁紙以應用更改</string>
+    <string name="grid_feedback_caption">在 GitHub 提 Issue</string>
+    <!-- 壁纸磁贴占位格（反馈入口）：壁纸数量为奇数时补在最后一格 -->
+    <string name="grid_feedback_title">反饋與移植請求</string>
+    <!-- 未翻译: grid_feedback_url -->
+    <string name="miui_permission_go_settings">去設置</string>
+    <string name="miui_permission_message">小米系統需要手動授予「動態壁紙服務」權限，否則無法正常打開壁紙預覽。\n\n點擊確定後，請在權限管理頁面找到「動態壁紙服務」並開啟。</string>
+    <string name="miui_permission_open_failed">無法打開設置頁面</string>
+    <string name="miui_permission_title">需要授予權限</string>
+    <string name="no_browser_found">未找到瀏覽器</string>
+    <string name="no_email_found">未找到郵件應用</string>
+    <!-- 未翻译: openweather_api_key -->
     <string name="pref_apply_api_title">申請API</string>
-    <string name="pref_weather_update_interval">天氣更新間隔</string>
-    <string name="pref_weather_source_title">天氣資料來源</string>
-    <string name="pref_weather_source_openweather">OpenWeather</string>
-    <string name="pref_weather_source_openweather_note">需要 API 金鑰</string>
+    <string name="pref_fireworks_custom_background_summary">點擊選擇自定義背景圖片</string>
+    <string name="pref_fireworks_custom_background_title">自定義背景圖片</string>
+    <string name="pref_fireworks_grass_night_summary">星空與草地，煙花在草叢後綻放</string>
+    <string name="pref_fireworks_grass_night_title">草地夜景</string>
+    <string name="pref_fireworks_reset_background_summary">清除自定義背景，使用默認背景</string>
+    <string name="pref_fireworks_reset_background_title">恢復默認背景</string>
+    <string name="pref_global_frame_rate">全局幀數</string>
+    <string name="pref_microbes_color_mode_modern">新版</string>
+    <string name="pref_microbes_color_mode_original">原版</string>
+    <string name="pref_nexus_custom_background_summary">選擇背景圖片</string>
+    <string name="pref_nexus_custom_background_title">自定義背景</string>
+    <string name="pref_nexus_reset_background_summary">清除自定義背景並使用內置背景</string>
+    <string name="pref_nexus_reset_background_title">恢復默認背景</string>
+    <string name="pref_open_wallpaper_chooser">打開壁紙選擇器</string>
+    <string name="pref_open_wallpaper_picker">設定壁紙</string>
+    <string name="pref_open_wallpaper_picker_failed">不支持壁紙預覽</string>
+    <string name="pref_openweather_api_key_title">OpenWeather API 密鑰</string>
+    <string name="pref_use_vulkan_summary">使用 Vulkan 獲得更好效能（重新套用牆紙生效）</string>
+    <string name="pref_use_vulkan_title">Vulkan 渲染器</string>
+    <string name="pref_weather_api_guide_common">六、常見問題\n配置後無法獲取天氣：\n- 檢查 Key 是否複製完整，不要帶多餘空格或換行符。\n- 新生成的 APIKey 可能需要 10～30 分鐘才能生效，耐心等待後再測試。\n- 確認應用已開啟定位權限。</string>
+    <string name="pref_weather_api_guide_illustration">API 教程插圖</string>
+    <string name="pref_weather_api_guide_intro">OpenWeather API 密鑰獲取與配置完整教程。</string>
+    <string name="pref_weather_api_guide_link_text">https://openweathermap.org/</string>
+    <string name="pref_weather_api_guide_open_web_button">打開 OpenWeather 官網</string>
+    <string name="pref_weather_api_guide_prepare">一、前期準備\n- 一個可正常接收郵件的郵箱地址\n- 能正常訪問 OpenWeather 官網的網絡環境</string>
+    <string name="pref_weather_api_guide_step_config1">五、在壁紙應用中配置 APIKey\n1. 打開壁紙應用，點擊右上角的雲朵圖標（天氣設置入口）</string>
+    <string name="pref_weather_api_guide_step_config2">2. 在彈出的菜單中選擇 OpenWeather API 密鑰選項</string>
+    <string name="pref_weather_api_guide_step_config3">3. 在彈出的輸入框中粘貼你剛才複製的 APIKey，點擊確定保存。</string>
+    <string name="pref_weather_api_guide_step_config4">4. 配置完成後，點擊「立即刷新天氣」測試，如果壁紙能正常加載天氣信息，說明配置成功。</string>
+    <string name="pref_weather_api_guide_step_key1">四、獲取你的專屬 APIKey\n1. 驗證郵箱後，返回 OpenWeather 官網並登錄你的賬號。\n2. 登錄成功後，在個人中心頁面點擊導航欄的 API keys 選項</string>
+    <string name="pref_weather_api_guide_step_key2">3. 在 API 管理頁面，你會看到系統默認生成的 APIKey（通常命名為 Default，狀態為 Active），直接複製即可；也可以輸入名稱點擊 Generate 生成新的 Key。</string>
+    <string name="pref_weather_api_guide_step_key3">重要說明：免費版 APIKey 有調用限制，每分鐘最多 60 次、每天最多 1000 次，個人壁紙使用完全足夠。請勿將你的 APIKey 公開分享，避免被他人濫用導致限流。</string>
+    <string name="pref_weather_api_guide_step_register1">二、註冊 OpenWeather 賬號\n1. 打開 OpenWeather 官網（https://openweathermap.org/），點擊右上角橙色 Login 按鈕</string>
+    <string name="pref_weather_api_guide_step_register2">2. 在登錄頁面點擊 Create an Account</string>
+    <string name="pref_weather_api_guide_step_register3">3. 在註冊表單中填寫信息：\n Username：自定義用戶名（僅用於賬號標識）\n Enter email：填寫你的有效郵箱地址（後續驗證和找回賬號用）\n Password：設置賬號密碼\n Repeat password：再次輸入相同密碼\n填寫完成後提交註冊。</string>
+    <string name="pref_weather_api_guide_step_verify1">三、驗證你的郵箱\n1. 提交註冊後，頁面會提示：We have sent the confirmation link to xxx@xx.com. Please check your email.</string>
+    <string name="pref_weather_api_guide_step_verify2">2. 登錄你填寫的郵箱，找到來自 OpenWeather 的驗證郵件，點擊郵件中的 Verify your email 按鈕完成驗證。</string>
+    <string name="pref_weather_api_guide_step_verify3">如果未收到郵件，請檢查垃圾郵件或廣告郵件文件夾。</string>
+    <!-- 未翻译: pref_weather_debug_override -->
+    <!-- 未翻译: pref_weather_debug_restore -->
+    <!-- 未翻译: pref_weather_debug_title -->
+    <string name="pref_weather_last_refresh">最後刷新時間: %1$s</string>
+    <string name="pref_weather_last_refresh_unknown">最後刷新時間: 未知</string>
+    <string name="pref_weather_refresh_now">立即刷新天氣</string>
+    <string name="pref_weather_refresh_now_failed">天氣刷新失敗</string>
+    <string name="pref_weather_refresh_now_success">天氣刷新完成</string>
+    <string name="pref_weather_source_action_api">設定API</string>
+    <string name="pref_weather_source_action_guide">教學</string>
     <string name="pref_weather_source_cma">中國氣象局</string>
     <string name="pref_weather_source_cma_note">無需金鑰僅中國大陸</string>
     <string name="pref_weather_source_openmeteo">Open-Meteo</string>
     <string name="pref_weather_source_openmeteo_note">無需金鑰全球可用</string>
-    <string name="pref_weather_source_action_api">設定API</string>
-    <string name="pref_weather_source_action_guide">教學</string>
-    <string name="pref_openweather_api_key_title">OpenWeather API 密鑰</string>
-    <string name="weather_toolbar_title">天氣設置</string>
-    <string name="pref_weather_last_refresh">最後刷新時間: %1$s</string>
-    <string name="pref_weather_last_refresh_unknown">最後刷新時間: 未知</string>
-
-    <string name="grass_color_default">默認</string>
-    <string name="grass_color_green">綠色</string>
-    <string name="grass_color_blue">藍色</string>
-    <string name="grass_color_red">紅色</string>
-    <string name="grass_color_pink">粉色</string>
-    <string name="grass_color_purple">紫色</string>
-    <string name="grass_color_yellow">黃色</string>
-    <string name="grass_color_black">黑色</string>
-    <string name="grass_color_white">白色</string>
-
-    <!-- 魔法煙霧壁紙 -->
-
-    <!-- 光環螺旋壁紙 -->
-
-    <!-- 藍色海洋壁紙 -->
-
-    <string name="pref_open_wallpaper_picker">設定壁紙</string>
-    <string name="pref_open_wallpaper_picker_failed">不支持壁紙預覽</string>
-    <string name="pref_microbes_color_mode_original">原版</string>
-    <string name="pref_microbes_color_mode_modern">新版</string>
-    <string name="pref_open_wallpaper_chooser">打開壁紙選擇器</string>
-    <string name="pref_live_preview">實時預覽</string>
-    <string name="pref_nexus_custom_background_title">自定義背景</string>
-    <string name="pref_nexus_custom_background_summary">選擇背景圖片</string>
-    <string name="pref_nexus_reset_background_title">恢復默認背景</string>
-    <string name="pref_nexus_reset_background_summary">清除自定義背景並使用內置背景</string>
-    <string name="nexus_bg_pyramid">默認</string>
-    <string name="nexus_bg_pyramid_1">舊版 1</string>
-    <string name="nexus_bg_pyramid_2">舊版 2</string>
-    <string name="nexus_bg_pyramid_3">舊版 3</string>
-    <string name="nexus_bg_pyramid_4">極簡</string>
-
-    <!-- Deep Sea settings -->
-    <string name="deepsea_custom_background_title">自定義背景</string>
-    <string name="deepsea_custom_background_summary">選擇背景圖片</string>
-    <string name="deepsea_reset_background_title">恢復默認背景</string>
-    <string name="deepsea_reset_background_summary">清除自定義背景並使用內置背景</string>
-
-    <!-- Nexus設置 -->
-
-
-    <string name="miui_permission_title">需要授予權限</string>
-    <string name="miui_permission_message">
-        小米系統需要手動授予「動態壁紙服務」權限，否則無法正常打開壁紙預覽。\n\n點擊確定後，請在權限管理頁面找到「動態壁紙服務」並開啟。</string>
-    <string name="miui_permission_go_settings">去設置</string>
-    <string name="miui_permission_continue">繼續</string>
-    <string name="miui_permission_open_failed">無法打開設置頁面</string>
-    <string name="about_title">關於</string>
-    <string name="about_app_info">應用信息</string>
-    <string name="about_project_intro">項目簡介</string>
-    <string name="about_links">鏈接與聯繫方式</string>
-    <string name="about_official_website">開源項目</string>
-    <string name="about_official_website_url">https://github.com/dynnbw/RE-Android-Live-Wallpapers</string>
-    <string name="about_email">郵箱</string>
-    <string name="about_email_address">3471348199@qq.com</string>
-    <string name="about_email_address_alt">xujiekai508@gmail.com</string>
-    <string name="about_qq">QQ頻道</string>
-    
-    <string name="about_feedback">反饋</string>
-    <string name="about_bilibili">Bilibili主頁</string>
-    <string name="about_bilibili_url">https://space.bilibili.com/470023065</string>
-    <string name="about_feedback_contact">反饋請通過上述聯繫方式</string>
-    <string name="about_thanks">致謝</string>
-    <string name="about_thanks_original">感謝原作者</string>
-    <string name="about_thanks_original_detail">原作者：MediaTek、Google、Samsung</string>
-
-    <string name="about_developer">開發者</string>
-    <string name="about_author">作者</string>
-    <string name="about_author_detail">念. </string>
-    <string name="about_disclaimer">免責聲明</string>
-    <string name="about_disclaimer_title">僅供學習與交流</string>
-    <string name="about_disclaimer_detail">本項目僅供非商業、學習交流使用，所有權歸原著作權人所有。</string>
-    <string name="app_version_summary">版本：%1$s</string>
-    <string name="no_browser_found">未找到瀏覽器</string>
-    <string name="no_email_found">未找到郵件應用</string>
-    <!-- 版本更新 -->
-    <string name="check_for_updates">檢查更新</string>
+    <string name="pref_weather_source_openweather">OpenWeather</string>
+    <string name="pref_weather_source_openweather_note">需要 API 金鑰</string>
+    <string name="pref_weather_source_title">天氣資料來源</string>
+    <string name="pref_weather_update_interval">天氣更新間隔</string>
+    <string name="reset_action_confirm">恢復</string>
+    <string name="reset_all_settings_done">已恢復全部默認配置</string>
+    <string name="reset_all_settings_message">確定要將所有壁紙和全局設置恢復為默認值嗎？</string>
+    <string name="reset_all_settings_title">恢復全部默認配置</string>
+    <string name="reset_current_settings_summary">恢復當前壁紙的默認配置</string>
+    <string name="reset_current_settings_title">恢復默認配置</string>
+    <string name="settings_title">壁紙設置</string>
     <string name="up_to_date_message">已是最新版本 (v%1$s)</string>
     <string name="update_available_title">發現新版本 v%1$s</string>
     <string name="update_button">下載</string>
-    <string name="update_later_button">稍後</string>
     <string name="update_check_failed">檢查更新失敗：%1$s</string>
     <string name="update_downloading_title">正在下載更新…</string>
-    <string name="config_open_browser_failed">無法打開瀏覽器</string>
-    <string name="fireworks_custom_background_set_toast">自定義背景已設置，請重新設置壁紙以應用更改</string>
-    <string name="fireworks_background_reset_toast">已恢復默認背景</string>
-    <string name="pref_fireworks_custom_background_title">自定義背景圖片</string>
-    <string name="pref_fireworks_custom_background_summary">點擊選擇自定義背景圖片</string>
-    <string name="pref_fireworks_reset_background_title">恢復默認背景</string>
-    <string name="pref_fireworks_reset_background_summary">清除自定義背景，使用默認背景</string>
-    <string name="pref_fireworks_grass_night_title">草地夜景</string>
-    <string name="pref_fireworks_grass_night_summary">星空與草地，煙花在草叢後綻放</string>
-    <string name="reset_all_settings_title">恢復全部默認配置</string>
-    <string name="reset_all_settings_message">確定要將所有壁紙和全局設置恢復為默認值嗎？</string>
-    <string name="reset_all_settings_done">已恢復全部默認配置</string>
-    <string name="reset_current_settings_title">恢復默認配置</string>
-    <string name="reset_current_settings_summary">恢復當前壁紙的默認配置</string>
-    <string name="reset_action_confirm">恢復</string>
-    <string name="pref_weather_api_guide_intro">OpenWeather API 密鑰獲取與配置完整教程。</string>
-    <string name="pref_weather_api_guide_prepare">一、前期準備\n- 一個可正常接收郵件的郵箱地址\n- 能正常訪問 OpenWeather
-        官網的網絡環境</string>
-    <string name="pref_weather_api_guide_step_register1">二、註冊 OpenWeather 賬號\n1. 打開 OpenWeather
-        官網（https://openweathermap.org/），點擊右上角橙色 Login 按鈕</string>
-    <string name="pref_weather_api_guide_step_register2">2. 在登錄頁面點擊 Create an Account</string>
-    <string name="pref_weather_api_guide_step_register3">3. 在註冊表單中填寫信息：\n Username：自定義用戶名（僅用於賬號標識）\n
-        Enter email：填寫你的有效郵箱地址（後續驗證和找回賬號用）\n Password：設置賬號密碼\n Repeat password：再次輸入相同密碼\n填寫完成後提交註冊。</string>
-    <string name="pref_weather_api_guide_step_verify1">三、驗證你的郵箱\n1. 提交註冊後，頁面會提示：We have sent the
-        confirmation link to xxx@xx.com. Please check your email.</string>
-    <string name="pref_weather_api_guide_step_verify2">2. 登錄你填寫的郵箱，找到來自 OpenWeather 的驗證郵件，點擊郵件中的
-        Verify your email 按鈕完成驗證。</string>
-    <string name="pref_weather_api_guide_step_verify3">如果未收到郵件，請檢查垃圾郵件或廣告郵件文件夾。</string>
-    <string name="pref_weather_api_guide_step_key1">四、獲取你的專屬 APIKey\n1. 驗證郵箱後，返回 OpenWeather
-        官網並登錄你的賬號。\n2. 登錄成功後，在個人中心頁面點擊導航欄的 API keys 選項</string>
-    <string name="pref_weather_api_guide_step_key2">3. 在 API 管理頁面，你會看到系統默認生成的 APIKey（通常命名為
-        Default，狀態為 Active），直接複製即可；也可以輸入名稱點擊 Generate 生成新的 Key。</string>
-    <string name="pref_weather_api_guide_step_key3">重要說明：免費版 APIKey 有調用限制，每分鐘最多 60 次、每天最多 1000
-        次，個人壁紙使用完全足夠。請勿將你的 APIKey 公開分享，避免被他人濫用導致限流。</string>
-    <string name="pref_weather_api_guide_step_config1">五、在壁紙應用中配置 APIKey\n1.
-        打開壁紙應用，點擊右上角的雲朵圖標（天氣設置入口）</string>
-    <string name="pref_weather_api_guide_step_config2">2. 在彈出的菜單中選擇 OpenWeather API 密鑰選項</string>
-    <string name="pref_weather_api_guide_step_config3">3. 在彈出的輸入框中粘貼你剛才複製的 APIKey，點擊確定保存。</string>
-    <string name="pref_weather_api_guide_step_config4">4. 配置完成後，點擊「立即刷新天氣」測試，如果壁紙能正常加載天氣信息，說明配置成功。</string>
-    <string name="pref_weather_api_guide_common">六、常見問題\n配置後無法獲取天氣：\n- 檢查 Key 是否複製完整，不要帶多餘空格或換行符。\n-
-        新生成的 APIKey 可能需要 10～30 分鐘才能生效，耐心等待後再測試。\n- 確認應用已開啟定位權限。</string>
-    <string name="pref_weather_api_guide_illustration">API 教程插圖</string>
-    <string name="pref_weather_api_guide_link_text">https://openweathermap.org/</string>
-    <string name="pref_weather_api_guide_open_web_button">打開 OpenWeather 官網</string>
-
-    <string name="pref_use_vulkan_title">Vulkan 渲染器</string>
-    <string name="pref_use_vulkan_summary">使用 Vulkan 獲得更好效能（重新套用牆紙生效）</string>
-    <string name="pref_disabled_prefix">[已禁用]</string>
-
-    <!-- Luminous dots wallpaper -->
-
-    <!-- Nixie tube wallpaper -->
-    <string name="wallpaper_nixietube_desc">輝光管陣列：預設為優雅桌面時鐘，音訊響起時變身分貝儀</string>
-
-    <!-- GeekLog wallpaper -->
-    <!-- 壁纸磁贴占位格（反馈入口）：壁纸数量为奇数时补在最后一格 -->
-    <string name="grid_feedback_title">反饋與移植請求</string>
-    <string name="grid_feedback_caption">在 GitHub 提 Issue</string>
+    <string name="update_later_button">稍後</string>
+    <string name="wallpapers">REAndroid 動態壁紙</string>
+    <string name="weather_toolbar_title">天氣設置</string>
 </resources>

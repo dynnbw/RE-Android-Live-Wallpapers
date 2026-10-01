@@ -1,229 +1,149 @@
-<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+<!--
+    Copyright (C) 2026 The Reborn Android Live Wallpapers authors
 
-    <!-- Название приложения -->
-    <string name="wallpapers">REAndroid Живые обои</string>
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+    本文件是本项目自己的译文，不是 AOSP 派生 —— 带 AOSP 版权头的是另外几个语言文件。
+
+-->
+
+<resources>
+    <string name="about_app_info">Информация о приложении</string>
+    <string name="about_author">Автор</string>
+    <string name="about_author_detail">念. и участники</string>
+    <string name="about_bilibili">Bilibili</string>
+    <string name="about_bilibili_url">https://space.bilibili.com/470023065</string>
+    <string name="about_developer">Разработчик</string>
+    <string name="about_disclaimer">Отказ от ответственности</string>
+    <string name="about_disclaimer_detail">Этот проект предназначен только для некоммерческого использования и образовательных целей. Все права принадлежат правообладателям.</string>
+    <string name="about_disclaimer_title">Только для обучения и обмена</string>
+    <string name="about_email">Электронная почта</string>
+    <string name="about_email_address">3471348199@qq.com</string>
+    <string name="about_email_address_alt">xujiekai508@gmail.com</string>
+    <string name="about_feedback">Обратная связь</string>
+    <string name="about_feedback_contact">Для обратной связи используйте указанные контакты.</string>
+    <string name="about_links">Ссылки и контакты</string>
+    <string name="about_official_website">Открытый исходный код</string>
+    <string name="about_official_website_url">https://github.com/dynnbw/RE-Android-Live-Wallpapers</string>
+    <string name="about_qq">QQ Канал</string>
+    <!-- 未翻译: about_qq_url -->
+    <string name="about_thanks">Благодарности</string>
+    <string name="about_thanks_original">Спасибо оригинальным авторам</string>
+    <string name="about_thanks_original_detail">Оригинальные: MediaTek, Google, Samsung</string>
+    <string name="about_title">О программе</string>
+    <!-- 未翻译: action_clear_debug_log -->
+    <!-- 未翻译: action_debug_location_override -->
+    <!-- 未翻译: action_export_debug_log -->
     <string name="app_name">REAndroid Живые обои</string>
-
-
-    <!-- Обои Флуоресценция -->
-    <string name="wallpaper_flsorescence">Флуоресценция</string>
-
-    <!-- Обои -->
-    
-
-    <!-- Обои с предпросмотром камеры -->
-
-    <!-- Обои с травой и небом -->
-    <string name="wallpaper_grass_vk">Трава Vulkan</string>
-
-
-    <!-- Обои с галактикой -->
-    <string name="wallpaper_galaxy_vk">Галактика Vulkan</string>
-
-    <!-- Обои Галактика 4 -->
-
-    <!-- Обои с листьями на воде -->
-    <string name="wallpaper_fall_vk">Водяные листья Vulkan</string>
-
-    <!-- Обои Дикий мир -->
-
-    <!-- Обои Фейерверки -->
-
-    <!-- Обои Ветряные мельницы -->
-
-    <!-- Обои Океанская погода -->
-
-    <!-- Обои Глубокое море -->
-
-    <!-- Обои Полярные часы -->
-
-    <!-- Обои Nexus -->
-
-    <!-- Обои Шумовое поле -->
-    <string name="wallpaper_nebula">Туманность</string>
-
-    <!-- Обои музыкальной визуализации -->
-
-    <!-- Настройки полярных часов -->
+    <string name="app_version_summary">Версия: %1$s</string>
+    <string name="check_for_updates">Проверить обновления</string>
     <string name="clock_settings">Настройки полярных часов</string>
-
-    <!-- Названия палитр -->
-    <string name="palette_gray">Сталь</string>
-    <string name="palette_violet">Полночь</string>
-    <string name="palette_matrix">Зелёный экран</string>
-    <string name="palette_white_c">Белый медведь (динамический)</string>
-    <string name="palette_black_c">Чёрная дыра (динамическая)</string>
-    <string name="palette_halloween">Тыквенный пирог</string>
-    <string name="palette_zenburn">Винегрет с других планет</string>
-    <string name="palette_oceanic">Синий лазер</string>
-
-    <!-- Интерфейс настроек -->
-    <string name="settings_title">Настройки живых обоев</string>
-
-
+    <string name="config_open_browser_failed">Не удалось открыть браузер</string>
+    <!-- 未翻译: debug_location_clear -->
+    <!-- 未翻译: debug_location_cleared -->
+    <!-- 未翻译: debug_location_format -->
+    <!-- 未翻译: debug_location_hint -->
+    <!-- 未翻译: debug_location_invalid -->
+    <!-- 未翻译: debug_location_message -->
+    <!-- 未翻译: debug_location_set -->
+    <!-- 未翻译: debug_location_title -->
+    <!-- 未翻译: deepsea_custom_background_summary -->
+    <!-- 未翻译: deepsea_custom_background_title -->
+    <!-- 未翻译: deepsea_reset_background_summary -->
+    <!-- 未翻译: deepsea_reset_background_title -->
+    <string name="fireworks_background_reset_toast">Фон по умолчанию восстановлен</string>
+    <string name="fireworks_custom_background_set_toast">Пользовательский фон установлен. Повторно примените обои, чтобы изменения вступили в силу.</string>
+    <string name="grid_feedback_caption">Создать issue на GitHub</string>
+    <!-- 壁纸磁贴占位格（反馈入口）：壁纸数量为奇数时补在最后一格 -->
+    <string name="grid_feedback_title">Отзывы и запросы</string>
+    <!-- 未翻译: grid_feedback_url -->
+    <string name="miui_permission_go_settings">Перейти в настройки</string>
+    <string name="miui_permission_message">MIUI требует вручную включить разрешение «Служба живых обоев», чтобы открыть предпросмотр.\n\nНажмите ОК, затем включите его в управлении разрешениями.</string>
+    <string name="miui_permission_open_failed">Не удалось открыть настройки</string>
+    <string name="miui_permission_title">Требуется разрешение</string>
+    <string name="no_browser_found">Браузер не найден</string>
+    <string name="no_email_found">Почтовое приложение не найдено</string>
+    <string name="openweather_api_key">ВАШ_КЛЮЧ_OPENWEATHER_API</string>
+    <string name="pref_apply_api_title">Получить API</string>
+    <!-- 未翻译: pref_fireworks_custom_background_summary -->
+    <!-- 未翻译: pref_fireworks_custom_background_title -->
+    <!-- 未翻译: pref_fireworks_grass_night_summary -->
+    <!-- 未翻译: pref_fireworks_grass_night_title -->
+    <!-- 未翻译: pref_fireworks_reset_background_summary -->
+    <!-- 未翻译: pref_fireworks_reset_background_title -->
+    <string name="pref_global_frame_rate">Глобальная частота кадров</string>
+    <string name="pref_microbes_color_mode_modern">Новый</string>
+    <string name="pref_microbes_color_mode_original">Оригинал</string>
+    <!-- 未翻译: pref_nexus_custom_background_summary -->
+    <!-- 未翻译: pref_nexus_custom_background_title -->
+    <!-- 未翻译: pref_nexus_reset_background_summary -->
+    <!-- 未翻译: pref_nexus_reset_background_title -->
+    <string name="pref_open_wallpaper_chooser">Открыть выбор обоев</string>
     <string name="pref_open_wallpaper_picker">Установить обои</string>
     <string name="pref_open_wallpaper_picker_failed">Предпросмотр обоев не поддерживается</string>
-    <string name="pref_open_wallpaper_chooser">Открыть выбор обоев</string>
-    <string name="pref_live_preview">Живой предпросмотр</string>
-    <string name="pref_microbes_color_mode_original">Оригинал</string>
-    <string name="pref_microbes_color_mode_modern">Новый</string>
-    <string name="pref_nexus_custom_background_title">Пользовательский фон</string>
-    <string name="pref_nexus_custom_background_summary">Выбрать фоновое изображение</string>
-    <string name="pref_nexus_reset_background_title">Сбросить фон</string>
-    <string name="pref_nexus_reset_background_summary">Очистить пользовательский фон и использовать встроенный</string>
-    <string name="nexus_bg_pyramid">Пирамида</string>
-    <string name="nexus_bg_pyramid_1">Пирамида 1</string>
-    <string name="nexus_bg_pyramid_2">Пирамида 2</string>
-    <string name="nexus_bg_pyramid_3">Пирамида 3</string>
-    <string name="nexus_bg_pyramid_4">Минималистичная</string>
-
-    <!-- Настройки Глубокого моря -->
-    <string name="deepsea_custom_background_title">Пользовательский фон</string>
-    <string name="deepsea_custom_background_summary">Выбрать фоновое изображение</string>
-    <string name="deepsea_reset_background_title">Сбросить фон</string>
-    <string name="deepsea_reset_background_summary">Очистить пользовательский фон и использовать встроенный</string>
-
-    <!-- Расширенные настройки Nexus -->
-
-    <string name="pref_weather_update_interval">Интервал обновления погоды</string>
-    <string name="pref_weather_source_title">Источник данных о погоде</string>
-    <string name="pref_weather_source_openweather">OpenWeather</string>
-    <string name="pref_weather_source_openweather_note">Требуется API-ключ</string>
-    <string name="pref_weather_source_cma">Метеослужба Китая</string>
-    <string name="pref_weather_source_cma_note">Ключ не нужен, только материковый Китай</string>
-    <string name="pref_weather_source_openmeteo">Open-Meteo</string>
-    <string name="pref_weather_source_openmeteo_note">Без ключа, по всему миру</string>
-    <string name="pref_weather_source_action_api">Настроить API</string>
-    <string name="pref_weather_source_action_guide">Руководство</string>
-    <string name="pref_weather_refresh_now">Обновить погоду сейчас</string>
-    <string name="pref_weather_refresh_now_success">Обновление погоды завершено</string>
-    <string name="pref_weather_refresh_now_failed">Не удалось обновить погоду</string>
     <string name="pref_openweather_api_key_title">API-ключ OpenWeather</string>
-    <string name="pref_apply_api_title">Получить API</string>
+    <string name="pref_use_vulkan_summary">Использовать Vulkan для лучшей производительности (переприменить обои)</string>
+    <string name="pref_use_vulkan_title">Vulkan рендерер</string>
+    <string name="pref_weather_api_guide_common">Шаг 6: Поиск и устранение неисправностей\n- Убедитесь, что ключ скопирован полностью без лишних пробелов или переносов строк.\n- Новый API-ключ может активироваться 10–30 минут; подождите и попробуйте снова.\n- Убедитесь, что разрешение на определение местоположения включено в приложении.</string>
+    <string name="pref_weather_api_guide_illustration">Иллюстрация руководства по API</string>
     <string name="pref_weather_api_guide_intro">Руководство по настройке API-ключа OpenWeather.</string>
+    <string name="pref_weather_api_guide_link_text">https://openweathermap.org/</string>
+    <string name="pref_weather_api_guide_open_web_button">Открыть сайт OpenWeather</string>
     <string name="pref_weather_api_guide_prepare">Шаг 1: Подготовка\n- Адрес электронной почты, способный получать проверочные сообщения\n- Сетевая среда, имеющая доступ к сайту OpenWeather</string>
-    <string name="pref_weather_api_guide_step_register1">Шаг 2: Зарегистрируйте учетную запись OpenWeather\n1. Откройте https://openweathermap.org/ и нажмите оранжевую кнопку «Login» в правом верхнем углу (см. изображение 1).</string>
-    <string name="pref_weather_api_guide_step_register2">2. На странице входа нажмите «Create an Account».</string>
-    <string name="pref_weather_api_guide_step_register3">3. Заполните регистрационную форму (см. изображение 3):\n    Имя пользователя: пользовательское имя для идентификации учетной записи\n    Электронная почта: ваш действующий email для проверки и восстановления учётной записи\n    Пароль: установите пароль\n    Повторите пароль: введите тот же пароль ещё раз\nОтправьте форму для регистрации.</string>
-    <string name="pref_weather_api_guide_step_verify1">Шаг 3: Подтвердите вашу электронную почту\n1. После регистрации страница показывает: Мы отправили ссылку для подтверждения на xxx@xx.com. Пожалуйста, проверьте вашу почту. 2. Откройте вашу почту, найдите сообщение от OpenWeather и нажмите кнопку «Verify your email», чтобы завершить подтверждение (см. изображение 5).\nЕсли вы не получили письмо, проверьте папки «Спам» или «Акции».</string>
-    <string name="pref_weather_api_guide_step_verify2">2. Откройте вашу почту, найдите сообщение от OpenWeather и нажмите кнопку «Verify your email», чтобы завершить подтверждение.</string>
-    <string name="pref_weather_api_guide_step_verify3">Если вы не получили письмо, проверьте папки «Спам» или «Акции».</string>
-    <string name="pref_weather_api_guide_step_key1">Шаг 4: Получите ваш API-ключ\n1. После подтверждения вернитесь на сайт OpenWeather и войдите.\n2. В панели управления вашей учётной записью откройте «API Keys» в навигационном меню.</string>
-    <string name="pref_weather_api_guide_step_key2">3. На странице управления API скопируйте сгенерированный по умолчанию ключ (обычно называется «Default», статус «Active») или введите имя и нажмите «Generate», чтобы создать новый ключ.</string>
-    <string name="pref_weather_api_guide_step_key3">Важно: бесплатные ключи ограничены 60 вызовами в минуту и 1000 в день, что достаточно для личного использования. Не публикуйте ваш ключ, чтобы избежать злоупотреблений и ограничения учётной записи.</string>
     <string name="pref_weather_api_guide_step_config1">Шаг 5: Настройте API-ключ в приложении обоев\n1. Откройте приложение обоев и нажмите на значок облака в правом верхнем углу.</string>
     <string name="pref_weather_api_guide_step_config2">2. Во всплывающем меню выберите «API-ключ OpenWeather».</string>
     <string name="pref_weather_api_guide_step_config3">3. Вставьте скопированный API-ключ в поле ввода и нажмите «Подтвердить», чтобы сохранить.</string>
     <string name="pref_weather_api_guide_step_config4">4. Нажмите «Обновить погоду сейчас», чтобы проверить. Если обои нормально загружают информацию о погоде, настройка выполнена успешно.</string>
-    <string name="pref_weather_api_guide_common">Шаг 6: Поиск и устранение неисправностей\n- Убедитесь, что ключ скопирован полностью без лишних пробелов или переносов строк.\n- Новый API-ключ может активироваться 10–30 минут; подождите и попробуйте снова.\n- Убедитесь, что разрешение на определение местоположения включено в приложении.</string>
-    <string name="pref_weather_api_guide_illustration">Иллюстрация руководства по API</string>
-    <string name="pref_weather_api_guide_link_text">https://openweathermap.org/</string>
-    <string name="pref_weather_api_guide_open_web_button">Открыть сайт OpenWeather</string>
+    <string name="pref_weather_api_guide_step_key1">Шаг 4: Получите ваш API-ключ\n1. После подтверждения вернитесь на сайт OpenWeather и войдите.\n2. В панели управления вашей учётной записью откройте «API Keys» в навигационном меню.</string>
+    <string name="pref_weather_api_guide_step_key2">3. На странице управления API скопируйте сгенерированный по умолчанию ключ (обычно называется «Default», статус «Active») или введите имя и нажмите «Generate», чтобы создать новый ключ.</string>
+    <string name="pref_weather_api_guide_step_key3">Важно: бесплатные ключи ограничены 60 вызовами в минуту и 1000 в день, что достаточно для личного использования. Не публикуйте ваш ключ, чтобы избежать злоупотреблений и ограничения учётной записи.</string>
+    <string name="pref_weather_api_guide_step_register1">Шаг 2: Зарегистрируйте учетную запись OpenWeather\n1. Откройте https://openweathermap.org/ и нажмите оранжевую кнопку «Login» в правом верхнем углу (см. изображение 1).</string>
+    <string name="pref_weather_api_guide_step_register2">2. На странице входа нажмите «Create an Account».</string>
+    <string name="pref_weather_api_guide_step_register3">3. Заполните регистрационную форму (см. изображение 3):\n Имя пользователя: пользовательское имя для идентификации учетной записи\n Электронная почта: ваш действующий email для проверки и восстановления учётной записи\n Пароль: установите пароль\n Повторите пароль: введите тот же пароль ещё раз\nОтправьте форму для регистрации.</string>
+    <string name="pref_weather_api_guide_step_verify1">Шаг 3: Подтвердите вашу электронную почту\n1. После регистрации страница показывает: Мы отправили ссылку для подтверждения на xxx@xx.com. Пожалуйста, проверьте вашу почту. 2. Откройте вашу почту, найдите сообщение от OpenWeather и нажмите кнопку «Verify your email», чтобы завершить подтверждение (см. изображение 5).\nЕсли вы не получили письмо, проверьте папки «Спам» или «Акции».</string>
+    <string name="pref_weather_api_guide_step_verify2">2. Откройте вашу почту, найдите сообщение от OpenWeather и нажмите кнопку «Verify your email», чтобы завершить подтверждение.</string>
+    <string name="pref_weather_api_guide_step_verify3">Если вы не получили письмо, проверьте папки «Спам» или «Акции».</string>
+    <string name="pref_weather_debug_override">Применено переопределение погоды: %1$s</string>
+    <string name="pref_weather_debug_restore">Возвращена стандартная логика погоды</string>
+    <string name="pref_weather_debug_title">Отладка погоды</string>
     <string name="pref_weather_last_refresh">Последнее обновление: %1$s</string>
     <string name="pref_weather_last_refresh_unknown">Последнее обновление: неизвестно</string>
-    <string name="pref_weather_debug_title">Отладка погоды</string>
-    <string name="pref_weather_debug_restore">Возвращена стандартная логика погоды</string>
-    <string name="pref_weather_debug_override">Применено переопределение погоды: %1$s</string>
-    <string name="weather_toolbar_title">Настройки погоды</string>
-
-    <string name="miui_permission_title">Требуется разрешение</string>
-    <string name="miui_permission_message">MIUI требует вручную включить разрешение «Служба живых обоев», чтобы открыть предпросмотр.\n\nНажмите ОК, затем включите его в управлении разрешениями.</string>
-    <string name="miui_permission_go_settings">Перейти в настройки</string>
-    <string name="miui_permission_continue">Продолжить</string>
-    <string name="miui_permission_open_failed">Не удалось открыть настройки</string>
-    <string name="about_title">О программе</string>
-
-    <!-- Настройки обоев Галактика -->
-
-    <!-- Настройки обоев Галактика 4 -->
-
-    <!-- Обои Блики и лучи -->
-
-    <!-- Cube wallpaper -->
-
-
-    <!-- Глобальные настройки частоты кадров -->
-    <string name="pref_global_frame_rate">Глобальная частота кадров</string>
-
-    <string name="grass_color_default">По умолчанию</string>
-    <string name="grass_color_green">Зелёный</string>
-    <string name="grass_color_blue">Синий</string>
-    <string name="grass_color_red">Красный</string>
-    <string name="grass_color_pink">Розовый</string>
-    <string name="grass_color_purple">Фиолетовый</string>
-    <string name="grass_color_yellow">Жёлтый</string>
-    <string name="grass_color_black">Чёрный</string>
-    <string name="grass_color_white">Белый</string>
-
-    <!-- Обои Волшебный дым -->
-    <string name="pref_fireworks_custom_background_title">Пользовательское фоновое изображение</string>
-    <string name="pref_fireworks_custom_background_summary">Нажмите, чтобы выбрать пользовательское фоновое изображение</string>
-    <string name="pref_fireworks_reset_background_title">Сбросить на фон по умолчанию</string>
-    <string name="pref_fireworks_reset_background_summary">Удалить пользовательский фон и использовать стандартный</string>
-
-    <!-- Обои Голографическая спираль -->
-
-    <!-- Обои Синее море -->
-
-    <string name="openweather_api_key">ВАШ_КЛЮЧ_OPENWEATHER_API</string>
-
-    <!-- Экран О программе -->
-    <string name="about_app_info">Информация о приложении</string>
-    <string name="about_project_intro">Описание проекта</string>
-    <string name="about_links">Ссылки и контакты</string>
-    <string name="about_official_website">Открытый исходный код</string>
-    <string name="about_official_website_url">https://github.com/dynnbw/RE-Android-Live-Wallpapers</string>
-    <string name="about_email">Электронная почта</string>
-    <string name="about_email_address">3471348199@qq.com</string>
-    <string name="about_email_address_alt">xujiekai508@gmail.com</string>
-    <string name="about_qq">QQ Канал</string>
-    
-    <string name="about_bilibili">Bilibili</string>
-    <string name="about_bilibili_url">https://space.bilibili.com/470023065</string>
-    <string name="about_feedback">Обратная связь</string>
-    <string name="about_feedback_contact">Для обратной связи используйте указанные контакты.</string>
-    <string name="about_thanks">Благодарности</string>
-    <string name="about_thanks_original">Спасибо оригинальным авторам</string>
-    <string name="about_thanks_original_detail">Оригинальные: MediaTek, Google, Samsung</string>
-
-    <string name="about_developer">Разработчик</string>
-    <string name="about_author">Автор</string>
-    <string name="about_author_detail">念. и участники</string>
-    <string name="about_disclaimer">Отказ от ответственности</string>
-    <string name="about_disclaimer_title">Только для обучения и обмена</string>
-    <string name="about_disclaimer_detail">Этот проект предназначен только для некоммерческого использования и образовательных целей. Все права принадлежат правообладателям.</string>
-    <string name="app_version_summary">Версия: %1$s</string>
-    <string name="no_browser_found">Браузер не найден</string>
-    <string name="no_email_found">Почтовое приложение не найдено</string>
-    <!-- 版本更新 -->
-    <string name="check_for_updates">Проверить обновления</string>
+    <string name="pref_weather_refresh_now">Обновить погоду сейчас</string>
+    <string name="pref_weather_refresh_now_failed">Не удалось обновить погоду</string>
+    <string name="pref_weather_refresh_now_success">Обновление погоды завершено</string>
+    <string name="pref_weather_source_action_api">Настроить API</string>
+    <string name="pref_weather_source_action_guide">Руководство</string>
+    <string name="pref_weather_source_cma">Метеослужба Китая</string>
+    <string name="pref_weather_source_cma_note">Ключ не нужен, только материковый Китай</string>
+    <string name="pref_weather_source_openmeteo">Open-Meteo</string>
+    <string name="pref_weather_source_openmeteo_note">Без ключа, по всему миру</string>
+    <string name="pref_weather_source_openweather">OpenWeather</string>
+    <string name="pref_weather_source_openweather_note">Требуется API-ключ</string>
+    <string name="pref_weather_source_title">Источник данных о погоде</string>
+    <string name="pref_weather_update_interval">Интервал обновления погоды</string>
+    <string name="reset_action_confirm">Восстановить</string>
+    <string name="reset_all_settings_done">Все настройки восстановлены до значений по умолчанию</string>
+    <string name="reset_all_settings_message">Восстановить все настройки обоев и глобальные параметры до значений по умолчанию?</string>
+    <string name="reset_all_settings_title">Восстановить все настройки по умолчанию</string>
+    <string name="reset_current_settings_summary">Восстановить настройки текущих обоев до значений по умолчанию</string>
+    <string name="reset_current_settings_title">Восстановить настройки по умолчанию</string>
+    <string name="settings_title">Настройки живых обоев</string>
     <string name="up_to_date_message">Установлена последняя версия (v%1$s)</string>
     <string name="update_available_title">Новая версия v%1$s</string>
     <string name="update_button">Скачать</string>
-    <string name="update_later_button">Позже</string>
     <string name="update_check_failed">Не удалось проверить обновления: %1$s</string>
     <string name="update_downloading_title">Загрузка обновления…</string>
-    <string name="config_open_browser_failed">Не удалось открыть браузер</string>
-    <string name="fireworks_custom_background_set_toast">Пользовательский фон установлен. Повторно примените обои, чтобы изменения вступили в силу.</string>
-    <string name="fireworks_background_reset_toast">Фон по умолчанию восстановлен</string>
-    <string name="reset_all_settings_title">Восстановить все настройки по умолчанию</string>
-    <string name="reset_all_settings_message">Восстановить все настройки обоев и глобальные параметры до значений по умолчанию?</string>
-    <string name="reset_all_settings_done">Все настройки восстановлены до значений по умолчанию</string>
-    <string name="reset_current_settings_title">Восстановить настройки по умолчанию</string>
-    <string name="reset_current_settings_summary">Восстановить настройки текущих обоев до значений по умолчанию</string>
-    <string name="reset_action_confirm">Восстановить</string>
-
-    <string name="pref_use_vulkan_title">Vulkan рендерер</string>
-    <string name="pref_use_vulkan_summary">Использовать Vulkan для лучшей производительности (переприменить обои)</string>
-    <string name="pref_disabled_prefix">[Отключено]</string>
-
-    <!-- Luminous dots wallpaper -->
-
-    <!-- Nixie tube wallpaper -->
-    <string name="wallpaper_nixietube_desc">Газоразрядный индикатор: по умолчанию изящные часы, при воспроизведении звука — VU-метр</string>
-
-    <!-- GeekLog wallpaper -->
-    <!-- 壁纸磁贴占位格（反馈入口）：壁纸数量为奇数时补在最后一格 -->
-    <string name="grid_feedback_title">Отзывы и запросы</string>
-    <string name="grid_feedback_caption">Создать issue на GitHub</string>
+    <string name="update_later_button">Позже</string>
+    <string name="wallpapers">REAndroid Живые обои</string>
+    <string name="weather_toolbar_title">Настройки погоды</string>
 </resources>
