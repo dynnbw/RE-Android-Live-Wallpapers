@@ -1,0 +1,726 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Spectrum &mdash; FFT &middot; WebGL</title>
+<style>
+  :root { --fg:#e8e8e8; --dim:#8a8a8a; --line:#2a2a2a; --warn:#ffcc66; }
+  * { box-sizing: border-box; }
+  html, body { margin:0; padding:0; height:100%; background:#000; overflow:hidden; }
+  body { font:12px/1.55 ui-monospace, SFMono-Regular, Menlo, Consolas, "Cascadia Mono", monospace; color:var(--fg); }
+  #gl { position:fixed; inset:0; width:100%; height:100%; display:block; background:#000; }
+  #hud {
+    position:fixed; left:12px; top:12px; max-width:min(430px, calc(100vw - 24px));
+    max-height:calc(100vh - 24px); overflow:auto; padding:10px 12px;
+    background:rgba(12,12,12,.82); border:1px solid var(--line); border-radius:8px;
+    backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
+  }
+  #hud.hidden { display:none; }
+  .row { display:flex; flex-wrap:wrap; gap:6px; }
+  button {
+    font:inherit; color:var(--fg); background:#1b1b1b; border:1px solid #333;
+    border-radius:6px; padding:3px 8px; cursor:pointer;
+  }
+  button:hover { background:#242424; }
+  button[aria-pressed="true"] { background:#2f4a2f; border-color:#4a7a4a; }
+  /* 只有采集出问题（被拒、没勾音频、等授权）时才会出现这一行 */
+  .warn { color:var(--warn); margin:6px 0 0; }
+</style>
+</head>
+<body>
+<canvas id="gl"></canvas>
+
+<div id="hud">
+  <div class="row">
+    <button data-src="idle"    aria-pressed="true">Idle</button>
+    <button data-src="synth"   aria-pressed="false">Test tone</button>
+    <button data-src="display" aria-pressed="false"
+            title="Capture system output: pick a browser tab and tick &quot;Share tab audio&quot;, or (on Windows) pick Entire screen and tick &quot;Share system audio&quot;">System output</button>
+    <button data-src="mic"     aria-pressed="false">Microphone</button>
+    <button data-src="silent"  aria-pressed="false">Silence</button>
+  </div>
+
+  <p class="warn" id="s-note" hidden></p>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ---------------------------------------------------------------
+  // 常量：逐条对应 MusicVisWaveGL / WaveScene（vis3 = FFT）
+  // ---------------------------------------------------------------
+  var LINE_COUNT = 1024;            // WaveScene.LINE_COUNT
+  var FFT_SIZE = 512;               // musicvis_fft_size 默认 "512"
+  var HALF = LINE_COUNT / 2;        // 512：线的 x 从 -512 到 511
+  var FADEOUT_LENGTH = 100, FADEOUT_FACTOR = 0.95, FADEIN_LENGTH = 15;
+  var FRAME_MS = 1000 / 50;         // 原版 GenericWaveRS: mHandler.postDelayed(mDrawCube, 20)
+
+  // 模型比例：AOSP 把"屏幕短边 = 480 行"写死（≈2/480）。musicvis_fit_screen 默认关，
+  // 所以这里也是定值 —— 竖屏恒有约 480 条可见，其余落在视口外。
+  var BASE_SCALE = 0.004165;
+
+  // 冰纹理（64×1 的竖向渐变），从 app 的 musicvis/drawable/musicvis_ice.png 原样取出
+  var ICE_PNG = 'iVBORw0KGgoAAAANSUhEUgAAAEAAAAABCAIAAADhDz9AAAAAAXNSR0IArs4c6QAAAAZiS0dEAP8A'
+    + '/wD/oL2nkwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9kKHQ4lKijwRJ8AAAAZdEVYdENvbW1lbnQA'
+    + 'Q3JlYXRlZCB3aXRoIEdJTVBXgQ4XAAAAUUlEQVQI12XKMQqAQBBD0W+VbOn9DzoZENZCVxQh1c/b9n1aeCAz'
+    + 'jIS99nShwRBa1xP99saXvIw4DhI6VOgm+a5J6KKaFB3SN87fL3O/ocKcnIX7Qwf5JT+eAAAAAElFTkSuQmCC';
+
+  var canvas = document.getElementById('gl');
+  var gl = canvas.getContext('webgl', { antialias: true, alpha: false, preserveDrawingBuffer: false })
+        || canvas.getContext('experimental-webgl', { antialias: true, alpha: false });
+  if (!gl) {
+    document.body.innerHTML = '<p style="color:#f88;padding:20px;font:14px monospace">' +
+      'This browser has no WebGL context.</p>';
+    return;
+  }
+
+  // ---------------------------------------------------------------
+  // 着色器：与 app 的 musicvis_wave_vs/fs.glsl 同一套（GLSL ES 3.00 → 100 的写法差异而已）
+  // ---------------------------------------------------------------
+  var VS = [
+    'attribute vec2 aPosition;',
+    'attribute vec2 aTexCoord;',
+    'uniform mat4 uMVP;',
+    'varying vec2 vTex;',
+    'void main() {',
+    '  vTex = aTexCoord;',
+    '  gl_Position = uMVP * vec4(aPosition, 0.0, 1.0);',
+    '}'
+  ].join('\n');
+
+  var FS = [
+    'precision mediump float;',
+    'varying vec2 vTex;',
+    'uniform sampler2D uTex;',
+    'void main() {',
+    '  gl_FragColor = texture2D(uTex, vTex);',
+    '}'
+  ].join('\n');
+
+  function compile(type, src) {
+    var s = gl.createShader(type);
+    gl.shaderSource(s, src);
+    gl.compileShader(s);
+    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+      throw new Error(gl.getShaderInfoLog(s) || 'shader compile failed');
+    }
+    return s;
+  }
+
+  var prog, loc;
+  try {
+    prog = gl.createProgram();
+    gl.attachShader(prog, compile(gl.VERTEX_SHADER, VS));
+    gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, FS));
+    gl.linkProgram(prog);
+    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
+      throw new Error(gl.getProgramInfoLog(prog) || 'link failed');
+    }
+  } catch (e) {
+    document.body.innerHTML = '<p style="color:#f88;padding:20px;font:14px monospace">' +
+      'Shader failed: ' + String(e.message || e) + '</p>';
+    return;
+  }
+  gl.useProgram(prog);
+  loc = {
+    aPosition: gl.getAttribLocation(prog, 'aPosition'),
+    aTexCoord: gl.getAttribLocation(prog, 'aTexCoord'),
+    uMVP:      gl.getUniformLocation(prog, 'uMVP'),
+    uTex:      gl.getUniformLocation(prog, 'uTex')
+  };
+
+  // ---- 贴图 ----
+  var texture = gl.createTexture();
+  var textureReady = false;
+  (function loadTexture() {
+    var img = new Image();
+    img.onload = function () {
+      gl.bindTexture(gl.TEXTURE_2D, texture);
+      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, img);
+      // 64×1 是 2 的幂，但仍然必须显式设过滤 —— WebGL 默认要 mipmap，不设就是全黑
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      textureReady = true;
+    };
+    img.onerror = function () { console.error('texture decode failed'); };
+    img.src = 'data:image/png;base64,' + ICE_PNG;
+  })();
+
+  // ---- 顶点缓冲：位置与纹理坐标各一条，和 app 一样是 1024 条线 × 2 个顶点 ----
+  var posData = new Float32Array(LINE_COUNT * 2 * 2);
+  var texData = new Float32Array(LINE_COUNT * 2 * 2);
+  var posBuf = gl.createBuffer();
+  var texBuf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, posBuf);
+  gl.bufferData(gl.ARRAY_BUFFER, posData, gl.DYNAMIC_DRAW);
+  gl.bindBuffer(gl.ARRAY_BUFFER, texBuf);
+  gl.bufferData(gl.ARRAY_BUFFER, texData, gl.DYNAMIC_DRAW);
+
+  gl.clearColor(0, 0, 0, 1);   // musicvis_bg_color 默认 #000000
+
+  // ---------------------------------------------------------------
+  // 场景状态：WaveScene 的字段（vis3 只走 FFT 那一条支路）
+  // ---------------------------------------------------------------
+  var pointData = new Float32Array(LINE_COUNT * 8);
+  var analyzer = new Int32Array(FFT_SIZE / 2);     // new int[capSize / 2]
+
+  var IDLE_WAVE = 0, IDLE_SIMULATE = 1, IDLE_FLAT = 2;
+  var idleMode = IDLE_WAVE;                        // musicvis_idle_mode 默认 "wave"
+  var idle = 0, waveCounter = 0, yRotation = 0;
+
+  var fadeoutcounter = 0, fadeincounter = 0;
+  var wave1pos = 0, wave1amp = 0, wave2pos = 0, wave2amp = 0;
+  var wave3pos = 0, wave3amp = 0, wave4pos = 0, wave4amp = 0;
+  var idleWave = new Float32Array(LINE_COUNT * 8);
+  var lastWaveCounter = 0;
+
+  // WaveScene.initPointData()
+  (function initPointData() {
+    for (var i = 0; i < LINE_COUNT; i++) {
+      pointData[i * 8]     = i - HALF;   // start X
+      pointData[i * 8 + 2] = 0;          // start S
+      pointData[i * 8 + 3] = 0;          // start T
+      pointData[i * 8 + 4] = i - HALF;   // end X
+      pointData[i * 8 + 6] = 1;          // end S
+      pointData[i * 8 + 7] = 0;          // end T
+    }
+  })();
+
+  var width = canvas.width, height = canvas.height;
+
+  function resize() {
+    var dpr = window.devicePixelRatio || 1;
+    var w = Math.max(1, Math.round(window.innerWidth  * dpr));
+    var h = Math.max(1, Math.round(window.innerHeight * dpr));
+    if (canvas.width !== w || canvas.height !== h) {
+      canvas.width = w; canvas.height = h;
+      gl.viewport(0, 0, w, h);
+    }
+    width = canvas.width; height = canvas.height;
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  // ---------------------------------------------------------------
+  // 合成频谱（WaveScene.synthesizeFft）—— 没有真实音频时它让画面"像在放音乐"
+  // ---------------------------------------------------------------
+  var NOTE_POOL = 12;
+  var rand = (function () { var s = 0x2f6e2b1; return function () {
+    s = (s * 1103515245 + 12345) & 0x7fffffff;
+    return s / 0x7fffffff;
+  }; })();
+  function randInt(n) { return Math.floor(rand() * n); }
+
+  var synthData = new Int32Array(FFT_SIZE);
+  var synthPhase = new Float32Array(FFT_SIZE / 2);
+  var binDrift = null;
+  var noteBin = new Int32Array(NOTE_POOL), noteAmp = new Float32Array(NOTE_POOL);
+  var noteWidth = new Float32Array(NOTE_POOL), noteDecay = new Float32Array(NOTE_POOL);
+  var fftFrame = 0, fftEnergy = 0.8, fftEnergyTarget = 0.8, fftEnergyTimer = 0;
+  var fftBeatEnv = 0, fftBeatTimer = 0;
+
+  function freeNoteSlot() {
+    for (var k = 0; k < NOTE_POOL; k++) if (noteAmp[k] < 1) return k;
+    return -1;
+  }
+
+  function spawnNarrowNote(bins) {
+    var slot = freeNoteSlot();
+    if (slot < 0) return;
+    var bin;
+    if (rand() < 0.5) {
+      bin = 1 + Math.floor(Math.pow(rand(), 1.6) * bins * 0.5);
+    } else {
+      bin = 1 + randInt(Math.max(1, bins - 2));
+    }
+    if (bin >= bins) bin = bins - 1;
+    noteBin[slot] = bin;
+    noteAmp[slot] = 25 + rand() * 55;
+    noteWidth[slot] = 2 + rand() * 4;
+    noteDecay[slot] = 0.90 + rand() * 0.05;
+  }
+
+  /** 返回"和 getFormattedData 同样单位"的 len：FFT 是数组长度的一半。 */
+  function synthesizeFft(expected) {
+    var bins = expected / 2;
+    fftFrame += 1;
+    if (binDrift === null) {
+      binDrift = new Float32Array(bins);
+      for (var d = 0; d < bins; d++) binDrift[d] = rand() * 2 - 1;
+    }
+    if (--fftEnergyTimer <= 0) { fftEnergyTimer = 120 + randInt(160); fftEnergyTarget = 0.8 + rand() * 0.5; }
+    fftEnergy += (fftEnergyTarget - fftEnergy) * 0.02;
+    if (--fftBeatTimer <= 0) { fftBeatTimer = 55 + randInt(160); fftBeatEnv = 1; }
+    fftBeatEnv *= 0.935;
+
+    // 重拍的头几帧：2–3 条**宽带**爆发
+    if (fftBeatEnv > 0.92) {
+      var bursts = 2 + (rand() < 0.5 ? 1 : 0);
+      for (var s = 0; s < bursts; s++) {
+        var slot = freeNoteSlot();
+        if (slot < 0) break;
+        var bin = 1 + Math.floor(Math.pow(rand(), 1.4) * bins * 0.6);
+        if (bin >= bins) bin = bins - 1;
+        noteBin[slot] = bin;
+        noteAmp[slot] = 40 + rand() * 70;
+        noteWidth[slot] = bins * (0.12 + rand() * 0.2);
+        noteDecay[slot] = 0.93 + rand() * 0.03;
+      }
+    }
+    // 之间夹着**窄峰**——那一条条来回跑的柱子
+    if (rand() < 0.8) spawnNarrowNote(bins);
+    if (rand() < 0.3) spawnNarrowNote(bins);
+
+    for (var k = 0; k < NOTE_POOL; k++) {
+      if (noteAmp[k] >= 1) {
+        noteAmp[k] *= noteDecay[k];
+        if (noteAmp[k] < 1) noteAmp[k] = 0;
+      }
+    }
+
+    for (var i = 1; i < bins; i++) {
+      binDrift[i] += (rand() * 2 - 1) * 0.14 - binDrift[i] * 0.03;
+      var f = i / bins;
+      var mag = (4.2 * (1 - f) * (1 - f) + 0.8) * (1 + 0.25 * binDrift[i]) * fftEnergy;
+      if (f < 0.3) mag += fftBeatEnv * 20 * (1 - f / 0.3);
+      for (var n = 0; n < NOTE_POOL; n++) {
+        if (noteAmp[n] < 1) continue;
+        var dist = Math.abs(i - noteBin[n]);
+        if (dist < noteWidth[n]) mag += noteAmp[n] * (1 - dist / noteWidth[n]);
+      }
+      if (mag > 127) mag = 127;
+      synthPhase[i] += 0.02 + 0.05 * f + 0.03 * Math.sin(fftFrame * 0.001 + i);
+      var re = Math.trunc(mag * Math.cos(synthPhase[i]));
+      var im = Math.trunc(mag * Math.sin(synthPhase[i]));
+      if (re > 127) re = 127; else if (re < -127) re = -127;
+      if (im > 127) im = 127; else if (im < -127) im = -127;
+      synthData[i * 2] = re;
+      synthData[i * 2 + 1] = im;
+    }
+    return expected / 2;
+  }
+
+  // ---------------------------------------------------------------
+  // 数据源（与 vis1 演示同一套：麦克风 / 屏幕共享的音频）
+  // ---------------------------------------------------------------
+  var source = 'idle';    // idle | synth | display | mic | silent
+  var audioCtx = null, analyser = null, timeData = null, srcNode = null;
+  var openKind = '', openStream = null, captureState = '';
+  var captureData = null;      // Int32Array(FFT_SIZE)：实部/虚部交错，和 Visualizer 的 8 位格式同位
+
+  function ensureAudio() {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    if (!analyser) {
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = FFT_SIZE * 2;              // 时域拿到 1024 点，取前 512
+      analyser.smoothingTimeConstant = 0;
+      timeData = new Float32Array(analyser.fftSize);
+      captureData = new Int32Array(FFT_SIZE);
+    }
+    return audioCtx;
+  }
+
+  function closeCapture() {
+    if (srcNode) { try { srcNode.disconnect(); } catch (e) { /* 已经断开 */ } srcNode = null; }
+    if (openStream) { openStream.getTracks().forEach(function (t) { t.stop(); }); openStream = null; }
+    openKind = '';
+  }
+
+  /**
+   * 打开一个采集源。kind = 'display'（系统输出）| 'mic'（麦克风）。
+   * Chrome 不允许只请求音频的屏幕共享，必须同时要 video，拿到后立刻把视频轨停掉。
+   */
+  function openCapture(kind) {
+    if (openKind === kind) return Promise.resolve();
+    var md = navigator.mediaDevices;
+    var req = md && (kind === 'display' ? md.getDisplayMedia : md.getUserMedia);
+    if (!req) {
+      captureState = 'No ' + (kind === 'display' ? 'getDisplayMedia' : 'getUserMedia') +
+        ' in this browser/context (common when opened from file://)';
+      return Promise.reject(new Error(captureState));
+    }
+    closeCapture();
+    var wants = kind === 'display'
+      ? { video: true, audio: true }
+      : { audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } };
+
+    return req.call(md, wants).then(function (stream) {
+      if (kind === 'display') {
+        if (!stream.getAudioTracks().length) {
+          stream.getTracks().forEach(function (t) { t.stop(); });
+          var noAudio = new Error('The source you picked has no audio — tick "Share tab audio" ' +
+            'in the picker (on Windows, picking "Entire screen" gives "Share system audio")');
+          noAudio.explained = true;
+          throw noAudio;
+        }
+        stream.getVideoTracks().forEach(function (t) { t.stop(); });
+      }
+      openKind = kind;
+      openStream = stream;
+      var ctx = ensureAudio();
+      srcNode = ctx.createMediaStreamSource(stream);
+      srcNode.connect(analyser);                     // 不接 destination，避免啸叫
+      captureState = (kind === 'display' ? 'System output ready' : 'Microphone ready') +
+        ' (source: ' + (stream.getAudioTracks()[0].label || 'unnamed') + ')';
+      stream.getAudioTracks()[0].onended = function () {
+        closeCapture();
+        if (source === kind) setSource('idle');
+      };
+    }).catch(function (err) {
+      captureState = err && err.explained ? err.message
+        : (kind === 'display' ? 'System output failed' : 'Microphone failed') +
+          ': ' + (err && err.message ? err.message : err) +
+          (kind === 'display' ? ' (NotAllowedError means the picker was cancelled)' : '');
+      throw err;
+    });
+  }
+
+  // ---- 512 点实数 FFT（原地、radix-2）→ 交错成 8 位量级的实部/虚部 ----
+  var fftRe = new Float32Array(FFT_SIZE), fftIm = new Float32Array(FFT_SIZE);
+
+  function fft(samples, out) {
+    var n = FFT_SIZE, i, j, bit;
+    // 汉宁窗：平台那边 Visualizer 自己也加窗，这是等价物
+    for (i = 0; i < n; i++) {
+      fftRe[i] = samples[i] * (0.5 - 0.5 * Math.cos(2 * Math.PI * i / (n - 1))) * 2;
+      fftIm[i] = 0;
+    }
+    for (i = 1, j = 0; i < n; i++) {
+      for (bit = n >> 1; j & bit; bit >>= 1) j ^= bit;
+      j ^= bit;
+      if (i < j) {
+        var t = fftRe[i]; fftRe[i] = fftRe[j]; fftRe[j] = t;
+        t = fftIm[i]; fftIm[i] = fftIm[j]; fftIm[j] = t;
+      }
+    }
+    for (var len = 2; len <= n; len <<= 1) {
+      var ang = -2 * Math.PI / len;
+      var wr = Math.cos(ang), wi = Math.sin(ang);
+      for (i = 0; i < n; i += len) {
+        var cr = 1, ci = 0;
+        for (var k = 0; k < len / 2; k++) {
+          var ur = fftRe[i + k], ui = fftIm[i + k];
+          var hv = i + k + len / 2;
+          var vr = fftRe[hv] * cr - fftIm[hv] * ci;
+          var vi = fftRe[hv] * ci + fftIm[hv] * cr;
+          fftRe[i + k] = ur + vr;  fftIm[i + k] = ui + vi;
+          fftRe[hv] = ur - vr;     fftIm[hv] = ui - vi;
+          var ncr = cr * wr - ci * wi;
+          ci = cr * wi + ci * wr;  cr = ncr;
+        }
+      }
+    }
+    // 满量程正弦 → 峰值 |X| = n/2，换算到 8 位格式的 127，与 app 喂进算法的量级一致
+    var scale = 254 / n;
+    for (i = 0; i < n / 2; i++) {
+      var re = Math.round(fftRe[i] * scale), im = Math.round(fftIm[i] * scale);
+      if (re > 127) re = 127; else if (re < -127) re = -127;
+      if (im > 127) im = 127; else if (im < -127) im = -127;
+      out[i * 2] = re;
+      out[i * 2 + 1] = im;
+    }
+    return out;
+  }
+
+  /** 真实的采集数据；null = 没有数据（len 0 → 交给 idle / 合成那一路）。 */
+  function currentData() {
+    if (source !== 'display' && source !== 'mic') return null;
+    if (!analyser) return null;
+    analyser.getFloatTimeDomainData(timeData);
+    return fft(timeData.subarray(0, FFT_SIZE), captureData);
+  }
+
+  // ---------------------------------------------------------------
+  // WaveScene.updateWaveData()（FFT 支路）
+  // ---------------------------------------------------------------
+  /**
+   * WaveScene.synthesizeData()：没有音频时用的合成数据。
+   * SIMULATE → 音乐样的频谱；FLAT → 全 0（画面上是一条躺平的线）。
+   * 返回值的单位与 getFormattedData 一致：FFT 是数组长度的一半。
+   */
+  function synthesizeData() {
+    if (idleMode === IDLE_FLAT) {
+      synthData.fill(0);
+      return FFT_SIZE / 2;
+    }
+    return synthesizeFft(FFT_SIZE);
+  }
+
+  function updateWaveData() {
+    var data = currentData();
+    var len = 0;
+    if (data) len = Math.trunc(data.length / 2);     // 实虚交错 → 复数箱数
+
+    if (len === 0) {
+      if (idleMode !== IDLE_WAVE) {
+        idle = 0;
+        len = synthesizeData();                      // 合成数据也走同一条 FFT 支路
+        if (len === 0) return;
+      } else {
+        if (idle === 0) idle = 1;
+        return;                                      // idle 时点数据由 applyIdleAndFade 填
+      }
+    }
+
+    len = Math.trunc(len / 2);                       // 原版：砍掉高频，只留低半段
+    if (len > analyzer.length) len = analyzer.length;
+    if (idle !== 0) idle = 0;
+
+    for (var i = 1; i < len - 1; i++) {
+      var v1 = data[i * 2], v2 = data[i * 2 + 1];
+      var newval = (v1 * v1 + v2 * v2) * (Math.trunc(i / 16) + 1);
+      var oldval = analyzer[i];
+      if (newval < oldval - 800) newval = oldval - 800;
+      analyzer[i] = newval;
+    }
+
+    // 把 len 个箱分到 width 条柱子上。
+    // 原版是线性均分；这里用 frac^1.5 —— 低频占的屏宽更多，频谱更像常见的分析器。
+    var outlen = LINE_COUNT;
+    var w = Math.min(width, outlen);
+    var skip = Math.trunc((outlen - w) / 2);
+    for (var b = 0; b < w; b++) {
+      var frac = b / w;
+      var binIdx = Math.floor(Math.pow(frac, 1.5) * (len - 1));
+      if (binIdx < 0) binIdx = 0;
+      if (binIdx >= len) binIdx = len - 1;
+      var val = analyzer[binIdx] / 8;
+      if (val < 1 && val > -1) val = 1;
+      var idx = (b + skip) * 8;
+      pointData[idx + 1] = val;
+      pointData[idx + 5] = -val;
+    }
+    waveCounter++;
+  }
+
+  // ---------------------------------------------------------------
+  // WaveScene.applyIdleAndFade() / makeIdleWave()
+  // ---------------------------------------------------------------
+  function makeIdleWave(points) {
+    var amp1 = Math.sin(0.007 * wave1amp) * 120;
+    var amp2 = Math.sin(0.023 * wave2amp) * 80;
+    var amp3 = Math.sin(0.011 * wave3amp) * 40;
+    var amp4 = Math.sin(0.031 * wave4amp) * 20;
+    var skip = Math.trunc((1024 - width) / 2);
+    if (skip < 0) skip = 0;
+    var end = 1024 - skip;
+    for (var i = skip; i < end; i++) {
+      var val = Math.sin(0.013 * (wave1pos + i)) * amp1 + Math.sin(0.029 * (wave2pos + i)) * amp2;
+      var off = Math.sin(0.005 * (wave3pos + i)) * amp3 + Math.sin(0.017 * (wave4pos + i)) * amp4;
+      if (val < 2 && val > -2) val = 2;
+      points[i * 8 + 1] = val + off;
+      points[i * 8 + 5] = -val + off;
+    }
+    wave1pos++; wave1amp++;
+    wave2pos--; wave2amp++;
+    wave3pos++; wave3amp++;
+    wave4pos++; wave4amp++;
+  }
+
+  function applyIdleAndFade() {
+    var w = Math.min(width, 1024);
+    var skip = Math.trunc((1024 - w) / 2);
+    var end = 1024 - skip;
+    var i, val;
+
+    if (idle !== 0) {
+      if (fadeoutcounter > 0) {
+        for (i = skip; i < end; i++) {
+          val = Math.abs(pointData[i * 8 + 1]) * FADEOUT_FACTOR;
+          if (val < 2) val = 2;
+          pointData[i * 8 + 1] = val;
+          pointData[i * 8 + 5] = -val;
+        }
+        fadeoutcounter--;
+        if (fadeoutcounter === 0) { wave1amp = 0; wave2amp = 0; wave3amp = 0; wave4amp = 0; }
+      } else {
+        makeIdleWave(pointData);
+      }
+      fadeincounter = FADEIN_LENGTH;
+    } else {
+      if (fadeincounter > 0 && fadeoutcounter === 0) {
+        makeIdleWave(idleWave);
+        if (lastWaveCounter !== waveCounter) {
+          lastWaveCounter = waveCounter;
+          for (i = skip; i < end; i++) {
+            val = Math.abs(pointData[i * 8 + 1]);
+            pointData[i * 8 + 1] = (val * (FADEIN_LENGTH - fadeincounter)
+              + idleWave[i * 8 + 1] * fadeincounter) / FADEIN_LENGTH;
+            pointData[i * 8 + 5] = (-val * (FADEIN_LENGTH - fadeincounter)
+              + idleWave[i * 8 + 5] * fadeincounter) / FADEIN_LENGTH;
+          }
+        }
+        fadeincounter--;
+        if (fadeincounter === 0) fadeoutcounter = FADEOUT_LENGTH;
+      } else {
+        fadeoutcounter = FADEOUT_LENGTH;
+      }
+    }
+  }
+
+  // ---------------------------------------------------------------
+  // WaveScene.updateBuffers() / updateMvp()
+  // ---------------------------------------------------------------
+  function updateBuffers() {
+    for (var i = 0; i < LINE_COUNT; i++) {
+      var b = i * 8, o = i * 4;
+      posData[o]     = pointData[b];
+      posData[o + 1] = pointData[b + 1];
+      posData[o + 2] = pointData[b + 4];
+      posData[o + 3] = pointData[b + 5];
+      texData[o]     = pointData[b + 2];
+      texData[o + 1] = pointData[b + 3];
+      texData[o + 2] = pointData[b + 6];
+      texData[o + 3] = pointData[b + 7];
+    }
+  }
+
+  function ortho(out, left, right, bottom, top, near, far) {
+    var lr = 1 / (left - right), bt = 1 / (bottom - top), nf = 1 / (near - far);
+    out[0] = -2 * lr;  out[1] = 0;      out[2] = 0;       out[3] = 0;
+    out[4] = 0;        out[5] = -2 * bt; out[6] = 0;     out[7] = 0;
+    out[8] = 0;        out[9] = 0;      out[10] = 2 * nf; out[11] = 0;
+    out[12] = (left + right) * lr; out[13] = (top + bottom) * bt;
+    out[14] = (far + near) * nf;   out[15] = 1;
+    return out;
+  }
+
+  var proj = new Float32Array(16), model = new Float32Array(16), mvp = new Float32Array(16);
+
+  function updateMvp() {
+    var aspect;
+    if (width > height) {
+      aspect = width / height;
+      ortho(proj, -aspect, aspect, -1, 1, -1, 1);
+    } else {
+      aspect = height / width;
+      ortho(proj, -1, 1, -aspect, aspect, -1, 1);
+    }
+    var scale = BASE_SCALE * (1 + 2 * Math.abs(Math.sin(yRotation * Math.PI / 180)));
+    var c = Math.cos(yRotation * Math.PI / 180), s = Math.sin(yRotation * Math.PI / 180);
+    // model = scale * rotateZ(yRotation)
+    model[0] = c * scale; model[1] = s * scale; model[2] = 0; model[3] = 0;
+    model[4] = -s * scale; model[5] = c * scale; model[6] = 0; model[7] = 0;
+    model[8] = 0; model[9] = 0; model[10] = scale; model[11] = 0;
+    model[12] = 0; model[13] = 0; model[14] = 0; model[15] = 1;
+
+    for (var col = 0; col < 4; col++) {
+      for (var row = 0; row < 4; row++) {
+        var sum = 0;
+        for (var k = 0; k < 4; k++) sum += model[k * 4 + row] * proj[col * 4 + k];
+        mvp[col * 4 + row] = sum;
+      }
+    }
+  }
+
+  // ---------------------------------------------------------------
+  // 每帧
+  // ---------------------------------------------------------------
+  function draw() {
+    updateWaveData();
+    applyIdleAndFade();
+    updateBuffers();
+    updateMvp();
+
+    gl.uniformMatrix4fv(loc.uMVP, false, mvp);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    if (!textureReady) return;
+
+    gl.uniform1i(loc.uTex, 0);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, posBuf);
+    gl.bufferSubData(gl.ARRAY_BUFFER, 0, posData);
+    gl.enableVertexAttribArray(loc.aPosition);
+    gl.vertexAttribPointer(loc.aPosition, 2, gl.FLOAT, false, 0, 0);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, texBuf);
+    gl.bufferSubData(gl.ARRAY_BUFFER, 0, texData);
+    gl.enableVertexAttribArray(loc.aTexCoord);
+    gl.vertexAttribPointer(loc.aTexCoord, 2, gl.FLOAT, false, 0, 0);
+
+    // musicvis_use_triangle_strip 默认**开**：相邻两条线之间会连成四边形（带子），
+    // 关掉才是 1024 根互不相连的竖线。
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, LINE_COUNT * 2);
+  }
+
+  // 原版 GenericWaveRS 是 postDelayed(mDrawCube, 20) → 50 FPS
+  var lastDraw = 0;
+  function loop(now) {
+    requestAnimationFrame(loop);
+    if (now - lastDraw < FRAME_MS) return;
+    lastDraw = now;
+    draw();
+  }
+  requestAnimationFrame(loop);
+
+  // ---------------------------------------------------------------
+  // 交互
+  // ---------------------------------------------------------------
+  var sNote = document.getElementById('s-note');
+  var btns = Array.prototype.slice.call(document.querySelectorAll('button[data-src]'));
+  var SOURCES = ['idle', 'synth', 'display', 'mic', 'silent'];
+
+  function showNote(text) {
+    sNote.hidden = !text;
+    sNote.textContent = text || '';
+  }
+
+  // 没有音频时走哪条路，对应 app 的 musicvis_idle_mode（wave / simulate / flat）
+  var IDLE_OF_SOURCE = { idle: IDLE_WAVE, synth: IDLE_SIMULATE, silent: IDLE_FLAT };
+
+  function setSource(next) {
+    source = next;
+    idleMode = (next in IDLE_OF_SOURCE) ? IDLE_OF_SOURCE[next] : IDLE_WAVE;
+    btns.forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.src === next)); });
+    if (next === 'display' || next === 'mic') {
+      if (openKind === next) {
+        showNote('');
+      } else {
+        showNote(next === 'display'
+          ? 'Waiting for you to pick a source (tick "Share tab audio / system audio")…'
+          : 'Requesting microphone permission…');
+        openCapture(next).catch(function () { showNote(captureState); });
+      }
+    } else {
+      showNote('');
+    }
+  }
+
+  btns.forEach(function (b) {
+    b.addEventListener('click', function () { setSource(b.dataset.src); });
+  });
+
+  // 桌面滚动 → 旋转。app 里是 onOffsetsChanged 给的 xOffset：
+  //   mYRotation = xOffset * 4 * 360  （FFT 比 PCM 多一倍）—— 横向移过一整屏 = 转四整圈
+  var pointerX = 0.5;
+  function applyPointer(clientX) {
+    var rect = canvas.getBoundingClientRect();
+    var f = rect.width > 0 ? (clientX - rect.left) / rect.width : 0.5;
+    pointerX = Math.max(0, Math.min(1, f));
+    yRotation = pointerX * 4 * 360;
+  }
+  canvas.addEventListener('pointermove', function (e) { applyPointer(e.clientX); });
+  canvas.addEventListener('pointerdown', function (e) { applyPointer(e.clientX); });
+  yRotation = pointerX * 4 * 360;
+
+  window.addEventListener('keydown', function (e) {
+    if (e.key === 'h' || e.key === 'H') {
+      document.getElementById('hud').classList.toggle('hidden');
+    } else if (e.key === 'm' || e.key === 'M') {
+      setSource(SOURCES[(SOURCES.indexOf(source) + 1) % SOURCES.length]);
+    }
+  });
+
+  setSource('idle');
+})();
+</script>
+</body>
+</html>
