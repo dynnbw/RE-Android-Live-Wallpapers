@@ -535,14 +535,31 @@
     weAudioAt = performance.now();
   }
 
-  /** 把 WE 的 64 段铺到算法真正读的那一串箱上（1 … len−2）。 */
+  /**
+   * 把 WE 的 64 段铺到算法真正读的那一串箱上（1 … len−2）。
+   *
+   * **这里要预补偿，不能直接把频段当实部喂进去。** WE 给的是**已经处理过的各频段音量**
+   * （0..1），而算法后面还要做两件事：
+   *   analyzer[i] = (re² + im²) · (i/16 + 1)
+   * 其中 `(i/16+1)` 是为**补偿音乐本身随频率下降的能量**而设的。WE 的频段已经是
+   * 大致拉平的观感量，再乘一遍这个增益，高频就会被抬成一面白墙（实测截图里正是如此）；
+   * 而且满格频段算出来约 4 倍屏高，整块都爆掉。
+   *
+   * 所以反过来解：想让 `analyzer[i] = 频段值 · WE_TARGET`，就喂
+   *   re = sqrt(频段值 · WE_TARGET / (i/16+1))，im = 0
+   * 代回去正好抵消。满格频段 → analyzer = 4096 → 显示价值 512 → **恰好一个模型单位**
+   * （baseScale = 1/512 时正好顶到上下边，不溢出）。
+   */
+  var WE_TARGET = 4096;
+
   function wallpaperEngineData() {
     if (!weAudio || performance.now() - weAudioAt > WE_TIMEOUT_MS) return null;
     var hi = Math.trunc(FFT_SIZE / 4) - 2;          // 与 updateWaveData 里的 len−1 一致
     captureData.fill(0);
     for (var b = 1; b <= hi; b++) {
       var m = weAudio[Math.round((b - 1) / (hi - 1) * (WE_BANDS - 1))];
-      captureData[b * 2] = Math.round(m * 127);     // 当实部用，虚部留 0
+      var re = Math.round(Math.sqrt(m * WE_TARGET / (Math.trunc(b / 16) + 1)));
+      captureData[b * 2] = re > 127 ? 127 : re;     // 当实部用，虚部留 0
     }
     return captureData;
   }
