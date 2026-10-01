@@ -11,5 +11,9 @@
   "pref_fireworks_palette_label_original": "Original",
   "pref_fireworks_palette_label_vivid": "Vívido",
   "pref_fireworks_enhanced_title": "Explosões aprimoradas",
-  "pref_fireworks_enhanced_summary": "Nove formas de explosão, foguetes com ponto de destino, halo e cintilância"
+  "pref_fireworks_enhanced_summary": "Nove formas de explosão, foguetes com ponto de destino, halo e cintilância",
+  "pref_fireworks_custom_background_summary": "Toque para selecionar uma imagem de fundo personalizada",
+  "pref_fireworks_custom_background_title": "Imagem de fundo personalizada",
+  "pref_fireworks_reset_background_summary": "Remover o fundo personalizado e usar o padrão",
+  "pref_fireworks_reset_background_title": "Restaurar para o fundo padrão"
 }

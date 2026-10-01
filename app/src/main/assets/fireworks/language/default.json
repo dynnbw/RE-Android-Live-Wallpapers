@@ -11,5 +11,11 @@
   "pref_fireworks_palette_label_original": "Original",
   "pref_fireworks_palette_label_vivid": "Vivid",
   "pref_fireworks_enhanced_title": "Enhanced bursts",
-  "pref_fireworks_enhanced_summary": "Nine burst shapes, rockets that fly to a target, rocket glow and twinkling sparks"
+  "pref_fireworks_enhanced_summary": "Nine burst shapes, rockets that fly to a target, rocket glow and twinkling sparks",
+  "pref_fireworks_custom_background_summary": "Tap to select a custom background image",
+  "pref_fireworks_custom_background_title": "Custom background image",
+  "pref_fireworks_grass_night_summary": "Night sky with stars and swaying grass; fireworks burst behind the grass",
+  "pref_fireworks_grass_night_title": "Grass night scene",
+  "pref_fireworks_reset_background_summary": "Remove the custom background and use the default one",
+  "pref_fireworks_reset_background_title": "Reset to default background"
 }

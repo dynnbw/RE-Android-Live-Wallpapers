@@ -23,5 +23,9 @@
   "nexus_mode_label_5": "Голубой",
   "nexus_mode_label_6": "Фиолетовый",
   "nexus_mode_label_7": "Розовый",
-  "nexus_mode_label_8": "Радуга"
+  "nexus_mode_label_8": "Радуга",
+  "pref_nexus_custom_background_summary": "Выбрать фоновое изображение",
+  "pref_nexus_custom_background_title": "Пользовательский фон",
+  "pref_nexus_reset_background_summary": "Очистить пользовательский фон и использовать встроенный",
+  "pref_nexus_reset_background_title": "Сбросить фон"
 }

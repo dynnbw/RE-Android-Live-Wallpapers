@@ -11,5 +11,9 @@
   "pref_fireworks_palette_label_original": "원본",
   "pref_fireworks_palette_label_vivid": "선명",
   "pref_fireworks_enhanced_title": "강화 폭발",
-  "pref_fireworks_enhanced_summary": "아홉 가지 폭발 형태, 목표 지점으로 날아가는 로켓, 로켓 광채와 반짝임"
+  "pref_fireworks_enhanced_summary": "아홉 가지 폭발 형태, 목표 지점으로 날아가는 로켓, 로켓 광채와 반짝임",
+  "pref_fireworks_custom_background_summary": "클릭하여 사용자 정의 배경 이미지 선택",
+  "pref_fireworks_custom_background_title": "사용자 정의 배경 이미지",
+  "pref_fireworks_reset_background_summary": "사용자 정의 배경을 지우고 기본 배경을 사용합니다",
+  "pref_fireworks_reset_background_title": "기본 배경 복원"
 }

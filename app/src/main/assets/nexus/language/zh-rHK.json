@@ -23,5 +23,9 @@
   "nexus_mode_label_5": "青色",
   "nexus_mode_label_6": "紫色",
   "nexus_mode_label_7": "粉色",
-  "nexus_mode_label_8": "多彩"
+  "nexus_mode_label_8": "多彩",
+  "pref_nexus_custom_background_summary": "選擇背景圖片",
+  "pref_nexus_custom_background_title": "自定義背景",
+  "pref_nexus_reset_background_summary": "清除自定義背景並使用內置背景",
+  "pref_nexus_reset_background_title": "恢復默認背景"
 }

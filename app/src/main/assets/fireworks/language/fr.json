@@ -11,5 +11,9 @@
   "pref_fireworks_palette_label_original": "Original",
   "pref_fireworks_palette_label_vivid": "Vif",
   "pref_fireworks_enhanced_title": "Explosions améliorées",
-  "pref_fireworks_enhanced_summary": "Neuf formes d’explosion, fusées à point cible, halo et scintillement"
+  "pref_fireworks_enhanced_summary": "Neuf formes d’explosion, fusées à point cible, halo et scintillement",
+  "pref_fireworks_custom_background_summary": "Appuyez pour sélectionner une image d’arrière-plan personnalisée",
+  "pref_fireworks_custom_background_title": "Image d’arrière-plan personnalisée",
+  "pref_fireworks_reset_background_summary": "Supprimer l’arrière-plan personnalisé et utiliser celui par défaut",
+  "pref_fireworks_reset_background_title": "Rétablir l’arrière-plan par défaut"
 }

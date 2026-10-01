@@ -11,5 +11,9 @@
   "pref_fireworks_palette_label_original": "মূল",
   "pref_fireworks_palette_label_vivid": "উজ্জ্বল",
   "pref_fireworks_enhanced_title": "উন্নত বিস্ফোরণ",
-  "pref_fireworks_enhanced_summary": "নয়টি বিস্ফোরণ আকৃতি, লক্ষ্যের দিকে ওড়া রকেট, রকেটের আভা ও ঝিকিমিকি"
+  "pref_fireworks_enhanced_summary": "নয়টি বিস্ফোরণ আকৃতি, লক্ষ্যের দিকে ওড়া রকেট, রকেটের আভা ও ঝিকিমিকি",
+  "pref_fireworks_custom_background_summary": "একটি কাস্টম পটভূমি ছবি নির্বাচন করতে ট্যাপ করুন",
+  "pref_fireworks_custom_background_title": "কাস্টম পটভূমি ছবি",
+  "pref_fireworks_reset_background_summary": "কাস্টম পটভূমি সরান এবং ডিফল্টটি ব্যবহার করুন",
+  "pref_fireworks_reset_background_title": "ডিফল্ট পটভূমিতে রিসেট করুন"
 }

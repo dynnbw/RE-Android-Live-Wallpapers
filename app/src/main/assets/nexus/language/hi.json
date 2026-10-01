@@ -23,5 +23,9 @@
   "nexus_mode_label_5": "सियान",
   "nexus_mode_label_6": "बैंगनी",
   "nexus_mode_label_7": "गुलाबी",
-  "nexus_mode_label_8": "इंद्रधनुष"
+  "nexus_mode_label_8": "इंद्रधनुष",
+  "pref_nexus_custom_background_summary": "पृष्ठभूमि छवि चुनें",
+  "pref_nexus_custom_background_title": "अनुकूलित पृष्ठभूमि",
+  "pref_nexus_reset_background_summary": "अनुकूलित पृष्ठभूमि साफ़ करें और अंतर्निहित का उपयोग करें",
+  "pref_nexus_reset_background_title": "पृष्ठभूमि रीसेट करें"
 }

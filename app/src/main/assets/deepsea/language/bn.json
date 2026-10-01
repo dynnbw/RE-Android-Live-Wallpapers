@@ -19,5 +19,9 @@
   "particlecolor_label_11": "12",
   "particlecolor_label_12": "13",
   "particlecolor_label_13": "14",
-  "particlecolor_label_14": "15"
+  "particlecolor_label_14": "15",
+  "deepsea_custom_background_summary": "একটি পটভূমি ছবি নির্বাচন করুন",
+  "deepsea_custom_background_title": "কাস্টম পটভূমি",
+  "deepsea_reset_background_summary": "কাস্টম পটভূমি মুছুন এবং বিল্ট-ইন ব্যবহার করুন",
+  "deepsea_reset_background_title": "পটভূমি রিসেট করুন"
 }

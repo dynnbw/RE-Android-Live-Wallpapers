@@ -23,5 +23,9 @@
   "nexus_mode_label_5": "Cian",
   "nexus_mode_label_6": "Púrpura",
   "nexus_mode_label_7": "Rosa",
-  "nexus_mode_label_8": "Arcoíris"
+  "nexus_mode_label_8": "Arcoíris",
+  "pref_nexus_custom_background_summary": "Seleccionar una imagen de fondo",
+  "pref_nexus_custom_background_title": "Fondo personalizado",
+  "pref_nexus_reset_background_summary": "Borrar fondo personalizado y usar el integrado",
+  "pref_nexus_reset_background_title": "Restablecer fondo"
 }

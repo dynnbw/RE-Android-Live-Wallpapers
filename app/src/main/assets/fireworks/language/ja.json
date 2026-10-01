@@ -11,5 +11,9 @@
   "pref_fireworks_palette_label_original": "オリジナル",
   "pref_fireworks_palette_label_vivid": "鮮やか",
   "pref_fireworks_enhanced_title": "強化炸裂",
-  "pref_fireworks_enhanced_summary": "9 種類の炸裂形状、目標点へ飛ぶロケット、ロケットの光輪と星のまたたき"
+  "pref_fireworks_enhanced_summary": "9 種類の炸裂形状、目標点へ飛ぶロケット、ロケットの光輪と星のまたたき",
+  "pref_fireworks_custom_background_summary": "クリックしてカスタム背景画像を選択",
+  "pref_fireworks_custom_background_title": "カスタム背景画像",
+  "pref_fireworks_reset_background_summary": "カスタム背景をクリアし、デフォルト背景を使用します",
+  "pref_fireworks_reset_background_title": "デフォルト背景に戻す"
 }

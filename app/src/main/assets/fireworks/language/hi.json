@@ -11,5 +11,9 @@
   "pref_fireworks_palette_label_original": "मूल",
   "pref_fireworks_palette_label_vivid": "जीवंत",
   "pref_fireworks_enhanced_title": "उन्नत विस्फोट",
-  "pref_fireworks_enhanced_summary": "नौ विस्फोट आकार, लक्ष्य की ओर उड़ते रॉकेट, रॉकेट प्रभामंडल और टिमटिमाहट"
+  "pref_fireworks_enhanced_summary": "नौ विस्फोट आकार, लक्ष्य की ओर उड़ते रॉकेट, रॉकेट प्रभामंडल और टिमटिमाहट",
+  "pref_fireworks_custom_background_summary": "अनुकूलित पृष्ठभूमि छवि चुनने के लिए टैप करें",
+  "pref_fireworks_custom_background_title": "अनुकूलित पृष्ठभूमि छवि",
+  "pref_fireworks_reset_background_summary": "अनुकूलित पृष्ठभूमि हटाएँ और डिफ़ॉल्ट का उपयोग करें",
+  "pref_fireworks_reset_background_title": "डिफ़ॉल्ट पृष्ठभूमि पर रीसेट करें"
 }

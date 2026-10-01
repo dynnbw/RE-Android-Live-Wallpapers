@@ -19,5 +19,9 @@
   "particlecolor_label_11": "12",
   "particlecolor_label_12": "13",
   "particlecolor_label_13": "14",
-  "particlecolor_label_14": "15"
+  "particlecolor_label_14": "15",
+  "deepsea_custom_background_summary": "Ein Hintergrundbild auswählen",
+  "deepsea_custom_background_title": "Benutzerdefinierter Hintergrund",
+  "deepsea_reset_background_summary": "Benutzerdefinierten Hintergrund löschen und integrierten verwenden",
+  "deepsea_reset_background_title": "Hintergrund zurücksetzen"
 }

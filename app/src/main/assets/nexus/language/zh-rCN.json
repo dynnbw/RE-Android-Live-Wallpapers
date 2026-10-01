@@ -23,5 +23,9 @@
   "nexus_background_preset_label_pyramid_background1": "样式 1",
   "nexus_background_preset_label_pyramid_background2": "样式 2",
   "nexus_background_preset_label_pyramid_background3": "样式 3",
-  "nexus_background_preset_label_pyramid_background4": "样式 4"
+  "nexus_background_preset_label_pyramid_background4": "样式 4",
+  "pref_nexus_custom_background_summary": "选择背景图片",
+  "pref_nexus_custom_background_title": "自定义背景",
+  "pref_nexus_reset_background_summary": "清除自定义背景并使用内置背景",
+  "pref_nexus_reset_background_title": "恢复默认背景"
 }

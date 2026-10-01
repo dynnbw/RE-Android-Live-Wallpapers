@@ -23,5 +23,9 @@
   "nexus_mode_label_5": "Cyan",
   "nexus_mode_label_6": "Violett",
   "nexus_mode_label_7": "Rosa",
-  "nexus_mode_label_8": "Regenbogen"
+  "nexus_mode_label_8": "Regenbogen",
+  "pref_nexus_custom_background_summary": "Ein Hintergrundbild auswählen",
+  "pref_nexus_custom_background_title": "Benutzerdefinierter Hintergrund",
+  "pref_nexus_reset_background_summary": "Benutzerdefinierten Hintergrund löschen und integrierten verwenden",
+  "pref_nexus_reset_background_title": "Hintergrund zurücksetzen"
 }

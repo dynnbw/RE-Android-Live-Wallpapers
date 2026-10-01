@@ -11,5 +11,11 @@
   "pref_fireworks_palette_label_original": "原版",
   "pref_fireworks_palette_label_vivid": "鮮豔",
   "pref_fireworks_enhanced_title": "增強爆開",
-  "pref_fireworks_enhanced_summary": "九種爆開形態、火箭飛向目標點、火箭光暈與星塵閃爍"
+  "pref_fireworks_enhanced_summary": "九種爆開形態、火箭飛向目標點、火箭光暈與星塵閃爍",
+  "pref_fireworks_custom_background_summary": "點擊選擇自訂背景圖片",
+  "pref_fireworks_custom_background_title": "自訂背景圖片",
+  "pref_fireworks_grass_night_summary": "星空與草地，煙花在草叢後綻放",
+  "pref_fireworks_grass_night_title": "草地夜景",
+  "pref_fireworks_reset_background_summary": "清除自訂背景，使用預設背景",
+  "pref_fireworks_reset_background_title": "恢復預設背景"
 }
