@@ -44,6 +44,8 @@
   </div>
 
   <p class="warn" id="s-note" hidden></p>
+  <!-- 只有 URL 上带 ?debug=1 时才出现，见下面的 resize / loop -->
+  <p class="warn" id="s-dbg" hidden></p>
 </div>
 
 <script>
@@ -204,10 +206,19 @@
 
   var width = canvas.width, height = canvas.height;
 
+  /**
+   * 跟着 canvas **自己的 CSS 盒子**走，而不是 window.innerWidth。
+   *
+   * 两者平时一样，但在宿主里可能不一致 —— Wallpaper Engine 里就遇到过"只显示出左侧
+   * 一条边"，那正是"绘制缓冲比真正被显示的区域大"（裁切，不是缩放）的样子。
+   * 而且不靠 resize 事件：每帧对一次（下面 loop 里调），宿主改尺寸时它未必会发事件。
+   */
   function resize() {
     var dpr = window.devicePixelRatio || 1;
-    var w = Math.max(1, Math.round(window.innerWidth  * dpr));
-    var h = Math.max(1, Math.round(window.innerHeight * dpr));
+    var cssW = canvas.clientWidth  || window.innerWidth  || 1;
+    var cssH = canvas.clientHeight || window.innerHeight || 1;
+    var w = Math.max(1, Math.round(cssW * dpr));
+    var h = Math.max(1, Math.round(cssH * dpr));
     if (canvas.width !== w || canvas.height !== h) {
       canvas.width = w; canvas.height = h;
       gl.viewport(0, 0, w, h);
@@ -741,10 +752,29 @@
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, LINE_COUNT * 2);
   }
 
+  // ?debug=1：把几个尺寸摆到画面上。宿主里"只显示一角"这类问题，看这几个数就能定位
+  // —— 是 window 报得比 canvas 大，还是 canvas 缓冲比视口大。
+  var DBG = /[?&]debug=1(&|$)/.test(location.search);
+  var sDbg = document.getElementById('s-dbg');
+  var lastDbg = 0;
+
+  function updateDebug(now) {
+    if (!DBG || now - lastDbg < 500) return;
+    lastDbg = now;
+    sDbg.hidden = false;
+    sDbg.textContent = 'debug: window ' + window.innerWidth + '×' + window.innerHeight +
+      ' · canvas CSS ' + canvas.clientWidth + '×' + canvas.clientHeight +
+      ' · dpr ' + (window.devicePixelRatio || 1) +
+      ' · buffer ' + canvas.width + '×' + canvas.height +
+      ' · viewport ' + gl.drawingBufferWidth + '×' + gl.drawingBufferHeight;
+  }
+
   // 原版 GenericWaveRS 是 postDelayed(mDrawCube, 20) → 50 FPS
   var lastDraw = 0;
   function loop(now) {
     requestAnimationFrame(loop);
+    resize();                     // 宿主改尺寸时未必发 resize 事件，每帧对一次
+    updateDebug(now);
     if (now - lastDraw < FRAME_MS) return;
     lastDraw = now;
     draw();
