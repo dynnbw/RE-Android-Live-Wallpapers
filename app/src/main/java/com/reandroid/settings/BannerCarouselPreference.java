@@ -2,12 +2,12 @@ package com.reandroid.settings;
 
 import android.content.Context;
 import android.content.Intent;
-import android.util.AttributeSet;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.Settings;
+import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -45,11 +45,19 @@ import java.util.List;
  */
 public class BannerCarouselPreference extends Preference {
     private static final String TAG = "BannerCarousel";
+    /*
+     * 按**快慢**排，不是按境内外 —— 横幅内容全球一样，谁先应答就用谁，不需要地区探测
+     * （更新检查器那边不一样：那里"从哪个源取到"决定给用户哪种下载入口）。
+     *
+     * 图片是相对清单所在目录解析的（见下面的 base），所以换源等于清单和图片一起换。
+     */
     private static final String[] MANIFEST_URLS = {
-            // jsDelivr CDN（国内可访问，代理 gh-pages 分支）
-            "https://cdn.jsdelivr.net/gh/dynnbw/RE-Android-Live-Wallpapers@gh-pages/banners/banners.json",
-            // GitHub Pages 兜底
-            "https://dynnbw.github.io/RE-Android-Live-Wallpapers/banners/banners.json"
+        // Gitee：国内最快（实测 0.9s），gh-pages 分支本来就镜像在那里
+        "https://gitee.com/dynnbw/RE-Android-Live-Wallpapers/raw/gh-pages/banners/banners.json",
+        // jsDelivr CDN（代理 gh-pages 分支）
+        "https://cdn.jsdelivr.net/gh/dynnbw/RE-Android-Live-Wallpapers@gh-pages/banners/banners.json",
+        // GitHub Pages 兜底
+        "https://dynnbw.github.io/RE-Android-Live-Wallpapers/banners/banners.json"
     };
     private static final long AUTO_SCROLL_MS = 5000;
     private static final int CONNECT_TIMEOUT_MS = 8000;
@@ -75,6 +83,7 @@ public class BannerCarouselPreference extends Preference {
     private static class Banner {
         final String image;
         final String link;
+
         Banner(String image, String link) {
             this.image = image;
             this.link = link;
@@ -105,48 +114,57 @@ public class BannerCarouselPreference extends Preference {
     // ── 清单拉取 ──
 
     private void fetchManifest() {
-        new Thread(() -> {
-            List<Banner> list = new ArrayList<>();
-            for (String manifestUrl : MANIFEST_URLS) {
-                try {
-                    URL url = new URL(manifestUrl);
-                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                    conn.setConnectTimeout(CONNECT_TIMEOUT_MS);
-                    conn.setReadTimeout(CONNECT_TIMEOUT_MS);
-                    if (conn.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                        try (InputStream is = conn.getInputStream()) {
-                            String json = new String(IoUtils.readAllBytes(is), StandardCharsets.UTF_8);
-                            JSONObject root = new JSONObject(json);
-                            JSONArray arr = root.optJSONArray("banners");
-                            if (arr != null) {
-                                String base = manifestUrl.substring(0, manifestUrl.lastIndexOf('/') + 1);
-                                for (int i = 0; i < arr.length(); i++) {
-                                    JSONObject b = arr.optJSONObject(i);
-                                    if (b == null) continue;
-                                    String image = b.optString("image");
-                                    // 相对路径按清单所在目录解析
-                                    if (!image.startsWith("http")) image = base + image;
-                                    list.add(new Banner(image, b.optString("link")));
+        new Thread(
+                        () -> {
+                            List<Banner> list = new ArrayList<>();
+                            for (String manifestUrl : MANIFEST_URLS) {
+                                try {
+                                    URL url = new URL(manifestUrl);
+                                    HttpURLConnection conn =
+                                            (HttpURLConnection) url.openConnection();
+                                    conn.setConnectTimeout(CONNECT_TIMEOUT_MS);
+                                    conn.setReadTimeout(CONNECT_TIMEOUT_MS);
+                                    if (conn.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                                        try (InputStream is = conn.getInputStream()) {
+                                            String json = new String(
+                                                    IoUtils.readAllBytes(is),
+                                                    StandardCharsets.UTF_8);
+                                            JSONObject root = new JSONObject(json);
+                                            JSONArray arr = root.optJSONArray("banners");
+                                            if (arr != null) {
+                                                String base = manifestUrl.substring(
+                                                        0, manifestUrl.lastIndexOf('/') + 1);
+                                                for (int i = 0; i < arr.length(); i++) {
+                                                    JSONObject b = arr.optJSONObject(i);
+                                                    if (b == null) continue;
+                                                    String image = b.optString("image");
+                                                    // 相对路径按清单所在目录解析
+                                                    if (!image.startsWith("http"))
+                                                        image = base + image;
+                                                    list.add(
+                                                            new Banner(image, b.optString("link")));
+                                                }
+                                            }
+                                        }
+                                    }
+                                    conn.disconnect();
+                                    if (!list.isEmpty()) break;
+                                } catch (Exception e) {
+                                    Log.w(TAG, "fetch manifest failed: " + manifestUrl, e);
                                 }
                             }
-                        }
-                    }
-                    conn.disconnect();
-                    if (!list.isEmpty()) break;
-                } catch (Exception e) {
-                    Log.w(TAG, "fetch manifest failed: " + manifestUrl, e);
-                }
-            }
-            handler.post(() -> {
-                if (list.isEmpty()) {
-                    // 拉取失败/无横幅：整个轮播隐藏，不影响网格
-                    if (itemRoot != null) itemRoot.setVisibility(View.GONE);
-                    return;
-                }
-                banners = list;
-                setupPager();
-            });
-        }, "banner-fetch").start();
+                            handler.post(() -> {
+                                if (list.isEmpty()) {
+                                    // 拉取失败/无横幅：整个轮播隐藏，不影响网格
+                                    if (itemRoot != null) itemRoot.setVisibility(View.GONE);
+                                    return;
+                                }
+                                banners = list;
+                                setupPager();
+                            });
+                        },
+                        "banner-fetch")
+                .start();
     }
 
     // ── 页面装配 ──
@@ -201,8 +219,10 @@ public class BannerCarouselPreference extends Preference {
             holder.itemView.setOnClickListener(v -> {
                 if (banner.link != null && !banner.link.isEmpty()) {
                     try {
-                        holder.itemView.getContext().startActivity(
-                                new Intent(Intent.ACTION_VIEW, Uri.parse(banner.link)));
+                        holder.itemView
+                                .getContext()
+                                .startActivity(
+                                        new Intent(Intent.ACTION_VIEW, Uri.parse(banner.link)));
                     } catch (Exception e) {
                         Log.w(TAG, "open banner link failed", e);
                     }
@@ -217,6 +237,7 @@ public class BannerCarouselPreference extends Preference {
 
         class PageHolder extends RecyclerView.ViewHolder {
             final ImageView image;
+
             PageHolder(@NonNull View itemView) {
                 super(itemView);
                 image = itemView.findViewById(R.id.banner_image);
@@ -247,7 +268,8 @@ public class BannerCarouselPreference extends Preference {
         int inactive = ContextCompat.getColor(getContext(), R.color.md_theme_onSurface);
         for (int i = 0; i < dots.getChildCount(); i++) {
             View dot = dots.getChildAt(i);
-            dot.getBackground().setTint(i == position ? control : (inactive & 0x00FFFFFF) | 0x66000000);
+            dot.getBackground()
+                    .setTint(i == position ? control : (inactive & 0x00FFFFFF) | 0x66000000);
         }
     }
 
@@ -256,8 +278,11 @@ public class BannerCarouselPreference extends Preference {
     private void startAutoScroll() {
         stopAutoScroll();
         if (banners.size() < 2 || pager == null) return;
-        if (Settings.Global.getInt(getContext().getContentResolver(),
-                Settings.Global.ANIMATOR_DURATION_SCALE, 1) == 0) {
+        if (Settings.Global.getInt(
+                        getContext().getContentResolver(),
+                        Settings.Global.ANIMATOR_DURATION_SCALE,
+                        1)
+                == 0) {
             return; // 系统减弱动态：不自动播放
         }
         Runnable task = new Runnable() {
