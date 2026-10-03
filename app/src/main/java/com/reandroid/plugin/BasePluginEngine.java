@@ -3,16 +3,17 @@ package com.reandroid.plugin;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
+import android.graphics.Rect;
 import android.opengl.EGL14;
 import android.opengl.EGLConfig;
 import android.opengl.EGLContext;
 import android.opengl.EGLDisplay;
 import android.opengl.EGLSurface;
 import android.opengl.GLES30;
-import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.Surface;
@@ -32,6 +33,9 @@ import com.reandroid.gles.GLESWallpaper;
 public abstract class BasePluginEngine implements WallpaperEngine {
 
     private static final String TAG = "BasePluginEngine";
+
+    /** EGL 没建起来时，补发 onSurfaceChanged 的最小间隔（见 {@link #scheduleSurfaceRecovery}）。 */
+    private static final long RECOVERY_INTERVAL_MS = 500L;
 
     protected final Context mContext;
     protected final WallpaperPluginHost mHost;
@@ -65,6 +69,7 @@ public abstract class BasePluginEngine implements WallpaperEngine {
 
     /** 主线程发布的待处理尺寸；成对读写，渲染线程在 drawFrame 开头取走。 */
     private final Object mResizeLock = new Object();
+
     private int mRequestedWidth = 256, mRequestedHeight = 256;
     private boolean mResizePending;
 
@@ -88,7 +93,8 @@ public abstract class BasePluginEngine implements WallpaperEngine {
         GLESWallpaper.initializeAppContext(context);
         if (mHost != null) {
             try {
-                mHost.getSharedPreferences().registerOnSharedPreferenceChangeListener(mPrefsListener);
+                mHost.getSharedPreferences()
+                        .registerOnSharedPreferenceChangeListener(mPrefsListener);
             } catch (Exception e) {
                 Log.w(TAG, "Failed to register prefs change listener", e);
             }
@@ -118,6 +124,16 @@ public abstract class BasePluginEngine implements WallpaperEngine {
         Surface surface = holder.getSurface();
         if (surface == null || !surface.isValid()) return;
 
+        /*
+         * 限速。这个过程是被 drawFrame 每帧触发的：建不起来时每一帧都会走一遍
+         * "跳过绘制 → 补发 → 还是不行"，也就是每秒两行 × 目标帧率（实测 4531 行 / 39 秒）。
+         * 刷屏本身会把真正的原因挤出日志缓冲 —— 事后根本查不出初始化为什么失败。
+         * 500ms 一次对恢复速度没有可感影响。
+         */
+        long now = SystemClock.uptimeMillis();
+        if (now - mLastRecoveryMs < RECOVERY_INTERVAL_MS) return;
+        mLastRecoveryMs = now;
+
         mRecoveryPosted = true;
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
@@ -137,7 +153,8 @@ public abstract class BasePluginEngine implements WallpaperEngine {
         mHolder = null;
         if (mHost != null) {
             try {
-                mHost.getSharedPreferences().unregisterOnSharedPreferenceChangeListener(mPrefsListener);
+                mHost.getSharedPreferences()
+                        .unregisterOnSharedPreferenceChangeListener(mPrefsListener);
             } catch (Exception e) {
                 Log.w(TAG, "Failed to unregister prefs change listener", e);
             }
@@ -161,7 +178,7 @@ public abstract class BasePluginEngine implements WallpaperEngine {
             // 且纹理加载会阻塞主线程导致壁纸加载缓慢。延迟到渲染线程 drawFrame 执行。
             mSceneStartPending = true;
         } else {
-            mScene.stop();            // pause audio capture to save power
+            mScene.stop(); // pause audio capture to save power
         }
     }
 
@@ -174,7 +191,10 @@ public abstract class BasePluginEngine implements WallpaperEngine {
 
     /** onCreate 收到的 holder，仅用于 EGL 没建起来时补发尺寸（见 scheduleSurfaceRecovery）。 */
     private SurfaceHolder mHolder;
+
     private volatile boolean mRecoveryPosted;
+    /** 上次补发的时刻；只在渲染线程读写（drawFrame 那条路径）。 */
+    private long mLastRecoveryMs;
 
     @Override
     public void onSurfaceChanged(SurfaceHolder holder, int format, int width, int height) {
@@ -184,9 +204,12 @@ public abstract class BasePluginEngine implements WallpaperEngine {
 
         if (surface == null || !surface.isValid()) return;
 
-        Log.d(TAG, "onSurfaceChanged: " + width + "x" + height
-                + " eglCreated=" + mEglCreated + " surfChanged=" + (mCurrentSurface != surface)
-                + " oldSize=" + mWidth + "x" + mHeight);
+        Log.d(
+                TAG,
+                "onSurfaceChanged: " + width + "x" + height
+                        + " eglCreated=" + mEglCreated + " surfChanged="
+                        + (mCurrentSurface != surface)
+                        + " oldSize=" + mWidth + "x" + mHeight);
 
         /*
          * 只发布尺寸，不在这里动场景：mScene.resize() 会改写投影矩阵并重建水面网格，
@@ -206,10 +229,23 @@ public abstract class BasePluginEngine implements WallpaperEngine {
             return;
         }
 
-        // Recreate EGL if surface changed
-        if (mCurrentSurface != surface) {
-            if (mEglCreated) {
-                if (mScene != null) { mScene.stop(); mScene.release(); mScene = null; }
+        /*
+         * 建 EGL 的条件是「surface 换了**或**还没建起来」。
+         *
+         * 只看 surface 标识会漏掉一种状态：initEgl 失败过一次之后，mCurrentSurface 已经是
+         * 这个 surface 而 mEglCreated 仍是 false —— 此时下面那个 `!=` 不成立，EGL 就再也建
+         * 不起来了。而补发 onSurfaceChanged 拿到的还是同一个 Surface，补发也永远无效，于是卡
+         * 成每帧一条 "drawFrame skipped: EGL not created"。scheduleSurfaceRecovery 的存在就是
+         * 为了救这种状态，原来这条门却把它挡在外面。
+         */
+        boolean surfaceChanged = mCurrentSurface != surface;
+        if (surfaceChanged || !mEglCreated) {
+            if (surfaceChanged && mEglCreated) {
+                if (mScene != null) {
+                    mScene.stop();
+                    mScene.release();
+                    mScene = null;
+                }
                 destroyEgl();
             }
             mCurrentSurface = surface;
@@ -252,13 +288,15 @@ public abstract class BasePluginEngine implements WallpaperEngine {
     /** Injects plugin SharedPreferences (and cross-plugin access) into the scene via reflection. */
     protected void tryInjectPrefs(GLESScene scene) {
         if (mHost == null || scene == null) return;
-        PluginPrefsInjector.inject(scene, mHost.getSharedPreferences(),
+        PluginPrefsInjector.inject(
+                scene,
+                mHost.getSharedPreferences(),
                 pluginId -> mHost.getSharedPreferences(pluginId));
     }
 
     @Override
-    public void onOffsetsChanged(float xOffset, float yOffset, float xStep, float yStep,
-                                  int xPixels, int yPixels) {
+    public void onOffsetsChanged(
+            float xOffset, float yOffset, float xStep, float yStep, int xPixels, int yPixels) {
         if (mScene != null) {
             // 步长要单独播下去：setOffset 的四个参数里没有它，而"这个桌面到底能不能滚"
             // 只有它说得清（不滚动的桌面固定上报 xOffset=0，与"两页桌面的第 1 页"无法区分）。
@@ -284,7 +322,10 @@ public abstract class BasePluginEngine implements WallpaperEngine {
             Log.w(TAG, "drawFrame skipped: EGL not created");
             return;
         }
-        if (mScene == null) { Log.w(TAG, "drawFrame skipped: scene is null"); return; }
+        if (mScene == null) {
+            Log.w(TAG, "drawFrame skipped: scene is null");
+            return;
+        }
 
         /*
          * 尺寸变化在这里取走并应用 —— 场景数据(投影矩阵、水面网格)由渲染线程独占，
@@ -303,7 +344,9 @@ public abstract class BasePluginEngine implements WallpaperEngine {
             try {
                 GLES30.glClearColor(0f, 0f, 0f, 1f);
                 GLES30.glEnable(GLES30.GL_BLEND);
-            } catch (Exception e) { Log.w(TAG, "GL clear/enable failed", e); }
+            } catch (Exception e) {
+                Log.w(TAG, "GL clear/enable failed", e);
+            }
 
             if (mSceneInitPending) {
                 Log.d(TAG, "Deferred scene.init() for " + mScene.getClass().getSimpleName());
@@ -342,31 +385,51 @@ public abstract class BasePluginEngine implements WallpaperEngine {
         }
     }
 
+    /**
+     * 建 EGL。**每一步失败都要留痕**：这四步原来除了 chooseConfig 全是静默 return false，
+     * 于是一次失败的初始化只表现为"画不出来"，原因无从查起（日志滚掉之后再也补不回来）。
+     */
     protected boolean initEgl(Surface surface) {
         mDisplay = EGL14.eglGetDisplay(EGL14.EGL_DEFAULT_DISPLAY);
-        if (mDisplay == EGL14.EGL_NO_DISPLAY) return false;
+        if (mDisplay == EGL14.EGL_NO_DISPLAY) {
+            Log.e(TAG, "eglGetDisplay failed: 0x" + Integer.toHexString(EGL14.eglGetError()));
+            return false;
+        }
         int[] version = new int[2];
-        if (!EGL14.eglInitialize(mDisplay, version, 0, version, 1)) return false;
+        if (!EGL14.eglInitialize(mDisplay, version, 0, version, 1)) {
+            Log.e(TAG, "eglInitialize failed: 0x" + Integer.toHexString(EGL14.eglGetError()));
+            return false;
+        }
         // 优先带深度的配置，没有就退回不带深度的，不能让所有壁纸都渲染不出来。
         EGLConfig config = EglSetup.chooseConfig(mDisplay, true);
         if (config == null) config = EglSetup.chooseConfig(mDisplay, false);
         if (config == null) {
-            Log.e(TAG, "eglChooseConfig failed");
+            Log.e(TAG, "eglChooseConfig failed: 0x" + Integer.toHexString(EGL14.eglGetError()));
             return false;
         }
         int[] depthBits = new int[1];
         EGL14.eglGetConfigAttrib(mDisplay, config, EGL14.EGL_DEPTH_SIZE, depthBits, 0);
         Log.i(TAG, "EGL 配置深度位数 = " + depthBits[0]);
         mEglContext = EglSetup.createContext(mDisplay, config);
-        if (mEglContext == EGL14.EGL_NO_CONTEXT) return false;
-        mEglSurface = EGL14.eglCreateWindowSurface(mDisplay, config, surface,
-                new int[]{EGL14.EGL_NONE}, 0);
-        return mEglSurface != null && mEglSurface != EGL14.EGL_NO_SURFACE;
+        if (mEglContext == EGL14.EGL_NO_CONTEXT) {
+            Log.e(TAG, "eglCreateContext failed: 0x" + Integer.toHexString(EGL14.eglGetError()));
+            return false;
+        }
+        mEglSurface = EGL14.eglCreateWindowSurface(
+                mDisplay, config, surface, new int[] {EGL14.EGL_NONE}, 0);
+        if (mEglSurface == null || mEglSurface == EGL14.EGL_NO_SURFACE) {
+            Log.e(
+                    TAG,
+                    "eglCreateWindowSurface failed: 0x" + Integer.toHexString(EGL14.eglGetError()));
+            return false;
+        }
+        return true;
     }
 
     private void destroyEgl() {
         if (mDisplay != null && mDisplay != EGL14.EGL_NO_DISPLAY) {
-            EGL14.eglMakeCurrent(mDisplay, EGL14.EGL_NO_SURFACE, EGL14.EGL_NO_SURFACE, EGL14.EGL_NO_CONTEXT);
+            EGL14.eglMakeCurrent(
+                    mDisplay, EGL14.EGL_NO_SURFACE, EGL14.EGL_NO_SURFACE, EGL14.EGL_NO_CONTEXT);
             if (mEglSurface != null && mEglSurface != EGL14.EGL_NO_SURFACE)
                 EGL14.eglDestroySurface(mDisplay, mEglSurface);
             if (mEglContext != null && mEglContext != EGL14.EGL_NO_CONTEXT)
