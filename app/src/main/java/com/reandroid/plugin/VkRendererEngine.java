@@ -14,7 +14,8 @@ public class VkRendererEngine extends BaseVKPluginEngine {
 
     private final VkRendererDelegate mDelegate;
 
-    public VkRendererEngine(Context context, WallpaperPluginHost host, VkRendererDelegate delegate) {
+    public VkRendererEngine(
+            Context context, WallpaperPluginHost host, VkRendererDelegate delegate) {
         super(context, host);
         mDelegate = delegate;
     }
@@ -101,8 +102,7 @@ public class VkRendererEngine extends BaseVKPluginEngine {
     }
 
     @Override
-    public void onSurfaceChanged(
-            android.view.SurfaceHolder holder, int format, int w, int h) {
+    public void onSurfaceChanged(android.view.SurfaceHolder holder, int format, int w, int h) {
         if (mDelegate.needsFullRecreateOnSurfaceChange()) {
             super.onSurfaceChanged(holder, format, w, h);
         } else {

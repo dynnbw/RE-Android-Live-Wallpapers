@@ -122,9 +122,8 @@ final class GrassVkDelegate implements VkRendererDelegate {
         float[] verts = mScene.mRenderDataBuilder.buildGrassVertexArray(sd);
         int vertCount = mScene.mRenderDataBuilder.getGrassVertexCount();
 
-        GrassRenderDataBuilder.StarBatches stars =
-                mScene.mRenderDataBuilder.buildStarBatches(
-                        mNightStars, sd, mWidth, mHeight, mStarBatches);
+        GrassRenderDataBuilder.StarBatches stars = mScene.mRenderDataBuilder.buildStarBatches(
+                mNightStars, sd, mWidth, mHeight, mStarBatches);
 
         GrassVKNative.nRenderFrame(
                 mRendererHandle,
@@ -174,4 +173,3 @@ final class GrassVkDelegate implements VkRendererDelegate {
         if (mScene != null) mScene.addTap(x, y);
     }
 }
-

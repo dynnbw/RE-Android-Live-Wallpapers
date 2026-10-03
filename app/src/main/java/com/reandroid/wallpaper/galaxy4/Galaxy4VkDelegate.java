@@ -19,6 +19,7 @@ final class Galaxy4VkDelegate implements VkRendererDelegate {
     private final Context mContext;
     /** 场景一建出来就要有设置，所以构造时就收下（之后的变化走 onPluginPrefsChanged）。 */
     private final SharedPreferences mPrefs;
+
     private Galaxy4Scene mScene;
     private long mRendererHandle;
 
