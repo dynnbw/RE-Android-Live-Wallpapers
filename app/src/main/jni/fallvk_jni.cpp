@@ -1298,7 +1298,7 @@ public:
     std::vector<uint16_t> tempWaterIndices_;
 };
 
-template <typename T>
+static template <typename T>
 FallVkRenderer* asRenderer(T handle) {
     return reinterpret_cast<FallVkRenderer*>(handle);
 }

@@ -871,7 +871,7 @@ public:
     }
 };
 
-template<typename T> Galaxy4VkRenderer* asRenderer(T h) { return reinterpret_cast<Galaxy4VkRenderer*>(h); }
+static template <typename T> Galaxy4VkRenderer* asRenderer(T h) { return reinterpret_cast<Galaxy4VkRenderer*>(h); }
 
 } // namespace
 

@@ -9,11 +9,10 @@ import com.reandroid.utils.AssetLoader;
 
 final class GrassVKNative {
     static {
-        System.loadLibrary("grassvulkan");
+        System.loadLibrary("rebornvk");
     }
 
-    private GrassVKNative() {
-    }
+    private GrassVKNative() {}
 
     static native long nCreateRenderer(AssetManager assetManager);
 
@@ -25,7 +24,8 @@ final class GrassVKNative {
 
     static native void nOnSurfaceDestroyed(long handle);
 
-    static native void nRenderFrame(long handle,
+    static native void nRenderFrame(
+            long handle,
             float[] skyWeights,
             float[] grassMvp,
             float[] grassVerts,
@@ -52,11 +52,13 @@ final class GrassVKNative {
             int moonVertCount,
             float[] moonParams);
 
-    static native void nSetSkyTexture(long handle, int slot, int[] argbPixels, int width, int height);
+    static native void nSetSkyTexture(
+            long handle, int slot, int[] argbPixels, int width, int height);
 
     static native void nSetAATexture(long handle, int[] argbPixels, int width, int height);
 
-    static native void nSetSpriteTexture(long handle, int slot, int[] argbPixels, int width, int height);
+    static native void nSetSpriteTexture(
+            long handle, int slot, int[] argbPixels, int width, int height);
 
     static native boolean nIsVulkanSupported();
 
@@ -90,17 +92,13 @@ final class GrassVKNative {
         if (handle == 0L) {
             return;
         }
-        int[] pixels = new int[] {
-                0x00000000,
-                0xFFFFFFFF,
-                0xFFFFFFFF,
-                0x00000000
-        };
+        int[] pixels = new int[] {0x00000000, 0xFFFFFFFF, 0xFFFFFFFF, 0x00000000};
         nSetAATexture(handle, pixels, 4, 1);
     }
 
     /** Upload a 24x64 sky texture generated from grass_sky_fields.txt section data. */
-    private static void uploadSkyField(Context context, long handle, int slot, String allText, String sectionName) {
+    private static void uploadSkyField(
+            Context context, long handle, int slot, String allText, String sectionName) {
         if (context == null || handle == 0L) {
             return;
         }
@@ -121,7 +119,7 @@ final class GrassVKNative {
             return;
         }
         int argb = ((a & 0xFF) << 24) | ((r & 0xFF) << 16) | ((g & 0xFF) << 8) | (b & 0xFF);
-        nSetSpriteTexture(handle, slot, new int[]{argb}, 1, 1);
+        nSetSpriteTexture(handle, slot, new int[] {argb}, 1, 1);
     }
 
     private static void uploadSkyTexture(Context context, long handle, int slot, String assetPath) {
@@ -154,7 +152,8 @@ final class GrassVKNative {
         bitmap.recycle();
     }
 
-    private static void uploadSpriteTexture(Context context, long handle, int slot, String assetPath) {
+    private static void uploadSpriteTexture(
+            Context context, long handle, int slot, String assetPath) {
         if (context == null || handle == 0L) {
             return;
         }
@@ -183,5 +182,4 @@ final class GrassVKNative {
         }
         bitmap.recycle();
     }
-
 }

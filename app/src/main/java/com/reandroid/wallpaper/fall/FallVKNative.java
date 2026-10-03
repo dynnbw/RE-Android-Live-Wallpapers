@@ -5,20 +5,19 @@ import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.view.Surface;
 
+import com.reandroid.settings.WallpaperSettings;
+import com.reandroid.utils.AssetLoader;
+import com.reandroid.utils.SkyField;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import com.reandroid.utils.AssetLoader;
-import com.reandroid.utils.SkyField;
-import com.reandroid.settings.WallpaperSettings;
-
 final class FallVKNative {
     static {
-        System.loadLibrary("fallvulkan");
+        System.loadLibrary("rebornvk");
     }
 
-    private FallVKNative() {
-    }
+    private FallVKNative() {}
 
     static native long nCreateRenderer(AssetManager assetManager);
 
@@ -30,13 +29,26 @@ final class FallVKNative {
 
     static native void nOnSurfaceDestroyed(long handle);
 
-    static native void nRenderFrame(long handle, float[] projectionMatrix, float[] viewMatrix,
-            float[] leavesData, int leafCount, float xOffset,
-            float[] waterVertices, float[] waterTexCoords, short[] waterIndices,
-            int waterVertexCount, int waterIndexCount,
-            float[] dropData, int dropCount,
-            float glHeight, float bgScale, float meshScaleX, float meshScaleY,
-            float dxMul, int rotate);
+    static native void nRenderFrame(
+            long handle,
+            float[] projectionMatrix,
+            float[] viewMatrix,
+            float[] leavesData,
+            int leafCount,
+            float xOffset,
+            float[] waterVertices,
+            float[] waterTexCoords,
+            short[] waterIndices,
+            int waterVertexCount,
+            int waterIndexCount,
+            float[] dropData,
+            int dropCount,
+            float glHeight,
+            float bgScale,
+            float meshScaleX,
+            float meshScaleY,
+            float dxMul,
+            int rotate);
 
     /** 河床遮罩：单通道字节（白=天空 黑=树）。 */
     static native void nSetMaskTexture(long handle, byte[] mask, int width, int height);
@@ -86,17 +98,25 @@ final class FallVKNative {
         String[] candidates;
         if (greenLeavesEnabled) {
             candidates = new String[] {
-                "fall/drawable/leaves_0.png", "fall/drawable/leaves_1.png", "fall/drawable/leaves_2.png", "fall/drawable/leaves_3.png",
-                "fall/drawable/leaves_4.png", "fall/drawable/leaves_5.png", "fall/drawable/leaves_6.png", "fall/drawable/leaves_7.png",
-                "fall/drawable/leaves_8.png", "fall/drawable/leaves_9.png", "fall/drawable/leaves_10.png", "fall/drawable/leaves_11.png",
-                "fall/drawable/leaves_12.png", "fall/drawable/leaves_13.png", "fall/drawable/leaves_14.png", "fall/drawable/leaves_15.png",
-                "fall/drawable/leaves_16.png", "fall/drawable/leaves_17.png", "fall/drawable/leaves_18.png", "fall/drawable/leaves_19.png"
+                "fall/drawable/leaves_0.png", "fall/drawable/leaves_1.png",
+                        "fall/drawable/leaves_2.png", "fall/drawable/leaves_3.png",
+                "fall/drawable/leaves_4.png", "fall/drawable/leaves_5.png",
+                        "fall/drawable/leaves_6.png", "fall/drawable/leaves_7.png",
+                "fall/drawable/leaves_8.png", "fall/drawable/leaves_9.png",
+                        "fall/drawable/leaves_10.png", "fall/drawable/leaves_11.png",
+                "fall/drawable/leaves_12.png", "fall/drawable/leaves_13.png",
+                        "fall/drawable/leaves_14.png", "fall/drawable/leaves_15.png",
+                "fall/drawable/leaves_16.png", "fall/drawable/leaves_17.png",
+                        "fall/drawable/leaves_18.png", "fall/drawable/leaves_19.png"
             };
         } else {
             candidates = new String[] {
-                "fall/drawable/leaves_0.png", "fall/drawable/leaves_1.png", "fall/drawable/leaves_2.png", "fall/drawable/leaves_3.png",
-                "fall/drawable/leaves_4.png", "fall/drawable/leaves_5.png", "fall/drawable/leaves_6.png", "fall/drawable/leaves_7.png",
-                "fall/drawable/leaves_8.png", "fall/drawable/leaves_9.png", "fall/drawable/leaves_10.png", "fall/drawable/leaves_11.png",
+                "fall/drawable/leaves_0.png", "fall/drawable/leaves_1.png",
+                        "fall/drawable/leaves_2.png", "fall/drawable/leaves_3.png",
+                "fall/drawable/leaves_4.png", "fall/drawable/leaves_5.png",
+                        "fall/drawable/leaves_6.png", "fall/drawable/leaves_7.png",
+                "fall/drawable/leaves_8.png", "fall/drawable/leaves_9.png",
+                        "fall/drawable/leaves_10.png", "fall/drawable/leaves_11.png",
                 "fall/drawable/leaves_12.png", "fall/drawable/leaves_13.png"
             };
         }

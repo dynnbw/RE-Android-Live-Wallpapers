@@ -1601,7 +1601,7 @@ public:
     void*           starYellowVertexMapped_ = nullptr;
 };
 
-template <typename T>
+static template <typename T>
 GrassVkRenderer* asRenderer(T handle) {
     return reinterpret_cast<GrassVkRenderer*>(handle);
 }

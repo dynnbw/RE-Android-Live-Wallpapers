@@ -1243,7 +1243,7 @@ public:
     size_t particleCapacity_ = 0;
 };
 
-template <typename T>
+static template <typename T>
 GalaxyVkRenderer* asRenderer(T handle) {
     return reinterpret_cast<GalaxyVkRenderer*>(handle);
 }

@@ -5,29 +5,42 @@ import android.content.res.AssetManager;
 import android.view.Surface;
 
 import com.reandroid.utils.AssetLoader;
-import com.reandroid.settings.WallpaperSettings;
 
 final class Galaxy4VKNative {
-    static { System.loadLibrary("galaxy4vulkan"); }
+    static {
+        System.loadLibrary("rebornvk");
+    }
 
     private Galaxy4VKNative() {}
 
     static native long nCreateRenderer(AssetManager assetManager);
+
     static native void nDestroyRenderer(long handle);
+
     static native boolean nOnSurfaceCreated(long handle, Surface surface, int width, int height);
+
     static native void nOnSurfaceChanged(long handle, Surface surface, int width, int height);
+
     static native void nOnSurfaceDestroyed(long handle);
 
-    static native void nRenderFrame(long handle, float[] projectionMatrix,
-            float[] spaceClouds, float[] bgStars, float[] staticStars,
-            int spaceCloudCount, int bgStarCount, float timeSeconds,
-            float particleSize, float particleOpacity);
+    static native void nRenderFrame(
+            long handle,
+            float[] projectionMatrix,
+            float[] spaceClouds,
+            float[] bgStars,
+            float[] staticStars,
+            int spaceCloudCount,
+            int bgStarCount,
+            float timeSeconds,
+            float particleSize,
+            float particleOpacity);
 
     static native void nSetBackgroundTexture(long handle, int[] argbPixels, int width, int height);
+
     static native void nSetCloudTexture(long handle, int[] argbPixels, int width, int height);
-    static native void nSetStaticStarTextures(long handle,
-            int[] tex1Pixels, int w1, int h1,
-            int[] tex2Pixels, int w2, int h2);
+
+    static native void nSetStaticStarTextures(
+            long handle, int[] tex1Pixels, int w1, int h1, int[] tex2Pixels, int w2, int h2);
 
     static native boolean nIsVulkanSupported();
 
@@ -50,7 +63,8 @@ final class Galaxy4VKNative {
         }
     }
 
-    private static void uploadPackedTexture(Context context, long handle, String path, boolean cloud) {
+    private static void uploadPackedTexture(
+            Context context, long handle, String path, boolean cloud) {
         int[] packed = decodePixels(context, path);
         if (packed.length < 3) return;
         int w = packed[0], h = packed[1];
@@ -63,12 +77,16 @@ final class Galaxy4VKNative {
     private static int[] decodePixels(Context context, String assetPath) {
         android.graphics.Bitmap bitmap = AssetLoader.decodeBitmap(context, assetPath);
         if (bitmap == null) return new int[0];
-        android.graphics.Bitmap argb = bitmap.getConfig() == android.graphics.Bitmap.Config.ARGB_8888
-                ? bitmap : bitmap.copy(android.graphics.Bitmap.Config.ARGB_8888, false);
+        android.graphics.Bitmap argb =
+                bitmap.getConfig() == android.graphics.Bitmap.Config.ARGB_8888
+                        ? bitmap
+                        : bitmap.copy(android.graphics.Bitmap.Config.ARGB_8888, false);
         if (argb != bitmap) bitmap.recycle();
         int w = argb.getWidth(), h = argb.getHeight();
         int[] pixels = new int[w * h + 3];
-        pixels[0] = w; pixels[1] = h; pixels[2] = 0;
+        pixels[0] = w;
+        pixels[1] = h;
+        pixels[2] = 0;
         argb.getPixels(pixels, 3, w, 0, 0, w, h);
         argb.recycle();
         return pixels;

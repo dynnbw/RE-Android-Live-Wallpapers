@@ -5,16 +5,15 @@ import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.view.Surface;
 
-import com.reandroid.utils.AssetLoader;
 import com.reandroid.settings.WallpaperSettings;
+import com.reandroid.utils.AssetLoader;
 
 final class GalaxyVKNative {
     static {
-        System.loadLibrary("galaxyvulkan");
+        System.loadLibrary("rebornvk");
     }
 
-    private GalaxyVKNative() {
-    }
+    private GalaxyVKNative() {}
 
     static native long nCreateRenderer(AssetManager assetManager);
 
@@ -26,8 +25,14 @@ final class GalaxyVKNative {
 
     static native void nOnSurfaceDestroyed(long handle);
 
-    static native void nRenderFrame(long handle, float[] mvpMatrix, float[] particlePositions,
-            float[] particleColors, int particleCount, float particleAlphaMultiplier, float twist);
+    static native void nRenderFrame(
+            long handle,
+            float[] mvpMatrix,
+            float[] particlePositions,
+            float[] particleColors,
+            int particleCount,
+            float particleAlphaMultiplier,
+            float twist);
 
     static native void nSetLightTexture(long handle, int[] argbPixels, int width, int height);
 
@@ -45,7 +50,8 @@ final class GalaxyVKNative {
         uploadTexture(context, handle, "galaxy/drawable/galaxy_space.jpg", false);
     }
 
-    private static void uploadTexture(Context context, long handle, String assetPath, boolean isLight) {
+    private static void uploadTexture(
+            Context context, long handle, String assetPath, boolean isLight) {
         if (context == null || handle == 0L) {
             return;
         }
