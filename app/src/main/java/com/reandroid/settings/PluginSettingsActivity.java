@@ -199,7 +199,7 @@ public class PluginSettingsActivity extends AppCompatActivity
         try {
             WallpaperPlugin plugin = (WallpaperPlugin)
                     Class.forName(mPluginVkClass).getDeclaredConstructor().newInstance();
-            android.view.View view = plugin.createVulkanPreview(this);
+            android.view.View view = plugin.createVulkanPreview(this, prefs);
             if (view instanceof WallpaperPreview) return (WallpaperPreview) view;
             if (view != null) Log.w(TAG, "VK 预览视图没有实现 WallpaperPreview，忽略");
         } catch (Exception e) {

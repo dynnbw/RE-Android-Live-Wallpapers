@@ -1,6 +1,7 @@
 package com.reandroid.plugin;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.view.View;
 
 /**
@@ -23,8 +24,11 @@ public interface WallpaperPlugin {
      *
      * <p>由插件自己给，而不是在 info.json 里再写一个类名：视图类通常不是 public，
      * 而这个方法天然能访问同包的 nIsVulkanSupported()，能不能用 Vulkan 由它自己判断。
+     *
+     * <p>{@code prefs} 是插件作用域的那份 —— 预览与壁纸用的是同一个 delegate，
+     * 场景建出来时就得带着设置。
      */
-    default View createVulkanPreview(Context context) {
+    default View createVulkanPreview(Context context, SharedPreferences prefs) {
         return null;
     }
 

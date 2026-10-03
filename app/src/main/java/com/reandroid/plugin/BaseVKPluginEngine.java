@@ -206,9 +206,32 @@ public abstract class BaseVKPluginEngine implements WallpaperEngine, Runnable {
     /**
      * 渲染线程可能早于 surface 就绪（见 {@link #startRenderer}）：每帧给一次补创建的机会。
      *
-     * <p>默认什么都不做 —— 大多数插件的 surface 在 startRenderer 之前就已就绪。
+     * <p>surface 已经就绪时它什么都不做，所以对"surface 在 startRenderer 之前就绪"的插件是
+     * 惰性的；只有真的等到晚到的 surface 时才起作用。
      */
-    protected void ensureSurfaceReady() {}
+    protected void ensureSurfaceReady() {
+        if (mSurfaceCreated || mHolder == null) return;
+        Surface s = mHolder.getSurface();
+        if (s == null || !s.isValid()) return;
+        Log.i(getLogTag(), "deferred surface creation");
+        mSurfaceCreated = true;
+        onSurfaceCreatedNative(s, mWidth, mHeight);
+    }
+
+    /**
+     * surface 变化的轻量处理：只记尺寸、更新场景、确保渲染器与线程，**不做**销毁重建。
+     *
+     * <p>给 native 自己会重建 swapchain 的壁纸用（由
+     * {@link VkRendererDelegate#needsFullRecreateOnSurfaceChange()} 决定）。
+     */
+    protected void applySurfaceChangeLightweight(SurfaceHolder holder, int w, int h) {
+        mHolder = holder;
+        mWidth = w;
+        mHeight = h;
+        ensureOrResizeScene();
+        ensureRenderer();
+        startRenderer();
+    }
 
     protected void stopRenderer() {
         mRunning = false;

@@ -1,15 +1,16 @@
 package com.reandroid.wallpaper.galaxy4;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.view.View;
 
+import com.reandroid.plugin.VkRendererEngine;
 import com.reandroid.plugin.WallpaperEngine;
 import com.reandroid.plugin.WallpaperPlugin;
 import com.reandroid.plugin.WallpaperPluginHost;
+import com.reandroid.vulkan.VKSurfaceView;
 
 public class Galaxy4VKPlugin implements WallpaperPlugin {
-    static {
-        android.util.Log.e("Galaxy4VKPlugin", "*** PLUGIN STATIC INIT ***");
-    }
 
     @Override
     public String getId() {
@@ -18,16 +19,19 @@ public class Galaxy4VKPlugin implements WallpaperPlugin {
 
     @Override
     public WallpaperEngine createEngine(Context ctx, WallpaperPluginHost host) {
-        return new Galaxy4VKPluginEngine(ctx, host);
+        return new VkRendererEngine(
+                ctx, host, new Galaxy4VkDelegate(ctx, host.getSharedPreferences()));
     }
 
     /**
      * 设置页的 VK 预览。设备不支持 Vulkan 就返回 null，让预览退回 OpenGL ES。
+     *
+     * <p>用的 delegate 与壁纸那条路径是同一个类 —— 预览和壁纸不会再各写一份 native 调用。
      */
     @Override
-    public android.view.View createVulkanPreview(Context context) {
+    public View createVulkanPreview(Context context, SharedPreferences prefs) {
         if (!Galaxy4VKNative.nIsVulkanSupported()) return null;
-        return new Galaxy4VKSurfaceView(context);
+        return new VKSurfaceView(context, new Galaxy4VkDelegate(context, prefs));
     }
 
     @Override

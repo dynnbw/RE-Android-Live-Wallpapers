@@ -8,6 +8,7 @@ import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+import com.reandroid.plugin.VkRendererDelegate;
 import com.reandroid.plugin.WallpaperPreview;
 
 /**
@@ -16,29 +17,43 @@ import com.reandroid.plugin.WallpaperPreview;
  *
  * @param <T> Scene 类型
  */
-public abstract class VKSurfaceView<T> extends SurfaceView
+public class VKSurfaceView extends SurfaceView
         implements SurfaceHolder.Callback, Runnable, WallpaperPreview {
+
+    /** 壁纸特有的那部分；本类只管线程、surface 生命周期与配速。 */
+    private final VkRendererDelegate mDelegate;
 
     protected volatile Thread mThread;
     protected volatile boolean mRunning;
-    protected volatile long mRendererHandle;
-    protected volatile T mScene;
+    /** 渲染器是否已建 —— createRenderer() 归 delegate，这里只记它成没成功。 */
+    protected boolean mRendererCreated;
+
     protected final Object mSceneLock = new Object();
     protected boolean mNativeSurfaceAlive;
     protected int mWidth, mHeight;
 
-    // 共享帧率控制与诊断
-    private final FrameRateManager mFrameRate = new FrameRateManager(getLogTag());
+    /*
+     * 惰性建：不能写在字段初始化里 —— getLogTag() 已经转给 mDelegate，而字段初始化发生在
+     * 构造器体之前，那时 mDelegate 还是 null。
+     */
+    private FrameRateManager mFrameRate;
+
+    private FrameRateManager frameRate() {
+        if (mFrameRate == null) mFrameRate = new FrameRateManager(getLogTag());
+        return mFrameRate;
+    }
 
     // ---- 构造器 ----
 
-    protected VKSurfaceView(Context context) {
+    public VKSurfaceView(Context context, VkRendererDelegate delegate) {
         super(context);
+        mDelegate = delegate;
         init();
     }
 
-    protected VKSurfaceView(Context context, AttributeSet attrs) {
+    public VKSurfaceView(Context context, AttributeSet attrs, VkRendererDelegate delegate) {
         super(context, attrs);
+        mDelegate = delegate;
         init();
     }
 
@@ -82,7 +97,7 @@ public abstract class VKSurfaceView<T> extends SurfaceView
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
         stopRenderer();
-        if (mNativeSurfaceAlive && mRendererHandle != 0L) {
+        if (mNativeSurfaceAlive && mRendererCreated) {
             onSurfaceDestroyedNative();
             mNativeSurfaceAlive = false;
         }
@@ -98,20 +113,15 @@ public abstract class VKSurfaceView<T> extends SurfaceView
         stopRenderer();
     }
 
-    @Override
-    public Object getScene() {
-        return mScene;
-    }
-
     public void releaseRenderer() {
         stopRenderer();
-        if (mRendererHandle != 0L) {
+        if (mRendererCreated) {
             if (mNativeSurfaceAlive) {
                 onSurfaceDestroyedNative();
                 mNativeSurfaceAlive = false;
             }
             destroyRenderer();
-            mRendererHandle = 0L;
+            mRendererCreated = false;
         }
     }
 
@@ -127,10 +137,10 @@ public abstract class VKSurfaceView<T> extends SurfaceView
         try {
             while (mRunning) {
                 long frameStart = SystemClock.uptimeMillis();
-                mFrameRate.syncPerfSettingsIfNeeded(frameStart);
+                frameRate().syncPerfSettingsIfNeeded(frameStart);
 
                 try {
-                    if (mRendererHandle != 0L && mScene != null) {
+                    if (mRendererCreated && mDelegate.isReady()) {
                         synchronized (mSceneLock) {
                             syncTexturesIfNeeded();
                             renderFrame();
@@ -142,10 +152,10 @@ public abstract class VKSurfaceView<T> extends SurfaceView
                 }
 
                 long frameCost = SystemClock.uptimeMillis() - frameStart;
-                mFrameRate.recordFrameCost(frameCost);
+                frameRate().recordFrameCost(frameCost);
 
                 try {
-                    Thread.sleep(mFrameRate.pacingSleepMs(frameCost));
+                    Thread.sleep(frameRate().pacingSleepMs(frameCost));
                 } catch (InterruptedException ignored) {
                     Thread.currentThread().interrupt();
                     return;
@@ -190,38 +200,55 @@ public abstract class VKSurfaceView<T> extends SurfaceView
         }
     }
 
-    // ---- 模板方法：子类实现 ----
+    // ---- 模板方法：全部转给 delegate ----
 
-    /** 创建壁纸 Scene 实例 */
-    protected abstract void ensureScene();
+    @Override
+    public Object getScene() {
+        return mDelegate.getScene();
+    }
 
-    /** Scene resize（如果 Scene 支持） */
-    protected void onSceneResize(int width, int height) {}
+    protected void ensureScene() {
+        mDelegate.ensureScene(mWidth, mHeight);
+    }
 
-    /** 创建 Vulkan 渲染器并上传纹理 */
-    protected abstract void ensureRenderer();
+    protected void onSceneResize(int width, int height) {
+        mDelegate.ensureScene(width, height);
+    }
 
-    /** 销毁 Vulkan 渲染器 */
-    protected abstract void destroyRenderer();
+    protected void ensureRenderer() {
+        if (mRendererCreated) return;
+        mRendererCreated = mDelegate.createRenderer() != 0L;
+    }
 
-    /** 调用 VKNative.nOnSurfaceCreated */
-    protected abstract void onSurfaceCreatedNative(Surface surface);
+    protected void destroyRenderer() {
+        mDelegate.destroyRenderer();
+    }
 
-    /** 调用 VKNative.nOnSurfaceChanged */
-    protected abstract void onSurfaceChangedNative(Surface surface);
+    protected void onSurfaceCreatedNative(Surface surface) {
+        mDelegate.onSurfaceCreated(surface, mWidth, mHeight);
+    }
 
-    /** 调用 VKNative.nOnSurfaceDestroyed */
-    protected abstract void onSurfaceDestroyedNative();
+    protected void onSurfaceChangedNative(Surface surface) {
+        mDelegate.onSurfaceChanged(surface, mWidth, mHeight);
+    }
 
-    /** 运行时纹理热切换（每帧检查） */
-    protected void syncTexturesIfNeeded() {}
+    protected void onSurfaceDestroyedNative() {
+        mDelegate.onSurfaceDestroyed();
+    }
 
-    /** 执行 Scene.update + VKNative.nRenderFrame */
-    protected abstract void renderFrame();
+    protected void syncTexturesIfNeeded() {
+        mDelegate.syncTexturesIfNeeded();
+    }
 
-    /** 渲染线程名称 */
-    protected abstract String getThreadName();
+    protected void renderFrame() {
+        mDelegate.renderFrame();
+    }
 
-    /** 日志 TAG */
-    protected abstract String getLogTag();
+    protected String getThreadName() {
+        return mDelegate.logTag() + "PreviewThread";
+    }
+
+    protected String getLogTag() {
+        return mDelegate.logTag();
+    }
 }
