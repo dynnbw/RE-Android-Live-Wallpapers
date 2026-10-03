@@ -1,15 +1,8 @@
 {
-  "versionCode": 12,
-  "versionName": "更新测试",
-  "downloads": [
-    {
-      "kind": "external",
-      "url": "https://nnbw.lanzoub.com/b00u0zc3g",
-      "label": "蓝奏云"
-    }
-  ],
+  "versionCode": 10,
+  "versionName": "1.9",
   "changelog": {
-    "en": "⚠️ This is a test of the update feature, not a new release\n\nIf you are using the app: please ignore this and do not tap Download. Nothing would install anyway — it is here only to check that the update flow itself works.\n\nReal release notes will appear here when there is a real release.",
-    "zh": "⚠️ 这是一次更新功能的测试，不是新版本\n\n如果你正在使用本应用：请忽略这条提示，不要点击下载。即使点了也装不上 —— 这只是为了验证更新流程本身能不能走通。\n\n真正的版本发布时，这里会写明这次新增与修复了什么。"
+    "en": "New: three new wallpapers — Cosmic Flow (Sony's flowing swirls, 8 colour themes), Shake Them All (falling Androids on a physics simulation) and Flowing Silk (flowing ribbons, 3 colour themes)\nNew: Fireworks — particle count, burst trails and an enhanced comet mode\nNew: rainbow colour mode on Nexus, and an adjustable microbe count with per-size colouring\nNew: touch rotation on Cube, manual theme selection on Aurora 2, idle mode on the music visualisations\nNew: inline colour picker in wallpaper settings, and a feedback tile in the wallpaper list\n\nFixed: switching wallpapers could leave the previous wallpaper's last frame on screen\nFixed: the picture could stretch and clip at one edge after the canvas changed size\nFixed: several Grass issues — the draw order of weather and the night sky, the night tone, the moon's tilt, and the wind phase\nFixed: settings could show stale values after a toggle, a reset or a dependency change\nFixed: a number of paths that only failed once something else had already gone wrong\n\nChanged: wallpaper names and translations aligned with the originals\nChanged: all wallpaper icons unified to 512x512\nChanged: Water Leaves' backdrop and visuals reworked for better image quality\nChanged: smoother animation and lower memory use across several wallpapers",
+    "zh": "新增：三个新壁纸——宇宙流动（索尼的流动波纹，8 种主题配色）、坠落的安卓机器人（带物理模拟的下落机器人）、丝语流年（流动丝带，3 种主题配色）\n新增：烟火壁纸——粒子数量、拖尾、增强彗星模式\n新增：交错光幕彩虹配色；微生物数量可调，并按体型区分颜色\n新增：立方体触摸旋转、北极光2 手动主题、音乐可视化空闲模式\n新增：设置页内嵌取色器；壁纸列表数量为奇数时补一个反馈入口\n\n修复：切换壁纸偶发停留在上一张壁纸的画面\n修复：画面在尺寸变化后偶发被拉伸、在边缘被截断\n修复：天空草地壁纸——天气与夜空的绘制次序、夜间色调、月亮倾角、风相位\n修复：设置项在开关、恢复默认或依赖变化后显示旧值\n修复：若干\"只在已经出错时才会失败\"的路径\n\n变更：壁纸名称与多语言翻译对齐原版\n变更：全部壁纸图标统一为 512×512\n变更：水面落叶壁纸背景图片与视觉效果优化\n变更：多个壁纸的流畅度与内存占用优化"
   }
 }
