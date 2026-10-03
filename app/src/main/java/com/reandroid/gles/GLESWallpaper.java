@@ -508,7 +508,8 @@ public abstract class GLESWallpaper extends WallpaperService {
         if (context != null && context != EGL14.EGL_NO_CONTEXT) {
             EGL14.eglDestroyContext(display, context);
         }
-        EGL14.eglTerminate(display);
+        // 不要 eglTerminate：EGL_DEFAULT_DISPLAY 是全进程共享的，同进程里的预览/其它引擎
+        // 会被一起端掉。自己的 surface 与 context 上面已经销毁。
     }
 
     private static void logD(String msg) {

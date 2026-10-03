@@ -259,8 +259,12 @@ public class GLESPreviewView extends SurfaceView implements SurfaceHolder.Callba
             if (mContext != null && mContext != EGL14.EGL_NO_CONTEXT) {
                 EGL14.eglDestroyContext(mDisplay, mContext);
             }
-            EGL14.eglTerminate(mDisplay);
         }
+        /*
+         * 不要再 eglTerminate：EGL_DEFAULT_DISPLAY 是这个进程里所有 EGL 用户共享的，而壁纸引擎
+         * 就在同一个进程 —— 预览销毁时 terminate 会把引擎的 context / surface 一起端掉。
+         * 自己的 surface 和 context 上面已经销毁，terminate 只剩这个副作用。
+         */
         mSurface = null;
         mContext = null;
         mDisplay = null;

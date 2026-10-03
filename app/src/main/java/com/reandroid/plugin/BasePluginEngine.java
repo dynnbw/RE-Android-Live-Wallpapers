@@ -441,8 +441,13 @@ public abstract class BasePluginEngine implements WallpaperEngine {
                 EGL14.eglDestroySurface(mDisplay, mEglSurface);
             if (mEglContext != null && mEglContext != EGL14.EGL_NO_CONTEXT)
                 EGL14.eglDestroyContext(mDisplay, mEglContext);
-            EGL14.eglTerminate(mDisplay);
         }
+        /*
+         * 到这里**不要**再 eglTerminate。它作用的是 display，而 EGL_DEFAULT_DISPLAY 是整个
+         * 进程共享的 —— 设置页的预览（GLESPreviewView）和这个引擎跑在同一个进程里，谁先销毁
+         * 就把对方的 context / surface 一并端掉。surface 与 context 上面已经各自销毁，
+         * eglTerminate 剩下的只有这个副作用（而且它本来也不保证释放 EGL 资源）。
+         */
         mEglCreated = false;
         mEglCurrent = false;
         mDisplay = null;
