@@ -29,11 +29,14 @@ public final class PluginPrefsInjector {
     public static void injectPrefs(Object scene, SharedPreferences prefs) {
         if (scene == null) return;
         try {
-            java.lang.reflect.Method m = scene.getClass()
-                    .getMethod("setPluginPrefs", SharedPreferences.class);
+            java.lang.reflect.Method m =
+                    scene.getClass().getMethod("setPluginPrefs", SharedPreferences.class);
             m.invoke(scene, prefs);
         } catch (NoSuchMethodException e) {
-            Log.i(TAG, scene.getClass().getSimpleName() + " has no setPluginPrefs — using default prefs source");
+            Log.i(
+                    TAG,
+                    scene.getClass().getSimpleName()
+                            + " has no setPluginPrefs — using default prefs source");
         } catch (Exception e) {
             Log.w(TAG, "Failed to inject prefs into " + scene.getClass().getSimpleName(), e);
         }
@@ -42,13 +45,16 @@ public final class PluginPrefsInjector {
     public static void injectProvider(Object scene, PluginPrefsProvider provider) {
         if (scene == null || provider == null) return;
         try {
-            java.lang.reflect.Method m = scene.getClass()
-                    .getMethod("setPluginPrefsProvider", PluginPrefsProvider.class);
+            java.lang.reflect.Method m =
+                    scene.getClass().getMethod("setPluginPrefsProvider", PluginPrefsProvider.class);
             m.invoke(scene, provider);
         } catch (NoSuchMethodException e) {
             // 绝大多数壁纸不需要读别的插件，没有这个方法很正常，不必记日志
         } catch (Exception e) {
-            Log.w(TAG, "Failed to inject prefs provider into " + scene.getClass().getSimpleName(), e);
+            Log.w(
+                    TAG,
+                    "Failed to inject prefs provider into " + scene.getClass().getSimpleName(),
+                    e);
         }
     }
 }
