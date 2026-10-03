@@ -85,7 +85,11 @@ public class ProxyWallpaperService extends WallpaperService {
         public void onCreate(SurfaceHolder surfaceHolder) {
             super.onCreate(surfaceHolder);
             setTouchEventsEnabled(true);
-            createEngine(getActivePlugin(ProxyWallpaperService.this));
+            /*
+             * 不在这里建引擎：此刻框架还没发 surfaceCreated，还没有可用的 surface，
+             * 引擎拿不到 surface 就建不起 EGL。等 onSurfaceCreated —— 那才是"surface 可用"
+             * 的权威信号（AOSP 的壁纸也在这一步建 EGL）。
+             */
         }
 
         private void createEngine(String pluginId) {
@@ -212,15 +216,20 @@ public class ProxyWallpaperService extends WallpaperService {
         @Override
         public void onSurfaceCreated(SurfaceHolder holder) {
             super.onSurfaceCreated(holder);
-            // Recreate the engine after surface destruction — without this override,
-            // a surface-recreate (rotation, multi-window) leaves the wallpaper black
-            // because onSurfaceDestroyed nulled mEngine with no rebuild path.
+            /*
+             * 引擎在这里建。两种情况都靠这一步：
+             *   - surface 销毁后重建（旋转、多窗口）：onSurfaceDestroyed 把 mEngine 置空了
+             *   - 服务刚起：Engine.onCreate 时还没有 surface，故意不建（见那里）
+             * 框架此刻已经保证 surface 可用，所以引擎能在 onCreate 里直接把 EGL 建起来。
+             */
+            mDriven = true;
             if (mEngine == null) {
                 String activeId = getActivePlugin(ProxyWallpaperService.this);
                 if (activeId != null) {
                     createEngine(activeId);
                 }
             }
+            ensureRenderThread();
         }
 
         // ---- Engine callbacks forwarded under mLock (mirrors GLESWallpaper.mSceneLock) ----

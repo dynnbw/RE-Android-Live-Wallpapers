@@ -3,7 +3,6 @@ package com.reandroid.plugin;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
-import android.graphics.Rect;
 import android.opengl.EGL14;
 import android.opengl.EGLConfig;
 import android.opengl.EGLContext;
@@ -11,9 +10,6 @@ import android.opengl.EGLDisplay;
 import android.opengl.EGLSurface;
 import android.opengl.GLES30;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.SystemClock;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.Surface;
@@ -33,9 +29,6 @@ import com.reandroid.gles.GLESWallpaper;
 public abstract class BasePluginEngine implements WallpaperEngine {
 
     private static final String TAG = "BasePluginEngine";
-
-    /** EGL 没建起来时，补发 onSurfaceChanged 的最小间隔（见 {@link #scheduleSurfaceRecovery}）。 */
-    private static final long RECOVERY_INTERVAL_MS = 500L;
 
     protected final Context mContext;
     protected final WallpaperPluginHost mHost;
@@ -107,45 +100,32 @@ public abstract class BasePluginEngine implements WallpaperEngine {
     @Override
     public void onCreate(SurfaceHolder holder) {
         mHolder = holder;
+        /*
+         * EGL 在这里建，而不是等 onSurfaceChanged 的尺寸。
+         *
+         * 宿主调 onCreate 的时机对应框架的 surfaceCreated —— 那是"这个 surface 已经可用"的
+         * 权威信号（AOSP 自己的壁纸也在这一步建 EGL）。尺寸要晚一步才有，而建 EGL 并不需要它：
+         * 原来两件事绑在一起，于是"拿不到尺寸 → 不通知 → EGL 也不建"，实测切换壁纸时出现过
+         * 39 次引擎被创建却始终没有尺寸的情况，画面就一直停在上一个壁纸的最后一帧。
+         */
+        Surface surface = holder != null ? holder.getSurface() : null;
+        if (surface != null && surface.isValid()) {
+            attachEgl(surface);
+        }
     }
 
     /**
-     * 兜底：EGL 还没建起来时，用保存的 SurfaceHolder 让主线程补发一次 onSurfaceChanged。
+     * 为这个 surface 建 EGL 并记录为当前 surface。
      *
-     * <p>存在的理由：引擎创建时若拿不到画布尺寸（切换壁纸的瞬间常见），
-     * ProxyEngine 就不会通知尺寸；而切换壁纸时 surface 没有变化，系统也不会再回调，
-     * 于是 EGL 永远建不起来，画面一直停在上一个壁纸的最后一帧。
-     * 补发走主线程，和系统回调同一个线程，避免与 onSurfaceChanged 竞态。
+     * <p>建完不建场景 —— 场景需要尺寸，等 {@link #onSurfaceChanged} 带来。
      */
-    private void scheduleSurfaceRecovery() {
-        if (mRecoveryPosted) return;
-        final SurfaceHolder holder = mHolder;
-        if (holder == null) return;
-        Surface surface = holder.getSurface();
-        if (surface == null || !surface.isValid()) return;
-
-        /*
-         * 限速。这个过程是被 drawFrame 每帧触发的：建不起来时每一帧都会走一遍
-         * "跳过绘制 → 补发 → 还是不行"，也就是每秒两行 × 目标帧率（实测 4531 行 / 39 秒）。
-         * 刷屏本身会把真正的原因挤出日志缓冲 —— 事后根本查不出初始化为什么失败。
-         * 500ms 一次对恢复速度没有可感影响。
-         */
-        long now = SystemClock.uptimeMillis();
-        if (now - mLastRecoveryMs < RECOVERY_INTERVAL_MS) return;
-        mLastRecoveryMs = now;
-
-        mRecoveryPosted = true;
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
-            @Override
-            public void run() {
-                mRecoveryPosted = false;
-                if (mEglCreated) return;
-                Rect frame = holder.getSurfaceFrame();
-                if (frame.width() <= 0 || frame.height() <= 0) return;
-                Log.w(TAG, "EGL 未建立，补发 onSurfaceChanged " + frame.width() + "x" + frame.height());
-                onSurfaceChanged(holder, 0, frame.width(), frame.height());
-            }
-        });
+    private void attachEgl(Surface surface) {
+        mCurrentSurface = surface;
+        mEglCreated = initEgl(surface);
+        mEglCurrent = false;
+        mSceneInitPending = false;
+        // 建起来了就允许下一次再报"没有 EGL"（每段缺失期只留一行日志）
+        if (mEglCreated) mEglMissingLogged = false;
     }
 
     @Override
@@ -189,12 +169,14 @@ public abstract class BasePluginEngine implements WallpaperEngine {
 
     private Surface mCurrentSurface;
 
-    /** onCreate 收到的 holder，仅用于 EGL 没建起来时补发尺寸（见 scheduleSurfaceRecovery）。 */
+    /** onCreate 收到的 holder；EGL 没建起来时用它判定 surface 是否可用。 */
     private SurfaceHolder mHolder;
 
-    private volatile boolean mRecoveryPosted;
-    /** 上次补发的时刻；只在渲染线程读写（drawFrame 那条路径）。 */
-    private long mLastRecoveryMs;
+    /** 已经为"没有 EGL"打过日志，避免每帧一行（见 drawFrame）。 */
+    private boolean mEglMissingLogged;
+
+    /** 已经为"场景还没建"打过日志；同上。 */
+    private boolean mSceneMissingLogged;
 
     @Override
     public void onSurfaceChanged(SurfaceHolder holder, int format, int width, int height) {
@@ -230,13 +212,11 @@ public abstract class BasePluginEngine implements WallpaperEngine {
         }
 
         /*
-         * 建 EGL 的条件是「surface 换了**或**还没建起来」。
+         * EGL 的条件是「surface 换了**或**还没建起来」。
          *
-         * 只看 surface 标识会漏掉一种状态：initEgl 失败过一次之后，mCurrentSurface 已经是
-         * 这个 surface 而 mEglCreated 仍是 false —— 此时下面那个 `!=` 不成立，EGL 就再也建
-         * 不起来了。而补发 onSurfaceChanged 拿到的还是同一个 Surface，补发也永远无效，于是卡
-         * 成每帧一条 "drawFrame skipped: EGL not created"。scheduleSurfaceRecovery 的存在就是
-         * 为了救这种状态，原来这条门却把它挡在外面。
+         * 只看 surface 标识会漏掉一种状态：initEgl 失败过一次之后，mCurrentSurface 已经是这个
+         * surface 而 mEglCreated 仍是 false —— 此时下面那个 `!=` 不成立，EGL 就再也建不起来，
+         * 而系统不会再为同一个 surface 回调。所以这里把"还没建起来"也算作需要重建。
          */
         boolean surfaceChanged = mCurrentSurface != surface;
         if (surfaceChanged || !mEglCreated) {
@@ -248,19 +228,18 @@ public abstract class BasePluginEngine implements WallpaperEngine {
                 }
                 destroyEgl();
             }
-            mCurrentSurface = surface;
-            mEglCreated = initEgl(surface);
-            mEglCurrent = false;
-            mSceneInitPending = false;
-            if (mEglCreated) {
-                mScene = createScene(width, height, mContext);
-                // Defer init() until drawFrame — EGL must be current for GL calls in onCreate()
-                mPendingSurface = surface;
-                mPendingResources = mContext.getResources();
-                mPendingPreview = mPreview;
-                mSceneInitPending = true;
-                tryInjectPrefs(mScene);
-            }
+            attachEgl(surface);
+        }
+
+        // 场景可能还没建：EGL 在 onCreate（surfaceCreated）里就建好了，那时还没有尺寸
+        if (mEglCreated && mScene == null) {
+            mScene = createScene(width, height, mContext);
+            // Defer init() until drawFrame — EGL must be current for GL calls in onCreate()
+            mPendingSurface = surface;
+            mPendingResources = mContext.getResources();
+            mPendingPreview = mPreview;
+            mSceneInitPending = true;
+            tryInjectPrefs(mScene);
         }
         // 尺寸变化不在这里应用 —— drawFrame 会取走 mResizePending 再 resize
     }
@@ -318,14 +297,29 @@ public abstract class BasePluginEngine implements WallpaperEngine {
     @Override
     public void drawFrame(long timeMs) {
         if (!mEglCreated) {
-            scheduleSurfaceRecovery();
-            Log.w(TAG, "drawFrame skipped: EGL not created");
+            /*
+             * 只在**进入**这个状态时打一行。这里原来是每帧一行 + 补发一次 onSurfaceChanged，
+             * 那套防御把日志刷到了每秒上百行，真正的原因（初始化的哪一步失败）当场就被挤出
+             * 缓冲、事后无从查起。没有 EGL 就只是"还没拿到可用的 surface"，安静等着即可。
+             */
+            if (!mEglMissingLogged) {
+                mEglMissingLogged = true;
+                Log.e(TAG, "没有 EGL 上下文，跳过绘制（等下一次 surface 回调）");
+            }
             return;
         }
         if (mScene == null) {
-            Log.w(TAG, "drawFrame skipped: scene is null");
+            /*
+             * EGL 建好、尺寸还没来时会走到这里（见 onCreate）。同样只报一次 ——
+             * 每帧一行会在等尺寸的那一小段时间里刷满日志。
+             */
+            if (!mSceneMissingLogged) {
+                mSceneMissingLogged = true;
+                Log.w(TAG, "场景还没建（等尺寸），跳过绘制");
+            }
             return;
         }
+        mSceneMissingLogged = false;
 
         /*
          * 尺寸变化在这里取走并应用 —— 场景数据(投影矩阵、水面网格)由渲染线程独占，
@@ -415,12 +409,25 @@ public abstract class BasePluginEngine implements WallpaperEngine {
             Log.e(TAG, "eglCreateContext failed: 0x" + Integer.toHexString(EGL14.eglGetError()));
             return false;
         }
+        /*
+         * validBefore/validAfter 是给 EGL_BAD_NATIVE_WINDOW 定性的：进函数时 Surface 还标称有效，
+         * 若失败后立刻变成无效，说明是"建的过程中被销毁"（竞态）；若前后都有效，则说明
+         * isValid() 这个判据本身不代表底层 ANativeWindow 可用 —— 那就得换判据，而不是重试。
+         */
+        boolean validBefore = surface.isValid();
         mEglSurface = EGL14.eglCreateWindowSurface(
                 mDisplay, config, surface, new int[] {EGL14.EGL_NONE}, 0);
         if (mEglSurface == null || mEglSurface == EGL14.EGL_NO_SURFACE) {
             Log.e(
                     TAG,
-                    "eglCreateWindowSurface failed: 0x" + Integer.toHexString(EGL14.eglGetError()));
+                    "eglCreateWindowSurface failed: 0x"
+                            + Integer.toHexString(EGL14.eglGetError())
+                            + " surf="
+                            + Integer.toHexString(System.identityHashCode(surface))
+                            + " validBefore="
+                            + validBefore
+                            + " validAfter="
+                            + surface.isValid());
             return false;
         }
         return true;
