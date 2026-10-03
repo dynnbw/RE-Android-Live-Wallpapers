@@ -14,7 +14,10 @@ import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
-public class GLESPreviewView extends SurfaceView implements SurfaceHolder.Callback, Runnable {
+import com.reandroid.plugin.WallpaperPreview;
+
+public class GLESPreviewView extends SurfaceView
+        implements SurfaceHolder.Callback, Runnable, WallpaperPreview {
     private static final String TAG = "GLESPreviewView";
     private static final boolean DEBUG =
             android.util.Log.isLoggable("GLESPreviewView", android.util.Log.DEBUG);

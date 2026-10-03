@@ -1,7 +1,6 @@
 package com.reandroid.plugin;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -22,7 +21,6 @@ import androidx.preference.SwitchPreferenceCompat;
 
 import com.reandroid.gles.GLESScene;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.Map;
@@ -43,10 +41,15 @@ public class PluginSettingsFragment extends PreferenceFragmentCompat
 
         void refreshPreview();
 
-        GLESScene getScene();
+        /** 预览正在用的场景；调用方按方法名反射推 prefs，不需要知道类型。 */
+        Object getScene();
     }
 
     private static final String ARG_PLUGIN_ID = "plugin_id";
+
+    /** 每个插件自己的偏好里的键：用 Vulkan 渲染而不是 OpenGL ES。 */
+    private static final String USE_VULKAN_KEY = "use_vulkan";
+
     private static final String KEY_CUSTOM_BG_URI = "pref_custom_background_uri";
     private PreviewHost mHost;
     private ActivityResultLauncher<String> mImagePickerLauncher;
@@ -67,8 +70,7 @@ public class PluginSettingsFragment extends PreferenceFragmentCompat
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mImagePickerLauncher = registerForActivityResult(
-                new ActivityResultContracts.GetContent(),
-                this::onImagePicked);
+                new ActivityResultContracts.GetContent(), this::onImagePicked);
     }
 
     @Override
@@ -110,7 +112,7 @@ public class PluginSettingsFragment extends PreferenceFragmentCompat
         // Vulkan renderer toggle (if a VK plugin is available)
         if (pluginVk != null) {
             SwitchPreferenceCompat vkSwitch = new SwitchPreferenceCompat(ctx);
-            vkSwitch.setKey("use_vulkan");
+            vkSwitch.setKey(USE_VULKAN_KEY);
             vkSwitch.setTitle(com.reandroid.wallpaper.R.string.pref_use_vulkan_title);
             vkSwitch.setSummary(com.reandroid.wallpaper.R.string.pref_use_vulkan_summary);
             vkSwitch.setDefaultValue(false);
@@ -136,15 +138,16 @@ public class PluginSettingsFragment extends PreferenceFragmentCompat
         JSONObject layout = PluginResources.loadLayout(ctx, pluginId);
         if (layout != null) {
             JSONObject language = PluginResources.loadLanguageForLocale(ctx, pluginId);
-            DynamicPreferenceFactory.buildPreferences(ctx, prefs, layout,
-                    screen::addPreference, language);
+            DynamicPreferenceFactory.buildPreferences(
+                    ctx, prefs, layout, screen::addPreference, language);
 
             // Wire up button-type preferences (custom background / reset background)
             Map<String, String[]> buttonSpecs = DynamicPreferenceFactory.collectButtonSpecs(layout);
             for (Map.Entry<String, String[]> entry : buttonSpecs.entrySet()) {
                 Preference btn = screen.findPreference(entry.getKey());
                 if (btn != null) {
-                    wireButtonAction(btn, entry.getValue()[0], entry.getValue()[1], pluginId, prefs);
+                    wireButtonAction(
+                            btn, entry.getValue()[0], entry.getValue()[1], pluginId, prefs);
                 }
             }
         }
@@ -166,14 +169,21 @@ public class PluginSettingsFragment extends PreferenceFragmentCompat
         JSONObject layout = PluginResources.loadLayout(requireContext(), pluginId);
         if (layout != null) {
             JSONObject language = PluginResources.loadLanguageForLocale(requireContext(), pluginId);
-            DynamicPreferenceFactory.buildPreferences(requireContext(),
-                    getPreferenceManager().getSharedPreferences(), layout,
-                    scr::addPreference, language);
+            DynamicPreferenceFactory.buildPreferences(
+                    requireContext(),
+                    getPreferenceManager().getSharedPreferences(),
+                    layout,
+                    scr::addPreference,
+                    language);
             Map<String, String[]> buttonSpecs = DynamicPreferenceFactory.collectButtonSpecs(layout);
             for (Map.Entry<String, String[]> entry : buttonSpecs.entrySet()) {
                 Preference btn = scr.findPreference(entry.getKey());
                 if (btn != null) {
-                    wireButtonAction(btn, entry.getValue()[0], entry.getValue()[1], pluginId,
+                    wireButtonAction(
+                            btn,
+                            entry.getValue()[0],
+                            entry.getValue()[1],
+                            pluginId,
                             getPreferenceManager().getSharedPreferences());
                 }
             }
@@ -182,20 +192,15 @@ public class PluginSettingsFragment extends PreferenceFragmentCompat
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
-        GLESScene scene = mHost != null ? mHost.getScene() : null;
-        if (scene != null) {
-            Context ctx = requireContext();
-            try {
-                java.lang.reflect.Method m = scene.getClass()
-                        .getMethod("setPluginPrefs", SharedPreferences.class);
-                m.invoke(scene, prefs);
-                // 同时补一次跨插件读取能力（合成类壁纸需要；普通壁纸没有这个方法，静默跳过）
-                PluginPrefsInjector.injectProvider(scene,
-                        pluginId -> ctx.getSharedPreferences("plugin_" + pluginId, Context.MODE_PRIVATE));
-            } catch (Exception e) {
-                Log.w("PluginSettingsFragment", "Failed to inject prefs into preview, refreshing scene", e);
-                if (mHost != null) mHost.refreshPreview();
-            }
+        /*
+         * 切换渲染器要把整块预览换掉 —— 它换了实现（GLESPreviewView ↔ VKSurfaceView），
+         * 不是换一个参数。只改设置里的值而预览照旧，等于预览在骗人。
+         */
+        if (USE_VULKAN_KEY.equals(key)) {
+            if (mHost != null) mHost.refreshPreview();
+            // 不 return：这个 key 可能还被 dependency / disableOn 引用，下面的行刷新照走
+        } else {
+            injectPrefsIntoPreview(prefs);
         }
         // 一个 key 变化后刷新受影响的行 —— 这是原来"整块重建动态区"所做的事，分两半做增量：
         //   值：在 prefs 里改了值的那个控件重新读一次（重建时每个控件都会重读）
@@ -207,12 +212,44 @@ public class PluginSettingsFragment extends PreferenceFragmentCompat
         }
     }
 
+    /**
+     * 把新的 prefs 推给预览正在用的场景。
+     *
+     * <p>按方法名反射调 {@code setPluginPrefs(SharedPreferences)} —— GL 与 VK 用的是同一个
+     * Scene 类，所以这里不需要知道它是哪一种；没有这个方法就退回整块重建预览。
+     */
+    private void injectPrefsIntoPreview(SharedPreferences prefs) {
+        Object scene = mHost != null ? mHost.getScene() : null;
+        if (scene == null) return;
+        Context ctx = requireContext();
+        try {
+            java.lang.reflect.Method m =
+                    scene.getClass().getMethod("setPluginPrefs", SharedPreferences.class);
+            m.invoke(scene, prefs);
+            // 同时补一次跨插件读取能力（合成类壁纸需要；普通壁纸没有这个方法，静默跳过）
+            PluginPrefsInjector.injectProvider(
+                    scene,
+                    pluginId ->
+                            ctx.getSharedPreferences("plugin_" + pluginId, Context.MODE_PRIVATE));
+        } catch (Exception e) {
+            Log.w(
+                    "PluginSettingsFragment",
+                    "Failed to inject prefs into preview, refreshing scene",
+                    e);
+            if (mHost != null) mHost.refreshPreview();
+        }
+    }
+
     private String getPluginId() {
         return getArguments() != null ? getArguments().getString(ARG_PLUGIN_ID) : null;
     }
 
-    private void wireButtonAction(Preference btn, String action, String disableOnKey,
-                                   String pluginId, SharedPreferences prefs) {
+    private void wireButtonAction(
+            Preference btn,
+            String action,
+            String disableOnKey,
+            String pluginId,
+            SharedPreferences prefs) {
         switch (action) {
             case "pickBackground":
                 btn.setOnPreferenceClickListener(pref -> {
@@ -226,9 +263,15 @@ public class PluginSettingsFragment extends PreferenceFragmentCompat
                 btn.setOnPreferenceClickListener(pref -> {
                     if (isButtonDisabled(prefs, disableOnKey)) return true;
                     prefs.edit().remove(KEY_CUSTOM_BG_URI).apply();
-                    Toast.makeText(requireContext(),
-                            com.reandroid.wallpaper.R.string.fireworks_background_reset_toast,
-                            Toast.LENGTH_SHORT).show();
+                    Toast.makeText(
+                                    requireContext(),
+                                    com.reandroid
+                                            .wallpaper
+                                            .R
+                                            .string
+                                            .fireworks_background_reset_toast,
+                                    Toast.LENGTH_SHORT)
+                            .show();
                     updateBackgroundButtonSummary(btn, prefs);
                     if (mHost != null) mHost.refreshPreview();
                     return true;
@@ -240,7 +283,9 @@ public class PluginSettingsFragment extends PreferenceFragmentCompat
 
     /** 按钮 disableOn 检查：父开关开启时按钮不可用（按钮不存值，change-listener 拦截不适用）。 */
     private static boolean isButtonDisabled(SharedPreferences prefs, String disableOnKey) {
-        return disableOnKey != null && !disableOnKey.isEmpty() && prefs.getBoolean(disableOnKey, false);
+        return disableOnKey != null
+                && !disableOnKey.isEmpty()
+                && prefs.getBoolean(disableOnKey, false);
     }
 
     private void onImagePicked(Uri uri) {
@@ -248,17 +293,23 @@ public class PluginSettingsFragment extends PreferenceFragmentCompat
         String pluginId = getPluginId();
         if (pluginId == null) return;
         Context ctx = requireContext();
-        SharedPreferences prefs = ctx.getSharedPreferences("plugin_" + pluginId, Context.MODE_PRIVATE);
+        SharedPreferences prefs =
+                ctx.getSharedPreferences("plugin_" + pluginId, Context.MODE_PRIVATE);
 
         // Take persistable permission so URI survives reboots
         try {
-            ctx.getContentResolver().takePersistableUriPermission(uri,
-                    Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        } catch (Exception e) { Log.w("PluginSettingsFragment", "Failed to take persistable URI permission", e); }
+            ctx.getContentResolver()
+                    .takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        } catch (Exception e) {
+            Log.w("PluginSettingsFragment", "Failed to take persistable URI permission", e);
+        }
 
         prefs.edit().putString(KEY_CUSTOM_BG_URI, uri.toString()).apply();
-        Toast.makeText(ctx, com.reandroid.wallpaper.R.string.fireworks_custom_background_set_toast,
-                Toast.LENGTH_SHORT).show();
+        Toast.makeText(
+                        ctx,
+                        com.reandroid.wallpaper.R.string.fireworks_custom_background_set_toast,
+                        Toast.LENGTH_SHORT)
+                .show();
 
         // Update button summary and refresh preview
         Preference btn = findPreference("pref_custom_background");
@@ -282,8 +333,9 @@ public class PluginSettingsFragment extends PreferenceFragmentCompat
         for (int i = 0; i < perms.length(); i++) {
             String perm = perms.optString(i);
             String androidPerm = mapPermission(perm);
-            if (androidPerm != null && ContextCompat.checkSelfPermission(requireContext(), androidPerm)
-                    != PackageManager.PERMISSION_GRANTED) {
+            if (androidPerm != null
+                    && ContextCompat.checkSelfPermission(requireContext(), androidPerm)
+                            != PackageManager.PERMISSION_GRANTED) {
                 needed.add(androidPerm);
             }
         }
@@ -294,11 +346,16 @@ public class PluginSettingsFragment extends PreferenceFragmentCompat
 
     private static String mapPermission(String name) {
         switch (name) {
-            case "RECORD_AUDIO": return Manifest.permission.RECORD_AUDIO;
-            case "CAMERA": return Manifest.permission.CAMERA;
-            case "ACCESS_FINE_LOCATION": return Manifest.permission.ACCESS_FINE_LOCATION;
-            case "ACCESS_COARSE_LOCATION": return Manifest.permission.ACCESS_COARSE_LOCATION;
-            default: return null;
+            case "RECORD_AUDIO":
+                return Manifest.permission.RECORD_AUDIO;
+            case "CAMERA":
+                return Manifest.permission.CAMERA;
+            case "ACCESS_FINE_LOCATION":
+                return Manifest.permission.ACCESS_FINE_LOCATION;
+            case "ACCESS_COARSE_LOCATION":
+                return Manifest.permission.ACCESS_COARSE_LOCATION;
+            default:
+                return null;
         }
     }
 }

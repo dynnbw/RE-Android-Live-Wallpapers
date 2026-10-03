@@ -8,6 +8,8 @@ import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+import com.reandroid.plugin.WallpaperPreview;
+
 /**
  * Vulkan 预览 SurfaceView 共享基类，封装线程管理、Surface 生命周期和帧率诊断。
  * 子类通过模板方法注入壁纸特定的 Scene 创建、纹理上传和渲染调用。
@@ -15,7 +17,7 @@ import android.view.SurfaceView;
  * @param <T> Scene 类型
  */
 public abstract class VKSurfaceView<T> extends SurfaceView
-        implements SurfaceHolder.Callback, Runnable {
+        implements SurfaceHolder.Callback, Runnable, WallpaperPreview {
 
     protected volatile Thread mThread;
     protected volatile boolean mRunning;
@@ -96,6 +98,11 @@ public abstract class VKSurfaceView<T> extends SurfaceView
         stopRenderer();
     }
 
+    @Override
+    public Object getScene() {
+        return mScene;
+    }
+
     public void releaseRenderer() {
         stopRenderer();
         if (mRendererHandle != 0L) {
@@ -160,7 +167,9 @@ public abstract class VKSurfaceView<T> extends SurfaceView
         mThread.start();
     }
 
-    protected void stopRenderer() {
+    /** public 是为了满足 {@link WallpaperPreview}；pauseRenderer() 本来就公开这一件事。 */
+    @Override
+    public void stopRenderer() {
         mRunning = false;
         // 捕获局部引用：渲染线程退出时会把 mThread 置 null，
         // 若直接读字段，join 期间线程退出会导致 mThread.isAlive() NPE。

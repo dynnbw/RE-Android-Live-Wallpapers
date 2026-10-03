@@ -17,6 +17,15 @@ public class FallVKPlugin implements WallpaperPlugin {
         return new FallVKPluginEngine(c, host);
     }
 
+    /**
+     * 设置页的 VK 预览。设备不支持 Vulkan 就返回 null，让预览退回 OpenGL ES。
+     */
+    @Override
+    public android.view.View createVulkanPreview(Context context) {
+        if (!FallVKNative.nIsVulkanSupported()) return null;
+        return new FallVKSurfaceView(context);
+    }
+
     @Override
     public void release() {}
 }

@@ -21,6 +21,15 @@ public class Galaxy4VKPlugin implements WallpaperPlugin {
         return new Galaxy4VKPluginEngine(ctx, host);
     }
 
+    /**
+     * 设置页的 VK 预览。设备不支持 Vulkan 就返回 null，让预览退回 OpenGL ES。
+     */
+    @Override
+    public android.view.View createVulkanPreview(Context context) {
+        if (!Galaxy4VKNative.nIsVulkanSupported()) return null;
+        return new Galaxy4VKSurfaceView(context);
+    }
+
     @Override
     public void release() {}
 }

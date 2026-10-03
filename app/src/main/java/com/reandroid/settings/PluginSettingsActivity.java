@@ -16,6 +16,8 @@ import com.reandroid.plugin.PluginPrefsInjector;
 import com.reandroid.plugin.PluginResources;
 import com.reandroid.plugin.PluginSettingsFragment;
 import com.reandroid.plugin.ProxyWallpaperService;
+import com.reandroid.plugin.WallpaperPlugin;
+import com.reandroid.plugin.WallpaperPreview;
 import com.reandroid.wallpaper.R;
 
 import org.json.JSONObject;
@@ -33,8 +35,16 @@ public class PluginSettingsActivity extends AppCompatActivity
 
     private String mPluginId;
     private FrameLayout mPreviewContainer;
-    private GLESPreviewView mPreviewView;
+    /** 容器里那块视图；渲染控制走 {@link #mPreview}。 */
+    private android.view.View mPreviewView;
+
+    /** 与之配套的渲染控制（GL 与 VK 两种实现）。 */
+    private com.reandroid.plugin.WallpaperPreview mPreview;
+
     private String mPreviewClass;
+    /** 这个插件的 Vulkan 插件类名；没有 VK 版时为 null。 */
+    private String mPluginVkClass;
+
     private boolean mPreviewStopped;
     private SettingsToolbarHelper mToolbarHelper;
 
@@ -65,13 +75,14 @@ public class PluginSettingsActivity extends AppCompatActivity
 
         JSONObject info = PluginResources.loadInfo(this, mPluginId);
         mPreviewClass = info != null ? info.optString("previewClass", null) : null;
+        mPluginVkClass = info != null ? info.optString("pluginVk", null) : null;
         setTitle(PluginResources.resolveLabel(this, mPluginId, info));
 
         mPreviewContainer = findViewById(R.id.preview_container);
         createPreviewView();
 
-        PluginSettingsFragment fragment = (PluginSettingsFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.settings_container);
+        PluginSettingsFragment fragment = (PluginSettingsFragment)
+                getSupportFragmentManager().findFragmentById(R.id.settings_container);
         if (fragment == null) {
             fragment = PluginSettingsFragment.newInstance(mPluginId);
             getSupportFragmentManager()
@@ -94,8 +105,8 @@ public class PluginSettingsActivity extends AppCompatActivity
     @Override
     protected void onStop() {
         if (mToolbarHelper != null) mToolbarHelper.onStop();
-        if (mPreviewView != null) {
-            mPreviewView.stopRenderer();
+        if (mPreview != null) {
+            mPreview.stopRenderer();
             mPreviewStopped = true;
         }
         super.onStop();
@@ -104,9 +115,10 @@ public class PluginSettingsActivity extends AppCompatActivity
     @Override
     protected void onDestroy() {
         if (mToolbarHelper != null) mToolbarHelper.onDestroy();
-        if (mPreviewView != null) {
-            mPreviewView.stopRenderer();
+        if (mPreview != null) {
+            mPreview.stopRenderer();
             mPreviewView = null;
+            mPreview = null;
         }
         super.onDestroy();
     }
@@ -157,8 +169,8 @@ public class PluginSettingsActivity extends AppCompatActivity
     }
 
     @Override
-    public GLESScene getScene() {
-        return mPreviewView != null ? mPreviewView.getScene() : null;
+    public Object getScene() {
+        return mPreview != null ? mPreview.getScene() : null;
     }
 
     @Override
@@ -166,18 +178,57 @@ public class PluginSettingsActivity extends AppCompatActivity
         runOnUiThread(this::createPreviewView);
     }
 
+    /**
+     * 建预览。渲染器跟随「使用 Vulkan」开关 —— 打开且这个插件有 VK 预览时用 VK，
+     * 否则退回 OpenGL ES。
+     *
+     * <p>不跟随的话，用户在预览里看到的和实际应用后的渲染器就是两回事：VK 在设备上跑不起来
+     * 也看不出来，只能等应用完壁纸才发现画面是空的。
+     */
+    /**
+     * 开关打开时让插件交出它的 VK 预览；否则返回 null。
+     *
+     * <p>「能不能用 Vulkan」由插件自己判断 —— 预览视图与那个壁纸的 {@code nIsVulkanSupported()}
+     * 同一个包，只有它够得着。这里只负责读开关、实例化插件类。
+     */
+    private WallpaperPreview createVulkanPreview() {
+        if (mPluginVkClass == null) return null;
+        // 与 ProxyWallpaperService.loadPlugin 读的是同一份偏好（插件作用域）
+        SharedPreferences prefs = getSharedPreferences("plugin_" + mPluginId, Context.MODE_PRIVATE);
+        if (!prefs.getBoolean("use_vulkan", false)) return null;
+        try {
+            WallpaperPlugin plugin = (WallpaperPlugin)
+                    Class.forName(mPluginVkClass).getDeclaredConstructor().newInstance();
+            android.view.View view = plugin.createVulkanPreview(this);
+            if (view instanceof WallpaperPreview) return (WallpaperPreview) view;
+            if (view != null) Log.w(TAG, "VK 预览视图没有实现 WallpaperPreview，忽略");
+        } catch (Exception e) {
+            Log.w(TAG, "VK 预览建不起来，退回 OpenGL ES", e);
+        }
+        return null;
+    }
+
     private void createPreviewView() {
         if (mPreviewContainer == null) return;
         if (mPreviewView != null) {
             mPreviewContainer.removeView(mPreviewView);
-            mPreviewView.stopRenderer();
+            if (mPreview != null) mPreview.stopRenderer();
             mPreviewView = null;
+            mPreview = null;
         }
-        if (mPreviewClass == null) return;
-        mPreviewView = new GLESPreviewView(this, this::createScene);
+
+        WallpaperPreview vk = createVulkanPreview();
+        if (vk != null) {
+            mPreview = vk;
+            mPreviewView = (android.view.View) vk;
+        } else {
+            if (mPreviewClass == null) return;
+            GLESPreviewView gl = new GLESPreviewView(this, this::createScene);
+            mPreview = gl;
+            mPreviewView = gl;
+        }
         mPreviewView.setLayoutParams(new FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT,
-                FrameLayout.LayoutParams.MATCH_PARENT));
+                FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
         mPreviewContainer.addView(mPreviewView);
         mPreviewStopped = false;
     }
@@ -195,8 +246,7 @@ public class PluginSettingsActivity extends AppCompatActivity
                     scene = (GLESScene) clz.getConstructor(Context.class, int.class, int.class)
                             .newInstance(this, w, h);
                 } catch (NoSuchMethodException e2) {
-                    scene = (GLESScene) clz.getConstructor(int.class, int.class)
-                            .newInstance(w, h);
+                    scene = (GLESScene) clz.getConstructor(int.class, int.class).newInstance(w, h);
                 }
             }
             injectPluginPrefs(scene);
@@ -208,7 +258,8 @@ public class PluginSettingsActivity extends AppCompatActivity
     }
 
     private void injectPluginPrefs(GLESScene scene) {
-        PluginPrefsInjector.inject(scene,
+        PluginPrefsInjector.inject(
+                scene,
                 getSharedPreferences("plugin_" + mPluginId, Context.MODE_PRIVATE),
                 pluginId -> getSharedPreferences("plugin_" + pluginId, Context.MODE_PRIVATE));
     }
