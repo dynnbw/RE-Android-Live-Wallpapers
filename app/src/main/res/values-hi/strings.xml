@@ -145,8 +145,10 @@
     <string name="update_available_title">नया संस्करण v%1$s</string>
     <string name="update_button">डाउनलोड करें</string>
     <string name="update_check_failed">अपडेट जांच विफल: %1$s</string>
+    <string name="update_download_direct">सीधा डाउनलोड</string>
     <string name="update_downloading_title">अपडेट डाउनलोड हो रहा है…</string>
     <string name="update_later_button">बाद में</string>
+    <string name="update_open_failed">लिंक नहीं खुल सका</string>
     <string name="wallpapers">आरईएंड्रॉइड लाइव वॉलपेपर</string>
     <string name="weather_toolbar_title">मौसम सेटिंग्स</string>
 </resources>

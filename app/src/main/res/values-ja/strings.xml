@@ -145,8 +145,10 @@
     <string name="update_available_title">新しいバージョン v%1$s</string>
     <string name="update_button">ダウンロード</string>
     <string name="update_check_failed">アップデートの確認に失敗しました: %1$s</string>
+    <string name="update_download_direct">直接ダウンロード</string>
     <string name="update_downloading_title">アップデートをダウンロード中…</string>
     <string name="update_later_button">後で</string>
+    <string name="update_open_failed">リンクを開けませんでした</string>
     <string name="wallpapers">REAndroid ライブ壁紙</string>
     <string name="weather_toolbar_title">天気設定</string>
 </resources>

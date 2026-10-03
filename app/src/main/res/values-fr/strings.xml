@@ -145,8 +145,10 @@
     <string name="update_available_title">Nouvelle version v%1$s</string>
     <string name="update_button">Télécharger</string>
     <string name="update_check_failed">Échec de la recherche de mises à jour : %1$s</string>
+    <string name="update_download_direct">Téléchargement direct</string>
     <string name="update_downloading_title">Téléchargement de la mise à jour…</string>
     <string name="update_later_button">Plus tard</string>
+    <string name="update_open_failed">Impossible d ouvrir le lien</string>
     <string name="wallpapers">REAndroid Fonds d’écran animés</string>
     <string name="weather_toolbar_title">Paramètres météo</string>
 </resources>

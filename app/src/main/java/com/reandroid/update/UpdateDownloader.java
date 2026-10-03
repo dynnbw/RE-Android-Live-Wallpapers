@@ -6,8 +6,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Uri;
-import android.util.Log;
 import android.os.Environment;
+import android.util.Log;
 
 import com.reandroid.wallpaper.R;
 
@@ -33,7 +33,9 @@ public class UpdateDownloader {
 
     public interface Callback {
         void onDownloadStarted();
+
         void onComplete(Uri apkUri);
+
         void onError(String message);
     }
 
@@ -41,11 +43,18 @@ public class UpdateDownloader {
         mContext = context.getApplicationContext();
     }
 
+    /** 只接受 https —— 免得清单把下载引到 file:// / content:// 之类的地方。 */
+    private static boolean isAcceptableUrl(String url) {
+        return url != null && url.startsWith("https://");
+    }
+
     /**
      * 开始下载 APK，通过系统 DownloadManager 执行。
-     * 直连 GitHub，国内用户可在浏览器手动添加加速镜像。
+     *
+     * @param option 清单里指定的直连入口；为 null 时退回写死的 GitHub Releases 前缀
+     *               （老清单没有 downloads 字段时走这条）
      */
-    public void download(VersionInfo info, Callback callback) {
+    public void download(VersionInfo info, VersionInfo.Download option, Callback callback) {
         // Guard against re-entry: cancel any in-flight download before starting a new one,
         // otherwise the old receiver is orphaned (leaked on the application Context) and
         // mDownloadId is overwritten, losing the first download's completion handling.
@@ -57,13 +66,21 @@ public class UpdateDownloader {
 
         // versionName is server-supplied and concatenated into the URL and filename —
         // reject anything outside a strict version format to avoid path/URL manipulation.
-        if (info.versionName == null || !VERSION_NAME_PATTERN.matcher(info.versionName).matches()) {
+        if (info.versionName == null
+                || !VERSION_NAME_PATTERN.matcher(info.versionName).matches()) {
             if (mCallback != null) mCallback.onError("Invalid version name: " + info.versionName);
             return;
         }
 
         String filename = "REWallpapers_v" + info.versionName + ".apk";
-        String url = URL_PREFIX + "v" + info.versionName + "/app-release.apk";
+        String url;
+        if (option != null && isAcceptableUrl(option.url)) {
+            // 地址由清单提供 —— 被篡改的后果只是"下不到"，装不进假包：APK 用同一把签名密钥，
+            // 签名不同的更新 Android 会拒绝安装。
+            url = option.url;
+        } else {
+            url = URL_PREFIX + "v" + info.versionName + "/app-release.apk";
+        }
 
         DownloadManager dm = (DownloadManager) mContext.getSystemService(Context.DOWNLOAD_SERVICE);
         DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
@@ -87,9 +104,12 @@ public class UpdateDownloader {
     public void cancel() {
         if (mDownloadId != 0) {
             try {
-                DownloadManager dm = (DownloadManager) mContext.getSystemService(Context.DOWNLOAD_SERVICE);
+                DownloadManager dm =
+                        (DownloadManager) mContext.getSystemService(Context.DOWNLOAD_SERVICE);
                 if (dm != null) dm.remove(mDownloadId);
-            } catch (Exception e) { Log.w(TAG, "Failed to remove download", e); }
+            } catch (Exception e) {
+                Log.w(TAG, "Failed to remove download", e);
+            }
             mDownloadId = 0;
         }
         unregister();
@@ -104,14 +124,15 @@ public class UpdateDownloader {
 
             unregister();
 
-            DownloadManager dm = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
+            DownloadManager dm =
+                    (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
             DownloadManager.Query query = new DownloadManager.Query();
             query.setFilterById(mDownloadId);
 
             try (android.database.Cursor cursor = dm.query(query)) {
                 if (cursor != null && cursor.moveToFirst()) {
-                    int status = cursor.getInt(
-                            cursor.getColumnIndex(DownloadManager.COLUMN_STATUS));
+                    int status =
+                            cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS));
                     if (status == DownloadManager.STATUS_SUCCESSFUL) {
                         Uri uri = dm.getUriForDownloadedFile(mDownloadId);
                         if (uri == null) {
@@ -131,7 +152,9 @@ public class UpdateDownloader {
         if (mRegistered) {
             try {
                 mContext.unregisterReceiver(mReceiver);
-            } catch (Exception e) { Log.w(TAG, "Failed to unregister download receiver", e); }
+            } catch (Exception e) {
+                Log.w(TAG, "Failed to unregister download receiver", e);
+            }
             mRegistered = false;
         }
     }

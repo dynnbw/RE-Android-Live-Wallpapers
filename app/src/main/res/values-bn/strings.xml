@@ -145,8 +145,10 @@
     <string name="update_available_title">New Version v%1$s</string>
     <string name="update_button">Download</string>
     <string name="update_check_failed">Failed to check for updates: %1$s</string>
+    <string name="update_download_direct">সরাসরি ডাউনলোড</string>
     <string name="update_downloading_title">Downloading update…</string>
     <string name="update_later_button">Later</string>
+    <string name="update_open_failed">লিঙ্কটি খোলা যায়নি</string>
     <string name="wallpapers">আরইঅ্যানড্রয়েড লাইভ ওয়ালপেপার</string>
     <string name="weather_toolbar_title">আবহাওয়া সেটিংস</string>
 </resources>

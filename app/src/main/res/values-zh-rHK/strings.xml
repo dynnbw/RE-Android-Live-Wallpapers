@@ -145,8 +145,10 @@
     <string name="update_available_title">發現新版本 v%1$s</string>
     <string name="update_button">下載</string>
     <string name="update_check_failed">檢查更新失敗：%1$s</string>
+    <string name="update_download_direct">直接下載</string>
     <string name="update_downloading_title">正在下載更新…</string>
     <string name="update_later_button">稍後</string>
+    <string name="update_open_failed">打不開這個連結</string>
     <string name="wallpapers">REAndroid 動態壁紙</string>
     <string name="weather_toolbar_title">天氣設置</string>
 </resources>

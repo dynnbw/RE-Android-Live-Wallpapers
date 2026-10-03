@@ -145,8 +145,10 @@
     <string name="update_available_title">Новая версия v%1$s</string>
     <string name="update_button">Скачать</string>
     <string name="update_check_failed">Не удалось проверить обновления: %1$s</string>
+    <string name="update_download_direct">Прямая загрузка</string>
     <string name="update_downloading_title">Загрузка обновления…</string>
     <string name="update_later_button">Позже</string>
+    <string name="update_open_failed">Не удалось открыть ссылку</string>
     <string name="wallpapers">REAndroid Живые обои</string>
     <string name="weather_toolbar_title">Настройки погоды</string>
 </resources>
