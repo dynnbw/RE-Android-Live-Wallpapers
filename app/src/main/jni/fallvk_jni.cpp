@@ -1305,28 +1305,24 @@ FallVkRenderer* asRenderer(T handle) {
 
 }  // namespace
 
-extern "C" JNIEXPORT jlong JNICALL
-Java_com_reandroid_wallpaper_fall_FallVKNative_nCreateRenderer(
+static jlong JNICALL nCreateRenderer(
         JNIEnv* env, jclass, jobject assetManager) {
     auto* renderer = new FallVkRenderer(AAssetManager_fromJava(env, assetManager));
     return reinterpret_cast<jlong>(renderer);
 }
 
-extern "C" JNIEXPORT void JNICALL
-Java_com_reandroid_wallpaper_fall_FallVKNative_nDestroyRenderer(
+static void JNICALL nDestroyRenderer(
         JNIEnv*, jclass, jlong handle) {
     delete asRenderer(handle);
 }
 
-extern "C" JNIEXPORT jboolean JNICALL
-Java_com_reandroid_wallpaper_fall_FallVKNative_nOnSurfaceCreated(
+static jboolean JNICALL nOnSurfaceCreated(
         JNIEnv* env, jclass, jlong handle, jobject surface, jint width, jint height) {
     auto* renderer = asRenderer(handle);
     return renderer != nullptr && renderer->createOrUpdateSurface(env, surface, width, height);
 }
 
-extern "C" JNIEXPORT void JNICALL
-Java_com_reandroid_wallpaper_fall_FallVKNative_nOnSurfaceChanged(
+static void JNICALL nOnSurfaceChanged(
         JNIEnv* env, jclass, jlong handle, jobject surface, jint width, jint height) {
     auto* renderer = asRenderer(handle);
     if (renderer != nullptr) {
@@ -1334,8 +1330,7 @@ Java_com_reandroid_wallpaper_fall_FallVKNative_nOnSurfaceChanged(
     }
 }
 
-extern "C" JNIEXPORT void JNICALL
-Java_com_reandroid_wallpaper_fall_FallVKNative_nOnSurfaceDestroyed(
+static void JNICALL nOnSurfaceDestroyed(
         JNIEnv*, jclass, jlong handle) {
     auto* renderer = asRenderer(handle);
     if (renderer != nullptr) {
@@ -1343,8 +1338,7 @@ Java_com_reandroid_wallpaper_fall_FallVKNative_nOnSurfaceDestroyed(
     }
 }
 
-extern "C" JNIEXPORT void JNICALL
-Java_com_reandroid_wallpaper_fall_FallVKNative_nRenderFrame(
+static void JNICALL nRenderFrame(
         JNIEnv* env, jclass, jlong handle, jfloatArray projectionMatrix, jfloatArray viewMatrix,
         jfloatArray leavesData, jint leafCount, jfloat xOffset,
         jfloatArray waterVertices, jfloatArray waterTexCoords, jshortArray waterIndices,
@@ -1361,8 +1355,7 @@ Java_com_reandroid_wallpaper_fall_FallVKNative_nRenderFrame(
     }
 }
 
-extern "C" JNIEXPORT void JNICALL
-Java_com_reandroid_wallpaper_fall_FallVKNative_nSetMaskTexture(
+static void JNICALL nSetMaskTexture(
         JNIEnv* env, jclass, jlong handle, jbyteArray mask, jint width, jint height) {
     auto* renderer = asRenderer(handle);
     if (renderer != nullptr) {
@@ -1370,8 +1363,7 @@ Java_com_reandroid_wallpaper_fall_FallVKNative_nSetMaskTexture(
     }
 }
 
-extern "C" JNIEXPORT void JNICALL
-Java_com_reandroid_wallpaper_fall_FallVKNative_nSetSkyTexture(
+static void JNICALL nSetSkyTexture(
         JNIEnv* env, jclass, jlong handle, jintArray argbPixels, jint width, jint height) {
     auto* renderer = asRenderer(handle);
     if (renderer != nullptr) {
@@ -1379,8 +1371,7 @@ Java_com_reandroid_wallpaper_fall_FallVKNative_nSetSkyTexture(
     }
 }
 
-extern "C" JNIEXPORT void JNICALL
-Java_com_reandroid_wallpaper_fall_FallVKNative_nSetLeafTexture(
+static void JNICALL nSetLeafTexture(
         JNIEnv* env, jclass, jlong handle, jintArray argbPixels, jint width, jint height) {
     auto* renderer = asRenderer(handle);
     if (renderer != nullptr) {
@@ -1388,8 +1379,7 @@ Java_com_reandroid_wallpaper_fall_FallVKNative_nSetLeafTexture(
     }
 }
 
-extern "C" JNIEXPORT void JNICALL
-Java_com_reandroid_wallpaper_fall_FallVKNative_nSetLeafAtlasFrameCount(
+static void JNICALL nSetLeafAtlasFrameCount(
         JNIEnv*, jclass, jlong handle, jint frameCount) {
     auto* renderer = asRenderer(handle);
     if (renderer != nullptr) {
@@ -1397,8 +1387,31 @@ Java_com_reandroid_wallpaper_fall_FallVKNative_nSetLeafAtlasFrameCount(
     }
 }
 
-extern "C" JNIEXPORT jboolean JNICALL
-Java_com_reandroid_wallpaper_fall_FallVKNative_nIsVulkanSupported(
+static jboolean JNICALL nIsVulkanSupported(
         JNIEnv*, jclass) {
     return vkIsVulkanSupported();
+}
+
+// ---- JNI 注册表 ----
+// 原来这里是手写的 Java_com_... stub（四个壁纸四份，只差类名）。现在只是静态函数 +
+// 一张表，由 jni_bridge.cpp 的 JNI_OnLoad 统一注册；签名由 Java 侧的 native 声明反推。
+static const JNINativeMethod kMethods[] = {
+    {"nCreateRenderer", "(Landroid/content/res/AssetManager;)J", reinterpret_cast<void*>(nCreateRenderer)},
+    {"nDestroyRenderer", "(J)V", reinterpret_cast<void*>(nDestroyRenderer)},
+    {"nOnSurfaceCreated", "(JLandroid/view/Surface;II)Z", reinterpret_cast<void*>(nOnSurfaceCreated)},
+    {"nOnSurfaceChanged", "(JLandroid/view/Surface;II)V", reinterpret_cast<void*>(nOnSurfaceChanged)},
+    {"nOnSurfaceDestroyed", "(J)V", reinterpret_cast<void*>(nOnSurfaceDestroyed)},
+    {"nRenderFrame", "(J[F[F[FIF[F[F[SII[FIFFFFFI)V", reinterpret_cast<void*>(nRenderFrame)},
+    {"nSetMaskTexture", "(J[BII)V", reinterpret_cast<void*>(nSetMaskTexture)},
+    {"nSetSkyTexture", "(J[III)V", reinterpret_cast<void*>(nSetSkyTexture)},
+    {"nSetLeafTexture", "(J[III)V", reinterpret_cast<void*>(nSetLeafTexture)},
+    {"nSetLeafAtlasFrameCount", "(JI)V", reinterpret_cast<void*>(nSetLeafAtlasFrameCount)},
+    {"nIsVulkanSupported", "()Z", reinterpret_cast<void*>(nIsVulkanSupported)},
+};
+
+bool registerFallVk(JNIEnv* env) {
+    jclass cls = env->FindClass("com/reandroid/wallpaper/fall/FallVKNative");
+    if (cls == nullptr) return false;
+    const int count = sizeof(kMethods) / sizeof(kMethods[0]);
+    return env->RegisterNatives(cls, kMethods, count) == JNI_OK;
 }

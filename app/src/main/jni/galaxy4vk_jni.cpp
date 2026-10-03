@@ -875,8 +875,7 @@ static template <typename T> Galaxy4VkRenderer* asRenderer(T h) { return reinter
 
 } // namespace
 
-extern "C" JNIEXPORT jlong JNICALL
-Java_com_reandroid_wallpaper_galaxy4_Galaxy4VKNative_nCreateRenderer(
+static jlong JNICALL nCreateRenderer(
         JNIEnv* env, jclass, jobject assetManager) {
     LOGI("nCreateRenderer called");
     auto* r = new Galaxy4VkRenderer(AAssetManager_fromJava(env, assetManager));
@@ -884,32 +883,27 @@ Java_com_reandroid_wallpaper_galaxy4_Galaxy4VKNative_nCreateRenderer(
     return reinterpret_cast<jlong>(r);
 }
 
-extern "C" JNIEXPORT void JNICALL
-Java_com_reandroid_wallpaper_galaxy4_Galaxy4VKNative_nDestroyRenderer(JNIEnv*, jclass, jlong handle) {
+static void JNICALL nDestroyRenderer(JNIEnv*, jclass, jlong handle) {
     if (auto* r = asRenderer(handle)) { r->destroy(); delete r; }
 }
 
-extern "C" JNIEXPORT jboolean JNICALL
-Java_com_reandroid_wallpaper_galaxy4_Galaxy4VKNative_nOnSurfaceCreated(
+static jboolean JNICALL nOnSurfaceCreated(
         JNIEnv* env, jclass, jlong handle, jobject surface, jint w, jint h) {
     auto* r = asRenderer(handle);
     return r != nullptr && r->createOrUpdateSurface(env, surface, w, h);
 }
 
-extern "C" JNIEXPORT void JNICALL
-Java_com_reandroid_wallpaper_galaxy4_Galaxy4VKNative_nOnSurfaceChanged(
+static void JNICALL nOnSurfaceChanged(
         JNIEnv* env, jclass, jlong handle, jobject surface, jint w, jint h) {
     if (auto* r = asRenderer(handle)) r->createOrUpdateSurface(env, surface, w, h);
 }
 
-extern "C" JNIEXPORT void JNICALL
-Java_com_reandroid_wallpaper_galaxy4_Galaxy4VKNative_nOnSurfaceDestroyed(
+static void JNICALL nOnSurfaceDestroyed(
         JNIEnv*, jclass, jlong handle) {
     if (auto* r = asRenderer(handle)) r->destroySurface();
 }
 
-extern "C" JNIEXPORT void JNICALL
-Java_com_reandroid_wallpaper_galaxy4_Galaxy4VKNative_nRenderFrame(
+static void JNICALL nRenderFrame(
         JNIEnv* env, jclass, jlong handle, jfloatArray proj,
         jfloatArray clouds, jfloatArray stars, jfloatArray statics,
         jint cloudCount, jint starCount, jfloat time,
@@ -919,27 +913,46 @@ Java_com_reandroid_wallpaper_galaxy4_Galaxy4VKNative_nRenderFrame(
                   particleSize, particleOpacity);
 }
 
-extern "C" JNIEXPORT void JNICALL
-Java_com_reandroid_wallpaper_galaxy4_Galaxy4VKNative_nSetBackgroundTexture(
+static void JNICALL nSetBackgroundTexture(
         JNIEnv* env, jclass, jlong handle, jintArray pixels, jint w, jint h) {
     if (auto* r = asRenderer(handle)) r->setBackgroundTexture(env, pixels, w, h);
 }
 
-extern "C" JNIEXPORT void JNICALL
-Java_com_reandroid_wallpaper_galaxy4_Galaxy4VKNative_nSetCloudTexture(
+static void JNICALL nSetCloudTexture(
         JNIEnv* env, jclass, jlong handle, jintArray pixels, jint w, jint h) {
     if (auto* r = asRenderer(handle)) r->setCloudTexture(env, pixels, w, h);
 }
 
-extern "C" JNIEXPORT void JNICALL
-Java_com_reandroid_wallpaper_galaxy4_Galaxy4VKNative_nSetStaticStarTextures(
+static void JNICALL nSetStaticStarTextures(
         JNIEnv* env, jclass, jlong handle,
         jintArray pix1, jint w1, jint h1,
         jintArray pix2, jint w2, jint h2) {
     if (auto* r = asRenderer(handle)) r->setStaticStarTextures(env, pix1, w1, h1, pix2, w2, h2);
 }
 
-extern "C" JNIEXPORT jboolean JNICALL
-Java_com_reandroid_wallpaper_galaxy4_Galaxy4VKNative_nIsVulkanSupported(JNIEnv*, jclass) {
+static jboolean JNICALL nIsVulkanSupported(JNIEnv*, jclass) {
     return vkIsVulkanSupported() ? JNI_TRUE : JNI_FALSE;
+}
+
+// ---- JNI 注册表 ----
+// 原来这里是手写的 Java_com_... stub（四个壁纸四份，只差类名）。现在只是静态函数 +
+// 一张表，由 jni_bridge.cpp 的 JNI_OnLoad 统一注册；签名由 Java 侧的 native 声明反推。
+static const JNINativeMethod kMethods[] = {
+    {"nCreateRenderer", "(Landroid/content/res/AssetManager;)J", reinterpret_cast<void*>(nCreateRenderer)},
+    {"nDestroyRenderer", "(J)V", reinterpret_cast<void*>(nDestroyRenderer)},
+    {"nOnSurfaceCreated", "(JLandroid/view/Surface;II)Z", reinterpret_cast<void*>(nOnSurfaceCreated)},
+    {"nOnSurfaceChanged", "(JLandroid/view/Surface;II)V", reinterpret_cast<void*>(nOnSurfaceChanged)},
+    {"nOnSurfaceDestroyed", "(J)V", reinterpret_cast<void*>(nOnSurfaceDestroyed)},
+    {"nRenderFrame", "(J[F[F[F[FIIFFF)V", reinterpret_cast<void*>(nRenderFrame)},
+    {"nSetBackgroundTexture", "(J[III)V", reinterpret_cast<void*>(nSetBackgroundTexture)},
+    {"nSetCloudTexture", "(J[III)V", reinterpret_cast<void*>(nSetCloudTexture)},
+    {"nSetStaticStarTextures", "(J[III[III)V", reinterpret_cast<void*>(nSetStaticStarTextures)},
+    {"nIsVulkanSupported", "()Z", reinterpret_cast<void*>(nIsVulkanSupported)},
+};
+
+bool registerGalaxy4Vk(JNIEnv* env) {
+    jclass cls = env->FindClass("com/reandroid/wallpaper/galaxy4/Galaxy4VKNative");
+    if (cls == nullptr) return false;
+    const int count = sizeof(kMethods) / sizeof(kMethods[0]);
+    return env->RegisterNatives(cls, kMethods, count) == JNI_OK;
 }

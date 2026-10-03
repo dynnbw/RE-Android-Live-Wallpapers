@@ -1610,42 +1610,36 @@ GrassVkRenderer* asRenderer(T handle) {
 
 // ===== JNI exports =====
 
-extern "C" JNIEXPORT jlong JNICALL
-Java_com_reandroid_wallpaper_grass_GrassVKNative_nCreateRenderer(
+static jlong JNICALL nCreateRenderer(
         JNIEnv* env, jclass, jobject assetManager) {
     auto* r = new GrassVkRenderer(AAssetManager_fromJava(env, assetManager));
     return reinterpret_cast<jlong>(r);
 }
 
-extern "C" JNIEXPORT void JNICALL
-Java_com_reandroid_wallpaper_grass_GrassVKNative_nDestroyRenderer(
+static void JNICALL nDestroyRenderer(
         JNIEnv*, jclass, jlong handle) {
     delete asRenderer(handle);
 }
 
-extern "C" JNIEXPORT jboolean JNICALL
-Java_com_reandroid_wallpaper_grass_GrassVKNative_nOnSurfaceCreated(
+static jboolean JNICALL nOnSurfaceCreated(
         JNIEnv* env, jclass, jlong handle, jobject surface, jint width, jint height) {
     auto* r = asRenderer(handle);
     return r != nullptr && r->createOrUpdateSurface(env, surface, width, height);
 }
 
-extern "C" JNIEXPORT void JNICALL
-Java_com_reandroid_wallpaper_grass_GrassVKNative_nOnSurfaceChanged(
+static void JNICALL nOnSurfaceChanged(
         JNIEnv* env, jclass, jlong handle, jobject surface, jint width, jint height) {
     auto* r = asRenderer(handle);
     if (r) r->createOrUpdateSurface(env, surface, width, height);
 }
 
-extern "C" JNIEXPORT void JNICALL
-Java_com_reandroid_wallpaper_grass_GrassVKNative_nOnSurfaceDestroyed(
+static void JNICALL nOnSurfaceDestroyed(
         JNIEnv*, jclass, jlong handle) {
     auto* r = asRenderer(handle);
     if (r) r->destroySurface();
 }
 
-extern "C" JNIEXPORT void JNICALL
-Java_com_reandroid_wallpaper_grass_GrassVKNative_nRenderFrame(
+static void JNICALL nRenderFrame(
         JNIEnv* env, jclass, jlong handle,
         jfloatArray skyWeights, jfloatArray grassMvp,
         jfloatArray grassVerts, jint grassVertCount,
@@ -1676,29 +1670,48 @@ Java_com_reandroid_wallpaper_grass_GrassVKNative_nRenderFrame(
             moonParams);
 }
 
-extern "C" JNIEXPORT void JNICALL
-Java_com_reandroid_wallpaper_grass_GrassVKNative_nSetSkyTexture(
+static void JNICALL nSetSkyTexture(
         JNIEnv* env, jclass, jlong handle, jint slot, jintArray argbPixels, jint width, jint height) {
     auto* r = asRenderer(handle);
     if (r) r->setSkyTexture(env, slot, argbPixels, width, height);
 }
 
-extern "C" JNIEXPORT void JNICALL
-Java_com_reandroid_wallpaper_grass_GrassVKNative_nSetAATexture(
+static void JNICALL nSetAATexture(
         JNIEnv* env, jclass, jlong handle, jintArray argbPixels, jint width, jint height) {
     auto* r = asRenderer(handle);
     if (r) r->setAATexture(env, argbPixels, width, height);
 }
 
-extern "C" JNIEXPORT void JNICALL
-Java_com_reandroid_wallpaper_grass_GrassVKNative_nSetSpriteTexture(
+static void JNICALL nSetSpriteTexture(
         JNIEnv* env, jclass, jlong handle, jint slot, jintArray argbPixels, jint width, jint height) {
     auto* r = asRenderer(handle);
     if (r) r->setSpriteTexture(env, slot, argbPixels, width, height);
 }
 
-extern "C" JNIEXPORT jboolean JNICALL
-Java_com_reandroid_wallpaper_grass_GrassVKNative_nIsVulkanSupported(
+static jboolean JNICALL nIsVulkanSupported(
         JNIEnv*, jclass) {
     return vkIsVulkanSupported();
+}
+
+// ---- JNI 注册表 ----
+// 原来这里是手写的 Java_com_... stub（四个壁纸四份，只差类名）。现在只是静态函数 +
+// 一张表，由 jni_bridge.cpp 的 JNI_OnLoad 统一注册；签名由 Java 侧的 native 声明反推。
+static const JNINativeMethod kMethods[] = {
+    {"nCreateRenderer", "(Landroid/content/res/AssetManager;)J", reinterpret_cast<void*>(nCreateRenderer)},
+    {"nDestroyRenderer", "(J)V", reinterpret_cast<void*>(nDestroyRenderer)},
+    {"nOnSurfaceCreated", "(JLandroid/view/Surface;II)Z", reinterpret_cast<void*>(nOnSurfaceCreated)},
+    {"nOnSurfaceChanged", "(JLandroid/view/Surface;II)V", reinterpret_cast<void*>(nOnSurfaceChanged)},
+    {"nOnSurfaceDestroyed", "(J)V", reinterpret_cast<void*>(nOnSurfaceDestroyed)},
+    {"nRenderFrame", "(J[F[F[FI[SI[FI[FI[FI[FI[FI[FI[FI[FI[FI[F)V", reinterpret_cast<void*>(nRenderFrame)},
+    {"nSetSkyTexture", "(JI[III)V", reinterpret_cast<void*>(nSetSkyTexture)},
+    {"nSetAATexture", "(J[III)V", reinterpret_cast<void*>(nSetAATexture)},
+    {"nSetSpriteTexture", "(JI[III)V", reinterpret_cast<void*>(nSetSpriteTexture)},
+    {"nIsVulkanSupported", "()Z", reinterpret_cast<void*>(nIsVulkanSupported)},
+};
+
+bool registerGrassVk(JNIEnv* env) {
+    jclass cls = env->FindClass("com/reandroid/wallpaper/grass/GrassVKNative");
+    if (cls == nullptr) return false;
+    const int count = sizeof(kMethods) / sizeof(kMethods[0]);
+    return env->RegisterNatives(cls, kMethods, count) == JNI_OK;
 }

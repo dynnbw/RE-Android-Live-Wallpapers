@@ -11,6 +11,7 @@ LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
 LOCAL_MODULE := rebornvk
 LOCAL_SRC_FILES := \
+    jni_bridge.cpp \
     galaxyvk_jni.cpp \
     fallvk_jni.cpp \
     grassvk_jni.cpp \
