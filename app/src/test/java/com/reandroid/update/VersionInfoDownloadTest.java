@@ -67,8 +67,7 @@ public class VersionInfoDownloadTest {
     @Test
     public void eachRegionGetsExactlyItsOwnEntry() {
         VersionInfo info = with(
-                direct("https://cdn.example/app.apk"),
-                external("https://pan.example/x", "网盘"));
+                direct("https://cdn.example/app.apk"), external("https://pan.example/x", "网盘"));
 
         List<VersionInfo.Download> foreign = info.downloadOptionsFor(VersionInfo.Source.FOREIGN);
         assertEquals(1, foreign.size());
@@ -97,8 +96,7 @@ public class VersionInfoDownloadTest {
     @Test
     public void unknownRegionOffersEverything() {
         VersionInfo info = with(
-                direct("https://cdn.example/app.apk"),
-                external("https://pan.example/x", "网盘"));
+                direct("https://cdn.example/app.apk"), external("https://pan.example/x", "网盘"));
 
         List<VersionInfo.Download> options = info.downloadOptionsFor(VersionInfo.Source.UNKNOWN);
         assertEquals(2, options.size());
