@@ -95,7 +95,7 @@
     <string name="pref_open_wallpaper_picker">वॉलपेपर के रूप में सेट करें</string>
     <string name="pref_open_wallpaper_picker_failed">वॉलपेपर पूर्वावलोकन समर्थित नहीं है</string>
     <string name="pref_openweather_api_key_title">ओपनवेदर एपीआई कुंजी</string>
-    <string name="pref_use_vulkan_summary">बेहतर प्रदर्शन के लिए Vulkan का उपयोग करें (वॉलपेपर फिर से लागू करें)</string>
+    <string name="pref_use_vulkan_summary">प्रयोगात्मक: OpenGL ES के बजाय Vulkan रेंडरर का उपयोग करता है। यह कम स्थिर है और कुछ डिवाइसों पर कुछ भी नहीं दिख सकता। वॉलपेपर फिर से लागू करें।</string>
     <string name="pref_use_vulkan_title">Vulkan रेंडरर</string>
     <string name="pref_weather_api_guide_common">चरण 6: समस्या निवारण\n- सत्यापित करें कि कुंजी पूरी तरह से बिना अतिरिक्त रिक्त स्थान या लाइन ब्रेक के कॉपी की गई है।\n- एक नई एपीआई कुंजी सक्रिय होने में 10-30 मिनट लग सकते हैं; प्रतीक्षा करें और पुनः प्रयास करें।\n- सुनिश्चित करें कि ऐप में स्थान अनुमति सक्षम है।</string>
     <string name="pref_weather_api_guide_illustration">एपीआई ट्यूटोरियल चित्रण</string>

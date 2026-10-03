@@ -95,7 +95,7 @@
     <string name="pref_open_wallpaper_picker">Definir como papel de parede</string>
     <string name="pref_open_wallpaper_picker_failed">Pré-visualização do papel de parede não suportada</string>
     <string name="pref_openweather_api_key_title">Chave de API OpenWeather</string>
-    <string name="pref_use_vulkan_summary">Usar Vulkan para melhor desempenho (reaplicar papel de parede)</string>
+    <string name="pref_use_vulkan_summary">Experimental: usa o renderizador Vulkan em vez do OpenGL ES. É menos estável e alguns aparelhos podem não exibir nada. Reaplicar papel de parede.</string>
     <string name="pref_use_vulkan_title">Renderizador Vulkan</string>
     <string name="pref_weather_api_guide_common">Passo 6: Solução de problemas\n- Verifique se a chave foi copiada completamente sem espaços ou quebras de linha extras.\n- Uma nova chave de API pode levar de 10 a 30 minutos para ser ativada; aguarde e tente novamente.\n- Certifique-se de que a permissão de localização esteja ativada no aplicativo.</string>
     <string name="pref_weather_api_guide_illustration">Ilustração do tutorial da API</string>

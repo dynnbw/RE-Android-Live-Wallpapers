@@ -95,7 +95,7 @@
     <string name="pref_open_wallpaper_picker">Définir comme fond d’écran</string>
     <string name="pref_open_wallpaper_picker_failed">Aperçu du fond d’écran non pris en charge</string>
     <string name="pref_openweather_api_key_title">Clé API OpenWeather</string>
-    <string name="pref_use_vulkan_summary">Utiliser Vulkan pour de meilleures performances (réappliquer le fond d écran)</string>
+    <string name="pref_use_vulkan_summary">Expérimental : utilise le moteur Vulkan au lieu de la version OpenGL ES. Moins stable, et certains appareils peuvent ne rien afficher. Réappliquer le fond d écran.</string>
     <string name="pref_use_vulkan_title">Moteur de rendu Vulkan</string>
     <string name="pref_weather_api_guide_common">Étape 6 : Dépannage\n- Vérifiez que la clé est copiée entièrement sans espaces ni sauts de ligne supplémentaires.\n- Une nouvelle clé API peut prendre 10 à 30 minutes pour s’activer ; attendez et réessayez.\n- Assurez-vous que l’autorisation de localisation est activée dans l’application.</string>
     <string name="pref_weather_api_guide_illustration">Illustration du tutoriel API</string>

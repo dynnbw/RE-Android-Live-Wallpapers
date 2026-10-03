@@ -95,7 +95,7 @@
     <string name="pref_open_wallpaper_picker">Als Hintergrundbild festlegen</string>
     <string name="pref_open_wallpaper_picker_failed">Hintergrundvorschau nicht unterstützt</string>
     <string name="pref_openweather_api_key_title">OpenWeather API-Schlüssel</string>
-    <string name="pref_use_vulkan_summary">Vulkan für bessere Leistung verwenden (Tapete neu anwenden)</string>
+    <string name="pref_use_vulkan_summary">Experimentell: verwendet den Vulkan-Renderer statt OpenGL ES. Weniger stabil, und auf manchen Geräten wird möglicherweise nichts gezeichnet. Tapete neu anwenden.</string>
     <string name="pref_use_vulkan_title">Vulkan-Renderer</string>
     <string name="pref_weather_api_guide_common">Schritt 6: Fehlerbehebung\n- Überprüfen Sie, ob der Schlüssel vollständig ohne zusätzliche Leerzeichen oder Zeilenumbrüche kopiert wurde.\n- Ein neuer API-Schlüssel kann 10–30 Minuten zur Aktivierung benötigen; warten Sie und versuchen Sie es erneut.\n- Stellen Sie sicher, dass die Standortberechtigung in der App aktiviert ist.</string>
     <string name="pref_weather_api_guide_illustration">API-Tutorialabbildung</string>

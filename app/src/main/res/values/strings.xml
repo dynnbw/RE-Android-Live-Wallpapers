@@ -95,7 +95,7 @@
     <string name="pref_open_wallpaper_picker">Set as wallpaper</string>
     <string name="pref_open_wallpaper_picker_failed">Wallpaper preview not supported</string>
     <string name="pref_openweather_api_key_title">OpenWeather API key</string>
-    <string name="pref_use_vulkan_summary">Use Vulkan for better performance (reapply wallpaper to take effect)</string>
+    <string name="pref_use_vulkan_summary">Experimental: uses the Vulkan renderer instead of OpenGL ES. It is less stable and some devices may fail to render. Reapply the wallpaper to take effect.</string>
     <string name="pref_use_vulkan_title">Vulkan Renderer</string>
     <string name="pref_weather_api_guide_common">Step 6: Troubleshooting\n- Verify the key is copied completely without extra spaces or line breaks.\n- A new API key may take 10–30 minutes to activate; wait and try again.\n- Make sure location permission is enabled in the app.</string>
     <string name="pref_weather_api_guide_illustration">API tutorial illustration</string>

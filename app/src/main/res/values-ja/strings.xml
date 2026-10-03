@@ -95,7 +95,7 @@
     <string name="pref_open_wallpaper_picker">壁紙に設定</string>
     <string name="pref_open_wallpaper_picker_failed">壁紙プレビューに対応していません</string>
     <string name="pref_openweather_api_key_title">OpenWeather APIキー</string>
-    <string name="pref_use_vulkan_summary">Vulkan を使用してパフォーマンスを向上（壁紙を再適用）</string>
+    <string name="pref_use_vulkan_summary">実験的機能: OpenGL ES の代わりに Vulkan レンダラーを使用します。安定性が低く、一部の端末では何も表示されないことがあります。壁紙を再適用。</string>
     <string name="pref_use_vulkan_title">Vulkan レンダラー</string>
     <string name="pref_weather_api_guide_common">六、よくある質問\n設定後天気が取得できない場合：\n- キーが正しくコピーされているか確認（余分なスペースや改行がないか）\n- 新しく生成したAPIキーは有効になるまで10～30分かかることがあります。しばらく待ってから再テストしてください。\n- アプリの位置情報権限が有効か確認してください。</string>
     <string name="pref_weather_api_guide_illustration">APIチュートリアル図</string>

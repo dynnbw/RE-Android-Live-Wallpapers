@@ -95,7 +95,7 @@
     <string name="pref_open_wallpaper_picker">배경화면으로 설정</string>
     <string name="pref_open_wallpaper_picker_failed">배경화면 미리보기를 지원하지 않습니다</string>
     <string name="pref_openweather_api_key_title">OpenWeather API 키</string>
-    <string name="pref_use_vulkan_summary">더 나은 성능을 위해 Vulkan 사용 (배경화면 다시 적용)</string>
+    <string name="pref_use_vulkan_summary">실험적 기능: OpenGL ES 대신 Vulkan 렌더러를 사용합니다. 안정성이 낮아 일부 기기에서는 아무것도 표시되지 않을 수 있습니다. 배경화면 다시 적용.</string>
     <string name="pref_use_vulkan_title">Vulkan 렌더러</string>
     <string name="pref_weather_api_guide_common">6. 자주 묻는 질문\n설정 후 날씨를 가져올 수 없는 경우:\n- Key가 완전히 복사되었는지 확인하고, 불필요한 공백이나 줄바꿈 문자가 없는지 확인하세요.\n- 새로 생성된 API Key는 적용까지 10~30분이 걸릴 수 있습니다. 인내심을 가지고 기다린 후 테스트하세요.\n- 앱의 위치 권한이 활성화되어 있는지 확인하세요.</string>
     <string name="pref_weather_api_guide_illustration">API 튜토리얼 일러스트</string>

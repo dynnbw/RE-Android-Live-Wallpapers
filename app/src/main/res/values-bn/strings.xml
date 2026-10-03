@@ -95,7 +95,7 @@
     <string name="pref_open_wallpaper_picker">ওয়ালপেপার হিসেবে সেট করুন</string>
     <string name="pref_open_wallpaper_picker_failed">ওয়ালপেপার প্রিভিউ সমর্থিত নয়</string>
     <string name="pref_openweather_api_key_title">ওপেনওয়েদার এপিআই কী</string>
-    <string name="pref_use_vulkan_summary">ভালো পারফরম্যান্সের জন্য Vulkan ব্যবহার করুন (ওয়ালপেপার পুনরায় প্রয়োগ করুন)</string>
+    <string name="pref_use_vulkan_summary">পরীক্ষামূলক: OpenGL ES-এর বদলে Vulkan রেন্ডারার ব্যবহার করে। এটি কম স্থিতিশীল এবং কিছু ডিভাইসে রেন্ডার নাও হতে পারে। ওয়ালপেপার পুনরায় প্রয়োগ করুন।</string>
     <string name="pref_use_vulkan_title">Vulkan রেন্ডারার</string>
     <string name="pref_weather_api_guide_common">ধাপ ৬: সমস্যা সমাধান\n- কীটি সম্পূর্ণভাবে অতিরিক্ত স্পেস বা লাইন ব্রেক ছাড়া কপি করা হয়েছে কিনা যাচাই করুন।\n- একটি নতুন এপিআই কী সক্রিয় হতে ১০-৩০ মিনিট সময় নিতে পারে; অপেক্ষা করুন এবং আবার চেষ্টা করুন।\n- অ্যাপে অবস্থানের অনুমতি সক্ষম আছে কিনা নিশ্চিত করুন।</string>
     <string name="pref_weather_api_guide_illustration">এপিআই টিউটোরিয়াল চিত্র</string>
