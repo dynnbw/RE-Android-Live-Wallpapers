@@ -12,9 +12,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -151,7 +154,8 @@ public class SettingsToolbarHelper {
             weatherButton.setImageDrawable(tintToolbarIcon(icon));
             return;
         }
-        Drawable fallback = ContextCompat.getDrawable(mActivity, android.R.drawable.ic_menu_compass);
+        Drawable fallback =
+                ContextCompat.getDrawable(mActivity, android.R.drawable.ic_menu_compass);
         if (fallback != null) {
             weatherButton.setImageDrawable(tintToolbarIcon(fallback));
         }
@@ -169,9 +173,7 @@ public class SettingsToolbarHelper {
             return;
         }
         ContextThemeWrapper themedContext = new ContextThemeWrapper(
-                mActivity,
-                R.style.ThemeOverlay_WallpaperSettings_ToolbarPopup
-        );
+                mActivity, R.style.ThemeOverlay_WallpaperSettings_ToolbarPopup);
         PopupMenu popupMenu = new PopupMenu(themedContext, weatherButton);
         popupMenu.getMenuInflater().inflate(R.menu.menu_weather_toolbar, popupMenu.getMenu());
         MenuItem lastRefreshItem = popupMenu.getMenu().findItem(R.id.action_weather_last_refresh);
@@ -207,9 +209,14 @@ public class SettingsToolbarHelper {
                         if (weatherManager != null) {
                             weatherManager.clearManualOverride();
                         }
-                        lastWeatherState = weatherManager != null ? weatherManager.getLastState() : null;
+                        lastWeatherState =
+                                weatherManager != null ? weatherManager.getLastState() : null;
                         updateWeatherMenuIcon();
-                        Toast.makeText(mActivity, R.string.pref_weather_debug_restore, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(
+                                        mActivity,
+                                        R.string.pref_weather_debug_restore,
+                                        Toast.LENGTH_SHORT)
+                                .show();
                         return;
                     }
 
@@ -219,14 +226,15 @@ public class SettingsToolbarHelper {
                         WeatherCondition selected = conditions[conditionIndex];
                         boolean isNight = isNightTime();
                         long nowUtc = System.currentTimeMillis() / 1000L;
-                        WeatherState overrideState = new WeatherState(selected, isNight, 0.0f, 0.0f,
-                                0L, 0L, nowUtc);
+                        WeatherState overrideState =
+                                new WeatherState(selected, isNight, 0.0f, 0.0f, 0L, 0L, nowUtc);
                         if (weatherManager != null) {
                             weatherManager.setManualOverride(overrideState);
                         }
                         lastWeatherState = overrideState;
                         updateWeatherMenuIcon();
-                        String message = mActivity.getString(R.string.pref_weather_debug_override, debugOptions[which]);
+                        String message = mActivity.getString(
+                                R.string.pref_weather_debug_override, debugOptions[which]);
                         Toast.makeText(mActivity, message, Toast.LENGTH_SHORT).show();
                     }
                 })
@@ -251,25 +259,61 @@ public class SettingsToolbarHelper {
 
     private void showGlobalFrameRateDialog() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mActivity);
-        String[] entries = {"24 FPS", "30 FPS", "45 FPS", "60 FPS", "90 FPS", "120 FPS", "180 FPS"};
-        String[] values = {"24", "30", "45", "60", "90", "120", "180"};
+
+        // 档位与取值只留**一份**数组，entries 从它派生 —— 两份额外数组迟早对不上。
+        // 打头的是「跟随屏幕」，存的是哨兵字符串 "screen"（用 -1 的话，任何还在用
+        // Integer.parseInt 的调用点都会静默算成 1 fps）。
+        // 档位文案保持硬编码英文：FPS 是全球通用的科技用语，没有本地化必要。
+        final String[] values = {
+            FrameRatePolicy.FOLLOW_SCREEN, "24", "30", "45", "60", "90", "120", "180",
+        };
+        String[] entries = new String[values.length];
+        for (int i = 0; i < values.length; i++) {
+            entries[i] = FrameRatePolicy.FOLLOW_SCREEN.equals(values[i])
+                    ? mActivity.getString(R.string.pref_frame_rate_follow_screen)
+                    : values[i] + " FPS";
+        }
+
         String currentValue = prefs.getString(KEY_GLOBAL_FRAME_RATE, "60");
+        // 兜底取 "60" 那一项，而不是下标 0 —— 下标 0 现在是「跟随屏幕」
         int checkedIndex = 0;
         for (int i = 0; i < values.length; i++) {
             if (TextUtils.equals(values[i], currentValue)) {
                 checkedIndex = i;
                 break;
             }
+            if ("60".equals(values[i])) {
+                checkedIndex = i;
+            }
         }
 
-        new AlertDialog.Builder(mActivity, R.style.ThemeOverlay_WallpaperSettings_AppCompatDialog)
+        View content =
+                LayoutInflater.from(mActivity).inflate(R.layout.dialog_global_frame_rate, null);
+        ListView list = content.findViewById(R.id.frame_rate_list);
+        CheckBox powerSave = content.findViewById(R.id.frame_rate_power_save_check);
+
+        list.setAdapter(new ArrayAdapter<>(
+                mActivity, android.R.layout.simple_list_item_single_choice, entries));
+        list.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+        list.setItemChecked(checkedIndex, true);
+
+        // 先 setChecked 再挂监听，否则恢复状态时会误写一次
+        powerSave.setChecked(prefs.getBoolean(WallpaperSettings.KEY_FRAME_RATE_POWER_SAVE, false));
+        powerSave.setOnCheckedChangeListener((buttonView, isChecked) -> prefs.edit()
+                .putBoolean(WallpaperSettings.KEY_FRAME_RATE_POWER_SAVE, isChecked)
+                .apply());
+
+        final AlertDialog dialog = new AlertDialog.Builder(
+                        mActivity, R.style.ThemeOverlay_WallpaperSettings_AppCompatDialog)
                 .setTitle(R.string.pref_global_frame_rate)
-                .setSingleChoiceItems(entries, checkedIndex, (dialog, which) -> {
-                    prefs.edit().putString(KEY_GLOBAL_FRAME_RATE, values[which]).apply();
-                    dialog.dismiss();
-                })
+                .setView(content)
                 .setNegativeButton(android.R.string.cancel, null)
-                .show();
+                .create();
+        list.setOnItemClickListener((parent, view, position, id) -> {
+            prefs.edit().putString(KEY_GLOBAL_FRAME_RATE, values[position]).apply();
+            dialog.dismiss();
+        });
+        dialog.show();
     }
 
     private void showWeatherUpdateIntervalDialog() {
@@ -288,7 +332,9 @@ public class SettingsToolbarHelper {
         new AlertDialog.Builder(mActivity, R.style.ThemeOverlay_WallpaperSettings_AppCompatDialog)
                 .setTitle(R.string.pref_weather_update_interval)
                 .setSingleChoiceItems(entries, checkedIndex, (dialog, which) -> {
-                    prefs.edit().putString("weather_update_minutes", values[which]).apply();
+                    prefs.edit()
+                            .putString("weather_update_minutes", values[which])
+                            .apply();
                     restartWeatherManager();
                     dialog.dismiss();
                 })
@@ -308,7 +354,13 @@ public class SettingsToolbarHelper {
                 .setTitle(R.string.pref_openweather_api_key_title)
                 .setView(input)
                 .setPositiveButton(android.R.string.ok, (dialog, which) -> {
-                    prefs.edit().putString("openweather_api_key", input.getText() == null ? "" : input.getText().toString().trim()).apply();
+                    prefs.edit()
+                            .putString(
+                                    "openweather_api_key",
+                                    input.getText() == null
+                                            ? ""
+                                            : input.getText().toString().trim())
+                            .apply();
                     restartWeatherManager();
                 })
                 .setNegativeButton(android.R.string.cancel, null)
@@ -326,28 +378,38 @@ public class SettingsToolbarHelper {
      */
     private void showWeatherSourceDialog() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mActivity);
-        String current = prefs.getString(WeatherManager.KEY_SOURCE, WeatherManager.SOURCE_OPENMETEO);
-        boolean cmaAllowed = WeatherManager.isSourceAvailable(WeatherManager.SOURCE_CMA, Locale.getDefault());
+        String current =
+                prefs.getString(WeatherManager.KEY_SOURCE, WeatherManager.SOURCE_OPENMETEO);
+        boolean cmaAllowed =
+                WeatherManager.isSourceAvailable(WeatherManager.SOURCE_CMA, Locale.getDefault());
 
-        String[] ids = { WeatherManager.SOURCE_OPENMETEO, WeatherManager.SOURCE_CMA,
-                WeatherManager.SOURCE_OPENWEATHER };
+        String[] ids = {
+            WeatherManager.SOURCE_OPENMETEO,
+            WeatherManager.SOURCE_CMA,
+            WeatherManager.SOURCE_OPENWEATHER
+        };
         String[] titles = {
-                mActivity.getString(R.string.pref_weather_source_openmeteo),
-                mActivity.getString(R.string.pref_weather_source_cma),
-                mActivity.getString(R.string.pref_weather_source_openweather) };
+            mActivity.getString(R.string.pref_weather_source_openmeteo),
+            mActivity.getString(R.string.pref_weather_source_cma),
+            mActivity.getString(R.string.pref_weather_source_openweather)
+        };
         String[] notes = {
-                mActivity.getString(R.string.pref_weather_source_openmeteo_note),
-                mActivity.getString(R.string.pref_weather_source_cma_note),
-                mActivity.getString(R.string.pref_weather_source_openweather_note) };
+            mActivity.getString(R.string.pref_weather_source_openmeteo_note),
+            mActivity.getString(R.string.pref_weather_source_cma_note),
+            mActivity.getString(R.string.pref_weather_source_openweather_note)
+        };
         // 只有中国气象局有地区限制；另外两路全球可用
-        boolean[] enabled = { true, cmaAllowed, true };
+        boolean[] enabled = {true, cmaAllowed, true};
 
-        WeatherSourceAdapter adapter = new WeatherSourceAdapter(
-                mActivity, ids, titles, notes, enabled, current);
-        AlertDialog dialog = new AlertDialog.Builder(mActivity, R.style.ThemeOverlay_WallpaperSettings_AppCompatDialog)
+        WeatherSourceAdapter adapter =
+                new WeatherSourceAdapter(mActivity, ids, titles, notes, enabled, current);
+        AlertDialog dialog = new AlertDialog.Builder(
+                        mActivity, R.style.ThemeOverlay_WallpaperSettings_AppCompatDialog)
                 .setTitle(R.string.pref_weather_source_title)
                 .setAdapter(adapter, (d, which) -> {
-                    prefs.edit().putString(WeatherManager.KEY_SOURCE, ids[which]).apply();
+                    prefs.edit()
+                            .putString(WeatherManager.KEY_SOURCE, ids[which])
+                            .apply();
                     // 与改密钥同一条路：换源之后立刻重取一次，不然要等下一个周期
                     restartWeatherManager();
                     d.dismiss();
@@ -375,8 +437,13 @@ public class SettingsToolbarHelper {
         private final String mCurrent;
         private AlertDialog mDialog;
 
-        WeatherSourceAdapter(Context context, String[] ids, String[] titles, String[] notes,
-                boolean[] enabled, String current) {
+        WeatherSourceAdapter(
+                Context context,
+                String[] ids,
+                String[] titles,
+                String[] notes,
+                boolean[] enabled,
+                String current) {
             mContext = context;
             mIds = ids;
             mTitles = titles;
@@ -417,7 +484,8 @@ public class SettingsToolbarHelper {
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            View row = convertView != null ? convertView
+            View row = convertView != null
+                    ? convertView
                     : LayoutInflater.from(mContext)
                             .inflate(R.layout.dialog_weather_source_item, parent, false);
             TextView title = row.findViewById(R.id.weather_source_title);
@@ -463,10 +531,12 @@ public class SettingsToolbarHelper {
             weatherButton.setEnabled(false);
         }
         if (weatherManager == null) {
-            weatherManager = new WeatherManager(mActivity.getApplicationContext(), state -> mActivity.runOnUiThread(() -> {
-                lastWeatherState = state;
-                updateWeatherMenuIcon();
-            }));
+            weatherManager = new WeatherManager(
+                    mActivity.getApplicationContext(),
+                    state -> mActivity.runOnUiThread(() -> {
+                        lastWeatherState = state;
+                        updateWeatherMenuIcon();
+                    }));
             weatherManager.start();
         }
 
@@ -476,30 +546,44 @@ public class SettingsToolbarHelper {
             if (weatherButton != null) {
                 weatherButton.setEnabled(true);
             }
-            WeatherState resolved = state != null ? state : (currentManager != null ? currentManager.getLastState() : null);
+            WeatherState resolved = state != null
+                    ? state
+                    : (currentManager != null ? currentManager.getLastState() : null);
             if (resolved != null) {
                 lastWeatherState = resolved;
                 updateWeatherMenuIcon();
-                Toast.makeText(mActivity, R.string.pref_weather_refresh_now_success, Toast.LENGTH_SHORT).show();
+                Toast.makeText(
+                                mActivity,
+                                R.string.pref_weather_refresh_now_success,
+                                Toast.LENGTH_SHORT)
+                        .show();
             } else {
-                Toast.makeText(mActivity, R.string.pref_weather_refresh_now_failed, Toast.LENGTH_SHORT).show();
+                Toast.makeText(
+                                mActivity,
+                                R.string.pref_weather_refresh_now_failed,
+                                Toast.LENGTH_SHORT)
+                        .show();
             }
         }));
     }
 
     private void restartWeatherManager() {
         if (weatherManager == null) {
-            weatherManager = new WeatherManager(mActivity.getApplicationContext(), state -> mActivity.runOnUiThread(() -> {
-                lastWeatherState = state;
-                updateWeatherMenuIcon();
-            }));
+            weatherManager = new WeatherManager(
+                    mActivity.getApplicationContext(),
+                    state -> mActivity.runOnUiThread(() -> {
+                        lastWeatherState = state;
+                        updateWeatherMenuIcon();
+                    }));
         }
         weatherManager.stop();
         weatherManager.start();
         final WeatherManager currentManager = weatherManager;
         weatherManager.refreshNow(state -> mActivity.runOnUiThread(() -> {
             if (mActivity.isFinishing() || mActivity.isDestroyed()) return;
-            WeatherState resolved = state != null ? state : (currentManager != null ? currentManager.getLastState() : null);
+            WeatherState resolved = state != null
+                    ? state
+                    : (currentManager != null ? currentManager.getLastState() : null);
             if (resolved != null) {
                 lastWeatherState = resolved;
                 updateWeatherMenuIcon();
@@ -529,7 +613,9 @@ public class SettingsToolbarHelper {
             case D5_RAIN_SHOWERS:
                 return isNight ? R.drawable.weather_night_rain : R.drawable.weather_day_rain;
             case D6_THUNDERSTORMS:
-                return isNight ? R.drawable.weather_night_lightning : R.drawable.weather_day_lightning;
+                return isNight
+                        ? R.drawable.weather_night_lightning
+                        : R.drawable.weather_day_lightning;
             case D7_FLURRIES_SNOW:
                 return isNight ? R.drawable.weather_night_snow : R.drawable.weather_day_snow;
             case D8_ICE_COLD:
@@ -573,9 +659,7 @@ public class SettingsToolbarHelper {
 
     private void showDebugPopupMenu(android.view.View anchor) {
         ContextThemeWrapper themedContext = new ContextThemeWrapper(
-                mActivity,
-                R.style.ThemeOverlay_WallpaperSettings_ToolbarPopup
-        );
+                mActivity, R.style.ThemeOverlay_WallpaperSettings_ToolbarPopup);
         PopupMenu popupMenu = new PopupMenu(themedContext, anchor);
         popupMenu.getMenuInflater().inflate(R.menu.menu_debug_toolbar, popupMenu.getMenu());
         popupMenu.setOnMenuItemClickListener(item -> {
@@ -615,33 +699,54 @@ public class SettingsToolbarHelper {
                 .setMessage(R.string.debug_location_message)
                 .setView(input)
                 .setPositiveButton(android.R.string.ok, (dialog, which) -> {
-                    String text = input.getText() == null ? "" : input.getText().toString().trim();
+                    String text = input.getText() == null
+                            ? ""
+                            : input.getText().toString().trim();
                     if (text.isEmpty()) {
                         prefs.edit().remove("debug_lat").remove("debug_lng").apply();
                         com.reandroid.utils.LocationProvider.setDebugLocation(0, 0);
-                        Toast.makeText(mActivity, R.string.debug_location_cleared, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(
+                                        mActivity,
+                                        R.string.debug_location_cleared,
+                                        Toast.LENGTH_SHORT)
+                                .show();
                         return;
                     }
                     String[] parts = text.split(",");
                     if (parts.length != 2) {
-                        Toast.makeText(mActivity, R.string.debug_location_format, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(
+                                        mActivity,
+                                        R.string.debug_location_format,
+                                        Toast.LENGTH_SHORT)
+                                .show();
                         return;
                     }
                     try {
                         float lat = Float.parseFloat(parts[0].trim());
                         float lng = Float.parseFloat(parts[1].trim());
-                        prefs.edit().putFloat("debug_lat", lat).putFloat("debug_lng", lng).apply();
+                        prefs.edit()
+                                .putFloat("debug_lat", lat)
+                                .putFloat("debug_lng", lng)
+                                .apply();
                         com.reandroid.utils.LocationProvider.setDebugLocation(lat, lng);
-                        Toast.makeText(mActivity, mActivity.getString(R.string.debug_location_set, lat, lng),
-                                Toast.LENGTH_SHORT).show();
+                        Toast.makeText(
+                                        mActivity,
+                                        mActivity.getString(R.string.debug_location_set, lat, lng),
+                                        Toast.LENGTH_SHORT)
+                                .show();
                     } catch (NumberFormatException e) {
-                        Toast.makeText(mActivity, R.string.debug_location_invalid, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(
+                                        mActivity,
+                                        R.string.debug_location_invalid,
+                                        Toast.LENGTH_SHORT)
+                                .show();
                     }
                 })
                 .setNeutralButton(R.string.debug_location_clear, (d, w) -> {
                     prefs.edit().remove("debug_lat").remove("debug_lng").apply();
                     com.reandroid.utils.LocationProvider.setDebugLocation(0, 0);
-                    Toast.makeText(mActivity, R.string.debug_location_cleared, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(mActivity, R.string.debug_location_cleared, Toast.LENGTH_SHORT)
+                            .show();
                 })
                 .setNegativeButton(android.R.string.cancel, null)
                 .show();
@@ -654,30 +759,42 @@ public class SettingsToolbarHelper {
                 .setPositiveButton(R.string.reset_action_confirm, (dialog, which) -> {
                     // Save global settings that should survive reset
                     String defName = mActivity.getPackageName() + "_preferences";
-                    SharedPreferences mainPrefs = mActivity.getSharedPreferences(defName, Context.MODE_PRIVATE);
+                    SharedPreferences mainPrefs =
+                            mActivity.getSharedPreferences(defName, Context.MODE_PRIVATE);
                     String apiKey = mainPrefs.getString("openweather_api_key", "");
                     String frameRate = mainPrefs.getString(KEY_GLOBAL_FRAME_RATE, "");
                     String weatherInterval = mainPrefs.getString("weather_update_minutes", "");
+                    // 省电联动开关和帧率一样是"设置"不是"内容"，也得留着
+                    boolean frameRatePowerSave = mainPrefs.getBoolean(
+                            WallpaperSettings.KEY_FRAME_RATE_POWER_SAVE, false);
                     // 数据源也是全局设置：漏了它，用户重置一次就被悄悄拨回默认那路
                     String weatherSource = mainPrefs.getString(WeatherManager.KEY_SOURCE, "");
 
                     mainPrefs.edit().clear().apply();
-                    java.io.File prefsDir = new java.io.File(mActivity.getApplicationInfo().dataDir, "shared_prefs");
+                    java.io.File prefsDir = new java.io.File(
+                            mActivity.getApplicationInfo().dataDir, "shared_prefs");
                     if (prefsDir.isDirectory()) {
                         String[] files = prefsDir.list();
                         if (files != null) {
                             for (String f : files) {
                                 if (f.startsWith("plugin_") && f.endsWith(".xml")) {
                                     String name = f.substring(0, f.length() - 4);
-                                    mActivity.getSharedPreferences(name, Context.MODE_PRIVATE).edit().clear().apply();
+                                    mActivity
+                                            .getSharedPreferences(name, Context.MODE_PRIVATE)
+                                            .edit()
+                                            .clear()
+                                            .apply();
                                 }
                             }
                         }
                     }
                     // Restore preserved settings
-                    android.content.SharedPreferences.Editor restore = mainPrefs.edit()
+                    android.content.SharedPreferences.Editor restore = mainPrefs
+                            .edit()
                             .putString("openweather_api_key", apiKey)
                             .putString(KEY_GLOBAL_FRAME_RATE, frameRate)
+                            .putBoolean(
+                                    WallpaperSettings.KEY_FRAME_RATE_POWER_SAVE, frameRatePowerSave)
                             .putString("weather_update_minutes", weatherInterval);
                     /*
                      * **空串不能写回去。** 从没选过数据源时读出来就是空串，写回去等于把
@@ -688,8 +805,11 @@ public class SettingsToolbarHelper {
                         restore.putString(WeatherManager.KEY_SOURCE, weatherSource);
                     }
                     restore.apply();
-                    android.widget.Toast.makeText(mActivity, R.string.reset_all_settings_done,
-                            android.widget.Toast.LENGTH_SHORT).show();
+                    android.widget.Toast.makeText(
+                                    mActivity,
+                                    R.string.reset_all_settings_done,
+                                    android.widget.Toast.LENGTH_SHORT)
+                            .show();
                     mActivity.recreate();
                 })
                 .setNegativeButton(android.R.string.cancel, null)

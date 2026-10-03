@@ -81,6 +81,9 @@
     <string name="pref_fireworks_grass_night_title">Grass night scene</string>
     <string name="pref_fireworks_reset_background_summary">Remove the custom background and use the default one</string>
     <string name="pref_fireworks_reset_background_title">Reset to default background</string>
+    <string name="pref_frame_rate_follow_screen">Follow screen refresh rate</string>
+    <string name="pref_frame_rate_power_save">Reduce in power save mode</string>
+    <string name="pref_frame_rate_power_save_summary">Lower the frame rate automatically while the phone is in power-save mode</string>
     <string name="pref_global_frame_rate">Global Frame Rate</string>
     <string name="pref_microbes_color_mode_modern">New</string>
     <string name="pref_microbes_color_mode_original">Original</string>

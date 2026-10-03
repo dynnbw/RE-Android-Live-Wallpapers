@@ -138,8 +138,7 @@ public abstract class VKSurfaceView<T> extends SurfaceView
                 mFrameRate.recordFrameCost(frameCost);
 
                 try {
-                    long sleepMs = Math.max(1L, mFrameRate.getTargetFrameMs() - frameCost);
-                    Thread.sleep(sleepMs);
+                    Thread.sleep(mFrameRate.pacingSleepMs(frameCost));
                 } catch (InterruptedException ignored) {
                     Thread.currentThread().interrupt();
                     return;

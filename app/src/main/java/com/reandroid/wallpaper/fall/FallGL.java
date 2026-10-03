@@ -29,12 +29,12 @@ import android.os.SystemClock;
 import android.util.Log;
 import android.view.MotionEvent;
 
-import com.reandroid.utils.MathUtils;
-import com.reandroid.utils.AssetLoader;
-import com.reandroid.utils.SkyField;
 import com.reandroid.gles.GLESScene;
 import com.reandroid.gles.GlowRenderer;
 import com.reandroid.settings.WallpaperSettings;
+import com.reandroid.utils.AssetLoader;
+import com.reandroid.utils.MathUtils;
+import com.reandroid.utils.SkyField;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -171,6 +171,7 @@ public class FallGL extends GLESScene {
      * 于是每一团自带深浅，边缘偏深、中心偏亮。
      */
     private static final float[] ALGAE_LOW = {0.03f, 0.07f, 0.42f};
+
     private static final float[] ALGAE_HIGH = {0.12f, 0.38f, 1.00f};
     /** 噪声贴图在 assets 里的路径。 */
     private static final String ALGAE_NOISE_ASSET = "fall/drawable/algae_noise.png";
@@ -227,12 +228,11 @@ public class FallGL extends GLESScene {
      * 没有辉光来收尾，看着就是一块糊在天空上的白渍，比不做还难看。
      */
     private static final float EMITTER_GAIN = 1.5f;
-    private static final long ANR_FRAME_THRESHOLD_MS = 200L;
     /** assets/fall/drawable/ 下 leaves_N.png 的文件数（绿叶全开时用满）。 */
     private static final int LEAF_TEXTURE_FILES = 20;
 
-    private int mProgram;       // leaf shader
-    private int mWaterProgram;  // water shader (GPU ripple)
+    private int mProgram; // leaf shader
+    private int mWaterProgram; // water shader (GPU ripple)
     private int mPositionHandle;
     private int mTexCoordHandle;
     private int mMatrixHandle;
@@ -260,11 +260,13 @@ public class FallGL extends GLESScene {
     private int mWAlgaeNoiseGainHandle;
     /** 亮弧场的尺度（见 {@link #ALGAE_ARC_SCALE}），水面与叶子各一份。 */
     private int mWAlgaeArcScaleHandle;
+
     private int mWAlgaeLowHandle;
     private int mWAlgaeHighHandle;
     private int mWAlgaePowerHandle;
     /** 落叶着色器里的逐像素受光 uniform。 */
     private int mLeafCenterHandle;
+
     private int mLeafAxisXHandle;
     private int mLeafAxisYHandle;
     private int mLeafAlgaeAmountHandle;
@@ -283,10 +285,12 @@ public class FallGL extends GLESScene {
     private int mLeafAlgaeArcScaleHandle;
     /** 场里用到的两端颜色。叶子只取覆盖度，但 algaeLayer 要它们。 */
     private int mLeafAlgaeLowHandle;
+
     private int mLeafAlgaeHighHandle;
     private int mLightColorHandle;
     /** 落叶着色器里的时段染色 uniform。 */
     private int mTintHandle;
+
     private int mTintAmountHandle;
     private int mTintValueHandle;
     private int mWPositionHandle;
@@ -314,13 +318,13 @@ public class FallGL extends GLESScene {
      * （{@code [夜, 晨, 昏, 昼]}）—— 它们就是靠下标对齐的，只动一处就会串色。
      */
     private static final String[] SKY_SECTIONS = {
-            "SKY_FIELD_NIGHT", "SKY_FIELD_MORNING", "SKY_FIELD_DUSK", "SKY_FIELD_DAY"
+        "SKY_FIELD_NIGHT", "SKY_FIELD_MORNING", "SKY_FIELD_DUSK", "SKY_FIELD_DAY"
     };
     private static final String[] SKY_SAMPLER_UNIFORMS = {
-            "uSkyNight", "uSkyMorning", "uSkyDusk", "uSkyDay"
+        "uSkyNight", "uSkyMorning", "uSkyDusk", "uSkyDay"
     };
     private static final String[] SKY_WEIGHT_UNIFORMS = {
-            "uWeightNight", "uWeightMorning", "uWeightDusk", "uWeightDay"
+        "uWeightNight", "uWeightMorning", "uWeightDusk", "uWeightDay"
     };
     private final int[] mSkyTextures = new int[SKY_SECTIONS.length];
     private final int[] mSkySamplerHandles = new int[SKY_SECTIONS.length];
@@ -334,11 +338,12 @@ public class FallGL extends GLESScene {
      * 调用时改写那 8 个槽位即可，不必每次重新构造整个数组。
      */
     private static final float[] LEAF_QUAD_TEMPLATE = {
-            0f, 0f, 0f, 0.0f, 0.0f,
-            0f, 0f, 0f, 1.0f, 0.0f,
-            0f, 0f, 0f, 1.0f, 1.0f,
-            0f, 0f, 0f, 0.0f, 1.0f
+        0f, 0f, 0f, 0.0f, 0.0f,
+        0f, 0f, 0f, 1.0f, 0.0f,
+        0f, 0f, 0f, 1.0f, 1.0f,
+        0f, 0f, 0f, 0.0f, 1.0f
     };
+
     private final float[] mLeafQuadVertices = LEAF_QUAD_TEMPLATE.clone();
     private ShortBuffer mWaterIndexBuffer;
     private final float[] mModelMatrix = new float[16];
@@ -346,19 +351,16 @@ public class FallGL extends GLESScene {
     private final float[] mMVPMatrix = new float[16];
     /** drawLeafQuad 的临时矩阵：每片叶子用两次，不能每帧新分配。 */
     private final float[] mLeafMvMatrix = new float[16];
+
     private boolean mGLInitialized = false;
     /** HDR 中间缓冲 + 辉光。建不出来时整体退化成空操作，画面与不用它时相同。 */
     private GlowRenderer mGlowRenderer;
+
     private int mFrameCount = 0;
     private final FallScene mScene;
     private final Context mContext;
-    private int mTargetFps = 30;
-    private long mTargetFrameMs = 33L;
     private boolean mAnrDiagEnabled = false;
     private long mLastPerfSyncMs = 0L;
-    private long mDiagFrameCount = 0L;
-    private long mDiagAccumulatedMs = 0L;
-    private long mDiagMaxMs = 0L;
     private static final float TOUCH_TRIGGER_DISTANCE_THRESHOLD_PX = 42.0f;
     private float mLastTouchTriggerX = -1.0f;
     private float mLastTouchTriggerY = -1.0f;
@@ -390,13 +392,13 @@ public class FallGL extends GLESScene {
         }
 
         if (mMaskTexture != 0) {
-            int[] tex = new int[] { mMaskTexture };
+            int[] tex = new int[] {mMaskTexture};
             GLES30.glDeleteTextures(1, tex, 0);
             mMaskTexture = 0;
         }
         releaseSkyTextures();
         if (mAlgaeNoiseTexture != 0) {
-            int[] tex = new int[] { mAlgaeNoiseTexture };
+            int[] tex = new int[] {mAlgaeNoiseTexture};
             GLES30.glDeleteTextures(1, tex, 0);
             mAlgaeNoiseTexture = 0;
         }
@@ -453,7 +455,9 @@ public class FallGL extends GLESScene {
 
         // 建不出来（FBO 不完整 / 着色器失败）时它整体退化成空操作，画面照旧
         mGlowRenderer = new GlowRenderer();
-        mGlowRenderer.init(mWidth, mHeight,
+        mGlowRenderer.init(
+                mWidth,
+                mHeight,
                 "fall/shaders/GLES/glow_quad_vs.glsl",
                 "fall/shaders/GLES/glow_bright_fs.glsl",
                 "fall/shaders/GLES/glow_blur_fs.glsl",
@@ -583,9 +587,6 @@ public class FallGL extends GLESScene {
         }
         mFrameCount++;
 
-        long frameStart = SystemClock.uptimeMillis();
-        syncPerfSettingsIfNeeded(frameStart);
-
         if (!mGLInitialized) {
             if (mResources != null) {
                 start();
@@ -612,7 +613,7 @@ public class FallGL extends GLESScene {
 
         GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT | GLES30.GL_DEPTH_BUFFER_BIT);
 
-        drawWaterQuad(sceneData);  // uses mWaterProgram internally
+        drawWaterQuad(sceneData); // uses mWaterProgram internally
         drawLeaves(sceneData);
 
         /*
@@ -646,9 +647,6 @@ public class FallGL extends GLESScene {
                 Log.w(TAG, "drawFrame中GL错误: " + glError);
             }
         }
-
-        long frameCost = SystemClock.uptimeMillis() - frameStart;
-        recordFrameCost(frameCost);
     }
 
     /** 落叶要不要走 HDR 那一趟：开关、设备能力两者都要满足。 */
@@ -683,7 +681,8 @@ public class FallGL extends GLESScene {
          * 必须与 drawWaterQuad 那边保持一致 —— 否则"水里那圈光"和"叶子被照到哪"会对不上。
          */
         GLES30.glUniform1f(mLeafAlgaeAmountHandle, mScene.getAlgaeAmount());
-        GLES30.glUniform2f(mLeafAlgaeMetricHandle,
+        GLES30.glUniform2f(
+                mLeafAlgaeMetricHandle,
                 sceneData.getMeshScaleX() * sceneData.getDxMul(),
                 sceneData.getMeshScaleY() / Math.max(1e-4f, halfWorldH));
         /*
@@ -696,8 +695,10 @@ public class FallGL extends GLESScene {
         float meshScaleY = sceneData.getMeshScaleY();
         float halfWorldHForMesh = Math.max(1e-4f, sceneData.getGlHeight() * 0.5f);
         GLES30.glUniform2f(mLeafAlgaeMeshScaleHandle, meshScaleX, meshScaleY / halfWorldHForMesh);
-        GLES30.glUniform2f(mLeafAlgaeMeshOffsetHandle,
-                (sceneData.getXOffset() * 2.0f + 1.0f) * meshScaleX, meshScaleY);
+        GLES30.glUniform2f(
+                mLeafAlgaeMeshOffsetHandle,
+                (sceneData.getXOffset() * 2.0f + 1.0f) * meshScaleX,
+                meshScaleY);
         GLES30.glUniform1f(mLeafAlgaeThresholdHandle, FallScene.ALGAE_THRESHOLD);
         GLES30.glUniform1f(mLeafAlgaeBandHandle, FallScene.ALGAE_BAND);
         GLES30.glUniform1f(mLeafAlgaeNoiseTileHandle, ALGAE_NOISE_TILE);
@@ -705,8 +706,10 @@ public class FallGL extends GLESScene {
         GLES30.glUniform1f(mLeafAlgaeArcScaleHandle, ALGAE_ARC_SCALE);
         GLES30.glUniform3f(mLeafAlgaeLowHandle, ALGAE_LOW[0], ALGAE_LOW[1], ALGAE_LOW[2]);
         GLES30.glUniform3f(mLeafAlgaeHighHandle, ALGAE_HIGH[0], ALGAE_HIGH[1], ALGAE_HIGH[2]);
-        GLES30.glUniform3f(mLightColorHandle,
-                FallScene.LEAF_LIGHT_COLOR[0], FallScene.LEAF_LIGHT_COLOR[1],
+        GLES30.glUniform3f(
+                mLightColorHandle,
+                FallScene.LEAF_LIGHT_COLOR[0],
+                FallScene.LEAF_LIGHT_COLOR[1],
                 FallScene.LEAF_LIGHT_COLOR[2]);
 
         int dropCount = sceneData.getActiveDropCount();
@@ -760,18 +763,24 @@ public class FallGL extends GLESScene {
         GLES30.glUniform1f(mWXOffsetHandle, sceneData.getXOffset());
         GLES30.glUniform1f(mWRotateHandle, (float) sceneData.getRotate());
         GLES30.glUniform1f(mWDropCountHandle, (float) sceneData.getActiveDropCount());
-        GLES30.glUniform4fv(mWDropHandle, Math.max(1, sceneData.getActiveDropCount()), sceneData.getDropData(), 0);
+        GLES30.glUniform4fv(
+                mWDropHandle,
+                Math.max(1, sceneData.getActiveDropCount()),
+                sceneData.getDropData(),
+                0);
 
         GLES30.glEnableVertexAttribArray(mWPositionHandle);
         mWaterMeshVertexBuffer.position(0);
-        GLES30.glVertexAttribPointer(mWPositionHandle, 3, GLES30.GL_FLOAT, false, 12, mWaterMeshVertexBuffer);
+        GLES30.glVertexAttribPointer(
+                mWPositionHandle, 3, GLES30.GL_FLOAT, false, 12, mWaterMeshVertexBuffer);
 
         // 水面顶点着色器不使用 aTexCoord 属性（vTexCoord 由 VS 程序化计算），
         // 未声明的属性 location 为 -1，启用/绑定它会触发 GL_INVALID_VALUE (1281)。
         if (mWTexCoordHandle >= 0) {
             GLES30.glEnableVertexAttribArray(mWTexCoordHandle);
             mWaterMeshTexCoordBuffer.position(0);
-            GLES30.glVertexAttribPointer(mWTexCoordHandle, 2, GLES30.GL_FLOAT, false, 8, mWaterMeshTexCoordBuffer);
+            GLES30.glVertexAttribPointer(
+                    mWTexCoordHandle, 2, GLES30.GL_FLOAT, false, 8, mWaterMeshTexCoordBuffer);
         }
 
         GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
@@ -794,8 +803,10 @@ public class FallGL extends GLESScene {
         // 纵向半轴按屏幕长宽比折算成 UV。不折的话竖屏上画出来是竖椭圆，见 EMITTER_HALF_W。
         float emitterRadiusY = EMITTER_HALF_W * EMITTER_ASPECT * mWidth / (float) mHeight;
         GLES30.glUniform2f(mWEmitterRadiusHandle, EMITTER_HALF_W, emitterRadiusY);
-        GLES30.glUniform3f(mWEmitterColorHandle, EMITTER_COLOR[0], EMITTER_COLOR[1], EMITTER_COLOR[2]);
-        GLES30.glUniform1f(mWEmitterGainHandle,
+        GLES30.glUniform3f(
+                mWEmitterColorHandle, EMITTER_COLOR[0], EMITTER_COLOR[1], EMITTER_COLOR[2]);
+        GLES30.glUniform1f(
+                mWEmitterGainHandle,
                 isGlowActive() ? mScene.getEmitterWeight() * EMITTER_GAIN : 0.0f);
 
         /*
@@ -809,8 +820,7 @@ public class FallGL extends GLESScene {
          * 相位正好走完整数圈。**两者必须一起改** —— 周期和倍数任改一个都会在回绕处留下跳变。
          */
         GLES30.glUniform1f(mWStarAmountHandle, mScene.getStarAmount());
-        GLES30.glUniform1f(mWStarTimeHandle,
-                (SystemClock.uptimeMillis() % STAR_WRAP_MS) * 0.001f);
+        GLES30.glUniform1f(mWStarTimeHandle, (SystemClock.uptimeMillis() % STAR_WRAP_MS) * 0.001f);
         // 星点的形状修正，见着色器里 uStarAspect 的说明
         GLES30.glUniform1f(mWStarAspectHandle, mHeight / (float) Math.max(1, mWidth));
 
@@ -839,12 +849,16 @@ public class FallGL extends GLESScene {
 
         int indexCount = sceneData.getWaterMeshIndexCount();
         if (indexCount > 0) {
-            if (mWaterIndexBuffer == null || mWaterIndexBuffer.capacity() != sceneData.getWaterMeshIndices().length) {
-                mWaterIndexBuffer = ByteBuffer.allocateDirect(sceneData.getWaterMeshIndices().length * 2)
-                        .order(ByteOrder.nativeOrder()).asShortBuffer();
+            if (mWaterIndexBuffer == null
+                    || mWaterIndexBuffer.capacity() != sceneData.getWaterMeshIndices().length) {
+                mWaterIndexBuffer = ByteBuffer.allocateDirect(
+                                sceneData.getWaterMeshIndices().length * 2)
+                        .order(ByteOrder.nativeOrder())
+                        .asShortBuffer();
                 mWaterIndexBuffer.put(sceneData.getWaterMeshIndices()).position(0);
             }
-            GLES30.glDrawElements(GLES30.GL_TRIANGLES, indexCount, GLES30.GL_UNSIGNED_SHORT, mWaterIndexBuffer);
+            GLES30.glDrawElements(
+                    GLES30.GL_TRIANGLES, indexCount, GLES30.GL_UNSIGNED_SHORT, mWaterIndexBuffer);
         }
 
         GLES30.glDisableVertexAttribArray(mWPositionHandle);
@@ -869,8 +883,16 @@ public class FallGL extends GLESScene {
             float shadowOffset = leaf.altitude * 0.2f;
             int texture = mLeafTextures[leaf.leafTextureIndex % mLeafTextures.length];
             // 影子是剪影，与光无关，传 -1 让片元跳过整段
-            drawLeafQuad(leaf.x - shadowOffset, leaf.y - shadowOffset, leaf.scale * sizeMul, leaf.angle,
-                    texture, shadowAlpha, true, sceneData, -1);
+            drawLeafQuad(
+                    leaf.x - shadowOffset,
+                    leaf.y - shadowOffset,
+                    leaf.scale * sizeMul,
+                    leaf.angle,
+                    texture,
+                    shadowAlpha,
+                    true,
+                    sceneData,
+                    -1);
         }
 
         float leafAlpha = 1.0f;
@@ -882,12 +904,28 @@ public class FallGL extends GLESScene {
         }
 
         int texture = mLeafTextures[leaf.leafTextureIndex % mLeafTextures.length];
-        drawLeafQuad(leaf.x, leaf.y, leaf.scale * sizeMul, leaf.angle, texture, leafAlpha, false,
-                sceneData, index);
+        drawLeafQuad(
+                leaf.x,
+                leaf.y,
+                leaf.scale * sizeMul,
+                leaf.angle,
+                texture,
+                leafAlpha,
+                false,
+                sceneData,
+                index);
     }
 
-    private void drawLeafQuad(float x, float y, float scale, float rotation, int texture, float alpha,
-            boolean silhouette, FallScene.SceneData sceneData, int leafIndex) {
+    private void drawLeafQuad(
+            float x,
+            float y,
+            float scale,
+            float rotation,
+            int texture,
+            float alpha,
+            boolean silhouette,
+            FallScene.SceneData sceneData,
+            int leafIndex) {
         float drawX = x - sceneData.getXOffset() * 2.0f;
 
         /*
@@ -924,17 +962,33 @@ public class FallGL extends GLESScene {
         Matrix.multiplyMM(mvMatrix, 0, sceneData.getViewMatrix(), 0, mModelMatrix, 0);
         Matrix.multiplyMM(mMVPMatrix, 0, sceneData.getProjectionMatrix(), 0, mvMatrix, 0);
 
-        drawQuad(-FallScene.LEAF_SIZE, -FallScene.LEAF_SIZE, FallScene.LEAF_SIZE, FallScene.LEAF_SIZE,
-                texture, alpha, silhouette);
+        drawQuad(
+                -FallScene.LEAF_SIZE,
+                -FallScene.LEAF_SIZE,
+                FallScene.LEAF_SIZE,
+                FallScene.LEAF_SIZE,
+                texture,
+                alpha,
+                silhouette);
     }
 
-    private void drawQuad(float left, float top, float right, float bottom, int texture, float alpha,
+    private void drawQuad(
+            float left,
+            float top,
+            float right,
+            float bottom,
+            int texture,
+            float alpha,
             boolean silhouette) {
         float[] vertices = mLeafQuadVertices;
-        vertices[0] = left;   vertices[1] = bottom;
-        vertices[5] = right;  vertices[6] = bottom;
-        vertices[10] = right; vertices[11] = top;
-        vertices[15] = left;  vertices[16] = top;
+        vertices[0] = left;
+        vertices[1] = bottom;
+        vertices[5] = right;
+        vertices[6] = bottom;
+        vertices[10] = right;
+        vertices[11] = top;
+        vertices[15] = left;
+        vertices[16] = top;
 
         if (mLeafQuadVertexBuffer == null || mLeafQuadVertexBuffer.capacity() != vertices.length) {
             mLeafQuadVertexBuffer = createFloatBuffer(vertices);
@@ -953,11 +1007,13 @@ public class FallGL extends GLESScene {
         }
 
         GLES30.glEnableVertexAttribArray(mPositionHandle);
-        GLES30.glVertexAttribPointer(mPositionHandle, 3, GLES30.GL_FLOAT, false, 20, mLeafQuadVertexBuffer);
+        GLES30.glVertexAttribPointer(
+                mPositionHandle, 3, GLES30.GL_FLOAT, false, 20, mLeafQuadVertexBuffer);
 
         mLeafQuadVertexBuffer.position(3);
         GLES30.glEnableVertexAttribArray(mTexCoordHandle);
-        GLES30.glVertexAttribPointer(mTexCoordHandle, 2, GLES30.GL_FLOAT, false, 20, mLeafQuadVertexBuffer);
+        GLES30.glVertexAttribPointer(
+                mTexCoordHandle, 2, GLES30.GL_FLOAT, false, 20, mLeafQuadVertexBuffer);
 
         GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
         GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, texture);
@@ -976,8 +1032,7 @@ public class FallGL extends GLESScene {
          * 报 "$ invalid character"，而且**离线的 glslangValidator 会先代入再验、
          * 反而是绿的** —— 水面那边就是这么栽过一次的。
          */
-        String fragmentShader = AssetLoader
-                .readText(mContext, "fall/shaders/GLES/fall_fs.glsl")
+        String fragmentShader = AssetLoader.readText(mContext, "fall/shaders/GLES/fall_fs.glsl")
                 .replace("$DROP_SIZE", String.valueOf(WallpaperSettings.getFallMaxDrops(80)));
         int vs = compileShader(GLES30.GL_VERTEX_SHADER, vertexShader);
         int fs = compileShader(GLES30.GL_FRAGMENT_SHADER, fragmentShader);
@@ -1041,8 +1096,8 @@ public class FallGL extends GLESScene {
          * 只替换顶点那边的话，运行时报的是 "$ invalid character"，
          * 而离线的 glslangValidator 校验（会先代入再验）反而是绿的，把问题盖住了。
          */
-        String fragmentShader = AssetLoader
-                .readText(mContext, "fall/shaders/GLES/fall_water_fs.glsl")
+        String fragmentShader = AssetLoader.readText(
+                        mContext, "fall/shaders/GLES/fall_water_fs.glsl")
                 .replace("$DROP_SIZE", String.valueOf(maxDrops));
         int vs = compileShader(GLES30.GL_VERTEX_SHADER, vertexShader);
         int fs = compileShader(GLES30.GL_FRAGMENT_SHADER, fragmentShader);
@@ -1064,48 +1119,49 @@ public class FallGL extends GLESScene {
             Log.e(TAG, "Water程序链接失败: " + GLES30.glGetProgramInfoLog(mWaterProgram));
         }
 
-        mWPositionHandle     = GLES30.glGetAttribLocation(mWaterProgram, "aPosition");
-        mWTexCoordHandle     = GLES30.glGetAttribLocation(mWaterProgram, "aTexCoord");
-        mWMatrixHandle       = GLES30.glGetUniformLocation(mWaterProgram, "uMVPMatrix");
-        mWAlphaHandle        = GLES30.glGetUniformLocation(mWaterProgram, "uAlpha");
-        mWMaskHandle         = GLES30.glGetUniformLocation(mWaterProgram, "uMask");
+        mWPositionHandle = GLES30.glGetAttribLocation(mWaterProgram, "aPosition");
+        mWTexCoordHandle = GLES30.glGetAttribLocation(mWaterProgram, "aTexCoord");
+        mWMatrixHandle = GLES30.glGetUniformLocation(mWaterProgram, "uMVPMatrix");
+        mWAlphaHandle = GLES30.glGetUniformLocation(mWaterProgram, "uAlpha");
+        mWMaskHandle = GLES30.glGetUniformLocation(mWaterProgram, "uMask");
         for (int i = 0; i < SKY_SECTIONS.length; i++) {
-            mSkySamplerHandles[i] = GLES30.glGetUniformLocation(mWaterProgram, SKY_SAMPLER_UNIFORMS[i]);
-            mSkyWeightHandles[i]  = GLES30.glGetUniformLocation(mWaterProgram, SKY_WEIGHT_UNIFORMS[i]);
+            mSkySamplerHandles[i] =
+                    GLES30.glGetUniformLocation(mWaterProgram, SKY_SAMPLER_UNIFORMS[i]);
+            mSkyWeightHandles[i] =
+                    GLES30.glGetUniformLocation(mWaterProgram, SKY_WEIGHT_UNIFORMS[i]);
         }
-        mWColorHandle        = GLES30.glGetUniformLocation(mWaterProgram, "uColor");
-        mWEmitterPosHandle   = GLES30.glGetUniformLocation(mWaterProgram, "uEmitterPos");
+        mWColorHandle = GLES30.glGetUniformLocation(mWaterProgram, "uColor");
+        mWEmitterPosHandle = GLES30.glGetUniformLocation(mWaterProgram, "uEmitterPos");
         mWEmitterRadiusHandle = GLES30.glGetUniformLocation(mWaterProgram, "uEmitterRadius");
         mWEmitterColorHandle = GLES30.glGetUniformLocation(mWaterProgram, "uEmitterColor");
-        mWEmitterGainHandle  = GLES30.glGetUniformLocation(mWaterProgram, "uEmitterGain");
-        mWStarAmountHandle   = GLES30.glGetUniformLocation(mWaterProgram, "uStarAmount");
-        mWStarTimeHandle     = GLES30.glGetUniformLocation(mWaterProgram, "uStarTime");
-        mWStarAspectHandle   = GLES30.glGetUniformLocation(mWaterProgram, "uStarAspect");
-        mWAlgaeAmountHandle    = GLES30.glGetUniformLocation(mWaterProgram, "uAlgaeAmount");
-        mWAlgaeGainHandle      = GLES30.glGetUniformLocation(mWaterProgram, "uAlgaeGain");
+        mWEmitterGainHandle = GLES30.glGetUniformLocation(mWaterProgram, "uEmitterGain");
+        mWStarAmountHandle = GLES30.glGetUniformLocation(mWaterProgram, "uStarAmount");
+        mWStarTimeHandle = GLES30.glGetUniformLocation(mWaterProgram, "uStarTime");
+        mWStarAspectHandle = GLES30.glGetUniformLocation(mWaterProgram, "uStarAspect");
+        mWAlgaeAmountHandle = GLES30.glGetUniformLocation(mWaterProgram, "uAlgaeAmount");
+        mWAlgaeGainHandle = GLES30.glGetUniformLocation(mWaterProgram, "uAlgaeGain");
         mWAlgaeThresholdHandle = GLES30.glGetUniformLocation(mWaterProgram, "uAlgaeThreshold");
-        mWAlgaeBandHandle      = GLES30.glGetUniformLocation(mWaterProgram, "uAlgaeBand");
-        mWAlgaeNoiseHandle     = GLES30.glGetUniformLocation(mWaterProgram, "uAlgaeNoise");
+        mWAlgaeBandHandle = GLES30.glGetUniformLocation(mWaterProgram, "uAlgaeBand");
+        mWAlgaeNoiseHandle = GLES30.glGetUniformLocation(mWaterProgram, "uAlgaeNoise");
         mWAlgaeNoiseTileHandle = GLES30.glGetUniformLocation(mWaterProgram, "uAlgaeNoiseTile");
         mWAlgaeNoiseGainHandle = GLES30.glGetUniformLocation(mWaterProgram, "uAlgaeNoiseGain");
         mWAlgaeArcScaleHandle = GLES30.glGetUniformLocation(mWaterProgram, "uAlgaeArcScale");
-        mWAlgaeLowHandle       = GLES30.glGetUniformLocation(mWaterProgram, "uAlgaeLow");
-        mWAlgaeHighHandle      = GLES30.glGetUniformLocation(mWaterProgram, "uAlgaeHigh");
-        mWAlgaePowerHandle     = GLES30.glGetUniformLocation(mWaterProgram, "uAlgaePower");
-        mWGlHeightHandle     = GLES30.glGetUniformLocation(mWaterProgram, "u_glHeight");
-        mWBgScaleHandle      = GLES30.glGetUniformLocation(mWaterProgram, "u_bgScale");
-        mWMeshScaleXHandle   = GLES30.glGetUniformLocation(mWaterProgram, "u_meshScaleX");
-        mWMeshScaleYHandle   = GLES30.glGetUniformLocation(mWaterProgram, "u_meshScaleY");
-        mWDxMulHandle        = GLES30.glGetUniformLocation(mWaterProgram, "u_dxMul");
-        mWXOffsetHandle      = GLES30.glGetUniformLocation(mWaterProgram, "u_xOffset");
-        mWRotateHandle       = GLES30.glGetUniformLocation(mWaterProgram, "u_rotate");
-        mWDropHandle         = GLES30.glGetUniformLocation(mWaterProgram, "u_drop");
-        mWDropCountHandle    = GLES30.glGetUniformLocation(mWaterProgram, "u_dropCount");
+        mWAlgaeLowHandle = GLES30.glGetUniformLocation(mWaterProgram, "uAlgaeLow");
+        mWAlgaeHighHandle = GLES30.glGetUniformLocation(mWaterProgram, "uAlgaeHigh");
+        mWAlgaePowerHandle = GLES30.glGetUniformLocation(mWaterProgram, "uAlgaePower");
+        mWGlHeightHandle = GLES30.glGetUniformLocation(mWaterProgram, "u_glHeight");
+        mWBgScaleHandle = GLES30.glGetUniformLocation(mWaterProgram, "u_bgScale");
+        mWMeshScaleXHandle = GLES30.glGetUniformLocation(mWaterProgram, "u_meshScaleX");
+        mWMeshScaleYHandle = GLES30.glGetUniformLocation(mWaterProgram, "u_meshScaleY");
+        mWDxMulHandle = GLES30.glGetUniformLocation(mWaterProgram, "u_dxMul");
+        mWXOffsetHandle = GLES30.glGetUniformLocation(mWaterProgram, "u_xOffset");
+        mWRotateHandle = GLES30.glGetUniformLocation(mWaterProgram, "u_rotate");
+        mWDropHandle = GLES30.glGetUniformLocation(mWaterProgram, "u_drop");
+        mWDropCountHandle = GLES30.glGetUniformLocation(mWaterProgram, "u_dropCount");
 
         GLES30.glDeleteShader(vs);
         GLES30.glDeleteShader(fs);
     }
-
 
     /**
      * 上传一张贴图。
@@ -1128,8 +1184,10 @@ public class FallGL extends GLESScene {
         int[] texture = new int[1];
         GLES30.glGenTextures(1, texture, 0);
         GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, texture[0]);
-        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR);
-        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(
+                GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(
+                GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
         int wrap = repeat ? GLES30.GL_REPEAT : GLES30.GL_CLAMP_TO_EDGE;
         GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, wrap);
         GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, wrap);
@@ -1148,20 +1206,33 @@ public class FallGL extends GLESScene {
             return 0;
         }
 
-        ByteBuffer buf = ByteBuffer.allocateDirect(mask.pixels.length).order(ByteOrder.nativeOrder());
+        ByteBuffer buf =
+                ByteBuffer.allocateDirect(mask.pixels.length).order(ByteOrder.nativeOrder());
         buf.put(mask.pixels).position(0);
 
         int[] tex = new int[1];
         GLES30.glGenTextures(1, tex, 0);
         GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, tex[0]);
-        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR);
-        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
-        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE);
-        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE);
+        GLES30.glTexParameteri(
+                GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(
+                GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(
+                GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE);
+        GLES30.glTexParameteri(
+                GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE);
         // 单字节/像素：行对齐按 4 字节算的话，宽度不是 4 的倍数时行会错位
         GLES30.glPixelStorei(GLES30.GL_UNPACK_ALIGNMENT, 1);
-        GLES30.glTexImage2D(GLES30.GL_TEXTURE_2D, 0, GLES30.GL_R8, mask.width, mask.height, 0,
-                GLES30.GL_RED, GLES30.GL_UNSIGNED_BYTE, buf);
+        GLES30.glTexImage2D(
+                GLES30.GL_TEXTURE_2D,
+                0,
+                GLES30.GL_R8,
+                mask.width,
+                mask.height,
+                0,
+                GLES30.GL_RED,
+                GLES30.GL_UNSIGNED_BYTE,
+                buf);
         return tex[0];
     }
 
@@ -1170,14 +1241,26 @@ public class FallGL extends GLESScene {
         int[] tex = new int[1];
         GLES30.glGenTextures(1, tex, 0);
         GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, tex[0]);
-        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR);
-        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
-        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE);
-        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE);
+        GLES30.glTexParameteri(
+                GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(
+                GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(
+                GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE);
+        GLES30.glTexParameteri(
+                GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE);
         ByteBuffer buf = ByteBuffer.allocateDirect(1).order(ByteOrder.nativeOrder());
         buf.put((byte) 255).position(0);
-        GLES30.glTexImage2D(GLES30.GL_TEXTURE_2D, 0, GLES30.GL_R8, 1, 1, 0,
-                GLES30.GL_RED, GLES30.GL_UNSIGNED_BYTE, buf);
+        GLES30.glTexImage2D(
+                GLES30.GL_TEXTURE_2D,
+                0,
+                GLES30.GL_R8,
+                1,
+                1,
+                0,
+                GLES30.GL_RED,
+                GLES30.GL_UNSIGNED_BYTE,
+                buf);
         return tex[0];
     }
 
@@ -1223,8 +1306,10 @@ public class FallGL extends GLESScene {
         int[] texture = new int[1];
         GLES30.glGenTextures(1, texture, 0);
         GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, texture[0]);
-        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR);
-        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(
+                GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(
+                GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
         GLUtils.texImage2D(GLES30.GL_TEXTURE_2D, 0, bitmap, 0);
         bitmap.recycle();
         return texture[0];
@@ -1250,10 +1335,14 @@ public class FallGL extends GLESScene {
         int[] texture = new int[1];
         GLES30.glGenTextures(1, texture, 0);
         GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, texture[0]);
-        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR_MIPMAP_LINEAR);
-        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
-        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE);
-        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE);
+        GLES30.glTexParameteri(
+                GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR_MIPMAP_LINEAR);
+        GLES30.glTexParameteri(
+                GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(
+                GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE);
+        GLES30.glTexParameteri(
+                GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE);
         GLUtils.texImage2D(GLES30.GL_TEXTURE_2D, 0, bitmap, 0);
         GLES30.glGenerateMipmap(GLES30.GL_TEXTURE_2D);
         bitmap.recycle();
@@ -1263,13 +1352,13 @@ public class FallGL extends GLESScene {
     private int[] createPlaceholderLeafTextures() {
         int[] textures = new int[14];
         int[] colors = {
-                Color.parseColor("#8B4513"), Color.parseColor("#A0522D"),
-                Color.parseColor("#8B6914"), Color.parseColor("#B8860B"),
-                Color.parseColor("#D2691E"), Color.parseColor("#CD853F"),
-                Color.parseColor("#DEB887"), Color.parseColor("#F4A460"),
-                Color.parseColor("#FF8C00"), Color.parseColor("#FFA500"),
-                Color.parseColor("#FFD700"), Color.parseColor("#FFFF00"),
-                Color.parseColor("#FF6347"), Color.parseColor("#FF4500")
+            Color.parseColor("#8B4513"), Color.parseColor("#A0522D"),
+            Color.parseColor("#8B6914"), Color.parseColor("#B8860B"),
+            Color.parseColor("#D2691E"), Color.parseColor("#CD853F"),
+            Color.parseColor("#DEB887"), Color.parseColor("#F4A460"),
+            Color.parseColor("#FF8C00"), Color.parseColor("#FFA500"),
+            Color.parseColor("#FFD700"), Color.parseColor("#FFFF00"),
+            Color.parseColor("#FF6347"), Color.parseColor("#FF4500")
         };
         for (int i = 0; i < textures.length; i++) {
             textures[i] = createPlaceholderTexture(64, 64, colors[i]);
@@ -1277,36 +1366,16 @@ public class FallGL extends GLESScene {
         return textures;
     }
 
-    private void syncPerfSettingsIfNeeded(long nowMs) {
+    /**
+     * 只刷新「诊断开关」。原来这里还顺带算目标帧率，那是从 FrameRateManager 复制的诊断
+     * 副本 —— 已经删掉，真正的帧率由 GLESWallpaper 那条循环统一负责。
+     * 这个开关本身还有用：它给下面那个 glGetError 闸门用。
+     */
+    private void refreshDiagFlagIfNeeded(long nowMs) {
         if (nowMs - mLastPerfSyncMs < PERF_SYNC_INTERVAL_MS) {
             return;
         }
         mLastPerfSyncMs = nowMs;
-        int fps = WallpaperSettings.getGlobalFrameRate(30);
-        mTargetFps = Math.max(1, fps);
-        mTargetFrameMs = Math.max(1L, 1000L / mTargetFps);
         mAnrDiagEnabled = WallpaperSettings.isVulkanAnrDiagnosticsEnabled(true);
     }
-
-    private void recordFrameCost(long frameCostMs) {
-        if (!mAnrDiagEnabled) {
-            return;
-        }
-        if (frameCostMs >= ANR_FRAME_THRESHOLD_MS) {
-            Log.w(TAG, "Slow frame: " + frameCostMs + "ms, targetFps=" + mTargetFps);
-        }
-        mDiagFrameCount++;
-        mDiagAccumulatedMs += frameCostMs;
-        if (frameCostMs > mDiagMaxMs) {
-            mDiagMaxMs = frameCostMs;
-        }
-        if (mDiagFrameCount >= 120) {
-            long avg = mDiagAccumulatedMs / Math.max(1L, mDiagFrameCount);
-            Log.i(TAG, "FrameStats avg=" + avg + "ms max=" + mDiagMaxMs + "ms fpsTarget=" + mTargetFps);
-            mDiagFrameCount = 0L;
-            mDiagAccumulatedMs = 0L;
-            mDiagMaxMs = 0L;
-        }
-    }
-
 }

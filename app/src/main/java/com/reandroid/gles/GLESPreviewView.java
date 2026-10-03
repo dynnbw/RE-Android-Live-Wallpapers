@@ -7,17 +7,18 @@ import android.opengl.EGLContext;
 import android.opengl.EGLDisplay;
 import android.opengl.EGLSurface;
 import android.opengl.GLES30;
-import android.util.AttributeSet;
+import android.os.Process;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.os.Process;
-import android.view.MotionEvent;
 
 public class GLESPreviewView extends SurfaceView implements SurfaceHolder.Callback, Runnable {
     private static final String TAG = "GLESPreviewView";
-    private static final boolean DEBUG = android.util.Log.isLoggable("GLESPreviewView", android.util.Log.DEBUG);
+    private static final boolean DEBUG =
+            android.util.Log.isLoggable("GLESPreviewView", android.util.Log.DEBUG);
+
     public interface SceneFactory {
         GLESScene create(int width, int height);
     }
@@ -86,24 +87,25 @@ public class GLESPreviewView extends SurfaceView implements SurfaceHolder.Callba
         if (mThread != null) return;
         int width = holder.getSurfaceFrame() != null ? holder.getSurfaceFrame().width() : 0;
         int height = holder.getSurfaceFrame() != null ? holder.getSurfaceFrame().height() : 0;
-        
+
         // 如果SurfaceFrame尺寸无效，尝试从View本身获取（可能需要等待布局完成）
         if (width <= 0 || height <= 0) {
             width = getWidth();
             height = getHeight();
         }
-        
+
         // 最后的备选方案：使用最小可用尺寸
         if (width <= 0) width = 256;
         if (height <= 0) height = 256;
 
         mPendingWidth = width;
         mPendingHeight = height;
-        
+
         if (DEBUG) {
-            android.util.Log.d("GLESPreviewView", "startRenderer: width=" + width + ", height=" + height);
+            android.util.Log.d(
+                    "GLESPreviewView", "startRenderer: width=" + width + ", height=" + height);
         }
-        
+
         mScene = mFactory.create(width, height);
 
         mRunning = true;
@@ -117,7 +119,10 @@ public class GLESPreviewView extends SurfaceView implements SurfaceHolder.Callba
         // 若直接读字段，join 期间线程退出会导致 mThread.isAlive() NPE。
         Thread thread = mThread;
         if (thread != null) {
-            try { thread.join(1000); } catch (InterruptedException ignored) {}
+            try {
+                thread.join(1000);
+            } catch (InterruptedException ignored) {
+            }
             if (thread.isAlive()) {
                 // 超时未退出：保留引用，由渲染线程退出时自行清理并销毁EGL，
                 // 避免旧线程未结束时又启动新线程导致并发渲染/双重释放。
@@ -160,12 +165,15 @@ public class GLESPreviewView extends SurfaceView implements SurfaceHolder.Callba
             // 预览跟随全局帧率设置（与桌面引擎一致），每秒重读一次
             long lastFpsCheckMs = 0;
             long targetFrameMs = 33L;
+            boolean vsyncPaced = false;
             while (mRunning) {
                 long now = System.currentTimeMillis();
                 if (now - lastFpsCheckMs >= 1000L) {
                     lastFpsCheckMs = now;
-                    int fps = com.reandroid.settings.WallpaperSettings.getGlobalFrameRate(30);
-                    targetFrameMs = Math.max(1L, 1000L / Math.max(1, fps));
+                    com.reandroid.settings.FrameRatePolicy.Decision decision =
+                            com.reandroid.settings.WallpaperSettings.resolveFrameRateDecision(30);
+                    targetFrameMs = Math.max(1L, 1000L / Math.max(1, decision.fps));
+                    vsyncPaced = decision.vsyncPaced;
                 }
                 try {
                     synchronized (mSceneLock) {
@@ -187,10 +195,13 @@ public class GLESPreviewView extends SurfaceView implements SurfaceHolder.Callba
                     break;
                 }
                 long frameCost = System.currentTimeMillis() - now;
-                long sleepMs = Math.max(1L, targetFrameMs - frameCost);
-                try {
-                    Thread.sleep(sleepMs);
-                } catch (InterruptedException ignored) {
+                long sleepMs = com.reandroid.settings.FrameRatePolicy.pacingSleepMs(
+                        targetFrameMs, vsyncPaced, frameCost);
+                if (sleepMs > 0L) {
+                    try {
+                        Thread.sleep(sleepMs);
+                    } catch (InterruptedException ignored) {
+                    }
                 }
             }
         } finally {
@@ -240,7 +251,8 @@ public class GLESPreviewView extends SurfaceView implements SurfaceHolder.Callba
 
     private void destroyEgl() {
         if (mDisplay != null && mDisplay != EGL14.EGL_NO_DISPLAY) {
-            EGL14.eglMakeCurrent(mDisplay, EGL14.EGL_NO_SURFACE, EGL14.EGL_NO_SURFACE, EGL14.EGL_NO_CONTEXT);
+            EGL14.eglMakeCurrent(
+                    mDisplay, EGL14.EGL_NO_SURFACE, EGL14.EGL_NO_SURFACE, EGL14.EGL_NO_CONTEXT);
             if (mSurface != null && mSurface != EGL14.EGL_NO_SURFACE) {
                 EGL14.eglDestroySurface(mDisplay, mSurface);
             }

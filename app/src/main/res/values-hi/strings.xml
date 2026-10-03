@@ -81,6 +81,9 @@
     <string name="pref_fireworks_grass_night_title">रात का घास दृश्य</string>
     <string name="pref_fireworks_reset_background_summary">कस्टम पृष्ठभूमि हटाकर डिफ़ॉल्ट का उपयोग करें</string>
     <string name="pref_fireworks_reset_background_title">डिफ़ॉल्ट पृष्ठभूमि पर रीसेट करें</string>
+    <string name="pref_frame_rate_follow_screen">स्क्रीन रिफ़्रेश दर का अनुसरण करें</string>
+    <string name="pref_frame_rate_power_save">पावर सेव मोड में घटाएँ</string>
+    <string name="pref_frame_rate_power_save_summary">फ़ोन के पावर सेव मोड में रहने पर फ़्रेम दर अपने आप कम हो जाती है</string>
     <string name="pref_global_frame_rate">वैश्विक फ्रेम दर</string>
     <string name="pref_microbes_color_mode_modern">नया</string>
     <string name="pref_microbes_color_mode_original">मूल</string>

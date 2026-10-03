@@ -1,22 +1,24 @@
 package com.reandroid.gles;
 
-import android.service.wallpaper.WallpaperService;
-import android.view.SurfaceHolder;
-import android.os.Bundle;
-import android.os.Process;
-import android.os.SystemClock;
-import android.view.Surface;
-import android.content.res.Resources;
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.util.Log;
+import android.content.res.Resources;
 import android.opengl.EGL14;
 import android.opengl.EGLConfig;
 import android.opengl.EGLContext;
 import android.opengl.EGLDisplay;
 import android.opengl.EGLSurface;
-import android.opengl.GLES30;
+import android.os.Bundle;
+import android.os.Process;
+import android.os.SystemClock;
+import android.service.wallpaper.WallpaperService;
+import android.util.Log;
 import android.view.MotionEvent;
+import android.view.Surface;
+import android.view.SurfaceHolder;
+
+import com.reandroid.settings.FrameRatePolicy;
+import com.reandroid.settings.WallpaperSettings;
+import com.reandroid.vulkan.FrameRateManager;
 
 public abstract class GLESWallpaper extends WallpaperService {
     private static final String TAG = "GLESWallpaper";
@@ -72,21 +74,6 @@ public abstract class GLESWallpaper extends WallpaperService {
 
     protected abstract GLESScene createScene(int width, int height);
 
-    /**
-     * 获取目标帧数（从SharedPreferences）
-     */
-    private int getTargetFrameRate() {
-        try {
-            SharedPreferences prefs = androidx.preference.PreferenceManager.getDefaultSharedPreferences(this);
-            String value = prefs.getString("global_frame_rate", "60");
-            int fps = Integer.parseInt(value);
-            return Math.max(1, fps);
-        } catch (Exception e) {
-            Log.w("GLESWallpaper", "Failed to get frame rate setting, using default 60 FPS");
-            return 60;
-        }
-    }
-
     private class GLESEngine extends Engine implements Runnable {
         /** 连续这么多帧呈现失败才放弃渲染（每次失败都会先尝试重建 EGL surface）。 */
         private static final int MAX_SWAP_FAILURES = 30;
@@ -126,7 +113,10 @@ public abstract class GLESWallpaper extends WallpaperService {
             if (thread != null) {
                 // 上限取短：这个 join 跑在主线程上（onVisibilityChanged / onDestroy），
                 // 而实测主线程在这条路径上被按住过 500-668ms。
-                try { thread.join(JOIN_TIMEOUT_MS); } catch (InterruptedException ignored) {}
+                try {
+                    thread.join(JOIN_TIMEOUT_MS);
+                } catch (InterruptedException ignored) {
+                }
                 if (thread.isAlive()) {
                     // 超时未退出：保留引用，由渲染线程退出时自行清理，
                     // 避免旧线程未结束时又启动新线程导致并发渲染/EGL互相销毁。
@@ -157,19 +147,21 @@ public abstract class GLESWallpaper extends WallpaperService {
             super.onSurfaceCreated(holder);
             mHolder = holder;
             logD("onSurfaceCreated: holder准备完成");
-            
+
             // Try to get size from surface frame
             android.graphics.Rect frame = holder.getSurfaceFrame();
             if (frame != null && (frame.width() > 0 && frame.height() > 0)) {
                 int width = frame.width();
                 int height = frame.height();
                 logD("surface frame: " + width + "x" + height);
-                
+
                 // Create scene immediately if we have size
                 synchronized (mSceneLock) {
                     if (mScene == null) {
                         mScene = createScene(width, height);
-                        Resources res = getApplicationContext() != null ? getApplicationContext().getResources() : getResources();
+                        Resources res = getApplicationContext() != null
+                                ? getApplicationContext().getResources()
+                                : getResources();
                         mScene.init(holder.getSurface(), res, isPreview());
                         mScene.setResources(res);
                         mScene.resize(width, height);
@@ -219,7 +211,9 @@ public abstract class GLESWallpaper extends WallpaperService {
                 if (mScene == null) {
                     mScene = createScene(width, height);
                     // 优先使用Application资源，避免早期生命周期空指针
-                    Resources res = getApplicationContext() != null ? getApplicationContext().getResources() : getResources();
+                    Resources res = getApplicationContext() != null
+                            ? getApplicationContext().getResources()
+                            : getResources();
                     mScene.init(holder.getSurface(), res, isPreview());
                     mScene.setResources(res);
                     mScene.resize(width, height);
@@ -234,16 +228,16 @@ public abstract class GLESWallpaper extends WallpaperService {
         }
 
         @Override
-        public void onOffsetsChanged(float xOffset, float yOffset,
-                float xStep, float yStep, int xPixels, int yPixels) {
+        public void onOffsetsChanged(
+                float xOffset, float yOffset, float xStep, float yStep, int xPixels, int yPixels) {
             synchronized (mSceneLock) {
                 if (mScene != null) mScene.setOffset(xOffset, yOffset, xPixels, yPixels);
             }
         }
 
         @Override
-        public Bundle onCommand(String action, int x, int y, int z,
-                Bundle extras, boolean resultRequested) {
+        public Bundle onCommand(
+                String action, int x, int y, int z, Bundle extras, boolean resultRequested) {
             synchronized (mSceneLock) {
                 if (mScene != null) {
                     mScene.onCommand(action, x, y, z);
@@ -325,7 +319,8 @@ public abstract class GLESWallpaper extends WallpaperService {
 
                 if (surface != null && surface.isValid()) {
                     int[] surfaceAttribs = {EGL14.EGL_NONE};
-                    eglSurface = EGL14.eglCreateWindowSurface(display, config, surface, surfaceAttribs, 0);
+                    eglSurface = EGL14.eglCreateWindowSurface(
+                            display, config, surface, surfaceAttribs, 0);
                 }
 
                 if (eglSurface == null || eglSurface == EGL14.EGL_NO_SURFACE) {
@@ -349,7 +344,9 @@ public abstract class GLESWallpaper extends WallpaperService {
                             int width = frame.width();
                             int height = frame.height();
                             mScene = createScene(width, height);
-                            Resources res = getApplicationContext() != null ? getApplicationContext().getResources() : getResources();
+                            Resources res = getApplicationContext() != null
+                                    ? getApplicationContext().getResources()
+                                    : getResources();
                             mScene.init(surface, res, isPreview());
                             mScene.setResources(res);
                             mScene.resize(width, height);
@@ -363,14 +360,35 @@ public abstract class GLESWallpaper extends WallpaperService {
                 }
                 if (sceneRef != null) sceneRef.start();
 
-                // 获取全局帧数设置
-                int targetFps = getTargetFrameRate();
-                long targetFrameTimeMs = 1000 / targetFps;
-                logD("目标FPS: " + targetFps);
+                // 全局帧率：每秒重读一次，改了设置不用重启壁纸（与 FrameRateManager 对齐）
+                FrameRatePolicy.Decision decision = WallpaperSettings.resolveFrameRateDecision(60);
+                long targetFrameTimeMs = Math.max(1L, 1000L / Math.max(1, decision.fps));
+                long lastFpsSyncMs = 0L;
+                FrameRateManager.applySurfaceFrameRateHint(surface, decision.fps);
+                logD("目标FPS: " + decision.fps + " vsyncPaced=" + decision.vsyncPaced);
+
+                // 帧统计：**开发者选项那个"显示刷新率"浮层反映的是屏幕的模式，不是我们跑得多快**
+                // —— 壁纸只有 40 帧它照样显示 120。要验"真的跑到了设定帧数"，只能用我们自己的数：
+                // 这里记的是**帧间隔**（相邻两帧的起始时间差），不是 draw+swap 的耗时。
+                // 与 Vulkan 侧同一套口径，logcat 里 grep FrameStats 两边都能看到。
+                long statFrames = 0L;
+                long statAccumMs = 0L;
+                long statMaxMs = 0L;
+                long lastFrameStartMs = 0L;
 
                 int swapFailures = 0;
                 while (mRunning) {
                     long now = System.currentTimeMillis();
+                    if (now - lastFpsSyncMs >= 1000L) {
+                        lastFpsSyncMs = now;
+                        FrameRatePolicy.Decision next =
+                                WallpaperSettings.resolveFrameRateDecision(60);
+                        if (next.fps != decision.fps) {
+                            FrameRateManager.applySurfaceFrameRateHint(surface, next.fps);
+                        }
+                        decision = next;
+                        targetFrameTimeMs = Math.max(1L, 1000L / Math.max(1, decision.fps));
+                    }
                     try {
                         synchronized (mSceneLock) {
                             if (mScene != null) mScene.drawFrame(now);
@@ -382,8 +400,10 @@ public abstract class GLESWallpaper extends WallpaperService {
                     if (!EGL14.eglSwapBuffers(display, eglSurface)) {
                         int error = EGL14.eglGetError();
                         swapFailures++;
-                        Log.e(TAG, "eglSwapBuffers失败(" + swapFailures + "/" + MAX_SWAP_FAILURES
-                                + "): 0x" + Integer.toHexString(error));
+                        Log.e(
+                                TAG,
+                                "eglSwapBuffers失败(" + swapFailures + "/" + MAX_SWAP_FAILURES
+                                        + "): 0x" + Integer.toHexString(error));
                         if (swapFailures >= MAX_SWAP_FAILURES) {
                             mRunning = false;
                             break;
@@ -393,30 +413,70 @@ public abstract class GLESWallpaper extends WallpaperService {
                          * 已经失效。重建后再试 —— 别当场结束循环，循环一停就只能等下一次
                          * surface / 可见性回调才能复活，那正是"卡住"的来源。
                          */
-                        EGL14.eglMakeCurrent(display, EGL14.EGL_NO_SURFACE,
-                                EGL14.EGL_NO_SURFACE, EGL14.EGL_NO_CONTEXT);
+                        EGL14.eglMakeCurrent(
+                                display,
+                                EGL14.EGL_NO_SURFACE,
+                                EGL14.EGL_NO_SURFACE,
+                                EGL14.EGL_NO_CONTEXT);
                         if (eglSurface != EGL14.EGL_NO_SURFACE) {
                             EGL14.eglDestroySurface(display, eglSurface);
                         }
                         eglSurface = EGL14.EGL_NO_SURFACE;
                         Surface retrySurface = mHolder == null ? null : mHolder.getSurface();
+                        // 连 surface 也要跟上 —— 下面那个帧率提示用的是这个缓存，
+                        // 重建之后旧句柄已经失效了
+                        surface = retrySurface;
                         if (retrySurface != null && retrySurface.isValid()) {
-                            eglSurface = EGL14.eglCreateWindowSurface(display, config,
-                                    retrySurface, new int[] {EGL14.EGL_NONE}, 0);
+                            eglSurface = EGL14.eglCreateWindowSurface(
+                                    display, config, retrySurface, new int[] {EGL14.EGL_NONE}, 0);
                         }
                         if (eglSurface == EGL14.EGL_NO_SURFACE) {
                             // 没有可用 surface，等系统回调；别空转烧 CPU。
-                            try { Thread.sleep(RETRY_SLEEP_MS); } catch (InterruptedException ignored) {}
+                            try {
+                                Thread.sleep(RETRY_SLEEP_MS);
+                            } catch (InterruptedException ignored) {
+                            }
                             continue;
                         }
                         EGL14.eglMakeCurrent(display, eglSurface, eglSurface, context);
-                        try { Thread.sleep(RETRY_SLEEP_MS); } catch (InterruptedException ignored) {}
+                        // 新 surface 要重新告诉系统目标帧率（旧句柄那条提示随它一起失效了）
+                        FrameRateManager.applySurfaceFrameRateHint(surface, decision.fps);
+                        try {
+                            Thread.sleep(RETRY_SLEEP_MS);
+                        } catch (InterruptedException ignored) {
+                        }
                         continue;
                     }
                     swapFailures = 0;
                     long frameTime = System.currentTimeMillis() - now;
-                    long sleep = Math.max(1, targetFrameTimeMs - frameTime);
-                    try { Thread.sleep(sleep); } catch (InterruptedException ignored) {}
+                    long sleep = FrameRatePolicy.pacingSleepMs(
+                            targetFrameTimeMs, decision.vsyncPaced, frameTime);
+                    if (sleep > 0L) {
+                        try {
+                            Thread.sleep(sleep);
+                        } catch (InterruptedException ignored) {
+                        }
+                    }
+
+                    // 帧间隔统计（首帧没有"上一帧"，跳过）
+                    if (lastFrameStartMs != 0L) {
+                        long interval = now - lastFrameStartMs;
+                        statFrames++;
+                        statAccumMs += interval;
+                        if (interval > statMaxMs) statMaxMs = interval;
+                        if (statFrames >= 120L) {
+                            long avg = statAccumMs / statFrames;
+                            Log.i(
+                                    TAG,
+                                    "FrameStats avg=" + avg + "ms max=" + statMaxMs + "ms fps="
+                                            + (avg > 0L ? 1000L / avg : 0L) + " target="
+                                            + decision.fps + " vsyncPaced=" + decision.vsyncPaced);
+                            statFrames = 0L;
+                            statAccumMs = 0L;
+                            statMaxMs = 0L;
+                        }
+                    }
+                    lastFrameStartMs = now;
                 }
             } finally {
                 // 仅当当前线程仍持有槽位时才释放场景并清理线程引用：
@@ -440,7 +500,8 @@ public abstract class GLESWallpaper extends WallpaperService {
 
     private static void cleanupEgl(EGLDisplay display, EGLSurface surface, EGLContext context) {
         if (display == null || display == EGL14.EGL_NO_DISPLAY) return;
-        EGL14.eglMakeCurrent(display, EGL14.EGL_NO_SURFACE, EGL14.EGL_NO_SURFACE, EGL14.EGL_NO_CONTEXT);
+        EGL14.eglMakeCurrent(
+                display, EGL14.EGL_NO_SURFACE, EGL14.EGL_NO_SURFACE, EGL14.EGL_NO_CONTEXT);
         if (surface != null && surface != EGL14.EGL_NO_SURFACE) {
             EGL14.eglDestroySurface(display, surface);
         }

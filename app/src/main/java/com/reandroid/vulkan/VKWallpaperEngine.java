@@ -113,8 +113,8 @@ public abstract class VKWallpaperEngine<T> extends WallpaperService.Engine imple
     }
 
     @Override
-    public void onOffsetsChanged(float xOffset, float yOffset, float xStep, float yStep,
-            int xPixels, int yPixels) {
+    public void onOffsetsChanged(
+            float xOffset, float yOffset, float xStep, float yStep, int xPixels, int yPixels) {
         super.onOffsetsChanged(xOffset, yOffset, xStep, yStep, xPixels, yPixels);
         synchronized (mSceneLock) {
             if (mScene != null) {
@@ -156,8 +156,7 @@ public abstract class VKWallpaperEngine<T> extends WallpaperService.Engine imple
                 mFrameRate.recordFrameCost(frameCost);
 
                 try {
-                    long sleepMs = Math.max(1L, mFrameRate.getTargetFrameMs() - frameCost);
-                    Thread.sleep(sleepMs);
+                    Thread.sleep(mFrameRate.pacingSleepMs(frameCost));
                 } catch (InterruptedException ignored) {
                     Thread.currentThread().interrupt();
                     return;

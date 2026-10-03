@@ -3,7 +3,6 @@ package com.reandroid.settings;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
-import android.util.Log;
 
 import androidx.preference.PreferenceManager;
 
@@ -23,6 +22,7 @@ public class WallpaperSettings {
     }
 
     public static final String KEY_GLOBAL_FRAME_RATE = "global_frame_rate";
+    public static final String KEY_FRAME_RATE_POWER_SAVE = "pref_frame_rate_power_save";
     public static final String KEY_VK_ANR_DIAGNOSTICS = "pref_vk_anr_diag";
 
     public static final String KEY_FALL_LEAF_COUNT = "pref_fall_leaf_count";
@@ -85,6 +85,7 @@ public class WallpaperSettings {
         if (p == null) return defValue;
         return p.getBoolean(key, defValue);
     }
+
     public static int getFallMaxDrops(int defValue) {
         SharedPreferences p = prefs();
         if (p == null) return defValue;
@@ -115,26 +116,73 @@ public class WallpaperSettings {
         return p.getBoolean(KEY_GALAXY_USE_LIGHT2, defValue);
     }
 
-    public static int getGlobalFrameRate(int defValue) {
-        // 全局设置：固定读默认 prefs，不随插件注入（保证 VK/GLES 两渲染器一致）
-        Context ctx = getContext();
-        if (ctx == null) return defValue;
-        try {
-            String value = PreferenceManager.getDefaultSharedPreferences(ctx)
-                    .getString(KEY_GLOBAL_FRAME_RATE, String.valueOf(defValue));
-            int fps = Integer.parseInt(value != null ? value : String.valueOf(defValue));
-            return Math.max(1, fps);
-        } catch (Exception e) {
-            Log.w("WallpaperSettings", "Failed to parse global frame rate", e);
-            return defValue;
-        }
-    }
-
     public static boolean isVulkanAnrDiagnosticsEnabled(boolean defValue) {
         // 全局设置：固定读默认 prefs，不随插件注入
         Context ctx = getContext();
         if (ctx == null) return defValue;
-        return PreferenceManager.getDefaultSharedPreferences(ctx).getBoolean(KEY_VK_ANR_DIAGNOSTICS, defValue);
+        return PreferenceManager.getDefaultSharedPreferences(ctx)
+                .getBoolean(KEY_VK_ANR_DIAGNOSTICS, defValue);
+    }
+
+    // ---- 全局帧率：跟随屏幕 / 省电联动 ----
+
+    /** 省电联动开关。默认关 —— 新特性一律默认关，用户自己开。 */
+    public static boolean isFrameRatePowerSaveEnabled(boolean defValue) {
+        // 全局设置：固定读默认 prefs，不随插件注入
+        Context ctx = getContext();
+        if (ctx == null) return defValue;
+        return PreferenceManager.getDefaultSharedPreferences(ctx)
+                .getBoolean(KEY_FRAME_RATE_POWER_SAVE, defValue);
+    }
+
+    /** 面板刷新率；读不到返回 0，由 {@link FrameRatePolicy} 落到兜底值。 */
+    public static float getDisplayRefreshRate() {
+        Context ctx = getContext();
+        if (ctx == null) return 0f;
+        try {
+            android.hardware.display.DisplayManager dm = (android.hardware.display.DisplayManager)
+                    ctx.getSystemService(Context.DISPLAY_SERVICE);
+            android.view.Display display =
+                    dm != null ? dm.getDisplay(android.view.Display.DEFAULT_DISPLAY) : null;
+            return display != null ? display.getRefreshRate() : 0f;
+        } catch (Throwable t) {
+            return 0f;
+        }
+    }
+
+    /** 当前是否处于系统省电模式。同步廉价读，调用方按秒轮询即可。 */
+    public static boolean isPowerSaveMode() {
+        Context ctx = getContext();
+        if (ctx == null) return false;
+        try {
+            android.os.PowerManager pm =
+                    (android.os.PowerManager) ctx.getSystemService(Context.POWER_SERVICE);
+            return pm != null && pm.isPowerSaveMode();
+        } catch (Throwable t) {
+            return false;
+        }
+    }
+
+    /**
+     * 帧率决策。android 侧只负责取原语（偏好字符串、刷新率、省电状态），
+     * 判断全在纯函数 {@link FrameRatePolicy#decide} 里，那边有 JVM 单测。
+     */
+    public static FrameRatePolicy.Decision resolveFrameRateDecision(int defValue) {
+        Context ctx = getContext();
+        String raw = ctx == null
+                ? null
+                : PreferenceManager.getDefaultSharedPreferences(ctx)
+                        .getString(KEY_GLOBAL_FRAME_RATE, String.valueOf(defValue));
+        return FrameRatePolicy.decide(
+                raw,
+                getDisplayRefreshRate(),
+                isPowerSaveMode(),
+                isFrameRatePowerSaveEnabled(false));
+    }
+
+    /** 只要帧率、不关心节奏时的快捷方式。 */
+    public static int resolveFrameRate(int defValue) {
+        return resolveFrameRateDecision(defValue).fps;
     }
 
     public static boolean isGrassEnabled(boolean defValue) {

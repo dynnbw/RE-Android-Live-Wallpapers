@@ -12,6 +12,7 @@ import android.view.SurfaceHolder;
 import com.reandroid.settings.WallpaperSettings;
 import com.reandroid.utils.IoUtils;
 import com.reandroid.vulkan.FrameRateManager;
+
 import org.json.JSONObject;
 
 import java.io.InputStream;
@@ -68,6 +69,8 @@ public class ProxyWallpaperService extends WallpaperService {
          * "壁纸卡住，进一次应用再退出来才动"。而其它回调说明系统正在用我们，那就该画。
          */
         private volatile boolean mDriven;
+        /** 上一次下发给系统的 surface 帧率提示，避免每帧重复调用。0 = 还没发过。 */
+        private int mLastFrameRateHint;
 
         /** 仅用于状态变化时打一行日志，别每帧刷。 */
         private boolean mRendering;
@@ -113,8 +116,10 @@ public class ProxyWallpaperService extends WallpaperService {
                         initH = frame.height();
                         fromFrame = true;
                     }
-                    Log.d(TAG, "createEngine onSurfaceChanged: " + initW + "x" + initH
-                            + " (fromFrame=" + fromFrame + ")");
+                    Log.d(
+                            TAG,
+                            "createEngine onSurfaceChanged: " + initW + "x" + initH + " (fromFrame="
+                                    + fromFrame + ")");
                     if (initW > 0 && initH > 0) {
                         mEngine.onSurfaceChanged(getSurfaceHolder(), mLastFormat, initW, initH);
                     } else {
@@ -131,7 +136,9 @@ public class ProxyWallpaperService extends WallpaperService {
             Log.d(TAG, "destroyEngine: lastSize=" + mLastWidth + "x" + mLastHeight);
             mRunning = false;
             if (mRenderThread != null) {
-                synchronized (mLock) { mLock.notifyAll(); }
+                synchronized (mLock) {
+                    mLock.notifyAll();
+                }
                 mRenderThread.interrupt();
                 /*
                  * 上限取得短：这个 join 跑在**主线程**上（可见性/surface 回调都是），
@@ -186,7 +193,9 @@ public class ProxyWallpaperService extends WallpaperService {
                 mDriven = false;
             }
             if (visible) {
-                synchronized (mLock) { mLock.notifyAll(); }
+                synchronized (mLock) {
+                    mLock.notifyAll();
+                }
                 // Detect plugin ID change (user switched to a different wallpaper
                 // via settings while this engine was running): recreate the engine.
                 String activeId = getActivePlugin(ProxyWallpaperService.this);
@@ -222,9 +231,13 @@ public class ProxyWallpaperService extends WallpaperService {
 
         @Override
         public void onSurfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-            Log.d(TAG, "ProxyEngine.onSurfaceChanged: " + width + "x" + height
-                    + " engine=" + (mEngine != null));
-            mLastFormat = format; mLastWidth = width; mLastHeight = height;
+            Log.d(
+                    TAG,
+                    "ProxyEngine.onSurfaceChanged: " + width + "x" + height + " engine="
+                            + (mEngine != null));
+            mLastFormat = format;
+            mLastWidth = width;
+            mLastHeight = height;
             // 系统在给我们配 surface，等于说这块画面在用（见 mDriven）。
             mDriven = true;
             synchronized (mLock) {
@@ -247,17 +260,26 @@ public class ProxyWallpaperService extends WallpaperService {
         }
 
         @Override
-        public void onOffsetsChanged(float xOffset, float yOffset,
-                                     float xOffsetStep, float yOffsetStep,
-                                     int xPixelOffset, int yPixelOffset) {
+        public void onOffsetsChanged(
+                float xOffset,
+                float yOffset,
+                float xOffsetStep,
+                float yOffsetStep,
+                int xPixelOffset,
+                int yPixelOffset) {
             // 桌面在滚动就是在用它 —— 顺带把可能停泊住的渲染循环叫醒（见 mDriven）。
             mDriven = true;
             synchronized (mLock) {
                 mLock.notifyAll();
                 if (mEngine != null) {
                     try {
-                        mEngine.onOffsetsChanged(xOffset, yOffset, xOffsetStep, yOffsetStep,
-                                xPixelOffset, yPixelOffset);
+                        mEngine.onOffsetsChanged(
+                                xOffset,
+                                yOffset,
+                                xOffsetStep,
+                                yOffsetStep,
+                                xPixelOffset,
+                                yPixelOffset);
                     } catch (Exception e) {
                         Log.e(TAG, "Plugin onOffsetsChanged crashed", e);
                     }
@@ -282,8 +304,8 @@ public class ProxyWallpaperService extends WallpaperService {
         }
 
         @Override
-        public Bundle onCommand(String action, int x, int y, int z,
-                                Bundle extras, boolean resultRequested) {
+        public Bundle onCommand(
+                String action, int x, int y, int z, Bundle extras, boolean resultRequested) {
             synchronized (mLock) {
                 if (mEngine != null) {
                     try {
@@ -298,6 +320,16 @@ public class ProxyWallpaperService extends WallpaperService {
 
         private void ensureRenderThread() {
             if (mRenderThread != null) return;
+            /*
+             * 引擎自带渲染线程时，宿主这条循环没事可做 —— 它的 drawFrame 是空实现，
+             * 起起来只会空转（VK 插件就是如此：它有自己的 GalaxyVKThread 之类）。
+             * 生命周期事件照旧转发给它，它自己会起停。
+             */
+            WallpaperEngine engine = mEngine;
+            if (engine != null && engine.isSelfDriven()) {
+                Log.d(TAG, "引擎自带渲染线程，宿主不驱动");
+                return;
+            }
             mRunning = true;
             mRenderThread = new Thread("ProxyEngineRenderer") {
                 @Override
@@ -313,6 +345,14 @@ public class ProxyWallpaperService extends WallpaperService {
                             }
                             long frameStart = System.currentTimeMillis();
                             mFrameRate.syncPerfSettingsIfNeeded(frameStart);
+                            // 目标帧率变了才重新告诉系统（每秒最多一次，不是每帧）
+                            int hintFps = mFrameRate.getTargetFps();
+                            if (hintFps != mLastFrameRateHint) {
+                                mLastFrameRateHint = hintFps;
+                                SurfaceHolder sh = getSurfaceHolder();
+                                FrameRateManager.applySurfaceFrameRateHint(
+                                        sh != null ? sh.getSurface() : null, hintFps);
+                            }
                             synchronized (mLock) {
                                 if (mEngine != null) {
                                     try {
@@ -330,8 +370,11 @@ public class ProxyWallpaperService extends WallpaperService {
                             }
                             long frameCost = System.currentTimeMillis() - frameStart;
                             mFrameRate.recordFrameCost(frameCost);
-                            long sleepMs = Math.max(1L, mFrameRate.getTargetFrameMs() - frameCost);
-                            try { Thread.sleep(sleepMs); } catch (InterruptedException ignored) {}
+                            long sleepMs = mFrameRate.pacingSleepMs(frameCost);
+                            try {
+                                Thread.sleep(sleepMs);
+                            } catch (InterruptedException ignored) {
+                            }
                         } else {
                             if (mRendering) {
                                 mRendering = false;
@@ -364,7 +407,8 @@ public class ProxyWallpaperService extends WallpaperService {
 
             // Check for Vulkan renderer preference
             if (pluginVk != null) {
-                SharedPreferences prefs = getSharedPreferences("plugin_" + pluginId, Context.MODE_PRIVATE);
+                SharedPreferences prefs =
+                        getSharedPreferences("plugin_" + pluginId, Context.MODE_PRIVATE);
                 if (prefs.getBoolean("use_vulkan", false)) {
                     className = pluginVk;
                 }
@@ -404,6 +448,5 @@ public class ProxyWallpaperService extends WallpaperService {
         public Context getContext() {
             return mContext;
         }
-
     }
 }

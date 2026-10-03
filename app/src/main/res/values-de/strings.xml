@@ -81,6 +81,9 @@
     <string name="pref_fireworks_grass_night_title">Gras bei Nacht</string>
     <string name="pref_fireworks_reset_background_summary">Eigenen Hintergrund entfernen und den Standard verwenden</string>
     <string name="pref_fireworks_reset_background_title">Auf Standardhintergrund zurücksetzen</string>
+    <string name="pref_frame_rate_follow_screen">Bildwiederholrate des Displays folgen</string>
+    <string name="pref_frame_rate_power_save">Im Energiesparmodus reduzieren</string>
+    <string name="pref_frame_rate_power_save_summary">Senkt die Bildrate automatisch, solange das Gerät im Energiesparmodus ist</string>
     <string name="pref_global_frame_rate">Globale Bildrate</string>
     <string name="pref_microbes_color_mode_modern">Neu</string>
     <string name="pref_microbes_color_mode_original">Original</string>

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    全局帧率对话框：上面一个「省电联动」复选框，下面单选帧率。
+
+    为什么不用 setSingleChoiceItems：它会把单选列表撑满对话框的列表槽，塞不进第二个控件。
+    所以整块用 setView 自绘（dialog_weather_source_item.xml 是同一条路的先例）。
+
+    **缩进必须加在外层容器上，不能加在 CheckBox 上。** CompoundButton 那个方框是按
+    控件自己的左边缘画的，`paddingStart` 只把**文字**推走 —— 结果是方框贴着对话框边、
+    文字缩进 24dp，中间空出一大段（实测方框只离边 6dp，文字却在 24dp）。加在容器上
+    两者才会一起动。
+
+    帧率档位的文案（"24 FPS"…）仍是 Java 里的字面量 —— FPS 是全球通用的科技用语，
+    没有本地化必要；只有「跟随屏幕」那一项是真句子，走字符串资源。
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="18dp"
+        android:paddingEnd="24dp"
+        android:paddingTop="20dp">
+
+        <CheckBox
+            android:id="@+id/frame_rate_power_save_check"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/pref_frame_rate_power_save"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <TextView
+            android:id="@+id/frame_rate_power_save_summary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="30dp"
+            android:paddingBottom="4dp"
+            android:text="@string/pref_frame_rate_power_save_summary"
+            android:textAppearance="?android:attr/textAppearanceSmall" />
+    </LinearLayout>
+
+    <ListView
+        android:id="@+id/frame_rate_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+</LinearLayout>

@@ -81,6 +81,9 @@
     <string name="pref_fireworks_grass_night_title">Ночная трава</string>
     <string name="pref_fireworks_reset_background_summary">Убрать свой фон и вернуть стандартный</string>
     <string name="pref_fireworks_reset_background_title">Сбросить на стандартный фон</string>
+    <string name="pref_frame_rate_follow_screen">Следовать частоте обновления экрана</string>
+    <string name="pref_frame_rate_power_save">Снижать в режиме энергосбережения</string>
+    <string name="pref_frame_rate_power_save_summary">Автоматически снижает частоту кадров, когда телефон в режиме энергосбережения</string>
     <string name="pref_global_frame_rate">Глобальная частота кадров</string>
     <string name="pref_microbes_color_mode_modern">Новый</string>
     <string name="pref_microbes_color_mode_original">Оригинал</string>

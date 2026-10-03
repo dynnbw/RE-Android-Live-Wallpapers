@@ -81,6 +81,9 @@
     <string name="pref_fireworks_grass_night_title">রাতের ঘাস দৃশ্য</string>
     <string name="pref_fireworks_reset_background_summary">কাস্টম পটভূমি মুছে ডিফল্টটি ব্যবহার করুন</string>
     <string name="pref_fireworks_reset_background_title">ডিফল্ট পটভূমিতে রিসেট করুন</string>
+    <string name="pref_frame_rate_follow_screen">স্ক্রিন রিফ্রেশ রেট অনুসরণ করুন</string>
+    <string name="pref_frame_rate_power_save">পাওয়ার সেভ মোডে কমান</string>
+    <string name="pref_frame_rate_power_save_summary">ফোন পাওয়ার সেভ মোডে থাকলে ফ্রেম রেট স্বয়ংক্রিয়ভাবে কমে যায়</string>
     <string name="pref_global_frame_rate">বৈশ্বিক ফ্রেম রেট</string>
     <string name="pref_microbes_color_mode_modern">নতুন</string>
     <string name="pref_microbes_color_mode_original">মূল</string>

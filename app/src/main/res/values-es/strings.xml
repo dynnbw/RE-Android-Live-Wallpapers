@@ -81,6 +81,9 @@
     <string name="pref_fireworks_grass_night_title">Escena nocturna de hierba</string>
     <string name="pref_fireworks_reset_background_summary">Quitar el fondo personalizado y usar el predeterminado</string>
     <string name="pref_fireworks_reset_background_title">Restablecer al fondo predeterminado</string>
+    <string name="pref_frame_rate_follow_screen">Seguir la frecuencia de actualización de la pantalla</string>
+    <string name="pref_frame_rate_power_save">Reducir en modo de ahorro de energía</string>
+    <string name="pref_frame_rate_power_save_summary">Reduce automáticamente la velocidad de fotogramas cuando el teléfono está en modo de ahorro de energía</string>
     <string name="pref_global_frame_rate">Frecuencia de cuadros global</string>
     <string name="pref_microbes_color_mode_modern">Nuevo</string>
     <string name="pref_microbes_color_mode_original">Original</string>

@@ -21,15 +21,11 @@ import android.graphics.Bitmap;
 import android.opengl.GLES30;
 import android.opengl.GLUtils;
 import android.os.Process;
-import android.os.SystemClock;
 import android.util.Log;
 
-import com.reandroid.utils.AssetLoader;
 import com.reandroid.gles.GLESScene;
-import com.reandroid.settings.WallpaperSettings;
+import com.reandroid.utils.AssetLoader;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
 /**
@@ -38,8 +34,6 @@ import java.nio.FloatBuffer;
  */
 public class GalaxyGL extends GLESScene {
     private static final String TAG = "GalaxyGL";
-    private static final long PERF_SYNC_INTERVAL_MS = 1000L;
-    private static final long ANR_FRAME_THRESHOLD_MS = 200L;
 
     private final Context mContext;
     private boolean mGLInitialized = false;
@@ -55,23 +49,15 @@ public class GalaxyGL extends GLESScene {
     private FloatBuffer mBgVertexBuffer;
     /** 全屏背景四边形：整块都是常量，原先每帧重新构造一次数组。 */
     private static final float[] BG_VERTICES = {
-        -1, -1, 0, 1,
-         1, -1, 1, 1,
-        -1,  1, 0, 0,
-         1,  1, 1, 0
+        -1, -1, 0, 1, 1, -1, 1, 1,
+        -1, 1, 0, 0, 1, 1, 1, 0
     };
+
     private FloatBuffer mLightQuadBuffer;
     private final float[] mLightQuadVerts = new float[20];
     private final GalaxyScene mScene;
     private android.content.SharedPreferences mPluginPrefs;
-    private int mTargetFps = 30;
-    private long mTargetFrameMs = 33L;
-    private boolean mAnrDiagEnabled = false;
-    private long mLastPerfSyncMs = 0L;
-    private long mDiagFrameCount = 0L;
-    private long mDiagAccumulatedMs = 0L;
-    private long mDiagMaxMs = 0L;
-    
+
     /**
      * 构造函数
      * @param width  屏幕宽度
@@ -107,7 +93,7 @@ public class GalaxyGL extends GLESScene {
 
     @Override
     public void release() {
-        int[] tex = new int[] { mTexSpace, mTexFlares, mTexLight1 };
+        int[] tex = new int[] {mTexSpace, mTexFlares, mTexLight1};
         GLES30.glDeleteTextures(tex.length, tex, 0);
         mTexSpace = 0;
         mTexFlares = 0;
@@ -130,6 +116,7 @@ public class GalaxyGL extends GLESScene {
         mParticleColorBuffer = null;
         mGLInitialized = false;
     }
+
     public void setParticleCount(int count) {
         mScene.setParticleCount(count);
     }
@@ -202,30 +189,28 @@ public class GalaxyGL extends GLESScene {
 
     private void createPrograms() {
         mBgProgram = createProgram(
-            AssetLoader.readText(mContext, "galaxy/shaders/GLES/galaxy_bg_vs.glsl"),
-            AssetLoader.readText(mContext, "galaxy/shaders/GLES/galaxy_bg_fs.glsl")
-        );
+                AssetLoader.readText(mContext, "galaxy/shaders/GLES/galaxy_bg_vs.glsl"),
+                AssetLoader.readText(mContext, "galaxy/shaders/GLES/galaxy_bg_fs.glsl"));
 
         mParticleProgram = createProgram(
-            AssetLoader.readText(mContext, "galaxy/shaders/GLES/galaxy_particle_vs.glsl"),
-            AssetLoader.readText(mContext, "galaxy/shaders/GLES/galaxy_particle_fs.glsl")
-        );
+                AssetLoader.readText(mContext, "galaxy/shaders/GLES/galaxy_particle_vs.glsl"),
+                AssetLoader.readText(mContext, "galaxy/shaders/GLES/galaxy_particle_fs.glsl"));
 
         mLightProgram = createProgram(
-            AssetLoader.readText(mContext, "galaxy/shaders/GLES/galaxy_light_vs.glsl"),
-            AssetLoader.readText(mContext, "galaxy/shaders/GLES/galaxy_light_fs.glsl")
-        );
+                AssetLoader.readText(mContext, "galaxy/shaders/GLES/galaxy_light_vs.glsl"),
+                AssetLoader.readText(mContext, "galaxy/shaders/GLES/galaxy_light_fs.glsl"));
 
         Log.d(TAG, "着色器程序创建完成");
     }
 
-
-
     private void loadTextures() {
-        mTexSpace = loadTexture(AssetLoader.decodeBitmap(mContext, "galaxy/drawable/galaxy_space.jpg"));
-        mTexFlares = loadTexture(AssetLoader.decodeBitmap(mContext, "galaxy/drawable/galaxy_flares.png"));
+        mTexSpace =
+                loadTexture(AssetLoader.decodeBitmap(mContext, "galaxy/drawable/galaxy_space.jpg"));
+        mTexFlares = loadTexture(
+                AssetLoader.decodeBitmap(mContext, "galaxy/drawable/galaxy_flares.png"));
         mUseLight2 = readLight2FromPrefs();
-        mTexLight1 = loadTexture(AssetLoader.decodeBitmap(mContext,
+        mTexLight1 = loadTexture(AssetLoader.decodeBitmap(
+                mContext,
                 mUseLight2 ? "galaxy/drawable/light2.png" : "galaxy/drawable/light1.jpg"));
 
         Log.d(TAG, "纹理加载完成");
@@ -238,12 +223,13 @@ public class GalaxyGL extends GLESScene {
         }
 
         if (mTexLight1 != 0) {
-            int[] tex = new int[] { mTexLight1 };
+            int[] tex = new int[] {mTexLight1};
             GLES30.glDeleteTextures(1, tex, 0);
             mTexLight1 = 0;
         }
 
-        mTexLight1 = loadTexture(AssetLoader.decodeBitmap(mContext,
+        mTexLight1 = loadTexture(AssetLoader.decodeBitmap(
+                mContext,
                 desiredUseLight2 ? "galaxy/drawable/light2.png" : "galaxy/drawable/light1.jpg"));
         mUseLight2 = desiredUseLight2;
     }
@@ -253,10 +239,14 @@ public class GalaxyGL extends GLESScene {
         GLES30.glGenTextures(1, textureHandle, 0);
 
         GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, textureHandle[0]);
-        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR);
-        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
-        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE);
-        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE);
+        GLES30.glTexParameteri(
+                GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(
+                GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(
+                GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE);
+        GLES30.glTexParameteri(
+                GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE);
 
         GLUtils.texImage2D(GLES30.GL_TEXTURE_2D, 0, bitmap, 0);
         bitmap.recycle();
@@ -277,8 +267,6 @@ public class GalaxyGL extends GLESScene {
 
     @Override
     public void drawFrame(long timeMs) {
-        long frameStart = SystemClock.uptimeMillis();
-        syncPerfSettingsIfNeeded(frameStart);
 
         mScene.update(timeMs);
         GalaxyScene.SceneData sceneData = mScene.getSceneData();
@@ -294,9 +282,6 @@ public class GalaxyGL extends GLESScene {
         drawBackground();
         drawParticles(sceneData);
         drawLights(sceneData);
-
-        long frameCost = SystemClock.uptimeMillis() - frameStart;
-        recordFrameCost(frameCost);
     }
 
     private void syncParticleBuffers(GalaxyScene.SceneData sceneData) {
@@ -372,10 +357,12 @@ public class GalaxyGL extends GLESScene {
         GLES30.glEnableVertexAttribArray(colorHandle);
 
         mParticlePositionBuffer.position(0);
-        GLES30.glVertexAttribPointer(posHandle, 3, GLES30.GL_FLOAT, false, 0, mParticlePositionBuffer);
+        GLES30.glVertexAttribPointer(
+                posHandle, 3, GLES30.GL_FLOAT, false, 0, mParticlePositionBuffer);
 
         mParticleColorBuffer.position(0);
-        GLES30.glVertexAttribPointer(colorHandle, 4, GLES30.GL_FLOAT, false, 0, mParticleColorBuffer);
+        GLES30.glVertexAttribPointer(
+                colorHandle, 4, GLES30.GL_FLOAT, false, 0, mParticleColorBuffer);
 
         GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
         GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mTexFlares);
@@ -399,10 +386,26 @@ public class GalaxyGL extends GLESScene {
         float sx = (baseSize / mWidth) * 1.1f;
         float sy = (baseSize / mWidth) * 1.2f;
 
-        mLightQuadVerts[0]  = -sx; mLightQuadVerts[1]  = -sy; mLightQuadVerts[2] = 0; mLightQuadVerts[3] = 0; mLightQuadVerts[4] = 0;
-        mLightQuadVerts[5]  =  sx; mLightQuadVerts[6]  = -sy; mLightQuadVerts[7] = 0; mLightQuadVerts[8] = 1; mLightQuadVerts[9] = 0;
-        mLightQuadVerts[10] = -sx; mLightQuadVerts[11] =  sy; mLightQuadVerts[12]= 0; mLightQuadVerts[13]= 0; mLightQuadVerts[14]= 1;
-        mLightQuadVerts[15] =  sx; mLightQuadVerts[16] =  sy; mLightQuadVerts[17]= 0; mLightQuadVerts[18]= 1; mLightQuadVerts[19]= 1;
+        mLightQuadVerts[0] = -sx;
+        mLightQuadVerts[1] = -sy;
+        mLightQuadVerts[2] = 0;
+        mLightQuadVerts[3] = 0;
+        mLightQuadVerts[4] = 0;
+        mLightQuadVerts[5] = sx;
+        mLightQuadVerts[6] = -sy;
+        mLightQuadVerts[7] = 0;
+        mLightQuadVerts[8] = 1;
+        mLightQuadVerts[9] = 0;
+        mLightQuadVerts[10] = -sx;
+        mLightQuadVerts[11] = sy;
+        mLightQuadVerts[12] = 0;
+        mLightQuadVerts[13] = 0;
+        mLightQuadVerts[14] = 1;
+        mLightQuadVerts[15] = sx;
+        mLightQuadVerts[16] = sy;
+        mLightQuadVerts[17] = 0;
+        mLightQuadVerts[18] = 1;
+        mLightQuadVerts[19] = 1;
 
         if (mLightQuadBuffer == null) {
             mLightQuadBuffer = createFloatBuffer(mLightQuadVerts);
@@ -431,37 +434,4 @@ public class GalaxyGL extends GLESScene {
         GLES30.glDisableVertexAttribArray(posHandle);
         GLES30.glDisableVertexAttribArray(texHandle);
     }
-
-    private void syncPerfSettingsIfNeeded(long nowMs) {
-        if (nowMs - mLastPerfSyncMs < PERF_SYNC_INTERVAL_MS) {
-            return;
-        }
-        mLastPerfSyncMs = nowMs;
-        int fps = WallpaperSettings.getGlobalFrameRate(30);
-        mTargetFps = Math.max(1, fps);
-        mTargetFrameMs = Math.max(1L, 1000L / mTargetFps);
-        mAnrDiagEnabled = WallpaperSettings.isVulkanAnrDiagnosticsEnabled(true);
-    }
-
-    private void recordFrameCost(long frameCostMs) {
-        if (!mAnrDiagEnabled) {
-            return;
-        }
-        if (frameCostMs >= ANR_FRAME_THRESHOLD_MS) {
-            Log.w(TAG, "Slow frame: " + frameCostMs + "ms, targetFps=" + mTargetFps);
-        }
-        mDiagFrameCount++;
-        mDiagAccumulatedMs += frameCostMs;
-        if (frameCostMs > mDiagMaxMs) {
-            mDiagMaxMs = frameCostMs;
-        }
-        if (mDiagFrameCount >= 120) {
-            long avg = mDiagAccumulatedMs / Math.max(1L, mDiagFrameCount);
-            Log.i(TAG, "FrameStats avg=" + avg + "ms max=" + mDiagMaxMs + "ms fpsTarget=" + mTargetFps);
-            mDiagFrameCount = 0L;
-            mDiagAccumulatedMs = 0L;
-            mDiagMaxMs = 0L;
-        }
-    }
-
 }

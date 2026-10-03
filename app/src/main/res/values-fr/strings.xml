@@ -81,6 +81,9 @@
     <string name="pref_fireworks_grass_night_title">Scène nocturne d\'herbe</string>
     <string name="pref_fireworks_reset_background_summary">Supprimer l\'arrière-plan personnalisé et utiliser celui par défaut</string>
     <string name="pref_fireworks_reset_background_title">Réinitialiser l\'arrière-plan par défaut</string>
+    <string name="pref_frame_rate_follow_screen">Suivre la fréquence de rafraîchissement de l’écran</string>
+    <string name="pref_frame_rate_power_save">Réduire en mode économie d’énergie</string>
+    <string name="pref_frame_rate_power_save_summary">Réduit automatiquement la fréquence d’images lorsque le téléphone est en mode économie d’énergie</string>
     <string name="pref_global_frame_rate">Fréquence d’images globale</string>
     <string name="pref_microbes_color_mode_modern">Nouveau</string>
     <string name="pref_microbes_color_mode_original">Original</string>

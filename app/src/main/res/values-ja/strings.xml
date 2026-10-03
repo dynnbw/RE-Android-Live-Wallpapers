@@ -81,6 +81,9 @@
     <string name="pref_fireworks_grass_night_title">夜の草地</string>
     <string name="pref_fireworks_reset_background_summary">カスタム背景を消して既定の背景に戻す</string>
     <string name="pref_fireworks_reset_background_title">既定の背景に戻す</string>
+    <string name="pref_frame_rate_follow_screen">画面のリフレッシュレートに合わせる</string>
+    <string name="pref_frame_rate_power_save">省電力モード時にフレームレートを下げる</string>
+    <string name="pref_frame_rate_power_save_summary">省電力モード中はフレームレートを自動で下げます</string>
     <string name="pref_global_frame_rate">全体フレームレート</string>
     <string name="pref_microbes_color_mode_modern">新バージョン</string>
     <string name="pref_microbes_color_mode_original">クラシック版</string>
