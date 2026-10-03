@@ -92,9 +92,6 @@
         <activity android:exported="true" android:label="Grass" android:name="com.reandroid.wallpaper.grass.Grass" android:theme="@android:style/Theme.NoTitleBar" android:enabled="@bool/config_enable_grass_wallpaper">
             <intent-filter><action android:name="android.intent.action.MAIN" /><category android:name="android.intent.category.TEST" /></intent-filter>
         </activity>
-        <activity android:exported="true" android:label="Grass Vulkan" android:name="com.reandroid.wallpaper.grass.GrassVK" android:theme="@android:style/Theme.NoTitleBar" android:enabled="@bool/config_enable_grass_wallpaper">
-            <intent-filter><action android:name="android.intent.action.MAIN" /><category android:name="android.intent.category.TEST" /></intent-filter>
-        </activity>
         <activity android:exported="true" android:label="Aurora" android:name="com.reandroid.wallpaper.aurora1.Aurora1" android:theme="@android:style/Theme.NoTitleBar" android:enabled="@bool/config_enable_aurora1_wallpaper">
             <intent-filter><action android:name="android.intent.action.MAIN" /><category android:name="android.intent.category.TEST" /></intent-filter>
         </activity>
@@ -104,16 +101,9 @@
         <activity android:exported="true" android:label="Galaxy" android:name="com.reandroid.wallpaper.galaxy.Galaxy" android:theme="@android:style/Theme.NoTitleBar" android:enabled="@bool/config_enable_galaxy_wallpaper">
             <intent-filter><action android:name="android.intent.action.MAIN" /><category android:name="android.intent.category.TEST" /></intent-filter>
         </activity>
-        <activity android:exported="true" android:label="Galaxy Vulkan" android:name="com.reandroid.wallpaper.galaxy.GalaxyVK" android:theme="@android:style/Theme.NoTitleBar" android:enabled="@bool/config_enable_galaxy_wallpaper">
-            <intent-filter><action android:name="android.intent.action.MAIN" /><category android:name="android.intent.category.TEST" /></intent-filter>
-        </activity>
         <activity android:exported="true" android:label="Water Leaves" android:name="com.reandroid.wallpaper.fall.Fall" android:theme="@android:style/Theme.NoTitleBar" android:enabled="@bool/config_enable_fall_wallpaper">
             <intent-filter><action android:name="android.intent.action.MAIN" /><category android:name="android.intent.category.TEST" /></intent-filter>
         </activity>
-        <activity android:exported="true" android:label="Water Leaves Vulkan" android:name="com.reandroid.wallpaper.fall.FallVK" android:theme="@android:style/Theme.NoTitleBar" android:enabled="@bool/config_enable_fall_wallpaper">
-            <intent-filter><action android:name="android.intent.action.MAIN" /><category android:name="android.intent.category.TEST" /></intent-filter>
-        </activity>
-
         <!-- === Single wallpaper service (plugin architecture) === -->
         <service
             android:name="com.reandroid.plugin.ProxyWallpaperService"
