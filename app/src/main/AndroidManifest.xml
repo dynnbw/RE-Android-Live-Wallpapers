@@ -46,10 +46,14 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
-        <!-- Main Settings -->
+        <!--
+            Main Settings —— 这里**不写** android:label。
+            activity 的 label 会覆盖应用名，而这是启动器入口：写了它桌面就显示「壁纸设置」
+            而不是应用名。应用内的标题由 SettingsActivity 运行时 setTitle(R.string.settings_title)
+            负责，所以删掉不影响界面。
+        -->
         <activity
             android:exported="true"
-            android:label="@string/settings_title"
             android:name="com.reandroid.settings.SettingsActivity"
             android:theme="@style/Theme.WallpaperSettings">
             <intent-filter>
