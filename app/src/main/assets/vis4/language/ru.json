@@ -7,5 +7,7 @@
   "musicvis_bg_color_label_#2F4F4F": "Тёмно-зелёный",
   "musicvis_bg_color_label_#FFE4DE": "Розовый",
   "musicvis_bg_color_label_#F0FFFF": "Светло-зелёный",
-  "musicvis_bg_color_label_#EDDEFF": "Светло-фиолетовый"
+  "musicvis_bg_color_label_#EDDEFF": "Светло-фиолетовый",
+  "musicvis_follow_volume": "Следовать системной громкости",
+  "musicvis_follow_volume_summary": "Громкость медиа определяет размер визуализации"
 }

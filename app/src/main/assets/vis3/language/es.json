@@ -27,5 +27,7 @@
   "musicvis_recolor_color": "Color",
   "musicvis_brightness": "Brillo",
   "musicvis_saturation": "Saturación",
-  "musicvis_hue": "Matiz"
+  "musicvis_hue": "Matiz",
+  "musicvis_follow_volume": "Seguir el volumen del sistema",
+  "musicvis_follow_volume_summary": "El volumen multimedia determina el tamaño de la visualización"
 }

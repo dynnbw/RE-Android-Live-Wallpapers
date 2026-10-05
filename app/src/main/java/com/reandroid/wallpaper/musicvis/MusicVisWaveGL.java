@@ -1,13 +1,13 @@
 package com.reandroid.wallpaper.musicvis;
 
-import com.reandroid.utils.GLTextureUtils;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.opengl.GLES30;
 import android.util.Log;
 
-import com.reandroid.utils.AssetLoader;
 import com.reandroid.gles.GLESScene;
+import com.reandroid.utils.AssetLoader;
+import com.reandroid.utils.GLTextureUtils;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -35,12 +35,18 @@ public class MusicVisWaveGL extends GLESScene {
     private FloatBuffer mTexBuffer;
 
     // HSL colorization
-    private int mColorProgram, mColorPosLoc, mColorTexLoc, mColorMvpLoc, mColorSamplerLoc, mColorAdjustLoc;
+    private int mColorProgram,
+            mColorPosLoc,
+            mColorTexLoc,
+            mColorMvpLoc,
+            mColorSamplerLoc,
+            mColorAdjustLoc;
     private int mGreyTextureId;
     private FloatBuffer mAdjustBuffer;
     private final String mLineTextureAssetPath;
 
-    public MusicVisWaveGL(int width, int height, Context context, WaveScene.Mode mode, String textureAssetPath) {
+    public MusicVisWaveGL(
+            int width, int height, Context context, WaveScene.Mode mode, String textureAssetPath) {
         super(width, height);
         mContext = context;
         mScene = new WaveScene(width, height, mode, context);
@@ -87,7 +93,7 @@ public class MusicVisWaveGL extends GLESScene {
                 s.mAudioCapture.stop();
                 s.mAudioCapture.release();
             }
-            s.mAudioCapture = new AudioCapture(AudioCapture.TYPE_FFT, s.mFftSize);
+            s.mAudioCapture = s.createAudioCapture(AudioCapture.TYPE_FFT, s.mFftSize);
             s.mVizData = new int[s.mAudioCapture.getSize()];
             s.mAnalyzer = new int[s.mAudioCapture.getSize() / 2];
             s.mPcmSmoothed = new float[s.mAudioCapture.getSize()];
@@ -116,7 +122,8 @@ public class MusicVisWaveGL extends GLESScene {
             GLES30.glEnableVertexAttribArray(mColorAdjustLoc);
             GLES30.glVertexAttribPointer(mColorPosLoc, 2, GLES30.GL_FLOAT, false, 0, mPosBuffer);
             GLES30.glVertexAttribPointer(mColorTexLoc, 2, GLES30.GL_FLOAT, false, 0, mTexBuffer);
-            GLES30.glVertexAttribPointer(mColorAdjustLoc, 3, GLES30.GL_FLOAT, false, 0, mAdjustBuffer);
+            GLES30.glVertexAttribPointer(
+                    mColorAdjustLoc, 3, GLES30.GL_FLOAT, false, 0, mAdjustBuffer);
             int dm = s.mUseTriangleStrip ? GLES30.GL_TRIANGLE_STRIP : GLES30.GL_LINES;
             GLES30.glDrawArrays(dm, 0, WaveScene.LINE_COUNT * 2);
             GLES30.glDisableVertexAttribArray(mColorPosLoc);
@@ -147,15 +154,20 @@ public class MusicVisWaveGL extends GLESScene {
         String vs = AssetLoader.readText(mContext, "musicvis/shaders/GLES/musicvis_wave_vs.glsl");
         String fs = AssetLoader.readText(mContext, "musicvis/shaders/GLES/musicvis_wave_fs.glsl");
         mProgram = createProgram(vs, fs);
-        if (mProgram == 0) { Log.e(TAG, "Program creation failed"); return; }
+        if (mProgram == 0) {
+            Log.e(TAG, "Program creation failed");
+            return;
+        }
         mPosLoc = GLES30.glGetAttribLocation(mProgram, "aPosition");
         mTexLoc = GLES30.glGetAttribLocation(mProgram, "aTexCoord");
         mMvpLoc = GLES30.glGetUniformLocation(mProgram, "uMVP");
         mSamplerLoc = GLES30.glGetUniformLocation(mProgram, "uTex");
         mTextureId = GLTextureUtils.loadTextureFromAsset(mContext, mLineTextureAssetPath);
 
-        String cvs = AssetLoader.readText(mContext, "musicvis/shaders/GLES/musicvis_wave_color_vs.glsl");
-        String cfs = AssetLoader.readText(mContext, "musicvis/shaders/GLES/musicvis_wave_color_fs.glsl");
+        String cvs =
+                AssetLoader.readText(mContext, "musicvis/shaders/GLES/musicvis_wave_color_vs.glsl");
+        String cfs =
+                AssetLoader.readText(mContext, "musicvis/shaders/GLES/musicvis_wave_color_fs.glsl");
         mColorProgram = createProgram(cvs, cfs);
         if (mColorProgram != 0) {
             mColorPosLoc = GLES30.glGetAttribLocation(mColorProgram, "aPosition");
@@ -164,14 +176,21 @@ public class MusicVisWaveGL extends GLESScene {
             mColorMvpLoc = GLES30.glGetUniformLocation(mColorProgram, "uMVP");
             mColorSamplerLoc = GLES30.glGetUniformLocation(mColorProgram, "uTex");
         }
-        mGreyTextureId = GLTextureUtils.loadTextureFromAsset(mContext, "musicvis/drawable/musicvis_grey.png");
+        mGreyTextureId = GLTextureUtils.loadTextureFromAsset(
+                mContext, "musicvis/drawable/musicvis_grey.png");
 
         int posSize = WaveScene.LINE_COUNT * 2 * 2 * 4;
         int texSize = WaveScene.LINE_COUNT * 2 * 2 * 4;
         int adjSize = WaveScene.LINE_COUNT * 2 * 3 * 4;
-        mPosBuffer = ByteBuffer.allocateDirect(posSize).order(ByteOrder.nativeOrder()).asFloatBuffer();
-        mTexBuffer = ByteBuffer.allocateDirect(texSize).order(ByteOrder.nativeOrder()).asFloatBuffer();
-        mAdjustBuffer = ByteBuffer.allocateDirect(adjSize).order(ByteOrder.nativeOrder()).asFloatBuffer();
+        mPosBuffer = ByteBuffer.allocateDirect(posSize)
+                .order(ByteOrder.nativeOrder())
+                .asFloatBuffer();
+        mTexBuffer = ByteBuffer.allocateDirect(texSize)
+                .order(ByteOrder.nativeOrder())
+                .asFloatBuffer();
+        mAdjustBuffer = ByteBuffer.allocateDirect(adjSize)
+                .order(ByteOrder.nativeOrder())
+                .asFloatBuffer();
     }
 
     private void uploadBuffers(WaveScene s) {
@@ -182,6 +201,4 @@ public class MusicVisWaveGL extends GLESScene {
         mAdjustBuffer.position(0);
         mAdjustBuffer.put(s.mAdjustData).position(0);
     }
-
-
 }

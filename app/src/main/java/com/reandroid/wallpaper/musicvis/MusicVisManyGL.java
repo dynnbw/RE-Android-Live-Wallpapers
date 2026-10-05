@@ -1,12 +1,12 @@
 package com.reandroid.wallpaper.musicvis;
 
-import com.reandroid.utils.GLTextureUtils;
 import android.content.Context;
 import android.opengl.GLES30;
 import android.opengl.Matrix;
 
-import com.reandroid.utils.AssetLoader;
 import com.reandroid.gles.GLESScene;
+import com.reandroid.utils.AssetLoader;
+import com.reandroid.utils.GLTextureUtils;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -54,8 +54,8 @@ public class MusicVisManyGL extends GLESScene {
     private int mTexPeakOff;
     private int mTexBlack;
     private int mTexAlbum;
-    private int mTexLine;    // fire (PCM, vis2)
-    private int mTexLineFFT;  // ice (FFT, vis3)
+    private int mTexLine; // fire (PCM, vis2)
+    private int mTexLineFFT; // ice (FFT, vis3)
 
     // Buffers
     private FloatBuffer mPosBuffer;
@@ -88,6 +88,9 @@ public class MusicVisManyGL extends GLESScene {
         super(width, height);
         mContext = context;
         mScene = new ManyScene(width, height, context);
+        // vis5 的 Scene 不走 AudioVisBase，音量增益来源在这里接上（只有这里拿得到 Context）
+        mScene.setVolumeGainSource(
+                AudioVisBase.volumeGainSource(context, mScene::followsSystemVolume));
     }
 
     public void setPluginPrefs(android.content.SharedPreferences p) {
@@ -171,10 +174,14 @@ public class MusicVisManyGL extends GLESScene {
     private void initGLIfNeeded() {
         if (mQuadProgram != 0 || mContext == null) return;
 
-        String quadVs = AssetLoader.readText(mContext, "musicvis/shaders/GLES/musicvis_many_quad_vs.glsl");
-        String quadFs = AssetLoader.readText(mContext, "musicvis/shaders/GLES/musicvis_many_quad_fs.glsl");
-        String lineVs = AssetLoader.readText(mContext, "musicvis/shaders/GLES/musicvis_many_line_vs.glsl");
-        String lineFs = AssetLoader.readText(mContext, "musicvis/shaders/GLES/musicvis_many_line_fs.glsl");
+        String quadVs =
+                AssetLoader.readText(mContext, "musicvis/shaders/GLES/musicvis_many_quad_vs.glsl");
+        String quadFs =
+                AssetLoader.readText(mContext, "musicvis/shaders/GLES/musicvis_many_quad_fs.glsl");
+        String lineVs =
+                AssetLoader.readText(mContext, "musicvis/shaders/GLES/musicvis_many_line_vs.glsl");
+        String lineFs =
+                AssetLoader.readText(mContext, "musicvis/shaders/GLES/musicvis_many_line_fs.glsl");
         mQuadProgram = createProgram(quadVs, quadFs);
         mLineProgram = createProgram(lineVs, lineFs);
         if (mQuadProgram == 0 || mLineProgram == 0) return;
@@ -189,20 +196,32 @@ public class MusicVisManyGL extends GLESScene {
         mLineMvpLoc = GLES30.glGetUniformLocation(mLineProgram, "uMVP");
         mLineSamplerLoc = GLES30.glGetUniformLocation(mLineProgram, "uTex");
 
-        mTexBackground = GLTextureUtils.loadTextureFromAsset(mContext, "musicvis/drawable/musicvis_vu_background.png");
-        mTexFrame = GLTextureUtils.loadTextureFromAsset(mContext, "musicvis/drawable/musicvis_vu_frame.png");
-        mTexNeedle = GLTextureUtils.loadTextureFromAsset(mContext, "musicvis/drawable/musicvis_vu_needle.png");
-        mTexPeakOn = GLTextureUtils.loadTextureFromAsset(mContext, "musicvis/drawable/musicvis_vu_peak_on.png");
-        mTexPeakOff = GLTextureUtils.loadTextureFromAsset(mContext, "musicvis/drawable/musicvis_vu_peak_off.png");
-        mTexBlack = GLTextureUtils.loadTextureFromAsset(mContext, "musicvis/drawable/musicvis_black.png");
-        mTexAlbum = GLTextureUtils.loadTextureFromAsset(mContext, "musicvis/drawable/musicvis_albumart.png");
-        mTexLine = GLTextureUtils.loadTextureFromAsset(mContext, "musicvis/drawable/musicvis_fire.png");
-        mTexLineFFT = GLTextureUtils.loadTextureFromAsset(mContext, "musicvis/drawable/musicvis_ice.png");
-        mTexGrey = GLTextureUtils.loadTextureFromAsset(mContext, "musicvis/drawable/musicvis_grey.png");
+        mTexBackground = GLTextureUtils.loadTextureFromAsset(
+                mContext, "musicvis/drawable/musicvis_vu_background.png");
+        mTexFrame = GLTextureUtils.loadTextureFromAsset(
+                mContext, "musicvis/drawable/musicvis_vu_frame.png");
+        mTexNeedle = GLTextureUtils.loadTextureFromAsset(
+                mContext, "musicvis/drawable/musicvis_vu_needle.png");
+        mTexPeakOn = GLTextureUtils.loadTextureFromAsset(
+                mContext, "musicvis/drawable/musicvis_vu_peak_on.png");
+        mTexPeakOff = GLTextureUtils.loadTextureFromAsset(
+                mContext, "musicvis/drawable/musicvis_vu_peak_off.png");
+        mTexBlack = GLTextureUtils.loadTextureFromAsset(
+                mContext, "musicvis/drawable/musicvis_black.png");
+        mTexAlbum = GLTextureUtils.loadTextureFromAsset(
+                mContext, "musicvis/drawable/musicvis_albumart.png");
+        mTexLine = GLTextureUtils.loadTextureFromAsset(
+                mContext, "musicvis/drawable/musicvis_fire.png");
+        mTexLineFFT =
+                GLTextureUtils.loadTextureFromAsset(mContext, "musicvis/drawable/musicvis_ice.png");
+        mTexGrey = GLTextureUtils.loadTextureFromAsset(
+                mContext, "musicvis/drawable/musicvis_grey.png");
 
         // HSL color shader (reuses vis2/vis3 wave color shader)
-        String cvs = AssetLoader.readText(mContext, "musicvis/shaders/GLES/musicvis_wave_color_vs.glsl");
-        String cfs = AssetLoader.readText(mContext, "musicvis/shaders/GLES/musicvis_wave_color_fs.glsl");
+        String cvs =
+                AssetLoader.readText(mContext, "musicvis/shaders/GLES/musicvis_wave_color_vs.glsl");
+        String cfs =
+                AssetLoader.readText(mContext, "musicvis/shaders/GLES/musicvis_wave_color_fs.glsl");
         mColorProgram = createProgram(cvs, cfs);
         if (mColorProgram != 0) {
             mColorPosLoc = GLES30.glGetAttribLocation(mColorProgram, "aPosition");
@@ -214,13 +233,26 @@ public class MusicVisManyGL extends GLESScene {
 
         mQuadUvs = AssetLoader.readFloatArray(mContext, "musicvis/data/musicvis_quad_uv.csv");
 
-        mPosBuffer = ByteBuffer.allocateDirect(12 * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
-        mTexBuffer = ByteBuffer.allocateDirect(mQuadUvs.length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
-        mLinePosBuffer = ByteBuffer.allocateDirect(mScene.mLinePositions.length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
-        mLineTexBuffer = ByteBuffer.allocateDirect(mScene.mLineTexCoords.length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
-        mLinePosBufferFFT = ByteBuffer.allocateDirect(mScene.mWaveFFT.mPositions.length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
-        mLineTexBufferFFT = ByteBuffer.allocateDirect(mScene.mWaveFFT.mTexCoords.length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
-        mAdjustBuffer = ByteBuffer.allocateDirect(mScene.mAdjustData.length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
+        mPosBuffer =
+                ByteBuffer.allocateDirect(12 * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
+        mTexBuffer = ByteBuffer.allocateDirect(mQuadUvs.length * 4)
+                .order(ByteOrder.nativeOrder())
+                .asFloatBuffer();
+        mLinePosBuffer = ByteBuffer.allocateDirect(mScene.mLinePositions.length * 4)
+                .order(ByteOrder.nativeOrder())
+                .asFloatBuffer();
+        mLineTexBuffer = ByteBuffer.allocateDirect(mScene.mLineTexCoords.length * 4)
+                .order(ByteOrder.nativeOrder())
+                .asFloatBuffer();
+        mLinePosBufferFFT = ByteBuffer.allocateDirect(mScene.mWaveFFT.mPositions.length * 4)
+                .order(ByteOrder.nativeOrder())
+                .asFloatBuffer();
+        mLineTexBufferFFT = ByteBuffer.allocateDirect(mScene.mWaveFFT.mTexCoords.length * 4)
+                .order(ByteOrder.nativeOrder())
+                .asFloatBuffer();
+        mAdjustBuffer = ByteBuffer.allocateDirect(mScene.mAdjustData.length * 4)
+                .order(ByteOrder.nativeOrder())
+                .asFloatBuffer();
 
         mScene.updateProjection();
     }
@@ -289,8 +321,7 @@ public class MusicVisManyGL extends GLESScene {
 
     private void drawWave(float[] baseMatrix, int waveIdx) {
         ManyScene s = mScene;
-        boolean useFFT = (s.mWaveMode == 1)
-                || (s.mWaveMode == 2 && waveIdx == 2);
+        boolean useFFT = (s.mWaveMode == 1) || (s.mWaveMode == 2 && waveIdx == 2);
         FloatBuffer posBuf = useFFT ? mLinePosBufferFFT : mLinePosBuffer;
         FloatBuffer texBuf = useFFT ? mLineTexBufferFFT : mLineTexBuffer;
 
@@ -315,7 +346,8 @@ public class MusicVisManyGL extends GLESScene {
             GLES30.glVertexAttribPointer(mColorTexLoc, 2, GLES30.GL_FLOAT, false, 0, texBuf);
             // Use PCM or FFT section of adjust buffer
             mAdjustBuffer.position(useFFT ? LINE_COUNT * 2 * 3 : 0);
-            GLES30.glVertexAttribPointer(mColorAdjustLoc, 3, GLES30.GL_FLOAT, false, 0, mAdjustBuffer);
+            GLES30.glVertexAttribPointer(
+                    mColorAdjustLoc, 3, GLES30.GL_FLOAT, false, 0, mAdjustBuffer);
         } else {
             GLES30.glUseProgram(mLineProgram);
             GLES30.glUniformMatrix4fv(mLineMvpLoc, 1, false, mMvp, 0);
@@ -358,10 +390,18 @@ public class MusicVisManyGL extends GLESScene {
 
     private void drawQuad(int texId, float x1, float y1, float z1, float x2, float y2, float z2) {
         float[] positions = mQuadPositions;
-        positions[0] = x1; positions[1] = y1; positions[2] = z1;
-        positions[3] = x2; positions[4] = y1; positions[5] = z1;
-        positions[6] = x1; positions[7] = y2; positions[8] = z2;
-        positions[9] = x2; positions[10] = y2; positions[11] = z2;
+        positions[0] = x1;
+        positions[1] = y1;
+        positions[2] = z1;
+        positions[3] = x2;
+        positions[4] = y1;
+        positions[5] = z1;
+        positions[6] = x1;
+        positions[7] = y2;
+        positions[8] = z2;
+        positions[9] = x2;
+        positions[10] = y2;
+        positions[11] = z2;
         float[] uvs = mQuadUvs;
         mPosBuffer.position(0);
         mPosBuffer.put(positions).position(0);
@@ -382,10 +422,18 @@ public class MusicVisManyGL extends GLESScene {
 
     private void drawQuadXZ(int texId, float x1, float x2, float y, float z1, float z2) {
         float[] positions = mQuadPositions;
-        positions[0] = x1; positions[1] = y; positions[2] = z1;
-        positions[3] = x2; positions[4] = y; positions[5] = z1;
-        positions[6] = x1; positions[7] = y; positions[8] = z2;
-        positions[9] = x2; positions[10] = y; positions[11] = z2;
+        positions[0] = x1;
+        positions[1] = y;
+        positions[2] = z1;
+        positions[3] = x2;
+        positions[4] = y;
+        positions[5] = z1;
+        positions[6] = x1;
+        positions[7] = y;
+        positions[8] = z2;
+        positions[9] = x2;
+        positions[10] = y;
+        positions[11] = z2;
         float[] uvs = mQuadUvs;
         mPosBuffer.position(0);
         mPosBuffer.put(positions).position(0);
@@ -405,6 +453,5 @@ public class MusicVisManyGL extends GLESScene {
     }
 
     // ---- shader helpers ----
-
 
 }

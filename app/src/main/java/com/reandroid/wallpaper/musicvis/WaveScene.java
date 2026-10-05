@@ -1,8 +1,9 @@
 package com.reandroid.wallpaper.musicvis;
 
 import android.content.Context;
-import com.reandroid.utils.Mat4;
 import android.content.SharedPreferences;
+
+import com.reandroid.utils.Mat4;
 
 import java.util.Random;
 
@@ -12,7 +13,10 @@ import java.util.Random;
  * Has ZERO GL imports.
  */
 public final class WaveScene extends AudioVisBase {
-    public enum Mode { PCM, FFT }
+    public enum Mode {
+        PCM,
+        FFT
+    }
 
     static final int LINE_COUNT = 1024;
     private static final int FADEOUT_LENGTH = 100;
@@ -53,33 +57,34 @@ public final class WaveScene extends AudioVisBase {
     int mIdleMode = IDLE_WAVE;
 
     // Synthetic-data state (idle modes simulate/flat)
-    private static final int VOICE_COUNT = 14;  // PCM voices
-    private static final int NOTE_POOL = 12;    // FFT concurrent note bumps (wide bursts + narrow notes)
+    private static final int VOICE_COUNT = 14; // PCM voices
+    private static final int NOTE_POOL =
+            12; // FFT concurrent note bumps (wide bursts + narrow notes)
     private final Random mSynthRand = new Random();
-    private int[] mSynthData;        // scene-owned scratch; aliased by mVizData while idle-simulating
-    private float mPcmFrame = 0f;    // PCM: global frame counter
+    private int[] mSynthData; // scene-owned scratch; aliased by mVizData while idle-simulating
+    private float mPcmFrame = 0f; // PCM: global frame counter
     private float mPcmEnergy = 0.9f; // PCM: global energy (slow random walk)
     private float mPcmEnergyTarget = 0.9f;
     private int mPcmEnergyTimer = 0;
-    private float mPcmBeatEnv = 0f;  // PCM: beat envelope 0..1
+    private float mPcmBeatEnv = 0f; // PCM: beat envelope 0..1
     private int mPcmBeatTimer = 0;
-    private float[] mVoicePhase;     // PCM: per-voice phase (radians)
-    private float[] mVoiceAmp;       // PCM: per-voice amplitude
+    private float[] mVoicePhase; // PCM: per-voice phase (radians)
+    private float[] mVoiceAmp; // PCM: per-voice amplitude
     private float[] mVoiceAmpTarget; // PCM: per-voice random-walk target
-    private float[] mVoiceFreq;      // PCM: per-voice phase step per sample
-    private float mFftFrame = 0f;    // FFT: global frame counter
+    private float[] mVoiceFreq; // PCM: per-voice phase step per sample
+    private float mFftFrame = 0f; // FFT: global frame counter
     private float mFftEnergy = 0.8f; // FFT: global energy (slow random walk)
     private float mFftEnergyTarget = 0.8f;
     private int mFftEnergyTimer = 0;
-    private float mFftBeatEnv = 0f;  // FFT: beat envelope 0..1
+    private float mFftBeatEnv = 0f; // FFT: beat envelope 0..1
     private int mFftBeatTimer = 0;
-    private float[] mBinDrift;       // FFT: per-bin independent drift (-1..1)
+    private float[] mBinDrift; // FFT: per-bin independent drift (-1..1)
     private int mPcmRetuneTimer = 0; // PCM: frames until next voice retune
-    private int[] mNoteBin;          // FFT: note pool — bin center
-    private float[] mNoteAmp;        // FFT: note pool — amplitude (0 = free)
-    private float[] mNoteWidth;      // FFT: note pool — half-width in bins
-    private float[] mNoteDecay;      // FFT: note pool — decay per frame
-    private float[] mSynthPhase;     // FFT: per-bin rotating phase (radians)
+    private int[] mNoteBin; // FFT: note pool — bin center
+    private float[] mNoteAmp; // FFT: note pool — amplitude (0 = free)
+    private float[] mNoteWidth; // FFT: note pool — half-width in bins
+    private float[] mNoteDecay; // FFT: note pool — decay per frame
+    private float[] mSynthPhase; // FFT: per-bin rotating phase (radians)
 
     // ---- constructors ----
 
@@ -113,7 +118,7 @@ public final class WaveScene extends AudioVisBase {
         int size = getAudioCaptureSize();
         if (mAudioCapture == null || mAudioCapture.getSize() != size) {
             if (mAudioCapture != null) mAudioCapture.release();
-            mAudioCapture = new AudioCapture(type, size);
+            mAudioCapture = createAudioCapture(type, size);
             int capSize = mAudioCapture.getSize();
             mVizData = new int[capSize];
             mAnalyzer = new int[capSize / 2];
@@ -158,12 +163,12 @@ public final class WaveScene extends AudioVisBase {
         int outlen = mPointData.length / 8;
         int half = outlen / 2;
         for (int i = 0; i < outlen; i++) {
-            mPointData[i * 8] = i - half;          // start X
-            mPointData[i * 8 + 2] = 0f;           // start S
-            mPointData[i * 8 + 3] = 0f;           // start T
-            mPointData[i * 8 + 4] = i - half;      // end X
-            mPointData[i * 8 + 6] = 1.0f;          // end S
-            mPointData[i * 8 + 7] = 0f;            // end T
+            mPointData[i * 8] = i - half; // start X
+            mPointData[i * 8 + 2] = 0f; // start S
+            mPointData[i * 8 + 3] = 0f; // start T
+            mPointData[i * 8 + 4] = i - half; // end X
+            mPointData[i * 8 + 6] = 1.0f; // end S
+            mPointData[i * 8 + 7] = 0f; // end T
         }
     }
 
@@ -200,17 +205,19 @@ public final class WaveScene extends AudioVisBase {
             if (len > outlen) len = outlen;
             if (mIdle != 0) mIdle = 0;
             float alpha = 0.3f;
+            float gain = volumeGain();
             for (int i = 0; i < len; i++) {
                 float smoothed = alpha * mVizData[i] + (1f - alpha) * mPcmSmoothed[i];
                 mPcmSmoothed[i] = smoothed;
-                mPointData[i * 8 + 1] = smoothed;
-                mPointData[i * 8 + 5] = -smoothed;
+                mPointData[i * 8 + 1] = smoothed * gain;
+                mPointData[i * 8 + 5] = -smoothed * gain;
             }
         } else {
             // FFT mode
             len = len / 2; // bins are in pairs
             if (len > mAnalyzer.length) len = mAnalyzer.length;
             if (mIdle != 0) mIdle = 0;
+            float gain = volumeGain();
 
             for (int i = 1; i < len - 1; i++) {
                 int val1 = mVizData[i * 2];
@@ -237,8 +244,9 @@ public final class WaveScene extends AudioVisBase {
                 float val = mAnalyzer[binIdx] / 8f;
                 if (val < 1f && val > -1f) val = 1f;
                 int idx = (i + skip) * 8;
-                mPointData[idx + 1] = val;
-                mPointData[idx + 5] = -val;
+                // 增益乘在**渲染量**上（mAnalyzer 已经平方过，这里再乘就落在线性档位上）
+                mPointData[idx + 1] = val * gain;
+                mPointData[idx + 5] = -val * gain;
             }
         }
         mWaveCounter++;
@@ -302,7 +310,8 @@ public final class WaveScene extends AudioVisBase {
             mPcmRetuneTimer = 300 + mSynthRand.nextInt(300);
             for (int k = 0; k < VOICE_COUNT; k++) {
                 if (mSynthRand.nextFloat() < 0.6f) {
-                    mVoiceFreq[k] = 0.002f + mSynthRand.nextFloat() * mSynthRand.nextFloat() * 0.15f;
+                    mVoiceFreq[k] =
+                            0.002f + mSynthRand.nextFloat() * mSynthRand.nextFloat() * 0.15f;
                 }
             }
         }
@@ -331,7 +340,7 @@ public final class WaveScene extends AudioVisBase {
         for (int i = 0; i < expected; i++) {
             // dense deterministic noise — the "audio texture" that reads as real
             float n = (float) Math.sin(i * 12.9898 + frame * 1.31) * 43758.5453f;
-            n = n - (float) Math.floor(n);           // 0..1 hash
+            n = n - (float) Math.floor(n); // 0..1 hash
             float v = (n * 2f - 1f) * 24f * env;
             float vsum = 0f;
             for (int k = 0; k < VOICE_COUNT; k++) {
@@ -341,8 +350,10 @@ public final class WaveScene extends AudioVisBase {
             v += vsum * env;
             v += mPcmBeatEnv * 70f * (float) Math.sin(i * 0.024f + frame * 0.7f); // bass drum
             // traveling amplitude "loud spot" — breaks the uniform texture
-            float spat = 0.62f + 0.38f * (0.6f * (float) Math.sin(i * 0.0031f + frame * 0.033f)
-                    + 0.4f * (float) Math.sin(i * 0.0077f - frame * 0.021f));
+            float spat = 0.62f
+                    + 0.38f
+                            * (0.6f * (float) Math.sin(i * 0.0031f + frame * 0.033f)
+                                    + 0.4f * (float) Math.sin(i * 0.0077f - frame * 0.021f));
             v *= spat;
             int s = (int) v;
             if (s > 127) s = 127;
@@ -409,9 +420,10 @@ public final class WaveScene extends AudioVisBase {
             float f = (float) i / bins;
             // quadratic floor so the (i/16+1) gain doesn't inflate high bins into
             // a visible resting bar line; rests at ~1-4 units (near-invisible)
-            float mag = (4.2f * (1f - f) * (1f - f) + 0.8f) * (1f + 0.25f * mBinDrift[i]) * mFftEnergy;
+            float mag =
+                    (4.2f * (1f - f) * (1f - f) + 0.8f) * (1f + 0.25f * mBinDrift[i]) * mFftEnergy;
             if (f < 0.3f) {
-                mag += mFftBeatEnv * 20f * (1f - f / 0.3f);  // kick region pulses with the beat
+                mag += mFftBeatEnv * 20f * (1f - f / 0.3f); // kick region pulses with the beat
             }
             for (int k = 0; k < NOTE_POOL; k++) {
                 if (mNoteAmp[k] < 1f) continue;
@@ -424,8 +436,10 @@ public final class WaveScene extends AudioVisBase {
             mSynthPhase[i] += 0.02f + 0.05f * f + 0.03f * (float) Math.sin(mFftFrame * 0.001f + i);
             int re = (int) (mag * Math.cos(mSynthPhase[i]));
             int im = (int) (mag * Math.sin(mSynthPhase[i]));
-            if (re > 127) re = 127; else if (re < -127) re = -127;
-            if (im > 127) im = 127; else if (im < -127) im = -127;
+            if (re > 127) re = 127;
+            else if (re < -127) re = -127;
+            if (im > 127) im = 127;
+            else if (im < -127) im = -127;
             mSynthData[i * 2] = re;
             mSynthData[i * 2 + 1] = im;
         }
@@ -522,7 +536,10 @@ public final class WaveScene extends AudioVisBase {
                 }
                 fadeoutcounter--;
                 if (fadeoutcounter == 0) {
-                    wave1amp = 0; wave2amp = 0; wave3amp = 0; wave4amp = 0;
+                    wave1amp = 0;
+                    wave2amp = 0;
+                    wave3amp = 0;
+                    wave4amp = 0;
                 }
             } else {
                 makeIdleWave(mPointData);
@@ -536,9 +553,11 @@ public final class WaveScene extends AudioVisBase {
                     for (int i = skip; i < end; i++) {
                         float val = Math.abs(mPointData[i * 8 + 1]);
                         mPointData[i * 8 + 1] = (val * (FADEIN_LENGTH - fadeincounter)
-                                + idleWave[i * 8 + 1] * fadeincounter) / FADEIN_LENGTH;
+                                        + idleWave[i * 8 + 1] * fadeincounter)
+                                / FADEIN_LENGTH;
                         mPointData[i * 8 + 5] = (-val * (FADEIN_LENGTH - fadeincounter)
-                                + idleWave[i * 8 + 5] * fadeincounter) / FADEIN_LENGTH;
+                                        + idleWave[i * 8 + 5] * fadeincounter)
+                                / FADEIN_LENGTH;
                     }
                 }
                 fadeincounter--;
@@ -568,10 +587,14 @@ public final class WaveScene extends AudioVisBase {
             points[i * 8 + 1] = val + off;
             points[i * 8 + 5] = -val + off;
         }
-        wave1pos++; wave1amp++;
-        wave2pos--; wave2amp++;
-        wave3pos++; wave3amp++;
-        wave4pos++; wave4amp++;
+        wave1pos++;
+        wave1amp++;
+        wave2pos--;
+        wave2amp++;
+        wave3pos++;
+        wave3amp++;
+        wave4pos++;
+        wave4amp++;
     }
 
     // ---- buffer building ----
@@ -581,12 +604,12 @@ public final class WaveScene extends AudioVisBase {
         for (int i = 0; i < LINE_COUNT; i++) {
             int base = i * 8;
             int out = i * 4;
-            mPositions[out]     = mPointData[base];
+            mPositions[out] = mPointData[base];
             mPositions[out + 1] = mPointData[base + 1];
             mPositions[out + 2] = mPointData[base + 4];
             mPositions[out + 3] = mPointData[base + 5];
 
-            mTexCoords[out]     = mPointData[base + 2];
+            mTexCoords[out] = mPointData[base + 2];
             mTexCoords[out + 1] = mPointData[base + 3];
             mTexCoords[out + 2] = mPointData[base + 6];
             mTexCoords[out + 3] = mPointData[base + 7];
@@ -600,7 +623,7 @@ public final class WaveScene extends AudioVisBase {
         float v = mRecolorEnabled ? mBrightness : 1f;
         for (int i = 0; i < LINE_COUNT * 2; i++) {
             int b = i * 3;
-            mAdjustData[b]     = h;
+            mAdjustData[b] = h;
             mAdjustData[b + 1] = s;
             mAdjustData[b + 2] = v;
         }
@@ -627,7 +650,8 @@ public final class WaveScene extends AudioVisBase {
 
         // 基准比例默认是 AOSP 的 0.004165f(≈2/480，竖屏恒有约 480 条可见、其余在屏外)；
         // 打开 musicvis_fit_screen 后按屏幕短边缩放，采样与物理像素约 1:1。见 AudioVisBase#baseScale。
-        float scale = baseScale() * (1.0f + 2f * Math.abs((float) Math.sin(Math.toRadians(mYRotation))));
+        float scale =
+                baseScale() * (1.0f + 2f * Math.abs((float) Math.sin(Math.toRadians(mYRotation))));
         Mat4.setIdentityM(mModel);
         Mat4.rotateM(mModel, mYRotation, 0f, 0f, 1f);
         Mat4.scaleM(mModel, scale, scale, scale);

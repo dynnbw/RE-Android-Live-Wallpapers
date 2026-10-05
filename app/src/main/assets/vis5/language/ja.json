@@ -12,5 +12,7 @@
   "musicvis_bg_color_label_#2F4F4F": "暗緑",
   "musicvis_bg_color_label_#FFE4DE": "ピンク",
   "musicvis_bg_color_label_#F0FFFF": "薄緑",
-  "musicvis_bg_color_label_#EDDEFF": "薄紫"
+  "musicvis_bg_color_label_#EDDEFF": "薄紫",
+  "musicvis_follow_volume": "システム音量に追従",
+  "musicvis_follow_volume_summary": "メディア音量に応じて画面の振幅が変わります"
 }

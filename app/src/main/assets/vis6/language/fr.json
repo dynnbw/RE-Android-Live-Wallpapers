@@ -17,5 +17,7 @@
   "musicvis_recolor_color": "Couleur",
   "musicvis_brightness": "Luminosité",
   "musicvis_saturation": "Saturation",
-  "musicvis_hue": "Teinte"
+  "musicvis_hue": "Teinte",
+  "musicvis_follow_volume": "Suivre le volume du système",
+  "musicvis_follow_volume_summary": "Le volume multimédia détermine la taille de la visualisation"
 }

@@ -1,6 +1,13 @@
 {
   "prefs": [
     {
+      "type": "switch",
+      "key": "musicvis_follow_volume",
+      "title": "musicvis_follow_volume",
+      "summary": "musicvis_follow_volume_summary",
+      "default": "false"
+    },
+    {
       "type": "list",
       "key": "musicvis_wave_mode",
       "title": "pref_vis5_wave_mode",

@@ -22,5 +22,7 @@
   "musicvis_recolor_color": "Color",
   "musicvis_brightness": "Brightness",
   "musicvis_saturation": "Saturation",
-  "musicvis_hue": "Hue"
+  "musicvis_hue": "Hue",
+  "musicvis_follow_volume": "Follow system volume",
+  "musicvis_follow_volume_summary": "Let the media volume change how large the visualization looks"
 }

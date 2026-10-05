@@ -1,12 +1,13 @@
 package com.reandroid.wallpaper.musicvis.vis6;
 
 import android.content.Context;
-import com.reandroid.plugin.ColorPrefs;
-import com.reandroid.wallpaper.musicvis.AudioCapture;
-import com.reandroid.wallpaper.musicvis.AudioVisBase;
-import com.reandroid.utils.Mat4;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+
+import com.reandroid.plugin.ColorPrefs;
+import com.reandroid.utils.Mat4;
+import com.reandroid.wallpaper.musicvis.AudioCapture;
+import com.reandroid.wallpaper.musicvis.AudioVisBase;
 
 /**
  * Pure-logic circle/ring scene for vis6.
@@ -54,7 +55,7 @@ final class CircleScene extends AudioVisBase {
             double t0 = (double) i / mRingCount;
             double t1 = (double) (i + 1) / mRingCount;
             mBinStart[i] = (int) (binMin * Math.pow((double) binMax / binMin, t0));
-            mBinEnd[i]   = (int) (binMin * Math.pow((double) binMax / binMin, t1));
+            mBinEnd[i] = (int) (binMin * Math.pow((double) binMax / binMin, t1));
         }
     }
 
@@ -73,7 +74,7 @@ final class CircleScene extends AudioVisBase {
     @Override
     public void start() {
         if (mAudioCapture == null) {
-            mAudioCapture = new AudioCapture(AudioCapture.TYPE_FFT, 512);
+            mAudioCapture = createAudioCapture(AudioCapture.TYPE_FFT, 512);
         }
         mAudioCapture.start();
         // 设置一律由引擎注入（原兜底读的 "musicvis6_prefs" 是插件架构之前的旧名字）
@@ -130,6 +131,7 @@ final class CircleScene extends AudioVisBase {
         int len = mVizData.length / 2;
         if (len == 0) return;
 
+        float gain = volumeGain();
         for (int r = 0; r < mRingCount; r++) {
             int start = mBinStart[r];
             int end = Math.min(mBinEnd[r], len);
@@ -140,7 +142,7 @@ final class CircleScene extends AudioVisBase {
                 sum += (float) Math.sqrt(v1 * v1 + v2 * v2);
                 count++;
             }
-            mRingAmps[r] = count > 0 ? Math.min(1f, sum / count / 40f) : 0f;
+            mRingAmps[r] = count > 0 ? Math.min(1f, sum / count / 40f * gain) : 0f;
         }
 
         if (mRecolorDynamic && mRecolorEnabled) {
@@ -166,9 +168,9 @@ final class CircleScene extends AudioVisBase {
                 float or = r + mHalfThickness;
                 int ip = j * 4;
                 int op = j * 4 + 2;
-                mRingVertices[i][ip]     = cos * ir;
+                mRingVertices[i][ip] = cos * ir;
                 mRingVertices[i][ip + 1] = sin * ir;
-                mRingVertices[i][op]     = cos * or;
+                mRingVertices[i][op] = cos * or;
                 mRingVertices[i][op + 1] = sin * or;
             }
         }
@@ -179,7 +181,8 @@ final class CircleScene extends AudioVisBase {
     void updateMvp() {
         float aspect = (float) mWidth / mHeight;
         float w = 1.2f, h = 1.2f;
-        if (aspect >= 1f) w *= aspect; else h /= aspect;
+        if (aspect >= 1f) w *= aspect;
+        else h /= aspect;
         Mat4.orthoM(mProj, -w, w, -h, h, -1, 1);
         Mat4.setIdentityM(mMvp);
         Mat4.rotateM(mMvp, mRotation, 0, 0, 1);

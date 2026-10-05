@@ -22,5 +22,7 @@
   "musicvis_recolor_color": "रंग",
   "musicvis_brightness": "चमक",
   "musicvis_saturation": "संतृप्ति",
-  "musicvis_hue": "वर्ण"
+  "musicvis_hue": "वर्ण",
+  "musicvis_follow_volume": "सिस्टम वॉल्यूम का पालन करें",
+  "musicvis_follow_volume_summary": "मीडिया वॉल्यूम तय करेगा कि विज़ुअलाइज़ेशन कितना बड़ा दिखे"
 }

@@ -22,5 +22,7 @@
   "musicvis_recolor_color": "色",
   "musicvis_brightness": "輝度",
   "musicvis_saturation": "彩度",
-  "musicvis_hue": "色相"
+  "musicvis_hue": "色相",
+  "musicvis_follow_volume": "システム音量に追従",
+  "musicvis_follow_volume_summary": "メディア音量に応じて画面の振幅が変わります"
 }

@@ -7,14 +7,28 @@ public class AudioCapture {
     private static final String TAG = "AudioCapture";
     private static final long MAX_IDLE_TIME_MS = 3000;
 
+    /** 采样音量的间隔：读音量是系统调用，而音量键的观感延迟远小于这个数。 */
+    private static final long VOLUME_POLL_INTERVAL_MS = 200;
+
     public static final int TYPE_PCM = 0;
     public static final int TYPE_FFT = 1;
     public static final int TYPE_BOTH = 2;
+
+    /** 「跟随系统音量」的偏好键（各 vis 壁纸共用同一个键名）。 */
+    public static final String PREF_FOLLOW_VOLUME = "musicvis_follow_volume";
 
     private final int mType;
     private final int mSize;
 
     private Visualizer mVisualizer;
+
+    /** 幅度增益（1 = 不跟随）；由采集线程按 {@link #VOLUME_POLL_INTERVAL_MS} 刷新。 */
+    private volatile float mVolumeGain = 1f;
+
+    /** 采集线程读、渲染线程写，所以是 volatile。 */
+    private volatile VolumeGainSource mVolumeGainSource;
+
+    private long mLastVolumePollMs;
 
     // PCM double-buffering
     private byte[] mRawBufferA;
@@ -78,7 +92,72 @@ public class AudioCapture {
         }
     }
 
-    public int getSize() { return mSize; }
+    public int getSize() {
+        return mSize;
+    }
+
+    // ---- 幅度跟随系统音量 ----
+
+    /**
+     * 由宿主注入的「当前音量 → 幅度增益」。{@code AudioCapture} 不碰 Android API：
+     * 读音量与映射都在宿主那侧（见 {@code AudioVisBase.volumeGainSource}）。
+     */
+    public interface VolumeGainSource {
+        /** @return 0..1 的线性增益，1 = 满音量 */
+        float gain();
+    }
+
+    /**
+     * 媒体音量档位 → 幅度增益。用**档位比例**，不是物理响度（dB）。
+     *
+     * <p>为什么不用 dB：媒体音量曲线在低档跨度极大，而渲染端把幅度平方（{@code re²+im²}）
+     * 或取平均，两者相乘之后低档就落到万分之一 —— 看上去就是**突然变小**。
+     * 按档位比例是线性的：50% 档 → 约一半。
+     *
+     * <p>抽成纯函数是为了能在 JVM 测试里钉住这条映射。
+     */
+    public static float gainForVolume(int index, int maxIndex) {
+        if (maxIndex <= 0) {
+            return 1f;
+        }
+        float gain = (float) index / maxIndex;
+        return gain < 0f ? 0f : (gain > 1f ? 1f : gain);
+    }
+
+    /** 注入增益来源；传 null 表示不跟随（恒 1）。 */
+    public void setVolumeGainSource(VolumeGainSource source) {
+        mVolumeGainSource = source;
+        if (source == null) {
+            mVolumeGain = 1f;
+        }
+    }
+
+    public boolean hasVolumeGainSource() {
+        return mVolumeGainSource != null;
+    }
+
+    /**
+     * 当前幅度增益。渲染端把它乘到**自己那个域**上：幅度驱动的画面乘在幅度上，
+     * 已经平方过的分析值（{@code mAnalyzer}）乘在分析值上 —— 两边都得到"尺寸 ∝ 档位比例"。
+     */
+    public float getVolumeGain() {
+        return mVolumeGain;
+    }
+
+    /** 读音量是系统调用，按固定间隔取样即可（音量键的观感延迟远小于一帧）。 */
+    private void pollVolumeGain() {
+        VolumeGainSource source = mVolumeGainSource;
+        if (source == null) {
+            return;
+        }
+        long now = System.currentTimeMillis();
+        if (now - mLastVolumePollMs < VOLUME_POLL_INTERVAL_MS) {
+            return;
+        }
+        mLastVolumePollMs = now;
+        float gain = source.gain();
+        mVolumeGain = gain < 0f ? 0f : (gain > 1f ? 1f : gain);
+    }
 
     public void start() {
         if (mVisualizer == null) return;
@@ -102,7 +181,10 @@ public class AudioCapture {
     public void stop() {
         mRunning = false;
         if (mCaptureThread != null) {
-            try { mCaptureThread.join(500); } catch (InterruptedException ignored) {}
+            try {
+                mCaptureThread.join(500);
+            } catch (InterruptedException ignored) {
+            }
             mCaptureThread = null;
         }
         mReadyRawBuffer = null;
@@ -193,6 +275,7 @@ public class AudioCapture {
             int[] fftFmtB = mFftFmtB;
 
             while (mRunning) {
+                pollVolumeGain();
                 int pcmStatus = Visualizer.ERROR;
                 int fftStatus = Visualizer.ERROR;
                 try {
@@ -227,7 +310,8 @@ public class AudioCapture {
                         mReadyRawBuffer = captured;
                         mReadyFormattedBuffer = (mCaptureIndex == 0) ? fmtA : fmtB;
                         mCaptureIndex ^= 1;
-                    } else if ((System.currentTimeMillis() - mLastValidCaptureTimeMs) > MAX_IDLE_TIME_MS) {
+                    } else if ((System.currentTimeMillis() - mLastValidCaptureTimeMs)
+                            > MAX_IDLE_TIME_MS) {
                         mHasData = false;
                     }
                     // Silent: don't publish, don't toggle — last valid data stays.
@@ -246,7 +330,10 @@ public class AudioCapture {
                 // Adaptive polling: fast (200 Hz) when audio is present,
                 // slow (5 Hz) during silence to save CPU.
                 long delay = mHasData ? 5 : 200;
-                try { Thread.sleep(delay); } catch (InterruptedException ignored) {}
+                try {
+                    Thread.sleep(delay);
+                } catch (InterruptedException ignored) {
+                }
             }
         }
     }

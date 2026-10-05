@@ -46,6 +46,7 @@ public final class VisualizerScene extends AudioVisBase {
 
     /** 顶点：每个采样六个（一个点 = 两个三角形），每个 (x, y, 角 x, 角 y)。 */
     private final float[] mVertices = new float[CAPTURE_SIZE * FLOATS_PER_DOT];
+
     private int mVertexCount;
 
     /** 边缘柔化宽度，单位是"半径 = 1"的角坐标；由 {@link #buildDots} 按点的大小算好。 */
@@ -89,7 +90,7 @@ public final class VisualizerScene extends AudioVisBase {
     @Override
     public void start() {
         if (mAudioCapture == null) {
-            mAudioCapture = new AudioCapture(AudioCapture.TYPE_PCM, CAPTURE_SIZE);
+            mAudioCapture = createAudioCapture(AudioCapture.TYPE_PCM, CAPTURE_SIZE);
         }
         mAudioCapture.start();
     }
@@ -135,7 +136,7 @@ public final class VisualizerScene extends AudioVisBase {
         data = dataOrSilence(data, mSilence);
         int n = visibleSamples(mWidth, data.length);
         mFeather = featherFor(mWidth, data.length);
-        mVertexCount = buildDots(data, mWidth, mHeight, mVertices);
+        mVertexCount = buildDots(data, mWidth, mHeight, mVertices, volumeGain());
         updateLineColor(data, n);
     }
 
@@ -163,7 +164,8 @@ public final class VisualizerScene extends AudioVisBase {
         if (mRecolorDynamic && n > 0) {
             mHue = nextHue(mHue, meanAbs(data, n));
         }
-        int rgb = MathUtils.hsbToRgb(mHue,
+        int rgb = MathUtils.hsbToRgb(
+                mHue,
                 MathUtils.clamp(mSaturation, 0.0f, 1.0f),
                 MathUtils.clamp(mBrightness, 0.0f, 1.0f));
         mLineColor[0] = android.graphics.Color.red(rgb) / 255.0f;
@@ -260,6 +262,11 @@ public final class VisualizerScene extends AudioVisBase {
      * @return 写进去的顶点数；输入退化时为 0
      */
     static int buildDots(int[] data, int width, int height, float[] out) {
+        return buildDots(data, width, height, out, 1f);
+    }
+
+    /** @param gain 幅度增益（跟随系统音量）；1 = 不缩放 */
+    static int buildDots(int[] data, int width, int height, float[] out, float gain) {
         if (data == null || out == null) {
             return 0;
         }
@@ -279,7 +286,7 @@ public final class VisualizerScene extends AudioVisBase {
         int cursor = 0;
         for (int i = 0; i < n; i++) {
             float cx = i * stepX;
-            float cy = centerY + data[i] * scale;
+            float cy = centerY + data[i] * scale * gain;
             float left = cx - half;
             float right = cx + half;
             float top = cy - half;

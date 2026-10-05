@@ -3,8 +3,11 @@ package com.reandroid.wallpaper.musicvis;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.media.AudioManager;
 
 import com.reandroid.plugin.ColorPrefs;
+
+import java.util.function.BooleanSupplier;
 
 /**
  * Abstract base for pure-logic music visualization scenes.
@@ -30,6 +33,8 @@ public abstract class AudioVisBase {
     protected boolean mHasPrefInit = false;
     /** 横向比例是否跟随屏幕短边（见 baseScale()）；false = AOSP 原版把“屏幕短边 = 480 行”写死。 */
     protected boolean mFitScreen = false;
+    /** 幅度是否跟随系统音量；false = AOSP 的默认缩放模式，与加此设置之前的表现一致。 */
+    protected boolean mFollowSystemVolume;
 
     // HSL recolor
     public boolean mRecolorEnabled;
@@ -40,6 +45,7 @@ public abstract class AudioVisBase {
     protected int mPrefHue;
     /** 取色器换算 HSV 的暂存数组(避免每帧分配,子类共用)。 */
     protected final float[] mHsvScratch = new float[3];
+
     public final float[] mBgColor = new float[3];
 
     // Shared prefs (injected by engine or read from default source)
@@ -59,6 +65,7 @@ public abstract class AudioVisBase {
         mFftSize = safeParseInt(p.getString("musicvis_fft_size", "512"), 512);
         mUseTriangleStrip = p.getBoolean("musicvis_use_triangle_strip", true);
         mFitScreen = p.getBoolean("musicvis_fit_screen", false);
+        mFollowSystemVolume = p.getBoolean(AudioCapture.PREF_FOLLOW_VOLUME, false);
         mRecolorEnabled = p.getBoolean("musicvis_recolor", false);
         mRecolorDynamic = "dynamic".equals(p.getString("musicvis_recolor_mode", "static"));
         // 取色器(颜色取代原来的 色调/饱和度/亮度 三个滑块):默认 #FF0000
@@ -85,11 +92,19 @@ public abstract class AudioVisBase {
     // ---- utility methods ----
 
     protected static int safeParseInt(String s, int def) {
-        try { return Integer.parseInt(s); } catch (Exception e) { return def; }
+        try {
+            return Integer.parseInt(s);
+        } catch (Exception e) {
+            return def;
+        }
     }
 
     protected static int safeGetInt(SharedPreferences p, String k, int d) {
-        try { return p.getInt(k, d); } catch (ClassCastException e) { return d; }
+        try {
+            return p.getInt(k, d);
+        } catch (ClassCastException e) {
+            return d;
+        }
     }
 
     /**
@@ -110,6 +125,56 @@ public abstract class AudioVisBase {
     }
 
     // ---- lifecycle ----
+
+    /**
+     * 建采集并带上全部「共用的采集设置」。
+     *
+     * <p>各子类都在自己的 start() 里建采集，走这一个口子是为了新加采集项时只改这里，
+     * 不必回头逐个补（漏掉的那个会静默地不生效）。
+     */
+    protected AudioCapture createAudioCapture(int type, int size) {
+        AudioCapture capture = new AudioCapture(type, size);
+        capture.setVolumeGainSource(volumeGainSource(mContext, () -> mFollowSystemVolume));
+        return capture;
+    }
+
+    /**
+     * 「跟随系统音量」的增益来源。关着（或拿不到 AudioManager）就恒返回 1，即不缩放。
+     *
+     * <p>映射走 {@link AudioCapture#gainForVolume} —— 关键是**档位比例**而非物理响度。
+     */
+    static AudioCapture.VolumeGainSource volumeGainSource(
+            final Context context, final BooleanSupplier enabled) {
+        return () -> {
+            if (context == null || !enabled.getAsBoolean()) {
+                return 1f;
+            }
+            AudioManager audio = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+            if (audio == null) {
+                return 1f;
+            }
+            return AudioCapture.gainForVolume(
+                    audio.getStreamVolume(AudioManager.STREAM_MUSIC),
+                    audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC));
+        };
+    }
+
+    /**
+     * 当前幅度增益（1 = 不缩放）。渲染端把它乘到**自己那个域**上 ——
+     * 幅度驱动的画面乘在幅度上，平方过的分析值（{@code mAnalyzer}）乘在分析值上。
+     */
+    protected float volumeGain() {
+        AudioCapture capture = mAudioCapture;
+        if (capture == null) {
+            return 1f;
+        }
+        // 采集也可能由别处直接 new 出来（换 FFT 尺寸那条路就是），那种绕开
+        // createAudioCapture 的采集没有来源 —— 在这里现接上，免得设置静默失效。
+        if (!capture.hasVolumeGainSource()) {
+            capture.setVolumeGainSource(volumeGainSource(mContext, () -> mFollowSystemVolume));
+        }
+        return capture.getVolumeGain();
+    }
 
     public void start() {}
 

@@ -17,5 +17,7 @@
   "musicvis_recolor_color": "Farbe",
   "musicvis_brightness": "Helligkeit",
   "musicvis_saturation": "Sättigung",
-  "musicvis_hue": "Farbton"
+  "musicvis_hue": "Farbton",
+  "musicvis_follow_volume": "Systemlautstärke folgen",
+  "musicvis_follow_volume_summary": "Die Medienlautstärke bestimmt, wie groß die Visualisierung aussieht"
 }

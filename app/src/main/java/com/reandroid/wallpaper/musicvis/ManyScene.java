@@ -1,10 +1,11 @@
 package com.reandroid.wallpaper.musicvis;
 
 import android.content.Context;
-import com.reandroid.utils.Mat4;
-import com.reandroid.plugin.PluginPrefsProvider;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+
+import com.reandroid.plugin.PluginPrefsProvider;
+import com.reandroid.utils.Mat4;
 
 /**
  * Pure-logic composite scene for vis5.
@@ -15,8 +16,8 @@ final class ManyScene {
     private static final int LINE_COUNT = 256;
 
     // Composed sub-scenes — reuse vis2 (PCM) and vis3 (FFT) WaveScene directly
-    final WaveScene mWave;      // PCM waveform
-    final WaveScene mWaveFFT;   // FFT spectrum (reuses vis3 logic)
+    final WaveScene mWave; // PCM waveform
+    final WaveScene mWaveFFT; // FFT spectrum (reuses vis3 logic)
     final VuScene mNeedle;
 
     // Audio — single TYPE_BOTH capture produces PCM + FFT simultaneously
@@ -57,6 +58,10 @@ final class ManyScene {
     private int mFrameCount;
     private SharedPreferences mPluginPrefs;
     private PluginPrefsProvider mPluginPrefsProvider;
+    /** 幅度是否跟随系统音量；false = 不缩放，与加此设置之前的表现一致。 */
+    private boolean mFollowSystemVolume;
+
+    private AudioCapture.VolumeGainSource mVolumeGainSource;
 
     // HSL recolor state — synced from vis2 (PCM) and vis3 (FFT) prefs
     boolean mRecolorPCM, mRecolorFFT;
@@ -65,7 +70,8 @@ final class ManyScene {
     float mSatPCM = 1f, mSatFFT = 1f;
     float mBriPCM = 1f, mBriFFT = 1f;
     int mFftSize = 512; // synced from vis3 prefs
-    final float[] mAdjustData = new float[LINE_COUNT * 2 * 3 * 2]; // PCM + FFT: 2 verts × 3 HSL × 256 lines × 2 types
+    final float[] mAdjustData =
+            new float[LINE_COUNT * 2 * 3 * 2]; // PCM + FFT: 2 verts × 3 HSL × 256 lines × 2 types
     // Texture index: 0=fire (PCM vis2), 1=ice (FFT vis3)
     int mLineTexPCM, mLineTexFFT;
 
@@ -85,6 +91,7 @@ final class ManyScene {
     void start() {
         if (mAudioCapture == null) {
             mAudioCapture = new AudioCapture(AudioCapture.TYPE_BOTH, 1024);
+            mAudioCapture.setVolumeGainSource(mVolumeGainSource);
         }
         mAudioCapture.start();
     }
@@ -109,6 +116,33 @@ final class ManyScene {
         mPluginPrefsProvider = provider;
     }
 
+    /** 「跟随系统音量」的增益来源，由宿主注入 —— 只有它拿得到 Context。 */
+    void setVolumeGainSource(AudioCapture.VolumeGainSource source) {
+        mVolumeGainSource = source;
+        if (mAudioCapture != null) {
+            mAudioCapture.setVolumeGainSource(source);
+        }
+    }
+
+    boolean followsSystemVolume() {
+        return mFollowSystemVolume;
+    }
+
+    /**
+     * 当前幅度增益（1 = 不缩放），乘在**渲染量的域**上：下面两处 `mPointData` 是幅度，
+     * 而 `mWaveFFT.mAnalyzer` 是平方过的分析值，各自在自己的域里乘。
+     */
+    private float volumeGain() {
+        AudioCapture capture = mAudioCapture;
+        if (capture == null) {
+            return 1f;
+        }
+        if (mVolumeGainSource != null && !capture.hasVolumeGainSource()) {
+            capture.setVolumeGainSource(mVolumeGainSource);
+        }
+        return capture.getVolumeGain();
+    }
+
     void setOffset(float xOffset, float yOffset, int xPixels, int yPixels) {
         mRotate = (xOffset - 0.5f) * 90f;
     }
@@ -123,7 +157,7 @@ final class ManyScene {
     private static void initPointDataSubset(float[] pd) {
         int half = LINE_COUNT / 2;
         for (int i = 0; i < LINE_COUNT; i++) {
-            pd[i * 8]     = i - half;
+            pd[i * 8] = i - half;
             pd[i * 8 + 2] = 0f;
             pd[i * 8 + 3] = 0f;
             pd[i * 8 + 4] = i - half;
@@ -143,8 +177,10 @@ final class ManyScene {
         if (!mHasPrefInit || pref != mUseTriangleStrip) {
             mUseTriangleStrip = pref;
         }
+        mFollowSystemVolume = p.getBoolean(AudioCapture.PREF_FOLLOW_VOLUME, false);
         mWaveMode = Integer.parseInt(p.getString("musicvis_wave_mode", "0"));
-        // Sync static HSL + FFT config from vis2/vis3 prefs (only on first call — dynamic hue manages itself)
+        // Sync static HSL + FFT config from vis2/vis3 prefs (only on first call — dynamic hue
+        // manages itself)
         if (!mHasPrefInit) {
             syncVis2Prefs();
             syncVis3Prefs();
@@ -246,11 +282,14 @@ final class ManyScene {
         len /= 4;
         if (len > LINE_COUNT) len = LINE_COUNT;
         float[] pd = mWave.mPointData;
+        float gain = volumeGain();
         for (int i = 0; i < len; i++) {
-            int amp = (mVizData[i * 4] + mVizData[i * 4 + 1]
-                     + mVizData[i * 4 + 2] + mVizData[i * 4 + 3]);
-            pd[i * 8 + 1] = amp;
-            pd[i * 8 + 5] = -amp;
+            int amp = (mVizData[i * 4]
+                    + mVizData[i * 4 + 1]
+                    + mVizData[i * 4 + 2]
+                    + mVizData[i * 4 + 3]);
+            pd[i * 8 + 1] = amp * gain;
+            pd[i * 8 + 5] = -amp * gain;
         }
         mWaveCounter++;
     }
@@ -270,7 +309,10 @@ final class ManyScene {
                 }
                 fadeoutcounter--;
                 if (fadeoutcounter == 0) {
-                    wave1amp = 0; wave2amp = 0; wave3amp = 0; wave4amp = 0;
+                    wave1amp = 0;
+                    wave2amp = 0;
+                    wave3amp = 0;
+                    wave4amp = 0;
                 }
             } else {
                 makeIdleWave(pd);
@@ -283,10 +325,12 @@ final class ManyScene {
                     lastWaveCounter = mWaveCounter;
                     for (int i = 0; i < LINE_COUNT; i++) {
                         float val = Math.abs(pd[i * 8 + 1]);
-                        pd[i * 8 + 1] = (val * (15 - fadeincounter)
-                                + idleWave[i * 8 + 1] * fadeincounter) / 15f;
-                        pd[i * 8 + 5] = (-val * (15 - fadeincounter)
-                                + idleWave[i * 8 + 5] * fadeincounter) / 15f;
+                        pd[i * 8 + 1] =
+                                (val * (15 - fadeincounter) + idleWave[i * 8 + 1] * fadeincounter)
+                                        / 15f;
+                        pd[i * 8 + 5] =
+                                (-val * (15 - fadeincounter) + idleWave[i * 8 + 5] * fadeincounter)
+                                        / 15f;
                     }
                 }
                 fadeincounter--;
@@ -313,10 +357,14 @@ final class ManyScene {
             points[i * 8 + 1] = val + off;
             points[i * 8 + 5] = -val + off;
         }
-        wave1pos++; wave1amp++;
-        wave2pos--; wave2amp++;
-        wave3pos++; wave3amp++;
-        wave4pos++; wave4amp++;
+        wave1pos++;
+        wave1amp++;
+        wave2pos--;
+        wave2amp++;
+        wave3pos++;
+        wave3amp++;
+        wave4pos++;
+        wave4amp++;
     }
 
     // ---- FFT wave data (reuses WaveScene FFT, same as vis3) ----
@@ -350,13 +398,17 @@ final class ManyScene {
         int srcidx = 0;
         int cnt = 0;
         float[] pd = mWaveFFT.mPointData;
+        float gain = volumeGain();
         for (int i = 0; i < LINE_COUNT; i++) {
             float val = mWaveFFT.mAnalyzer[srcidx] * 64f / 8f; // gain to match PCM amplitude range
             if (val < 1f && val > -1f) val = 1f;
-            pd[i * 8 + 1] = val;
-            pd[i * 8 + 5] = -val;
+            pd[i * 8 + 1] = val * gain;
+            pd[i * 8 + 5] = -val * gain;
             cnt += len;
-            if (cnt > LINE_COUNT) { srcidx++; cnt -= LINE_COUNT; }
+            if (cnt > LINE_COUNT) {
+                srcidx++;
+                cnt -= LINE_COUNT;
+            }
         }
     }
 
@@ -367,11 +419,11 @@ final class ManyScene {
         float[] pd = mWave.mPointData;
         for (int i = 0; i < LINE_COUNT; i++) {
             int base = i * 8, out = i * 4;
-            mLinePositions[out]     = pd[base];
+            mLinePositions[out] = pd[base];
             mLinePositions[out + 1] = pd[base + 1];
             mLinePositions[out + 2] = pd[base + 4];
             mLinePositions[out + 3] = pd[base + 5];
-            mLineTexCoords[out]     = pd[base + 2];
+            mLineTexCoords[out] = pd[base + 2];
             mLineTexCoords[out + 1] = pd[base + 3];
             mLineTexCoords[out + 2] = pd[base + 6];
             mLineTexCoords[out + 3] = pd[base + 7];
@@ -382,21 +434,26 @@ final class ManyScene {
 
     /** Build HSL adjust buffer + advance dynamic hue for both PCM and FFT. */
     void updateAdjustBuffer() {
-        // Dynamic hue: compute average amplitude and shift hue (matching WaveScene.updateDynamicHue)
+        // Dynamic hue: compute average amplitude and shift hue (matching
+        // WaveScene.updateDynamicHue)
         if (mRecolorPCM && mRecolorDynPCM) updateDynamicHue(false); // PCM → mWave.mPointData
-        if (mRecolorFFT && mRecolorDynFFT) updateDynamicHue(true);  // FFT → mWaveFFT.mPointData
+        if (mRecolorFFT && mRecolorDynFFT) updateDynamicHue(true); // FFT → mWaveFFT.mPointData
         // PCM section
         float h = mRecolorPCM ? mHuePCM : -1f;
         for (int i = 0; i < LINE_COUNT * 2; i++) {
             int b = i * 3;
-            mAdjustData[b] = h; mAdjustData[b + 1] = mSatPCM; mAdjustData[b + 2] = mBriPCM;
+            mAdjustData[b] = h;
+            mAdjustData[b + 1] = mSatPCM;
+            mAdjustData[b + 2] = mBriPCM;
         }
         // FFT section
         int off = LINE_COUNT * 2 * 3;
         h = mRecolorFFT ? mHueFFT : -1f;
         for (int i = 0; i < LINE_COUNT * 2; i++) {
             int b = off + i * 3;
-            mAdjustData[b] = h; mAdjustData[b + 1] = mSatFFT; mAdjustData[b + 2] = mBriFFT;
+            mAdjustData[b] = h;
+            mAdjustData[b + 1] = mSatFFT;
+            mAdjustData[b + 2] = mBriFFT;
         }
     }
 
@@ -409,7 +466,7 @@ final class ManyScene {
         float avg = sum / LINE_COUNT;
         float norm = Math.min(1f, avg / 800f);
         if (isFFT) mHueFFT = (mHueFFT + norm * 0.03f) % 1f;
-        else       mHuePCM = (mHuePCM + norm * 0.03f) % 1f;
+        else mHuePCM = (mHuePCM + norm * 0.03f) % 1f;
     }
 
     /** Propagate resize to WaveScene instances (FFT bin mapping needs current width). */
@@ -432,9 +489,13 @@ final class ManyScene {
 
     /** Called at end of each frame to advance idle wave counters. */
     void endFrame() {
-        wave1pos++; wave1amp++;
-        wave2pos--; wave2amp++;
-        wave3pos++; wave3amp++;
-        wave4pos++; wave4amp++;
+        wave1pos++;
+        wave1amp++;
+        wave2pos--;
+        wave2amp++;
+        wave3pos++;
+        wave3amp++;
+        wave4pos++;
+        wave4amp++;
     }
 }

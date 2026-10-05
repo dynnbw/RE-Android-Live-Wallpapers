@@ -16,5 +16,7 @@
   "musicvis_bg_color_label_#2F4F4F": "Vert foncé",
   "musicvis_bg_color_label_#FFE4DE": "Rose",
   "musicvis_bg_color_label_#F0FFFF": "Vert clair",
-  "musicvis_bg_color_label_#EDDEFF": "Violet clair"
+  "musicvis_bg_color_label_#EDDEFF": "Violet clair",
+  "musicvis_follow_volume": "Suivre le volume du système",
+  "musicvis_follow_volume_summary": "Le volume multimédia détermine la taille de la visualisation"
 }

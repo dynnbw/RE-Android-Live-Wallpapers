@@ -7,5 +7,7 @@
   "musicvis_bg_color_label_#2F4F4F": "Verde escuro",
   "musicvis_bg_color_label_#FFE4DE": "Rosa",
   "musicvis_bg_color_label_#F0FFFF": "Verde claro",
-  "musicvis_bg_color_label_#EDDEFF": "Roxo claro"
+  "musicvis_bg_color_label_#EDDEFF": "Roxo claro",
+  "musicvis_follow_volume": "Seguir o volume do sistema",
+  "musicvis_follow_volume_summary": "O volume de mídia define o tamanho da visualização"
 }

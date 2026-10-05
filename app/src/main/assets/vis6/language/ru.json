@@ -17,5 +17,7 @@
   "musicvis_recolor_color": "Цвет",
   "musicvis_brightness": "Яркость",
   "musicvis_saturation": "Насыщенность",
-  "musicvis_hue": "Оттенок"
+  "musicvis_hue": "Оттенок",
+  "musicvis_follow_volume": "Следовать системной громкости",
+  "musicvis_follow_volume_summary": "Громкость медиа определяет размер визуализации"
 }

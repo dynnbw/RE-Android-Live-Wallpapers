@@ -12,5 +12,7 @@
   "musicvis_bg_color_label_#2F4F4F": "Dunkelgrün",
   "musicvis_bg_color_label_#FFE4DE": "Rosa",
   "musicvis_bg_color_label_#F0FFFF": "Hellgrün",
-  "musicvis_bg_color_label_#EDDEFF": "Hellviolett"
+  "musicvis_bg_color_label_#EDDEFF": "Hellviolett",
+  "musicvis_follow_volume": "Systemlautstärke folgen",
+  "musicvis_follow_volume_summary": "Die Medienlautstärke bestimmt, wie groß die Visualisierung aussieht"
 }

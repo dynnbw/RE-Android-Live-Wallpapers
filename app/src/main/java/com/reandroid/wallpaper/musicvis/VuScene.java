@@ -1,6 +1,7 @@
 package com.reandroid.wallpaper.musicvis;
 
 import android.content.Context;
+
 import com.reandroid.utils.Mat4;
 
 /**
@@ -43,7 +44,7 @@ public final class VuScene extends AudioVisBase {
     @Override
     public void start() {
         if (mAudioCapture == null) {
-            mAudioCapture = new AudioCapture(AudioCapture.TYPE_PCM, 1024);
+            mAudioCapture = createAudioCapture(AudioCapture.TYPE_PCM, 1024);
         }
         mAudioCapture.start();
     }
@@ -72,7 +73,8 @@ public final class VuScene extends AudioVisBase {
             volt = volt / len;
         }
 
-        applyNeedlePhysics(volt);
+        // 增益乘在渲染量上（volt 是平均幅度，指针偏转线性于它）
+        applyNeedlePhysics((int) (volt * volumeGain()));
     }
 
     /**

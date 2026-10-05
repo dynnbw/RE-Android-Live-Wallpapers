@@ -1,3 +1,11 @@
 {
-  "prefs": []
+  "prefs": [
+    {
+      "type": "switch",
+      "key": "musicvis_follow_volume",
+      "title": "musicvis_follow_volume",
+      "summary": "musicvis_follow_volume_summary",
+      "default": "false"
+    }
+  ]
 }

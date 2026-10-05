@@ -22,5 +22,7 @@
   "musicvis_recolor_color": "রঙ",
   "musicvis_brightness": "উজ্জ্বলতা",
   "musicvis_saturation": "সম্পৃক্তি",
-  "musicvis_hue": "রঙের ছটা"
+  "musicvis_hue": "রঙের ছটা",
+  "musicvis_follow_volume": "সিস্টেমের ভলিউম অনুসরণ করুন",
+  "musicvis_follow_volume_summary": "মিডিয়া ভলিউম অনুযায়ী ভিজ্যুয়ালাইজেশনের আকার বদলাবে"
 }

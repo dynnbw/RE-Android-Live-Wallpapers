@@ -7,5 +7,7 @@
   "musicvis_bg_color_label_#2F4F4F": "गहरा हरा",
   "musicvis_bg_color_label_#FFE4DE": "गुलाबी",
   "musicvis_bg_color_label_#F0FFFF": "हल्का हरा",
-  "musicvis_bg_color_label_#EDDEFF": "हल्का बैंगनी"
+  "musicvis_bg_color_label_#EDDEFF": "हल्का बैंगनी",
+  "musicvis_follow_volume": "सिस्टम वॉल्यूम का पालन करें",
+  "musicvis_follow_volume_summary": "मीडिया वॉल्यूम तय करेगा कि विज़ुअलाइज़ेशन कितना बड़ा दिखे"
 }

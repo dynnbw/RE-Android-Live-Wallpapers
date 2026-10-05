@@ -7,5 +7,7 @@
   "musicvis_bg_color_label_#2F4F4F": "진한 녹색",
   "musicvis_bg_color_label_#FFE4DE": "분홍",
   "musicvis_bg_color_label_#F0FFFF": "연한 녹색",
-  "musicvis_bg_color_label_#EDDEFF": "연한 보라"
+  "musicvis_bg_color_label_#EDDEFF": "연한 보라",
+  "musicvis_follow_volume": "시스템 볼륨 따르기",
+  "musicvis_follow_volume_summary": "미디어 볼륨에 따라 화면의 진폭이 달라집니다"
 }

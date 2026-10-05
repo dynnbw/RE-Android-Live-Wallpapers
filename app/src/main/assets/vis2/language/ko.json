@@ -22,5 +22,7 @@
   "musicvis_recolor_color": "색상",
   "musicvis_brightness": "밝기",
   "musicvis_saturation": "채도",
-  "musicvis_hue": "색조"
+  "musicvis_hue": "색조",
+  "musicvis_follow_volume": "시스템 볼륨 따르기",
+  "musicvis_follow_volume_summary": "미디어 볼륨에 따라 화면의 진폭이 달라집니다"
 }

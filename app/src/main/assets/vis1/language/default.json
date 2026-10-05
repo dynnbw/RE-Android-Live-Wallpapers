@@ -16,5 +16,7 @@
   "musicvis_bg_color_label_#2F4F4F": "Dark green",
   "musicvis_bg_color_label_#FFE4DE": "Pink",
   "musicvis_bg_color_label_#F0FFFF": "Light green",
-  "musicvis_bg_color_label_#EDDEFF": "Light purple"
+  "musicvis_bg_color_label_#EDDEFF": "Light purple",
+  "musicvis_follow_volume": "Follow system volume",
+  "musicvis_follow_volume_summary": "Let the media volume change how large the visualization looks"
 }

@@ -16,5 +16,7 @@
   "musicvis_bg_color_label_#2F4F4F": "暗綠",
   "musicvis_bg_color_label_#FFE4DE": "粉色",
   "musicvis_bg_color_label_#F0FFFF": "淺綠",
-  "musicvis_bg_color_label_#EDDEFF": "淺紫"
+  "musicvis_bg_color_label_#EDDEFF": "淺紫",
+  "musicvis_follow_volume": "跟隨系統音量",
+  "musicvis_follow_volume_summary": "媒體音量將改變畫面的幅度大小"
 }

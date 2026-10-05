@@ -27,5 +27,7 @@
   "musicvis_recolor_color": "颜色",
   "musicvis_brightness": "亮度",
   "musicvis_saturation": "饱和度",
-  "musicvis_hue": "色相"
+  "musicvis_hue": "色相",
+  "musicvis_follow_volume": "跟随系统音量",
+  "musicvis_follow_volume_summary": "媒体音量将改变画面的幅度大小"
 }
