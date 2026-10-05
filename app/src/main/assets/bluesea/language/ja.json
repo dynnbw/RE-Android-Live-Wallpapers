@@ -1,3 +1,6 @@
 {
-  "title": "ブルーシー"
+  "title": "ブルーシー",
+  "bluesea_jelly_density": "クラゲの密度",
+  "bluesea_jelly_size": "クラゲの大きさ",
+  "bluesea_particle_count": "泡の数"
 }

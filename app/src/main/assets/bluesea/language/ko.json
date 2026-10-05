@@ -1,3 +1,6 @@
 {
-  "title": "푸른 바다"
+  "title": "푸른 바다",
+  "bluesea_jelly_density": "해파리 밀도",
+  "bluesea_jelly_size": "해파리 크기",
+  "bluesea_particle_count": "거품 개수"
 }

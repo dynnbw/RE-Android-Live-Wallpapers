@@ -1,3 +1,6 @@
 {
-  "title": "Mar azul"
+  "title": "Mar azul",
+  "bluesea_jelly_density": "Densidad de medusas",
+  "bluesea_jelly_size": "Tamaño de medusas",
+  "bluesea_particle_count": "Cantidad de burbujas"
 }

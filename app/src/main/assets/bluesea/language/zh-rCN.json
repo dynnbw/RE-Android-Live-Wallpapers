@@ -1,3 +1,6 @@
 {
-  "title": "蓝色海洋"
+  "title": "蓝色海洋",
+  "bluesea_jelly_density": "水母密度",
+  "bluesea_jelly_size": "水母大小",
+  "bluesea_particle_count": "气泡数量"
 }

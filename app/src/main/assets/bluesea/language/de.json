@@ -1,3 +1,6 @@
 {
-  "title": "Blaues Meer"
+  "title": "Blaues Meer",
+  "bluesea_jelly_density": "Quallendichte",
+  "bluesea_jelly_size": "Quallengröße",
+  "bluesea_particle_count": "Blasenzahl"
 }

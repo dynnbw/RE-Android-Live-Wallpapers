@@ -1,3 +1,6 @@
 {
-  "title": "Mar Azul"
+  "title": "Mar Azul",
+  "bluesea_jelly_density": "Densidade de águas-vivas",
+  "bluesea_jelly_size": "Tamanho das águas-vivas",
+  "bluesea_particle_count": "Quantidade de bolhas"
 }

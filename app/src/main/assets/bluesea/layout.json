@@ -1,3 +1,28 @@
 {
-  "prefs": []
+  "prefs": [
+    {
+      "type": "seekbar",
+      "key": "bluesea_jelly_density",
+      "title": "bluesea_jelly_density",
+      "default": "100",
+      "min": 25,
+      "max": 100
+    },
+    {
+      "type": "seekbar",
+      "key": "bluesea_jelly_size",
+      "title": "bluesea_jelly_size",
+      "default": "100",
+      "min": 60,
+      "max": 160
+    },
+    {
+      "type": "seekbar",
+      "key": "bluesea_particle_count",
+      "title": "bluesea_particle_count",
+      "default": "40",
+      "min": 0,
+      "max": 80
+    }
+  ]
 }

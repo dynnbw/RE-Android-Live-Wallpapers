@@ -1,3 +1,6 @@
 {
-  "title": "Синее море"
+  "title": "Синее море",
+  "bluesea_jelly_density": "Плотность медуз",
+  "bluesea_jelly_size": "Размер медуз",
+  "bluesea_particle_count": "Количество пузырьков"
 }

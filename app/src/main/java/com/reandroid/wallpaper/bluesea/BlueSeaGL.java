@@ -1,6 +1,7 @@
 package com.reandroid.wallpaper.bluesea;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.opengl.GLES30;
 import android.opengl.GLUtils;
@@ -8,8 +9,8 @@ import android.opengl.Matrix;
 import android.util.Log;
 import android.view.MotionEvent;
 
-import com.reandroid.utils.AssetLoader;
 import com.reandroid.gles.GLESScene;
+import com.reandroid.utils.AssetLoader;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -38,10 +39,57 @@ public class BlueSeaGL extends GLESScene {
     private boolean mInitialized;
     private boolean mGlReady;
 
+    /**
+     * 主线程发布的待处理设置；成对读写，渲染线程在 drawFrame 开头取走。
+     *
+     * <p>不能就地应用：注入来自设置页（主线程）而 drawFrame 在渲染线程，而
+     * {@code BlueSeaScene} 在数量变化时会**重建**水母/气泡数组 —— 那不是纯字段写入。
+     * 就地交换会让渲染循环读到换了一半的数组（长度与下标是两次读），重建出来的水母也没有纹理。
+     */
+    private final Object mPrefsLock = new Object();
+
+    private SharedPreferences mPendingPrefs;
+    private boolean mPrefsPending;
+
     public BlueSeaGL(Context context, int width, int height) {
         super(width, height);
         mContext = context;
         mScene = new BlueSeaScene(width, height);
+    }
+
+    // ---- Plugin prefs injection ----
+
+    /**
+     * 反射注入入口（{@code PluginPrefsInjector} 按方法名找，必须是 public）。
+     *
+     * <p>只登记，真正的应用在渲染线程的 drawFrame 开头 —— 理由见 {@link #mPrefsLock}。
+     * 首次注入发生在第一帧之前，那时 mGlReady 还是 false，纹理由 initGlResources 一次装好。
+     */
+    public void setPluginPrefs(SharedPreferences prefs) {
+        synchronized (mPrefsLock) {
+            mPendingPrefs = prefs;
+            mPrefsPending = true;
+        }
+    }
+
+    /** 取走主线程发布的设置并在渲染线程应用（渲染线程调用）。 */
+    private void applyPendingPrefs() {
+        SharedPreferences prefs;
+        synchronized (mPrefsLock) {
+            if (!mPrefsPending) {
+                return;
+            }
+            mPrefsPending = false;
+            prefs = mPendingPrefs;
+        }
+
+        BlueSeaScene.JellyState[] before = mScene.mJellies;
+        mScene.setPluginPrefs(prefs);
+        // 只改大小的设置不重建数组，也就不该碰纹理（白重装一次会闪一下）
+        if (mGlReady && before != mScene.mJellies) {
+            deleteJellyTextures(before);
+            loadJellyTextures(mScene.mJellies);
+        }
     }
 
     @Override
@@ -70,6 +118,7 @@ public class BlueSeaGL extends GLESScene {
         if (!mInitialized) {
             return;
         }
+        applyPendingPrefs();
         if (!mGlReady) {
             initGlResources();
             if (!mGlReady) {
@@ -107,12 +156,7 @@ public class BlueSeaGL extends GLESScene {
         }
         deleteTexture(mScene.mBackground);
         deleteTexture(mScene.mParticle);
-        if (mScene.mJellies != null) {
-            for (BlueSeaScene.JellyState jelly : mScene.mJellies) {
-                deleteTexture(jelly.image);
-                deleteTexture(jelly.glow);
-            }
-        }
+        deleteJellyTextures(mScene.mJellies);
         mGlReady = false;
         mInitialized = false;
     }
@@ -120,12 +164,7 @@ public class BlueSeaGL extends GLESScene {
     // --- GL buffer init ---
 
     private void initBuffers() {
-        float[] vertices = {
-            -0.5f, -0.5f,
-             0.5f, -0.5f,
-            -0.5f,  0.5f,
-             0.5f,  0.5f
-        };
+        float[] vertices = {-0.5f, -0.5f, 0.5f, -0.5f, -0.5f, 0.5f, 0.5f, 0.5f};
         float[] tex = {
             0.0f, 1.0f,
             1.0f, 1.0f,
@@ -161,12 +200,7 @@ public class BlueSeaGL extends GLESScene {
         mScene.mBackground = loadTexture("bluesea/drawable/bluesea_bg.png");
         mScene.mParticle = loadTexture("bluesea/drawable/bluesea_particle.png");
 
-        if (mScene.mJellies != null) {
-            for (BlueSeaScene.JellyState jelly : mScene.mJellies) {
-                jelly.image = loadTexture(jelly.config.imageAsset);
-                jelly.glow = loadTexture(jelly.config.glowAsset);
-            }
-        }
+        loadJellyTextures(mScene.mJellies);
 
         GLES30.glDisable(GLES30.GL_DEPTH_TEST);
         GLES30.glDisable(GLES30.GL_CULL_FACE);
@@ -185,19 +219,25 @@ public class BlueSeaGL extends GLESScene {
         float scrollOffset = -mScene.mXOffset * mWidth * 1.5f;
         float bgWidth = (mHeight > mWidth) ? (mHeight * 1.5f) : (mWidth * 2.5f);
         float bgHeight = (mHeight > mWidth) ? mHeight : (mWidth * 5.0f / 3.0f);
-        drawSprite(mScene.mBackground, scrollOffset + (bgWidth / 2.0f), bgHeight / 2.0f, bgWidth, bgHeight, 1.0f);
+        drawSprite(
+                mScene.mBackground,
+                scrollOffset + (bgWidth / 2.0f),
+                bgHeight / 2.0f,
+                bgWidth,
+                bgHeight,
+                1.0f);
     }
 
     private void drawJellyPlane(int plane, long timeMs) {
         for (int i = 0; i < mScene.mJellies.length; i++) {
             BlueSeaScene.JellyState jelly = mScene.mJellies[i];
-            if (mScene.getJellyPlane(i) != plane) {
+            if (jelly.plane != plane) {
                 continue;
             }
             // 绘制坐标统一走 Scene(与触摸命中同公式,保证桌面滚动/跨页时点按一致)
-            float drawX = mScene.jellyDrawX(jelly, i, timeMs);
+            float drawX = mScene.jellyDrawX(jelly, timeMs);
             float drawY = mScene.jellyDrawY(jelly, timeMs);
-            float size = jelly.config.size * mScene.mScale;
+            float size = jelly.config.size * mScene.mScale * mScene.mJellySizeScale;
             float scale = mScene.computeSwimScale(jelly, timeMs);
 
             if (drawX + size < 0 || drawX - size > mWidth) {
@@ -222,11 +262,23 @@ public class BlueSeaGL extends GLESScene {
             if (drawX + particle.size < 0 || drawX - particle.size > mWidth) {
                 continue;
             }
-            drawSprite(mScene.mParticle, drawX, particle.y, particle.size, particle.size, particle.alpha);
+            drawSprite(
+                    mScene.mParticle,
+                    drawX,
+                    particle.y,
+                    particle.size,
+                    particle.size,
+                    particle.alpha);
         }
     }
 
-    private void drawSprite(BlueSeaScene.Texture texture, float x, float y, float width, float height, float alpha) {
+    private void drawSprite(
+            BlueSeaScene.Texture texture,
+            float x,
+            float y,
+            float width,
+            float height,
+            float alpha) {
         if (mProgram == 0 || texture == null || texture.id == 0) {
             return;
         }
@@ -268,10 +320,14 @@ public class BlueSeaGL extends GLESScene {
         GLES30.glGenTextures(1, ids, 0);
         int textureId = ids[0];
         GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, textureId);
-        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR);
-        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
-        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE);
-        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE);
+        GLES30.glTexParameteri(
+                GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(
+                GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(
+                GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE);
+        GLES30.glTexParameteri(
+                GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE);
         GLUtils.texImage2D(GLES30.GL_TEXTURE_2D, 0, bitmap, 0);
         bitmap.recycle();
         return new BlueSeaScene.Texture(textureId);
@@ -285,7 +341,20 @@ public class BlueSeaGL extends GLESScene {
         }
     }
 
+    /** 水母数组是重建出来的，纹理必须跟着重装（GL 上下文只在渲染线程 current）。 */
+    private void loadJellyTextures(BlueSeaScene.JellyState[] jellies) {
+        for (BlueSeaScene.JellyState jelly : jellies) {
+            jelly.image = loadTexture(jelly.config.imageAsset);
+            jelly.glow = loadTexture(jelly.config.glowAsset);
+        }
+    }
 
+    private void deleteJellyTextures(BlueSeaScene.JellyState[] jellies) {
+        for (BlueSeaScene.JellyState jelly : jellies) {
+            deleteTexture(jelly.image);
+            deleteTexture(jelly.glow);
+        }
+    }
 
     private static FloatBuffer createBuffer(float[] data) {
         ByteBuffer bb = ByteBuffer.allocateDirect(data.length * 4);

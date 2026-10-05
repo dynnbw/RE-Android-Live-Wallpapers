@@ -1,3 +1,6 @@
 {
-  "title": "Mer bleue"
+  "title": "Mer bleue",
+  "bluesea_jelly_density": "Densité de méduses",
+  "bluesea_jelly_size": "Taille des méduses",
+  "bluesea_particle_count": "Nombre de bulles"
 }

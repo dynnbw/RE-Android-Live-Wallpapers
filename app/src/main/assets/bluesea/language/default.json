@@ -1,3 +1,6 @@
 {
-  "title": "Blue Sea"
+  "title": "Blue Sea",
+  "bluesea_jelly_density": "Jellyfish density",
+  "bluesea_jelly_size": "Jellyfish size",
+  "bluesea_particle_count": "Bubble count"
 }
