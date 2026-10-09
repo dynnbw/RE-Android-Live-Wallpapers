@@ -2,8 +2,6 @@
 <manifest
     xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <original-package android:name="com.reandroid.wallpaper" />
-
     <uses-feature android:name="android.software.live_wallpaper" />
 
     <!--
@@ -20,17 +18,39 @@
         android:glEsVersion="0x00030002"
         android:required="true" />
 
+    <!--
+      这三个硬件**都不是必需的** —— 各只有一张壁纸用到，缺了照样能跑：
+        相机   → 只有 WalkAround（Camera.open）
+        麦克风 → 只有辉光管选「麦克风」音源时
+        定位   → 只有草地壁纸的天气
+      而权限会**隐含**同名 feature，且 required 默认为 true —— Play 据此把没有这些硬件的
+      设备整个过滤掉。所以要显式写 required="false" 覆盖掉。
+      （`aapt dump badging <apk>` 用的就是 Play 那套规则，改完照它核对。）
+    -->
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-feature android:name="android.hardware.microphone" android:required="false" />
+    <uses-feature android:name="android.hardware.location" android:required="false" />
+
+    <!--
+      权限按字母序。**不要**往回加下面这三条，它们看上去合理但其实都不起作用：
+        BIND_WALLPAPER        signature 级，普通应用申请不到；真正生效的是 service 上的
+                              android:permission（见下面的 ProxyWallpaperService）
+        SET_WALLPAPER         全代码没有任何设置壁纸的调用 —— 只有
+                              ACTION_LIVE_WALLPAPER_CHOOSER 这类系统 UI 流程，不需要权限
+        READ_EXTERNAL_STORAGE 选图走 SAF（takePersistableUriPermission），读的是用户授权的
+                              URI；全仓库没有外部存储或媒体读取
+    -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="android.permission.SET_WALLPAPER" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.BIND_WALLPAPER" />
-    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28"/>
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <!-- 更新包落在公共 Downloads；API 29+ 走分区存储，不再需要（见 UpdateDownloader） -->
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
 
     <application
         android:label="@string/wallpapers"
