@@ -14,7 +14,7 @@
 ```
 WallpaperPlugin          → 插件工厂：getId() / createEngine() / release()
 WallpaperEngine          → 渲染引擎：onCreate() / drawFrame() / onSurfaceChanged() / onTouchEvent() ...
-WallpaperPluginHost      → 宿主机服务：getSharedPreferences() / getContext() / requestRender()
+WallpaperPluginHost      → 宿主机服务：getSharedPreferences() / getSharedPreferences(pluginId) / getContext()
 ```
 
 - **WallpaperPlugin** — 无参构造函数，由 ProxyWallpaperService 通过 `Class.forName()` 反射实例化
@@ -100,7 +100,7 @@ WallpaperPluginHost      → 宿主机服务：getSharedPreferences() / getConte
 | `key` | 全部 | SharedPreferences 键名 |
 | `title` | 全部 | language JSON lookup key |
 | `summary` | 全部 | language JSON lookup key（可选） |
-| `default` | 全部 | 默认值（switch: bool, seekbar/list: 数字或字符串） |
+| `default` | 全部 | 默认值（switch: bool；seekbar/list: 数字或字符串；color: `#RRGGBB` 十六进制串） |
 | `min`, `max` | seekbar | 取值范围 |
 | `values` | list | 存储值数组 |
 | `labels` | list | 显示标签数组（可 `@string/` 引用，也支持 `{key}_label_{value}` 模式） |
@@ -120,9 +120,9 @@ com.reandroid
 ├── utils/          AssetLoader / GLTextureUtils / MathUtils / RawResourceLoader
 ├── settings/       SettingsActivity / SettingsMainFragment / PluginSettingsActivity
 │                   PreviewPreference / WallpaperSettings / MiuiPermissionHelper
-├── weather/        WeatherManager（调度/缓存）+ WeatherSource 两路实现
-│                   OpenWeatherSource / CmaWeatherSource / WeatherHttp
-│                   WeatherCondition / WeatherState
+├── weather/        WeatherManager（调度/缓存）+ WeatherSource 三路实现
+│                   OpenWeatherSource / CmaWeatherSource / OpenMeteoSource
+│                   WeatherHttp / WeatherCondition / WeatherState
 ├── astronomy/      SunCalculator / DayNightResolver / DeviceLocation
 ├── update/         UpdateHelper / UpdateChecker / UpdateDownloader / VersionInfo
 └── wallpaper/      每壁纸一组 Plugin / Engine / GL，多数另有 Scene（按子包划分）
@@ -289,11 +289,14 @@ graph TD
 
 ### 测试活动
 
-Manifest 声明 8 个 `CATEGORY_TEST` 活动，可用于 adb 单独启动壁纸调试：
+Manifest 声明 5 个 `CATEGORY_TEST` 活动，可用于 adb 单独启动壁纸调试：
 
 ```
-Grass / GrassVK / Aurora1 / Aurora2 / Galaxy / GalaxyVK / Fall / FallVK
+Grass / Aurora1 / Aurora2 / Galaxy / Fall
 ```
+
+（早先还有 GrassVK / GalaxyVK / FallVK 三个 Vulkan 调试活动，已随 VK 那批整理删掉；
+VK 渲染器仍可从设置页的渲染器开关切进去，不再各留一个独立活动。）
 
 每个通过 `res/values/config.xml` 中的 `config_enable_*_wallpaper` bool 控制启用。
 
