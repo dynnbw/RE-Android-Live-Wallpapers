@@ -44,16 +44,25 @@ jobs:
           java-version: '21'
 
       # 比较基准：PR 用目标分支的 sha，push 用上一个提交（新分支时是全零，退回 origin/main）
+      #
+      # 第三种情况是"before 指向的提交已经不在仓库里"：强推会把它换掉，而
+      # `git diff <不存在的 sha>` 直接 `fatal: bad object`，整个检查红掉 ——
+      # 2026-10-09 真实发生过一次（amend 后强推，before 就是被换掉的那条）。
+      # 退到 HEAD~1：那次推送只有一条提交，正好等于"本次改动"。
       - name: Pick the comparison base
         id: base
         run: |
           if [ -n "${{ github.event.pull_request.base.sha }}" ]; then
             echo "ref=${{ github.event.pull_request.base.sha }}" >> "$GITHUB_OUTPUT"
-          elif [ -n "${{ github.event.before }}" ] \
-               && [ "${{ github.event.before }}" != "0000000000000000000000000000000000000000" ]; then
+          elif [ -z "${{ github.event.before }}" ] \
+               || [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ]; then
+            echo "ref=origin/main" >> "$GITHUB_OUTPUT"
+          elif git cat-file -e "${{ github.event.before }}^{commit}" 2>/dev/null; then
             echo "ref=${{ github.event.before }}" >> "$GITHUB_OUTPUT"
           else
-            echo "ref=origin/main" >> "$GITHUB_OUTPUT"
+            fallback="$(git rev-parse --verify HEAD~1 2>/dev/null || echo origin/main)"
+            echo "::warning::before (${{ github.event.before }}) 已不在仓库里（多半是强推）；比较基准退到 $fallback"
+            echo "ref=$fallback" >> "$GITHUB_OUTPUT"
           fi
 
       # 只查**本次改动过**的 Java 文件（棘轮）—— 历史遗留的格式不会被拿来报红，
