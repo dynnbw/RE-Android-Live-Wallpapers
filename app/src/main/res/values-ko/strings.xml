@@ -1,35 +1,31 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!-- 
-/*
-* Copyright (C) 2008 The Android Open Source Project
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
- -->
+<!--
+    Copyright (C) 2026 The Reborn Android Live Wallpapers authors
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
 
 <resources>
     <string name="about_app_info">앱 정보</string>
-    <string name="about_author">저자</string>
-    <string name="about_author_detail">念.</string>
     <string name="about_bilibili">Bilibili 홈페이지</string>
     <string name="about_bilibili_url">https://space.bilibili.com/470023065</string>
     <string name="about_developer">개발자</string>
     <string name="about_disclaimer">면책 조항</string>
     <string name="about_disclaimer_detail">Apache License 2.0에 따라 배포됩니다. 이 제품의 일부는 다른 사람의 작품을 기반으로 하며, 그 권리는 각 권리자에게 있습니다.</string>
     <string name="about_disclaimer_title">라이선스와 귀속</string>
-    <string name="about_email">이메일</string>
     <string name="about_email_address">3471348199@qq.com</string>
     <string name="about_email_address_alt">xujiekai508@gmail.com</string>
+    <string name="about_email_gmail">Gmail</string>
+    <string name="about_email_qq">QQ 메일</string>
     <string name="about_feedback">피드백</string>
     <string name="about_feedback_contact">피드백은 위 연락처를 통해 보내주세요</string>
     <string name="about_links">링크 및 연락처</string>

@@ -17,32 +17,31 @@
         android:summary="@string/app_version_summary"
         android:key="about_check_update" />
 
-    <!-- 跳转链接与联系方式 -->
+    <!--
+        跳转链接与联系方式：**不显示地址明文**（页面更整洁）。地址本身仍留在语言包里 ——
+        点按动作要读它们（见 AboutFragment），只是不再铺在页面上。
+    -->
     <PreferenceCategory android:title="@string/about_links" />
     <Preference
         android:icon="@drawable/ic_github"
         android:title="@string/about_official_website"
-        android:summary="@string/about_official_website_url"
         android:key="about_official_website" />
+    <!-- 两行邮箱靠服务商分：页面不显示地址明文了，两个都叫「邮箱」会像写了两遍 -->
     <Preference
         android:icon="@drawable/ic_email"
-        android:title="@string/about_email"
-        android:summary="@string/about_email_address"
+        android:title="@string/about_email_qq"
         android:key="about_email" />
     <Preference
         android:icon="@drawable/ic_email"
-        android:title="@string/about_email"
-        android:summary="@string/about_email_address_alt"
+        android:title="@string/about_email_gmail"
         android:key="about_email2" />
     <Preference
         android:icon="@drawable/ic_bilibili"
         android:title="@string/about_bilibili"
-        android:summary="@string/about_bilibili_url"
         android:key="about_bilibili" />
     <Preference
         android:icon="@drawable/ic_qq"
         android:title="@string/about_qq"
-        android:summary="@string/about_qq_url"
         android:key="about_qq" />
     <Preference
         android:icon="@drawable/ic_feedback"
@@ -58,12 +57,13 @@
         android:selectable="false" />
 
 
-    <!-- 开发者信息 -->
-    <PreferenceCategory android:title="@string/about_developer" />
-    <Preference
-        android:title="@string/about_author"
-        android:summary="@string/about_author_detail"
-        android:selectable="false" />
+    <!--
+        开发者：名单**全部**在运行时从 GitHub 追加进来（见 AboutFragment），这里只有标题。
+        拉不到名单时整个分类会被移除 —— 不留一个空的「开发者」标题。
+    -->
+    <PreferenceCategory
+        android:key="about_developer_category"
+        android:title="@string/about_developer" />
 
     <!-- 免责声明 -->
     <PreferenceCategory android:title="@string/about_disclaimer" />

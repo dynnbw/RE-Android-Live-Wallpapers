@@ -1,35 +1,31 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!-- 
-/*
-* Copyright (C) 2008 The Android Open Source Project
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
- -->
+<!--
+    Copyright (C) 2026 The Reborn Android Live Wallpapers authors
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
 
 <resources>
     <string name="about_app_info">應用信息</string>
-    <string name="about_author">作者</string>
-    <string name="about_author_detail">念.</string>
     <string name="about_bilibili">Bilibili主頁</string>
     <string name="about_bilibili_url">https://space.bilibili.com/470023065</string>
     <string name="about_developer">開發者</string>
     <string name="about_disclaimer">免責聲明</string>
     <string name="about_disclaimer_detail">本項目依 Apache License 2.0 發布。部分內容基於他人作品，其權利歸各自所有者所有。</string>
     <string name="about_disclaimer_title">授權與歸屬</string>
-    <string name="about_email">郵箱</string>
     <string name="about_email_address">3471348199@qq.com</string>
     <string name="about_email_address_alt">xujiekai508@gmail.com</string>
+    <string name="about_email_gmail">Gmail 郵箱</string>
+    <string name="about_email_qq">QQ 郵箱</string>
     <string name="about_feedback">反饋</string>
     <string name="about_feedback_contact">反饋請通過上述聯繫方式</string>
     <string name="about_links">鏈接與聯繫方式</string>

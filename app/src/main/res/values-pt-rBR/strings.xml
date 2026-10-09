@@ -12,24 +12,20 @@
     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
     See the License for the specific language governing permissions and
     limitations under the License.
-
-    本文件是本项目自己的译文，不是 AOSP 派生 —— 带 AOSP 版权头的是另外几个语言文件。
-
 -->
 
 <resources>
     <string name="about_app_info">Informações do Aplicativo</string>
-    <string name="about_author">Autor</string>
-    <string name="about_author_detail">念. e colaboradores</string>
     <string name="about_bilibili">Bilibili</string>
     <string name="about_bilibili_url">https://space.bilibili.com/470023065</string>
     <string name="about_developer">Desenvolvedor</string>
     <string name="about_disclaimer">Aviso Legal</string>
     <string name="about_disclaimer_detail">Publicado sob a licença Apache 2.0. Algumas partes deste produto são baseadas no trabalho de outros; os direitos permanecem com seus respectivos titulares.</string>
     <string name="about_disclaimer_title">Licença e atribuição</string>
-    <string name="about_email">E-mail</string>
     <string name="about_email_address">3471348199@qq.com</string>
     <string name="about_email_address_alt">xujiekai508@gmail.com</string>
+    <string name="about_email_gmail">Gmail</string>
+    <string name="about_email_qq">E-mail do QQ</string>
     <string name="about_feedback">Feedback</string>
     <string name="about_feedback_contact">Para feedback, use as informações de contato acima.</string>
     <string name="about_links">Links e Contato</string>

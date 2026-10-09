@@ -8,12 +8,9 @@
 规则（都是约定的，不是猜的）：
   * 顺序按 `name=` 的字母序（排序键用的是键名，所以 13 个文件顺序天然一致）。
   * 每个键在**默认文件**里的前置注释会跟着它走；每个语言都镜像同一批注释行。
-  * 缺翻译的键：
-      - 文件**有版权头**（＝AOSP 译文）→ 从 `docs/OriginalCode/**/res/values-<语言>/`
-        里找原版译文补齐；
-      - 文件**没有版权头**（＝我们自己加的）→ 留一行 `<!-- 未翻译: 键 -->` 占位，
-        运行时照旧回退到英文（行为不变），行数也不会错开。
-  * 版权头原样保留。
+  * 缺翻译的键：留一行 `<!-- 未翻译: 键 -->` 占位，运行时照旧回退到英文（行为不变），
+    行数也不会错开。
+  * 版权头一律重新生成本项目那一份（13 个文件统一，见 OWN_HEADER）。
   * 值里的换行与缩进会被收成一行 —— Android 编译时本来就会折叠 XML 里的空白，
     所以字符串本身不变（已确认没有 `xml:space` 也没有引号包裹的值）。
 
@@ -30,7 +27,6 @@ import sys
 
 RES = "app/src/main/res"
 DEFAULT = RES + "/values/strings.xml"
-ORIGINALS = "docs/OriginalCode/**/res/values-%s/strings.xml"
 
 # 全仓库搜不到任何引用的键（Java 的 R.string. / getIdentifier、res 的 @string/、
 # assets 里 layout.json 的裸名字都算引用）。**这 35 个是逐条查过的**，整理时删掉。
@@ -101,16 +97,6 @@ def normalise(value):
     return " ".join(value.split())
 
 
-def original_value(locale, key):
-    """从原版源码里找这个语言下的译法。"""
-    for path in glob.glob(ORIGINALS % locale):
-        m = re.search(r'<string name="%s">(.*?)</string>' % re.escape(key),
-                      read(path), re.S)
-        if m:
-            return normalise(m.group(1))
-    return None
-
-
 # 只有"键名本身说不清"的键才配注释 —— 原来那些是给分组用的，按字母排完就全错位了。
 KEEP_COMMENTS = {
     "grid_feedback_title": [
@@ -126,9 +112,12 @@ DEFAULT_ONLY = {
     "openweather_api_key",   # 一个占位 token，本来就该照抄
 }
 
-# 本项目自己的版权头。这 8 个语言文件的内容是我们自己翻译的（不是 AOSP 派生），
-# 所以挂本项目的 Apache 头；AOSP 派生的那 5 个文件保留它们原来的头。
-# **行数与 AOSP 那份保持一致**，13 个文件才能逐行对齐。
+# 本项目自己的版权头，13 个语言文件**统一**用它。
+#
+# 早先这里是两分的：我们自己译的 8 个语言挂这个头，AOSP 派生的 5 个
+# （values / ko / zh-rCN / zh-rHK / zh-rTW）保留它们原来的头，`HEADER_END` 就是那个判据。
+# 现在那 5 个文件里已不含 AOSP 译文（逐条与原版比对，逐字相同者为 0 条），所以统一。
+# 项目级的署名仍在根目录 NOTICE.md（那里写明产品部分派生自 AOSP）。
 OWN_HEADER = [
     "Copyright (C) 2026 The Reborn Android Live Wallpapers authors",
     "",
@@ -143,13 +132,15 @@ OWN_HEADER = [
     "WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.",
     "See the License for the specific language governing permissions and",
     "limitations under the License.",
-    "",
-    "本文件是本项目自己的译文，不是 AOSP 派生 —— 带 AOSP 版权头的是另外几个语言文件。",
 ]
+
+# 版权头总行数（含首尾的 <!-- 与 -->）。13 个文件逐行对齐全靠它是个定值 ——
+# 早先这个数是**从默认文件的 AOSP 头量出来的**，默认文件一改就没有头可量、会生成空注释。
+HEADER_LINES = len(OWN_HEADER) + 2
 
 
 def placeholder_header(line_count):
-    """生成一个与 AOSP 版权头**行数相同**的本项目版权头。"""
+    """生成本项目版权头。行数固定（{@link HEADER_LINES}），13 个文件靠它逐行对齐。"""
     body = list(OWN_HEADER)
     while len(body) + 2 < line_count:          # 2 = 首尾那两行 <!-- 与 -->
         body.append("")
@@ -160,14 +151,11 @@ def placeholder_header(line_count):
     return "\n".join(lines)
 
 
-def build(locale, canonical, header, entries, missing_policy, header_lines):
+def build(locale, canonical, entries):
     """按 canonical 顺序拼出这个语言的新文件内容。"""
     have = {k: v for k, v, _ in entries}
-    if header:
-        head = header.rstrip("\r\n")
-    else:
-        head = placeholder_header(header_lines)
-    out = [head, ""]
+    # 版权头一律重新生成本项目那一份 —— 不再保留文件里原有的头
+    out = [placeholder_header(HEADER_LINES), ""]
     out.append('<resources>')
     for key, comment in canonical:
         for line in comment:
@@ -178,14 +166,8 @@ def build(locale, canonical, header, entries, missing_policy, header_lines):
             continue
         value = have.get(key)
         if value is None:
-            if missing_policy == "original":
-                value = original_value(locale, key)
-                if value is None:
-                    out.append("    <!-- 未翻译: %s -->" % key)
-                    continue
-            else:
-                out.append("    <!-- 未翻译: %s -->" % key)
-                continue
+            out.append("    <!-- 未翻译: %s -->" % key)
+            continue
         out.append('    <string name="%s">%s</string>' % (key, value))
     out.append("</resources>")
     return "\n".join(out) + "\n"
@@ -195,8 +177,7 @@ def main():
     write = "--write" in sys.argv
 
     header, entries, other = parse(DEFAULT)
-    header_lines = len(header.rstrip("\r\n").split("\n")) if header else 0
-    print("默认版权头 %d 行" % header_lines)
+    print("版权头：本项目那一份，%d 行（原来是按默认文件的 AOSP 头量出来的）" % HEADER_LINES)
     # 注释**默认丢弃**：原来的注释是"分段标题"式的（`<!-- Polar clock: palette name -->`），
     # 按字母排序之后它们要么指向了空、要么挂到了不相干的键上 —— 留着只会误导。
     # 只有"键名本身说不清"的才在 KEEP_COMMENTS 里点名保留。
@@ -218,24 +199,15 @@ def main():
         if own_other:
             print("  %-14s 另有非 string 元素 %s（整理时会丢弃，需你确认）"
                   % (locale, set(own_other)))
-        if locale == "values":
-            policy = "have"
-        else:
-            policy = "original" if own_header else "placeholder"
-        missing = [k for k, _ in canonical if k not in have]
-        filled = sum(1 for k in missing if policy == "original" and original_value(loc_tag, k))
-        print("  %-14s 有 %3d 键，缺 %2d，策略=%s%s"
-              % (locale, len(have),
-                 len(missing) if policy != "have" else 0,
-                 {"have": "基准", "original": "从原版补齐", "placeholder": "注释占位"}[policy],
-                 ("（其中 %d 个原版里没有，仍占位）" % (len(missing) - filled))
-                 if policy == "original" and filled < len(missing) else ""))
+        missing = 0 if locale == "values" else len(
+            [k for k, _ in canonical if k not in have])
+        print("  %-14s 有 %3d 键，缺 %2d%s"
+              % (locale, len(have), missing,
+                 "" if locale == "values" else "（缺的留注释占位，运行时回退英文）"))
 
         if not write:
             continue
-        text = build(loc_tag, canonical, own_header, own,
-                     "original" if policy == "original" else "placeholder",
-                     header_lines)
+        text = build(loc_tag, canonical, own)
         with io.open(path, "w", encoding="utf-8", newline="") as f:
             f.write(text)
 
