@@ -69,7 +69,6 @@
     <string name="miui_permission_title">অনুমতি প্রয়োজন</string>
     <string name="no_browser_found">কোন ব্রাউজার পাওয়া যায়নি</string>
     <string name="no_email_found">কোন ইমেইল অ্যাপ পাওয়া যায়নি</string>
-    <!-- 沿用默认: openweather_api_key -->
     <string name="pref_apply_api_title">এপিআই এর জন্য আবেদন করুন</string>
     <string name="pref_fireworks_custom_background_summary">কাস্টম পটভূমি ছবি বাছতে ট্যাপ করুন</string>
     <string name="pref_fireworks_custom_background_title">কাস্টম পটভূমি ছবি</string>

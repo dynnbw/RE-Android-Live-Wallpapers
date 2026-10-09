@@ -109,7 +109,6 @@ KEEP_COMMENTS = {
 DEFAULT_ONLY = {
     "about_qq_url",          # 一个网址
     "grid_feedback_url",     # 一个网址
-    "openweather_api_key",   # 一个占位 token，本来就该照抄
 }
 
 # 本项目自己的版权头，13 个语言文件**统一**用它。

@@ -69,7 +69,6 @@
     <string name="miui_permission_title">अनुमति आवश्यक है</string>
     <string name="no_browser_found">कोई ब्राउज़र नहीं मिला</string>
     <string name="no_email_found">कोई ईमेल ऐप नहीं मिला</string>
-    <!-- 沿用默认: openweather_api_key -->
     <string name="pref_apply_api_title">एपीआई के लिए आवेदन करें</string>
     <string name="pref_fireworks_custom_background_summary">कस्टम पृष्ठभूमि छवि चुनने के लिए टैप करें</string>
     <string name="pref_fireworks_custom_background_title">कस्टम पृष्ठभूमि छवि</string>

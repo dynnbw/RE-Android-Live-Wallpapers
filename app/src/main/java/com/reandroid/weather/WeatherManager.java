@@ -14,8 +14,6 @@ import android.util.Log;
 import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
 
-import com.reandroid.wallpaper.R;
-
 import java.io.IOException;
 import java.util.Locale;
 import java.util.concurrent.Executors;
@@ -72,6 +70,7 @@ public class WeatherManager {
         }
         return true;
     }
+
     private static final String KEY_LAST_CONDITION = "last_condition";
     private static final String KEY_LAST_IS_NIGHT = "last_is_night";
     private static final String KEY_LAST_TEMP_MIN = "last_temp_min";
@@ -101,6 +100,7 @@ public class WeatherManager {
      * 否则失败的源会被无限重试。
      */
     private volatile long mLastAttemptMs;
+
     private static final long MIN_ATTEMPT_INTERVAL_MS = 60000L;
 
     private volatile WeatherState mLastState;
@@ -171,8 +171,8 @@ public class WeatherManager {
         }
         boolean isNight = mPrefs.getBoolean(KEY_OVERRIDE_IS_NIGHT, false);
         long update = mPrefs.getLong(KEY_OVERRIDE_UPDATE, System.currentTimeMillis() / 1000L);
-        return new WeatherState(WeatherCondition.values()[ordinal], isNight,
-                0.0f, 0.0f, 0L, 0L, update);
+        return new WeatherState(
+                WeatherCondition.values()[ordinal], isNight, 0.0f, 0.0f, 0L, 0L, update);
     }
 
     public synchronized void start() {
@@ -202,7 +202,7 @@ public class WeatherManager {
     public synchronized void refreshIfStale() {
         long nowMs = System.currentTimeMillis();
         if (nowMs - mLastAttemptMs < MIN_ATTEMPT_INTERVAL_MS) {
-            return;   // 刚试过（哪怕刚失败），别被每帧问成洪水
+            return; // 刚试过（哪怕刚失败），别被每帧问成洪水
         }
         WeatherState state = getLastState();
         if (state != null && !isStale(state.updateUtc, nowMs / 1000L, getUpdateMinutes())) {
@@ -363,7 +363,8 @@ public class WeatherManager {
                 lon = stored[1];
             }
         }
-        mPrefs.edit().putString(KEY_LAST_LAT, String.format(Locale.US, "%.6f", lat))
+        mPrefs.edit()
+                .putString(KEY_LAST_LAT, String.format(Locale.US, "%.6f", lat))
                 .putString(KEY_LAST_LON, String.format(Locale.US, "%.6f", lon))
                 .apply();
 
@@ -403,20 +404,24 @@ public class WeatherManager {
         return new OpenMeteoSource();
     }
 
+    /** 文档里那串占位符。用户可能原样粘进来，那不是密钥。 */
+    private static final String API_KEY_PLACEHOLDER = "YOUR_OPENWEATHER_API_KEY";
+
     /**
-     * API 密钥：先看用户在设置里填的，再看资源里的占位值。
+     * API 密钥：没有就返回空串，交给 {@link OpenWeatherSource} 去报错。
      *
-     * <p>占位串的比对很脆（俄语那份翻译成"ВАШ_КЛЮЧ_OPENWEATHER_API"，就绕过了下面两个
-     * 哨兵），所以这里只当"没配"处理、交给 {@link OpenWeatherSource} 抛，
-     * 不再靠它决定要不要发请求。
+     * <p>**不要**把这个判断改成"读一个字符串资源、再拿英文子串去认"。那类资源是可翻译的，
+     * 一旦某份译文把占位符译掉（俄语那份曾译成 "ВАШ_КЛЮЧ_OPENWEATHER_API"），`contains`
+     * 就落空，占位串会被当成真密钥发出去 —— 而"pref 为空 → 读占位串 → 命中哨兵 → 返回空串"
+     * 本来就等于直接返回空串，绕那一圈只会把哨兵暴露给译文。所以占位符在这里当常量比对，
+     * 与语言无关，那条例外也不需要再以字符串资源的形式存在。
      */
     private String resolveApiKey() {
         String apiKey = mPrefs.getString("openweather_api_key", "");
         if (apiKey == null || apiKey.trim().isEmpty()) {
-            apiKey = mContext.getString(R.string.openweather_api_key);
+            return "";
         }
-        if (apiKey != null && (apiKey.contains("YOUR_API_KEY")
-                || apiKey.contains("YOUR_OPENWEATHER_API_KEY"))) {
+        if (apiKey.contains(API_KEY_PLACEHOLDER) || apiKey.contains("YOUR_API_KEY")) {
             return "";
         }
         return apiKey;
@@ -450,15 +455,18 @@ public class WeatherManager {
     }
 
     private boolean isNetworkAvailable() {
-        ConnectivityManager cm = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+        ConnectivityManager cm =
+                (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
         if (cm == null) return false;
         NetworkInfo info = cm.getActiveNetworkInfo();
         return info != null && info.isConnected();
     }
 
     private Location getBestLastKnownLocation() {
-        int fine = ContextCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION);
-        int coarse = ContextCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_COARSE_LOCATION);
+        int fine = ContextCompat.checkSelfPermission(
+                mContext, Manifest.permission.ACCESS_FINE_LOCATION);
+        int coarse = ContextCompat.checkSelfPermission(
+                mContext, Manifest.permission.ACCESS_COARSE_LOCATION);
         if (fine != android.content.pm.PackageManager.PERMISSION_GRANTED
                 && coarse != android.content.pm.PackageManager.PERMISSION_GRANTED) {
             Log.w(TAG, "Location permission not granted");
@@ -492,7 +500,7 @@ public class WeatherManager {
             }
             double lat = Double.parseDouble(latStr);
             double lon = Double.parseDouble(lonStr);
-            return new double[] { lat, lon };
+            return new double[] {lat, lon};
         } catch (Exception e) {
             return null;
         }

@@ -69,7 +69,6 @@
     <string name="miui_permission_title">Permiso requerido</string>
     <string name="no_browser_found">No se encontró ningún navegador</string>
     <string name="no_email_found">No se encontró ninguna aplicación de correo</string>
-    <!-- 沿用默认: openweather_api_key -->
     <string name="pref_apply_api_title">Solicitar API</string>
     <string name="pref_fireworks_custom_background_summary">Toca para elegir una imagen de fondo</string>
     <string name="pref_fireworks_custom_background_title">Imagen de fondo personalizada</string>

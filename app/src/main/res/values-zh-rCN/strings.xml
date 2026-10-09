@@ -69,7 +69,6 @@
     <string name="miui_permission_title">需要授予权限</string>
     <string name="no_browser_found">未找到浏览器</string>
     <string name="no_email_found">未找到邮件应用</string>
-    <!-- 沿用默认: openweather_api_key -->
     <string name="pref_apply_api_title">申请API</string>
     <string name="pref_fireworks_custom_background_summary">点击选择自定义背景图片</string>
     <string name="pref_fireworks_custom_background_title">自定义背景图片</string>
