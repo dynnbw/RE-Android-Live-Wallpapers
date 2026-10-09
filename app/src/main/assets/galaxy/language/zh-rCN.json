@@ -8,7 +8,7 @@
   "pref_galaxy_use_light2": "使用 light2 光晕贴图",
   "galaxy_arm_count": "旋臂数量",
   "galaxy_arm_offset": "旋臂偏移（弧度×1000）",
-  "galaxy_pitch_angle_deg": "螺距角（度×10）",
+  "galaxy_pitch_angle_deg": "旋臂倾角（度×10）",
   "galaxy_inner_scatter": "内部散射（×100）",
   "galaxy_outer_scatter": "外部散射（×100）",
   "galaxy_turbulence": "湍流强度（×100）",

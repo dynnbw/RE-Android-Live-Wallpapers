@@ -6,7 +6,7 @@
   "galaxy_particle_alpha": "パーティクルの透明度",
   "galaxy_precise_calc": "精密対数螺旋計算",
   "pref_galaxy_use_light2": "light2グローテクスチャを使用",
-  "galaxy_arm_count": "旋腕の数",
+  "galaxy_arm_count": "渦状腕の数",
   "galaxy_arm_offset": "腕のオフセット（ラジアン×1000）",
   "galaxy_pitch_angle_deg": "ピッチ角（度×10）",
   "galaxy_inner_scatter": "内部散乱（×100）",

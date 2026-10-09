@@ -90,7 +90,7 @@
     <string name="pref_open_wallpaper_picker">設定壁紙</string>
     <string name="pref_open_wallpaper_picker_failed">不支持壁紙預覽</string>
     <string name="pref_openweather_api_key_title">OpenWeather API 密鑰</string>
-    <string name="pref_use_vulkan_summary">實驗性功能：使用 Vulkan 渲染器代替 OpenGL ES。不夠穩定，部分裝置可能渲染不出畫面。重新套用牆紙生效。</string>
+    <string name="pref_use_vulkan_summary">實驗性功能：使用 Vulkan 渲染器代替 OpenGL ES。不夠穩定，部分裝置可能渲染不出畫面。重新套用牆紙後生效。</string>
     <string name="pref_use_vulkan_title">Vulkan 渲染器</string>
     <string name="pref_weather_api_guide_common">六、常見問題\n配置後無法獲取天氣：\n- 檢查 Key 是否複製完整，不要帶多餘空格或換行符。\n- 新生成的 APIKey 可能需要 10～30 分鐘才能生效，耐心等待後再測試。\n- 確認應用已開啟定位權限。</string>
     <string name="pref_weather_api_guide_illustration">API 教程插圖</string>
