@@ -3,12 +3,15 @@ package com.reandroid.settings;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.drawable.BitmapDrawable;
+import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.core.graphics.drawable.RoundedBitmapDrawable;
+import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceCategory;
 import androidx.preference.PreferenceFragmentCompat;
@@ -20,6 +23,12 @@ import com.reandroid.wallpaper.R;
 public class AboutFragment extends PreferenceFragmentCompat {
 
     private static final String KEY_DEVELOPER_CATEGORY = "about_developer_category";
+
+    /**
+     * 头像圆角半径占位图短边的比例。取 0.18 是有意的：GitHub 自己的头像就是**圆角方形**，
+     * 不是正圆 —— 想改成正圆把 {@link #roundedAvatar} 里的半径换成 {@code setCircular(true)} 即可。
+     */
+    private static final float AVATAR_CORNER_RATIO = 0.18f;
 
     @Override
     public void onCreatePreferences(@Nullable Bundle savedInstanceState, @Nullable String rootKey) {
@@ -138,10 +147,24 @@ public class AboutFragment extends PreferenceFragmentCompat {
         AvatarLoader.load(requireContext(), contributor.avatarUrl, bitmap -> {
             // 头像回来时页面可能已经走了
             if (isAdded()) {
-                row.setIcon(new BitmapDrawable(getResources(), bitmap));
+                row.setIcon(roundedAvatar(bitmap));
             }
         });
         return row;
+    }
+
+    /**
+     * 头像裁成圆角方形 —— 与 GitHub 自己的头像观感一致（不是正圆，见 {@link #AVATAR_CORNER_RATIO}）。
+     *
+     * <p>圆角必须做进 drawable：{@code Preference} 的图标是**缩放后**画进固定尺寸的框里的，
+     * 给方形位图加外边距或背景都改不了它的直角。半径按位图短边取比例，换密度、换尺寸都不变形。
+     */
+    private Drawable roundedAvatar(Bitmap bitmap) {
+        RoundedBitmapDrawable rounded = RoundedBitmapDrawableFactory.create(getResources(), bitmap);
+        rounded.setAntiAlias(true); // 不开的话圆角处是锯齿
+        rounded.setCornerRadius(
+                Math.min(bitmap.getWidth(), bitmap.getHeight()) * AVATAR_CORNER_RATIO);
+        return rounded;
     }
 
     // 保持Material2风格，无需包裹overlay
