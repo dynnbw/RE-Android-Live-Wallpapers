@@ -18,6 +18,7 @@
     <string name="about_app_info">アプリ情報</string>
     <string name="about_bilibili">Bilibiliホーム</string>
     <string name="about_bilibili_url">https://space.bilibili.com/470023065</string>
+    <string name="about_check_nightly">更新を確認（ナイトリービルド）</string>
     <string name="about_developer">開発者</string>
     <string name="about_disclaimer">免責事項</string>
     <string name="about_disclaimer_detail">Apache License 2.0 の下で公開されています。本製品の一部は他者の作品に基づいており、その権利はそれぞれの権利者に帰属します。</string>

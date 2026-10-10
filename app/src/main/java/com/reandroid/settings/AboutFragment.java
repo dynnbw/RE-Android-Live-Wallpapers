@@ -15,14 +15,21 @@ import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceCategory;
 import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.PreferenceScreen;
 
+import com.reandroid.update.NightlyChecker;
+import com.reandroid.update.NightlyRelease;
 import com.reandroid.update.UpdateHelper;
+import com.reandroid.update.VersionInfo;
 import com.reandroid.wallpaper.BuildConfig;
 import com.reandroid.wallpaper.R;
+
+import java.util.TimeZone;
 
 public class AboutFragment extends PreferenceFragmentCompat {
 
     private static final String KEY_DEVELOPER_CATEGORY = "about_developer_category";
+    private static final String KEY_NIGHTLY_UPDATE = "about_check_nightly";
 
     /**
      * 头像圆角半径占位图短边的比例。取 0.18 是有意的：GitHub 自己的头像就是**圆角方形**，
@@ -98,6 +105,72 @@ public class AboutFragment extends PreferenceFragmentCompat {
             });
         }
         loadContributors();
+        setupNightlyUpdate();
+    }
+
+    /**
+     * 夜间通道（自动构建）的入口：**只在 nightly 变体里留着**。
+     *
+     * <p>正式版里去掉这一行不是藏功能，是它本来就做不到：夜间包是**另一个应用**
+     * （applicationId 带 {@code .nightly}），正式版既更新不成它，点了也只会把人引到一个
+     * 需要单独安装的包上。所以这一行只对已经装着夜间包的人有意义。
+     */
+    private void setupNightlyUpdate() {
+        Preference nightly = findPreference(KEY_NIGHTLY_UPDATE);
+        if (nightly == null) {
+            return;
+        }
+        if (!BuildConfig.IS_NIGHTLY) {
+            PreferenceScreen screen = getPreferenceScreen();
+            if (screen != null) {
+                screen.removePreference(nightly);
+            }
+            return;
+        }
+        // 摘要显示这个包是什么时候构建的 —— 与 release 的构建时间同源，好对照
+        nightly.setSummary(getString(
+                R.string.app_version_summary,
+                NightlyRelease.versionNameFor(BuildConfig.BUILD_TIME_MS, TimeZone.getDefault())));
+        nightly.setOnPreferenceClickListener(pref -> {
+            checkNightly();
+            return true;
+        });
+    }
+
+    private void checkNightly() {
+        NightlyChecker.check(new NightlyChecker.Callback() {
+            @Override
+            public void onUpdateAvailable(VersionInfo info) {
+                if (isAdded()) {
+                    UpdateHelper.showUpdateDialog(AboutFragment.this, info);
+                }
+            }
+
+            @Override
+            public void onUpToDate() {
+                if (!isAdded()) {
+                    return;
+                }
+                // 本地这个版本名就是本包的构建时间，正是刚才比对用的那个
+                Toast.makeText(
+                                requireContext(),
+                                getString(R.string.up_to_date_message, BuildConfig.VERSION_NAME),
+                                Toast.LENGTH_SHORT)
+                        .show();
+            }
+
+            @Override
+            public void onError(String message) {
+                if (!isAdded()) {
+                    return;
+                }
+                Toast.makeText(
+                                requireContext(),
+                                getString(R.string.update_check_failed, message),
+                                Toast.LENGTH_SHORT)
+                        .show();
+            }
+        });
     }
 
     /**

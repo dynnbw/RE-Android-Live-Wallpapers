@@ -18,6 +18,7 @@
     <string name="about_app_info">অ্যাপ তথ্য</string>
     <string name="about_bilibili">বিলিবিলি</string>
     <string name="about_bilibili_url">https://space.bilibili.com/470023065</string>
+    <string name="about_check_nightly">আপডেট দেখুন (নাইটলি)</string>
     <string name="about_developer">ডেভেলপার</string>
     <string name="about_disclaimer">দাবিত্যাগ</string>
     <string name="about_disclaimer_detail">Apache License 2.0-এর অধীনে প্রকাশিত। এই পণ্যের কিছু অংশ অন্যের কাজের উপর ভিত্তি করে তৈরি, যার অধিকার সংশ্লিষ্ট মালিকদের কাছে রয়েছে।</string>

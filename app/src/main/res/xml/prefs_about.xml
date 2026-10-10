@@ -18,6 +18,15 @@
         android:key="about_check_update" />
 
     <!--
+        夜间通道（自动构建）的入口。只在 nightly 变体里留着 —— 正式版里由
+        AboutFragment 把这一行移除：那是另一个包，正式版既更新不成它、也不该把人引过去。
+    -->
+    <Preference
+        android:icon="@drawable/ic_update"
+        android:title="@string/about_check_nightly"
+        android:key="about_check_nightly" />
+
+    <!--
         跳转链接与联系方式：**不显示地址明文**（页面更整洁）。地址本身仍留在语言包里 ——
         点按动作要读它们（见 AboutFragment），只是不再铺在页面上。
     -->

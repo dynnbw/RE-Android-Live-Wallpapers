@@ -18,6 +18,7 @@
     <string name="about_app_info">Informations sur l’application</string>
     <string name="about_bilibili">Bilibili</string>
     <string name="about_bilibili_url">https://space.bilibili.com/470023065</string>
+    <string name="about_check_nightly">Rechercher des mises à jour (nightly)</string>
     <string name="about_developer">Développeur</string>
     <string name="about_disclaimer">Avertissement légal</string>
     <string name="about_disclaimer_detail">Publié sous la licence Apache 2.0. Certaines parties de ce produit sont basées sur le travail d\'autrui ; les droits correspondants restent à leurs titulaires respectifs.</string>

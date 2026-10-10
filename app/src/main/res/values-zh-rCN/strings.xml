@@ -18,6 +18,7 @@
     <string name="about_app_info">应用信息</string>
     <string name="about_bilibili">Bilibili主页</string>
     <string name="about_bilibili_url">https://space.bilibili.com/470023065</string>
+    <string name="about_check_nightly">检查更新（自动构建）</string>
     <string name="about_developer">开发者</string>
     <string name="about_disclaimer">免责声明</string>
     <string name="about_disclaimer_detail">本项目依 Apache License 2.0 发布。部分内容基于他人作品，其权利归各自所有者所有。</string>

@@ -18,6 +18,7 @@
     <string name="about_app_info">ऐप जानकारी</string>
     <string name="about_bilibili">बिलिबिली</string>
     <string name="about_bilibili_url">https://space.bilibili.com/470023065</string>
+    <string name="about_check_nightly">अपडेट जाँचें (नाइटली)</string>
     <string name="about_developer">डेवलपर</string>
     <string name="about_disclaimer">अस्वीकरण</string>
     <string name="about_disclaimer_detail">Apache License 2.0 के अंतर्गत जारी। इस उत्पाद के कुछ हिस्से दूसरों के कार्यों पर आधारित हैं, जिनके अधिकार उनके संबंधित स्वामियों के पास हैं।</string>

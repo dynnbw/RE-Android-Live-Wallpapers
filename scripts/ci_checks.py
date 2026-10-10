@@ -9,7 +9,7 @@ CI 上只跑这些：**不构建**（不装 Android SDK / NDK、不跑 Gradle）
   2. `layout.json` 里的每个设置项，`language/default.json` 里有没有对应条目
   3. `info.json` 的 `label`（`@string/x`）在 `res/values*/strings.xml` 里有没有定义
   4. 着色器能不能编译、名字成对的 vs/fs 能不能链接
-  5. 有没有人把签名文件提交进来
+  5. 有没有人把签名文件提交进来（`debug.keystore` 例外，见 NIGHTLY_KEYSTORE）
 
 本地跑：`python scripts/ci_checks.py`（Windows 上会自己去 VulkanSDK 目录里找
 glslangValidator，与 `GrassShaderCompileTest` 同一套找法；找不到就跳过着色器那一步）。
@@ -27,6 +27,14 @@ import xml.etree.ElementTree as ET
 
 ASSETS = "app/src/main/assets"
 RES = "app/src/main/res"
+
+# 唯一允许提交的签名文件：夜间通道用的**调试**密钥库。
+#
+# 调试密钥按约定就是公开的（别名/密码固定为 androiddebugkey / android），而且它只用于
+# 包名带 .nightly 的那个包 —— 就算泄露也签不出能覆盖正式版的更新（正式签名另有一把）。
+# CI 必须用一把**固定的**密钥：runner 每次现生成的话密钥都不同，
+# 夜间包互相覆盖不了（INSTALL_FAILED_UPDATE_INCOMPATIBLE）。
+NIGHTLY_KEYSTORE = "debug.keystore"
 
 problems = []
 
@@ -289,8 +297,10 @@ def check_no_secrets():
                              text=True).stdout.split()
     for path in tracked:
         if path.endswith((".jks", ".keystore")):
+            if path == NIGHTLY_KEYSTORE:
+                continue
             fail("secret", "签名文件被提交进来了：%s" % path)
-    print("签名文件：%d 个被跟踪的文件" % len(tracked))
+    print("签名文件：%d 个被跟踪的文件（放行 %s）" % (len(tracked), NIGHTLY_KEYSTORE))
 
 
 def main():

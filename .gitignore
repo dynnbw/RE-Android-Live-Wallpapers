@@ -29,6 +29,9 @@ local.properties
 gradle.properties
 *.jks
 *.keystore
+# 例外：夜间通道的调试密钥库要提交进仓库（公开密钥，只签包名带 .nightly 的包）。
+# 见 app/build.gradle 的 signingConfigs.debug 与 scripts/ci_checks.py 的 NIGHTLY_KEYSTORE。
+!debug.keystore
 
 # Logs and temp files
 *.log

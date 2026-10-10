@@ -17,7 +17,18 @@ def appVersionCode = (versionProps.getProperty('APP_VERSION_CODE', '1') as Strin
 def appVersionName = versionProps.getProperty('APP_VERSION_NAME', '1.0') as String
 
 def requestedTasks = gradle.startParameter.taskNames.collect { it.toLowerCase() }
-def isDebugVersionBuildRequested = requestedTasks.any { it.contains('debug') } && !requestedTasks.any { it.contains('release') }
+def releaseRequested = requestedTasks.any { it.contains('release') }
+def isNightlyBuildRequested = requestedTasks.any { it.contains('nightly') } && !releaseRequested
+
+/**
+ * 开发向的构建（debug / nightly）：保留隐藏壁纸、版本名带构建时间戳。
+ *
+ * <p>看的是**命令行任务名**而不是变体 —— 因为 `ignoreAssetsPattern` 只能全局设（见下），
+ * 没法按变体分别决定。代价是 `./gradlew assemble`、`build` 这类不带 debug/release 字样的
+ * 调用会被当成正式包；这是有意的，失败方向安全：宁可少两张开发壁纸，也不能让隐藏素材漏进正式包。
+ */
+def isDevBuildRequested = (isNightlyBuildRequested || requestedTasks.any { it.contains('debug') }) &&
+        !releaseRequested
 
 /**
  * 隐藏壁纸（assets/<id>/info.json 里 "hidden": true）不编入正式发布包。
@@ -41,17 +52,17 @@ file('src/main/assets').listFiles()?.each { dir ->
     }
 }
 
-// 同时请求 debug 与 release 时（例如 `./gradlew assemble`）只能二选一，
-// 这里按正式包处理并明确告知，避免 debug 少素材时一头雾水。
-if (requestedTasks.any { it.contains('release') } && requestedTasks.any { it.contains('debug') }) {
-    println("[assets] 本次构建同时包含 debug 与 release，按正式包处理，" +
+// 同时请求开发包与 release 时（例如 `./gradlew assemble`）只能二选一，
+// 这里按正式包处理并明确告知，避免开发包少素材时一头雾水。
+if (releaseRequested && requestedTasks.any { it.contains('debug') || it.contains('nightly') }) {
+    println("[assets] 本次构建同时包含开发包(debug/nightly)与 release，按正式包处理，" +
             "隐藏壁纸不编入：" + hiddenAssetDirs +
-            "  仅需 debug 时请单独执行 assembleDebug")
+            "  单独出开发包请执行 assembleDebug / assembleNightly")
 }
 def debugTimestamp = new Date().format('yyyy.MM.dd.HH.mm', TimeZone.getTimeZone('Asia/Shanghai'))
-def resolvedAppVersionName = isDebugVersionBuildRequested
-    ? "DeBug${debugTimestamp}"
-    : appVersionName
+def resolvedAppVersionName = !isDevBuildRequested
+        ? appVersionName
+        : (isNightlyBuildRequested ? "Nightly${debugTimestamp}" : "DeBug${debugTimestamp}")
 
 def bumpAppVersion = {
     Properties props = new Properties()
@@ -105,12 +116,12 @@ android {
          * 为什么用全局设置而不是按变体：AGP 8.7 的 Variant.androidResources
          * 没有暴露 ignoreAssetsPattern（实测报 MissingPropertyException），只能全局设。
          *
-         * 判定取"纯 debug 构建才保留"，其余一律过滤 —— 失败方向要安全：
-         * 万一判断错，宁可 debug 包少两个开发用壁纸，也不能让隐藏素材漏进正式包。
+         * 判定取"开发向构建（debug / nightly）才保留"，其余一律过滤 —— 失败方向要安全：
+         * 万一判断错，宁可开发包少两个开发用壁纸，也不能让隐藏素材漏进正式包。
          *
          * <default> 是 AAPT 的占位符（内置默认忽略规则），后面直接写目录名即为"忽略"。
          */
-        ignoreAssetsPattern = (isDebugVersionBuildRequested || hiddenAssetDirs.isEmpty())
+        ignoreAssetsPattern = (isDevBuildRequested || hiddenAssetDirs.isEmpty())
                 ? '<default>'
                 : ('<default>:' + hiddenAssetDirs.join(':'))
     }
@@ -125,6 +136,16 @@ android {
         ndk {
             abiFilters 'arm64-v8a', 'armeabi-v7a', 'x86', 'x86_64'
         }
+
+        /*
+         * 夜间通道的两块信息。
+         *
+         * BUILD_TIME_MS —— 这次构建的时刻。夜间版的检查更新拿它和 release 的 published_at
+         *   比大小（不用 versionCode：夜间包与正式包同号，比不出先后）。配置期求值。
+         * IS_NIGHTLY —— 只有 nightly 变体会覆盖成 true；关于页据此决定显不显示那个入口。
+         */
+        buildConfigField "long", "BUILD_TIME_MS", "${System.currentTimeMillis()}L"
+        buildConfigField "boolean", "IS_NIGHTLY", "false"
     }
 
     compileOptions {
@@ -149,6 +170,24 @@ android {
             keyAlias project.hasProperty('RELEASE_KEY_ALIAS') ? project.property('RELEASE_KEY_ALIAS') : ''
             keyPassword project.hasProperty('RELEASE_KEY_PASSWORD') ? project.property('RELEASE_KEY_PASSWORD') : ''
         }
+
+        /*
+         * 夜间通道的调试签名 —— **提交进仓库**的固定密钥。
+         *
+         * 为什么要提交：CI 的 runner 每次都是新机器，`~/.android/debug.keystore` 不存在时
+         * 会**现生成一把随机密钥**，于是今天的夜间包和明天签名不同、互相覆盖不了
+         * （INSTALL_FAILED_UPDATE_INCOMPATIBLE，只能先卸载 → 设置与壁纸绑定全丢）。
+         *
+         * 为什么可以公开：调试密钥按约定就是公开的（别名/密码固定 androiddebugkey / android），
+         * 而且它只签**包名带 .nightly** 的那个包 —— 泄露也签不出能覆盖正式版的更新
+         * （正式签名是上面那把自己保管的）。仓库里唯一放行的签名文件就是它，见 ci_checks。
+         */
+        debug {
+            storeFile rootProject.file('debug.keystore')
+            storePassword 'android'
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
+        }
     }
 
     buildTypes {
@@ -160,6 +199,20 @@ android {
         debug {
             // 使用与 release 相同的 signingConfig（可改为单独的 debug keystore）
             signingConfig signingConfigs.release
+        }
+        /*
+         * 每日构建通道：与正式版**并存**（独立包名），供测试者装当天的最新提交。
+         *
+         * initWith debug 继承 debuggable 等；但**签名必须显式覆盖** —— debug 那份刻意复用了
+         * release 签名（方便本地 debug 覆盖安装正式版），nightly 若继承它就能覆盖用户的正式安装。
+         * 这里先用 signingConfigs.debug（本机稳定）。接 CI 时要换成提交进仓库的那把调试密钥库：
+         * runner 每次现生成的话密钥都不同，夜间包互相覆盖不了（INSTALL_FAILED_UPDATE_INCOMPATIBLE）。
+         */
+        nightly {
+            initWith debug
+            applicationIdSuffix ".nightly"
+            signingConfig signingConfigs.debug
+            buildConfigField "boolean", "IS_NIGHTLY", "true"
         }
     }
 }

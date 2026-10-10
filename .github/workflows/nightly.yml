@@ -1,0 +1,117 @@
+name: nightly
+
+# 夜间构建：每晚（北京时间 03:07）看一眼主分支，**上次夜间包之后有新提交**才构建，
+# 构建出来发成 GitHub 的 prerelease，标签固定 `nightly`、内容每次覆盖。
+#
+# 为什么发成 prerelease：`/releases/latest` 天然排除预览版，所以正式通道
+# （应用内那个走 version.json 的检查更新）永远看不到夜间包，两条通道互不干扰。
+#
+# 为什么要装 NDK：`preBuild` 依赖 `buildVulkanNative`，而它用 `android.ndkDirectory`
+# 里的 ndk-build —— 版本必须与 app/build.gradle 里的 ndkVersion 一致。
+#
+# 签名：用**提交进仓库**的 debug.keystore（见 signingConfigs.debug），因此这里不需要任何
+# 密钥 secrets；runner 现生成的调试密钥每次都不同，夜间包会互相覆盖不了。
+
+on:
+  schedule:
+    # 每日 00:00 UTC = 北京时间 08:00。注意 **cron 一律按 UTC 算**，与仓库/用户时区无关。
+    # 整点也正是全球定时任务最挤的时刻，官方 runner 可能排队，晚几分钟属正常。
+    - cron: '0 0 * * *'
+  workflow_dispatch: # 也可以手动跑一次
+
+permissions:
+  contents: write # 发 release 需要
+
+jobs:
+  nightly:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          # 门控要比对 `nightly` 标签与 HEAD，所以要拿到标签。
+          # fetch-depth: 0 本来就会带标签，`fetch-tags` 再显式写一遍，免得日后有人改浅了它。
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: 有上次夜间包之后的新提交吗
+        id: gate
+        run: |
+          head="$(git rev-parse HEAD)"
+          last="$(git rev-parse -q --verify refs/tags/nightly || true)"
+          echo "HEAD=$head"
+          echo "上次夜间包=${last:-（还没有）}"
+          if [ -n "$last" ] && [ "$last" = "$head" ]; then
+            echo "主分支没有新提交，跳过。"
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up JDK
+        if: steps.gate.outputs.run == 'true'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Android SDK
+        if: steps.gate.outputs.run == 'true'
+        uses: android-actions/setup-android@v3
+
+      - name: 装 NDK（版本必须与 app/build.gradle 的 ndkVersion 一致）
+        if: steps.gate.outputs.run == 'true'
+        run: |
+          yes | sdkmanager --licenses > /dev/null || true
+          sdkmanager "ndk;25.2.9519653"
+
+      - name: Set up Gradle
+        if: steps.gate.outputs.run == 'true'
+        uses: gradle/actions/setup-gradle@v4
+
+      # 仓库里那份 gradle.properties 是本地专用的（含签名口令），所以没有提交。
+      # 这里补一份最小的：versionCode 用 run number —— 单调递增，免得夜间包互相比较时
+      # 被判成"降级"（adb/包安装器会拒绝 versionCode 变小的替换）。
+      - name: 补一份 gradle.properties
+        if: steps.gate.outputs.run == 'true'
+        run: |
+          printf 'APP_VERSION_CODE=%s\nAPP_VERSION_NAME=nightly\n' "${{ github.run_number }}" > gradle.properties
+
+      - name: 构建夜间包
+        if: steps.gate.outputs.run == 'true'
+        run: |
+          chmod +x gradlew   # Windows 上提交的，执行位丢了
+          ./gradlew :app:assembleNightly
+
+      - name: 汇总这次带了哪些提交
+        if: steps.gate.outputs.run == 'true'
+        run: |
+          last="$(git rev-parse -q --verify refs/tags/nightly || true)"
+          {
+            echo "自动构建，仅供测试。"
+            echo
+            if [ -n "$last" ]; then
+              echo "自上次夜间包以来的提交："
+              git log --oneline --no-decorate "$last..HEAD" | head -50
+            else
+              echo "最近提交："
+              git log --oneline --no-decorate -20
+            fi
+          } > nightly-notes.md
+          cat nightly-notes.md
+
+      - name: 发布（覆盖上一个 nightly）
+        if: steps.gate.outputs.run == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # 滚动标签：删掉重发，标签始终指向本次构建的提交（下一步的判断就靠它）
+          gh release delete nightly --yes --cleanup-tag 2>/dev/null || true
+          gh release create nightly \
+            app/build/outputs/apk/nightly/app-nightly.apk \
+            --prerelease \
+            --target "${{ github.sha }}" \
+            --title "Nightly $(TZ=Asia/Shanghai date +%Y-%m-%d)" \
+            --notes-file nightly-notes.md
