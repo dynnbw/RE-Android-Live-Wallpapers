@@ -47,72 +47,44 @@ public class NightlyReleaseTest {
         assertEquals("Nightly2026.10.10.14.41", NightlyRelease.versionNameFor(published, UTC));
     }
 
-    @Test
-    public void aLaterBuildIsAnUpdate() {
-        assertTrue(NightlyRelease.isNewerThan(2000L, 1000L));
-    }
-
-    /**
-     * 取等号**不算**有新版 —— 这正是"同一条发布"的情形（本地就是拿它构建的）。
-     * 若判成有新版，关于页会永远提示可以更新到它自己。
-     */
-    @Test
-    public void theSameBuildIsNotAnUpdate() {
-        assertFalse(NightlyRelease.isNewerThan(1000L, 1000L));
-    }
-
-    @Test
-    public void anOlderBuildIsNotAnUpdate() {
-        assertFalse(NightlyRelease.isNewerThan(1000L, 2000L));
-    }
-
     // ---- 是不是"给我用的"新版 ----
 
-    /** 本包自己的构建时间（取个任意时刻即可）。 */
+    /** 本包自己是什么时候构建的。 */
     private static final long BUILT = at("2026-10-11T00:30:00Z");
 
-    /** 第一次真跑出来的那条 release 用的是这个 SHA。 */
-    private static final String SHA = "bf15afdc2dbe092d4c15ae1bbbac946f35655622";
-
-    private static final String OTHER_SHA = "9768952aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
-
     /**
-     * 同一条提交就是我自己 —— **这条是这次报障的根**：
-     * CI 先构建、几分钟后才发 release，所以"发布时间"永远晚于"构建时间"；
-     * 只看时间的话，每个夜间包一打开就会提示"可以更新到它自己"。
+     * 同一天（哪怕发布时间更晚）不算新版 —— **这条是报障的根**：
+     * CI 先构建、几分钟后才发 release，比到秒的话每个夜间包都会把自己认成有新版，
+     * 于是天天提示"更新到自己"。比到天，同一天就相等了。
      */
     @Test
-    public void theSameCommitIsNeverAnUpdate() {
+    public void theSameDayIsNeverAnUpdate() {
+        assertFalse("同一天被当成了新版", NightlyRelease.isUpdateFor(at("2026-10-11T01:10:20Z"), BUILT));
+    }
+
+    /** 次日的夜间包才是新版。 */
+    @Test
+    public void theNextDayIsAnUpdate() {
+        assertTrue(NightlyRelease.isUpdateFor(at("2026-10-12T00:55:00Z"), BUILT));
+    }
+
+    /** 更早的那些不算更新，否则会把旧包推给用户。 */
+    @Test
+    public void anEarlierDayIsNotAnUpdate() {
+        assertFalse(NightlyRelease.isUpdateFor(at("2026-10-10T00:55:00Z"), BUILT));
+    }
+
+    /**
+     * 按 **UTC** 划天，不看本机时区 —— 否则同一条 release 落在不同时区的机器上
+     * 可能算成不同的两天（UTC 00:55 那条 = 北京 08:55，跨没跨天两边说法不同）。
+     */
+    @Test
+    public void daysAreCountedInUtc() {
+        // 同一天的两端：UTC 00:00 与 UTC 23:59:59 —— 相等，不是新版
         assertFalse(
-                "同一条提交被当成了新版",
-                NightlyRelease.isUpdateFor(at("2026-10-11T01:10:20Z"), SHA, BUILT, SHA));
-    }
-
-    /** 不同提交、且比我构建得晚 → 有新版（这才是真情形）。 */
-    @Test
-    public void aLaterNightlyFromAnotherCommitIsAnUpdate() {
-        assertTrue(NightlyRelease.isUpdateFor(at("2026-10-11T01:10:20Z"), OTHER_SHA, BUILT, SHA));
-    }
-
-    /** 不同提交、但比我还早 → 不算更新，否则会把更早的夜间包推给用户。 */
-    @Test
-    public void anEarlierNightlyFromAnotherCommitIsNotAnUpdate() {
-        assertFalse(NightlyRelease.isUpdateFor(at("2026-10-10T20:00:00Z"), OTHER_SHA, BUILT, SHA));
-    }
-
-    /**
-     * 取不到本包的 SHA（从源码 zip 构建）时，不能把任何提交认成"同一个" ——
-     * 认了就永远说已是最新。宁可多提示一次。
-     */
-    @Test
-    public void anUnknownLocalShaNeverCountsAsTheSame() {
-        assertTrue(NightlyRelease.isUpdateFor(at("2026-10-11T01:10:20Z"), SHA, BUILT, ""));
-        assertTrue(NightlyRelease.isUpdateFor(at("2026-10-11T01:10:20Z"), SHA, BUILT, null));
-    }
-
-    /** 一边被截短过（7 位短 SHA）也算同一条。 */
-    @Test
-    public void aShortShaStillMatchesTheFullOne() {
-        assertFalse(NightlyRelease.isUpdateFor(at("2026-10-11T01:10:20Z"), SHA, BUILT, "bf15afd"));
+                NightlyRelease.isUpdateFor(at("2026-10-11T23:59:59Z"), at("2026-10-11T00:00:00Z")));
+        // 跨过 UTC 午夜才算次日的包
+        assertTrue(
+                NightlyRelease.isUpdateFor(at("2026-10-12T00:00:01Z"), at("2026-10-11T23:59:59Z")));
     }
 }

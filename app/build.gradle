@@ -141,20 +141,12 @@ android {
          * 夜间通道的两块信息。
          *
          * BUILD_TIME_MS —— 这次构建的时刻。夜间版的检查更新拿它和 release 的 published_at
-         *   比大小（不用 versionCode：夜间包与正式包同号，比不出先后）。配置期求值。
+         *   比**日期**（夜间包每天一条，日粒度就够；也不用 versionCode —— 它与正式包同号）。
+         *   配置期求值。
          * IS_NIGHTLY —— 只有 nightly 变体会覆盖成 true；关于页据此决定显不显示那个入口。
          */
         buildConfigField "long", "BUILD_TIME_MS", "${System.currentTimeMillis()}L"
         buildConfigField "boolean", "IS_NIGHTLY", "false"
-
-        /*
-         * GIT_SHA —— 本包含的是哪一条提交。夜间版的检查更新**先比它**：同一个提交就是自己，
-         * 不必看时间（发布时间必然晚于构建时间，只按时间比会永远"有新版"）。
-         *
-         * 用 ProcessBuilder 而不是 project.exec：后者在配置期已不推荐。
-         * 从 zip 源码包构建时没有 .git，取不到就留空 —— 那种情况下退化成只按时间判断。
-         */
-        buildConfigField "String", "GIT_SHA", "\"${gitShaOrEmpty()}\""
     }
 
     compileOptions {
@@ -227,21 +219,6 @@ android {
 }
 
 def ndkBuildExecutable = new File(android.ndkDirectory, Os.isFamily(Os.FAMILY_WINDOWS) ? 'ndk-build.cmd' : 'ndk-build')
-
-/** 当前 HEAD 的完整 SHA；取不到（例如源码 zip）返回空串。 */
-def gitShaOrEmpty() {
-    try {
-        def process = new ProcessBuilder('git', 'rev-parse', 'HEAD')
-                .directory(rootDir)
-                .redirectErrorStream(true)
-                .start()
-        def text = process.inputStream.text.trim()
-        process.waitFor()
-        return process.exitValue() == 0 ? text : ''
-    } catch (Exception ignored) {
-        return ''
-    }
-}
 
 tasks.register('buildVulkanNative', Exec) {
     workingDir file('src/main/jni')

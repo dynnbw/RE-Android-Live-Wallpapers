@@ -18,13 +18,10 @@ import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceScreen;
 
 import com.reandroid.update.NightlyChecker;
-import com.reandroid.update.NightlyRelease;
 import com.reandroid.update.UpdateHelper;
 import com.reandroid.update.VersionInfo;
 import com.reandroid.wallpaper.BuildConfig;
 import com.reandroid.wallpaper.R;
-
-import java.util.TimeZone;
 
 public class AboutFragment extends PreferenceFragmentCompat {
 
@@ -127,10 +124,9 @@ public class AboutFragment extends PreferenceFragmentCompat {
             }
             return;
         }
-        // 摘要显示这个包是什么时候构建的 —— 与 release 的构建时间同源，好对照
-        nightly.setSummary(getString(
-                R.string.app_version_summary,
-                NightlyRelease.versionNameFor(BuildConfig.BUILD_TIME_MS, TimeZone.getDefault())));
+        // 摘要直接用版本名，而不是按设备时区重算一遍：本包的版本名是构建时在 CI 那边按
+        // Asia/Shanghai 生成的，运行时时区不同就会算出另一个时刻，与上面那行对不上。
+        nightly.setSummary(getString(R.string.app_version_summary, BuildConfig.VERSION_NAME));
         nightly.setOnPreferenceClickListener(pref -> {
             checkNightly();
             return true;

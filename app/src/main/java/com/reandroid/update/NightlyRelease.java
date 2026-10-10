@@ -32,42 +32,22 @@ public final class NightlyRelease {
     }
 
     /**
-     * 比我构建得更晚，才算有新版。
+     * 这条 release 是不是"给我用的"新版：**比到"天"为止**。
      *
-     * <p>不比较 versionCode：夜间包与正式包同号（都取自 {@code gradle.properties} 的下一个正式版本），
-     * 比不出先后。
+     * <p>夜间包是每天一条（nightly 的含义就是交给 Actions 自动构建），所以日粒度足够，
+     * 而且顺带解决了一个陷阱：发布时刻必然**晚于**构建时刻（CI 先构建、几分钟后才发 release），
+     * 若比到秒，每个夜间包都会把自己认成"有新版"、天天提示更新到自己。同一天 ⇒ 相等 ⇒
+     * 不是新版，这条自然就没了。
+     *
+     * <p>两边都按 **UTC** 取天。用本地时区的话，同一条 release 在不同时区的机器上可能落在
+     * 不同的两天（UTC 00:55 那条 = 北京 08:55，跨没跨天两边说法不同）。
      */
-    public static boolean isNewerThan(long publishedAtMs, long buildTimeMs) {
-        return publishedAtMs > buildTimeMs;
+    public static boolean isUpdateFor(long publishedAtMs, long buildTimeMs) {
+        return dayOf(publishedAtMs) > dayOf(buildTimeMs);
     }
 
-    /**
-     * 这条 release 是不是"给我用的"新版。**先比提交、再看时间，顺序不能反。**
-     *
-     * <p>为什么必须先比提交：发布时刻必然**晚于**构建时刻（CI 先构建、再发 release，差几分钟），
-     * 所以只看时间的话，每个夜间包都会把自己认成"有新版"，天天提示更新到自己。
-     * 提交相同 ⇒ 就是我自己，时间不必看。
-     *
-     * <p>提交不同时再看时间：只有比我构建得更晚才算数，免得把更早的夜间包当成更新推给用户。
-     *
-     * @param releaseCommit release 的 {@code target_commitish}（CI 用 {@code --target <sha>}，
-     *                      所以给的是完整 SHA）
-     * @param mySha         本包的 {@code BuildConfig.GIT_SHA}；源码 zip 构建时为空
-     */
-    public static boolean isUpdateFor(
-            long publishedAtMs, String releaseCommit, long buildTimeMs, String mySha) {
-        if (sameCommit(releaseCommit, mySha)) {
-            return false;
-        }
-        return isNewerThan(publishedAtMs, buildTimeMs);
-    }
-
-    /** 两边都该是完整 SHA；任一边被截短过也算命中（前缀比较）。 */
-    static boolean sameCommit(String a, String b) {
-        if (a == null || b == null || a.isEmpty() || b.isEmpty()) {
-            // 取不到本包的 SHA（从源码 zip 构建）时不敢认"同一个"，宁可多提示一次
-            return false;
-        }
-        return a.startsWith(b) || b.startsWith(a);
+    /** 自 epoch 起的第几天（UTC）。 */
+    static long dayOf(long ms) {
+        return Math.floorDiv(ms, 24L * 60 * 60 * 1000);
     }
 }

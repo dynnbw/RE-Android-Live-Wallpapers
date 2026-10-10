@@ -111,9 +111,9 @@ public final class NightlyChecker {
                     raw.append(line);
                 }
             }
-            // 比的是**本包的**构建时间与提交，不是"现在" ——
+            // 比的是**本包的**构建时间，不是"现在" ——
             // 传当前时间的话 published_at 永远小于它，于是永远"没有新版"。
-            return parse(raw.toString(), BuildConfig.BUILD_TIME_MS, BuildConfig.GIT_SHA);
+            return parse(raw.toString(), BuildConfig.BUILD_TIME_MS);
         } finally {
             if (conn != null) {
                 conn.disconnect();
@@ -127,7 +127,7 @@ public final class NightlyChecker {
      * <p>包内可见是为了让调用点集中在这一个类里；判断规则本身在 {@link NightlyRelease}
      * （零 android 导入）那边钉。
      */
-    static VersionInfo parse(String raw, long buildTimeMs, String mySha) throws Exception {
+    static VersionInfo parse(String raw, long buildTimeMs) throws Exception {
         JSONObject root = new JSONObject(raw);
 
         /*
@@ -144,14 +144,7 @@ public final class NightlyChecker {
         }
 
         long publishedAt = parseIso(root.optString("published_at", ""));
-
-        /*
-         * 先比提交，再看时间 —— 顺序不能反：发布时刻必然晚于构建时刻（CI 先构建、再发 release），
-         * 只看时间的话每个夜间包都会把自己认成有新版，天天提示更新到自己。
-         * target_commitish 是 workflow 里 `--target "${{ github.sha }}"` 定下的完整 SHA。
-         */
-        String commit = root.optString("target_commitish", "");
-        if (!NightlyRelease.isUpdateFor(publishedAt, commit, buildTimeMs, mySha)) {
+        if (!NightlyRelease.isUpdateFor(publishedAt, buildTimeMs)) {
             return null;
         }
 
