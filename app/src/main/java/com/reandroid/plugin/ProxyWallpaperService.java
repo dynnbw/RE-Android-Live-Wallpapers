@@ -1,5 +1,6 @@
 package com.reandroid.plugin;
 
+import android.app.WallpaperManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -315,7 +316,22 @@ public class ProxyWallpaperService extends WallpaperService {
         @Override
         public Bundle onCommand(
                 String action, int x, int y, int z, Bundle extras, boolean resultRequested) {
+            /*
+             * 桌面上的点击是从这条路进来的（预览才走 onTouchEvent —— 见各壁纸里"仅在预览模式接管，
+             * 桌面继续走 onCommand"的注释），所以它和另外四个回调一样能证明"这块画面在用"，
+             * 也就要一并把可能停泊住的渲染循环叫醒。少了这一步，平台误报不可见时点一下壁纸
+             * 要等 PARK_TIMEOUT_MS 才见效果。
+             *
+             * 只认交互类命令：平台还会发内部命令（冻结之类），那些不能当"在用"。
+             * 这三个常量由 WallpaperManager 暴露，平台侧一共就这三个。
+             */
+            if (WallpaperManager.COMMAND_TAP.equals(action)
+                    || WallpaperManager.COMMAND_SECONDARY_TAP.equals(action)
+                    || WallpaperManager.COMMAND_DROP.equals(action)) {
+                mDriven = true;
+            }
             synchronized (mLock) {
+                mLock.notifyAll();
                 if (mEngine != null) {
                     try {
                         mEngine.onCommand(action, x, y, z, extras);
