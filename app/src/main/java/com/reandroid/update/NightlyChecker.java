@@ -47,19 +47,15 @@ public final class NightlyChecker {
 
     private static final Handler MAIN = new Handler(Looper.getMainLooper());
 
-    /** 与 {@code UpdateChecker.Callback} 同一个形状。 */
-    public interface Callback {
-        void onUpdateAvailable(VersionInfo info);
-
-        void onUpToDate();
-
-        void onError(String message);
-    }
-
     private NightlyChecker() {}
 
-    /** 回调在主线程。任何失败都走 {@code onError}，不抛给调用方。 */
-    public static void check(final Callback callback) {
+    /**
+     * 回调在主线程。任何失败都走 {@code onError}，不抛给调用方。
+     *
+     * <p>回调类型直接复用 {@link UpdateChecker.Callback}：两条通道的调用点形状一致，
+     * 于是 {@link UpdateHelper} 里对话框、静默、延迟那套只需要一份实现。
+     */
+    public static void check(final UpdateChecker.Callback callback) {
         new Thread(
                         () -> {
                             VersionInfo info;

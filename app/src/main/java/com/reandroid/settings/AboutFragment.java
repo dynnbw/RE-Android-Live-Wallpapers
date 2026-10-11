@@ -17,9 +17,7 @@ import androidx.preference.PreferenceCategory;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceScreen;
 
-import com.reandroid.update.NightlyChecker;
 import com.reandroid.update.UpdateHelper;
-import com.reandroid.update.VersionInfo;
 import com.reandroid.wallpaper.BuildConfig;
 import com.reandroid.wallpaper.R;
 
@@ -128,44 +126,8 @@ public class AboutFragment extends PreferenceFragmentCompat {
         // Asia/Shanghai 生成的，运行时时区不同就会算出另一个时刻，与上面那行对不上。
         nightly.setSummary(getString(R.string.app_version_summary, BuildConfig.VERSION_NAME));
         nightly.setOnPreferenceClickListener(pref -> {
-            checkNightly();
+            UpdateHelper.checkAndShowNightly(AboutFragment.this);
             return true;
-        });
-    }
-
-    private void checkNightly() {
-        NightlyChecker.check(new NightlyChecker.Callback() {
-            @Override
-            public void onUpdateAvailable(VersionInfo info) {
-                if (isAdded()) {
-                    UpdateHelper.showUpdateDialog(AboutFragment.this, info);
-                }
-            }
-
-            @Override
-            public void onUpToDate() {
-                if (!isAdded()) {
-                    return;
-                }
-                // 本地这个版本名就是本包的构建时间，正是刚才比对用的那个
-                Toast.makeText(
-                                requireContext(),
-                                getString(R.string.up_to_date_message, BuildConfig.VERSION_NAME),
-                                Toast.LENGTH_SHORT)
-                        .show();
-            }
-
-            @Override
-            public void onError(String message) {
-                if (!isAdded()) {
-                    return;
-                }
-                Toast.makeText(
-                                requireContext(),
-                                getString(R.string.update_check_failed, message),
-                                Toast.LENGTH_SHORT)
-                        .show();
-            }
         });
     }
 

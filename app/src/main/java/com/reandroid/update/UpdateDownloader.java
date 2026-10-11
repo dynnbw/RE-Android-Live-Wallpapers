@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Environment;
 import android.util.Log;
 
@@ -92,7 +93,20 @@ public class UpdateDownloader {
         request.setMimeType("application/vnd.android.package-archive");
 
         IntentFilter filter = new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE);
-        mContext.registerReceiver(mReceiver, filter);
+        /*
+         * Android 14（targetSdk 34）起，注册接收者必须显式声明导出性，否则**抛 SecurityException**，
+         * 没人接就当场杀掉进程 —— 这一句曾让"直接下载"在所有 Android 14+ 上闪退
+         * （2026-10-11 实测：进程死在 registerReceiver 上）。
+         *
+         * 我们只收系统的下载完成广播，所以 NOT_EXPORTED：系统广播照常送达，别的应用发不进来。
+         * 不写 ContextCompat.registerReceiver(...)：那组常量要 androidx.core 1.9+，而这里是
+         * 传递依赖来的 1.5.0。平台常量是编译期内联的，放在版本判断里对旧设备也没有风险。
+         */
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            mContext.registerReceiver(mReceiver, filter, Context.RECEIVER_NOT_EXPORTED);
+        } else {
+            mContext.registerReceiver(mReceiver, filter);
+        }
         mRegistered = true;
 
         mDownloadId = dm.enqueue(request);

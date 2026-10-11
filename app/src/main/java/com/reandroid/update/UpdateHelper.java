@@ -75,8 +75,36 @@ public final class UpdateHelper {
         showUpdateDialog(fragment.requireActivity(), info);
     }
 
+    /** 两种检查器共有的形状：把回调接到"查一次"上。 */
+    private interface Checker {
+        void check(UpdateChecker.Callback callback);
+    }
+
+    /** 正式通道：清单（version.json）。 */
     public static void checkAndShow(Fragment fragment) {
-        UpdateChecker.check(new UpdateChecker.Callback() {
+        runCheck(fragment, UpdateChecker::check);
+    }
+
+    public static void checkAndShow(Activity activity, boolean silent) {
+        runCheck(activity, silent, UpdateChecker::check);
+    }
+
+    /**
+     * 夜间通道：GitHub 上那条 {@code nightly} 预发行。
+     *
+     * <p>只在 nightly 包里用 —— 它指向的是**另一个包**（applicationId 带 {@code .nightly}），
+     * 正式版里检查它既更新不了自己，还会把人引到一个需要单独安装的包上。
+     */
+    public static void checkAndShowNightly(Fragment fragment) {
+        runCheck(fragment, NightlyChecker::check);
+    }
+
+    public static void checkAndShowNightly(Activity activity, boolean silent) {
+        runCheck(activity, silent, NightlyChecker::check);
+    }
+
+    private static void runCheck(Fragment fragment, Checker checker) {
+        checker.check(new UpdateChecker.Callback() {
             @Override
             public void onUpdateAvailable(VersionInfo info) {
                 if (fragment.isAdded()) showUpdateDialog(fragment, info);
@@ -105,8 +133,8 @@ public final class UpdateHelper {
         });
     }
 
-    public static void checkAndShow(Activity activity, boolean silent) {
-        UpdateChecker.check(new UpdateChecker.Callback() {
+    private static void runCheck(Activity activity, boolean silent, Checker checker) {
+        checker.check(new UpdateChecker.Callback() {
             @Override
             public void onUpdateAvailable(VersionInfo info) {
                 if (activity.isFinishing() || activity.isDestroyed()) return;

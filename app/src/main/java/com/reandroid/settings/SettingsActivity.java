@@ -1,4 +1,3 @@
-
 package com.reandroid.settings;
 
 import android.os.Bundle;
@@ -11,10 +10,11 @@ import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 
 import com.reandroid.update.UpdateHelper;
+import com.reandroid.wallpaper.BuildConfig;
 import com.reandroid.wallpaper.R;
 
 public class SettingsActivity extends AppCompatActivity
-    implements PreferenceFragmentCompat.OnPreferenceStartFragmentCallback {
+        implements PreferenceFragmentCompat.OnPreferenceStartFragmentCallback {
 
     private boolean mUpdateChecked;
     private SettingsToolbarHelper mToolbarHelper;
@@ -54,7 +54,15 @@ public class SettingsActivity extends AppCompatActivity
         super.onResume();
         if (!mUpdateChecked) {
             mUpdateChecked = true;
-            UpdateHelper.checkAndShow(this, true);
+            /*
+             * 每次启动静默查一次。夜间包里查的是**夜间通道**：正式通道指向的是另一个包
+             * （applicationId 带 .nightly），弹出来也装不上，只会凭空多出一个应用。
+             */
+            if (BuildConfig.IS_NIGHTLY) {
+                UpdateHelper.checkAndShowNightly(this, true);
+            } else {
+                UpdateHelper.checkAndShow(this, true);
+            }
         }
     }
 
@@ -105,7 +113,8 @@ public class SettingsActivity extends AppCompatActivity
                 .instantiate(getClassLoader(), fragmentClass);
         fragment.setArguments(pref.getExtras());
 
-        getSupportFragmentManager().beginTransaction()
+        getSupportFragmentManager()
+                .beginTransaction()
                 .replace(R.id.settings_container, fragment)
                 .addToBackStack(pref.getKey())
                 .commit();
