@@ -40,6 +40,11 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
+      # Windows 上提交的，执行位丢了。放在最前面：后面的 setup-gradle 也会去碰 gradlew，
+      # 权限没补上它就先失败了。
+      - name: 给 gradlew 补上执行位
+        run: chmod +x gradlew
+
       - name: 有上次夜间包之后的新提交吗
         id: gate
         run: |
@@ -61,15 +66,33 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      - name: Set up Android SDK
-        if: steps.gate.outputs.run == 'true'
-        uses: android-actions/setup-android@v3
-
-      - name: 装 NDK（版本必须与 app/build.gradle 的 ndkVersion 一致）
+      # 不用 android-actions/setup-android：它内部会跑一句 `sdkmanager tools`，而 runner 上的
+      # 新版 cmdline-tools（16.0）早就没有 `tools` 这个包了 → 那句以退出码 1 结束，整个 action
+      # 连带失败（2026-10-11 第一次真跑就是栽在这里）。runner 镜像本来就带着完整 SDK
+      # （ANDROID_HOME=/usr/local/lib/android/sdk），缺的只是我们要的那个 NDK。
+      - name: 装 NDK 与编译所需的 SDK 组件
         if: steps.gate.outputs.run == 'true'
         run: |
-          yes | sdkmanager --licenses > /dev/null || true
-          sdkmanager "ndk;25.2.9519653"
+          SDK_ROOT="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
+          SDKMANAGER="$SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
+          if [ ! -x "$SDKMANAGER" ]; then
+            # 镜像里不一定有 latest 这个别名，兜底按目录找
+            SDKMANAGER="$(find "$SDK_ROOT/cmdline-tools" -name sdkmanager -type f | head -1)"
+          fi
+          test -n "$SDKMANAGER" && test -x "$SDKMANAGER" || { echo "找不到 sdkmanager"; exit 1; }
+          echo "sdkmanager: $SDKMANAGER"
+
+          yes | "$SDKMANAGER" --licenses > /dev/null || true
+          # NDK 版本必须与 app/build.gradle 的 ndkVersion 一致；
+          # platform / build-tools 钉到 AGP 8.7 认识的那一档，免得它自己去下载。
+          "$SDKMANAGER" "ndk;25.2.9519653" "platforms;android-35" "build-tools;35.0.0"
+
+          echo "--- ndk 目录 ---"
+          ls "$SDK_ROOT/ndk"
+
+          # 上面那步替代了 setup-android 设 ANDROID_HOME 的作用，这里把 SDK 位置写给 AGP，
+          # 免得它因为找不到 sdk.dir 而失败（local.properties 是忽略文件，只在 CI 里临时写）。
+          printf 'sdk.dir=%s\n' "$SDK_ROOT" > local.properties
 
       - name: Set up Gradle
         if: steps.gate.outputs.run == 'true'
@@ -85,9 +108,7 @@ jobs:
 
       - name: 构建夜间包
         if: steps.gate.outputs.run == 'true'
-        run: |
-          chmod +x gradlew   # Windows 上提交的，执行位丢了
-          ./gradlew :app:assembleNightly
+        run: ./gradlew :app:assembleNightly
 
       - name: 汇总这次带了哪些提交
         if: steps.gate.outputs.run == 'true'
