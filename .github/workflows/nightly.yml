@@ -14,10 +14,14 @@ name: nightly
 
 on:
   schedule:
-    # 每日 00:00 UTC = 北京时间 08:00。注意 **cron 一律按 UTC 算**，与仓库/用户时区无关。
-    # 整点也正是全球定时任务最挤的时刻，官方 runner 可能排队，晚几分钟属正常。
-    - cron: '0 0 * * *'
-  workflow_dispatch: # 也可以手动跑一次
+    # 每日 00:07 UTC = 北京时间 08:07。注意 **cron 一律按 UTC 算**，与仓库/用户时区无关。
+    #
+    # 分钟取 07 不是随手写的：GitHub 的定时任务只是"尽力而为"，官方明确点名高负载时刻
+    # 包括「每个整点」—— 排到整点会被延迟、甚至**直接丢弃**。第一次就是这样：
+    # 2026-10-10 推到主分支后，10-11 00:00 UTC 那一趟没有跑（运行记录是 0 次）。
+    # 挪开整点躲开最挤的队，比守着 00:00 有意义。
+    - cron: '7 0 * * *'
+  workflow_dispatch: # 也可以手动跑一次 —— 定时被丢了的话就靠它
 
 permissions:
   contents: write # 发 release 需要
@@ -52,7 +56,7 @@ jobs:
 
       - name: Set up JDK
         if: steps.gate.outputs.run == 'true'
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '21'
