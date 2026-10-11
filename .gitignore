@@ -27,6 +27,9 @@ captures/
 # Local machine config / secrets
 local.properties
 gradle.properties
+# 例外：CI 用的那份要提交 —— 它只有非机密项（本机那份含正式签名口令，仍然忽略）。
+# 上面那条没有斜杠，会在任何层级匹配，所以这里必须显式放行。
+!ci/gradle.properties
 *.jks
 *.keystore
 # 例外：夜间通道的调试密钥库要提交进仓库（公开密钥，只签包名带 .nightly 的包）。

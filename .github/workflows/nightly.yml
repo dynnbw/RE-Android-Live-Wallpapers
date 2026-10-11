@@ -98,13 +98,19 @@ jobs:
         if: steps.gate.outputs.run == 'true'
         uses: gradle/actions/setup-gradle@v4
 
-      # 仓库里那份 gradle.properties 是本地专用的（含签名口令），所以没有提交。
-      # 这里补一份最小的：versionCode 用 run number —— 单调递增，免得夜间包互相比较时
-      # 被判成"降级"（adb/包安装器会拒绝 versionCode 变小的替换）。
+      # 仓库里那份 gradle.properties 是本地专用的（含签名口令），所以没有提交 ——
+      # 这里从 ci/gradle.properties 复制一份（可审阅、与本地对照），再追加版本号。
+      # 别在这儿手写属性：曾经只写了版本号、漏掉 android.useAndroidX，
+      # CI 就栽在 checkNightlyAarMetadata 上（2026-10-11）。
       - name: 补一份 gradle.properties
         if: steps.gate.outputs.run == 'true'
         run: |
-          printf 'APP_VERSION_CODE=%s\nAPP_VERSION_NAME=nightly\n' "${{ github.run_number }}" > gradle.properties
+          cp ci/gradle.properties gradle.properties
+          # versionCode 用 run number：单调递增，免得夜间包互相比较时被判成"降级"
+          # （adb / 包安装器会拒绝 versionCode 变小的替换）。
+          printf 'APP_VERSION_CODE=%s\nAPP_VERSION_NAME=nightly\n' "${{ github.run_number }}" >> gradle.properties
+          echo "--- 本次的 gradle.properties ---"
+          cat gradle.properties
 
       - name: 构建夜间包
         if: steps.gate.outputs.run == 'true'
