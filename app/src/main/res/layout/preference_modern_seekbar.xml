@@ -25,6 +25,7 @@
             android:gravity="center_vertical"
             android:minHeight="64dp"
             android:orientation="horizontal"
+            android:scrollbars="none"
             android:paddingStart="16dp"
             android:paddingTop="14dp"
             android:paddingEnd="16dp"
@@ -83,18 +84,29 @@
                     android:clipChildren="false"
                     android:clipToPadding="false"
                     android:gravity="center_vertical"
-                    android:orientation="horizontal">
+                    android:orientation="horizontal"
+                    android:scrollbars="none">
 
-                    <SeekBar
-                        android:id="@+id/seekbar"
+                    <!-- 单独包一层并开启裁剪：拖动时 SeekBar 的按压光晕会画到自身 bounds 之外，
+                         不裁的话会盖住上面的标题和右边的数值。 -->
+                    <FrameLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:background="@null"
-                        android:clickable="false"
-                        android:focusable="false"
-                        android:paddingStart="8dp"
-                        android:paddingEnd="22dp" />
+                        android:clipChildren="true"
+                        android:clipToPadding="true">
+
+                        <SeekBar
+                            android:id="@+id/seekbar"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="@null"
+                            android:clickable="false"
+                            android:focusable="false"
+                            android:paddingStart="8dp"
+                            android:paddingEnd="22dp" />
+
+                    </FrameLayout>
 
                     <TextView
                         android:id="@+id/seekbar_value"
@@ -103,6 +115,7 @@
                         android:layout_marginStart="8dp"
                         android:gravity="end|center_vertical"
                         android:minWidth="36dp"
+                        android:scrollbars="none"
                         android:singleLine="true"
                         android:textAppearance="?android:attr/textAppearanceSmall"
                         android:textColor="?android:attr/textColorPrimary" />
