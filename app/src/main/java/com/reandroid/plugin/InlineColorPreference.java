@@ -32,7 +32,9 @@ public class InlineColorPreference extends Preference {
     private static final int MAX_PERCENT = 100;
 
     private static final int[] ROW_IDS = {R.id.color_row_1, R.id.color_row_2, R.id.color_row_3};
-    private static final int[] LABEL_IDS = {R.id.color_label_1, R.id.color_label_2, R.id.color_label_3};
+    private static final int[] LABEL_IDS = {
+        R.id.color_label_1, R.id.color_label_2, R.id.color_label_3
+    };
     private static final int[] BAR_IDS = {R.id.color_s1, R.id.color_s2, R.id.color_s3};
     private static final int[] VALUE_IDS = {R.id.color_v1, R.id.color_v2, R.id.color_v3};
 
@@ -48,11 +50,12 @@ public class InlineColorPreference extends Preference {
 
     /** 拖动期间保留的 HSV 分量:避免饱和度/亮度归零时色相被系统换算重置。 */
     private float mHue;
+
     private float mSaturation = 1.0f;
     private float mBrightness = 1.0f;
 
-    public InlineColorPreference(Context context, SharedPreferences prefs, int defaultColor,
-            String[] labels) {
+    public InlineColorPreference(
+            Context context, SharedPreferences prefs, int defaultColor, String[] labels) {
         super(context);
         mPrefs = prefs;
         mDefaultColor = defaultColor;
@@ -74,9 +77,8 @@ public class InlineColorPreference extends Preference {
 
     /** 分组内改用无卡片布局；必须在添加到父容器前调用。 */
     public void setGrouped(boolean grouped) {
-        setLayoutResource(grouped
-                ? R.layout.preference_grouped_color
-                : R.layout.preference_inline_color);
+        setLayoutResource(
+                grouped ? R.layout.preference_grouped_color : R.layout.preference_inline_color);
     }
 
     /** 由设置工厂依据依赖条件调用。 */
@@ -150,12 +152,10 @@ public class InlineColorPreference extends Preference {
                 }
 
                 @Override
-                public void onStartTrackingTouch(SeekBar seekBar) {
-                }
+                public void onStartTrackingTouch(SeekBar seekBar) {}
 
                 @Override
-                public void onStopTrackingTouch(SeekBar seekBar) {
-                }
+                public void onStopTrackingTouch(SeekBar seekBar) {}
             });
         }
         mBinding = false;

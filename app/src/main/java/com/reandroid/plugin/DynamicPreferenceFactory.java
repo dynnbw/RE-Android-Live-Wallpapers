@@ -53,8 +53,11 @@ public final class DynamicPreferenceFactory {
         final boolean dkDefaultFalse;
         boolean satisfied = true;
 
-        DependencyState(String dependency, String disableOn,
-                        boolean depDefaultTrue, boolean dkDefaultFalse) {
+        DependencyState(
+                String dependency,
+                String disableOn,
+                boolean depDefaultTrue,
+                boolean dkDefaultFalse) {
             this.dependency = dependency;
             this.disableOn = disableOn;
             this.depDefaultTrue = depDefaultTrue;
@@ -67,7 +70,8 @@ public final class DynamicPreferenceFactory {
         }
 
         void evaluate(SharedPreferences prefs) {
-            satisfied = dependencySatisfied(prefs, dependency, disableOn, depDefaultTrue, dkDefaultFalse);
+            satisfied = dependencySatisfied(
+                    prefs, dependency, disableOn, depDefaultTrue, dkDefaultFalse);
         }
     }
 
@@ -101,9 +105,12 @@ public final class DynamicPreferenceFactory {
      * @param layout    parsed layout.json
      * @param addAction callback to add each created preference
      */
-    public static void buildPreferences(Context context, SharedPreferences prefs,
-                                         JSONObject layout, AddPreferenceAction addAction,
-                                         JSONObject language) {
+    public static void buildPreferences(
+            Context context,
+            SharedPreferences prefs,
+            JSONObject layout,
+            AddPreferenceAction addAction,
+            JSONObject language) {
         JSONArray items = layout.optJSONArray("prefs");
         if (items == null) return;
         // root 用来解析 dependency / disableOn 的默认值：它们可以跨分组引用
@@ -114,16 +121,20 @@ public final class DynamicPreferenceFactory {
      * 构建一层条目。遇到 {@code type: "group"} 时先建分组标题，再把它的 prefs
      * 递归建进这个分组；组内子项改用无卡片布局。
      */
-    private static void buildItems(Context context, SharedPreferences prefs,
-                                   JSONArray items, JSONArray root,
-                                   AddPreferenceAction addAction, JSONObject language,
-                                   boolean grouped) {
+    private static void buildItems(
+            Context context,
+            SharedPreferences prefs,
+            JSONArray items,
+            JSONArray root,
+            AddPreferenceAction addAction,
+            JSONObject language,
+            boolean grouped) {
         int count = items.length();
         Preference[] created = new Preference[count];
         String[] dependencies = new String[count];
         String[] disableOnKeys = new String[count];
-        boolean[] depDefaults = new boolean[count];   // default true value for dependency parent
-        boolean[] dkDefaults = new boolean[count];    // default false value for disableOn parent
+        boolean[] depDefaults = new boolean[count]; // default true value for dependency parent
+        boolean[] dkDefaults = new boolean[count]; // default false value for disableOn parent
 
         // Pass 1: create preferences and add them
         for (int i = 0; i < count; i++) {
@@ -141,13 +152,13 @@ public final class DynamicPreferenceFactory {
                 CardGroupPreference group = new CardGroupPreference(context);
                 String groupKey = item.optString("key");
                 if (!groupKey.isEmpty()) group.setKey(groupKey);
-                group.setTitle(resolveStringRef(context,
-                        resolveLang(language, item.optString("title"))));
+                group.setTitle(
+                        resolveStringRef(context, resolveLang(language, item.optString("title"))));
                 addAction.add(group);
                 JSONArray children = item.optJSONArray("prefs");
                 if (children != null) {
-                    buildItems(context, prefs, children, root,
-                            group::addPreference, language, true);
+                    buildItems(
+                            context, prefs, children, root, group::addPreference, language, true);
                 }
                 created[i] = group;
                 continue;
@@ -195,7 +206,8 @@ public final class DynamicPreferenceFactory {
             if (!hasDep && !hasDk) continue;
 
             // 记录绑定，供父项变化时增量刷新（原先用完即弃，只能靠整块重建）
-            final DependencyState state = new DependencyState(dep, dk, depDefaults[i], dkDefaults[i]);
+            final DependencyState state =
+                    new DependencyState(dep, dk, depDefaults[i], dkDefaults[i]);
             state.evaluate(prefs);
             sDepStates.put(p, state);
 
@@ -222,8 +234,8 @@ public final class DynamicPreferenceFactory {
      *
      * @return 是否刷新了
      */
-    public static boolean refreshValue(PreferenceGroup root, SharedPreferences prefs,
-                                       String changedKey) {
+    public static boolean refreshValue(
+            PreferenceGroup root, SharedPreferences prefs, String changedKey) {
         if (root == null || prefs == null || changedKey == null) return false;
         boolean touched = false;
         for (int i = 0; i < root.getPreferenceCount(); i++) {
@@ -242,20 +254,23 @@ public final class DynamicPreferenceFactory {
     }
 
     /** 按控件类型把 prefs 里的值写回控件。写不进去就保持原样，不抛。 */
-    private static boolean applyValueFromPrefs(Preference p, ValueSpec spec, SharedPreferences prefs) {
+    private static boolean applyValueFromPrefs(
+            Preference p, ValueSpec spec, SharedPreferences prefs) {
         Object stored = prefs.getAll().get(spec.key);
         if (stored == null) stored = spec.defaultValue;
 
         if (p instanceof SwitchPreferenceCompat) {
             boolean on = stored instanceof Boolean
-                    ? (Boolean) stored : Boolean.parseBoolean(String.valueOf(stored));
+                    ? (Boolean) stored
+                    : Boolean.parseBoolean(String.valueOf(stored));
             SwitchPreferenceCompat sp = (SwitchPreferenceCompat) p;
             if (sp.isChecked() != on) sp.setChecked(on);
             return true;
         }
         if (p instanceof SeekBarPreference) {
             int v = stored instanceof Number
-                    ? ((Number) stored).intValue() : parseOrDefault(stored, (Integer) spec.defaultValue);
+                    ? ((Number) stored).intValue()
+                    : parseOrDefault(stored, (Integer) spec.defaultValue);
             SeekBarPreference sp = (SeekBarPreference) p;
             if (sp.getValue() != v) sp.setValue(v);
             return true;
@@ -291,8 +306,8 @@ public final class DynamicPreferenceFactory {
      *
      * @return 是否刷新了至少一项
      */
-    public static boolean refreshDependents(PreferenceGroup root, SharedPreferences prefs,
-                                            String changedKey) {
+    public static boolean refreshDependents(
+            PreferenceGroup root, SharedPreferences prefs, String changedKey) {
         if (root == null || prefs == null || changedKey == null) return false;
         boolean touched = false;
         for (int i = 0; i < root.getPreferenceCount(); i++) {
@@ -334,8 +349,12 @@ public final class DynamicPreferenceFactory {
     }
 
     /** 依赖条件：dependency 父项为 true 且 disableOn 父项不为 true。 */
-    private static boolean dependencySatisfied(SharedPreferences prefs,
-            String dep, String dk, boolean depDefTrue, boolean dkDefFalse) {
+    private static boolean dependencySatisfied(
+            SharedPreferences prefs,
+            String dep,
+            String dk,
+            boolean depDefTrue,
+            boolean dkDefFalse) {
         if (dep != null && !dep.isEmpty() && !prefs.getBoolean(dep, depDefTrue)) return false;
         if (dk != null && !dk.isEmpty() && prefs.getBoolean(dk, dkDefFalse)) return false;
         return true;
@@ -377,8 +396,8 @@ public final class DynamicPreferenceFactory {
     }
 
     /** 递归查找（分组里的条目也能被组外的键引用）。@return 没找到返回 null */
-    private static Boolean findDefaultBoolOrNull(JSONArray items, String key,
-                                                 boolean defaultValue) {
+    private static Boolean findDefaultBoolOrNull(
+            JSONArray items, String key, boolean defaultValue) {
         for (int i = 0; i < items.length(); i++) {
             JSONObject item = items.optJSONObject(i);
             if (item == null) continue;
@@ -402,8 +421,12 @@ public final class DynamicPreferenceFactory {
         return key; // fallback: use the key as display text
     }
 
-    private static Preference create(Context context, String type, JSONObject item,
-                                      SharedPreferences prefs, JSONObject language) {
+    private static Preference create(
+            Context context,
+            String type,
+            JSONObject item,
+            SharedPreferences prefs,
+            JSONObject language) {
         String key = item.optString("key");
         String title = resolveLang(language, item.optString("title"));
         String summary = resolveLang(language, item.optString("summary", ""));
@@ -486,8 +509,11 @@ public final class DynamicPreferenceFactory {
             case "color": {
                 // 内嵌取色组件(标题 + 色块 + 色调/饱和度/亮度 滑块),拖动即时写入设置;
                 // labels 给出滑块标签(取自插件语言文件),个数决定显示 2 个还是 3 个滑块
-                InlineColorPreference cp = new InlineColorPreference(context, prefs,
-                        colorDefault(item, 0xFF000000), resolveSliderLabels(item, language));
+                InlineColorPreference cp = new InlineColorPreference(
+                        context,
+                        prefs,
+                        colorDefault(item, 0xFF000000),
+                        resolveSliderLabels(item, language));
                 cp.setKey(key);
                 cp.setTitle(title);
                 if (!summary.isEmpty()) {
@@ -521,7 +547,8 @@ public final class DynamicPreferenceFactory {
     }
 
     /** Apply gray-out alpha in onBindViewHolder of the anonymous preference subclasses. */
-    private static void applyGrayAlpha(androidx.preference.PreferenceViewHolder holder, Preference pref) {
+    private static void applyGrayAlpha(
+            androidx.preference.PreferenceViewHolder holder, Preference pref) {
         holder.itemView.setAlpha(grayAlpha(pref));
     }
 
@@ -546,7 +573,7 @@ public final class DynamicPreferenceFactory {
                 String key = item.optString("key");
                 String action = item.optString("action", "");
                 if (!key.isEmpty()) {
-                    out.put(key, new String[]{action, item.optString("disableOn", null)});
+                    out.put(key, new String[] {action, item.optString("disableOn", null)});
                 }
             }
             collectButtonSpecs(item.optJSONArray("prefs"), out);
@@ -555,8 +582,8 @@ public final class DynamicPreferenceFactory {
 
     private static String resolveStringRef(Context ctx, String s) {
         if (s != null && s.startsWith("@string/")) {
-            int id = ctx.getResources().getIdentifier(
-                    s.substring(8), "string", ctx.getPackageName());
+            int id = ctx.getResources()
+                    .getIdentifier(s.substring(8), "string", ctx.getPackageName());
             if (id != 0) return ctx.getString(id);
         }
         return s != null ? s : "";

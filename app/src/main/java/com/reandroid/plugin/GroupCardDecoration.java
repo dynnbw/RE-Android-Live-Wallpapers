@@ -51,8 +51,11 @@ public class GroupCardDecoration extends RecyclerView.ItemDecoration {
     }
 
     @Override
-    public void getItemOffsets(@NonNull Rect outRect, @NonNull View view,
-                               @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
+    public void getItemOffsets(
+            @NonNull Rect outRect,
+            @NonNull View view,
+            @NonNull RecyclerView parent,
+            @NonNull RecyclerView.State state) {
         RecyclerView.Adapter<?> adapter = parent.getAdapter();
         if (!(adapter instanceof PreferenceGroupAdapter)) return;
         PreferenceGroupAdapter pga = (PreferenceGroupAdapter) adapter;
@@ -67,14 +70,14 @@ public class GroupCardDecoration extends RecyclerView.ItemDecoration {
         // 分组标题上方留出与上一张卡的间距
         if (p instanceof CardGroupPreference) outRect.top = mGroupGap;
         // 组内最后一个可见行（收起时就是标题行）下方留出间距
-        boolean lastInGroup = position >= pga.getItemCount() - 1
-                || groupOf(pga.getItem(position + 1)) != group;
+        boolean lastInGroup =
+                position >= pga.getItemCount() - 1 || groupOf(pga.getItem(position + 1)) != group;
         if (lastInGroup) outRect.bottom = mGroupGap;
     }
 
     @Override
-    public void onDraw(@NonNull Canvas c, @NonNull RecyclerView parent,
-                       @NonNull RecyclerView.State state) {
+    public void onDraw(
+            @NonNull Canvas c, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
         RecyclerView.Adapter<?> adapter = parent.getAdapter();
         if (!(adapter instanceof PreferenceGroupAdapter)) return;
         PreferenceGroupAdapter pga = (PreferenceGroupAdapter) adapter;
@@ -129,8 +132,11 @@ public class GroupCardDecoration extends RecyclerView.ItemDecoration {
             int pos = parent.getChildAdapterPosition(child);
             if (pos <= first || pos > last) continue;
             float lineTop = child.getTop();
-            c.drawRect(child.getLeft() + mDividerInset, lineTop,
-                    child.getRight() - mDividerInset, lineTop + mDividerHeight,
+            c.drawRect(
+                    child.getLeft() + mDividerInset,
+                    lineTop,
+                    child.getRight() - mDividerInset,
+                    lineTop + mDividerHeight,
                     mDivider);
         }
     }
