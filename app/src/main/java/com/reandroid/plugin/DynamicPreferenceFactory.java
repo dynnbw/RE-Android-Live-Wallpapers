@@ -2,6 +2,7 @@ package com.reandroid.plugin;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
 
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
@@ -24,6 +25,8 @@ import java.util.Map;
  * labels 给出滑块标签(个数 2 或 3 决定显示几个滑块)。
  */
 public final class DynamicPreferenceFactory {
+
+    private static final String TAG = "DynamicPreferenceFactory";
 
     private DynamicPreferenceFactory() {}
 
@@ -103,7 +106,18 @@ public final class DynamicPreferenceFactory {
                                          JSONObject language) {
         JSONArray items = layout.optJSONArray("prefs");
         if (items == null) return;
+        // root 用来解析 dependency / disableOn 的默认值：它们可以跨分组引用
+        buildItems(context, prefs, items, items, addAction, language, false);
+    }
 
+    /**
+     * 构建一层条目。遇到 {@code type: "group"} 时先建分组标题，再把它的 prefs
+     * 递归建进这个分组；组内子项改用无卡片布局。
+     */
+    private static void buildItems(Context context, SharedPreferences prefs,
+                                   JSONArray items, JSONArray root,
+                                   AddPreferenceAction addAction, JSONObject language,
+                                   boolean grouped) {
         int count = items.length();
         Preference[] created = new Preference[count];
         String[] dependencies = new String[count];
@@ -117,14 +131,46 @@ public final class DynamicPreferenceFactory {
             if (item == null) continue;
 
             String type = item.optString("type");
+
+            if ("group".equals(type)) {
+                if (grouped) {
+                    // PreferenceGroupAdapter 对嵌套可折叠组直接抛异常，这里明确跳过
+                    Log.w(TAG, "nested group ignored: " + item.optString("key"));
+                    continue;
+                }
+                CardGroupPreference group = new CardGroupPreference(context);
+                String groupKey = item.optString("key");
+                if (!groupKey.isEmpty()) group.setKey(groupKey);
+                group.setTitle(resolveStringRef(context,
+                        resolveLang(language, item.optString("title"))));
+                addAction.add(group);
+                JSONArray children = item.optJSONArray("prefs");
+                if (children != null) {
+                    buildItems(context, prefs, children, root,
+                            group::addPreference, language, true);
+                }
+                created[i] = group;
+                continue;
+            }
+
             Preference p = create(context, type, item, prefs, language);
             if (p != null) {
                 dependencies[i] = item.optString("dependency", null);
                 disableOnKeys[i] = item.optString("disableOn", null);
                 // Resolve default values for dependency/disableOn parent keys
-                depDefaults[i] = findDefaultBool(items, dependencies[i], true);
-                dkDefaults[i] = findDefaultBool(items, disableOnKeys[i], false);
-                if ("seekbar".equals(type)) {
+                depDefaults[i] = findDefaultBool(root, dependencies[i], true);
+                dkDefaults[i] = findDefaultBool(root, disableOnKeys[i], false);
+                if (grouped) {
+                    if (p instanceof InlineColorPreference) {
+                        ((InlineColorPreference) p).setGrouped(true);
+                    } else if ("seekbar".equals(type)) {
+                        p.setLayoutResource(
+                                com.reandroid.wallpaper.R.layout.preference_grouped_seekbar);
+                    } else {
+                        p.setLayoutResource(
+                                com.reandroid.wallpaper.R.layout.preference_grouped_item);
+                    }
+                } else if ("seekbar".equals(type)) {
                     p.setLayoutResource(com.reandroid.wallpaper.R.layout.preference_modern_seekbar);
                 } else if (!(p instanceof InlineColorPreference)) {
                     // 内嵌取色器自带布局,不能被覆盖
@@ -141,7 +187,7 @@ public final class DynamicPreferenceFactory {
         // PluginSettingsFragment 触发动态区 rebuild（视觉必然正确）。
         for (int i = 0; i < count; i++) {
             Preference p = created[i];
-            if (p == null) continue;
+            if (p == null || p instanceof CardGroupPreference) continue;
             String dep = dependencies[i];
             String dk = disableOnKeys[i];
             boolean hasDep = dep != null && !dep.isEmpty();
@@ -326,13 +372,26 @@ public final class DynamicPreferenceFactory {
 
     static boolean findDefaultBool(JSONArray items, String key, boolean fallback) {
         if (key == null) return fallback;
+        Boolean found = findDefaultBoolOrNull(items, key, fallback);
+        return found != null ? found : fallback;
+    }
+
+    /** 递归查找（分组里的条目也能被组外的键引用）。@return 没找到返回 null */
+    private static Boolean findDefaultBoolOrNull(JSONArray items, String key,
+                                                 boolean defaultValue) {
         for (int i = 0; i < items.length(); i++) {
             JSONObject item = items.optJSONObject(i);
-            if (item != null && key.equals(item.optString("key"))) {
-                return item.optBoolean("default", fallback);
+            if (item == null) continue;
+            if (key.equals(item.optString("key"))) {
+                return item.optBoolean("default", defaultValue);
+            }
+            JSONArray nested = item.optJSONArray("prefs");
+            if (nested != null) {
+                Boolean found = findDefaultBoolOrNull(nested, key, defaultValue);
+                if (found != null) return found;
             }
         }
-        return fallback;
+        return null;
     }
 
     private static String resolveLang(JSONObject lang, String key) {
@@ -474,17 +533,24 @@ public final class DynamicPreferenceFactory {
      */
     public static Map<String, String[]> collectButtonSpecs(JSONObject layout) {
         Map<String, String[]> specs = new LinkedHashMap<>();
-        JSONArray items = layout != null ? layout.optJSONArray("prefs") : null;
-        if (items == null) return specs;
+        collectButtonSpecs(layout != null ? layout.optJSONArray("prefs") : null, specs);
+        return specs;
+    }
+
+    private static void collectButtonSpecs(JSONArray items, Map<String, String[]> out) {
+        if (items == null) return;
         for (int i = 0; i < items.length(); i++) {
             JSONObject item = items.optJSONObject(i);
-            if (item != null && "button".equals(item.optString("type"))) {
+            if (item == null) continue;
+            if ("button".equals(item.optString("type"))) {
                 String key = item.optString("key");
                 String action = item.optString("action", "");
-                if (!key.isEmpty()) specs.put(key, new String[]{action, item.optString("disableOn", null)});
+                if (!key.isEmpty()) {
+                    out.put(key, new String[]{action, item.optString("disableOn", null)});
+                }
             }
+            collectButtonSpecs(item.optJSONArray("prefs"), out);
         }
-        return specs;
     }
 
     private static String resolveStringRef(Context ctx, String s) {
