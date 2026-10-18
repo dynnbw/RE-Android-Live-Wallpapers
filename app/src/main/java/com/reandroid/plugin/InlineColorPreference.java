@@ -72,6 +72,13 @@ public class InlineColorPreference extends Preference {
         notifyChanged();
     }
 
+    /** 分组内改用无卡片布局；必须在添加到父容器前调用。 */
+    public void setGrouped(boolean grouped) {
+        setLayoutResource(grouped
+                ? R.layout.preference_grouped_color
+                : R.layout.preference_inline_color);
+    }
+
     /** 由设置工厂依据依赖条件调用。 */
     public void setControlsActive(boolean active) {
         if (mActive == active) {
