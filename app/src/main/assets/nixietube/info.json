@@ -1,5 +1,6 @@
 {
   "plugin": "com.reandroid.wallpaper.nixietube.NixieTubePlugin",
+  "pluginVk": "com.reandroid.wallpaper.nixietube.NixieTubeVKPlugin",
   "previewClass": "com.reandroid.wallpaper.nixietube.NixieTubeGL",
   "author": "REAndroid",
   "permissions": ["RECORD_AUDIO"]
