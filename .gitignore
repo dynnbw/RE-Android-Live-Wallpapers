@@ -36,6 +36,11 @@ gradle.properties
 # 见 app/build.gradle 的 signingConfigs.debug 与 scripts/ci_checks.py 的 NIGHTLY_KEYSTORE。
 !debug.keystore
 
+# Native build outputs（ndk-build 在 preBuild 阶段生成，不进仓库）
+app/src/main/jniLibs/
+app/src/main/jni/obj/
+app/src/main/jni/libs/
+
 # Logs and temp files
 *.log
 build_output.txt

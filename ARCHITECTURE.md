@@ -210,49 +210,62 @@ onSurfaceChanged (main thread)
 
 ### Vulkan 路径
 
-4 个壁纸（Fall、Galaxy、Galaxy4、Grass）提供 Vulkan 后端，通过 `BaseVKPluginEngine` 实现 `WallpaperEngine` + `Runnable`，自管渲染线程。复用同名 GL 壁纸的 Scene 纯逻辑类。
+Vulkan 是**备选渲染器**：每个插件的 `use_vulkan` 开关默认关，GLES 仍是主线。
+壁纸与设置页预览共用同一份 delegate；线程、配速与 surface 生命周期由
+`VkRendererEngine` / `VKSurfaceView` 共享。
 
 ```mermaid
 graph TD
-    subgraph PLUGIN[com.reandroid.plugin]
-        VKP[BaseVKPluginEngine]
+    subgraph HOST[com.reandroid.plugin]
+        ENGINE[VkRendererEngine]
+        BASE[BaseVKPluginEngine]
+        PASS[VkPassRendererDelegate]
+        NPASS[VkPassNative]
     end
-    subgraph VULKAN[com.reandroid.vulkan]
-        FRAME[FrameRateManager]
+    subgraph WALL[壁纸 delegate]
+        G4[Galaxy4VkDelegate]
+        GAL[GalaxyVkDelegate]
+        BS[BlueSeaVkDelegate]
+        FALL[FallVkDelegate]
+        GRASS[GrassVkDelegate]
     end
-    subgraph FALL[Fall VK]
-        FALL_E[FallVKPluginEngine]
-    end
-    subgraph GALAXY[Galaxy VK]
-        GAL_E[GalaxyVKPluginEngine]
-    end
-    subgraph GRASS[Grass VK]
-        GRA_E[GrassVKPluginEngine]
+    subgraph NATIVE[librebornvk.so]
+        COMMON[vk_common.h]
+        PR[vk_pass_renderer.cpp]
+        OLD[fall/grass vk_jni.cpp]
     end
 
-    VKP --> FALL_E
-    VKP --> GAL_E
-    VKP --> GRA_E
-
-    FALL_E -->|复用| FallScene
-    GAL_E -->|复用| GalaxyScene
-    GRA_E -->|复用| GrassScene
-
-    FALL_E -->|JNI| FALL_JNI[fallvk_jni.cpp]
-    GAL_E -->|JNI| GAL_JNI[galaxyvk_jni.cpp]
-    GRA_E -->|JNI| GRA_JNI[grassvk_jni.cpp]
-
-    FALL_JNI -->|NDK| FALL_SO[libfallvulkan.so]
-    GAL_JNI -->|NDK| GAL_SO[libgalaxyvulkan.so]
-    GRA_JNI -->|NDK| GRA_SO[libgrassvulkan.so]
+    BASE --> ENGINE
+    ENGINE --> G4
+    ENGINE --> GAL
+    ENGINE --> BS
+    ENGINE --> FALL
+    ENGINE --> GRASS
+    G4 --> PASS
+    GAL --> PASS
+    BS --> PASS
+    PASS --> NPASS
+    NPASS --> PR
+    FALL --> OLD
+    GRASS --> OLD
+    PR --> COMMON
+    OLD --> COMMON
 ```
 
-- `BaseVKPluginEngine`（`com.reandroid.plugin`）封装线程管理、Surface 生命周期、帧率诊断
-- 子类实现模板方法：`createRenderer()`、`destroyRenderer()`、`onSurfaceCreatedNative()`、`renderFrame()`、`uploadTextures()`
-- Native 代码通过 [vk_common.h](app/src/main/jni/vk_common.h) CRTP 模板共享基础设施：679 + 1176 + 1321 + 1540 = **4716** 行
-- `FrameRateManager` 提供共享 FPS 控制与 ANR 诊断（阈值 200ms，每 120 帧统计一次）
-- `vkArgbToRgba()` 转换 Android ARGB → Vulkan RGBA 字节序
-- Swapchain 格式使用 UNORM（非 SRGB）避免双重伽马校正
+- **通用 pass 渲染器**：native 的 `VkPassRenderer` 把帧循环、pipeline/descriptor、
+  顶点缓冲、纹理上传、命令录制收进一份实现；Java 的 `VkPassRendererDelegate`
+  只要求子类实现 `buildScene` / `updateFrame`。每壁纸的 VK 版 =
+  着色器 + 一份 pass 配置 + 每帧数据。
+- **旧路径**：fall / grass 仍用各自的 `*vk_jni.cpp`（迁移中）；galaxy / galaxy4 已迁到
+  通用层。加一个 VK 壁纸不再新增 `.so`、不写 JNI stub。
+- `BaseVKPluginEngine` 封装线程管理、Surface 生命周期、帧率诊断；
+  `FrameRateManager` 提供共享 FPS 控制与 ANR 诊断（阈值 200ms，每 120 帧统计一次）。
+- Native 全部打进一个 `librebornvk.so`（每 ABI 一个），由
+  [Android.mk](app/src/main/jni/Android.mk) 在 `preBuild` 阶段用 ndk-build 生成。
+  **`.so` 是构建产物，不进仓库**：`app/src/main/jniLibs/` 已在 `.gitignore` 里，
+  干净检出后第一次构建会自动生成。
+- `vkArgbToRgba()` 转换 Android ARGB → Vulkan RGBA 字节序；
+  Swapchain 格式使用 UNORM（非 SRGB）避免双重伽马校正。
 
 ### MusicVis 架构
 
@@ -344,7 +357,7 @@ app/src/main/
 │   ├── drawable/          天气图标 / 启动图标
 │   └── menu/              菜单
 ├── jni/                   Vulkan NDK C++ 源码 + Android.mk
-├── jniLibs/               Vulkan 预编译 .so（4 壁纸 × 4 架构 = 16 个）
+├── jniLibs/               ndk-build 产物（不进仓库，构建时生成）
 └── shaders/               Vulkan GLSL 着色器源码（构建时编译为 SPIR-V）
 ```
 
@@ -370,5 +383,8 @@ app/src/main/
 ./gradlew assembleRelease
 ```
 
-Vulkan 壁纸需要 `arm64-v8a`、`armeabi-v7a`、`x86_64`、`x86`。Native 编译使用 [Android.mk](app/src/main/jni/Android.mk)（ndk-build），在 `preBuild` 阶段自动触发。预编译 `.so` 输出到 [app/src/main/jniLibs/](app/src/main/jniLibs/)。
+Vulkan 壁纸需要 `arm64-v8a`、`armeabi-v7a`、`x86_64`、`x86`。Native 编译使用
+[Android.mk](app/src/main/jni/Android.mk)（ndk-build），在 `preBuild` 阶段自动触发，
+输出到 `app/src/main/jniLibs/`。该目录是**构建产物**（`.gitignore` 已忽略）：
+`.so` 不进仓库，干净检出后第一次构建会自动生成。
 
