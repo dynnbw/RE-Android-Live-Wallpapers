@@ -1,5 +1,7 @@
 {
   "title": "微生物",
+  "pref_microbes_group_simulation": "模拟",
+  "pref_microbes_group_appearance": "外观",
   "microbes_lifecycle_speed": "生命周期速度",
   "microbes_motion_activity": "游动活跃度",
   "microbes_color_mode": "配色风格",

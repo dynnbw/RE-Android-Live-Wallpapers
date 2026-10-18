@@ -1,5 +1,8 @@
 {
   "title": "光环螺旋",
+  "pref_holospiral_group_spiral": "螺旋",
+  "pref_holospiral_group_appearance": "外观",
+  "pref_holospiral_group_view": "视角",
   "holospiral_color_scheme": "配色方案",
   "holospiral_color_scheme_label_default": "默认",
   "holospiral_color_scheme_label_purple": "紫韵",

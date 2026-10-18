@@ -1,45 +1,52 @@
 {
   "prefs": [
     {
-      "type": "seekbar",
-      "key": "phasebeam_dot_count",
-      "title": "phasebeam_dot_count",
-      "default": "28",
-      "min": 10,
-      "max": 60
-    },
-    {
-      "type": "list",
-      "key": "theme",
-      "title": "theme",
-      "default": "phasebeam",
-      "values": [
-        "phasebeam",
-        "sunbeam",
-        "waterbeam"
-      ],
-      "labels": [
-        "theme_label_phasebeam",
-        "theme_label_sunbeam",
-        "theme_label_waterbeam"
+      "type": "group",
+      "key": "phasebeam_beam",
+      "title": "pref_phasebeam_group_beam",
+      "prefs": [
+        {
+          "type": "seekbar",
+          "key": "phasebeam_dot_count",
+          "title": "phasebeam_dot_count",
+          "default": "28",
+          "min": 10,
+          "max": 60
+        },
+        {
+          "type": "list",
+          "key": "theme",
+          "title": "theme",
+          "default": "phasebeam",
+          "values": [
+            "phasebeam",
+            "sunbeam",
+            "waterbeam"
+          ],
+          "labels": [
+            "theme_label_phasebeam",
+            "theme_label_sunbeam",
+            "theme_label_waterbeam"
+          ]
+        },
+        {
+          "type": "switch",
+          "key": "phasebeam_recolor_enabled",
+          "title": "phasebeam_recolor_enabled"
+        },
+        {
+          "type": "color",
+          "key": "phasebeam_recolor_color",
+          "title": "phasebeam_recolor_color",
+          "default": "#800000",
+          "labels": [
+            "phasebeam_hue",
+            "phasebeam_saturation",
+            "phasebeam_brightness"
+          ],
+          "dependency": "phasebeam_recolor_enabled"
+        }
       ]
-    },
-    {
-      "type": "switch",
-      "key": "phasebeam_recolor_enabled",
-      "title": "phasebeam_recolor_enabled"
-    },
-    {
-      "type": "color",
-      "key": "phasebeam_recolor_color",
-      "title": "phasebeam_recolor_color",
-      "default": "#800000",
-      "labels": [
-        "phasebeam_hue",
-        "phasebeam_saturation",
-        "phasebeam_brightness"
-      ],
-      "dependency": "phasebeam_recolor_enabled"
     }
   ]
 }

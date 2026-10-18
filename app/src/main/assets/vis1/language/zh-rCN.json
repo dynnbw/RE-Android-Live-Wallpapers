@@ -1,5 +1,8 @@
 {
   "title": "可视化器",
+  "pref_vis1_group_audio": "音频",
+  "pref_vis1_group_recolor": "着色",
+  "pref_vis1_group_background": "背景",
   "settings_entry": "可视化器",
   "musicvis_recolor": "着色模式",
   "musicvis_recolor_color": "颜色",

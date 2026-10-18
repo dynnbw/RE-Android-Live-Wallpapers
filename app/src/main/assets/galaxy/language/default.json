@@ -1,5 +1,7 @@
 {
   "title": "Galaxy",
+  "pref_galaxy_group_core": "Galaxy",
+  "pref_galaxy_group_precise": "Precise spiral",
   "galaxy_radius": "Galaxy Size",
   "galaxy_parallax": "Parallax Strength",
   "galaxy_particle_count": "Particle count",

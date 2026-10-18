@@ -1,50 +1,64 @@
 {
   "prefs": [
     {
-      "type": "switch",
-      "key": "musicvis_follow_volume",
-      "title": "musicvis_follow_volume",
-      "summary": "musicvis_follow_volume_summary",
-      "default": "false"
-    },
-    {
-      "type": "list",
-      "key": "musicvis_wave_mode",
-      "title": "pref_vis5_wave_mode",
-      "default": "0",
-      "values": [
-        "0",
-        "1",
-        "2"
-      ],
-      "labels": [
-        "pref_vis5_wave_mode_0",
-        "pref_vis5_wave_mode_1",
-        "pref_vis5_wave_mode_2"
+      "type": "group",
+      "key": "vis5_audio",
+      "title": "pref_vis5_group_audio",
+      "prefs": [
+        {
+          "type": "switch",
+          "key": "musicvis_follow_volume",
+          "title": "musicvis_follow_volume",
+          "summary": "musicvis_follow_volume_summary",
+          "default": "false"
+        },
+        {
+          "type": "list",
+          "key": "musicvis_wave_mode",
+          "title": "pref_vis5_wave_mode",
+          "default": "0",
+          "values": [
+            "0",
+            "1",
+            "2"
+          ],
+          "labels": [
+            "pref_vis5_wave_mode_0",
+            "pref_vis5_wave_mode_1",
+            "pref_vis5_wave_mode_2"
+          ]
+        }
       ]
     },
     {
-      "type": "list",
-      "key": "musicvis_bg_color",
-      "title": "musicvis_bg_color",
-      "default": "#000000",
-      "values": [
-        "#000000",
-        "#300303",
-        "#50330",
-        "#2F4F4F",
-        "#FFE4DE",
-        "#F0FFFF",
-        "#EDDEFF"
-      ],
-      "labels": [
-        "musicvis_bg_color_label_#000000",
-        "musicvis_bg_color_label_#300303",
-        "musicvis_bg_color_label_#50330",
-        "musicvis_bg_color_label_#2F4F4F",
-        "musicvis_bg_color_label_#FFE4DE",
-        "musicvis_bg_color_label_#F0FFFF",
-        "musicvis_bg_color_label_#EDDEFF"
+      "type": "group",
+      "key": "vis5_background",
+      "title": "pref_vis5_group_background",
+      "prefs": [
+        {
+          "type": "list",
+          "key": "musicvis_bg_color",
+          "title": "musicvis_bg_color",
+          "default": "#000000",
+          "values": [
+            "#000000",
+            "#300303",
+            "#50330",
+            "#2F4F4F",
+            "#FFE4DE",
+            "#F0FFFF",
+            "#EDDEFF"
+          ],
+          "labels": [
+            "musicvis_bg_color_label_#000000",
+            "musicvis_bg_color_label_#300303",
+            "musicvis_bg_color_label_#50330",
+            "musicvis_bg_color_label_#2F4F4F",
+            "musicvis_bg_color_label_#FFE4DE",
+            "musicvis_bg_color_label_#F0FFFF",
+            "musicvis_bg_color_label_#EDDEFF"
+          ]
+        }
       ]
     }
   ]

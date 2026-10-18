@@ -1,5 +1,6 @@
 {
   "title": "Polar Clock",
+  "pref_polarclock_group_dial": "Dial",
   "show_seconds": "Show seconds",
   "variable_line_width": "Vary ring widths",
   "palette": "Color palette",

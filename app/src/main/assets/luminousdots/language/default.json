@@ -1,5 +1,7 @@
 {
   "title": "Luminous Dots",
+  "pref_luminousdots_group_appearance": "Appearance",
+  "pref_luminousdots_group_animation": "Animation",
   "pref_shape": "Shape",
   "shape_label_0": "Box",
   "shape_label_1": "Round",

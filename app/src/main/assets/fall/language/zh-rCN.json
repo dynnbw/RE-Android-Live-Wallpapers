@@ -1,5 +1,8 @@
 {
   "title": "水面落叶",
+  "pref_fall_group_leaves": "落叶",
+  "pref_fall_group_water": "水面",
+  "pref_fall_group_sky": "天空",
   "fall_leaf_size": "叶子大小",
   "fall_speed": "飘落速度",
   "pref_fall_leaf_count": "落叶数量",

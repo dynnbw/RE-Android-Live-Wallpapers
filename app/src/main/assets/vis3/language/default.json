@@ -1,5 +1,8 @@
 {
   "title": "Spectrum",
+  "pref_vis3_group_audio": "Audio",
+  "pref_vis3_group_recolor": "Recolor",
+  "pref_vis3_group_background": "Background",
   "musicvis_fit_screen": "Show more samples",
   "musicvis_fit_screen_summary": "Scale the waveform to the screen's short side",
   "musicvis_fft_size": "resolution",

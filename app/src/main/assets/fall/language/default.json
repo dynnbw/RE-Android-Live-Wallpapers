@@ -1,5 +1,8 @@
 {
   "title": "Water Leaves",
+  "pref_fall_group_leaves": "Leaves",
+  "pref_fall_group_water": "Water",
+  "pref_fall_group_sky": "Sky",
   "fall_leaf_size": "Leaf Size",
   "fall_speed": "Fall Speed",
   "pref_fall_leaf_count": "Leaf count",

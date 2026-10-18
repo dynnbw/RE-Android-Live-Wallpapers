@@ -1,5 +1,6 @@
 {
   "title": "Phase Beam",
+  "pref_phasebeam_group_beam": "Beam",
   "phasebeam_dot_count": "Particle Count",
   "theme": "Color theme",
   "phasebeam_recolor_enabled": "Adjust beam colors",

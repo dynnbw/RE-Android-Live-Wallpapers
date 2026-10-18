@@ -1,5 +1,7 @@
 {
   "title": "Deep Sea",
+  "pref_deepsea_group_jelly": "Jellyfish",
+  "pref_deepsea_group_background": "Background",
   "unitscale": "Jellyfish size",
   "unitnumber": "Number of jellyfish",
   "backgroundbrightness": "Background brightness",

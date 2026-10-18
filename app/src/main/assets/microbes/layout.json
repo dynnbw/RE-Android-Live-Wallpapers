@@ -1,41 +1,55 @@
 {
   "prefs": [
     {
-      "type": "seekbar",
-      "key": "microbes_count",
-      "title": "microbes_count",
-      "default": "300",
-      "min": 50,
-      "max": 500
+      "type": "group",
+      "key": "microbes_simulation",
+      "title": "pref_microbes_group_simulation",
+      "prefs": [
+        {
+          "type": "seekbar",
+          "key": "microbes_count",
+          "title": "microbes_count",
+          "default": "300",
+          "min": 50,
+          "max": 500
+        },
+        {
+          "type": "seekbar",
+          "key": "microbes_lifecycle_speed",
+          "title": "microbes_lifecycle_speed",
+          "default": "100",
+          "min": 50,
+          "max": 200
+        },
+        {
+          "type": "seekbar",
+          "key": "microbes_motion_activity",
+          "title": "microbes_motion_activity",
+          "default": "100",
+          "min": 10,
+          "max": 200
+        }
+      ]
     },
     {
-      "type": "seekbar",
-      "key": "microbes_lifecycle_speed",
-      "title": "microbes_lifecycle_speed",
-      "default": "100",
-      "min": 50,
-      "max": 200
-    },
-    {
-      "type": "seekbar",
-      "key": "microbes_motion_activity",
-      "title": "microbes_motion_activity",
-      "default": "100",
-      "min": 10,
-      "max": 200
-    },
-    {
-      "type": "list",
-      "key": "microbes_color_mode",
-      "title": "microbes_color_mode",
-      "default": "original",
-      "values": [
-        "original",
-        "modern"
-      ],
-      "labels": [
-        "microbes_color_mode_label_original",
-        "microbes_color_mode_label_modern"
+      "type": "group",
+      "key": "microbes_appearance",
+      "title": "pref_microbes_group_appearance",
+      "prefs": [
+        {
+          "type": "list",
+          "key": "microbes_color_mode",
+          "title": "microbes_color_mode",
+          "default": "original",
+          "values": [
+            "original",
+            "modern"
+          ],
+          "labels": [
+            "microbes_color_mode_label_original",
+            "microbes_color_mode_label_modern"
+          ]
+        }
       ]
     }
   ]

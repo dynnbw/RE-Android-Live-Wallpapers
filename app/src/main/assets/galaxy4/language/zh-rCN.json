@@ -1,5 +1,7 @@
 {
   "title": "黑洞",
+  "pref_galaxy4_group_galaxy": "星系",
+  "pref_galaxy4_group_background": "背景",
   "galaxy4_radius": "星系大小",
   "galaxy4_rotation_speed": "旋转速度",
   "galaxy4_thickness": "厚度散布",

@@ -1,5 +1,8 @@
 {
   "title": "频谱",
+  "pref_vis3_group_audio": "音频",
+  "pref_vis3_group_recolor": "着色",
+  "pref_vis3_group_background": "背景",
   "musicvis_fit_screen": "显示更多采样",
   "musicvis_fit_screen_summary": "横向比例按屏幕短边缩放",
   "musicvis_fft_size": "分辨率",

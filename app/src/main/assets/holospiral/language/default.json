@@ -1,5 +1,8 @@
 {
   "title": "Holo Spiral",
+  "pref_holospiral_group_spiral": "Spiral",
+  "pref_holospiral_group_appearance": "Appearance",
+  "pref_holospiral_group_view": "View",
   "holospiral_color_scheme": "Color Theme",
   "holospiral_color_scheme_label_default": "Default",
   "holospiral_color_scheme_label_purple": "Purple",

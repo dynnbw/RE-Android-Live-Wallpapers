@@ -1,5 +1,6 @@
 {
   "title": "Bubbles",
+  "pref_noisefield_group_particles": "Particles",
   "noisefield_dot_count": "Particle Count",
   "noisefield_speed": "Movement Speed",
   "noisefield_touch_force": "Touch Repulsion",

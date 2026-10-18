@@ -1,5 +1,9 @@
 {
   "title": "环形频谱",
+  "pref_vis6_group_audio": "音频",
+  "pref_vis6_group_recolor": "着色",
+  "pref_vis6_group_appearance": "外观",
+  "pref_vis6_group_background": "背景",
   "musicvis_recolor": "着色模式",
   "musicvis_recolor_mode": "着色模式",
   "circle_ring_count": "环形层数",

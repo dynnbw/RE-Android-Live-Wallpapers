@@ -1,5 +1,8 @@
 {
   "title": "Shake Them All",
+  "pref_droid_group_robot": "Robots",
+  "pref_droid_group_interaction": "Interaction",
+  "pref_droid_group_background": "Background",
   "droid_count": "Number of droids",
   "droid_size": "Size of droids",
   "droid_gravity": "Reaction to gravity",

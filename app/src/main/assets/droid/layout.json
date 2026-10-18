@@ -1,63 +1,84 @@
 {
   "prefs": [
     {
-      "type": "seekbar",
-      "key": "droid_count",
-      "title": "droid_count",
-      "min": 1,
-      "max": 30,
-      "default": 10
-    },
-    {
-      "type": "seekbar",
-      "key": "droid_size",
-      "title": "droid_size",
-      "min": 20,
-      "max": 100,
-      "default": 50
-    },
-    {
-      "type": "seekbar",
-      "key": "droid_gravity",
-      "title": "droid_gravity",
-      "min": 0,
-      "max": 100,
-      "default": 50
-    },
-    {
-      "type": "seekbar",
-      "key": "droid_shake",
-      "title": "droid_shake",
-      "min": 0,
-      "max": 100,
-      "default": 0
-    },
-    {
-      "type": "seekbar",
-      "key": "droid_touch",
-      "title": "droid_touch",
-      "min": 0,
-      "max": 100,
-      "default": 50
-    },
-    {
-      "type": "color",
-      "key": "droid_bg_color",
-      "title": "droid_bg_color",
-      "default": "#30587C",
-      "labels": [
-        "color_hue",
-        "color_saturation",
-        "color_brightness"
+      "type": "group",
+      "key": "droid_robot",
+      "title": "pref_droid_group_robot",
+      "prefs": [
+        {
+          "type": "seekbar",
+          "key": "droid_count",
+          "title": "droid_count",
+          "min": 1,
+          "max": 30,
+          "default": 10
+        },
+        {
+          "type": "seekbar",
+          "key": "droid_size",
+          "title": "droid_size",
+          "min": 20,
+          "max": 100,
+          "default": 50
+        },
+        {
+          "type": "seekbar",
+          "key": "droid_light",
+          "title": "droid_light",
+          "min": 0,
+          "max": 100,
+          "default": 0
+        }
       ]
     },
     {
-      "type": "seekbar",
-      "key": "droid_light",
-      "title": "droid_light",
-      "min": 0,
-      "max": 100,
-      "default": 0
+      "type": "group",
+      "key": "droid_interaction",
+      "title": "pref_droid_group_interaction",
+      "prefs": [
+        {
+          "type": "seekbar",
+          "key": "droid_gravity",
+          "title": "droid_gravity",
+          "min": 0,
+          "max": 100,
+          "default": 50
+        },
+        {
+          "type": "seekbar",
+          "key": "droid_shake",
+          "title": "droid_shake",
+          "min": 0,
+          "max": 100,
+          "default": 0
+        },
+        {
+          "type": "seekbar",
+          "key": "droid_touch",
+          "title": "droid_touch",
+          "min": 0,
+          "max": 100,
+          "default": 50
+        }
+      ]
+    },
+    {
+      "type": "group",
+      "key": "droid_background",
+      "title": "pref_droid_group_background",
+      "prefs": [
+        {
+          "type": "color",
+          "key": "droid_bg_color",
+          "title": "droid_bg_color",
+          "default": "#30587C",
+          "labels": [
+            "color_hue",
+            "color_saturation",
+            "color_brightness"
+          ]
+        }
+      ]
     }
   ]
 }

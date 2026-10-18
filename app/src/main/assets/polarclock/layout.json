@@ -1,59 +1,66 @@
 {
   "prefs": [
     {
-      "type": "switch",
-      "key": "show_seconds",
-      "title": "show_seconds",
-      "default": "true"
-    },
-    {
-      "type": "switch",
-      "key": "variable_line_width",
-      "title": "variable_line_width",
-      "default": "true"
-    },
-    {
-      "type": "list",
-      "key": "palette",
-      "title": "palette",
-      "default": "palette_gray",
-      "values": [
-        "palette_gray",
-        "palette_white_c",
-        "palette_black_c",
-        "palette_matrix",
-        "palette_halloween",
-        "palette_violet",
-        "palette_oceanic",
-        "palette_zenburn"
-      ],
-      "labels": [
-        "palette_label_palette_gray",
-        "palette_label_palette_white_c",
-        "palette_label_palette_black_c",
-        "palette_label_palette_matrix",
-        "palette_label_palette_halloween",
-        "palette_label_palette_violet",
-        "palette_label_palette_oceanic",
-        "palette_label_palette_zenburn"
-      ]
-    },
-    {
-      "type": "list",
-      "key": "ring_thickness",
-      "title": "ring_thickness",
-      "default": "screen",
-      "values": [
-        "screen",
-        "ref480",
-        "ref640",
-        "ref720"
-      ],
-      "labels": [
-        "ring_thickness_label_screen",
-        "ring_thickness_label_ref480",
-        "ring_thickness_label_ref640",
-        "ring_thickness_label_ref720"
+      "type": "group",
+      "key": "polarclock_dial",
+      "title": "pref_polarclock_group_dial",
+      "prefs": [
+        {
+          "type": "switch",
+          "key": "show_seconds",
+          "title": "show_seconds",
+          "default": "true"
+        },
+        {
+          "type": "switch",
+          "key": "variable_line_width",
+          "title": "variable_line_width",
+          "default": "true"
+        },
+        {
+          "type": "list",
+          "key": "palette",
+          "title": "palette",
+          "default": "palette_gray",
+          "values": [
+            "palette_gray",
+            "palette_white_c",
+            "palette_black_c",
+            "palette_matrix",
+            "palette_halloween",
+            "palette_violet",
+            "palette_oceanic",
+            "palette_zenburn"
+          ],
+          "labels": [
+            "palette_label_palette_gray",
+            "palette_label_palette_white_c",
+            "palette_label_palette_black_c",
+            "palette_label_palette_matrix",
+            "palette_label_palette_halloween",
+            "palette_label_palette_violet",
+            "palette_label_palette_oceanic",
+            "palette_label_palette_zenburn"
+          ]
+        },
+        {
+          "type": "list",
+          "key": "ring_thickness",
+          "title": "ring_thickness",
+          "default": "screen",
+          "values": [
+            "screen",
+            "ref480",
+            "ref640",
+            "ref720"
+          ],
+          "labels": [
+            "ring_thickness_label_screen",
+            "ring_thickness_label_ref480",
+            "ring_thickness_label_ref640",
+            "ring_thickness_label_ref720"
+          ]
+        }
       ]
     }
   ]
