@@ -1,4 +1,5 @@
 {
   "plugin": "com.reandroid.wallpaper.aurora2.Aurora2Plugin",
+  "pluginVk": "com.reandroid.wallpaper.aurora2.Aurora2VKPlugin",
   "previewClass": "com.reandroid.wallpaper.aurora2.Aurora2GL"
 }
