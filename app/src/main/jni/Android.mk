@@ -15,7 +15,8 @@ LOCAL_SRC_FILES := \
     galaxyvk_jni.cpp \
     fallvk_jni.cpp \
     grassvk_jni.cpp \
-    galaxy4vk_jni.cpp
+    galaxy4vk_jni.cpp \
+    vk_pass_renderer.cpp
 LOCAL_CPPFLAGS := -std=c++17
 LOCAL_LDLIBS := -landroid -llog -lvulkan
 include $(BUILD_SHARED_LIBRARY)

@@ -14,6 +14,7 @@ bool registerGalaxyVk(JNIEnv* env);
 bool registerFallVk(JNIEnv* env);
 bool registerGrassVk(JNIEnv* env);
 bool registerGalaxy4Vk(JNIEnv* env);
+bool registerPassVk(JNIEnv* env);
 
 extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* /*reserved*/) {
     JNIEnv* env = nullptr;
@@ -21,7 +22,7 @@ extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* /*reserved*/) {
         return JNI_ERR;
     }
     if (!registerGalaxyVk(env) || !registerFallVk(env) || !registerGrassVk(env)
-            || !registerGalaxy4Vk(env)) {
+            || !registerGalaxy4Vk(env) || !registerPassVk(env)) {
         return JNI_ERR;
     }
     return JNI_VERSION_1_6;
