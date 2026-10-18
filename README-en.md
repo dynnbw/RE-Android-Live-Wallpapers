@@ -44,7 +44,7 @@ Method 3: Long-press home screen → Wallpapers → find "REAndroid Live Wallpap
 
 ## Wallpaper List
 
-**33** wallpapers total (2 more are hidden and do not appear in the app's list), with **4** (Galaxy, Galaxy4, Grass, Fall) offering an additional Vulkan backend
+**33** wallpapers total (2 more are hidden and do not appear in the app's list), with **17** offering an additional Vulkan backend (see the VK column below)
 
 | Wallpaper | Type | VK | Description |
 | --- | --- | --- | --- |
@@ -53,29 +53,29 @@ Method 3: Long-press home screen → Wallpapers → find "REAndroid Live Wallpap
 | NightSky | Starfield | | 9,000 real stars from the Hipparcos catalog, gyroscope tracking, long-press to accelerate star trails |
 | Microbes | Particles | | Microbial swarm AI, touch to feed, reproduction/death cycle |
 | Grass | Nature | ✓ | Wind-blown grass, solar/lunar eclipses, weather integration |
-| WildWorld | Nature | | Prehistoric world with volcanoes, dinosaurs, pterosaurs, fireballs |
+| WildWorld | Nature | ✓ | Prehistoric world with volcanoes, dinosaurs, pterosaurs, fireballs |
 | WalkAround | Nature | | Camera perspective — what you see is what you get |
-| Cube | 3D | | 8 wireframe shapes, 3D rotation, touch drag |
-| Forest | Nature | | Forest with parallax scrolling |
+| Cube | 3D | ✓ | 8 wireframe shapes, 3D rotation, touch drag |
+| Forest | Nature | ✓ | Forest with parallax scrolling |
 | DeepSea | Nature | | Deep-sea jellyfish swarm, gyroscope tracking |
-| BlueSea | Nature | | Floating jellyfish, rising particles, tap to light up |
+| BlueSea | Nature | ✓ | Floating jellyfish, rising particles, tap to light up |
 | Fall | Nature | ✓ | Falling autumn leaves, water ripples |
-| Ocean | Weather | | Ocean weather wallpaper — waves/clouds/precipitation linked to real weather |
-| Windmill | Weather | | Windmill weather wallpaper — wind speed and sky change with weather |
+| Ocean | Weather | ✓ | Ocean weather wallpaper — waves/clouds/precipitation linked to real weather |
+| Windmill | Weather | ✓ | Windmill weather wallpaper — wind speed and sky change with weather |
 | Nexus | Effects | | Pulsed halo |
-| PhaseBeam | Effects | | Phase beam, HSL color tuning |
+| PhaseBeam | Effects | ✓ | Phase beam, HSL color tuning |
 | NoiseField | Effects | | Perlin noise particles, touch perturbation |
 | HoloSpiral | Effects | | Holographic spiral, 3D perspective rotation |
-| MagicSmoke | Effects | | Multi-layer smoke blending, psychedelic effect |
-| Aurora1 | Aurora | | Northern lights, 99-frame glow animation |
-| Aurora2 | Aurora | | Northern lights v2, more brilliant colors |
+| MagicSmoke | Effects | ✓ | Multi-layer smoke blending, psychedelic effect |
+| Aurora1 | Aurora | ✓ | Northern lights, 99-frame glow animation |
+| Aurora2 | Aurora | ✓ | Northern lights v2, more brilliant colors |
 | Fireworks | Effects | | Firework particles, tap to launch |
-| LuminousDots | Effects | | Luminous particle field |
-| CosmicFlow | Effects | | Grey ripple background with a GPU noise flow field, 8 colour themes |
+| LuminousDots | Effects | ✓ | Luminous particle field |
+| CosmicFlow | Effects | ✓ | Grey ripple background with a GPU noise flow field, 8 colour themes |
 | Silk | Effects | | Flowing silk ribbons, 3 colour themes |
 | Droid | Effects | | Android robots in parts, driven by gravity, acceleration and touch (listed in the app as "Shake Them All") |
 | PolarClock | Clock | | Polar clock, three palette styles |
-| NixieTube | Clock | | Nixie tube clock, audio-reactive |
+| NixieTube | Clock | ✓ | Nixie tube clock, audio-reactive |
 | vis2 | Music | | Audio spectrum visualization — FFT waveform |
 | vis3 | Music | | Audio spectrum visualization — PCM waveform |
 | vis4 | Music | | Audio visualization — VU meter style |
@@ -89,7 +89,7 @@ Compared to the original AOSP/MediaTek wallpapers:
 - **Independent Settings**: Each wallpaper has its own settings page — adjust particle count, color, animation speed, etc.
 - **Weather Integration**: Grass, Ocean, and Windmill change visuals based on real weather (requires API key).
 - **Music Visualization**: 5 audio spectrum styles — wallpapers react to music in real time.
-- **Vulkan Backend**: Galaxy, Galaxy4, Grass, and Fall support optional Vulkan rendering.
+- **Vulkan Backend**: 17 wallpapers support optional Vulkan rendering (see the VK column in the wallpaper list).
 
 <a id="weather-setup"></a>
 ## Weather Setup
@@ -180,7 +180,7 @@ Hardware consumption varies significantly across wallpapers:
 **Power-saving Tips:**
 - Lower particle count or grass blade count via wallpaper settings
 - Set global framerate to 30 FPS (Settings page overflow menu → Global Framerate)
-- For Galaxy/Galaxy4/Grass/Fall, try enabling Vulkan rendering
+- For wallpapers with a Vulkan backend (see the VK column), try enabling Vulkan rendering
 - Weather integration can be turned off (Grass settings → disable "Enable Weather Effects")
 
 <a id="faq"></a>
@@ -193,7 +193,7 @@ MIUI/HyperOS users need to grant "Live Wallpaper Service" permission in system s
 Check: ① Is the right source selected? (Open-Meteo and the China Meteorological Administration source both need no key — the former worldwide, the latter in the mainland) ② If you picked OpenWeather, is the key filled in? (weather icon → "Weather Source" → OpenWeather → "Configure API") ③ Is location permission granted? ④ Is the network working? — **OpenWeather is often unreachable from mainland networks**, which is why the other two sources are built in ⑤ Has the free quota run out? (1,000 calls/day) Long-press the weather icon to see the last refresh time.
 
 **Q: Why can't I see the Vulkan toggle?**
-Only Galaxy, Galaxy4, Grass, and Fall have Vulkan backends. If your device doesn't support Vulkan, the toggle will be visible but switching may have no effect or cause crashes.
+17 wallpapers have Vulkan backends (see the VK column in the wallpaper list above). If your device doesn't support Vulkan, the toggle will be visible but switching may have no effect or cause crashes.
 
 **Q: Music visualization isn't responding?**
 Confirm: ① Record Audio permission is granted ② Audio is currently playing (media volume is not zero)
