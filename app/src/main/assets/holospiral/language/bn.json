@@ -1,5 +1,8 @@
 {
   "title": "হলো সর্পিল",
+  "pref_holospiral_group_spiral": "সর্পিল",
+  "pref_holospiral_group_appearance": "চেহারা",
+  "pref_holospiral_group_view": "দৃশ্য",
   "holospiral_color_scheme": "রঙের থিম",
   "holospiral_color_scheme_label_default": "ডিফল্ট",
   "holospiral_color_scheme_label_purple": "বেগুনি",

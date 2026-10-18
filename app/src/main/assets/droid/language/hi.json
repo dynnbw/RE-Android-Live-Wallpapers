@@ -1,5 +1,8 @@
 {
   "title": "सबको हिलाओ",
+  "pref_droid_group_robot": "रोबोट",
+  "pref_droid_group_interaction": "इंटरैक्शन",
+  "pref_droid_group_background": "पृष्ठभूमि",
   "droid_count": "ड्रॉइड की संख्या",
   "droid_size": "ड्रॉइड का आकार",
   "droid_gravity": "गुरुत्वाकर्षण प्रतिक्रिया",

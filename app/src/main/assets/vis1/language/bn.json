@@ -1,5 +1,8 @@
 {
   "title": "ভিজুয়ালাইজার",
+  "pref_vis1_group_audio": "অডিও",
+  "pref_vis1_group_recolor": "রঙ পরিবর্তন",
+  "pref_vis1_group_background": "পটভূমি",
   "settings_entry": "ভিজুয়ালাইজার",
   "musicvis_recolor": "পুনরায় রঙ করুন",
   "musicvis_recolor_color": "রঙ",

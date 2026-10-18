@@ -1,5 +1,7 @@
 {
   "title": "Microbios",
+  "pref_microbes_group_simulation": "Simulación",
+  "pref_microbes_group_appearance": "Apariencia",
   "microbes_lifecycle_speed": "Velocidad del ciclo de vida",
   "microbes_motion_activity": "Actividad de movimiento",
   "microbes_color_mode": "Estilo de color",

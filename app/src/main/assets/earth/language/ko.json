@@ -1,5 +1,7 @@
 {
   "title": "지구",
+  "pref_earth_group_rotation": "회전",
+  "pref_earth_group_appearance": "모양",
   "earth_spin_speed": "자전 속도",
   "earth_spin_speed_summary": "지구가 스스로 도는 속도. 0이면 정지",
   "earth_sky": "별밤 배경",

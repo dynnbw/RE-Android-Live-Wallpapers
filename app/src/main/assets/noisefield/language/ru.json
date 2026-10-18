@@ -1,5 +1,6 @@
 {
   "title": "Пузыри",
+  "pref_noisefield_group_particles": "Частицы",
   "noisefield_dot_count": "Количество частиц",
   "noisefield_speed": "Скорость движения",
   "noisefield_touch_force": "Отталкивание при касании",

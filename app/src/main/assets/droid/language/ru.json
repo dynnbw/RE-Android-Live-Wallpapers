@@ -1,5 +1,8 @@
 {
   "title": "Встряхни их всех",
+  "pref_droid_group_robot": "Роботы",
+  "pref_droid_group_interaction": "Взаимодействие",
+  "pref_droid_group_background": "Фон",
   "droid_count": "Количество дроидов",
   "droid_size": "Размер дроидов",
   "droid_gravity": "Реакция на гравитацию",

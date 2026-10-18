@@ -1,5 +1,7 @@
 {
   "title": "Erde",
+  "pref_earth_group_rotation": "Rotation",
+  "pref_earth_group_appearance": "Aussehen",
   "earth_spin_speed": "Eigendrehung",
   "earth_spin_speed_summary": "Wie schnell sich die Erde dreht; 0 stoppt sie",
   "earth_sky": "Sternenfeld",

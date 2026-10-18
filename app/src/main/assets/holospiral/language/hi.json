@@ -1,5 +1,8 @@
 {
   "title": "होलो सर्पिल",
+  "pref_holospiral_group_spiral": "सर्पिल",
+  "pref_holospiral_group_appearance": "रूप",
+  "pref_holospiral_group_view": "दृश्य",
   "holospiral_color_scheme": "रंग थीम",
   "holospiral_color_scheme_label_default": "डिफ़ॉल्ट",
   "holospiral_color_scheme_label_purple": "बैंगनी",

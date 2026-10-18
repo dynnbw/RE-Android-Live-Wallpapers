@@ -1,5 +1,8 @@
 {
   "title": "ビジュアライザ",
+  "pref_vis1_group_audio": "オーディオ",
+  "pref_vis1_group_recolor": "色変更",
+  "pref_vis1_group_background": "背景",
   "settings_entry": "ビジュアライザ",
   "musicvis_recolor": "再着色",
   "musicvis_recolor_color": "色",

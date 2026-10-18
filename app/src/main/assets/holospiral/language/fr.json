@@ -1,5 +1,8 @@
 {
   "title": "Spirale Holo",
+  "pref_holospiral_group_spiral": "Spirale",
+  "pref_holospiral_group_appearance": "Apparence",
+  "pref_holospiral_group_view": "Vue",
   "holospiral_color_scheme": "Thème de couleur",
   "holospiral_color_scheme_label_default": "Par défaut",
   "holospiral_color_scheme_label_purple": "Violet",

@@ -1,5 +1,7 @@
 {
   "title": "Фейерверки",
+  "pref_fireworks_group_burst": "Фейерверк",
+  "pref_fireworks_group_background": "Фон",
   "pref_custom_background": "",
   "pref_reset_background": "",
   "pref_fireworks_count_title": "Количество фейерверков",

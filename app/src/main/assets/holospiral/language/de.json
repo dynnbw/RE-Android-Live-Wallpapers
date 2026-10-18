@@ -1,5 +1,8 @@
 {
   "title": "Holo-Spirale",
+  "pref_holospiral_group_spiral": "Spirale",
+  "pref_holospiral_group_appearance": "Aussehen",
+  "pref_holospiral_group_view": "Ansicht",
   "holospiral_color_scheme": "Farbthema",
   "holospiral_color_scheme_label_default": "Standard",
   "holospiral_color_scheme_label_purple": "Lila",

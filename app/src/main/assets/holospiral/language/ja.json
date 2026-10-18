@@ -1,5 +1,8 @@
 {
   "title": "光輪スパイラル",
+  "pref_holospiral_group_spiral": "スパイラル",
+  "pref_holospiral_group_appearance": "外観",
+  "pref_holospiral_group_view": "視点",
   "holospiral_color_scheme": "カラーテーマ",
   "holospiral_color_scheme_label_default": "デフォルト",
   "holospiral_color_scheme_label_purple": "パープル",

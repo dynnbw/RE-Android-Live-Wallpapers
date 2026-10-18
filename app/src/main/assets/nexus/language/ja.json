@@ -1,5 +1,8 @@
 {
   "title": "ネクサス",
+  "pref_nexus_group_pulses": "パルス",
+  "pref_nexus_group_motion": "動き",
+  "pref_nexus_group_background": "背景",
   "nexus_background_preset": "背景",
   "nexus_max_pulses": "最大通常パルス数",
   "nexus_max_extras": "最大追加パルス数",

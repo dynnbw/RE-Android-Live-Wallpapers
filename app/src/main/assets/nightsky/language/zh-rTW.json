@@ -1,5 +1,7 @@
 {
   "title": "夜空",
+  "pref_nightsky_group_camera": "相機",
+  "pref_nightsky_group_time": "時間",
   "nightsky_camera_focal_mm": "相機焦距",
   "nightsky_use_sensor": "使用感測器朝向",
   "nightsky_auto_time_accel": "自動時間加速",

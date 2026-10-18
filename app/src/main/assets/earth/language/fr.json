@@ -1,5 +1,7 @@
 {
   "title": "Terre",
+  "pref_earth_group_rotation": "Rotation",
+  "pref_earth_group_appearance": "Apparence",
   "earth_spin_speed": "Vitesse de rotation",
   "earth_spin_speed_summary": "Vitesse de rotation de la Terre ; 0 l’arrête",
   "earth_sky": "Champ d’étoiles",

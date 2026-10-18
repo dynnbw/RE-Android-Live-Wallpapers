@@ -1,5 +1,8 @@
 {
   "title": "Espectro",
+  "pref_vis3_group_audio": "Áudio",
+  "pref_vis3_group_recolor": "Recolorir",
+  "pref_vis3_group_background": "Plano de fundo",
   "musicvis_fit_screen": "Mostrar mais amostras",
   "musicvis_fit_screen_summary": "Escala a onda pelo lado curto da tela",
   "musicvis_use_triangle_strip": "Usar malha de tiras de triângulos legada",

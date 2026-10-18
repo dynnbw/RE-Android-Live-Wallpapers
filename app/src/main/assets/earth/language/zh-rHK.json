@@ -1,5 +1,7 @@
 {
   "title": "地球",
+  "pref_earth_group_rotation": "自轉",
+  "pref_earth_group_appearance": "外觀",
   "earth_spin_speed": "空閒自轉速度",
   "earth_spin_speed_summary": "地球自行旋轉的快慢；0 為靜止",
   "earth_sky": "星空背景",

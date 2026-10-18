@@ -1,5 +1,7 @@
 {
   "title": "銀河",
+  "pref_galaxy_group_core": "銀河",
+  "pref_galaxy_group_precise": "精密スパイラル",
   "galaxy_radius": "銀河のサイズ",
   "galaxy_parallax": "視差の強さ",
   "galaxy_particle_count": "パーティクル数",

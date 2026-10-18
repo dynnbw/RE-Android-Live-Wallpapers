@@ -34,5 +34,7 @@
   "pref_grass_legacy_firefly": "Vagalumes clássicos",
   "pref_grass_legacy_firefly_desc": "Vagalumes clássicos em vez dos modernos",
   "pref_grass_light": "Grama em contraluz",
-  "pref_grass_glow": "Efeitos"
+  "pref_grass_glow": "Brilho",
+  "pref_grass_firefly_light": "Luz de vaga-lumes",
+  "pref_grass_moon_glow": "Halo lunar"
 }

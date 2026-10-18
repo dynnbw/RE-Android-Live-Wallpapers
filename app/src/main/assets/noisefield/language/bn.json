@@ -1,5 +1,6 @@
 {
   "title": "বুদবুদ",
+  "pref_noisefield_group_particles": "কণা",
   "noisefield_dot_count": "কণার সংখ্যা",
   "noisefield_speed": "গতিবেগ",
   "noisefield_touch_force": "স্পর্শ প্রতিকর্ষণ",

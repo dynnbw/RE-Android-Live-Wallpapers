@@ -1,5 +1,8 @@
 {
   "title": "수면 위 낙엽",
+  "pref_fall_group_leaves": "나뭇잎",
+  "pref_fall_group_water": "물",
+  "pref_fall_group_sky": "하늘",
   "fall_leaf_size": "잎 크기",
   "fall_speed": "낙하 속도",
   "pref_fall_leaf_count": "낙엽 수",

@@ -34,5 +34,7 @@
   "pref_grass_legacy_firefly": "Klassische Glühwürmchen",
   "pref_grass_legacy_firefly_desc": "Klassische Glühwürmchen statt modernen",
   "pref_grass_light": "Gegenlicht-Gras",
-  "pref_grass_glow": "Effekte"
+  "pref_grass_glow": "Glühen",
+  "pref_grass_firefly_light": "Glühwürmchenlicht",
+  "pref_grass_moon_glow": "Mondhof"
 }

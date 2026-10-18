@@ -1,5 +1,7 @@
 {
   "title": "地球",
+  "pref_earth_group_rotation": "回転",
+  "pref_earth_group_appearance": "外観",
   "earth_spin_speed": "自転速度",
   "earth_spin_speed_summary": "地球が自ら回る速さ。0 で停止",
   "earth_sky": "星空",

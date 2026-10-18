@@ -1,5 +1,6 @@
 {
   "title": "Relógio Polar",
+  "pref_polarclock_group_dial": "Mostrador",
   "show_seconds": "Mostrar segundos",
   "variable_line_width": "Variar larguras dos anéis",
   "palette": "Paleta de Cores",

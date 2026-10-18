@@ -1,5 +1,7 @@
 {
   "title": "Agujero negro",
+  "pref_galaxy4_group_galaxy": "Galaxia",
+  "pref_galaxy4_group_background": "Fondo",
   "galaxy4_radius": "Tamaño de galaxia",
   "galaxy4_rotation_speed": "Velocidad de rotación",
   "galaxy4_thickness": "Grosor Z",

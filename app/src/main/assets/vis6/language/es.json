@@ -1,5 +1,9 @@
 {
   "title": "Espectro circular",
+  "pref_vis6_group_audio": "Audio",
+  "pref_vis6_group_recolor": "Recolorear",
+  "pref_vis6_group_appearance": "Apariencia",
+  "pref_vis6_group_background": "Fondo",
   "musicvis_recolor": "Recolorear",
   "musicvis_recolor_mode": "Modo de recoloreo",
   "circle_ring_count": "Número de anillos",

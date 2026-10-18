@@ -1,5 +1,7 @@
 {
   "title": "Points lumineux",
+  "pref_luminousdots_group_appearance": "Apparence",
+  "pref_luminousdots_group_animation": "Animation",
   "pref_shape": "Forme",
   "shape_label_0": "Carré",
   "shape_label_1": "Rond",

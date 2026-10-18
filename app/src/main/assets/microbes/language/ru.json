@@ -1,5 +1,7 @@
 {
   "title": "Микробы",
+  "pref_microbes_group_simulation": "Симуляция",
+  "pref_microbes_group_appearance": "Внешний вид",
   "microbes_lifecycle_speed": "Скорость жизненного цикла",
   "microbes_motion_activity": "Активность движения",
   "microbes_color_mode": "Стиль цвета",

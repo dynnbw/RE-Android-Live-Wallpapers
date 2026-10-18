@@ -1,5 +1,8 @@
 {
   "title": "셰이크 뎀 올",
+  "pref_droid_group_robot": "로봇",
+  "pref_droid_group_interaction": "상호작용",
+  "pref_droid_group_background": "배경",
   "droid_count": "드로이드 수",
   "droid_size": "드로이드 크기",
   "droid_gravity": "중력 반응",

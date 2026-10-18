@@ -1,5 +1,6 @@
 {
   "title": "Balões",
+  "pref_noisefield_group_particles": "Partículas",
   "noisefield_dot_count": "Número de partículas",
   "noisefield_speed": "Velocidade de movimento",
   "noisefield_touch_force": "Repulsão por toque",

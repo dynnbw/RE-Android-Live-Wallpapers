@@ -1,5 +1,7 @@
 {
   "title": "Múltiplos",
+  "pref_vis5_group_audio": "Áudio",
+  "pref_vis5_group_background": "Plano de fundo",
   "settings_entry": "Múltiplos",
   "pref_vis5_wave_mode": "Modo de onda",
   "musicvis_wave_mode_label_0": "Forma de onda PCM",

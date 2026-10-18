@@ -1,5 +1,6 @@
 {
   "title": "ফেজ বিম",
+  "pref_phasebeam_group_beam": "রশ্মি",
   "phasebeam_dot_count": "কণার সংখ্যা",
   "phasebeam_recolor_enabled": "রশ্মির রঙ সামঞ্জস্য করুন",
   "phasebeam_brightness": "উজ্জ্বলতা",

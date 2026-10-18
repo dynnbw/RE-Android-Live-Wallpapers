@@ -1,5 +1,7 @@
 {
   "title": "빛나는 도트",
+  "pref_luminousdots_group_appearance": "모양",
+  "pref_luminousdots_group_animation": "애니메이션",
   "pref_shape": "모양",
   "shape_label_0": "사각형",
   "shape_label_1": "라운드",

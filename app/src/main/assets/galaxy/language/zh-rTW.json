@@ -1,5 +1,7 @@
 {
   "title": "星系",
+  "pref_galaxy_group_core": "星系",
+  "pref_galaxy_group_precise": "精確螺旋",
   "galaxy_radius": "星系大小",
   "galaxy_parallax": "視差強度",
   "galaxy_particle_count": "粒子數量",

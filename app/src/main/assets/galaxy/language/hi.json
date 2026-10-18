@@ -1,5 +1,7 @@
 {
   "title": "आकाशगंगा",
+  "pref_galaxy_group_core": "आकाशगंगा",
+  "pref_galaxy_group_precise": "सटीक सर्पिल",
   "galaxy_radius": "आकाशगंगा का आकार",
   "galaxy_parallax": "लंबन शक्ति",
   "galaxy_particle_count": "कण संख्या",

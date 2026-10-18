@@ -1,5 +1,7 @@
 {
   "title": "光の粒",
+  "pref_luminousdots_group_appearance": "外観",
+  "pref_luminousdots_group_animation": "アニメーション",
   "pref_shape": "形状",
   "shape_label_0": "四角",
   "shape_label_1": "丸",

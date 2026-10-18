@@ -1,5 +1,6 @@
 {
   "title": "Bulles",
+  "pref_noisefield_group_particles": "Particules",
   "noisefield_dot_count": "Nombre de particules",
   "noisefield_speed": "Vitesse de déplacement",
   "noisefield_touch_force": "Répulsion tactile",

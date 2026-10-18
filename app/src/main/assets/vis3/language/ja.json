@@ -1,5 +1,8 @@
 {
   "title": "スペクトル",
+  "pref_vis3_group_audio": "オーディオ",
+  "pref_vis3_group_recolor": "色変更",
+  "pref_vis3_group_background": "背景",
   "musicvis_fit_screen": "サンプルを多く表示",
   "musicvis_fit_screen_summary": "波形を画面の短辺に合わせて拡大縮小",
   "musicvis_use_triangle_strip": "クラシック版三角形ストリップメッシュを使用",

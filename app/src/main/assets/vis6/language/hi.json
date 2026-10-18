@@ -1,5 +1,9 @@
 {
   "title": "वृत्ताकार स्पेक्ट्रम",
+  "pref_vis6_group_audio": "ऑडियो",
+  "pref_vis6_group_recolor": "रंग बदलें",
+  "pref_vis6_group_appearance": "रूप",
+  "pref_vis6_group_background": "पृष्ठभूमि",
   "musicvis_recolor": "पुनः रंगना",
   "musicvis_recolor_mode": "पुनः रंगने का तरीका",
   "circle_ring_count": "वलयों की संख्या",

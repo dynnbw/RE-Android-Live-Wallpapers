@@ -1,5 +1,7 @@
 {
   "title": "Grand fond",
+  "pref_deepsea_group_jelly": "Méduses",
+  "pref_deepsea_group_background": "Arrière-plan",
   "unitscale": "Taille des méduses",
   "unitnumber": "Nombre de méduses",
   "backgroundbrightness": "Luminosité de l’arrière-plan",

@@ -1,5 +1,7 @@
 {
   "title": "Fogos de Artifício",
+  "pref_fireworks_group_burst": "Fogos de artifício",
+  "pref_fireworks_group_background": "Plano de fundo",
   "pref_custom_background": "",
   "pref_reset_background": "",
   "pref_fireworks_count_title": "Quantidade de fogos",

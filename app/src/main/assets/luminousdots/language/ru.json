@@ -1,5 +1,7 @@
 {
   "title": "Блестящие точки",
+  "pref_luminousdots_group_appearance": "Внешний вид",
+  "pref_luminousdots_group_animation": "Анимация",
   "pref_shape": "Форма",
   "shape_label_0": "Квадрат",
   "shape_label_1": "Круглый",

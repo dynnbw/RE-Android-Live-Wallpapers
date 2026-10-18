@@ -34,5 +34,7 @@
   "pref_grass_legacy_firefly": "ক্লাসিক জোনাকি",
   "pref_grass_legacy_firefly_desc": "আধুনিকের বদলে ক্লাসিক জোনাকি",
   "pref_grass_light": "পিছনালো ঘাস",
-  "pref_grass_glow": "প্রভাব"
+  "pref_grass_glow": "আভা",
+  "pref_grass_firefly_light": "জোনাকি আলো",
+  "pref_grass_moon_glow": "চাঁদের আভা"
 }

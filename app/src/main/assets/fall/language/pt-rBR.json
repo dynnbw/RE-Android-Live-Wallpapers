@@ -1,5 +1,8 @@
 {
   "title": "Folhas na Água",
+  "pref_fall_group_leaves": "Folhas",
+  "pref_fall_group_water": "Água",
+  "pref_fall_group_sky": "Céu",
   "fall_leaf_size": "Tamanho da folha",
   "fall_speed": "Velocidade de queda",
   "pref_fall_leaf_count": "Quantidade de folhas",

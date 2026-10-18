@@ -1,5 +1,7 @@
 {
   "title": "Nachthimmel",
+  "pref_nightsky_group_camera": "Kamera",
+  "pref_nightsky_group_time": "Zeit",
   "nightsky_camera_focal_mm": "Kamera-Brennweite",
   "nightsky_use_sensor": "Sensorausrichtung verwenden",
   "nightsky_auto_time_accel": "Automatische Zeitbeschleunigung",

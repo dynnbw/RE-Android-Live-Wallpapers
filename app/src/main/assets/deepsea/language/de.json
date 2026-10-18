@@ -1,5 +1,7 @@
 {
   "title": "Tiefsee",
+  "pref_deepsea_group_jelly": "Quallen",
+  "pref_deepsea_group_background": "Hintergrund",
   "unitscale": "Größe der Quallen",
   "unitnumber": "Anzahl der Quallen",
   "backgroundbrightness": "Hintergrundhelligkeit",

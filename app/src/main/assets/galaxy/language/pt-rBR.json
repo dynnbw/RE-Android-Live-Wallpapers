@@ -1,5 +1,7 @@
 {
   "title": "Galáxia",
+  "pref_galaxy_group_core": "Galáxia",
+  "pref_galaxy_group_precise": "Espiral precisa",
   "galaxy_radius": "Tamanho da galáxia",
   "galaxy_parallax": "Intensidade de paralaxe",
   "galaxy_particle_count": "Quantidade de partículas",

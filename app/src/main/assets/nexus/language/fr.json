@@ -1,5 +1,8 @@
 {
   "title": "Nexus",
+  "pref_nexus_group_pulses": "Pulsions",
+  "pref_nexus_group_motion": "Mouvement",
+  "pref_nexus_group_background": "Arrière-plan",
   "nexus_background_preset": "Arrière-plan",
   "nexus_max_pulses": "Max. d’impulsions",
   "nexus_max_extras": "Max. d’impulsions supplémentaires",

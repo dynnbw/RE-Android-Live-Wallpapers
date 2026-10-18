@@ -1,5 +1,7 @@
 {
   "title": "আলোকিত বিন্দু",
+  "pref_luminousdots_group_appearance": "চেহারা",
+  "pref_luminousdots_group_animation": "অ্যানিমেশন",
   "pref_shape": "আকৃতি",
   "shape_label_0": "বাক্স",
   "shape_label_1": "গোলাকার",

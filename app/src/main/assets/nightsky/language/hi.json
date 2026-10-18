@@ -1,5 +1,7 @@
 {
   "title": "रात का आकाश",
+  "pref_nightsky_group_camera": "कैमरा",
+  "pref_nightsky_group_time": "समय",
   "nightsky_camera_focal_mm": "कैमरा फोकल लंबाई",
   "nightsky_use_sensor": "सेंसर अभिविन्यास का उपयोग करें",
   "nightsky_auto_time_accel": "स्वचालित समय त्वरण",

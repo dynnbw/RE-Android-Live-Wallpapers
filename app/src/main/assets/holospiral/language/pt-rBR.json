@@ -1,5 +1,8 @@
 {
   "title": "Espiral Holo",
+  "pref_holospiral_group_spiral": "Espiral",
+  "pref_holospiral_group_appearance": "Aparência",
+  "pref_holospiral_group_view": "Visão",
   "holospiral_color_scheme": "Tema de cor",
   "holospiral_color_scheme_label_default": "Padrão",
   "holospiral_color_scheme_label_purple": "Roxo",

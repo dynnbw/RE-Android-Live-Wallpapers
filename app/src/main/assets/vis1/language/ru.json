@@ -1,5 +1,8 @@
 {
   "title": "Визуализатор",
+  "pref_vis1_group_audio": "Аудио",
+  "pref_vis1_group_recolor": "Перекраска",
+  "pref_vis1_group_background": "Фон",
   "settings_entry": "Визуализатор",
   "musicvis_recolor": "Перекрашивание",
   "musicvis_recolor_color": "Цвет",

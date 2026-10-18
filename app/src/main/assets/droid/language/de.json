@@ -1,5 +1,8 @@
 {
   "title": "Schüttle sie alle",
+  "pref_droid_group_robot": "Roboter",
+  "pref_droid_group_interaction": "Interaktion",
+  "pref_droid_group_background": "Hintergrund",
   "droid_count": "Anzahl der Droids",
   "droid_size": "Größe der Droids",
   "droid_gravity": "Reaktion auf Schwerkraft",

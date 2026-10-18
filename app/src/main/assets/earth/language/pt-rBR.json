@@ -1,5 +1,7 @@
 {
   "title": "Terra",
+  "pref_earth_group_rotation": "Rotação",
+  "pref_earth_group_appearance": "Aparência",
   "earth_spin_speed": "Velocidade de rotação",
   "earth_spin_speed_summary": "Quão rápido a Terra gira; 0 a para",
   "earth_sky": "Campo de estrelas",

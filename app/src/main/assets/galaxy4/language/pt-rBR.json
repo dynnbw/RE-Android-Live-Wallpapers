@@ -1,5 +1,7 @@
 {
   "title": "Buraco Negro",
+  "pref_galaxy4_group_galaxy": "Galáxia",
+  "pref_galaxy4_group_background": "Plano de fundo",
   "galaxy4_radius": "Tamanho da galáxia",
   "galaxy4_rotation_speed": "Velocidade de rotação",
   "galaxy4_thickness": "Espessura Z",

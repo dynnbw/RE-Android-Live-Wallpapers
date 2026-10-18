@@ -1,5 +1,8 @@
 {
   "title": "সবাইকে ঝাঁকাও",
+  "pref_droid_group_robot": "রোবট",
+  "pref_droid_group_interaction": "ইন্টারঅ্যাকশন",
+  "pref_droid_group_background": "পটভূমি",
   "droid_count": "ড্রয়েড সংখ্যা",
   "droid_size": "ড্রয়েডের আকার",
   "droid_gravity": "মাধ্যাকর্ষণ প্রতিক্রিয়া",

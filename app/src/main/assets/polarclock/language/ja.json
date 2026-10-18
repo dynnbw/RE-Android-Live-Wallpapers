@@ -1,5 +1,6 @@
 {
   "title": "ポーラークロック",
+  "pref_polarclock_group_dial": "文字盤",
   "show_seconds": "秒を表示",
   "variable_line_width": "リングの幅を可変にする",
   "palette": "カラーパレット",

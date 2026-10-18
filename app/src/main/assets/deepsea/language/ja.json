@@ -1,5 +1,7 @@
 {
   "title": "深海",
+  "pref_deepsea_group_jelly": "クラゲ",
+  "pref_deepsea_group_background": "背景",
   "unitscale": "クラゲのサイズ",
   "unitnumber": "クラゲの数",
   "backgroundbrightness": "背景の明るさ",

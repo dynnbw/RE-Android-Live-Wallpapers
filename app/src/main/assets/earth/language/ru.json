@@ -1,5 +1,7 @@
 {
   "title": "Земля",
+  "pref_earth_group_rotation": "Вращение",
+  "pref_earth_group_appearance": "Внешний вид",
   "earth_spin_speed": "Скорость вращения",
   "earth_spin_speed_summary": "Как быстро вращается Земля; 0 — остановка",
   "earth_sky": "Звёздное небо",

@@ -1,5 +1,7 @@
 {
   "title": "Multitude",
+  "pref_vis5_group_audio": "Audio",
+  "pref_vis5_group_background": "Arrière-plan",
   "settings_entry": "Multitude",
   "pref_vis5_wave_mode": "Mode vague",
   "musicvis_wave_mode_label_0": "Forme d'onde PCM",

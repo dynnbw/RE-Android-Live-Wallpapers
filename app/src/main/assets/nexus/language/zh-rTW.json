@@ -1,5 +1,8 @@
 {
   "title": "交錯光幕",
+  "pref_nexus_group_pulses": "脈衝",
+  "pref_nexus_group_motion": "運動",
+  "pref_nexus_group_background": "背景",
   "nexus_background_preset": "背景",
   "nexus_max_pulses": "最大常規脈衝數",
   "nexus_max_extras": "最大額外脈衝數",

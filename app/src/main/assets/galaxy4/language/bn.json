@@ -1,5 +1,7 @@
 {
   "title": "ব্ল্যাক হোল",
+  "pref_galaxy4_group_galaxy": "গ্যালাক্সি",
+  "pref_galaxy4_group_background": "পটভূমি",
   "galaxy4_radius": "গ্যালাক্সির আকার",
   "galaxy4_rotation_speed": "ঘূর্ণন গতি",
   "galaxy4_thickness": "Z পুরুত্ব",

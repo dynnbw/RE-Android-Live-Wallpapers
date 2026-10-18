@@ -1,5 +1,7 @@
 {
   "title": "Leuchtende Punkte",
+  "pref_luminousdots_group_appearance": "Aussehen",
+  "pref_luminousdots_group_animation": "Animation",
   "pref_shape": "Form",
   "shape_label_0": "Kasten",
   "shape_label_1": "Rund",

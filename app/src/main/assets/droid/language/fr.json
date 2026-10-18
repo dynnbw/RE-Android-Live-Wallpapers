@@ -1,5 +1,8 @@
 {
   "title": "Secoue-les tous",
+  "pref_droid_group_robot": "Robots",
+  "pref_droid_group_interaction": "Interaction",
+  "pref_droid_group_background": "Arrière-plan",
   "droid_count": "Nombre de droids",
   "droid_size": "Taille des droids",
   "droid_gravity": "Réaction à la gravité",

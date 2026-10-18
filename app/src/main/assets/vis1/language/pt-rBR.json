@@ -1,5 +1,8 @@
 {
   "title": "Visualizador",
+  "pref_vis1_group_audio": "Áudio",
+  "pref_vis1_group_recolor": "Recolorir",
+  "pref_vis1_group_background": "Plano de fundo",
   "settings_entry": "Visualizador",
   "musicvis_recolor": "Recolorir",
   "musicvis_recolor_color": "Cor",

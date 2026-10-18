@@ -1,5 +1,6 @@
 {
   "title": "Horloge polaire",
+  "pref_polarclock_group_dial": "Cadran",
   "show_seconds": "Afficher les secondes",
   "variable_line_width": "Varier la largeur des anneaux",
   "palette": "Palette de couleurs",

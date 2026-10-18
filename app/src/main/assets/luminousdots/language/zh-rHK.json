@@ -1,5 +1,7 @@
 {
   "title": "光點",
+  "pref_luminousdots_group_appearance": "外觀",
+  "pref_luminousdots_group_animation": "動畫",
   "pref_shape": "形狀",
   "shape_label_0": "方框",
   "shape_label_1": "圓形",

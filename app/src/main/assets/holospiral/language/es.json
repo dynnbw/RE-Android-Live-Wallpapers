@@ -1,5 +1,8 @@
 {
   "title": "Espiral holográfica",
+  "pref_holospiral_group_spiral": "Espiral",
+  "pref_holospiral_group_appearance": "Apariencia",
+  "pref_holospiral_group_view": "Vista",
   "holospiral_color_scheme": "Tema de color",
   "holospiral_color_scheme_label_default": "Por defecto",
   "holospiral_color_scheme_label_purple": "Púrpura",

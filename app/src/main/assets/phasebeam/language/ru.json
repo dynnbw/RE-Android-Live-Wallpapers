@@ -1,5 +1,6 @@
 {
   "title": "Блики и лучи",
+  "pref_phasebeam_group_beam": "Луч",
   "phasebeam_dot_count": "Количество частиц",
   "phasebeam_recolor_enabled": "Настроить цвета лучей",
   "phasebeam_brightness": "Яркость",

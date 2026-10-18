@@ -1,5 +1,6 @@
 {
   "title": "फेज़ बीम",
+  "pref_phasebeam_group_beam": "किरण",
   "phasebeam_dot_count": "कण संख्या",
   "phasebeam_recolor_enabled": "बीम रंग समायोजित करें",
   "phasebeam_brightness": "चमक",

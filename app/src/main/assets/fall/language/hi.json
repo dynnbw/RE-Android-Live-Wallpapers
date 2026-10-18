@@ -1,5 +1,8 @@
 {
   "title": "जल पत्ते",
+  "pref_fall_group_leaves": "पत्तियाँ",
+  "pref_fall_group_water": "पानी",
+  "pref_fall_group_sky": "आकाश",
   "fall_leaf_size": "पत्ती का आकार",
   "fall_speed": "गिरने की गति",
   "pref_fall_leaf_count": "पत्तियों की संख्या",

@@ -34,5 +34,7 @@
   "pref_grass_legacy_firefly": "Классические светлячки",
   "pref_grass_legacy_firefly_desc": "Классические светлячки вместо современных",
   "pref_grass_light": "Трава на просвет",
-  "pref_grass_glow": "Эффекты"
+  "pref_grass_glow": "Свечение",
+  "pref_grass_firefly_light": "Свет светлячков",
+  "pref_grass_moon_glow": "Лунное гало"
 }

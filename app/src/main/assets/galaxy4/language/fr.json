@@ -1,5 +1,7 @@
 {
   "title": "Trou noir",
+  "pref_galaxy4_group_galaxy": "Galaxie",
+  "pref_galaxy4_group_background": "Arrière-plan",
   "galaxy4_radius": "Taille de la galaxie",
   "galaxy4_rotation_speed": "Vitesse de rotation",
   "galaxy4_thickness": "Épaisseur Z",

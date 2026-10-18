@@ -1,5 +1,7 @@
 {
   "title": "Галактика",
+  "pref_galaxy_group_core": "Галактика",
+  "pref_galaxy_group_precise": "Точная спираль",
   "galaxy_radius": "Размер галактики",
   "galaxy_parallax": "Сила параллакса",
   "galaxy_particle_count": "Количество частиц",

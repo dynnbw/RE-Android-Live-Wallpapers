@@ -1,5 +1,7 @@
 {
   "title": "ブラックホール",
+  "pref_galaxy4_group_galaxy": "銀河",
+  "pref_galaxy4_group_background": "背景",
   "galaxy4_radius": "銀河のサイズ",
   "galaxy4_rotation_speed": "回転速度",
   "galaxy4_thickness": "厚さの散布",

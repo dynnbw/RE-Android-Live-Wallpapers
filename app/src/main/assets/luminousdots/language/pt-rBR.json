@@ -1,5 +1,7 @@
 {
   "title": "Pontos luminosos",
+  "pref_luminousdots_group_appearance": "Aparência",
+  "pref_luminousdots_group_animation": "Animação",
   "pref_shape": "Forma",
   "shape_label_0": "Quadrado",
   "shape_label_1": "Redondo",

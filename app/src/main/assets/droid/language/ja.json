@@ -1,5 +1,8 @@
 {
   "title": "シェイク・ゼム・オール",
+  "pref_droid_group_robot": "ロボット",
+  "pref_droid_group_interaction": "インタラクション",
+  "pref_droid_group_background": "背景",
   "droid_count": "ドロイドの数",
   "droid_size": "ドロイドのサイズ",
   "droid_gravity": "重力への反応",

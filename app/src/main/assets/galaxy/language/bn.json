@@ -1,5 +1,7 @@
 {
   "title": "গ্যালাক্সি",
+  "pref_galaxy_group_core": "গ্যালাক্সি",
+  "pref_galaxy_group_precise": "নির্ভুল সর্পিল",
   "galaxy_radius": "গ্যালাক্সির আকার",
   "galaxy_parallax": "প্যারালাক্স শক্তি",
   "galaxy_particle_count": "কণার সংখ্যা",

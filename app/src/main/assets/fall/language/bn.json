@@ -1,5 +1,8 @@
 {
   "title": "জলপাতা",
+  "pref_fall_group_leaves": "পাতা",
+  "pref_fall_group_water": "জল",
+  "pref_fall_group_sky": "আকাশ",
   "fall_leaf_size": "পাতার আকার",
   "fall_speed": "পতনের গতি",
   "pref_fall_leaf_count": "পাতার সংখ্যা",

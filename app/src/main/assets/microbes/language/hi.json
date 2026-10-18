@@ -1,5 +1,7 @@
 {
   "title": "सूक्ष्मजीव",
+  "pref_microbes_group_simulation": "सिमुलेशन",
+  "pref_microbes_group_appearance": "रूप",
   "microbes_lifecycle_speed": "जीवनचक्र गति",
   "microbes_motion_activity": "गति गतिविधि",
   "microbes_color_mode": "रंग शैली",

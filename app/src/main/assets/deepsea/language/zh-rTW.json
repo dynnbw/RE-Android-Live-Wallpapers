@@ -1,5 +1,7 @@
 {
   "title": "深海",
+  "pref_deepsea_group_jelly": "水母",
+  "pref_deepsea_group_background": "背景",
   "unitscale": "水母尺寸",
   "unitnumber": "水母數目",
   "backgroundbrightness": "背景亮度",

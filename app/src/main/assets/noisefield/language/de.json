@@ -1,5 +1,6 @@
 {
   "title": "Blasen",
+  "pref_noisefield_group_particles": "Partikel",
   "noisefield_dot_count": "Partikelanzahl",
   "noisefield_speed": "Bewegungsgeschwindigkeit",
   "noisefield_touch_force": "Berührungsabstoßung",

@@ -1,5 +1,9 @@
 {
   "title": "원형 스펙트럼",
+  "pref_vis6_group_audio": "오디오",
+  "pref_vis6_group_recolor": "색상 변경",
+  "pref_vis6_group_appearance": "모양",
+  "pref_vis6_group_background": "배경",
   "musicvis_recolor": "다시 칠하기",
   "musicvis_recolor_mode": "다시 칠하기 모드",
   "circle_ring_count": "링 개수",

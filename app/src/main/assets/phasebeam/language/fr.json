@@ -1,5 +1,6 @@
 {
   "title": "Faisceau de phase",
+  "pref_phasebeam_group_beam": "Faisceau",
   "phasebeam_dot_count": "Nombre de particules",
   "phasebeam_recolor_enabled": "Ajuster les couleurs des faisceaux",
   "phasebeam_brightness": "Luminosité",

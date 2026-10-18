@@ -1,5 +1,7 @@
 {
   "title": "Ночное небо",
+  "pref_nightsky_group_camera": "Камера",
+  "pref_nightsky_group_time": "Время",
   "nightsky_camera_focal_mm": "Фокусное расстояние камеры",
   "nightsky_use_sensor": "Использовать ориентацию датчика",
   "nightsky_auto_time_accel": "Автоматическое ускорение времени",

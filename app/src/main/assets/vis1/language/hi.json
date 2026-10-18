@@ -1,5 +1,8 @@
 {
   "title": "विज़ुअलाइज़र",
+  "pref_vis1_group_audio": "ऑडियो",
+  "pref_vis1_group_recolor": "रंग बदलें",
+  "pref_vis1_group_background": "पृष्ठभूमि",
   "settings_entry": "विज़ुअलाइज़र",
   "musicvis_recolor": "पुनः रंगना",
   "musicvis_recolor_color": "रंग",

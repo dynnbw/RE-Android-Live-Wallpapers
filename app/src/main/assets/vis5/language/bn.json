@@ -1,5 +1,7 @@
 {
   "title": "একাধিক",
+  "pref_vis5_group_audio": "অডিও",
+  "pref_vis5_group_background": "পটভূমি",
   "settings_entry": "একাধিক",
   "pref_vis5_wave_mode": "তরঙ্গ মোড",
   "musicvis_wave_mode_label_0": "PCM তরঙ্গরূপ",

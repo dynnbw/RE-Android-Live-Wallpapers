@@ -34,5 +34,7 @@
   "pref_grass_legacy_firefly": "經典版螢火蟲",
   "pref_grass_legacy_firefly_desc": "使用經典版螢火蟲取代現代螢火蟲",
   "pref_grass_light": "草葉逆光",
-  "pref_grass_glow": "特效"
+  "pref_grass_glow": "輝光",
+  "pref_grass_firefly_light": "螢火蟲照亮",
+  "pref_grass_moon_glow": "月亮光暈"
 }

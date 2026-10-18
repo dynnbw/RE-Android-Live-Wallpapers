@@ -1,5 +1,8 @@
 {
   "title": "후광 나선",
+  "pref_holospiral_group_spiral": "나선",
+  "pref_holospiral_group_appearance": "모양",
+  "pref_holospiral_group_view": "보기",
   "holospiral_color_scheme": "색상 테마",
   "holospiral_color_scheme_label_default": "기본",
   "holospiral_color_scheme_label_purple": "퍼플",

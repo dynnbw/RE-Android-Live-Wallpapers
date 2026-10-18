@@ -1,5 +1,8 @@
 {
   "title": "Visualiseur",
+  "pref_vis1_group_audio": "Audio",
+  "pref_vis1_group_recolor": "Recolorer",
+  "pref_vis1_group_background": "Arrière-plan",
   "settings_entry": "Visualiseur",
   "musicvis_recolor": "Recolorier",
   "musicvis_recolor_color": "Couleur",

@@ -1,5 +1,8 @@
 {
   "title": "नेक्सस",
+  "pref_nexus_group_pulses": "स्पंदन",
+  "pref_nexus_group_motion": "गति",
+  "pref_nexus_group_background": "पृष्ठभूमि",
   "nexus_background_preset": "पृष्ठभूमि",
   "nexus_max_pulses": "अधिकतम पल्स",
   "nexus_max_extras": "अधिकतम अतिरिक्त पल्स",

@@ -1,5 +1,9 @@
 {
   "title": "円形スペクトル",
+  "pref_vis6_group_audio": "オーディオ",
+  "pref_vis6_group_recolor": "色変更",
+  "pref_vis6_group_appearance": "外観",
+  "pref_vis6_group_background": "背景",
   "musicvis_recolor": "再着色",
   "musicvis_recolor_mode": "再着色モード",
   "circle_ring_count": "リング数",

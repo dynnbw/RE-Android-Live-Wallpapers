@@ -1,5 +1,7 @@
 {
   "title": "불꽃놀이",
+  "pref_fireworks_group_burst": "불꽃놀이",
+  "pref_fireworks_group_background": "배경",
   "pref_custom_background": "",
   "pref_reset_background": "",
   "pref_fireworks_count_title": "불꽃 개수",

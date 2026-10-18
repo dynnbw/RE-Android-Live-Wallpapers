@@ -34,5 +34,7 @@
   "pref_grass_legacy_firefly": "क्लासिक जुगनू",
   "pref_grass_legacy_firefly_desc": "आधुनिक के बजाय क्लासिक जुगनू",
   "pref_grass_light": "पृष्ठप्रकाश घास",
-  "pref_grass_glow": "प्रभाव"
+  "pref_grass_glow": "चमक",
+  "pref_grass_firefly_light": "जुगनू प्रकाश",
+  "pref_grass_moon_glow": "चंद्र प्रभामंडल"
 }

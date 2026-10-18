@@ -1,5 +1,7 @@
 {
   "title": "Глубокое море",
+  "pref_deepsea_group_jelly": "Медузы",
+  "pref_deepsea_group_background": "Фон",
   "unitscale": "Размер медуз",
   "unitnumber": "Количество медуз",
   "backgroundbrightness": "Яркость фона",

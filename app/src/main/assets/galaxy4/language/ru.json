@@ -1,5 +1,7 @@
 {
   "title": "Чёрная дыра",
+  "pref_galaxy4_group_galaxy": "Галактика",
+  "pref_galaxy4_group_background": "Фон",
   "galaxy4_radius": "Размер галактики",
   "galaxy4_rotation_speed": "Скорость вращения",
   "galaxy4_thickness": "Толщина Z",

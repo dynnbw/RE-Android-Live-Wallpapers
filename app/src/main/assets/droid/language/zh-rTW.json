@@ -1,5 +1,8 @@
 {
   "title": "墜落的安卓機器人",
+  "pref_droid_group_robot": "機器人",
+  "pref_droid_group_interaction": "互動",
+  "pref_droid_group_background": "背景",
   "droid_count": "機器人數量",
   "droid_size": "機器人大小",
   "droid_gravity": "重力感應",

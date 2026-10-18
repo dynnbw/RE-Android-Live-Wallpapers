@@ -1,5 +1,7 @@
 {
   "title": "গভীর সমুদ্র",
+  "pref_deepsea_group_jelly": "জেলিফিশ",
+  "pref_deepsea_group_background": "পটভূমি",
   "unitscale": "জেলিফিশের আকার",
   "unitnumber": "জেলিফিশের সংখ্যা",
   "backgroundbrightness": "পটভূমির উজ্জ্বলতা",

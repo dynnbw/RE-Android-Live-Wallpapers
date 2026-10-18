@@ -1,5 +1,8 @@
 {
   "title": "Sacuda todos",
+  "pref_droid_group_robot": "Robôs",
+  "pref_droid_group_interaction": "Interação",
+  "pref_droid_group_background": "Plano de fundo",
   "droid_count": "Número de droids",
   "droid_size": "Tamanho dos droids",
   "droid_gravity": "Reação à gravidade",

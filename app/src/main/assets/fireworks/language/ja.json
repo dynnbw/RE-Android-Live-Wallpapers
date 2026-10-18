@@ -1,5 +1,7 @@
 {
   "title": "花火",
+  "pref_fireworks_group_burst": "花火",
+  "pref_fireworks_group_background": "背景",
   "pref_custom_background": "",
   "pref_reset_background": "",
   "pref_fireworks_count_title": "花火の数",

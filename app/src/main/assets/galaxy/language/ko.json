@@ -1,5 +1,7 @@
 {
   "title": "은하수",
+  "pref_galaxy_group_core": "은하",
+  "pref_galaxy_group_precise": "정밀 나선",
   "galaxy_radius": "은하 크기",
   "galaxy_parallax": "시차 강도",
   "galaxy_particle_count": "입자 수",

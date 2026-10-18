@@ -1,5 +1,9 @@
 {
   "title": "বৃত্তাকার স্পেকট্রাম",
+  "pref_vis6_group_audio": "অডিও",
+  "pref_vis6_group_recolor": "রঙ পরিবর্তন",
+  "pref_vis6_group_appearance": "চেহারা",
+  "pref_vis6_group_background": "পটভূমি",
   "musicvis_recolor": "পুনরায় রঙ করুন",
   "musicvis_recolor_mode": "পুনরায় রঙ করার মোড",
   "circle_ring_count": "রিংয়ের সংখ্যা",

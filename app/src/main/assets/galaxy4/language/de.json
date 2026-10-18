@@ -1,5 +1,7 @@
 {
   "title": "Schwarzes Loch",
+  "pref_galaxy4_group_galaxy": "Galaxie",
+  "pref_galaxy4_group_background": "Hintergrund",
   "galaxy4_radius": "Galaxiegröße",
   "galaxy4_rotation_speed": "Rotationsgeschwindigkeit",
   "galaxy4_thickness": "Z-Dicke",

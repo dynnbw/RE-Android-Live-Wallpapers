@@ -1,5 +1,6 @@
 {
   "title": "Polaruhr",
+  "pref_polarclock_group_dial": "Zifferblatt",
   "show_seconds": "Sekunden anzeigen",
   "variable_line_width": "Ringbreiten variieren",
   "palette": "Farbpalette",

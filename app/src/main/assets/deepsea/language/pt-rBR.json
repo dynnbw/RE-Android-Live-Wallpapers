@@ -1,5 +1,7 @@
 {
   "title": "Mar Profundo",
+  "pref_deepsea_group_jelly": "Águas-vivas",
+  "pref_deepsea_group_background": "Plano de fundo",
   "unitscale": "Tamanho das águas-vivas",
   "unitnumber": "Número de águas-vivas",
   "backgroundbrightness": "Brilho do fundo",

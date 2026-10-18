@@ -1,5 +1,7 @@
 {
   "title": "Mar profundo",
+  "pref_deepsea_group_jelly": "Medusas",
+  "pref_deepsea_group_background": "Fondo",
   "unitscale": "Tamaño de la medusa",
   "unitnumber": "Número de medusas",
   "backgroundbrightness": "Brillo del fondo",

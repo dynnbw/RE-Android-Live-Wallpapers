@@ -1,5 +1,8 @@
 {
   "title": "Нейроны",
+  "pref_nexus_group_pulses": "Импульсы",
+  "pref_nexus_group_motion": "Движение",
+  "pref_nexus_group_background": "Фон",
   "nexus_background_preset": "Фон",
   "nexus_max_pulses": "Макс. импульсов",
   "nexus_max_extras": "Макс. дополнительных импульсов",

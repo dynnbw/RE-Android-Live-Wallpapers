@@ -1,5 +1,8 @@
 {
   "title": "비주얼라이저",
+  "pref_vis1_group_audio": "오디오",
+  "pref_vis1_group_recolor": "색상 변경",
+  "pref_vis1_group_background": "배경",
   "settings_entry": "비주얼라이저",
   "musicvis_recolor": "다시 칠하기",
   "musicvis_recolor_color": "색상",

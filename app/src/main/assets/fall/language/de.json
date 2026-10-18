@@ -1,5 +1,8 @@
 {
   "title": "Wasserblätter",
+  "pref_fall_group_leaves": "Blätter",
+  "pref_fall_group_water": "Wasser",
+  "pref_fall_group_sky": "Himmel",
   "fall_leaf_size": "Blattgröße",
   "fall_speed": "Fallgeschwindigkeit",
   "pref_fall_leaf_count": "Anzahl Blätter",

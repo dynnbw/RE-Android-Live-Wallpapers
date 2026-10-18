@@ -1,5 +1,6 @@
 {
   "title": "泡泡",
+  "pref_noisefield_group_particles": "粒子",
   "noisefield_dot_count": "粒子數量",
   "noisefield_speed": "移動速度",
   "noisefield_touch_force": "觸碰排斥力",

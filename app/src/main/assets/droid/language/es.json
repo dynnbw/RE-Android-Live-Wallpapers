@@ -1,5 +1,8 @@
 {
   "title": "Sacúdelos a todos",
+  "pref_droid_group_robot": "Robots",
+  "pref_droid_group_interaction": "Interacción",
+  "pref_droid_group_background": "Fondo",
   "droid_count": "Número de droids",
   "droid_size": "Tamaño de los droids",
   "droid_gravity": "Reacción a la gravedad",

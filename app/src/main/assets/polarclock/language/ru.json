@@ -1,5 +1,6 @@
 {
   "title": "Полярные часы",
+  "pref_polarclock_group_dial": "Циферблат",
   "show_seconds": "Показывать секунды",
   "variable_line_width": "Изменять ширину колец",
   "palette": "Цветовая палитра",

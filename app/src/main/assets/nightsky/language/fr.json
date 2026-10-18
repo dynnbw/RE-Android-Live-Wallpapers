@@ -1,5 +1,7 @@
 {
   "title": "Ciel nocturne",
+  "pref_nightsky_group_camera": "Caméra",
+  "pref_nightsky_group_time": "Temps",
   "nightsky_camera_focal_mm": "Focale de l’appareil photo",
   "nightsky_use_sensor": "Utiliser l’orientation du capteur",
   "nightsky_auto_time_accel": "Accélération temporelle automatique",

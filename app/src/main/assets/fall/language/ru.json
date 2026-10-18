@@ -1,5 +1,8 @@
 {
   "title": "Водяные листья",
+  "pref_fall_group_leaves": "Листья",
+  "pref_fall_group_water": "Вода",
+  "pref_fall_group_sky": "Небо",
   "fall_leaf_size": "Размер листьев",
   "fall_speed": "Скорость падения",
   "pref_fall_leaf_count": "Количество листьев",
