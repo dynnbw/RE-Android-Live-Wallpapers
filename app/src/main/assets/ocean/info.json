@@ -1,5 +1,6 @@
 {
   "plugin": "com.reandroid.wallpaper.weatherwallpapers.ocean.OceanPlugin",
+  "pluginVk": "com.reandroid.wallpaper.weatherwallpapers.ocean.OceanWeatherVKPlugin",
   "previewClass": "com.reandroid.wallpaper.weatherwallpapers.ocean.OceanWeatherGL",
   "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"]
 }
