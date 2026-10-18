@@ -29,16 +29,19 @@ final class CubeVkDelegate extends VkPassRendererDelegate {
 
     /** x, y, alpha —— 线的颜色固定为白，只有触摸圆圈需要 0.6 的 alpha。 */
     private static final int FLOATS_PER_VERTEX = 3;
+
     private static final int STRIDE_BYTES = FLOATS_PER_VERTEX * 4;
     private static final int VERTICES_PER_QUAD = 6;
     /** 最长的形状 36 段线 = 216 顶点；触摸圆圈 32 段 = 192 顶点；留足余量。 */
     private static final int MAX_VERTICES = 1024;
+
     private static final int PUSH_BYTES = 16 * 4;
 
     private static final int CIRCLE_SEGMENTS = 32;
     private static final float TOUCH_CIRCLE_RADIUS = 0.08f;
     /** GLES 的 glLineWidth(2f)。 */
     private static final float LINE_WIDTH_PX = 2.0f;
+
     private static final float TOUCH_RING_ALPHA = 0.6f;
 
     private final SharedPreferences mPrefs;
@@ -136,8 +139,10 @@ final class CubeVkDelegate extends VkPassRendererDelegate {
         mPass = scene.add(new VkPass(
                         "shaders/cube_vk.vert.spv",
                         "shaders/cube_vk.frag.spv",
-                        new int[] {2, 1}, STRIDE_BYTES,
-                        VkPass.TOPOLOGY_TRIANGLE_LIST, VkPass.BLEND_ALPHA))
+                        new int[] {2, 1},
+                        STRIDE_BYTES,
+                        VkPass.TOPOLOGY_TRIANGLE_LIST,
+                        VkPass.BLEND_ALPHA))
                 .buffer(VERTEX_BUFFER, 0)
                 .pushConstants(PUSH_BYTES)
                 // GLES glBlendFunc(SRC_ALPHA, ONE_MINUS_SRC_ALPHA) 对 alpha 通道同样生效；
@@ -200,8 +205,8 @@ final class CubeVkDelegate extends VkPassRendererDelegate {
      * 一条线段的四边形。偏移在像素空间里取半线宽，再换回 NDC，因此横竖斜的
      * 视觉粗细一致；GL 的线段没有端口延伸，这里用平头四边形。
      */
-    private void addSegment(float x0, float y0, float x1, float y1,
-                            float halfW, float halfH, float alpha) {
+    private void addSegment(
+            float x0, float y0, float x1, float y1, float halfW, float halfH, float alpha) {
         if (mVertexCount + VERTICES_PER_QUAD > MAX_VERTICES) return;
         float dx = x1 - x0;
         float dy = y1 - y0;
@@ -270,9 +275,6 @@ final class CubeVkDelegate extends VkPassRendererDelegate {
     }
 
     private static final float[] CLIP_CORRECTION = {
-        1, 0, 0, 0,
-        0, -1, 0, 0,
-        0, 0, 0.5f, 0,
-        0, 0, 0.5f, 1,
+        1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0.5f, 0, 0, 0, 0.5f, 1,
     };
 }

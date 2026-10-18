@@ -21,15 +21,13 @@ public class WildWorldVKPlugin implements WallpaperPlugin {
     @Override
     public WallpaperEngine createEngine(Context ctx, WallpaperPluginHost host) {
         return new VkRendererEngine(
-                ctx, host,
-                new WildWorldVkDelegate(ctx, host.getSharedPreferences(), false));
+                ctx, host, new WildWorldVkDelegate(ctx, host.getSharedPreferences(), false));
     }
 
     @Override
     public View createVulkanPreview(Context context, SharedPreferences prefs) {
         if (!VkPassNative.nIsSupported()) return null;
-        return new VKSurfaceView(
-                context, new WildWorldVkDelegate(context, prefs, true));
+        return new VKSurfaceView(context, new WildWorldVkDelegate(context, prefs, true));
     }
 
     @Override

@@ -9,7 +9,6 @@ import com.reandroid.plugin.VkPassFrame;
 import com.reandroid.plugin.VkPassRendererDelegate;
 import com.reandroid.plugin.VkPassScene;
 import com.reandroid.utils.AssetLoader;
-import com.reandroid.weather.WeatherCondition;
 import com.reandroid.wallpaper.weatherwallpapers.CloudRenderer;
 import com.reandroid.wallpaper.weatherwallpapers.FogIceRenderer;
 import com.reandroid.wallpaper.weatherwallpapers.FrostRenderer;
@@ -17,6 +16,7 @@ import com.reandroid.wallpaper.weatherwallpapers.PrecipitationRenderer;
 import com.reandroid.wallpaper.weatherwallpapers.SkyRenderer;
 import com.reandroid.wallpaper.weatherwallpapers.ThunderRenderer;
 import com.reandroid.wallpaper.weatherwallpapers.WeatherStateManager;
+import com.reandroid.weather.WeatherCondition;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -45,6 +45,7 @@ final class OceanWeatherVkDelegate extends VkPassRendererDelegate {
 
     /** x, y, z, w（GL 裁剪空间） + u, v + r, g, b, a。 */
     private static final int FLOATS_PER_VERTEX = 10;
+
     private static final int VERTEX_STRIDE_BYTES = FLOATS_PER_VERTEX * 4;
     private static final int VERTICES_PER_SPRITE = 6;
     private static final int PUSH_BYTES = 16 * 4;
@@ -55,17 +56,19 @@ final class OceanWeatherVkDelegate extends VkPassRendererDelegate {
 
     /** 与 ocean/data/*.csv 的四个角一致，顺序同 GLES 的 TRIANGLE_STRIP。 */
     private static final float[] QUAD_FULL_XY = {
-            -8.0f, 8.0f, -8.0f, -8.0f, 8.0f, 8.0f, 8.0f, -8.0f,
+        -8.0f, 8.0f, -8.0f, -8.0f, 8.0f, 8.0f, 8.0f, -8.0f,
     };
+
     private static final float[] QUAD_RECT_ONE_TO_TWO_XY = {
-            -4.0f, 2.0f, -4.0f, -2.0f, 4.0f, 2.0f, 4.0f, -2.0f,
+        -4.0f, 2.0f, -4.0f, -2.0f, 4.0f, 2.0f, 4.0f, -2.0f,
     };
     private static final float[] QUAD_RECT_ONE_TO_FOUR_XY = {
-            -4.0f, 1.0f, -4.0f, -1.0f, 4.0f, 1.0f, 4.0f, -1.0f,
+        -4.0f, 1.0f, -4.0f, -1.0f, 4.0f, 1.0f, 4.0f, -1.0f,
     };
 
     /** 四个角的 UV，顺序与 quad 顶点一致。 */
     private static final float[] QUAD_U = {0.0f, 0.0f, 1.0f, 1.0f};
+
     private static final float[] QUAD_V = {0.0f, 1.0f, 0.0f, 1.0f};
 
     private final boolean mPreview;
@@ -83,8 +86,7 @@ final class OceanWeatherVkDelegate extends VkPassRendererDelegate {
     private final SkyRenderer mSkyRenderer = new SkyRenderer();
     private final CloudRenderer mCloudRenderer = new CloudRenderer();
     private final OceanWaveRenderer mWaveRenderer = new OceanWaveRenderer();
-    private final OceanWaterSurfaceRenderer mWaterSurfaceRenderer =
-            new OceanWaterSurfaceRenderer();
+    private final OceanWaterSurfaceRenderer mWaterSurfaceRenderer = new OceanWaterSurfaceRenderer();
     private final FogIceRenderer mFogIceRenderer = new FogIceRenderer();
     private final PrecipitationRenderer mPrecipitationRenderer = new PrecipitationRenderer();
     private final ThunderRenderer mThunderRenderer = new ThunderRenderer();
@@ -119,6 +121,7 @@ final class OceanWeatherVkDelegate extends VkPassRendererDelegate {
 
     /** 云的两套绘制序列共用贴图，但叠放槽位不同，按天气分支各用一组 id。 */
     private int mCloudA01Clear, mCloudA02Clear, mCloudB01Clear, mCloudB02Clear;
+
     private int mCloudA02Storm, mCloudA03Storm, mCloudB02Storm, mCloudB03Storm;
 
     // ---- 资源与 pass 槽位 ----
@@ -225,17 +228,16 @@ final class OceanWeatherVkDelegate extends VkPassRendererDelegate {
             int maxVertices = spec.capacity * VERTICES_PER_SPRITE;
             scene.createBuffer(bufferName, VERTEX_STRIDE_BYTES, maxVertices, true);
 
-            ByteBuffer buffer = ByteBuffer
-                    .allocateDirect(maxVertices * VERTEX_STRIDE_BYTES)
+            ByteBuffer buffer = ByteBuffer.allocateDirect(maxVertices * VERTEX_STRIDE_BYTES)
                     .order(ByteOrder.nativeOrder());
 
             VkPass pass = scene.add(new VkPass(
-                    "shaders/ocean_vk.vert.spv",
-                    "shaders/ocean_vk.frag.spv",
-                    new int[] {4, 2, 4},
-                    VERTEX_STRIDE_BYTES,
-                    VkPass.TOPOLOGY_TRIANGLE_LIST,
-                    VkPass.BLEND_PREMULTIPLIED))
+                            "shaders/ocean_vk.vert.spv",
+                            "shaders/ocean_vk.frag.spv",
+                            new int[] {4, 2, 4},
+                            VERTEX_STRIDE_BYTES,
+                            VkPass.TOPOLOGY_TRIANGLE_LIST,
+                            VkPass.BLEND_PREMULTIPLIED))
                     .buffer(bufferName, 0)
                     .pushConstants(PUSH_BYTES)
                     // GLES 的 glBlendFunc(ONE, ONE_MINUS_SRC_ALPHA) 对颜色和 alpha 都生效。
@@ -315,45 +317,119 @@ final class OceanWeatherVkDelegate extends VkPassRendererDelegate {
         boolean snowOn = mScene.mWeatherFlagManager.isSnowOn();
         boolean thunderOn = mScene.mWeatherFlagManager.isThunderOn();
 
-        clearOn = mSkyRenderer.drawSkyAndCelestial(mSkyDrawer, condition, nightWeight,
-                frameCnt, offset, landscape, fillScaleY,
-                mSkyA, mSkyB, mSkyC, mSkyD, mSkyG, mSkyStars,
-                mSun1, mSun2, mSun3, mMoon, mStar, mMeteor, clearOn);
+        clearOn = mSkyRenderer.drawSkyAndCelestial(
+                mSkyDrawer,
+                condition,
+                nightWeight,
+                frameCnt,
+                offset,
+                landscape,
+                fillScaleY,
+                mSkyA,
+                mSkyB,
+                mSkyC,
+                mSkyD,
+                mSkyG,
+                mSkyStars,
+                mSun1,
+                mSun2,
+                mSun3,
+                mMoon,
+                mStar,
+                mMeteor,
+                clearOn);
 
         prepareCloudIds(condition, nightWeight);
-        thunderOn = mCloudRenderer.drawClouds(mCloudDrawer, condition, nightWeight,
-                frameCnt, offset, landscape,
-                mCloudA01, mCloudA02, mCloudA03, mCloudB01, mCloudB02, mCloudB03,
-                mCloudLightA1, mCloudLightA2, mCloudLightA3,
-                mCloudLightB1, mCloudLightB2, mCloudLightB3, thunderOn);
+        thunderOn = mCloudRenderer.drawClouds(
+                mCloudDrawer,
+                condition,
+                nightWeight,
+                frameCnt,
+                offset,
+                landscape,
+                mCloudA01,
+                mCloudA02,
+                mCloudA03,
+                mCloudB01,
+                mCloudB02,
+                mCloudB03,
+                mCloudLightA1,
+                mCloudLightA2,
+                mCloudLightA3,
+                mCloudLightB1,
+                mCloudLightB2,
+                mCloudLightB3,
+                thunderOn);
 
         mWaveRenderer.drawWaves(mWaveDrawer, frameCnt, offset, landscape, mWaveBack, mWave);
 
-        clearOn = mSkyRenderer.drawSunlight(mSkyDrawer, condition, nightWeight,
-                frameCnt, offset, landscape, mSun4, clearOn);
+        clearOn = mSkyRenderer.drawSunlight(
+                mSkyDrawer, condition, nightWeight, frameCnt, offset, landscape, mSun4, clearOn);
 
-        mWaterSurfaceRenderer.drawWaterCover(mWaterDrawer, condition, nightWeight,
-                offset, landscape,
-                mWatercover1, mWatercover2, mWatercover3, mWatercover4,
-                mNightcover, mCapCover);
+        mWaterSurfaceRenderer.drawWaterCover(
+                mWaterDrawer,
+                condition,
+                nightWeight,
+                offset,
+                landscape,
+                mWatercover1,
+                mWatercover2,
+                mWatercover3,
+                mWatercover4,
+                mNightcover,
+                mCapCover);
 
-        mFogIceRenderer.drawFogIce(mFogIceDrawer, condition, nightWeight,
-                landscape, mFog01, mFog02, mIce, FogIceRenderer.Config.OCEAN);
+        mFogIceRenderer.drawFogIce(
+                mFogIceDrawer,
+                condition,
+                nightWeight,
+                landscape,
+                mFog01,
+                mFog02,
+                mIce,
+                FogIceRenderer.Config.OCEAN);
 
-        rainOn = mPrecipitationRenderer.drawRain(mPrecipitationDrawer, condition,
-                frameCnt, landscape, fillScaleY,
-                mRain1, mRain2, mRain3, mRain4, mCloudcover, mWaterdrop,
-                mRaindrop1, mRaindrop2, rainOn);
+        rainOn = mPrecipitationRenderer.drawRain(
+                mPrecipitationDrawer,
+                condition,
+                frameCnt,
+                landscape,
+                fillScaleY,
+                mRain1,
+                mRain2,
+                mRain3,
+                mRain4,
+                mCloudcover,
+                mWaterdrop,
+                mRaindrop1,
+                mRaindrop2,
+                rainOn);
 
-        mFrostRenderer.drawFrost(mFrostDrawer, condition, landscape,
-                mFrostC, mFrostE, mFrostF);
+        mFrostRenderer.drawFrost(mFrostDrawer, condition, landscape, mFrostC, mFrostE, mFrostF);
 
-        snowOn = mPrecipitationRenderer.drawSnow(mPrecipitationDrawer, condition,
-                frameCnt, offset, landscape, mSnow1, mSnow2, mSnow3, mSnow4, snowOn);
+        snowOn = mPrecipitationRenderer.drawSnow(
+                mPrecipitationDrawer,
+                condition,
+                frameCnt,
+                offset,
+                landscape,
+                mSnow1,
+                mSnow2,
+                mSnow3,
+                mSnow4,
+                snowOn);
 
-        thunderOn = mThunderRenderer.drawThunder(mThunderDrawer, condition,
-                frameCnt, offset, landscape,
-                mSkyFlash, mLightning1, mLightning2, mLightning3, thunderOn);
+        thunderOn = mThunderRenderer.drawThunder(
+                mThunderDrawer,
+                condition,
+                frameCnt,
+                offset,
+                landscape,
+                mSkyFlash,
+                mLightning1,
+                mLightning2,
+                mLightning3,
+                thunderOn);
 
         mScene.mWeatherFlagManager.setClearOn(clearOn);
         mScene.mWeatherFlagManager.setRainOn(rainOn);
@@ -367,7 +443,8 @@ final class OceanWeatherVkDelegate extends VkPassRendererDelegate {
      */
     private void prepareCloudIds(WeatherCondition condition, float nightWeight) {
         boolean clearBranch = (condition == WeatherCondition.D1_CLEAR
-                || condition == WeatherCondition.D8_ICE_COLD) && nightWeight < 1.0f;
+                        || condition == WeatherCondition.D8_ICE_COLD)
+                && nightWeight < 1.0f;
         if (clearBranch) {
             mCloudA01 = mCloudA01Clear;
             mCloudA02 = mCloudA02Clear;
@@ -387,47 +464,76 @@ final class OceanWeatherVkDelegate extends VkPassRendererDelegate {
 
     // ---- Drawer 桥接 ----
 
-    private final class DrawerBridge implements SkyRenderer.Drawer,
-            CloudRenderer.Drawer, OceanWaveRenderer.Drawer,
-            OceanWaterSurfaceRenderer.Drawer, FogIceRenderer.Drawer,
-            PrecipitationRenderer.Drawer, ThunderRenderer.Drawer,
-            FrostRenderer.Drawer {
+    private final class DrawerBridge
+            implements SkyRenderer.Drawer,
+                    CloudRenderer.Drawer,
+                    OceanWaveRenderer.Drawer,
+                    OceanWaterSurfaceRenderer.Drawer,
+                    FogIceRenderer.Drawer,
+                    PrecipitationRenderer.Drawer,
+                    ThunderRenderer.Drawer,
+                    FrostRenderer.Drawer {
         @Override
-        public void drawSprite(int t, float x, float y, float z,
-                               float sx, float sy, float r, float a) {
+        public void drawSprite(
+                int t, float x, float y, float z, float sx, float sy, float r, float a) {
             addSprite(t, x, y, z, sx, sy, r, a, QUAD_FULL);
         }
 
         @Override
-        public void drawSpriteRectOneToTwo(int t, float x, float y, float z,
-                                           float sx, float sy, float r, float a) {
+        public void drawSpriteRectOneToTwo(
+                int t, float x, float y, float z, float sx, float sy, float r, float a) {
             addSprite(t, x, y, z, sx, sy, r, a, QUAD_RECT_ONE_TO_TWO);
         }
 
         @Override
-        public void drawSpriteRectOneToFour(int t, float x, float y, float z,
-                                            float sx, float sy, float r, float a) {
+        public void drawSpriteRectOneToFour(
+                int t, float x, float y, float z, float sx, float sy, float r, float a) {
             addSprite(t, x, y, z, sx, sy, r, a, QUAD_RECT_ONE_TO_FOUR);
         }
 
         @Override
-        public void drawSpriteColoredRectOneToTwo(int t, float x, float y, float z,
-                                                  float sx, float sy, float r,
-                                                  float cr, float cg, float cb, float a) {
+        public void drawSpriteColoredRectOneToTwo(
+                int t,
+                float x,
+                float y,
+                float z,
+                float sx,
+                float sy,
+                float r,
+                float cr,
+                float cg,
+                float cb,
+                float a) {
             addSprite(t, x, y, z, sx, sy, r, cr, cg, cb, a, QUAD_RECT_ONE_TO_TWO);
         }
     }
 
-    private void addSprite(int assetId, float x, float y, float z,
-                           float scaleX, float scaleY, float rotation, float alpha,
-                           int quadType) {
-        addSprite(assetId, x, y, z, scaleX, scaleY, rotation,
-                alpha, alpha, alpha, alpha, quadType);
+    private void addSprite(
+            int assetId,
+            float x,
+            float y,
+            float z,
+            float scaleX,
+            float scaleY,
+            float rotation,
+            float alpha,
+            int quadType) {
+        addSprite(assetId, x, y, z, scaleX, scaleY, rotation, alpha, alpha, alpha, alpha, quadType);
     }
 
-    private void addSprite(int assetId, float x, float y, float z,
-                           float scaleX, float scaleY, float rotation,
-                           float r, float g, float b, float a, int quadType) {
+    private void addSprite(
+            int assetId,
+            float x,
+            float y,
+            float z,
+            float scaleX,
+            float scaleY,
+            float rotation,
+            float r,
+            float g,
+            float b,
+            float a,
+            int quadType) {
         if (assetId <= 0) {
             return;
         }
@@ -470,24 +576,31 @@ final class OceanWeatherVkDelegate extends VkPassRendererDelegate {
         ByteBuffer buffer = slot.buffer;
         int floatIndex = slot.count * VERTICES_PER_SPRITE * FLOATS_PER_VERTEX;
         // TRIANGLE_STRIP 的 0,1,2,3 展开成两个三角形：0,1,2 与 2,1,3。
-        floatIndex = putVertex(buffer, floatIndex, quad[0], quad[1],
-                QUAD_U[0], QUAD_V[0], r, g, b, a);
-        floatIndex = putVertex(buffer, floatIndex, quad[2], quad[3],
-                QUAD_U[1], QUAD_V[1], r, g, b, a);
-        floatIndex = putVertex(buffer, floatIndex, quad[4], quad[5],
-                QUAD_U[2], QUAD_V[2], r, g, b, a);
-        floatIndex = putVertex(buffer, floatIndex, quad[4], quad[5],
-                QUAD_U[2], QUAD_V[2], r, g, b, a);
-        floatIndex = putVertex(buffer, floatIndex, quad[2], quad[3],
-                QUAD_U[1], QUAD_V[1], r, g, b, a);
-        putVertex(buffer, floatIndex, quad[6], quad[7],
-                QUAD_U[3], QUAD_V[3], r, g, b, a);
+        floatIndex =
+                putVertex(buffer, floatIndex, quad[0], quad[1], QUAD_U[0], QUAD_V[0], r, g, b, a);
+        floatIndex =
+                putVertex(buffer, floatIndex, quad[2], quad[3], QUAD_U[1], QUAD_V[1], r, g, b, a);
+        floatIndex =
+                putVertex(buffer, floatIndex, quad[4], quad[5], QUAD_U[2], QUAD_V[2], r, g, b, a);
+        floatIndex =
+                putVertex(buffer, floatIndex, quad[4], quad[5], QUAD_U[2], QUAD_V[2], r, g, b, a);
+        floatIndex =
+                putVertex(buffer, floatIndex, quad[2], quad[3], QUAD_U[1], QUAD_V[1], r, g, b, a);
+        putVertex(buffer, floatIndex, quad[6], quad[7], QUAD_U[3], QUAD_V[3], r, g, b, a);
         slot.count++;
     }
 
-    private int putVertex(ByteBuffer buffer, int floatIndex,
-                          float localX, float localY, float u, float v,
-                          float r, float g, float b, float a) {
+    private int putVertex(
+            ByteBuffer buffer,
+            int floatIndex,
+            float localX,
+            float localY,
+            float u,
+            float v,
+            float r,
+            float g,
+            float b,
+            float a) {
         float[] m = mMvpMatrix;
         // 局部 z = 0，所以只取第 0、1、3 列与平移。
         float x = m[0] * localX + m[4] * localY + m[12];
@@ -523,8 +636,7 @@ final class OceanWeatherVkDelegate extends VkPassRendererDelegate {
             frame.setVertexCount(slot.pass, vertexCount);
             if (vertexCount > 0) {
                 slot.buffer.position(0);
-                frame.upload(slot.bufferName, slot.buffer,
-                        vertexCount * VERTEX_STRIDE_BYTES);
+                frame.upload(slot.bufferName, slot.buffer, vertexCount * VERTEX_STRIDE_BYTES);
             }
             frame.pushConstants(slot.pass, mPush);
         }
@@ -866,8 +978,7 @@ final class OceanWeatherVkDelegate extends VkPassRendererDelegate {
         final VkPass pass;
         int count;
 
-        Slot(int assetId, int capacity, String bufferName,
-             ByteBuffer buffer, VkPass pass) {
+        Slot(int assetId, int capacity, String bufferName, ByteBuffer buffer, VkPass pass) {
             this.assetId = assetId;
             this.capacity = capacity;
             this.bufferName = bufferName;
@@ -878,9 +989,6 @@ final class OceanWeatherVkDelegate extends VkPassRendererDelegate {
 
     /** GL 裁剪空间 → Vulkan 裁剪空间（y 翻转、z 从 [-w, w] 映射到 [0, w]）。与其它 VK 壁纸一致。 */
     private static final float[] CLIP_CORRECTION = {
-        1, 0, 0, 0,
-        0, -1, 0, 0,
-        0, 0, 0.5f, 0,
-        0, 0, 0.5f, 1,
+        1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0.5f, 0, 0, 0, 0.5f, 1,
     };
 }

@@ -30,16 +30,19 @@ final class PhaseBeamVkDelegate extends VkPassRendererDelegate {
 
     /** 背景：position(3) + offsetX(1) + realColor(4) + adjust(3)。 */
     private static final int BG_FLOATS_PER_VERTEX = 11;
+
     private static final int BG_STRIDE_BYTES = BG_FLOATS_PER_VERTEX * 4;
     /** 三个主题的背景网格都是 102 个顶点，留一点余量。 */
     private static final int BG_MAX_VERTICES = 128;
 
     /** 光点：NDC position(2) + uv(2) + alpha(1) + adjust(3)。 */
     private static final int POINT_FLOATS_PER_VERTEX = 8;
+
     private static final int POINT_STRIDE_BYTES = POINT_FLOATS_PER_VERTEX * 4;
     private static final int VERTICES_PER_POINT = 6;
     /** 场景把 dot_count 夹在 10..60。 */
     private static final int MAX_POINTS = 64;
+
     private static final int MAX_POINT_VERTICES = MAX_POINTS * VERTICES_PER_POINT;
 
     private final SharedPreferences mPrefs;
@@ -139,27 +142,33 @@ final class PhaseBeamVkDelegate extends VkPassRendererDelegate {
         scene.createTexture("dotTex");
 
         mBgPass = scene.add(new VkPass(
-                "shaders/phasebeam_vk_bg.vert.spv",
-                "shaders/phasebeam_vk_bg.frag.spv",
-                new int[] {3, 1, 4, 3}, BG_STRIDE_BYTES,
-                VkPass.TOPOLOGY_TRIANGLE_LIST, VkPass.BLEND_ADDITIVE))
+                        "shaders/phasebeam_vk_bg.vert.spv",
+                        "shaders/phasebeam_vk_bg.frag.spv",
+                        new int[] {3, 1, 4, 3},
+                        BG_STRIDE_BYTES,
+                        VkPass.TOPOLOGY_TRIANGLE_LIST,
+                        VkPass.BLEND_ADDITIVE))
                 .buffer("bg", 0)
                 .pushConstants(PUSH_BYTES);
 
         mBeamPass = scene.add(new VkPass(
-                "shaders/phasebeam_vk_dot.vert.spv",
-                "shaders/phasebeam_vk_dot.frag.spv",
-                new int[] {2, 2, 1, 3}, POINT_STRIDE_BYTES,
-                VkPass.TOPOLOGY_TRIANGLE_LIST, VkPass.BLEND_ADDITIVE))
+                        "shaders/phasebeam_vk_dot.vert.spv",
+                        "shaders/phasebeam_vk_dot.frag.spv",
+                        new int[] {2, 2, 1, 3},
+                        POINT_STRIDE_BYTES,
+                        VkPass.TOPOLOGY_TRIANGLE_LIST,
+                        VkPass.BLEND_ADDITIVE))
                 .buffer("beam", 0)
                 .pushConstants(PUSH_BYTES);
         mBeamPass.texture(0, "beamTex");
 
         mDotPass = scene.add(new VkPass(
-                "shaders/phasebeam_vk_dot.vert.spv",
-                "shaders/phasebeam_vk_dot.frag.spv",
-                new int[] {2, 2, 1, 3}, POINT_STRIDE_BYTES,
-                VkPass.TOPOLOGY_TRIANGLE_LIST, VkPass.BLEND_ADDITIVE))
+                        "shaders/phasebeam_vk_dot.vert.spv",
+                        "shaders/phasebeam_vk_dot.frag.spv",
+                        new int[] {2, 2, 1, 3},
+                        POINT_STRIDE_BYTES,
+                        VkPass.TOPOLOGY_TRIANGLE_LIST,
+                        VkPass.BLEND_ADDITIVE))
                 .buffer("dot", 0)
                 .pushConstants(PUSH_BYTES);
         mDotPass.texture(0, "dotTex");
@@ -224,8 +233,11 @@ final class PhaseBeamVkDelegate extends VkPassRendererDelegate {
 
         int dots = mScene.getDotCount();
         int beamFloats = buildPoints(
-                mBeamVertices, mScene.mBeamPositions, mScene.mBeamOffsets,
-                mScene.mBeamAdjusts, dots);
+                mBeamVertices,
+                mScene.mBeamPositions,
+                mScene.mBeamOffsets,
+                mScene.mBeamAdjusts,
+                dots);
         mBeamFloats.clear();
         mBeamFloats.put(mBeamVertices, 0, beamFloats);
         frame.upload("beam", mBeamBuffer, beamFloats * 4);
@@ -233,8 +245,7 @@ final class PhaseBeamVkDelegate extends VkPassRendererDelegate {
         frame.pushConstants(mBeamPass, mPush);
 
         int dotFloats = buildPoints(
-                mDotVertices, mScene.mDotPositions, mScene.mDotOffsets,
-                mScene.mDotAdjusts, dots);
+                mDotVertices, mScene.mDotPositions, mScene.mDotOffsets, mScene.mDotAdjusts, dots);
         mDotFloats.clear();
         mDotFloats.put(mDotVertices, 0, dotFloats);
         frame.upload("dot", mDotBuffer, dotFloats * 4);
@@ -285,8 +296,8 @@ final class PhaseBeamVkDelegate extends VkPassRendererDelegate {
      * {@code size = z * 7}、{@code alpha = 0.5 - size / 1000}、
      * {@code x -= offsetX * size / 100}、像素尺寸为 {@code size * scaleSize}。
      */
-    private int buildPoints(float[] out, float[] positions, float[] offsets,
-                            float[] adjusts, int count) {
+    private int buildPoints(
+            float[] out, float[] positions, float[] offsets, float[] adjusts, int count) {
         float scale = mScene.mScaleSize;
         int o = 0;
         for (int i = 0; i < count; i++) {
@@ -299,16 +310,24 @@ final class PhaseBeamVkDelegate extends VkPassRendererDelegate {
             float sizePx = size * scale;
             float hx = sizePx / mWidth;
             float hy = sizePx / mHeight;
-            o = writeQuad(out, o, cx, cy, hx, hy, alpha,
-                    adjusts[v], adjusts[v + 1], adjusts[v + 2]);
+            o = writeQuad(
+                    out, o, cx, cy, hx, hy, alpha, adjusts[v], adjusts[v + 1], adjusts[v + 2]);
         }
         return o;
     }
 
     /** 顶点格式：x, y, u, v, alpha, adjust(x,y,z)。左上角 uv=(0,0)，与 gl_PointCoord 同向。 */
-    private static int writeQuad(float[] out, int o, float cx, float cy,
-                                 float hx, float hy, float alpha,
-                                 float ax, float ay, float az) {
+    private static int writeQuad(
+            float[] out,
+            int o,
+            float cx,
+            float cy,
+            float hx,
+            float hy,
+            float alpha,
+            float ax,
+            float ay,
+            float az) {
         float left = cx - hx;
         float right = cx + hx;
         float top = cy + hy;
@@ -321,9 +340,17 @@ final class PhaseBeamVkDelegate extends VkPassRendererDelegate {
         return writeVertex(out, o, right, bottom, 1.0f, 1.0f, alpha, ax, ay, az);
     }
 
-    private static int writeVertex(float[] out, int o, float x, float y,
-                                   float u, float v, float alpha,
-                                   float ax, float ay, float az) {
+    private static int writeVertex(
+            float[] out,
+            int o,
+            float x,
+            float y,
+            float u,
+            float v,
+            float alpha,
+            float ax,
+            float ay,
+            float az) {
         out[o++] = x;
         out[o++] = y;
         out[o++] = u;
@@ -339,9 +366,9 @@ final class PhaseBeamVkDelegate extends VkPassRendererDelegate {
     private void uploadTextures() {
         if (mPassScene == null) return;
         boolean useGrey = mScene.mRecolorEnabled && "phasebeam".equals(mScene.mTheme);
-        String prefix = "sunbeam".equals(mScene.mTheme) ? "sunbeam"
-                : "waterbeam".equals(mScene.mTheme) ? "water"
-                : "phasebeam";
+        String prefix = "sunbeam".equals(mScene.mTheme)
+                ? "sunbeam"
+                : "waterbeam".equals(mScene.mTheme) ? "water" : "phasebeam";
         String suffix = useGrey ? "_grey" : "";
         String path = "phasebeam/drawable/" + prefix;
         uploadTexture("dotTex", path + "_dot" + suffix + ".png");
@@ -368,8 +395,8 @@ final class PhaseBeamVkDelegate extends VkPassRendererDelegate {
         return "sunbeam".equals(mScene.mTheme)
                 ? "phasebeam/data/sunbeam_bg_mesh.csv"
                 : "waterbeam".equals(mScene.mTheme)
-                    ? "phasebeam/data/water_bg_mesh.csv"
-                    : "phasebeam/data/phasebeam_bg_mesh.csv";
+                        ? "phasebeam/data/water_bg_mesh.csv"
+                        : "phasebeam/data/phasebeam_bg_mesh.csv";
     }
 
     private static ByteBuffer direct(int bytes) {
@@ -377,9 +404,6 @@ final class PhaseBeamVkDelegate extends VkPassRendererDelegate {
     }
 
     private static final float[] CLIP_CORRECTION = {
-        1, 0, 0, 0,
-        0, -1, 0, 0,
-        0, 0, 0.5f, 0,
-        0, 0, 0.5f, 1,
+        1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0.5f, 0, 0, 0, 0.5f, 1,
     };
 }

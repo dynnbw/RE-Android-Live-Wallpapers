@@ -23,8 +23,7 @@ public class OceanWeatherVKPlugin implements WallpaperPlugin {
 
     @Override
     public WallpaperEngine createEngine(Context ctx, WallpaperPluginHost host) {
-        return new VkRendererEngine(
-                ctx, host, new OceanWeatherVkDelegate(ctx, false));
+        return new VkRendererEngine(ctx, host, new OceanWeatherVkDelegate(ctx, false));
     }
 
     @Override

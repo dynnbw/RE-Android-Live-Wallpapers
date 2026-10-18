@@ -28,8 +28,7 @@ public class PhaseBeamVKPlugin implements WallpaperPlugin {
          */
         return new VkRendererEngine(ctx, host, delegate) {
             @Override
-            public void onOffsetsChanged(float xo, float yo, float xs, float ys,
-                                         int xp, int yp) {
+            public void onOffsetsChanged(float xo, float yo, float xs, float ys, int xp, int yp) {
                 delegate.setScrollStep(xs);
                 super.onOffsetsChanged(xo, yo, xs, ys, xp, yp);
             }

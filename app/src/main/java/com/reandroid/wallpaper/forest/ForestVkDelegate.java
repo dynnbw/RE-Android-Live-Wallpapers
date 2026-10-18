@@ -27,6 +27,7 @@ final class ForestVkDelegate extends VkPassRendererDelegate {
 
     /** 顶点属性：位置(2) + UV(2) + alpha(1)。 */
     private static final int FLOATS_PER_VERTEX = 5;
+
     private static final int VERTICES_PER_QUAD = 6; // 两个三角形
     private static final int STRIDE_BYTES = FLOATS_PER_VERTEX * 4;
     /** push constant：4x4 矩阵。 */
@@ -48,30 +49,28 @@ final class ForestVkDelegate extends VkPassRendererDelegate {
     private static final String TEX_OVERLAY = "forest_tex_overlay";
     private static final String TEX_PARTICLE = "forest_tex_particle";
     private static final String[] STEM_TEXTURES = {
-            "forest_tex_stem_a",
-            "forest_tex_stem_b1",
-            "forest_tex_stem_c",
-            "forest_tex_stem_b2",
+        "forest_tex_stem_a", "forest_tex_stem_b1", "forest_tex_stem_c", "forest_tex_stem_b2",
     };
 
     /** 纹理名与 GLES 的 mTexIndex 顺序对齐（0=bg, 1=overlay, 3=particle, 4..7=stems）。 */
     private static final String[] TEXTURE_NAMES = {
-            TEX_BG,
-            TEX_OVERLAY,
-            TEX_PARTICLE,
-            STEM_TEXTURES[0],
-            STEM_TEXTURES[1],
-            STEM_TEXTURES[2],
-            STEM_TEXTURES[3],
+        TEX_BG,
+        TEX_OVERLAY,
+        TEX_PARTICLE,
+        STEM_TEXTURES[0],
+        STEM_TEXTURES[1],
+        STEM_TEXTURES[2],
+        STEM_TEXTURES[3],
     };
+
     private static final String[] TEXTURE_ASSETS = {
-            "forest/drawable/forest_bg_16_16.png",
-            "forest/drawable/forest_bg_overlay_256_512.png",
-            "forest/drawable/forest_particle_32_32.png",
-            "forest/drawable/forest_stem_a_64_512.png",
-            "forest/drawable/forest_stem_b_01_64_512.png",
-            "forest/drawable/forest_stem_c_64_512.png",
-            "forest/drawable/forest_stem_b_02_64_512.png",
+        "forest/drawable/forest_bg_16_16.png",
+        "forest/drawable/forest_bg_overlay_256_512.png",
+        "forest/drawable/forest_particle_32_32.png",
+        "forest/drawable/forest_stem_a_64_512.png",
+        "forest/drawable/forest_stem_b_01_64_512.png",
+        "forest/drawable/forest_stem_c_64_512.png",
+        "forest/drawable/forest_stem_b_02_64_512.png",
     };
 
     /** 与 ForestScene.initStems() 的 texIndex 一致：4,5,6,7,4,6。 */
@@ -105,18 +104,27 @@ final class ForestVkDelegate extends VkPassRendererDelegate {
 
     /** GL ortho(0,240,0,320,-10,1000)，列主序。 */
     private static final float[] PROJECTION = {
-            1.0f / 120.0f, 0.0f, 0.0f, 0.0f,
-            0.0f, 1.0f / 160.0f, 0.0f, 0.0f,
-            0.0f, 0.0f, -2.0f / 1010.0f, 0.0f,
-            -1.0f, -1.0f, -990.0f / 1010.0f, 1.0f,
+        1.0f / 120.0f,
+        0.0f,
+        0.0f,
+        0.0f,
+        0.0f,
+        1.0f / 160.0f,
+        0.0f,
+        0.0f,
+        0.0f,
+        0.0f,
+        -2.0f / 1010.0f,
+        0.0f,
+        -1.0f,
+        -1.0f,
+        -990.0f / 1010.0f,
+        1.0f,
     };
 
     /** GL NDC → Vulkan 裁剪空间（y 翻转、z 到 0..1）。 */
     private static final float[] CLIP_CORRECTION = {
-            1, 0, 0, 0,
-            0, -1, 0, 0,
-            0, 0, 0.5f, 0,
-            0, 0, 0.5f, 1,
+        1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0.5f, 0, 0, 0, 0.5f, 1,
     };
 
     ForestVkDelegate(Context context) {
@@ -165,10 +173,17 @@ final class ForestVkDelegate extends VkPassRendererDelegate {
         if (mScene == null || event == null || mWidth <= 0 || mHeight <= 0) return;
         int action;
         switch (event.getActionMasked()) {
-            case MotionEvent.ACTION_DOWN: action = ForestScene.ACTION_DOWN; break;
-            case MotionEvent.ACTION_UP:   action = ForestScene.ACTION_UP; break;
-            case MotionEvent.ACTION_MOVE: action = ForestScene.ACTION_MOVE; break;
-            default: return;
+            case MotionEvent.ACTION_DOWN:
+                action = ForestScene.ACTION_DOWN;
+                break;
+            case MotionEvent.ACTION_UP:
+                action = ForestScene.ACTION_UP;
+                break;
+            case MotionEvent.ACTION_MOVE:
+                action = ForestScene.ACTION_MOVE;
+                break;
+            default:
+                return;
         }
         float sx = SCREEN_W / mWidth;
         float sy = SCREEN_H / mHeight;
@@ -200,16 +215,24 @@ final class ForestVkDelegate extends VkPassRendererDelegate {
 
         // 背景：GLES 里关掉混合。
         mBgPass = scene.add(new VkPass(
-                VS_ASSET, FS_ASSET, attribs, STRIDE_BYTES,
-                VkPass.TOPOLOGY_TRIANGLE_LIST, VkPass.BLEND_NONE))
+                        VS_ASSET,
+                        FS_ASSET,
+                        attribs,
+                        STRIDE_BYTES,
+                        VkPass.TOPOLOGY_TRIANGLE_LIST,
+                        VkPass.BLEND_NONE))
                 .buffer(BUF_BG, 0)
                 .pushConstants(PUSH_BYTES);
         mBgPass.texture(0, TEX_BG);
 
         // 叠加层：glBlendFunc(SRC_ALPHA, ONE)。四个因子都显式给全，alpha 通道也与 GLES 一致。
         mOverlayPass = scene.add(new VkPass(
-                VS_ASSET, FS_ASSET, attribs, STRIDE_BYTES,
-                VkPass.TOPOLOGY_TRIANGLE_LIST, VkPass.BLEND_ADDITIVE))
+                        VS_ASSET,
+                        FS_ASSET,
+                        attribs,
+                        STRIDE_BYTES,
+                        VkPass.TOPOLOGY_TRIANGLE_LIST,
+                        VkPass.BLEND_ADDITIVE))
                 .buffer(BUF_OVERLAY, 0)
                 .pushConstants(PUSH_BYTES)
                 .blendFactors(
@@ -220,8 +243,12 @@ final class ForestVkDelegate extends VkPassRendererDelegate {
         // 草：SRC_ALPHA / ONE_MINUS_SRC_ALPHA，按场景顺序逐株一个 pass。
         for (int i = 0; i < MAX_STEMS; i++) {
             VkPass pass = scene.add(new VkPass(
-                    VS_ASSET, FS_ASSET, attribs, STRIDE_BYTES,
-                    VkPass.TOPOLOGY_TRIANGLE_LIST, VkPass.BLEND_ALPHA))
+                            VS_ASSET,
+                            FS_ASSET,
+                            attribs,
+                            STRIDE_BYTES,
+                            VkPass.TOPOLOGY_TRIANGLE_LIST,
+                            VkPass.BLEND_ALPHA))
                     .buffer(BUF_STEM, 0)
                     .pushConstants(PUSH_BYTES)
                     .blendFactors(
@@ -233,8 +260,12 @@ final class ForestVkDelegate extends VkPassRendererDelegate {
 
         // 粒子：同样是非预乘 alpha，一次 pass 画完。
         mParticlePass = scene.add(new VkPass(
-                VS_ASSET, FS_ASSET, attribs, STRIDE_BYTES,
-                VkPass.TOPOLOGY_TRIANGLE_LIST, VkPass.BLEND_ALPHA))
+                        VS_ASSET,
+                        FS_ASSET,
+                        attribs,
+                        STRIDE_BYTES,
+                        VkPass.TOPOLOGY_TRIANGLE_LIST,
+                        VkPass.BLEND_ALPHA))
                 .buffer(BUF_PARTICLE, 0)
                 .pushConstants(PUSH_BYTES)
                 .blendFactors(
@@ -255,8 +286,11 @@ final class ForestVkDelegate extends VkPassRendererDelegate {
         frame.pushConstants(mBgPass, CLIP_CORRECTION);
 
         // 叠加层：平移 +30，并随桌面滚动。
-        writeScreenQuad(mOverlayVertices, 30.0f + mScene.mXOffset,
-                mScene.mLandscapeY, mScene.mOverlayOutTime);
+        writeScreenQuad(
+                mOverlayVertices,
+                30.0f + mScene.mXOffset,
+                mScene.mLandscapeY,
+                mScene.mOverlayOutTime);
         frame.upload(BUF_OVERLAY, mOverlayVertices, VERTICES_PER_QUAD * STRIDE_BYTES);
         frame.setVertexCount(mOverlayPass, VERTICES_PER_QUAD);
         frame.pushConstants(mOverlayPass, CLIP_CORRECTION);
@@ -285,8 +319,8 @@ final class ForestVkDelegate extends VkPassRendererDelegate {
     }
 
     /** 屏幕四边形：world 坐标经 GL ortho 变成 NDC，y 翻转交给 CLIP_CORRECTION。 */
-    private static void writeScreenQuad(ByteBuffer buffer, float worldLeft,
-                                        float worldBottom, float alpha) {
+    private static void writeScreenQuad(
+            ByteBuffer buffer, float worldLeft, float worldBottom, float alpha) {
         float left = worldLeft / (SCREEN_W * 0.5f) - 1.0f;
         float right = (worldLeft + SCREEN_W) / (SCREEN_W * 0.5f) - 1.0f;
         float bottom = worldBottom / (SCREEN_H * 0.5f) - 1.0f;
@@ -308,8 +342,7 @@ final class ForestVkDelegate extends VkPassRendererDelegate {
         float top = (centerY + halfY) / (SCREEN_H * 0.5f) - 1.0f;
 
         int floatIndex = mParticleCount * VERTICES_PER_QUAD * FLOATS_PER_VERTEX;
-        writeQuad(mParticleVertices, floatIndex, left, bottom, right, top,
-                particle.outTime);
+        writeQuad(mParticleVertices, floatIndex, left, bottom, right, top, particle.outTime);
         mParticleCount++;
     }
 
@@ -349,8 +382,7 @@ final class ForestVkDelegate extends VkPassRendererDelegate {
     private static void multiply(float[] out, float[] a, float[] b) {
         for (int column = 0; column < 4; column++) {
             for (int row = 0; row < 4; row++) {
-                out[column * 4 + row] =
-                        a[row] * b[column * 4]
+                out[column * 4 + row] = a[row] * b[column * 4]
                         + a[4 + row] * b[column * 4 + 1]
                         + a[8 + row] * b[column * 4 + 2]
                         + a[12 + row] * b[column * 4 + 3];
@@ -359,9 +391,14 @@ final class ForestVkDelegate extends VkPassRendererDelegate {
     }
 
     /** 两个三角形 0,1,2 与 2,1,3；UV 与 GLES 的 (0,1)(1,1)(0,0)(1,0) 一致。 */
-    private static void writeQuad(ByteBuffer buffer, int floatIndex,
-                                  float left, float bottom, float right, float top,
-                                  float alpha) {
+    private static void writeQuad(
+            ByteBuffer buffer,
+            int floatIndex,
+            float left,
+            float bottom,
+            float right,
+            float top,
+            float alpha) {
         floatIndex = putVertex(buffer, floatIndex, left, bottom, 0.0f, 1.0f, alpha);
         floatIndex = putVertex(buffer, floatIndex, right, bottom, 1.0f, 1.0f, alpha);
         floatIndex = putVertex(buffer, floatIndex, left, top, 0.0f, 0.0f, alpha);
@@ -370,8 +407,8 @@ final class ForestVkDelegate extends VkPassRendererDelegate {
         putVertex(buffer, floatIndex, right, top, 1.0f, 0.0f, alpha);
     }
 
-    private static int putVertex(ByteBuffer buffer, int floatIndex,
-                                 float x, float y, float u, float v, float alpha) {
+    private static int putVertex(
+            ByteBuffer buffer, int floatIndex, float x, float y, float u, float v, float alpha) {
         buffer.putFloat(floatIndex * 4, x);
         buffer.putFloat((floatIndex + 1) * 4, y);
         buffer.putFloat((floatIndex + 2) * 4, u);

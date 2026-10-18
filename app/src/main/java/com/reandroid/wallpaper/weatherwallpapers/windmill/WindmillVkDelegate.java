@@ -43,12 +43,12 @@ import java.nio.ByteOrder;
  */
 final class WindmillVkDelegate extends VkPassRendererDelegate
         implements WindmillRenderer.Drawer,
-        GroundRenderer.Drawer,
-        CloudRenderer.Drawer,
-        FogIceRenderer.Drawer,
-        SkyRenderer.Drawer,
-        PrecipitationRenderer.Drawer,
-        ThunderRenderer.Drawer {
+                GroundRenderer.Drawer,
+                CloudRenderer.Drawer,
+                FogIceRenderer.Drawer,
+                SkyRenderer.Drawer,
+                PrecipitationRenderer.Drawer,
+                ThunderRenderer.Drawer {
 
     private static final String VS = "shaders/windmill_vk.vert.spv";
     private static final String FS = "shaders/windmill_vk.frag.spv";
@@ -57,14 +57,19 @@ final class WindmillVkDelegate extends VkPassRendererDelegate
     private static final int SLOTS = 8;
     /** x, y, z, u, v, r, g, b, a, textureSlot。 */
     private static final int FLOATS_PER_VERTEX = 10;
+
     private static final int STRIDE = FLOATS_PER_VERTEX * 4;
     private static final int VERTICES_PER_SPRITE = 6;
     private static final int PUSH_BYTES = 16 * 4;
 
     // ── 顶点形状（与 windmill/data/*.csv 完全一致）──
     private static final float[] QUAD = {-8f, 8f, 0f, -8f, -8f, 0f, 8f, 8f, 0f, 8f, -8f, 0f};
-    private static final float[] RECT_ONE_TO_TWO = {-4f, 2f, 0f, -4f, -2f, 0f, 4f, 2f, 0f, 4f, -2f, 0f};
-    private static final float[] RECT_ONE_TO_FOUR = {-4f, 1f, 0f, -4f, -1f, 0f, 4f, 1f, 0f, 4f, -1f, 0f};
+    private static final float[] RECT_ONE_TO_TWO = {
+        -4f, 2f, 0f, -4f, -2f, 0f, 4f, 2f, 0f, 4f, -2f, 0f
+    };
+    private static final float[] RECT_ONE_TO_FOUR = {
+        -4f, 1f, 0f, -4f, -1f, 0f, 4f, 1f, 0f, 4f, -1f, 0f
+    };
     private static final float[] TEX_COORDS = {0f, 0f, 0f, 1f, 1f, 0f, 1f, 1f};
 
     private static final int QUAD_TYPE_SPRITE = 0;
@@ -170,6 +175,7 @@ final class WindmillVkDelegate extends VkPassRendererDelegate
     private static final int P_CLOUD_LIGHTS = 13;
     /** 远/中/近三档风车，每档每个风车一个 pass，保证一台风车内部 P→W→C 的顺序。 */
     private static final int P_WINMILL_FAR_0 = 14;
+
     private static final int P_FAR_LAND = 17;
     private static final int P_WINMILL_MID_0 = 18;
     private static final int P_NEAR_LAND = 21;
@@ -191,7 +197,7 @@ final class WindmillVkDelegate extends VkPassRendererDelegate
     private static final int PASS_COUNT = 91;
 
     private static final int[] WINMILL_TEX = {
-            TEX_PILLAR, TEX_PILLAR_FLIP, TEX_WING, TEX_WING_BLUR, TEX_CENTER
+        TEX_PILLAR, TEX_PILLAR_FLIP, TEX_WING, TEX_WING_BLUR, TEX_CENTER
     };
 
     /**
@@ -199,10 +205,7 @@ final class WindmillVkDelegate extends VkPassRendererDelegate
      * 与参考实现（BlueSeaVkDelegate）同一份常量。
      */
     private static final float[] CLIP_CORRECTION = {
-            1, 0, 0, 0,
-            0, -1, 0, 0,
-            0, 0, 0.5f, 0,
-            0, 0, 0.5f, 1,
+        1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0.5f, 0, 0, 0, 0.5f, 1,
     };
 
     private static final String[] ASSET_PATHS = new String[TEX_COUNT];
@@ -244,12 +247,18 @@ final class WindmillVkDelegate extends VkPassRendererDelegate
         ASSET_PATHS[TEX_LIGHTNING_01] = "weatherwallpapers/common/drawable/g_lightning_01.png";
         ASSET_PATHS[TEX_LIGHTNING_02] = "weatherwallpapers/common/drawable/g_lightning_02.png";
         ASSET_PATHS[TEX_LIGHTNING_03] = "weatherwallpapers/common/drawable/g_lightning_03.png";
-        ASSET_PATHS[TEX_CLOUD_LIGHT_A_01] = "weatherwallpapers/common/drawable/cloud_a_light_01.png";
-        ASSET_PATHS[TEX_CLOUD_LIGHT_A_02] = "weatherwallpapers/common/drawable/cloud_a_light_02.png";
-        ASSET_PATHS[TEX_CLOUD_LIGHT_A_03] = "weatherwallpapers/common/drawable/cloud_a_light_03.png";
-        ASSET_PATHS[TEX_CLOUD_LIGHT_B_01] = "weatherwallpapers/common/drawable/cloud_b_light_01.png";
-        ASSET_PATHS[TEX_CLOUD_LIGHT_B_02] = "weatherwallpapers/common/drawable/cloud_b_light_02.png";
-        ASSET_PATHS[TEX_CLOUD_LIGHT_B_03] = "weatherwallpapers/common/drawable/cloud_b_light_03.png";
+        ASSET_PATHS[TEX_CLOUD_LIGHT_A_01] =
+                "weatherwallpapers/common/drawable/cloud_a_light_01.png";
+        ASSET_PATHS[TEX_CLOUD_LIGHT_A_02] =
+                "weatherwallpapers/common/drawable/cloud_a_light_02.png";
+        ASSET_PATHS[TEX_CLOUD_LIGHT_A_03] =
+                "weatherwallpapers/common/drawable/cloud_a_light_03.png";
+        ASSET_PATHS[TEX_CLOUD_LIGHT_B_01] =
+                "weatherwallpapers/common/drawable/cloud_b_light_01.png";
+        ASSET_PATHS[TEX_CLOUD_LIGHT_B_02] =
+                "weatherwallpapers/common/drawable/cloud_b_light_02.png";
+        ASSET_PATHS[TEX_CLOUD_LIGHT_B_03] =
+                "weatherwallpapers/common/drawable/cloud_b_light_03.png";
         ASSET_PATHS[TEX_WING] = "windmill/drawable/a_windmill_wing.png";
         ASSET_PATHS[TEX_WING_BLUR] = "windmill/drawable/a_windmill_wing_blur2.png";
         ASSET_PATHS[TEX_CENTER] = "windmill/drawable/a_windmill_center_01.png";
@@ -301,9 +310,11 @@ final class WindmillVkDelegate extends VkPassRendererDelegate
     private int mStage = STAGE_NONE;
     /** 云的一格里，第 3 个 A 在「晴」分支要落到第二段；阴天分支三张 A 连续。 */
     private int mCloudACount;
+
     private boolean mClearCloudMode;
     /** 当前 drawByDistance 对应的风车 pass（按该距离下的绘制顺序）。 */
     private int[] mActiveMillPasses = new int[0];
+
     private int mMillCallCursor;
 
     private final float[] mPush = new float[16];
@@ -430,23 +441,36 @@ final class WindmillVkDelegate extends VkPassRendererDelegate
         definePass(scene, P_CLOUD_A_1, 3, TEX_CLOUD_A_01, TEX_CLOUD_A_02, TEX_CLOUD_A_03);
         definePass(scene, P_CLOUD_B_1, 7, TEX_CLOUD_B_01, TEX_CLOUD_B_02, TEX_CLOUD_B_03);
         definePass(scene, P_CLOUD_A_2, 1, TEX_CLOUD_A_01, TEX_CLOUD_A_02, TEX_CLOUD_A_03);
-        definePass(scene, P_CLOUD_LIGHTS, 20,
-                TEX_CLOUD_LIGHT_A_01, TEX_CLOUD_LIGHT_A_02, TEX_CLOUD_LIGHT_A_03,
-                TEX_CLOUD_LIGHT_B_01, TEX_CLOUD_LIGHT_B_02, TEX_CLOUD_LIGHT_B_03);
+        definePass(
+                scene,
+                P_CLOUD_LIGHTS,
+                20,
+                TEX_CLOUD_LIGHT_A_01,
+                TEX_CLOUD_LIGHT_A_02,
+                TEX_CLOUD_LIGHT_A_03,
+                TEX_CLOUD_LIGHT_B_01,
+                TEX_CLOUD_LIGHT_B_02,
+                TEX_CLOUD_LIGHT_B_03);
 
         definePass(scene, P_WINMILL_FAR_0, 3, WINMILL_TEX);
         definePass(scene, P_WINMILL_FAR_0 + 1, 3, WINMILL_TEX);
         definePass(scene, P_WINMILL_FAR_0 + 2, 3, WINMILL_TEX);
 
-        definePass(scene, P_FAR_LAND, 2,
-                TEX_LAND_02, TEX_LAND_04, TEX_LAND_07, TEX_LAND_09);
+        definePass(scene, P_FAR_LAND, 2, TEX_LAND_02, TEX_LAND_04, TEX_LAND_07, TEX_LAND_09);
 
         definePass(scene, P_WINMILL_MID_0, 3, WINMILL_TEX);
         definePass(scene, P_WINMILL_MID_0 + 1, 3, WINMILL_TEX);
         definePass(scene, P_WINMILL_MID_0 + 2, 3, WINMILL_TEX);
 
-        definePass(scene, P_NEAR_LAND, 2,
-                TEX_LAND_01, TEX_LAND_03, TEX_LAND_05, TEX_LAND_06, TEX_LAND_08);
+        definePass(
+                scene,
+                P_NEAR_LAND,
+                2,
+                TEX_LAND_01,
+                TEX_LAND_03,
+                TEX_LAND_05,
+                TEX_LAND_06,
+                TEX_LAND_08);
 
         definePass(scene, P_WINMILL_NEAR_0, 3, WINMILL_TEX);
         definePass(scene, P_WINMILL_NEAR_0 + 1, 3, WINMILL_TEX);
@@ -456,15 +480,14 @@ final class WindmillVkDelegate extends VkPassRendererDelegate
         definePass(scene, P_WINMILL_NEAR_0 + 5, 3, WINMILL_TEX);
         definePass(scene, P_WINMILL_NEAR_0 + 6, 3, WINMILL_TEX);
 
-        definePass(scene, P_LAWN, 2,
-                TEX_LAWN_01, TEX_LAWN_02, TEX_LAWN_03, TEX_LAWN_04, TEX_LAWN_05);
+        definePass(
+                scene, P_LAWN, 2, TEX_LAWN_01, TEX_LAWN_02, TEX_LAWN_03, TEX_LAWN_04, TEX_LAWN_05);
 
         definePass(scene, P_SUNLIGHT, 1, TEX_SUN_04);
         definePass(scene, P_FOG, 1, TEX_FOG);
         definePass(scene, P_ICE, 1, TEX_ICE);
 
-        definePass(scene, P_RAIN, 1,
-                TEX_RAIN_01, TEX_RAIN_02, TEX_RAIN_03, TEX_RAIN_04);
+        definePass(scene, P_RAIN, 1, TEX_RAIN_01, TEX_RAIN_02, TEX_RAIN_03, TEX_RAIN_04);
         definePass(scene, P_WATERDROP, 1, TEX_WATERDROP);
 
         for (int i = 0; i < 25; i++) {
@@ -480,8 +503,14 @@ final class WindmillVkDelegate extends VkPassRendererDelegate
         definePass(scene, P_SNOW_04, 1, TEX_SNOW_04);
         definePass(scene, P_SNOW_03, 200, TEX_SNOW_03);
 
-        definePass(scene, P_THUNDER, 80,
-                TEX_SKY_FLASH, TEX_LIGHTNING_01, TEX_LIGHTNING_02, TEX_LIGHTNING_03);
+        definePass(
+                scene,
+                P_THUNDER,
+                80,
+                TEX_SKY_FLASH,
+                TEX_LIGHTNING_01,
+                TEX_LIGHTNING_02,
+                TEX_LIGHTNING_03);
     }
 
     private void definePass(VkPassScene scene, int id, int capacitySprites, int... texIds) {
@@ -490,10 +519,12 @@ final class WindmillVkDelegate extends VkPassRendererDelegate
         scene.createBuffer(bufferName, STRIDE, vertices, true);
 
         VkPass pass = scene.add(new VkPass(
-                VS, FS,
-                new int[] {3, 2, 4, 1}, STRIDE,
-                VkPass.TOPOLOGY_TRIANGLE_LIST,
-                VkPass.BLEND_PREMULTIPLIED))
+                        VS,
+                        FS,
+                        new int[] {3, 2, 4, 1},
+                        STRIDE,
+                        VkPass.TOPOLOGY_TRIANGLE_LIST,
+                        VkPass.BLEND_PREMULTIPLIED))
                 .buffer(bufferName, 0)
                 .pushConstants(PUSH_BYTES);
 
@@ -503,9 +534,8 @@ final class WindmillVkDelegate extends VkPassRendererDelegate
             pass.texture(slot, "t" + texId);
         }
 
-        ByteBuffer buffer = ByteBuffer
-                .allocateDirect(vertices * STRIDE)
-                .order(ByteOrder.nativeOrder());
+        ByteBuffer buffer =
+                ByteBuffer.allocateDirect(vertices * STRIDE).order(ByteOrder.nativeOrder());
         mSpritePasses[id] = new SpritePass(pass, bufferName, buffer, capacitySprites, texIds);
     }
 
@@ -611,8 +641,7 @@ final class WindmillVkDelegate extends VkPassRendererDelegate
                 continue;
             }
             pass.buffer.position(0);
-            frame.upload(pass.bufferName, pass.buffer,
-                    sprites * VERTICES_PER_SPRITE * STRIDE);
+            frame.upload(pass.bufferName, pass.buffer, sprites * VERTICES_PER_SPRITE * STRIDE);
             frame.setVertexCount(pass.pass, sprites * VERTICES_PER_SPRITE);
             frame.pushConstants(pass.pass, mPush);
         }
@@ -626,9 +655,20 @@ final class WindmillVkDelegate extends VkPassRendererDelegate
 
         GroundRenderer.GroundTextures groundTextures = mGroundRenderer.selectTextures(
                 mScene.mCondition,
-                TEX_LAND_01, TEX_LAND_02, TEX_LAND_03, TEX_LAND_04, TEX_LAND_05,
-                TEX_LAND_06, TEX_LAND_07, TEX_LAND_08, TEX_LAND_09,
-                TEX_LAWN_01, TEX_LAWN_02, TEX_LAWN_03, TEX_LAWN_04, TEX_LAWN_05);
+                TEX_LAND_01,
+                TEX_LAND_02,
+                TEX_LAND_03,
+                TEX_LAND_04,
+                TEX_LAND_05,
+                TEX_LAND_06,
+                TEX_LAND_07,
+                TEX_LAND_08,
+                TEX_LAND_09,
+                TEX_LAWN_01,
+                TEX_LAWN_02,
+                TEX_LAWN_03,
+                TEX_LAWN_04,
+                TEX_LAWN_05);
 
         boolean clearOn = mScene.mWeatherFlagManager.isClearOn();
         boolean rainOn = mScene.mWeatherFlagManager.isRainOn();
@@ -636,84 +676,160 @@ final class WindmillVkDelegate extends VkPassRendererDelegate
         boolean thunderOn = mScene.mWeatherFlagManager.isThunderOn();
 
         mStage = STAGE_SKY;
-        clearOn = mSkyRenderer.drawSkyAndCelestial(this,
-                mScene.mCondition, mScene.mNightWeight, mScene.mFrameCnt, mScene.mOffset,
-                mScene.mLandscape, mScene.mFillScaleY,
-                TEX_SKY_01, TEX_SKY_02, TEX_SKY_03, TEX_SKY_04, TEX_SKY_04, TEX_SKY_STARS,
-                TEX_SUN_01, TEX_SUN_02, TEX_SUN_03, TEX_MOON, TEX_STAR, TEX_METEOR,
-                clearOn, SkyRenderer.Config.WINDMILL);
+        clearOn = mSkyRenderer.drawSkyAndCelestial(
+                this,
+                mScene.mCondition,
+                mScene.mNightWeight,
+                mScene.mFrameCnt,
+                mScene.mOffset,
+                mScene.mLandscape,
+                mScene.mFillScaleY,
+                TEX_SKY_01,
+                TEX_SKY_02,
+                TEX_SKY_03,
+                TEX_SKY_04,
+                TEX_SKY_04,
+                TEX_SKY_STARS,
+                TEX_SUN_01,
+                TEX_SUN_02,
+                TEX_SUN_03,
+                TEX_MOON,
+                TEX_STAR,
+                TEX_METEOR,
+                clearOn,
+                SkyRenderer.Config.WINDMILL);
 
         mStage = STAGE_NIGHTCOVER;
         if (mScene.mNightWeight > 0.0f
                 && (mScene.mCondition == WeatherCondition.D3_DREARY
-                || mScene.mCondition == WeatherCondition.D4_FOG
-                || mScene.mCondition == WeatherCondition.D5_RAIN_SHOWERS
-                || mScene.mCondition == WeatherCondition.D6_THUNDERSTORMS
-                || mScene.mCondition == WeatherCondition.D9_SLEET)) {
-            drawSprite(TEX_NIGHTCOVER,
-                    (-1.5f) + ((1.5f - mScene.mOffset) * 5.0f), -2.3f, -29.9f,
-                    2.0f * mScene.mLandscape, 2.0f * mScene.mFillScaleY,
-                    0.0f, mScene.mNightWeight);
+                        || mScene.mCondition == WeatherCondition.D4_FOG
+                        || mScene.mCondition == WeatherCondition.D5_RAIN_SHOWERS
+                        || mScene.mCondition == WeatherCondition.D6_THUNDERSTORMS
+                        || mScene.mCondition == WeatherCondition.D9_SLEET)) {
+            drawSprite(
+                    TEX_NIGHTCOVER,
+                    (-1.5f) + ((1.5f - mScene.mOffset) * 5.0f),
+                    -2.3f,
+                    -29.9f,
+                    2.0f * mScene.mLandscape,
+                    2.0f * mScene.mFillScaleY,
+                    0.0f,
+                    mScene.mNightWeight);
         }
 
         mStage = STAGE_CLOUDS;
         mCloudACount = 0;
         mClearCloudMode = (mScene.mCondition == WeatherCondition.D1_CLEAR
-                || mScene.mCondition == WeatherCondition.D8_ICE_COLD)
+                        || mScene.mCondition == WeatherCondition.D8_ICE_COLD)
                 && mScene.mNightWeight < 1.0f;
-        thunderOn = mCloudRenderer.drawClouds(this,
-                mScene.mCondition, mScene.mNightWeight, mScene.mFrameCnt, mScene.mOffset,
+        thunderOn = mCloudRenderer.drawClouds(
+                this,
+                mScene.mCondition,
+                mScene.mNightWeight,
+                mScene.mFrameCnt,
+                mScene.mOffset,
                 mScene.mLandscape,
-                TEX_CLOUD_A_01, TEX_CLOUD_A_02, TEX_CLOUD_A_03,
-                TEX_CLOUD_B_01, TEX_CLOUD_B_02, TEX_CLOUD_B_03,
-                TEX_CLOUD_LIGHT_A_01, TEX_CLOUD_LIGHT_A_02, TEX_CLOUD_LIGHT_A_03,
-                TEX_CLOUD_LIGHT_B_01, TEX_CLOUD_LIGHT_B_02, TEX_CLOUD_LIGHT_B_03,
-                thunderOn, CloudRenderer.Config.WINDMILL);
+                TEX_CLOUD_A_01,
+                TEX_CLOUD_A_02,
+                TEX_CLOUD_A_03,
+                TEX_CLOUD_B_01,
+                TEX_CLOUD_B_02,
+                TEX_CLOUD_B_03,
+                TEX_CLOUD_LIGHT_A_01,
+                TEX_CLOUD_LIGHT_A_02,
+                TEX_CLOUD_LIGHT_A_03,
+                TEX_CLOUD_LIGHT_B_01,
+                TEX_CLOUD_LIGHT_B_02,
+                TEX_CLOUD_LIGHT_B_03,
+                thunderOn,
+                CloudRenderer.Config.WINDMILL);
 
         drawWindmillDistance(2);
         mStage = STAGE_FAR_LAND;
-        mGroundRenderer.drawFarLand(this,
-                groundTextures.farLand, groundTextures.farLandNight,
-                mScene.mOffset, mScene.mLandscape, mScene.mNightWeight);
+        mGroundRenderer.drawFarLand(
+                this,
+                groundTextures.farLand,
+                groundTextures.farLandNight,
+                mScene.mOffset,
+                mScene.mLandscape,
+                mScene.mNightWeight);
 
         drawWindmillDistance(1);
         mStage = STAGE_NEAR_LAND;
-        mGroundRenderer.drawNearLand(this,
-                groundTextures.nearLand, groundTextures.nearLandNight,
-                mScene.mOffset, mScene.mLandscape, mScene.mNightWeight);
+        mGroundRenderer.drawNearLand(
+                this,
+                groundTextures.nearLand,
+                groundTextures.nearLandNight,
+                mScene.mOffset,
+                mScene.mLandscape,
+                mScene.mNightWeight);
 
         drawWindmillDistance(0);
         mStage = STAGE_LAWN;
-        mGroundRenderer.drawLawn(this,
-                groundTextures.lawn, groundTextures.lawnNight,
-                mScene.mOffset, mScene.mLandscape, mScene.mNightWeight);
+        mGroundRenderer.drawLawn(
+                this,
+                groundTextures.lawn,
+                groundTextures.lawnNight,
+                mScene.mOffset,
+                mScene.mLandscape,
+                mScene.mNightWeight);
 
         mStage = STAGE_SUNLIGHT;
-        clearOn = mSkyRenderer.drawSunlight(this,
-                mScene.mCondition, mScene.mNightWeight, mScene.mFrameCnt,
-                mScene.mOffset, mScene.mLandscape, TEX_SUN_04, clearOn,
+        clearOn = mSkyRenderer.drawSunlight(
+                this,
+                mScene.mCondition,
+                mScene.mNightWeight,
+                mScene.mFrameCnt,
+                mScene.mOffset,
+                mScene.mLandscape,
+                TEX_SUN_04,
+                clearOn,
                 SkyRenderer.Config.WINDMILL);
 
         mStage = STAGE_FOG_ICE;
-        mFogIceRenderer.drawFogIce(this,
-                mScene.mCondition, mScene.mNightWeight, mScene.mLandscape,
-                TEX_FOG, TEX_FOG, TEX_ICE, FogIceRenderer.Config.WINDMILL);
+        mFogIceRenderer.drawFogIce(
+                this,
+                mScene.mCondition,
+                mScene.mNightWeight,
+                mScene.mLandscape,
+                TEX_FOG,
+                TEX_FOG,
+                TEX_ICE,
+                FogIceRenderer.Config.WINDMILL);
 
         mStage = STAGE_RAIN;
-        rainOn = mPrecipitationRenderer.drawRain(this,
-                mScene.mCondition, mScene.mFrameCnt, mScene.mLandscape,
+        rainOn = mPrecipitationRenderer.drawRain(
+                this,
+                mScene.mCondition,
+                mScene.mFrameCnt,
+                mScene.mLandscape,
                 mScene.mFillScaleY,
-                TEX_RAIN_01, TEX_RAIN_02, TEX_RAIN_03, TEX_RAIN_04,
-                0, TEX_WATERDROP, mRaindropA, mRaindropB,
-                rainOn, PrecipitationRenderer.Config.WINDMILL);
+                TEX_RAIN_01,
+                TEX_RAIN_02,
+                TEX_RAIN_03,
+                TEX_RAIN_04,
+                0,
+                TEX_WATERDROP,
+                mRaindropA,
+                mRaindropB,
+                rainOn,
+                PrecipitationRenderer.Config.WINDMILL);
 
         snowOn = drawSnow(snowOn);
 
         mStage = STAGE_THUNDER;
-        thunderOn = mThunderRenderer.drawThunder(this,
-                mScene.mCondition, mScene.mFrameCnt, mScene.mOffset, mScene.mLandscape,
-                TEX_SKY_FLASH, TEX_LIGHTNING_01, TEX_LIGHTNING_02, TEX_LIGHTNING_03,
-                thunderOn, ThunderRenderer.Config.WINDMILL);
+        thunderOn = mThunderRenderer.drawThunder(
+                this,
+                mScene.mCondition,
+                mScene.mFrameCnt,
+                mScene.mOffset,
+                mScene.mLandscape,
+                TEX_SKY_FLASH,
+                TEX_LIGHTNING_01,
+                TEX_LIGHTNING_02,
+                TEX_LIGHTNING_03,
+                thunderOn,
+                ThunderRenderer.Config.WINDMILL);
 
         mScene.mWeatherFlagManager.setClearOn(clearOn);
         mScene.mWeatherFlagManager.setRainOn(rainOn);
@@ -738,34 +854,60 @@ final class WindmillVkDelegate extends VkPassRendererDelegate
     private boolean drawSnow(boolean snowOn) {
         if (mScene.mCondition == WeatherCondition.D7_FLURRIES_SNOW
                 || mScene.mCondition == WeatherCondition.D9_SLEET) {
-            int frostTex = mScene.mCondition == WeatherCondition.D9_SLEET
-                    ? TEX_FROST_F : TEX_FROST_E;
+            int frostTex =
+                    mScene.mCondition == WeatherCondition.D9_SLEET ? TEX_FROST_F : TEX_FROST_E;
             mStage = STAGE_FROST;
             if (mScene.mCondition == WeatherCondition.D9_SLEET) {
-                drawSprite(frostTex, -0.1f, -0.5f, -20.3f,
-                        0.65f * mScene.mLandscape, 1.05f, 0.0f, 1.0f);
+                drawSprite(
+                        frostTex,
+                        -0.1f,
+                        -0.5f,
+                        -20.3f,
+                        0.65f * mScene.mLandscape,
+                        1.05f,
+                        0.0f,
+                        1.0f);
             } else {
-                drawSprite(frostTex, 0.0f, -0.5f, -20.3f,
-                        0.63f * mScene.mLandscape, 1.05f, 0.0f, 1.0f);
+                drawSprite(
+                        frostTex,
+                        0.0f,
+                        -0.5f,
+                        -20.3f,
+                        0.63f * mScene.mLandscape,
+                        1.05f,
+                        0.0f,
+                        1.0f);
             }
         }
         mStage = STAGE_SNOW;
-        return mPrecipitationRenderer.drawSnow(this,
-                mScene.mCondition, mScene.mFrameCnt, mScene.mOffset, mScene.mLandscape,
-                TEX_SNOW_01, TEX_SNOW_02, TEX_SNOW_03, TEX_SNOW_04,
-                snowOn, PrecipitationRenderer.Config.WINDMILL);
+        return mPrecipitationRenderer.drawSnow(
+                this,
+                mScene.mCondition,
+                mScene.mFrameCnt,
+                mScene.mOffset,
+                mScene.mLandscape,
+                TEX_SNOW_01,
+                TEX_SNOW_02,
+                TEX_SNOW_03,
+                TEX_SNOW_04,
+                snowOn,
+                PrecipitationRenderer.Config.WINDMILL);
     }
 
     private static final int[] MILL_FAR_PASSES = {
-            P_WINMILL_FAR_0, P_WINMILL_FAR_0 + 1, P_WINMILL_FAR_0 + 2
+        P_WINMILL_FAR_0, P_WINMILL_FAR_0 + 1, P_WINMILL_FAR_0 + 2
     };
     private static final int[] MILL_MID_PASSES = {
-            P_WINMILL_MID_0, P_WINMILL_MID_0 + 1, P_WINMILL_MID_0 + 2
+        P_WINMILL_MID_0, P_WINMILL_MID_0 + 1, P_WINMILL_MID_0 + 2
     };
     private static final int[] MILL_NEAR_PASSES = {
-            P_WINMILL_NEAR_0, P_WINMILL_NEAR_0 + 1, P_WINMILL_NEAR_0 + 2,
-            P_WINMILL_NEAR_0 + 3, P_WINMILL_NEAR_0 + 4, P_WINMILL_NEAR_0 + 5,
-            P_WINMILL_NEAR_0 + 6
+        P_WINMILL_NEAR_0,
+        P_WINMILL_NEAR_0 + 1,
+        P_WINMILL_NEAR_0 + 2,
+        P_WINMILL_NEAR_0 + 3,
+        P_WINMILL_NEAR_0 + 4,
+        P_WINMILL_NEAR_0 + 5,
+        P_WINMILL_NEAR_0 + 6
     };
 
     private void drawWindmillDistance(int distance) {
@@ -778,54 +920,145 @@ final class WindmillVkDelegate extends VkPassRendererDelegate
         } else {
             mActiveMillPasses = MILL_NEAR_PASSES;
         }
-        mWindmillRenderer.drawByDistance(this, distance,
-                mScene.mFrameCnt, mScene.mOffset, mScene.mLandscape, mScene.mNightWeight,
-                TEX_WING, TEX_WING_BLUR, TEX_CENTER, TEX_CENTER,
-                TEX_PILLAR, TEX_PILLAR, TEX_PILLAR_FLIP, TEX_PILLAR_FLIP);
+        mWindmillRenderer.drawByDistance(
+                this,
+                distance,
+                mScene.mFrameCnt,
+                mScene.mOffset,
+                mScene.mLandscape,
+                mScene.mNightWeight,
+                TEX_WING,
+                TEX_WING_BLUR,
+                TEX_CENTER,
+                TEX_CENTER,
+                TEX_PILLAR,
+                TEX_PILLAR,
+                TEX_PILLAR_FLIP,
+                TEX_PILLAR_FLIP);
     }
 
     // ─────────────────────────── Drawer ───────────────────────────
 
     @Override
-    public void drawSprite(int texture, float x, float y, float z,
-                           float scaleX, float scaleY, float rotation, float alpha) {
-        draw(texture, x, y, z, scaleX, scaleY, rotation,
-                alpha, alpha, alpha, alpha, QUAD_TYPE_SPRITE);
+    public void drawSprite(
+            int texture,
+            float x,
+            float y,
+            float z,
+            float scaleX,
+            float scaleY,
+            float rotation,
+            float alpha) {
+        draw(
+                texture,
+                x,
+                y,
+                z,
+                scaleX,
+                scaleY,
+                rotation,
+                alpha,
+                alpha,
+                alpha,
+                alpha,
+                QUAD_TYPE_SPRITE);
     }
 
     @Override
-    public void drawSpriteRectOneToTwo(int texture, float x, float y, float z,
-                                       float scaleX, float scaleY, float rotation, float alpha) {
-        draw(texture, x, y, z, scaleX, scaleY, rotation,
-                alpha, alpha, alpha, alpha, QUAD_TYPE_RECT_ONE_TO_TWO);
+    public void drawSpriteRectOneToTwo(
+            int texture,
+            float x,
+            float y,
+            float z,
+            float scaleX,
+            float scaleY,
+            float rotation,
+            float alpha) {
+        draw(
+                texture,
+                x,
+                y,
+                z,
+                scaleX,
+                scaleY,
+                rotation,
+                alpha,
+                alpha,
+                alpha,
+                alpha,
+                QUAD_TYPE_RECT_ONE_TO_TWO);
     }
 
     @Override
-    public void drawSpriteColoredRectOneToTwo(int texture, float x, float y, float z,
-                                              float scaleX, float scaleY, float rotation,
-                                              float r, float g, float b, float alpha) {
-        draw(texture, x, y, z, scaleX, scaleY, rotation,
-                r, g, b, alpha, QUAD_TYPE_RECT_ONE_TO_TWO);
+    public void drawSpriteColoredRectOneToTwo(
+            int texture,
+            float x,
+            float y,
+            float z,
+            float scaleX,
+            float scaleY,
+            float rotation,
+            float r,
+            float g,
+            float b,
+            float alpha) {
+        draw(texture, x, y, z, scaleX, scaleY, rotation, r, g, b, alpha, QUAD_TYPE_RECT_ONE_TO_TWO);
     }
 
     @Override
-    public void drawSpriteRectOneToFour(int texture, float x, float y, float z,
-                                        float scaleX, float scaleY, float rotation, float alpha) {
-        draw(texture, x, y, z, scaleX, scaleY, rotation,
-                alpha, alpha, alpha, alpha, QUAD_TYPE_RECT_ONE_TO_FOUR);
+    public void drawSpriteRectOneToFour(
+            int texture,
+            float x,
+            float y,
+            float z,
+            float scaleX,
+            float scaleY,
+            float rotation,
+            float alpha) {
+        draw(
+                texture,
+                x,
+                y,
+                z,
+                scaleX,
+                scaleY,
+                rotation,
+                alpha,
+                alpha,
+                alpha,
+                alpha,
+                QUAD_TYPE_RECT_ONE_TO_FOUR);
     }
 
     @Override
-    public void drawSpriteColored(int texture, float x, float y, float z,
-                                  float scaleX, float scaleY, float rotation,
-                                  float r, float g, float b, float alpha) {
-        draw(texture, x, y, z, scaleX, scaleY, rotation,
-                r, g, b, alpha, QUAD_TYPE_SPRITE);
+    public void drawSpriteColored(
+            int texture,
+            float x,
+            float y,
+            float z,
+            float scaleX,
+            float scaleY,
+            float rotation,
+            float r,
+            float g,
+            float b,
+            float alpha) {
+        draw(texture, x, y, z, scaleX, scaleY, rotation, r, g, b, alpha, QUAD_TYPE_SPRITE);
     }
 
-    private void draw(int texture, float x, float y, float z,
-                      float scaleX, float scaleY, float rotation,
-                      float r, float g, float b, float alpha, int quadType) {
+    private void draw(
+            int texture,
+            float x,
+            float y,
+            float z,
+            float scaleX,
+            float scaleY,
+            float rotation,
+            float r,
+            float g,
+            float b,
+            float alpha,
+            int quadType) {
         int passId = routePass(texture);
         if (passId < 0) {
             return;
@@ -876,8 +1109,15 @@ final class WindmillVkDelegate extends VkPassRendererDelegate
         pass.count++;
     }
 
-    private void putVertex(ByteBuffer buffer, int vertexIndex, int uvIndex,
-                           float r, float g, float b, float alpha, int slot) {
+    private void putVertex(
+            ByteBuffer buffer,
+            int vertexIndex,
+            int uvIndex,
+            float r,
+            float g,
+            float b,
+            float alpha,
+            int slot) {
         int base = vertexIndex * 4;
         buffer.putFloat(mWorld[base]);
         buffer.putFloat(mWorld[base + 1]);
@@ -911,13 +1151,15 @@ final class WindmillVkDelegate extends VkPassRendererDelegate
                 return texture == TEX_NIGHTCOVER ? P_NIGHTCOVER : -1;
 
             case STAGE_CLOUDS:
-                if (texture == TEX_CLOUD_A_01 || texture == TEX_CLOUD_A_02
+                if (texture == TEX_CLOUD_A_01
+                        || texture == TEX_CLOUD_A_02
                         || texture == TEX_CLOUD_A_03) {
                     int index = mCloudACount++;
                     if (mClearCloudMode && index >= 2) return P_CLOUD_A_2;
                     return P_CLOUD_A_1;
                 }
-                if (texture == TEX_CLOUD_B_01 || texture == TEX_CLOUD_B_02
+                if (texture == TEX_CLOUD_B_01
+                        || texture == TEX_CLOUD_B_02
                         || texture == TEX_CLOUD_B_03) {
                     return P_CLOUD_B_1;
                 }
@@ -972,8 +1214,10 @@ final class WindmillVkDelegate extends VkPassRendererDelegate
                 return -1;
 
             case STAGE_THUNDER:
-                if (texture == TEX_SKY_FLASH || texture == TEX_LIGHTNING_01
-                        || texture == TEX_LIGHTNING_02 || texture == TEX_LIGHTNING_03) {
+                if (texture == TEX_SKY_FLASH
+                        || texture == TEX_LIGHTNING_01
+                        || texture == TEX_LIGHTNING_02
+                        || texture == TEX_LIGHTNING_03) {
                     return P_THUNDER;
                 }
                 return -1;
@@ -991,8 +1235,7 @@ final class WindmillVkDelegate extends VkPassRendererDelegate
         final int[] texIds;
         int count;
 
-        SpritePass(VkPass pass, String bufferName, ByteBuffer buffer,
-                   int capacity, int[] texIds) {
+        SpritePass(VkPass pass, String bufferName, ByteBuffer buffer, int capacity, int[] texIds) {
             this.pass = pass;
             this.bufferName = bufferName;
             this.buffer = buffer;

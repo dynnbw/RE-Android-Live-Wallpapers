@@ -23,8 +23,8 @@ public class WindmillVKPlugin implements WallpaperPlugin {
 
     @Override
     public WallpaperEngine createEngine(Context ctx, WallpaperPluginHost host) {
-        return new VkRendererEngine(ctx, host,
-                new WindmillVkDelegate(ctx, host.getSharedPreferences(), false));
+        return new VkRendererEngine(
+                ctx, host, new WindmillVkDelegate(ctx, host.getSharedPreferences(), false));
     }
 
     /**

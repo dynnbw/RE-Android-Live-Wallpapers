@@ -34,12 +34,13 @@ final class LuminousDotsVkDelegate extends VkPassRendererDelegate {
 
     private static final String TAG = "LuminousDotsVK";
 
-    private static final int ATTRS = LuminousDotsScene.ATTRS;       // 12 floats
-    private static final int STRIDE = LuminousDotsScene.STRIDE;     // 48 bytes
-    private static final int QUADS = LuminousDotsScene.QUADS;       // 1024
-    private static final int CORNERS_PER_QUAD = 6;                  // 两个三角形
+    private static final int ATTRS = LuminousDotsScene.ATTRS; // 12 floats
+    private static final int STRIDE = LuminousDotsScene.STRIDE; // 48 bytes
+    private static final int QUADS = LuminousDotsScene.QUADS; // 1024
+    private static final int CORNERS_PER_QUAD = 6; // 两个三角形
     /** 与 Scene.buildGrid() 写入的索引顺序一致：0,1,2 与 2,1,3。 */
     private static final int[] QUAD_CORNERS = {0, 1, 2, 2, 1, 3};
+
     private static final int EXPANDED_VERTICES = QUADS * CORNERS_PER_QUAD;
 
     private static final int MAX_GLOW_QUADS = LuminousDotsScene.GLOW_POS.length;
@@ -51,6 +52,7 @@ final class LuminousDotsVkDelegate extends VkPassRendererDelegate {
 
     /** mat4 + vec4 + 7 floats（alpha/battery/4 个渐变参数/贴图下标）。 */
     private static final int PUSH_FLOATS = 16 + 4 + 7;
+
     private static final int PUSH_BYTES = PUSH_FLOATS * 4;
 
     private static final long BATTERY_INTERVAL_MS = 5000L;
@@ -65,19 +67,19 @@ final class LuminousDotsVkDelegate extends VkPassRendererDelegate {
 
     /** 与 GLES 的 mObjTexId* 一一对应，下标即 push constant 里的 uTexIndex。 */
     private static final String[] OBJECT_ASSETS = {
-            "luminousdots/drawable/box0_128.png",
-            "luminousdots/drawable/box0_1_128.png",
-            "luminousdots/drawable/box0_64.png",
-            "luminousdots/drawable/box0_1_64.png",
-            "luminousdots/drawable/round0.png",
-            "luminousdots/drawable/dot0.png",
+        "luminousdots/drawable/box0_128.png",
+        "luminousdots/drawable/box0_1_128.png",
+        "luminousdots/drawable/box0_64.png",
+        "luminousdots/drawable/box0_1_64.png",
+        "luminousdots/drawable/round0.png",
+        "luminousdots/drawable/dot0.png",
     };
 
     /** 与 GLES 的 mGlowTexId* 一一对应：shape 0/1/2 → glowbox/glowdot/glowround。 */
     private static final String[] GLOW_ASSETS = {
-            "luminousdots/drawable/glowbox.png",
-            "luminousdots/drawable/glowdot.png",
-            "luminousdots/drawable/glowround.png",
+        "luminousdots/drawable/glowbox.png",
+        "luminousdots/drawable/glowdot.png",
+        "luminousdots/drawable/glowround.png",
     };
 
     private final boolean mPreview;
@@ -172,8 +174,12 @@ final class LuminousDotsVkDelegate extends VkPassRendererDelegate {
             // Up 用 mVerticesUp，Down 用 mVerticesDown（与 GLES 的 verticesUp/Down 一致）。
             String buffer = (i == 0 || i == 1 || i == 6 || i == 7) ? "up" : "down";
             VkPass pass = new VkPass(
-                    BG_VERT, BG_FRAG, ATTRIB_SIZES, STRIDE,
-                    VkPass.TOPOLOGY_TRIANGLE_LIST, VkPass.BLEND_ALPHA)
+                            BG_VERT,
+                            BG_FRAG,
+                            ATTRIB_SIZES,
+                            STRIDE,
+                            VkPass.TOPOLOGY_TRIANGLE_LIST,
+                            VkPass.BLEND_ALPHA)
                     .buffer(buffer, 0)
                     .pushConstants(PUSH_BYTES)
                     // 精确对应 GLES 的 glBlendFunc(SRC_ALPHA, ONE_MINUS_SRC_ALPHA)：
@@ -189,8 +195,12 @@ final class LuminousDotsVkDelegate extends VkPassRendererDelegate {
         }
 
         mGlowPass = new VkPass(
-                DOT_VERT, DOT_FRAG, ATTRIB_SIZES, STRIDE,
-                VkPass.TOPOLOGY_TRIANGLE_LIST, VkPass.BLEND_ALPHA)
+                        DOT_VERT,
+                        DOT_FRAG,
+                        ATTRIB_SIZES,
+                        STRIDE,
+                        VkPass.TOPOLOGY_TRIANGLE_LIST,
+                        VkPass.BLEND_ALPHA)
                 .buffer("glow", 0)
                 .pushConstants(PUSH_BYTES)
                 .blendFactors(
@@ -288,11 +298,19 @@ final class LuminousDotsVkDelegate extends VkPassRendererDelegate {
                 frame.setVertexCount(pass, 0);
                 continue;
             }
-            float[] rot = LuminousDotsScene.ROTATE_TYPE[
-                    LuminousDotsScene.ROTATE_IDX[mPassRot[i]][0]];
+            float[] rot =
+                    LuminousDotsScene.ROTATE_TYPE[LuminousDotsScene.ROTATE_IDX[mPassRot[i]][0]];
             LuminousDotsScene.buildMVP(
-                    mGlMvp, mProj, mHeight, mPassTx[i], mPassTy[i], 0f,
-                    data.mScale, rot, data.camPx, data.camPy);
+                    mGlMvp,
+                    mProj,
+                    mHeight,
+                    mPassTx[i],
+                    mPassTy[i],
+                    0f,
+                    data.mScale,
+                    rot,
+                    data.camPx,
+                    data.camPy);
             // GL clip → Vulkan clip：y 取反，z 从 [-w,w] 映射到 [0,w]。
             LuminousDotsScene.multiplyMM(mVkMvp, CLIP_CORRECTION, mGlMvp);
             fillPush(mVkMvp, alpha, objectTex, data);
@@ -302,8 +320,8 @@ final class LuminousDotsVkDelegate extends VkPassRendererDelegate {
 
         // --- glow：10 个 quad 共用一个 MVP 与一张贴图 ---
         if (glowCount > 0) {
-            float[] rot = LuminousDotsScene.ROTATE_TYPE[
-                    LuminousDotsScene.ROTATE_IDX[data.rotIdxGlow][0]];
+            float[] rot =
+                    LuminousDotsScene.ROTATE_TYPE[LuminousDotsScene.ROTATE_IDX[data.rotIdxGlow][0]];
             LuminousDotsScene.buildMVPGlow(
                     mGlMvp, mProj, mHeight, data.mScale, rot, data.camPx, data.camPy);
             LuminousDotsScene.multiplyMM(mVkMvp, CLIP_CORRECTION, mGlMvp);
@@ -342,8 +360,7 @@ final class LuminousDotsVkDelegate extends VkPassRendererDelegate {
         }
     }
 
-    private static void expandQuad(FloatBuffer src, ByteBuffer dst,
-                                   int srcQuad, int dstQuad) {
+    private static void expandQuad(FloatBuffer src, ByteBuffer dst, int srcQuad, int dstQuad) {
         for (int k = 0; k < CORNERS_PER_QUAD; k++) {
             int srcBase = srcQuad * 4 * ATTRS + QUAD_CORNERS[k] * ATTRS;
             int dstBase = (dstQuad * CORNERS_PER_QUAD + k) * ATTRS;
@@ -369,8 +386,7 @@ final class LuminousDotsVkDelegate extends VkPassRendererDelegate {
     }
 
     /** 四个角点在 updateMotionAlpha 里被写成同一个值，所以读 vertex 0 的 attr 9 即可。 */
-    private static void patchQuadAlpha(FloatBuffer src, int srcQuad,
-                                       ByteBuffer dst, int dstQuad) {
+    private static void patchQuadAlpha(FloatBuffer src, int srcQuad, ByteBuffer dst, int dstQuad) {
         float alpha = src.get(srcQuad * 4 * ATTRS + 9);
         int base = dstQuad * CORNERS_PER_QUAD * ATTRS;
         for (int k = 0; k < CORNERS_PER_QUAD; k++) {
@@ -380,8 +396,8 @@ final class LuminousDotsVkDelegate extends VkPassRendererDelegate {
 
     // ─────────────────────────── 每帧参数 ───────────────────────────
 
-    private void fillPush(float[] mvp, float alpha, int texIndex,
-                          LuminousDotsScene.SceneData data) {
+    private void fillPush(
+            float[] mvp, float alpha, int texIndex, LuminousDotsScene.SceneData data) {
         System.arraycopy(mvp, 0, mPush, 0, 16);
         System.arraycopy(mColor, 0, mPush, 16, 4);
         mPush[20] = alpha;
@@ -486,11 +502,9 @@ final class LuminousDotsVkDelegate extends VkPassRendererDelegate {
         if (now - mLastBatteryCheck <= BATTERY_INTERVAL_MS) return;
         mLastBatteryCheck = now;
         try {
-            BatteryManager bm =
-                    (BatteryManager) context.getSystemService(Context.BATTERY_SERVICE);
+            BatteryManager bm = (BatteryManager) context.getSystemService(Context.BATTERY_SERVICE);
             if (bm != null) {
-                mScene.setBatteryLevel(
-                        bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY));
+                mScene.setBatteryLevel(bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY));
             }
         } catch (RuntimeException e) {
             Log.w(TAG, "battery read failed", e);
@@ -502,9 +516,6 @@ final class LuminousDotsVkDelegate extends VkPassRendererDelegate {
      * 与 BlueSeaVkDelegate 使用同一份矩阵。
      */
     private static final float[] CLIP_CORRECTION = {
-            1, 0, 0, 0,
-            0, -1, 0, 0,
-            0, 0, 0.5f, 0,
-            0, 0, 0.5f, 1,
+        1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0.5f, 0, 0, 0, 0.5f, 1,
     };
 }

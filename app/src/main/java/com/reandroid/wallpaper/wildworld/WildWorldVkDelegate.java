@@ -98,16 +98,24 @@ final class WildWorldVkDelegate extends VkPassRendererDelegate {
 
     /** 每个 pass 绑定的纹理。恐龙两个 pass 共用一张贴图。 */
     private static final int[] PASS_TEXTURES = {
-        TEX_BG_DAY_UP, TEX_BG_DAY_DOWN, TEX_BG_NIGHT_UP, TEX_BG_NIGHT_DOWN,
+        TEX_BG_DAY_UP,
+        TEX_BG_DAY_DOWN,
+        TEX_BG_NIGHT_UP,
+        TEX_BG_NIGHT_DOWN,
         TEX_FIREBALL,
-        TEX_LAYER5, TEX_LAYER51,
+        TEX_LAYER5,
+        TEX_LAYER51,
         TEX_PTEROSAUR,
-        TEX_LAYER4, TEX_LAYER41,
+        TEX_LAYER4,
+        TEX_LAYER41,
         TEX_DINOSAUR,
-        TEX_LAYER3, TEX_LAYER31,
+        TEX_LAYER3,
+        TEX_LAYER31,
         TEX_DINOSAUR,
-        TEX_LAYER2, TEX_LAYER21,
-        TEX_LAYER1, TEX_LAYER11,
+        TEX_LAYER2,
+        TEX_LAYER21,
+        TEX_LAYER1,
+        TEX_LAYER11,
     };
 
     /**
@@ -115,16 +123,7 @@ final class WildWorldVkDelegate extends VkPassRendererDelegate {
      * 滚动层上下各 2 个；翼龙 1 个；恐龙每个 pass 1 个。
      */
     private static final int[] PASS_MAX_SPRITES = {
-        1, 1, 1, 1,
-        6,
-        2, 2,
-        1,
-        2, 2,
-        1,
-        2, 2,
-        1,
-        2, 2,
-        2, 2,
+        1, 1, 1, 1, 6, 2, 2, 1, 2, 2, 1, 2, 2, 1, 2, 2, 2, 2,
     };
 
     private final boolean mPreview;
@@ -217,17 +216,18 @@ final class WildWorldVkDelegate extends VkPassRendererDelegate {
             mBufferNames[i] = bufferName;
             int maxVertices = PASS_MAX_SPRITES[i] * VERTICES_PER_SPRITE;
             scene.createBuffer(bufferName, VERTEX_STRIDE_BYTES, maxVertices, true);
-            mVertexBuffers[i] = ByteBuffer
-                    .allocateDirect(maxVertices * VERTEX_STRIDE_BYTES)
+            mVertexBuffers[i] = ByteBuffer.allocateDirect(maxVertices * VERTEX_STRIDE_BYTES)
                     .order(ByteOrder.nativeOrder());
 
             // GLES：glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)，
             // RGB 与 alpha 使用同一组因子，因此四个因子都显式给出。
             VkPass pass = scene.add(new VkPass(
-                    "shaders/wildworld_vk.vert.spv",
-                    "shaders/wildworld_vk.frag.spv",
-                    new int[] {2, 2, 1}, VERTEX_STRIDE_BYTES,
-                    VkPass.TOPOLOGY_TRIANGLE_LIST, VkPass.BLEND_ALPHA))
+                            "shaders/wildworld_vk.vert.spv",
+                            "shaders/wildworld_vk.frag.spv",
+                            new int[] {2, 2, 1},
+                            VERTEX_STRIDE_BYTES,
+                            VkPass.TOPOLOGY_TRIANGLE_LIST,
+                            VkPass.BLEND_ALPHA))
                     .buffer(bufferName, 0)
                     .pushConstants(PUSH_BYTES)
                     .blendFactors(
@@ -269,8 +269,7 @@ final class WildWorldVkDelegate extends VkPassRendererDelegate {
             int vertexCount = sprites * VERTICES_PER_SPRITE;
             frame.setVertexCount(mPasses[i], vertexCount);
             if (vertexCount > 0) {
-                frame.upload(mBufferNames[i], mVertexBuffers[i],
-                        vertexCount * VERTEX_STRIDE_BYTES);
+                frame.upload(mBufferNames[i], mVertexBuffers[i], vertexCount * VERTEX_STRIDE_BYTES);
             }
             frame.pushConstants(mPasses[i], mPush);
         }
@@ -330,14 +329,12 @@ final class WildWorldVkDelegate extends VkPassRendererDelegate {
         if (d.alive == 0) return;
         float offX = d.x + mScene.mXOffset;
         if (offX + d.w > 0 && offX < mScene.mScreenWidth) {
-            addQuad(pass, offX, d.y - d.stepY,
-                    offX + d.w, d.y + d.h - d.stepY);
+            addQuad(pass, offX, d.y - d.stepY, offX + d.w, d.y + d.h - d.stepY);
         }
     }
 
     /** WildWorldGL.drawLayerSeamless()：上下两层各自画「当前 + 左侧补片」两遍。 */
-    private float addSeamlessLayers(
-            int passUp, int passDown, WildWorldScene.Layer[] layers) {
+    private float addSeamlessLayers(int passUp, int passDown, WildWorldScene.Layer[] layers) {
         WildWorldScene.Layer up = layers[WildWorldScene.UP];
         WildWorldScene.Layer down = layers[WildWorldScene.DOWN];
 
@@ -382,8 +379,8 @@ final class WildWorldVkDelegate extends VkPassRendererDelegate {
         mSpriteCounts[pass] = sprites + 1;
     }
 
-    private static int putVertex(ByteBuffer buffer, int floatIndex,
-                                 float x, float y, float u, float v) {
+    private static int putVertex(
+            ByteBuffer buffer, int floatIndex, float x, float y, float u, float v) {
         buffer.putFloat(floatIndex * 4, x);
         buffer.putFloat((floatIndex + 1) * 4, y);
         buffer.putFloat((floatIndex + 2) * 4, u);
@@ -416,9 +413,6 @@ final class WildWorldVkDelegate extends VkPassRendererDelegate {
 
     /** GL NDC → Vulkan 裁剪空间（y 翻转、z 到 0..1）。与其它 VK 壁纸保持一致。 */
     private static final float[] CLIP_CORRECTION = {
-        1, 0, 0, 0,
-        0, -1, 0, 0,
-        0, 0, 0.5f, 0,
-        0, 0, 0.5f, 1,
+        1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0.5f, 0, 0, 0, 0.5f, 1,
     };
 }

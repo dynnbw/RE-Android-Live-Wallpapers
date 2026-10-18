@@ -24,8 +24,7 @@ public class LuminousDotsVKPlugin implements WallpaperPlugin {
     @Override
     public WallpaperEngine createEngine(Context ctx, WallpaperPluginHost host) {
         return new VkRendererEngine(
-                ctx, host,
-                new LuminousDotsVkDelegate(ctx, host.getSharedPreferences(), false));
+                ctx, host, new LuminousDotsVkDelegate(ctx, host.getSharedPreferences(), false));
     }
 
     @Override
