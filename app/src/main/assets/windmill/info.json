@@ -1,5 +1,6 @@
 {
   "plugin": "com.reandroid.wallpaper.weatherwallpapers.windmill.WindmillPlugin",
   "previewClass": "com.reandroid.wallpaper.weatherwallpapers.windmill.WindmillGL",
+  "pluginVk": "com.reandroid.wallpaper.weatherwallpapers.windmill.WindmillVKPlugin",
   "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"]
 }
