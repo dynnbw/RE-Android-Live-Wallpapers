@@ -1,4 +1,5 @@
 {
   "plugin": "com.reandroid.wallpaper.magicsmoke.MagicSmokePlugin",
+  "pluginVk": "com.reandroid.wallpaper.magicsmoke.MagicSmokeVKPlugin",
   "previewClass": "com.reandroid.wallpaper.magicsmoke.MagicSmokeGL"
 }
