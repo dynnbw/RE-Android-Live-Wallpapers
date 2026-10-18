@@ -1,4 +1,5 @@
 {
   "plugin": "com.reandroid.wallpaper.forest.ForestPlugin",
+  "pluginVk": "com.reandroid.wallpaper.forest.ForestVKPlugin",
   "previewClass": "com.reandroid.wallpaper.forest.ForestGL"
 }
