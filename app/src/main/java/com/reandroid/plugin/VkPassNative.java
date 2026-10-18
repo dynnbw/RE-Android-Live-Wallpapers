@@ -52,8 +52,8 @@ public final class VkPassNative {
     /** 像素为 Android 的 ARGB int[]；native 侧转成 RGBA 后上传。 */
     static native void nSetTexture(long handle, String name, int[] argb, int width, int height);
 
-    /** 上传顶点数据；capacity 由 {@link #nCreateBuffer} 决定。 */
-    static native void nUploadBuffer(long handle, String name, ByteBuffer vertices);
+    /** 上传顶点数据的前 {@code bytes} 字节；capacity 由 {@link #nCreateBuffer} 决定。 */
+    static native void nUploadBuffer(long handle, String name, ByteBuffer vertices, int bytes);
 
     static native void nSetPushConstants(long handle, int passIndex, float[] values);
 

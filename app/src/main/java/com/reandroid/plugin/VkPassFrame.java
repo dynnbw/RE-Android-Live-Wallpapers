@@ -12,7 +12,11 @@ public final class VkPassFrame {
     }
 
     public void upload(String bufferName, ByteBuffer vertices) {
-        VkPassNative.nUploadBuffer(handle, bufferName, vertices);
+        upload(bufferName, vertices, vertices.capacity());
+    }
+
+    public void upload(String bufferName, ByteBuffer vertices, int bytes) {
+        VkPassNative.nUploadBuffer(handle, bufferName, vertices, bytes);
     }
 
     public void pushConstants(VkPass pass, float[] values) {

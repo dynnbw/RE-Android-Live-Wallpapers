@@ -212,8 +212,9 @@ bool VkPassRenderer::createPipelinesLocked() {
 
         VkPipelineVertexInputStateCreateInfo vertexInput{};
         vertexInput.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-        vertexInput.vertexBindingDescriptionCount = 1;
-        vertexInput.pVertexBindingDescriptions = &binding;
+        // 空属性 = 不给顶点缓冲，几何体由 gl_VertexIndex 生成（galaxy 的 bg/light 就是这样）
+        vertexInput.vertexBindingDescriptionCount = attributes.empty() ? 0 : 1;
+        vertexInput.pVertexBindingDescriptions = attributes.empty() ? nullptr : &binding;
         vertexInput.vertexAttributeDescriptionCount =
                 static_cast<uint32_t>(attributes.size());
         vertexInput.pVertexAttributeDescriptions =
@@ -466,8 +467,13 @@ void VkPassRenderer::recordFrameLocked(VkCommandBuffer cmd, uint32_t imageIndex)
         const PassRuntime& rt = runtime_[i];
         if (rt.pipeline == VK_NULL_HANDLE || rt.layout == VK_NULL_HANDLE) continue;
 
-        auto bufferIt = buffers_.find(pass.bufferName);
-        if (bufferIt == buffers_.end() || bufferIt->second.buffer == VK_NULL_HANDLE) continue;
+        // bufferName 为空 = 不用顶点缓冲（几何体由 gl_VertexIndex 生成）
+        VkBuffer vertexBuffer = VK_NULL_HANDLE;
+        if (!pass.bufferName.empty()) {
+            auto bufferIt = buffers_.find(pass.bufferName);
+            if (bufferIt == buffers_.end() || bufferIt->second.buffer == VK_NULL_HANDLE) continue;
+            vertexBuffer = bufferIt->second.buffer;
+        }
 
         vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, rt.pipeline);
         if (rt.descriptors != VK_NULL_HANDLE) {
@@ -484,9 +490,10 @@ void VkPassRenderer::recordFrameLocked(VkCommandBuffer cmd, uint32_t imageIndex)
                     VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                     0, bytes, rt.push.data());
         }
-        VkBuffer vb = bufferIt->second.buffer;
-        VkDeviceSize offset = 0;
-        vkCmdBindVertexBuffers(cmd, 0, 1, &vb, &offset);
+        if (vertexBuffer != VK_NULL_HANDLE) {
+            VkDeviceSize offset = 0;
+            vkCmdBindVertexBuffers(cmd, 0, 1, &vertexBuffer, &offset);
+        }
         vkCmdDraw(cmd, pass.vertexCount, 1, 0, 0);
     }
 
@@ -707,14 +714,14 @@ static void JNICALL nSetTexture(
 }
 
 static void JNICALL nUploadBuffer(
-        JNIEnv* env, jclass, jlong handle, jstring name, jobject data) {
+        JNIEnv* env, jclass, jlong handle, jstring name, jobject data, jint bytes) {
     auto* renderer = asRenderer(handle);
-    if (renderer == nullptr || data == nullptr) return;
+    if (renderer == nullptr || data == nullptr || bytes <= 0) return;
     void* address = env->GetDirectBufferAddress(data);
     jlong capacity = env->GetDirectBufferCapacity(data);
     if (address == nullptr || capacity <= 0) return;
-    renderer->uploadBuffer(
-            jstringToStd(env, name), address, static_cast<size_t>(capacity));
+    const size_t length = std::min(static_cast<size_t>(bytes), static_cast<size_t>(capacity));
+    renderer->uploadBuffer(jstringToStd(env, name), address, length);
 }
 
 static void JNICALL nSetPushConstants(
@@ -773,7 +780,7 @@ static const JNINativeMethod kMethods[] = {
     {"nCreateTexture", "(JLjava/lang/String;)V", reinterpret_cast<void*>(nCreateTexture)},
     {"nBindTexture", "(JIILjava/lang/String;)V", reinterpret_cast<void*>(nBindTexture)},
     {"nSetTexture", "(JLjava/lang/String;[III)V", reinterpret_cast<void*>(nSetTexture)},
-    {"nUploadBuffer", "(JLjava/lang/String;Ljava/nio/ByteBuffer;)V",
+    {"nUploadBuffer", "(JLjava/lang/String;Ljava/nio/ByteBuffer;I)V",
      reinterpret_cast<void*>(nUploadBuffer)},
     {"nSetPushConstants", "(JI[F)V", reinterpret_cast<void*>(nSetPushConstants)},
     {"nSetVertexCount", "(JII)V", reinterpret_cast<void*>(nSetVertexCount)},
