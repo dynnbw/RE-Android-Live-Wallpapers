@@ -80,9 +80,10 @@ void VkPassRenderer::setTexturePixels(const std::string& name, const int32_t* ar
     vkArgbToRgba(reinterpret_cast<int32_t*>(tex.pending.data()), count);
     tex.pendingWidth = width;
     tex.pendingHeight = height;
+    tex.dirty = true;
 
     if (device_ != VK_NULL_HANDLE && commandPool_ != VK_NULL_HANDLE) {
-        uploadPendingTexturesLocked();
+        uploadPendingTexturesLocked(false);
         refreshDescriptorsLocked();
     }
 }
@@ -135,10 +136,10 @@ bool VkPassRenderer::onDeviceCreated() {
         VkDescriptorPoolSize size{};
         size.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
         // 每个 set 按布局占用 kMaxTextures 个 sampler；池子要覆盖 maxSets 份
-        size.descriptorCount = kMaxTextures * 64;
+        size.descriptorCount = kMaxTextures * 256;
         VkDescriptorPoolCreateInfo pi{};
         pi.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-        pi.maxSets = 64;
+        pi.maxSets = 256;
         pi.poolSizeCount = 1;
         pi.pPoolSizes = &size;
         if (vkCreateDescriptorPool(device_, &pi, nullptr, &descriptorPool_) != VK_SUCCESS) {
@@ -154,7 +155,7 @@ bool VkPassRenderer::onDeviceCreated() {
     }
 
     if (commandPool_ != VK_NULL_HANDLE) {
-        uploadPendingTexturesLocked();
+        uploadPendingTexturesLocked(true);
     }
     return true;
 }
@@ -348,7 +349,7 @@ bool VkPassRenderer::createPipelinesLocked() {
 
 bool VkPassRenderer::onSwapchainCreated() {
     if (commandPool_ != VK_NULL_HANDLE) {
-        uploadPendingTexturesLocked();
+        uploadPendingTexturesLocked(true);
     }
     refreshDescriptorsLocked();
     return true;
@@ -427,12 +428,14 @@ void VkPassRenderer::destroyBufferLocked(BufferEntry& entry) {
     if (entry.memory != VK_NULL_HANDLE) { vkFreeMemory(device_, entry.memory, nullptr); entry.memory = VK_NULL_HANDLE; }
 }
 
-bool VkPassRenderer::uploadPendingTexturesLocked() {
+bool VkPassRenderer::uploadPendingTexturesLocked(bool force) {
     if (device_ == VK_NULL_HANDLE || commandPool_ == VK_NULL_HANDLE) return false;
     bool allOk = true;
     for (auto& entry : textures_) {
         TextureEntry& tex = entry.second;
         if (tex.pending.empty()) continue;
+        if (!force && !tex.dirty) continue;
+        tex.dirty = false;
         uint32_t unused = 0;
         if (!uploadTextureLocked(
                     unused, tex.image, tex.memory, tex.view, tex.sampler,
@@ -606,7 +609,7 @@ bool VkPassRenderer::createOrUpdateSurface(JNIEnv* env, jobject surface,
         window_ = nullptr;
         return false;
     }
-    uploadPendingTexturesLocked();
+    uploadPendingTexturesLocked(true);
     refreshDescriptorsLocked();
     return true;
 }

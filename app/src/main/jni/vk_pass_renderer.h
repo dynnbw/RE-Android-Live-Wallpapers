@@ -93,6 +93,8 @@ private:
         std::vector<uint32_t> pending;
         uint32_t pendingWidth = 0;
         uint32_t pendingHeight = 0;
+        /** 有新像素、还没上传。surface 重建时全部 pending 无条件重传。 */
+        bool dirty = false;
     };
 
     struct PassRuntime {
@@ -104,7 +106,8 @@ private:
 
     bool createBufferLocked(const std::string& name, BufferEntry& entry);
     void destroyBufferLocked(BufferEntry& entry);
-    bool uploadPendingTexturesLocked();
+    /** force=true：surface 重建后无条件重传所有 pending；false：只传有新像素的。 */
+    bool uploadPendingTexturesLocked(bool force);
     void refreshDescriptorsLocked();
     void recordFrameLocked(VkCommandBuffer cmd, uint32_t imageIndex);
 

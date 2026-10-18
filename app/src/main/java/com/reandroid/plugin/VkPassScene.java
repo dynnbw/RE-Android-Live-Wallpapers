@@ -41,7 +41,7 @@ public final class VkPassScene {
 
     void commit() {
         for (VkPass pass : passes) {
-            int[] factors = blendFactors(pass.blendMode);
+            int[] factors = pass.resolveBlendFactors();
             pass.index = VkPassNative.nAddPass(
                     handle,
                     pass.vsAsset,
@@ -65,7 +65,7 @@ public final class VkPassScene {
     }
 
     /** GLES 的四种混合模式翻译成 VkBlendFactor 数值。 */
-    private static int[] blendFactors(int blendMode) {
+    static int[] blendFactors(int blendMode) {
         switch (blendMode) {
             case VkPass.BLEND_ALPHA:
                 return new int[] {6, 7, 1, 7}; // SRC_ALPHA, ONE_MINUS_SRC_ALPHA
