@@ -1,4 +1,5 @@
 {
   "plugin": "com.reandroid.wallpaper.phasebeam.PhaseBeamPlugin",
-  "previewClass": "com.reandroid.wallpaper.phasebeam.PhaseBeamGL"
+  "previewClass": "com.reandroid.wallpaper.phasebeam.PhaseBeamGL",
+  "pluginVk": "com.reandroid.wallpaper.phasebeam.PhaseBeamVKPlugin"
 }
