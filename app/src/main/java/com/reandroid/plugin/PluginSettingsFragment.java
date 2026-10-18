@@ -8,10 +8,12 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.preference.Preference;
@@ -71,6 +73,13 @@ public class PluginSettingsFragment extends PreferenceFragmentCompat
         super.onCreate(savedInstanceState);
         mImagePickerLauncher = registerForActivityResult(
                 new ActivityResultContracts.GetContent(), this::onImagePicked);
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        // 分组卡片的整卡背景/阴影/分隔线（PreferenceGroup 的子项没法用一张 CardView 包住）
+        getListView().addItemDecoration(new GroupCardDecoration(requireContext()));
     }
 
     @Override
