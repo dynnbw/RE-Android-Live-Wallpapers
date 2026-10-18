@@ -148,8 +148,11 @@ public class CardGroupPreference extends PreferenceGroup {
     }
 
     /** 新布局已生效：先把标题行滚回原位，再把其余行的位置差补成平移动画。 */
-    private void animateLayoutChange(RecyclerView list, PreferenceGroupAdapter pga,
-                                     Map<Preference, Integer> oldTops, int oldHeaderTop) {
+    private void animateLayoutChange(
+            RecyclerView list,
+            PreferenceGroupAdapter pga,
+            Map<Preference, Integer> oldTops,
+            int oldHeaderTop) {
         if (mHeaderView != null && mHeaderView.isAttachedToWindow()) {
             int dy = mHeaderView.getTop() - oldHeaderTop;
             if (dy != 0) list.scrollBy(0, dy);

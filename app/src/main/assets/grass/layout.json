@@ -148,6 +148,18 @@
         },
         {
           "type": "switch",
+          "key": "pref_grass_firefly_light",
+          "title": "pref_grass_firefly_light",
+          "default": "false"
+        },
+        {
+          "type": "switch",
+          "key": "pref_grass_moon_glow",
+          "title": "pref_grass_moon_glow",
+          "default": "false"
+        },
+        {
+          "type": "switch",
           "key": "pref_grass_moon",
           "title": "pref_grass_moon",
           "default": "true"

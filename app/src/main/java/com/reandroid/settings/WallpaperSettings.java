@@ -45,6 +45,8 @@ public class WallpaperSettings {
     public static final String KEY_GRASS_PROCEDURAL_SUN = "pref_grass_procedural_sun";
     public static final String KEY_GRASS_LIGHT = "pref_grass_light";
     public static final String KEY_GRASS_GLOW = "pref_grass_glow";
+    public static final String KEY_GRASS_FIREFLY_LIGHT = "pref_grass_firefly_light";
+    public static final String KEY_GRASS_MOON_GLOW = "pref_grass_moon_glow";
     public static final String KEY_GRASS_DANDELION = "pref_grass_dandelion";
     public static final String KEY_GRASS_FIREFLY = "pref_grass_firefly";
     public static final String KEY_GRASS_WEATHER_ENABLED = "pref_grass_weather_enabled";
@@ -257,7 +259,7 @@ public class WallpaperSettings {
     }
 
     /**
-     * HDR + 辉光。
+     * 辉光：HDR + 辉光 + 黄昏影调（同一条离屏合成路径）。
      *
      * <p>默认关 —— 项目原则是默认还原 AOSP，美学增强一律做成可关的开关。
      */
@@ -265,6 +267,25 @@ public class WallpaperSettings {
         SharedPreferences p = prefs();
         if (p == null) return defValue;
         return p.getBoolean(KEY_GRASS_GLOW, defValue);
+    }
+
+    /**
+     * 萤火虫照亮草叶。
+     *
+     * <p>原先挂在「特效」开关下；拆开后新键缺失时由调用方回落到
+     * {@link #KEY_GRASS_GLOW} 的旧值，保证升级后观感不变。
+     */
+    public static boolean isGrassFireflyLightEnabled(boolean defValue) {
+        SharedPreferences p = prefs();
+        if (p == null) return defValue;
+        return p.getBoolean(KEY_GRASS_FIREFLY_LIGHT, defValue);
+    }
+
+    /** 月亮光晕（月亮假光）。迁移规则同上。 */
+    public static boolean isGrassMoonGlowEnabled(boolean defValue) {
+        SharedPreferences p = prefs();
+        if (p == null) return defValue;
+        return p.getBoolean(KEY_GRASS_MOON_GLOW, defValue);
     }
 
     public static boolean isMoonEnabled(boolean defValue) {

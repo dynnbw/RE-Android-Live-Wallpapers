@@ -1,6 +1,5 @@
 package com.reandroid.wallpaper.grass;
 
-import com.reandroid.utils.MathUtils;
 import com.reandroid.weather.WeatherCondition;
 
 final class Blade {
@@ -28,8 +27,7 @@ final class LegacyParticle {
     long velocityRetargetTime;
     float originX, originY, dx, dy;
 
-    LegacyParticle() {
-    }
+    LegacyParticle() {}
 }
 
 final class MoonEclipse {
@@ -75,6 +73,7 @@ final class SceneData {
      * 摊出来就得每帧同步两份状态，容易不一致。
      */
     GrassWaterDroplets water;
+
     Dandelion[] dandelions;
     Firefly[] fireflies;
     LegacyParticle[] legacyNormal;
@@ -88,6 +87,7 @@ final class SceneData {
      * （蒲公英 = 1 − t、萤火虫 = t），只乘一个系数的话，压掉萤火虫会把蒲公英反推亮。
      */
     float legacyDandelionVisibility;
+
     float legacyFireflyVisibility;
     long legacyNow;
 
@@ -143,17 +143,21 @@ final class SceneData {
      * 黄昏影调曲线的强度（0 = 不压，1 = 全量）。
      *
      * <p>作用在**合成后的整帧**上（草叶、天空、云雨都一起），只压中间调、黑白两端不动。
-     * 挂在**特效**开关下，与 {@link #glowEnabled} 同进同出。黎明不给：逆光分不出早晚，
+     * 挂在**辉光**开关下，与 {@link #glowEnabled} 同进同出。黎明不给：逆光分不出早晚，
      * 这个量是专门把黄昏挑出来的 —— 见 {@code GrassBacklight.duskToneAmount}。
      */
     float duskTone;
     /**
-     * HDR + 辉光开关。
+     * 辉光开关：HDR + 辉光 + 黄昏影调（三者共用同一条离屏合成路径）。
      *
      * <p>只反映**用户的开关**；设备能力（{@code GlowRenderer.isReady()}）只有渲染线程知道，
      * 由 {@code GrassGL.draw()} 再与一次。
      */
     boolean glowEnabled;
+    /** 萤火虫照亮草叶（独立于辉光，不需要离屏缓冲）。 */
+    boolean fireflyLightEnabled;
+    /** 月亮光晕 / 月亮假光（独立于辉光）。 */
+    boolean moonGlowEnabled;
     /** 逐叶遮挡，与 {@link #blades} 一一对应；由 GrassScene 限频重算。null = 还没算过。 */
     float[] bladeOcclusion;
 
@@ -192,7 +196,7 @@ final class SceneData {
     }
 
     /** 太阳本体的 RGB 增益，随高度角变化 —— 低空橙红、高空白偏蓝。见 {@link GrassSunAppearance}。 */
-    final float[] sunTint = new float[]{1.0f, 1.0f, 1.0f};
+    final float[] sunTint = new float[] {1.0f, 1.0f, 1.0f};
 
     boolean hasSolarEclipseOcclusion;
     SolarEclipse solarEclipseAtSun;
@@ -207,6 +211,7 @@ final class SceneData {
      * <p>注意是**整体**旋转：月面纹理和明暗终止线一起转，不是只转终止线。
      */
     float moonRotationDeg;
+
     float moonBrightness, moonAlpha, moonContrast, moonSaturation, moonBlueTint;
     MoonEclipse moonEclipse;
 

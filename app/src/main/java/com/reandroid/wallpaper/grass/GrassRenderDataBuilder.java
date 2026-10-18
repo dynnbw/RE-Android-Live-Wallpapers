@@ -1,7 +1,5 @@
 package com.reandroid.wallpaper.grass;
 
-import android.graphics.Color;
-
 import static com.reandroid.wallpaper.grass.GrassConstants.LEGACY_INTERVAL_VARIANCE;
 import static com.reandroid.wallpaper.grass.GrassConstants.LEGACY_MAX_EXTRAS;
 import static com.reandroid.wallpaper.grass.GrassConstants.LEGACY_MAX_FLARE;
@@ -9,6 +7,9 @@ import static com.reandroid.wallpaper.grass.GrassConstants.LEGACY_MAX_INTERVAL;
 import static com.reandroid.wallpaper.grass.GrassConstants.LEGACY_MAX_NORMAL;
 import static com.reandroid.wallpaper.grass.GrassConstants.LEGACY_TYPE_DANDELION;
 import static com.reandroid.wallpaper.grass.GrassConstants.LEGACY_TYPE_FIREFLY;
+
+import android.graphics.Color;
+
 import com.reandroid.utils.MathUtils;
 
 final class GrassRenderDataBuilder {
@@ -56,6 +57,7 @@ final class GrassRenderDataBuilder {
 
     /** 水珠与水花各一批 —— 它们的贴图不同（挂珠几乎全透明，水花是实心亮点）。 */
     private float[] mVKBeadVerts = new float[0];
+
     private int mVKBeadFloatCount;
     private float[] mVKSplashVerts = new float[0];
     private int mVKSplashFloatCount;
@@ -71,6 +73,7 @@ final class GrassRenderDataBuilder {
      * 200 片叶 × 60fps 就是每秒一万两千次分配。
      */
     private float[] mBladeXY = new float[0];
+
     private float[] mBladeHalfWidth = new float[0];
 
     void setGeometry(int width, int height, int vertexCount, int indexCount, int[] bladeSizes) {
@@ -118,10 +121,10 @@ final class GrassRenderDataBuilder {
         }
 
         out[0] = sd.moonPhaseAngle;
-        out[12] = sd.moonRotationDeg;   // p3.x：整体旋转角
+        out[12] = sd.moonRotationDeg; // p3.x：整体旋转角
         out[1] = sd.moonBrightness;
         out[2] = sd.moonAlpha;
-        out[3] = sd.dayWeight;          // 与天空同一个量，见 GrassGL.drawMoon
+        out[3] = sd.dayWeight; // 与天空同一个量，见 GrassGL.drawMoon
         out[4] = sd.moonContrast;
         out[5] = sd.moonSaturation;
         out[6] = sd.moonBlueTint;
@@ -165,11 +168,14 @@ final class GrassRenderDataBuilder {
      * 免得"开了特效但没开萤火虫"的人白白看到一片发灰的草。
      */
     static float bladeValueScale(SceneData sd, float brightness) {
-        boolean keepOwnColour = sd.backlightEnabled || (sd.glowEnabled && sd.fireflyEnabled);
+        boolean keepOwnColour =
+                sd.backlightEnabled || (sd.fireflyLightEnabled && sd.fireflyEnabled);
         if (!keepOwnColour) {
             return brightness;
         }
-        return MathUtils.mix(GrassConstants.GRASS_NIGHT_VALUE_FLOOR, 1.0f,
+        return MathUtils.mix(
+                GrassConstants.GRASS_NIGHT_VALUE_FLOOR,
+                1.0f,
                 MathUtils.clamp(brightness, 0.0f, 1.0f));
     }
 
@@ -196,7 +202,9 @@ final class GrassRenderDataBuilder {
         }
 
         int appearanceKey = computeGrassAppearanceKey(sd, grassBrightness, nightDesat);
-        if (!sd.grassGeometryDirty && hasGrassBuildCache && appearanceKey == lastGrassAppearanceKey) {
+        if (!sd.grassGeometryDirty
+                && hasGrassBuildCache
+                && appearanceKey == lastGrassAppearanceKey) {
             grassVertexArrayUpdated = false;
             return mVKGrassVertices;
         }
@@ -204,8 +212,8 @@ final class GrassRenderDataBuilder {
         float[] out = mVKGrassVertices;
         int cursor = 0;
         for (int i = 0; i < sd.blades.length; i++) {
-            cursor = appendBladeVertices(sd, sd.blades[i], i,
-                    grassBrightness, sd.xDraw, nightDesat, out, cursor);
+            cursor = appendBladeVertices(
+                    sd, sd.blades[i], i, grassBrightness, sd.xDraw, nightDesat, out, cursor);
             if (cursor > out.length) {
                 break;
             }
@@ -251,7 +259,8 @@ final class GrassRenderDataBuilder {
             mVKSunFloatCount = 0;
             return mVKSunVerts;
         }
-        appendSpriteQuadVertices(mVKSunVerts, 0, sd.sunX, sd.sunY, sd.sunSize, sd.sunAlpha, false, 0.0f);
+        appendSpriteQuadVertices(
+                mVKSunVerts, 0, sd.sunX, sd.sunY, sd.sunSize, sd.sunAlpha, false, 0.0f);
         mVKSunFloatCount = 30;
         return mVKSunVerts;
     }
@@ -270,7 +279,8 @@ final class GrassRenderDataBuilder {
             mVKMoonFloatCount = 0;
             return mVKMoonVerts;
         }
-        appendSpriteQuadVertices(mVKMoonVerts, 0, sd.moonX, sd.moonY, sd.moonSize, alpha, false, 0.0f);
+        appendSpriteQuadVertices(
+                mVKMoonVerts, 0, sd.moonX, sd.moonY, sd.moonSize, alpha, false, 0.0f);
         mVKMoonFloatCount = 30;
         return mVKMoonVerts;
     }
@@ -281,13 +291,15 @@ final class GrassRenderDataBuilder {
 
     float[] buildDandelionSpriteVertices(SceneData sd) {
         if (sd.legacyDandelionEnabled) {
-            mVKDandelionVerts = buildLegacySpriteVertices(sd, LEGACY_TYPE_DANDELION,
-                    false, false, true, mVKDandelionVerts);
+            mVKDandelionVerts = buildLegacySpriteVertices(
+                    sd, LEGACY_TYPE_DANDELION, false, false, true, mVKDandelionVerts);
             mVKDandelionFloatCount = mVKTempSpriteFloatCount;
             return mVKDandelionVerts;
         }
-        if (sd.dandelionVisibility <= 0.001f || !sd.dandelionEnabled
-            || sd.dandelions == null || sd.dandelions.length == 0) {
+        if (sd.dandelionVisibility <= 0.001f
+                || !sd.dandelionEnabled
+                || sd.dandelions == null
+                || sd.dandelions.length == 0) {
             mVKDandelionFloatCount = 0;
             return mVKDandelionVerts;
         }
@@ -301,8 +313,15 @@ final class GrassRenderDataBuilder {
         int cursor = 0;
         for (Dandelion d : sd.dandelions) {
             float sway = (float) Math.sin(d.swayPhase + sd.animNowMs * 0.001f * d.swaySpeed) * 6.0f;
-            cursor = appendSpriteQuadVertices(out, cursor, d.x, d.y + sway, d.size,
-                    0.9f * sd.dandelionVisibility, true, d.rotationDeg);
+            cursor = appendSpriteQuadVertices(
+                    out,
+                    cursor,
+                    d.x,
+                    d.y + sway,
+                    d.size,
+                    0.9f * sd.dandelionVisibility,
+                    true,
+                    d.rotationDeg);
             if (cursor > out.length) {
                 break;
             }
@@ -317,13 +336,15 @@ final class GrassRenderDataBuilder {
 
     float[] buildFireflySpriteVertices(SceneData sd) {
         if (sd.legacyFireflyEnabled) {
-            mVKFireflyVerts = buildLegacySpriteVertices(sd, LEGACY_TYPE_FIREFLY,
-                    false, true, true, mVKFireflyVerts);
+            mVKFireflyVerts = buildLegacySpriteVertices(
+                    sd, LEGACY_TYPE_FIREFLY, false, true, true, mVKFireflyVerts);
             mVKFireflyFloatCount = mVKTempSpriteFloatCount;
             return mVKFireflyVerts;
         }
-        if (sd.fireflyVisibility <= 0.001f || !sd.fireflyEnabled
-            || sd.fireflies == null || sd.fireflies.length == 0) {
+        if (sd.fireflyVisibility <= 0.001f
+                || !sd.fireflyEnabled
+                || sd.fireflies == null
+                || sd.fireflies.length == 0) {
             mVKFireflyFloatCount = 0;
             return mVKFireflyVerts;
         }
@@ -366,8 +387,8 @@ final class GrassRenderDataBuilder {
          * flare 计时走双倍、越界重生判断也做两遍。GLES 那边只更新一次，两个渲染器
          * 因此表现不一致 —— 以"一次"为准。
          */
-        mVKFireflyFlareVerts = buildLegacySpriteVertices(sd, LEGACY_TYPE_FIREFLY,
-                true, true, false, mVKFireflyFlareVerts);
+        mVKFireflyFlareVerts = buildLegacySpriteVertices(
+                sd, LEGACY_TYPE_FIREFLY, true, true, false, mVKFireflyFlareVerts);
         mVKFireflyFlareFloatCount = mVKTempSpriteFloatCount;
         return mVKFireflyFlareVerts;
     }
@@ -376,23 +397,29 @@ final class GrassRenderDataBuilder {
         return mVKFireflyFlareFloatCount / FLOATS_PER_SPRITE_VERTEX;
     }
 
-    private float[] buildLegacySpriteVertices(SceneData sd, int legacyTargetType,
-            boolean fireflyFlarePass, boolean includeFirefly, boolean updateState,
+    private float[] buildLegacySpriteVertices(
+            SceneData sd,
+            int legacyTargetType,
+            boolean fireflyFlarePass,
+            boolean includeFirefly,
+            boolean updateState,
             float[] reusableBuffer) {
         // 双套粒子：按目标类型选对应粒子集（蒲公英白天 / 萤火虫夜晚），
         // alpha 乘交叉淡入系数（1-transition / transition）
-        LegacyParticle[] normalSet = legacyTargetType == LEGACY_TYPE_DANDELION
-                ? sd.legacyNormal : sd.legacyNormalNight;
-        LegacyParticle[] extrasSet = legacyTargetType == LEGACY_TYPE_DANDELION
-                ? sd.legacyExtras : sd.legacyExtrasNight;
+        LegacyParticle[] normalSet =
+                legacyTargetType == LEGACY_TYPE_DANDELION ? sd.legacyNormal : sd.legacyNormalNight;
+        LegacyParticle[] extrasSet =
+                legacyTargetType == LEGACY_TYPE_DANDELION ? sd.legacyExtras : sd.legacyExtrasNight;
         boolean enabled = legacyTargetType == LEGACY_TYPE_DANDELION
-                ? sd.legacyDandelionEnabled : sd.legacyFireflyEnabled;
+                ? sd.legacyDandelionEnabled
+                : sd.legacyFireflyEnabled;
         if (!enabled || normalSet == null || extrasSet == null) {
             mVKTempSpriteFloatCount = 0;
             return reusableBuffer;
         }
         float alphaMultiplier = legacyTargetType == LEGACY_TYPE_DANDELION
-                ? sd.legacyDandelionVisibility : sd.legacyFireflyVisibility;
+                ? sd.legacyDandelionVisibility
+                : sd.legacyFireflyVisibility;
 
         int required = (LEGACY_MAX_NORMAL + LEGACY_MAX_EXTRAS) * 30;
         float[] out = reusableBuffer;
@@ -406,10 +433,21 @@ final class GrassRenderDataBuilder {
         for (int i = 0; i < LEGACY_MAX_NORMAL; i++) {
             LegacyParticle p = normalSet[i];
             if (p == null || !p.active) continue;
-            cursor = updateAndAppendLegacyParticle(out, cursor, p, sd,
-                    legacyTargetType, i, false, animNowMs,
-                    fireflyFlarePass, includeFirefly, updateState,
-                    alphaMultiplier, normalSet, extrasSet);
+            cursor = updateAndAppendLegacyParticle(
+                    out,
+                    cursor,
+                    p,
+                    sd,
+                    legacyTargetType,
+                    i,
+                    false,
+                    animNowMs,
+                    fireflyFlarePass,
+                    includeFirefly,
+                    updateState,
+                    alphaMultiplier,
+                    normalSet,
+                    extrasSet);
             if (cursor > out.length) {
                 break;
             }
@@ -419,10 +457,21 @@ final class GrassRenderDataBuilder {
             for (int i = 0; i < LEGACY_MAX_EXTRAS; i++) {
                 LegacyParticle p = extrasSet[i];
                 if (p == null || !p.active) continue;
-                cursor = updateAndAppendLegacyParticle(out, cursor, p, sd,
-                        legacyTargetType, i + 100, true, animNowMs,
-                        fireflyFlarePass, includeFirefly, updateState,
-                        alphaMultiplier, normalSet, extrasSet);
+                cursor = updateAndAppendLegacyParticle(
+                        out,
+                        cursor,
+                        p,
+                        sd,
+                        legacyTargetType,
+                        i + 100,
+                        true,
+                        animNowMs,
+                        fireflyFlarePass,
+                        includeFirefly,
+                        updateState,
+                        alphaMultiplier,
+                        normalSet,
+                        extrasSet);
                 if (cursor > out.length) {
                     break;
                 }
@@ -433,10 +482,21 @@ final class GrassRenderDataBuilder {
         return out;
     }
 
-    private int updateAndAppendLegacyParticle(float[] out, int cursor, LegacyParticle p,
-            SceneData sd, int legacyType, int index, boolean isExtras, long animNowMs,
-            boolean fireflyFlarePass, boolean includeFirefly, boolean updateState,
-            float alphaMultiplier, LegacyParticle[] normalSet, LegacyParticle[] extrasSet) {
+    private int updateAndAppendLegacyParticle(
+            float[] out,
+            int cursor,
+            LegacyParticle p,
+            SceneData sd,
+            int legacyType,
+            int index,
+            boolean isExtras,
+            long animNowMs,
+            boolean fireflyFlarePass,
+            boolean includeFirefly,
+            boolean updateState,
+            float alphaMultiplier,
+            LegacyParticle[] normalSet,
+            LegacyParticle[] extrasSet) {
         if (updateState) {
             long delta = animNowMs - p.startTime;
             if (delta < 0L) return cursor;
@@ -473,7 +533,7 @@ final class GrassRenderDataBuilder {
                 if (animNowMs >= p.flareEndTime && interval > 0L) {
                     p.silentEndTime = animNowMs
                             + (long) ((1.0 + (Math.random() * 2 - 1) * LEGACY_INTERVAL_VARIANCE)
-                            * LEGACY_MAX_INTERVAL);
+                                    * LEGACY_MAX_INTERVAL);
                 } else if (animNowMs >= p.silentEndTime && interval < 0L) {
                     p.flareEndTime = animNowMs + LEGACY_MAX_FLARE;
                 }
@@ -485,17 +545,21 @@ final class GrassRenderDataBuilder {
             float flicker = 0.5f + 0.5f * (float) Math.sin((animNowMs + index * 1234L) * 0.002);
             float alpha = (0.2f + 0.8f * flicker) * alphaMultiplier;
             float size = (isExtras ? 48.0f : 72.0f) * (0.8f + 0.4f * flicker);
-            return appendSpriteQuadVertices(out, cursor, p.originX, p.originY, size, alpha, false, 0.0f);
+            return appendSpriteQuadVertices(
+                    out, cursor, p.originX, p.originY, size, alpha, false, 0.0f);
         }
 
         float size = isExtras ? 64.0f : 96.0f;
-        return appendSpriteQuadVertices(out, cursor, p.originX, p.originY, size,
-                0.9f * alphaMultiplier, true, p.angle);
+        return appendSpriteQuadVertices(
+                out, cursor, p.originX, p.originY, size, 0.9f * alphaMultiplier, true, p.angle);
     }
 
     private boolean isLegacyParticleOutOfBounds(LegacyParticle p, int legacyType) {
         if (legacyType == LEGACY_TYPE_DANDELION) {
-            return p.originX < 0.0f || p.originX > width * 2.0f || p.originY < 0.0f || p.originY > height;
+            return p.originX < 0.0f
+                    || p.originX > width * 2.0f
+                    || p.originY < 0.0f
+                    || p.originY > height;
         }
         return p.originX < 0.0f || p.originX > width * 2.0f || p.originY < 0.0f;
     }
@@ -526,8 +590,15 @@ final class GrassRenderDataBuilder {
                 continue;
             }
             // b.size 是半径
-            cursor = appendSpriteQuadVertices(out, cursor, b.x, b.y, b.size * 2.0f,
-                    GrassWaterDroplets.beadAlpha(b.size), true, sunFacingRotation(sd, b.x, b.y));
+            cursor = appendSpriteQuadVertices(
+                    out,
+                    cursor,
+                    b.x,
+                    b.y,
+                    b.size * 2.0f,
+                    GrassWaterDroplets.beadAlpha(b.size),
+                    true,
+                    sunFacingRotation(sd, b.x, b.y));
         }
         mVKBeadFloatCount = Math.max(0, Math.min(cursor, out.length));
         return out;
@@ -555,8 +626,8 @@ final class GrassRenderDataBuilder {
             if (!sp.active) {
                 continue;
             }
-            cursor = appendSpriteQuadVertices(out, cursor, sp.x, sp.y, sp.size * 2.0f,
-                    sp.alpha(), false, 0.0f);
+            cursor = appendSpriteQuadVertices(
+                    out, cursor, sp.x, sp.y, sp.size * 2.0f, sp.alpha(), false, 0.0f);
         }
         mVKSplashFloatCount = Math.max(0, Math.min(cursor, out.length));
         return out;
@@ -574,8 +645,15 @@ final class GrassRenderDataBuilder {
         return (float) Math.toDegrees(Math.atan2(sd.sunY - y, sd.sunX - x)) + 90.0f;
     }
 
-    private int appendBladeVertices(SceneData sd, Blade blade, int bladeIndex, float brightness,
-            float xOffset, float nightDesat, float[] out, int cursor) {
+    private int appendBladeVertices(
+            SceneData sd,
+            Blade blade,
+            int bladeIndex,
+            float brightness,
+            float xOffset,
+            float nightDesat,
+            float[] out,
+            int cursor) {
         float scale = blade.scale * sd.grassWidthScale;
         float xpos = blade.xPos + xOffset;
         int size = blade.size;
@@ -601,24 +679,31 @@ final class GrassRenderDataBuilder {
 
         // 中心线的行走交给 GrassBladeGeometry —— 挂珠也要用它，两处各写一份的话
         // 日后一改叶片形状，水珠就会飘到叶外（而且不会报错）。
-        GrassBladeGeometry.trace(blade, xpos, scale,
-                sd.grassHardnessScale, sd.grassHeightScale, mBladeXY, mBladeHalfWidth);
+        GrassBladeGeometry.trace(
+                blade,
+                xpos,
+                scale,
+                sd.grassHardnessScale,
+                sd.grassHeightScale,
+                mBladeXY,
+                mBladeHalfWidth);
 
         // 本片叶的受光，带符号。光源位置来自 SceneData（由 GrassBacklight.lightPosition 选好），
         // 遮挡由场景限频算好（GrassBladeLighting.OCCLUSION_INTERVAL_MS）。
         // facing 每帧都重算，所以叶片摆动时亮度**跟着每片叶子动** —— 风与光照的耦合。
         float facing = GrassBladeLighting.facing(
-                mBladeXY[0], mBladeXY[1],
-                mBladeXY[size * 2], mBladeXY[size * 2 + 1],
-                sd.lightX, sd.lightY);
+                mBladeXY[0],
+                mBladeXY[1],
+                mBladeXY[size * 2],
+                mBladeXY[size * 2 + 1],
+                sd.lightX,
+                sd.lightY);
         // 强弱来自"光是不是在这片叶背后"（可见度），朝向只负责因叶而异的调制 + 定哪一侧。
         // 只靠朝向时实测 mean|beam| 只有 0.05 —— 太阳在屏幕正下方，竖直叶片的横截面轴是水平的。
         float visibility = GrassBladeLighting.visibility(
-                mBladeXY[0], mBladeXY[1], sd.lightX, sd.lightY,
-                GrassConstants.GRASS_LIGHT_RADIUS);
+                mBladeXY[0], mBladeXY[1], sd.lightX, sd.lightY, GrassConstants.GRASS_LIGHT_RADIUS);
         float beam = GrassBladeLighting.beam(
                 facing, visibility, sd.bladeOcclusion(bladeIndex), sd.lightStrength);
-
 
         float hw0 = mBladeHalfWidth[0];
         float baseX = mBladeXY[0];
@@ -630,20 +715,18 @@ final class GrassRenderDataBuilder {
         float fireflyShadow = sd.bladeFireflyShadow(bladeIndex);
 
         float rootTip = GrassBladeLighting.tipFraction(0, size);
-        cursor = putVertex(out, cursor, baseX - hw0, baseY, r, g, b, rootTip, 0.0f, beam,
-                fireflyShadow);
-        cursor = putVertex(out, cursor, baseX + hw0, baseY, r, g, b, rootTip, 1.0f, beam,
-                fireflyShadow);
+        cursor = putVertex(
+                out, cursor, baseX - hw0, baseY, r, g, b, rootTip, 0.0f, beam, fireflyShadow);
+        cursor = putVertex(
+                out, cursor, baseX + hw0, baseY, r, g, b, rootTip, 1.0f, beam, fireflyShadow);
 
         for (int k = 1; k <= size; k++) {
             float px = mBladeXY[k * 2];
             float py = mBladeXY[k * 2 + 1];
             float hw = mBladeHalfWidth[k];
             float tip = GrassBladeLighting.tipFraction(k, size);
-            cursor = putVertex(out, cursor, px - hw, py, r, g, b, tip, 0.0f, beam,
-                    fireflyShadow);
-            cursor = putVertex(out, cursor, px + hw, py, r, g, b, tip, 1.0f, beam,
-                    fireflyShadow);
+            cursor = putVertex(out, cursor, px - hw, py, r, g, b, tip, 0.0f, beam, fireflyShadow);
+            cursor = putVertex(out, cursor, px + hw, py, r, g, b, tip, 1.0f, beam, fireflyShadow);
         }
         return cursor;
     }
@@ -668,8 +751,17 @@ final class GrassRenderDataBuilder {
         return key;
     }
 
-    private int putVertex(float[] out, int cursor,
-            float x, float y, float r, float g, float b, float a, float s, float t,
+    private int putVertex(
+            float[] out,
+            int cursor,
+            float x,
+            float y,
+            float r,
+            float g,
+            float b,
+            float a,
+            float s,
+            float t,
             float fireflyShadow) {
         if (cursor + FLOATS_PER_GRASS_VERTEX > out.length) return out.length + 1;
         out[cursor++] = x;
@@ -684,8 +776,15 @@ final class GrassRenderDataBuilder {
         return cursor;
     }
 
-    private int appendSpriteQuadVertices(float[] out, int cursor,
-            float cx, float cy, float size, float alpha, boolean flipV, float rotationDeg) {
+    private int appendSpriteQuadVertices(
+            float[] out,
+            int cursor,
+            float cx,
+            float cy,
+            float size,
+            float alpha,
+            boolean flipV,
+            float rotationDeg) {
         if (cursor + 6 * FLOATS_PER_SPRITE_VERTEX > out.length) return out.length + 1;
 
         float half = size * 0.5f;
@@ -730,7 +829,8 @@ final class GrassRenderDataBuilder {
     /** 草叶顶点步长（字节），{@code glVertexAttribPointer} 要用。 */
     static final int GRASS_VERTEX_STRIDE_BYTES = FLOATS_PER_GRASS_VERTEX * 4;
 
-    private int putSpriteVertex(float[] out, int cursor, float x, float y, float u, float v, float a) {
+    private int putSpriteVertex(
+            float[] out, int cursor, float x, float y, float u, float v, float a) {
         if (cursor + FLOATS_PER_SPRITE_VERTEX > out.length) return out.length + 1;
         out[cursor++] = x;
         out[cursor++] = y;
@@ -762,8 +862,8 @@ final class GrassRenderDataBuilder {
      * same starVisibility scaling — each vertex carries its own alpha.
      * The given StarBatches is reused across frames to avoid per-frame allocation.
      */
-    StarBatches buildStarBatches(NightStarsLayer layer, SceneData sd, int width, int height,
-            StarBatches batches) {
+    StarBatches buildStarBatches(
+            NightStarsLayer layer, SceneData sd, int width, int height, StarBatches batches) {
         final StarBatches b = batches != null ? batches : new StarBatches();
         b.whiteCount = 0;
         b.warmCount = 0;
@@ -774,7 +874,8 @@ final class GrassRenderDataBuilder {
         }
         layer.draw(sd.animNowMs, width, height, new NightStarsLayer.SpriteDrawer() {
             @Override
-            public void draw(int tintType, float cx, float cy, float size, float alpha, float shift) {
+            public void draw(
+                    int tintType, float cx, float cy, float size, float alpha, float shift) {
                 float finalAlpha = alpha * sd.starVisibility;
                 if (finalAlpha <= 0.001f) {
                     return;
@@ -783,25 +884,33 @@ final class GrassRenderDataBuilder {
                 float[] arr;
                 int floatCursor;
                 if (group == 1) {
-                    arr = b.warm; floatCursor = b.warmCount * FLOATS_PER_SPRITE_VERTEX;
+                    arr = b.warm;
+                    floatCursor = b.warmCount * FLOATS_PER_SPRITE_VERTEX;
                 } else if (group == 2) {
-                    arr = b.cool; floatCursor = b.coolCount * FLOATS_PER_SPRITE_VERTEX;
+                    arr = b.cool;
+                    floatCursor = b.coolCount * FLOATS_PER_SPRITE_VERTEX;
                 } else if (group == 3) {
-                    arr = b.yellow; floatCursor = b.yellowCount * FLOATS_PER_SPRITE_VERTEX;
+                    arr = b.yellow;
+                    floatCursor = b.yellowCount * FLOATS_PER_SPRITE_VERTEX;
                 } else {
-                    arr = b.white; floatCursor = b.whiteCount * FLOATS_PER_SPRITE_VERTEX;
+                    arr = b.white;
+                    floatCursor = b.whiteCount * FLOATS_PER_SPRITE_VERTEX;
                 }
                 // appendStarQuad may grow the array; keep the returned reference
                 arr = appendStarQuad(arr, floatCursor, cx, cy, size, finalAlpha);
                 int newCount = floatCursor / FLOATS_PER_SPRITE_VERTEX + 6;
                 if (group == 1) {
-                    b.warm = arr; b.warmCount = newCount;
+                    b.warm = arr;
+                    b.warmCount = newCount;
                 } else if (group == 2) {
-                    b.cool = arr; b.coolCount = newCount;
+                    b.cool = arr;
+                    b.coolCount = newCount;
                 } else if (group == 3) {
-                    b.yellow = arr; b.yellowCount = newCount;
+                    b.yellow = arr;
+                    b.yellowCount = newCount;
                 } else {
-                    b.white = arr; b.whiteCount = newCount;
+                    b.white = arr;
+                    b.whiteCount = newCount;
                 }
             }
         });
@@ -824,7 +933,8 @@ final class GrassRenderDataBuilder {
     }
 
     /** Appends one star quad; returns the (possibly grown) array. */
-    private float[] appendStarQuad(float[] arr, int cursor, float cx, float cy, float size, float alpha) {
+    private float[] appendStarQuad(
+            float[] arr, int cursor, float cx, float cy, float size, float alpha) {
         int required = cursor + STAR_FLOATS_PER_QUAD;
         if (arr.length < required) {
             int newSize = arr.length == 0 ? 4096 : arr.length;

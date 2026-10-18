@@ -1030,7 +1030,7 @@ public class GrassGL extends GLESScene {
      * —— 这些 alpha 都是 uniform，可以大于 1。
      */
     private void drawMoonGlow(SceneData sd) {
-        if (!sd.glowEnabled || !sd.moonVisible || mSunProgram == 0) {
+        if (!sd.moonGlowEnabled || !sd.moonVisible || mSunProgram == 0) {
             return;
         }
         float gain = GrassConstants.MOON_GLOW_RAY_GAIN;
@@ -1365,7 +1365,7 @@ public class GrassGL extends GLESScene {
      * 批本身**每帧只建这一次**，{@code drawSprites} 直接用缓存：传统萤火虫那条路会推进
      * 粒子状态，建两次 flare 计时就走双倍（见 {@code GrassRenderDataBuilder} 里的记录）。
      *
-     * <p>开关取 {@code sd.glowEnabled}（用户的「特效」开关）而**不与设备能力再与一次** ——
+     * <p>开关取 {@code sd.fireflyLightEnabled} 而**不与设备能力再与一次** ——
      * 这一层不需要离屏缓冲，设备做不了辉光模糊也照样点得亮。
      */
     private void prepareFireflyLights(SceneData sd) {
@@ -1378,7 +1378,7 @@ public class GrassGL extends GLESScene {
         mFireflyFlareBatch = b.buildFireflyFlareSpriteVertices(sd);
         mFireflyFlareBatchFloats = b.getFireflyFlareVertexCount() * spriteStride;
 
-        float gain = sd.glowEnabled ? GrassConstants.FIREFLY_LIGHT_GAIN : 0.0f;
+        float gain = sd.fireflyLightEnabled ? GrassConstants.FIREFLY_LIGHT_GAIN : 0.0f;
         GLES30.glUniform1f(mGrassFireflyGainHandle, gain);
         if (gain <= 0.0f) {
             // 关着时着色器那一行是恒等（逐位不变），光源数组一个字节都不用传。

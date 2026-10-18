@@ -1,8 +1,7 @@
 package com.reandroid.wallpaper.grass;
 
 final class GrassConstants {
-    private GrassConstants() {
-    }
+    private GrassConstants() {}
 
     static final int DEFAULT_BLADE_COUNT = 200;
     static final float TESSELATION = 0.5f;
@@ -47,6 +46,7 @@ final class GrassConstants {
 
     /** 彩色圆斑强度（参考实现是 1.0）。 */
     static final float SUN_CIRCLE_ALPHA = 0.5f;
+
     static final float SUN_CIRCLE_OFFSET = 0.35f;
     static final float SUN_CIRCLE_OFFSET_RATIO = 0.5f;
     /** 透视环晕强度（参考实现是 0.25，还受 {@link #SUN_22_OPEN} 门控）。 */
@@ -83,6 +83,7 @@ final class GrassConstants {
     static final float RAIN_SPEED_Y = 1.0f;
     /** 最靠近镜头那一层的透明度与粗细（参考实现里单独处理的那层）。 */
     static final float RAIN_BASE_ALPHA = 0.8f;
+
     static final float RAIN_BASE_SCALE = 1.0f;
 
     /**
@@ -107,8 +108,8 @@ final class GrassConstants {
     /**
      * 萤火虫照亮草叶。
      *
-     * <p>挂在**特效**开关（{@code pref_grass_glow}）下，与 HDR 辉光、黄昏影调同进同出，
-     * 没有自己的开关 —— 先例是 {@code GrassBacklight.duskToneAmount}。
+     * <p>有独立开关（{@code pref_grass_firefly_light}）；原先挂在「特效」开关下，
+     * 拆分后新键缺失时会回落到那个旧开关。
      *
      * <p>取值是上机的起点，不是标准答案。四个都是旋钮。
      */

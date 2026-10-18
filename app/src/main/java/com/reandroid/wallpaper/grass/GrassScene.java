@@ -15,6 +15,8 @@
  */
 package com.reandroid.wallpaper.grass;
 
+import static com.reandroid.wallpaper.grass.GrassConstants.*;
+
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.opengl.Matrix;
@@ -27,10 +29,6 @@ import com.reandroid.weather.WeatherState;
 
 import java.util.Calendar;
 import java.util.Random;
-import java.util.TimeZone;
-
-import static com.reandroid.wallpaper.grass.GrassConstants.*;
-import com.reandroid.utils.MathUtils;
 
 /**
  * Grass 壁纸场景逻辑层（纯 Java，无 GL 调用）。
@@ -81,8 +79,12 @@ final class GrassScene {
     private boolean mMoonEnabled = false;
     /** 草叶逆光开关。默认关 —— 默认还原 AOSP，增强做成开关。 */
     private boolean mGrassLightEnabled = false;
-    /** HDR + 辉光开关。默认关。 */
+    /** 辉光开关（HDR + 辉光 + 黄昏影调）。默认关。 */
     private boolean mGrassGlowEnabled = false;
+    /** 萤火虫照亮草叶。默认跟随旧的「特效」开关。 */
+    private boolean mFireflyLightEnabled = false;
+    /** 月亮光晕。默认跟随旧的「特效」开关。 */
+    private boolean mMoonGlowEnabled = false;
     /** 光源位置的选择结果，避免每帧新建数组。 */
     private final float[] mLightPosScratch = new float[2];
     /** 上次重算逐叶遮挡的时刻。遮挡变化慢，限频算。 */
@@ -95,6 +97,7 @@ final class GrassScene {
      * 少一个会和 {@code moonVisible}（那个只管画不画月盘）混淆的状态。
      */
     private static final float NO_MOON_ALTITUDE_DEG = -90.0f;
+
     private boolean mProceduralSun = true;
     private float mGrassHeightScale = 1.0f;
     private float mGrassWidthScale = 1.0f;
@@ -127,6 +130,7 @@ final class GrassScene {
      * 硬开关，直接乘上去会让粒子在切到阵雨/雷暴的那一帧凭空消失。
      */
     private float mDandelionWeatherGate = 1.0f;
+
     private float mFireflyWeatherGate = 1.0f;
 
     /** 天气切换时粒子淡入淡出的时长（秒）。 */
@@ -203,22 +207,23 @@ final class GrassScene {
         mWidth = width;
         mHeight = height;
         mBladeSystem = new GrassBladeSystem(mRandom, mWindField, width, height, mBladeCount);
-        mRenderDataBuilder = new GrassRenderDataBuilder(new GrassRenderDataBuilder.LegacyParticleOps() {
-            @Override
-            public LegacyParticle createLegacyParticle(int type) {
-                return GrassScene.this.createLegacyParticle(type);
-            }
+        mRenderDataBuilder =
+                new GrassRenderDataBuilder(new GrassRenderDataBuilder.LegacyParticleOps() {
+                    @Override
+                    public LegacyParticle createLegacyParticle(int type) {
+                        return GrassScene.this.createLegacyParticle(type);
+                    }
 
-            @Override
-            public void flyLegacyFirefly(LegacyParticle p, boolean isInit) {
-                GrassScene.this.flyLegacyFirefly(p, isInit);
-            }
+                    @Override
+                    public void flyLegacyFirefly(LegacyParticle p, boolean isInit) {
+                        GrassScene.this.flyLegacyFirefly(p, isInit);
+                    }
 
-            @Override
-            public void flyLegacyDandelion(LegacyParticle p, boolean isInit) {
-                GrassScene.this.flyLegacyDandelion(p, isInit);
-            }
-        });
+                    @Override
+                    public void flyLegacyDandelion(LegacyParticle p, boolean isInit) {
+                        GrassScene.this.flyLegacyDandelion(p, isInit);
+                    }
+                });
     }
 
     // ---- Lifecycle ----
@@ -442,17 +447,25 @@ final class GrassScene {
     /** 天气对整体亮度与日月光晕的影响，叠在 {@link #updateSky} 算出的基准亮度上。 */
     private void applyWeatherToSky() {
         mSky.brightness = clamp(
-                mSky.brightness * GrassWeatherSystem.brightnessMultiplier(mWeatherCondition), 0.0f, 1.0f);
+                mSky.brightness * GrassWeatherSystem.brightnessMultiplier(mWeatherCondition),
+                0.0f,
+                1.0f);
         if (mSceneData.hasSunData) {
-            mSceneData.sunAlpha = clamp(mSceneData.sunAlpha * GrassWeatherSystem.sunAlphaScale(mWeatherCondition),
-                0.0f, 1.0f);
+            mSceneData.sunAlpha = clamp(
+                    mSceneData.sunAlpha * GrassWeatherSystem.sunAlphaScale(mWeatherCondition),
+                    0.0f,
+                    1.0f);
         }
         if (mSceneData.moonVisible) {
-            mSceneData.moonAlpha = clamp(mSceneData.moonAlpha * GrassWeatherSystem.moonAlphaScale(mWeatherCondition),
-                0.0f, 1.0f);
+            mSceneData.moonAlpha = clamp(
+                    mSceneData.moonAlpha * GrassWeatherSystem.moonAlphaScale(mWeatherCondition),
+                    0.0f,
+                    1.0f);
             mSceneData.moonBrightness = clamp(
-                mSceneData.moonBrightness * GrassWeatherSystem.moonBrightnessScale(mWeatherCondition),
-                0.0f, 1.0f);
+                    mSceneData.moonBrightness
+                            * GrassWeatherSystem.moonBrightnessScale(mWeatherCondition),
+                    0.0f,
+                    1.0f);
         }
     }
 
@@ -476,8 +489,9 @@ final class GrassScene {
          * 积分式在切换时只有"转速"变化，相位连续，草是平滑地加快/减慢而不是跳。
          */
         mWindPhase = (mWindPhase + dt * WIND_PHASE_PER_SEC * windTimeScale) % WIND_PHASE_PERIOD;
-        boolean bladeAnglesDirty = mBladeSystem.updateBladeAngles(mWindPhase,
-            GrassWeatherSystem.windAmplitudeScale(mWeatherCondition) * dayNightWind);
+        boolean bladeAnglesDirty = mBladeSystem.updateBladeAngles(
+                mWindPhase,
+                GrassWeatherSystem.windAmplitudeScale(mWeatherCondition) * dayNightWind);
         // 上一帧的脏标记已被渲染器消费（几何已重建）：记录当前角度作为
         // 新一轮脏判定基准。避免高 FPS 下每帧增量跌破阈值导致草停止摆动。
         if (mSceneData.grassGeometryDirty) {
@@ -501,8 +515,9 @@ final class GrassScene {
                 mDandelionWeatherGate, allowDandelion, dt, WEATHER_PARTICLE_FADE_SEC);
         mFireflyWeatherGate = GrassWeatherSystem.fadeGate(
                 mFireflyWeatherGate, allowFirefly, dt, WEATHER_PARTICLE_FADE_SEC);
-        mDandelionVisibility = (mDandelionEnabled ? computeDandelionVisibility(mSky.timeFrac) : 0.0f)
-                * mDandelionWeatherGate;
+        mDandelionVisibility =
+                (mDandelionEnabled ? computeDandelionVisibility(mSky.timeFrac) : 0.0f)
+                        * mDandelionWeatherGate;
         mFireflyVisibility = (mFireflyEnabled ? computeFireflyVisibility(mSky.timeFrac) : 0.0f)
                 * mFireflyWeatherGate;
         mNightWeight = computeStarVisibility();
@@ -519,8 +534,11 @@ final class GrassScene {
          * 从夜色直接跳到"夜色 + 蓝灰色调"，看上去就是夜晚突然变成白天。天气切换时也一样硬。
          * 现在拆成两段平滑的乘积：白天权重（本来就跟着日出日落连续变化）+ 天气开关的淡入淡出。
          */
-        mWeatherToneGate = GrassWeatherSystem.fadeGate(mWeatherToneGate,
-                GrassWeatherSystem.hasSkyTone(mWeatherCondition), dt, WEATHER_TONE_FADE_SEC);
+        mWeatherToneGate = GrassWeatherSystem.fadeGate(
+                mWeatherToneGate,
+                GrassWeatherSystem.hasSkyTone(mWeatherCondition),
+                dt,
+                WEATHER_TONE_FADE_SEC);
         mSceneData.dayWeight = 1.0f - mNightWeight;
         mSceneData.weatherToneAlpha = mSceneData.dayWeight * mWeatherToneGate;
     }
@@ -528,8 +546,8 @@ final class GrassScene {
     /** 推进粒子位置（传统优先：传统开关开启时现代粒子不再更新）。 */
     private void updateParticlePositions(float dt, long animNowMs) {
         if (!mLegacyDandelionEnabled && mDandelionVisibility > 0.001f && mDandelions != null) {
-            GrassParticleSystem.updateDandelionPositions(mRandom, mDandelions, dt,
-                    mDandelionSpeedScale, mWidth, mHeight);
+            GrassParticleSystem.updateDandelionPositions(
+                    mRandom, mDandelions, dt, mDandelionSpeedScale, mWidth, mHeight);
         }
         if (!mLegacyFireflyEnabled && mFireflyVisibility > 0.001f && mFireflies != null) {
             GrassParticleSystem.updateFireflyPositions(mFireflies, dt, mWidth, mHeight);
@@ -601,32 +619,35 @@ final class GrassScene {
         mSceneData.lightStrength = GrassBacklight.effectiveStrength(
                 mGrassLightEnabled, sunAlt, moonAlt, mWeatherCondition);
         // 高光门控：正午 0（不要高光）、黄金时刻 1、月夜 1
-        mSceneData.lightHighlight = mGrassLightEnabled
-                ? GrassBacklight.highlight(sunAlt, moonAlt)
-                : 0.0f;
+        mSceneData.lightHighlight =
+                mGrassLightEnabled ? GrassBacklight.highlight(sunAlt, moonAlt) : 0.0f;
         // 颜色跟着光源走（正午近白 / 黄金时刻琥珀 / 月亮冷白偏蓝）
         GrassLightColor.transmit(sunAlt, useMoon, mSceneData.lightTransmit);
         GrassLightColor.cool(sunAlt, useMoon, mSceneData.lightCool);
-        GrassBacklight.lightPosition(useMoon,
-                mSceneData.sunX, mSceneData.sunY,
-                mSceneData.moonX, mSceneData.moonY,
+        GrassBacklight.lightPosition(
+                useMoon,
+                mSceneData.sunX,
+                mSceneData.sunY,
+                mSceneData.moonX,
+                mSceneData.moonY,
                 mLightPosScratch);
         mSceneData.lightX = mLightPosScratch[0];
         mSceneData.lightY = mLightPosScratch[1];
 
         // 辉光只发布用户的开关；设备能力由渲染线程再与一次（见 GrassGL.draw）。
         mSceneData.glowEnabled = mGrassGlowEnabled;
+        mSceneData.fireflyLightEnabled = mFireflyLightEnabled;
+        mSceneData.moonGlowEnabled = mMoonGlowEnabled;
         // 黄昏影调挂在**特效**这个开关下（与辉光同一个）：它作用在整帧上，走的也是
         // 同一条离屏路径。逆光本身分不出黎明与黄昏，所以这里用只在下沉时段非零的
         // 黄昏权重单独挑出黄昏。
-        mSceneData.duskTone = GrassBacklight.duskToneAmount(
-                mGrassGlowEnabled, mSceneData.accurateWeights[2]);
+        mSceneData.duskTone =
+                GrassBacklight.duskToneAmount(mGrassGlowEnabled, mSceneData.accurateWeights[2]);
 
         // 逐叶遮挡**限频**重算。叶片摆动只影响朝向，那个每帧算；遮挡要等草长得够多
         // 或光源明显移动，250ms 一次足够，也把 O(n²) 的成本摊掉。
         int bladeCount = mSceneData.blades != null ? mSceneData.blades.length : 0;
-        if (mSceneData.bladeOcclusion == null
-                || mSceneData.bladeOcclusion.length != bladeCount) {
+        if (mSceneData.bladeOcclusion == null || mSceneData.bladeOcclusion.length != bladeCount) {
             mSceneData.bladeOcclusion = new float[bladeCount];
             mLastOcclusionMs = 0L;
         }
@@ -647,8 +668,11 @@ final class GrassScene {
 
         // 水珠要读 blades / xDraw / dt / 草的缩放，所以放在这一段的最后。
         // 强度为 0 时它自己会停止生成并让已有的珠离场。
-        mWaterDroplets.update(dt, GrassWeatherSystem.rainIntensity(mWeatherCondition),
-                mSceneData.blades, mSceneData);
+        mWaterDroplets.update(
+                dt,
+                GrassWeatherSystem.rainIntensity(mWeatherCondition),
+                mSceneData.blades,
+                mSceneData);
         mSceneData.water = mWaterDroplets;
     }
 
@@ -657,7 +681,8 @@ final class GrassScene {
     private void syncBladeBuffersFromSystem(boolean rebuildIndices) {
         mVertexCount = mBladeSystem.getVertexCount();
         mIndexCount = mBladeSystem.getIndexCount();
-        mRenderDataBuilder.setGeometry(mWidth, mHeight, mVertexCount, mIndexCount, mBladeSystem.getBladeSizes());
+        mRenderDataBuilder.setGeometry(
+                mWidth, mHeight, mVertexCount, mIndexCount, mBladeSystem.getBladeSizes());
         mGrassGeometryDirty = true;
         if (rebuildIndices) {
             mBladeIndexRebuildNeeded = true;
@@ -718,7 +743,8 @@ final class GrassScene {
             SolarEclipse eclipse = computeSolarEclipse(moonData, now);
             if (eclipse.fraction > 0.001f) {
                 float moonX = moonXFromHourAngle(moonData.moonHourAngleDeg);
-                float moonY = mHeight * (1.0f - clamp((float) moonData.moonAltitudeDeg, 0.0f, 90.0f) / 90.0f);
+                float moonY = mHeight
+                        * (1.0f - clamp((float) moonData.moonAltitudeDeg, 0.0f, 90.0f) / 90.0f);
                 mSceneData.hasSolarEclipseOcclusion = true;
                 mSceneData.solarEclipseAtSun = eclipse;
                 mSceneData.eclipseMoonX = moonX;
@@ -796,7 +822,6 @@ final class GrassScene {
         return weights != null ? weights[0] : 0.0f;
     }
 
-
     private float celestialXFromHourAngle(double hourAngleDeg) {
         float ratio = (float) ((hourAngleDeg + 180.0) / 360.0);
         float ratioExtended = ratio * 1.4f - 0.1f;
@@ -831,9 +856,8 @@ final class GrassScene {
             mLegacyFireflyEnabled = legacyFirefly;
             if (mLegacyFireflyEnabled) initLegacyParticles();
         }
-        WallpaperSettings.GrassTint tint = p != null
-                ? readGrassTint(p)
-                : WallpaperSettings.getGrassTint();
+        WallpaperSettings.GrassTint tint =
+                p != null ? readGrassTint(p) : WallpaperSettings.getGrassTint();
         int newBladeCount = p != null
                 ? p.getInt(WallpaperSettings.KEY_GRASS_COUNT, DEFAULT_BLADE_COUNT)
                 : WallpaperSettings.getGrassBladeCount(DEFAULT_BLADE_COUNT);
@@ -861,14 +885,38 @@ final class GrassScene {
         boolean newGrassGlow = p != null
                 ? p.getBoolean(WallpaperSettings.KEY_GRASS_GLOW, false)
                 : WallpaperSettings.isGrassGlowEnabled(false);
+        /*
+         * 萤火虫光照与月亮光晕原先挂在「特效」开关下。拆开后新键缺失时回落到旧值，
+         * 已经在用特效的用户升级后观感不变。
+         */
+        boolean newFireflyLight = p != null
+                ? p.getBoolean(WallpaperSettings.KEY_GRASS_FIREFLY_LIGHT, newGrassGlow)
+                : WallpaperSettings.isGrassFireflyLightEnabled(
+                        WallpaperSettings.isGrassGlowEnabled(false));
+        boolean newMoonGlow = p != null
+                ? p.getBoolean(WallpaperSettings.KEY_GRASS_MOON_GLOW, newGrassGlow)
+                : WallpaperSettings.isGrassMoonGlowEnabled(
+                        WallpaperSettings.isGrassGlowEnabled(false));
         float newHeightScale = p != null
-                ? clamp(p.getInt(WallpaperSettings.KEY_GRASS_HEIGHT, Math.round(1.0f * 100.0f)) / 100.0f, 0.1f, 10.0f)
+                ? clamp(
+                        p.getInt(WallpaperSettings.KEY_GRASS_HEIGHT, Math.round(1.0f * 100.0f))
+                                / 100.0f,
+                        0.1f,
+                        10.0f)
                 : WallpaperSettings.getGrassHeightScale(1.0f);
         float newWidthScale = p != null
-                ? clamp(p.getInt(WallpaperSettings.KEY_GRASS_WIDTH, Math.round(1.0f * 100.0f)) / 100.0f, 0.1f, 10.0f)
+                ? clamp(
+                        p.getInt(WallpaperSettings.KEY_GRASS_WIDTH, Math.round(1.0f * 100.0f))
+                                / 100.0f,
+                        0.1f,
+                        10.0f)
                 : WallpaperSettings.getGrassWidthScale(1.0f);
         float newHardnessScale = p != null
-                ? clamp(p.getInt(WallpaperSettings.KEY_GRASS_HARDNESS, Math.round(1.0f * 100.0f)) / 100.0f, 0.3f, 10.0f)
+                ? clamp(
+                        p.getInt(WallpaperSettings.KEY_GRASS_HARDNESS, Math.round(1.0f * 100.0f))
+                                / 100.0f,
+                        0.3f,
+                        10.0f)
                 : WallpaperSettings.getGrassHardnessScale(1.0f);
         boolean newDandelionEnabled = p != null
                 ? p.getBoolean(WallpaperSettings.KEY_GRASS_DANDELION, false)
@@ -877,13 +925,25 @@ final class GrassScene {
                 ? p.getBoolean(WallpaperSettings.KEY_GRASS_FIREFLY, false)
                 : WallpaperSettings.isFireflyEnabled(false);
         int newDandelionCount = p != null
-                ? Math.max(1, p.getInt(WallpaperSettings.KEY_GRASS_DANDELION_COUNT, DEFAULT_DANDELION_COUNT))
+                ? Math.max(
+                        1,
+                        p.getInt(
+                                WallpaperSettings.KEY_GRASS_DANDELION_COUNT,
+                                DEFAULT_DANDELION_COUNT))
                 : WallpaperSettings.getDandelionCount(DEFAULT_DANDELION_COUNT);
         int newFireflyCount = p != null
-                ? Math.max(1, p.getInt(WallpaperSettings.KEY_GRASS_FIREFLY_COUNT, DEFAULT_FIREFLY_COUNT))
+                ? Math.max(
+                        1,
+                        p.getInt(WallpaperSettings.KEY_GRASS_FIREFLY_COUNT, DEFAULT_FIREFLY_COUNT))
                 : WallpaperSettings.getFireflyCount(DEFAULT_FIREFLY_COUNT);
         float newDandelionSpeedScale = p != null
-                ? clamp(p.getInt(WallpaperSettings.KEY_GRASS_DANDELION_SPEED, Math.round(2.0f * 100.0f)) / 100.0f, 1.0f, 10.0f)
+                ? clamp(
+                        p.getInt(
+                                        WallpaperSettings.KEY_GRASS_DANDELION_SPEED,
+                                        Math.round(2.0f * 100.0f))
+                                / 100.0f,
+                        1.0f,
+                        10.0f)
                 : WallpaperSettings.getDandelionSpeedScale(2.0f);
 
         int hash = 17;
@@ -896,6 +956,8 @@ final class GrassScene {
         hash = 31 * hash + (newProceduralSun ? 1 : 0);
         hash = 31 * hash + (newGrassLight ? 1 : 0);
         hash = 31 * hash + (newGrassGlow ? 1 : 0);
+        hash = 31 * hash + (newFireflyLight ? 1 : 0);
+        hash = 31 * hash + (newMoonGlow ? 1 : 0);
         hash = 31 * hash + Float.floatToIntBits(newHeightScale);
         hash = 31 * hash + Float.floatToIntBits(newWidthScale);
         hash = 31 * hash + Float.floatToIntBits(newHardnessScale);
@@ -918,6 +980,8 @@ final class GrassScene {
         mProceduralSun = newProceduralSun;
         mGrassLightEnabled = newGrassLight;
         mGrassGlowEnabled = newGrassGlow;
+        mFireflyLightEnabled = newFireflyLight;
+        mMoonGlowEnabled = newMoonGlow;
         mGrassHeightScale = newHeightScale;
         mGrassWidthScale = newWidthScale;
         mGrassHardnessScale = newHardnessScale;
@@ -995,16 +1059,18 @@ final class GrassScene {
     }
 
     LegacyParticle createLegacyParticle(int type) {
-        return GrassParticleSystem.createLegacyParticle(mRandom, legacyNow, legacyDirection,
-                type, mWidth, mHeight);
+        return GrassParticleSystem.createLegacyParticle(
+                mRandom, legacyNow, legacyDirection, type, mWidth, mHeight);
     }
 
     void flyLegacyFirefly(LegacyParticle p, boolean isInit) {
-        GrassParticleSystem.flyLegacyFirefly(mRandom, p, isInit, legacyNow, legacyDirection, mWidth, mHeight);
+        GrassParticleSystem.flyLegacyFirefly(
+                mRandom, p, isInit, legacyNow, legacyDirection, mWidth, mHeight);
     }
 
     void flyLegacyDandelion(LegacyParticle p, boolean isInit) {
-        GrassParticleSystem.flyLegacyDandelion(mRandom, p, isInit, legacyNow, legacyDirection, mWidth, mHeight);
+        GrassParticleSystem.flyLegacyDandelion(
+                mRandom, p, isInit, legacyNow, legacyDirection, mWidth, mHeight);
     }
 
     /**
@@ -1015,7 +1081,8 @@ final class GrassScene {
         // 节流按真实时间；预览下不节流，否则一个 30 秒周期只更新两次，日食会一跳一跳
         long nowMs = System.currentTimeMillis();
         long interval = mIsPreview ? 0L : SOLAR_ECLIPSE_UPDATE_INTERVAL_MS;
-        if (mLastSolarEclipseUpdateMs != 0L && (nowMs - mLastSolarEclipseUpdateMs) < interval) return;
+        if (mLastSolarEclipseUpdateMs != 0L && (nowMs - mLastSolarEclipseUpdateMs) < interval)
+            return;
         if (data == null) {
             mSolarEclipseWeight = 0.0f;
             mLastSolarEclipseUpdateMs = nowMs;
@@ -1023,8 +1090,8 @@ final class GrassScene {
         }
         SolarEclipse eclipse = computeSolarEclipse(data, now);
         float[] accurateWeights = mDayNightSystem.getAccurateWeights();
-        float dayVisibility = clamp(accurateWeights[3] + 0.45f * (accurateWeights[1] + accurateWeights[2]),
-                0.0f, 1.0f);
+        float dayVisibility = clamp(
+                accurateWeights[3] + 0.45f * (accurateWeights[1] + accurateWeights[2]), 0.0f, 1.0f);
         float eased = smoothstep(0.0f, 1.0f, eclipse.fraction);
         mSolarEclipseWeight = clamp(eased * dayVisibility, 0.0f, 1.0f);
         mLastSolarEclipseUpdateMs = nowMs;
@@ -1038,12 +1105,13 @@ final class GrassScene {
 
         // 缓存按真实时间衡量 —— nowMs 是模拟时间，预览下 60 秒会被压缩成一帧
         long realNowMs = System.currentTimeMillis();
-        if (mCachedMoonData != null && (realNowMs - mLastCelestialComputeMs) < celestialCacheIntervalMs()) {
+        if (mCachedMoonData != null
+                && (realNowMs - mLastCelestialComputeMs) < celestialCacheIntervalMs()) {
             return mCachedMoonData;
         }
 
-        mCachedMoonData = MoonCalculator.compute(now,
-                mDayNightSystem.getLatitude(), mDayNightSystem.getLongitude());
+        mCachedMoonData = MoonCalculator.compute(
+                now, mDayNightSystem.getLatitude(), mDayNightSystem.getLongitude());
         mLastCelestialComputeMs = realNowMs;
         return mCachedMoonData;
     }
@@ -1061,10 +1129,12 @@ final class GrassScene {
     // ---- Astronomical computation ----
 
     private SolarEclipse computeSolarEclipse(MoonCalculator.MoonData data, Calendar now) {
-        return GrassAstronomyCalculator.computeSolarEclipse(data, now,
-            SOLAR_MEAN_ANGULAR_RADIUS_DEG,
-            LUNAR_MEAN_ANGULAR_RADIUS_DEG,
-            SOLAR_ECLIPSE_MODEL_TOLERANCE_DEG);
+        return GrassAstronomyCalculator.computeSolarEclipse(
+                data,
+                now,
+                SOLAR_MEAN_ANGULAR_RADIUS_DEG,
+                LUNAR_MEAN_ANGULAR_RADIUS_DEG,
+                SOLAR_ECLIPSE_MODEL_TOLERANCE_DEG);
     }
 
     private MoonEclipse computeMoonEclipse(MoonCalculator.MoonData data) {
@@ -1092,7 +1162,6 @@ final class GrassScene {
         return t * t * (3.0f - 2.0f * t);
     }
 
-
     int hsbToRgb(float h, float s, float b) {
         float red = 0.0f, green = 0.0f, blue = 0.0f;
         float hf = (h - (int) h) * 6.0f;
@@ -1102,12 +1171,36 @@ final class GrassScene {
         float qv = b * (1.0f - s * f);
         float tv = b * (1.0f - s * (1.0f - f));
         switch (ihf) {
-            case 0: red = b; green = tv; blue = pv; break;
-            case 1: red = qv; green = b; blue = pv; break;
-            case 2: red = pv; green = b; blue = tv; break;
-            case 3: red = pv; green = qv; blue = b; break;
-            case 4: red = tv; green = pv; blue = b; break;
-            case 5: red = b; green = pv; blue = qv; break;
+            case 0:
+                red = b;
+                green = tv;
+                blue = pv;
+                break;
+            case 1:
+                red = qv;
+                green = b;
+                blue = pv;
+                break;
+            case 2:
+                red = pv;
+                green = b;
+                blue = tv;
+                break;
+            case 3:
+                red = pv;
+                green = qv;
+                blue = b;
+                break;
+            case 4:
+                red = tv;
+                green = pv;
+                blue = b;
+                break;
+            case 5:
+                red = b;
+                green = pv;
+                blue = qv;
+                break;
         }
         return Color.argb(255, (int) (red * 255), (int) (green * 255), (int) (blue * 255));
     }
@@ -1117,14 +1210,19 @@ final class GrassScene {
         float min = Math.min(r, Math.min(g, b));
         float delta = max - min;
         float h;
-        if (delta == 0.0f) { h = 0.0f; }
-        else if (max == r) { h = ((g - b) / delta) % 6.0f; }
-        else if (max == g) { h = ((b - r) / delta) + 2.0f; }
-        else { h = ((r - g) / delta) + 4.0f; }
+        if (delta == 0.0f) {
+            h = 0.0f;
+        } else if (max == r) {
+            h = ((g - b) / delta) % 6.0f;
+        } else if (max == g) {
+            h = ((b - r) / delta) + 2.0f;
+        } else {
+            h = ((r - g) / delta) + 4.0f;
+        }
         h /= 6.0f;
         if (h < 0.0f) h += 1.0f;
         float s = max == 0.0f ? 0.0f : (delta / max);
-        return new float[]{h, s, max};
+        return new float[] {h, s, max};
     }
 
     // ---- Random helpers ----
