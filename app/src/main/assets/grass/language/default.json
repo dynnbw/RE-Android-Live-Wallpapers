@@ -1,5 +1,10 @@
 {
   "title": "Grass",
+  "pref_grass_group_basic": "Grass",
+  "pref_grass_group_weather": "Weather",
+  "pref_grass_group_sky": "Sky & Light",
+  "pref_grass_group_dandelion": "Dandelions",
+  "pref_grass_group_firefly": "Fireflies",
   "pref_grass_enabled": "Show grass",
   "pref_grass_weather_enabled": "Enable weather effects",
   "pref_grass_weather_rain_count": "Rain particle count",
