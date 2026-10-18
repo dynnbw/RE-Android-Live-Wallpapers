@@ -1,4 +1,5 @@
 {
   "plugin": "com.reandroid.wallpaper.bluesea.BlueSeaPlugin",
+  "pluginVk": "com.reandroid.wallpaper.bluesea.BlueSeaVKPlugin",
   "previewClass": "com.reandroid.wallpaper.bluesea.BlueSeaGL"
 }

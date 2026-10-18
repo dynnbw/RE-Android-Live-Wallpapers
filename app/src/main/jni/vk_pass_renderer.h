@@ -6,6 +6,7 @@
 
 #include "vk_common.h"
 
+#include <map>
 #include <unordered_map>
 #include <utility>
 
@@ -117,6 +118,9 @@ private:
     std::unordered_map<std::string, TextureEntry> textures_;
     VkDescriptorSetLayout descriptorSetLayout_ = VK_NULL_HANDLE;
     VkDescriptorPool descriptorPool_ = VK_NULL_HANDLE;
+    // 同一壁纸的很多 pass 共用 shader/布局（例如每个精灵一个 pass），按描述去重
+    std::map<std::string, VkPipeline> pipelineCache_;
+    std::map<uint32_t, VkPipelineLayout> layoutCache_;
     ANativeWindow* window_ = nullptr;
     int width_ = 0;
     int height_ = 0;

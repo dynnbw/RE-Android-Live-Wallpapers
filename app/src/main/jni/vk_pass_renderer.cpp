@@ -174,6 +174,30 @@ bool VkPassRenderer::createPipelinesLocked() {
         const VkPassDesc& pass = passes_[i];
         PassRuntime& rt = runtime_[i];
 
+        // 去重键：shader + 顶点布局 + 图元 + 混合 + push constant 大小
+        std::string key = pass.vsPath + "|" + pass.fsPath + "|";
+        for (uint32_t size : pass.attribSizes) key += std::to_string(size) + ",";
+        key += std::to_string(pass.strideBytes) + "|" + std::to_string(pass.primitive) + "|"
+             + std::to_string(pass.blendEnable ? 1 : 0) + ":"
+             + std::to_string(pass.srcColor) + "," + std::to_string(pass.dstColor) + ","
+             + std::to_string(pass.srcAlpha) + "," + std::to_string(pass.dstAlpha) + "|"
+             + std::to_string(pass.pushConstantBytes);
+
+        rt.layout = layoutCache_[pass.pushConstantBytes];
+        auto cachedPipeline = pipelineCache_.find(key);
+        if (cachedPipeline != pipelineCache_.end()) {
+            rt.pipeline = cachedPipeline->second;
+            VkDescriptorSetAllocateInfo alloc{};
+            alloc.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+            alloc.descriptorPool = descriptorPool_;
+            alloc.descriptorSetCount = 1;
+            alloc.pSetLayouts = &descriptorSetLayout_;
+            if (vkAllocateDescriptorSets(device_, &alloc, &rt.descriptors) != VK_SUCCESS) {
+                LOGE("vkAllocateDescriptorSets failed");
+            }
+            continue;
+        }
+
         VkShaderModule vs = createShaderModuleLocked({pass.vsPath.c_str()});
         VkShaderModule fs = createShaderModuleLocked({pass.fsPath.c_str()});
         if (vs == VK_NULL_HANDLE || fs == VK_NULL_HANDLE) {
@@ -266,19 +290,22 @@ bool VkPassRenderer::createPipelinesLocked() {
         pushRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
         pushRange.size = pass.pushConstantBytes;
 
-        VkPipelineLayoutCreateInfo layoutInfo{};
-        layoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        layoutInfo.setLayoutCount = 1;
-        layoutInfo.pSetLayouts = &descriptorSetLayout_;
-        if (pass.pushConstantBytes > 0) {
-            layoutInfo.pushConstantRangeCount = 1;
-            layoutInfo.pPushConstantRanges = &pushRange;
-        }
-        if (vkCreatePipelineLayout(device_, &layoutInfo, nullptr, &rt.layout) != VK_SUCCESS) {
-            LOGE("vkCreatePipelineLayout failed");
-            vkDestroyShaderModule(device_, vs, nullptr);
-            vkDestroyShaderModule(device_, fs, nullptr);
-            continue;
+        if (rt.layout == VK_NULL_HANDLE) {
+            VkPipelineLayoutCreateInfo layoutInfo{};
+            layoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+            layoutInfo.setLayoutCount = 1;
+            layoutInfo.pSetLayouts = &descriptorSetLayout_;
+            if (pass.pushConstantBytes > 0) {
+                layoutInfo.pushConstantRangeCount = 1;
+                layoutInfo.pPushConstantRanges = &pushRange;
+            }
+            if (vkCreatePipelineLayout(device_, &layoutInfo, nullptr, &rt.layout) != VK_SUCCESS) {
+                LOGE("vkCreatePipelineLayout failed");
+                vkDestroyShaderModule(device_, vs, nullptr);
+                vkDestroyShaderModule(device_, fs, nullptr);
+                continue;
+            }
+            layoutCache_[pass.pushConstantBytes] = rt.layout;
         }
 
         VkGraphicsPipelineCreateInfo pipelineInfo{};
@@ -303,6 +330,7 @@ bool VkPassRenderer::createPipelinesLocked() {
             LOGE("vkCreateGraphicsPipelines failed: %d", result);
             continue;
         }
+        pipelineCache_[key] = rt.pipeline;
 
         VkDescriptorSetAllocateInfo alloc{};
         alloc.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -345,12 +373,15 @@ void VkPassRenderer::destroyTexturesLocked() {
 }
 
 void VkPassRenderer::destroyPipelinesLocked() {
-    for (PassRuntime& rt : runtime_) {
-        if (rt.pipeline != VK_NULL_HANDLE) { vkDestroyPipeline(device_, rt.pipeline, nullptr); rt.pipeline = VK_NULL_HANDLE; }
-        if (rt.layout != VK_NULL_HANDLE) { vkDestroyPipelineLayout(device_, rt.layout, nullptr); rt.layout = VK_NULL_HANDLE; }
-        rt.descriptors = VK_NULL_HANDLE;
-    }
     runtime_.clear();
+    for (auto& entry : pipelineCache_) {
+        if (entry.second != VK_NULL_HANDLE) vkDestroyPipeline(device_, entry.second, nullptr);
+    }
+    pipelineCache_.clear();
+    for (auto& entry : layoutCache_) {
+        if (entry.second != VK_NULL_HANDLE) vkDestroyPipelineLayout(device_, entry.second, nullptr);
+    }
+    layoutCache_.clear();
 }
 
 // ─────────────────────────── resources ───────────────────────────
