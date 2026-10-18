@@ -79,6 +79,13 @@ public final class DynamicPreferenceFactory {
     private static final java.util.WeakHashMap<Preference, DependencyState> sDepStates =
             new java.util.WeakHashMap<>();
 
+    /** 组内行在卡片中的位置：决定水波纹该裁剪哪两个圆角。 */
+    private static final int ROW_MIDDLE = 0;
+
+    private static final int ROW_BOTTOM = 1;
+    private static final java.util.WeakHashMap<Preference, Integer> sGroupRowStyles =
+            new java.util.WeakHashMap<>();
+
     /**
      * 控件的值规格：key 与默认值。用于在不重建的前提下把值从 prefs 重读一遍。
      *
@@ -159,6 +166,12 @@ public final class DynamicPreferenceFactory {
                 if (children != null) {
                     buildItems(
                             context, prefs, children, root, group::addPreference, language, true);
+                }
+                // 组内最后一行的水波纹要裁掉下面两个圆角，其余行是直角
+                int childCount = group.getPreferenceCount();
+                for (int k = 0; k < childCount; k++) {
+                    sGroupRowStyles.put(
+                            group.getPreference(k), k == childCount - 1 ? ROW_BOTTOM : ROW_MIDDLE);
                 }
                 created[i] = group;
                 continue;
@@ -550,6 +563,14 @@ public final class DynamicPreferenceFactory {
     private static void applyGrayAlpha(
             androidx.preference.PreferenceViewHolder holder, Preference pref) {
         holder.itemView.setAlpha(grayAlpha(pref));
+        // 组内行按位置换水波纹，避免方形波纹溢出卡片圆角
+        Integer rowStyle = sGroupRowStyles.get(pref);
+        if (rowStyle != null) {
+            holder.itemView.setBackgroundResource(
+                    rowStyle == ROW_BOTTOM
+                            ? com.reandroid.wallpaper.R.drawable.bg_group_ripple_bottom
+                            : com.reandroid.wallpaper.R.drawable.bg_group_ripple_middle);
+        }
     }
 
     /**

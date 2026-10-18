@@ -18,10 +18,14 @@ import com.reandroid.wallpaper.R;
  * 把一整个分组画成一张卡：连续圆角背景 + 柔和阴影 + 组内分隔线。
  *
  * <p>PreferenceGroup 的子项在 RecyclerView 里是各自独立的一行，没法用一个 CardView 包住，
- * 所以整卡背景只能在 ItemDecoration 里画。阴影不用 {@link Paint#setShadowLayer} ——
- * 它在硬件加速画布上的形状绘制行为不可靠 —— 改为几层逐级外扩的半透明圆角矩形。
+ * 所以整卡背景只能在 ItemDecoration 里画。阴影不用 {@link Paint#setShadowLayer}（它在
+ * 硬件加速画布上的形状绘制不可靠），而是叠多层很淡的圆角矩形。**每层必须很淡**：
+ * 边缘那一圈如果太深，两张分组卡之间就会看成一条分割线。
  */
 public class GroupCardDecoration extends RecyclerView.ItemDecoration {
+
+    /** 阴影层数：层多、每层淡，边缘才不会有硬边。 */
+    private static final int SHADOW_LAYERS = 24;
 
     private final int mSideInset;
     private final int mGroupGap;
@@ -37,17 +41,20 @@ public class GroupCardDecoration extends RecyclerView.ItemDecoration {
 
     public GroupCardDecoration(Context context) {
         float density = context.getResources().getDisplayMetrics().density;
-        mSideInset = Math.round(8 * density);
-        mGroupGap = Math.round(8 * density);
+        // 与独立卡片对齐：FrameLayout 4dp + CardView compat padding ≈ 12dp
+        mSideInset = Math.round(12 * density);
+        // 独立卡片之间实测约 24dp（两边各 12dp）
+        mGroupGap = Math.round(12 * density);
         mRadius = 14 * density;
         mDividerInset = 16 * density;
         mDividerHeight = Math.max(1f, density);
-        mShadowStep = density;
+        // 24 层铺满约 7.5dp，边缘约 16% 暗，和 CardView 的 4dp elevation 接近
+        mShadowStep = 0.31f * density;
 
         mFill.setColor(context.getColor(R.color.md_theme_surface));
         int onSurface = context.getColor(R.color.md_theme_onSurface);
         mDivider.setColor((onSurface & 0x00FFFFFF) | 0x1F000000);
-        mShadow.setColor(0x0D000000);
+        mShadow.setColor(0x02000000);
     }
 
     @Override
@@ -118,7 +125,7 @@ public class GroupCardDecoration extends RecyclerView.ItemDecoration {
         float bottom = lastView != null ? lastView.getBottom() : parent.getHeight();
         if (bottom <= top) return;
 
-        for (int k = 4; k >= 1; k--) {
+        for (int k = SHADOW_LAYERS; k >= 1; k--) {
             float e = k * mShadowStep;
             mRect.set(left - e, top - e, right + e, bottom + e);
             c.drawRoundRect(mRect, mRadius + e, mRadius + e, mShadow);

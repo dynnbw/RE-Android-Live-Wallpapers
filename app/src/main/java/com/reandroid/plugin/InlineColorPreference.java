@@ -93,6 +93,8 @@ public class InlineColorPreference extends Preference {
     @Override
     public void onBindViewHolder(PreferenceViewHolder holder) {
         super.onBindViewHolder(holder);
+        // 分组收起的淡出会把行视图的 alpha 留在 0；复用到取色器时要复位
+        holder.itemView.setAlpha(1f);
 
         View swatch = holder.findViewById(R.id.color_swatch);
         TextView hex = (TextView) holder.findViewById(R.id.color_hex);

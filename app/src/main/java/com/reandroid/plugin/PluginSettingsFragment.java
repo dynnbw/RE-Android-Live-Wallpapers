@@ -78,6 +78,15 @@ public class PluginSettingsFragment extends PreferenceFragmentCompat
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        /*
+         * 关掉 AndroidX 自带的分隔线。
+         *
+         * PreferenceFragmentCompat 会从主题读 android:divider，然后在**每个条目**下面
+         * 画一条（onDrawOver，盖在内容之上）。分组标题也是一个条目，于是组与组之间、
+         * 以及所有独立卡片下面都会多出一条线。分组内部的分隔线由 GroupCardDecoration
+         * 自己画，所以这里把内置那条彻底关掉。
+         */
+        setDivider(null);
         // 分组卡片的整卡背景/阴影/分隔线（PreferenceGroup 的子项没法用一张 CardView 包住）
         getListView().addItemDecoration(new GroupCardDecoration(requireContext()));
     }
