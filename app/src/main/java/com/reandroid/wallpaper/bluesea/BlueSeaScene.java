@@ -320,15 +320,22 @@ final class BlueSeaScene {
     }
 
     float computeSwimScale(JellyState jelly, long timeMs) {
-        float period = Math.max(300.0f, jelly.config.swimTimeMs);
-        float phase = ((timeMs * 0.001f) / (period * 0.001f)) + jelly.swimPhase;
+        long periodMs = Math.max(300L, (long) jelly.config.swimTimeMs);
+        /*
+         * 绝对时间不能直接乘 0.001 进 float：currentTimeMillis 量级下 float 的精度只剩
+         * 几十秒，相位像是冻住了；uptimeMillis 量级下则每几十毫秒跳一格。预览与 VK
+         * 用不同的时间基准，同一份数学会呈现出"一个不动、一个在变大小"。
+         * 先对周期取模，再用 double 归一化，两种时间基准下都是平滑的。
+         */
+        double phase = (timeMs % periodMs) / (double) periodMs + jelly.swimPhase;
         return 1.0f + 0.1f * (float) Math.sin(phase * Math.PI * 2.0);
     }
 
     float computeDrift(float phaseOffset, float durationSeconds, long timeMs) {
         float driftSize = 20.0f * mScale;
-        float period = Math.max(2.0f, durationSeconds);
-        float phase = ((timeMs * 0.001f) / period) + phaseOffset;
+        double period = Math.max(2.0, durationSeconds);
+        double seconds = timeMs / 1000.0;
+        double phase = (seconds % period) / period + phaseOffset;
         return (float) Math.sin(phase * Math.PI * 2.0) * driftSize;
     }
 
