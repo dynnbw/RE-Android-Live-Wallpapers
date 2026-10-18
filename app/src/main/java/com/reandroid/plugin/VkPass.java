@@ -12,6 +12,7 @@ public final class VkPass {
 
     public static final int TOPOLOGY_TRIANGLE_STRIP = 0;
     public static final int TOPOLOGY_TRIANGLE_LIST = 1;
+    public static final int TOPOLOGY_POINT_LIST = 2;
 
     public static final int BLEND_NONE = 0;
     public static final int BLEND_ALPHA = 1;

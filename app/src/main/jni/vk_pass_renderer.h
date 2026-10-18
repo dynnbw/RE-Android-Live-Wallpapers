@@ -24,6 +24,8 @@ struct VkPassDesc {
     std::vector<uint32_t> attribSizes; // location 0..n-1 的分量数（float）
     uint32_t strideBytes = 0;
     bool triangleStrip = true;
+    /** 0 = strip, 1 = list, 2 = point list（与 Java 的 topology 常量一致）。 */
+    uint32_t primitive = 0;
     bool blendEnable = false;
     uint32_t srcColor = 0; // VkBlendFactor
     uint32_t dstColor = 0;
@@ -43,6 +45,7 @@ public:
     ~VkPassRenderer() override = default;
 
     int addPass(VkPassDesc desc);
+    void setClearColor(float r, float g, float b, float a);
     void createBuffer(const std::string& name, uint32_t strideBytes,
                       uint32_t capacityVertices, bool dynamic);
     void createTexture(const std::string& name);
@@ -51,6 +54,7 @@ public:
                           uint32_t width, uint32_t height);
     void uploadBuffer(const std::string& name, const void* data, size_t bytes);
     void setPushConstants(int passIndex, const float* values, size_t floatCount);
+    void setVertexCount(int passIndex, uint32_t vertexCount);
 
     void drawFrame();
 
@@ -116,4 +120,5 @@ private:
     ANativeWindow* window_ = nullptr;
     int width_ = 0;
     int height_ = 0;
+    float clearColor_[4] = {0.0f, 0.0f, 0.0f, 1.0f};
 };

@@ -23,6 +23,8 @@ public final class VkPassNative {
      *
      * @return pass 下标（写 push constant 时用）
      */
+    static native void nSetClearColor(long handle, float r, float g, float b, float a);
+
     static native int nAddPass(
             long handle,
             String vsAsset,
@@ -54,6 +56,9 @@ public final class VkPassNative {
     static native void nUploadBuffer(long handle, String name, ByteBuffer vertices);
 
     static native void nSetPushConstants(long handle, int passIndex, float[] values);
+
+    /** 每帧的顶点数（粒子/云这类数量会随设置变化）。 */
+    static native void nSetVertexCount(long handle, int passIndex, int vertexCount);
 
     static native boolean nSurfaceCreated(long handle, Surface surface, int width, int height);
 

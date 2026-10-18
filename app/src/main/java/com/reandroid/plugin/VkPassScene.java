@@ -22,6 +22,10 @@ public final class VkPassScene {
         return pass;
     }
 
+    public void setClearColor(float r, float g, float b, float a) {
+        VkPassNative.nSetClearColor(handle, r, g, b, a);
+    }
+
     public void createBuffer(String name, int strideBytes, int capacityVertices,
                              boolean dynamic) {
         VkPassNative.nCreateBuffer(handle, name, strideBytes, capacityVertices, dynamic);

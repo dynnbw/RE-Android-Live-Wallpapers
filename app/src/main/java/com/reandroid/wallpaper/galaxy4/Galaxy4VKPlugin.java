@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.view.View;
 
+import com.reandroid.plugin.VkPassNative;
 import com.reandroid.plugin.VkRendererEngine;
 import com.reandroid.plugin.WallpaperEngine;
 import com.reandroid.plugin.WallpaperPlugin;
@@ -30,7 +31,7 @@ public class Galaxy4VKPlugin implements WallpaperPlugin {
      */
     @Override
     public View createVulkanPreview(Context context, SharedPreferences prefs) {
-        if (!Galaxy4VKNative.nIsVulkanSupported()) return null;
+        if (!VkPassNative.nIsSupported()) return null;
         return new VKSurfaceView(context, new Galaxy4VkDelegate(context, prefs));
     }
 

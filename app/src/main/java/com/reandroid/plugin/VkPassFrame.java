@@ -20,4 +20,10 @@ public final class VkPassFrame {
             VkPassNative.nSetPushConstants(handle, pass.index, values);
         }
     }
+
+    public void setVertexCount(VkPass pass, int vertexCount) {
+        if (pass.index >= 0) {
+            VkPassNative.nSetVertexCount(handle, pass.index, vertexCount);
+        }
+    }
 }

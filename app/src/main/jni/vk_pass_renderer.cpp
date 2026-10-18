@@ -33,6 +33,14 @@ int VkPassRenderer::addPass(VkPassDesc desc) {
     return static_cast<int>(passes_.size()) - 1;
 }
 
+void VkPassRenderer::setClearColor(float r, float g, float b, float a) {
+    std::lock_guard<std::mutex> lock(mutex_);
+    clearColor_[0] = r;
+    clearColor_[1] = g;
+    clearColor_[2] = b;
+    clearColor_[3] = a;
+}
+
 void VkPassRenderer::createBuffer(const std::string& name, uint32_t strideBytes,
                                   uint32_t capacityVertices, bool dynamic) {
     std::lock_guard<std::mutex> lock(mutex_);
@@ -96,6 +104,12 @@ void VkPassRenderer::setPushConstants(int passIndex, const float* values, size_t
     dst.assign(values, values + floatCount);
 }
 
+void VkPassRenderer::setVertexCount(int passIndex, uint32_t vertexCount) {
+    std::lock_guard<std::mutex> lock(mutex_);
+    if (passIndex < 0 || static_cast<size_t>(passIndex) >= passes_.size()) return;
+    passes_[passIndex].vertexCount = vertexCount;
+}
+
 // ─────────────────────────── CRTP hooks ───────────────────────────
 
 bool VkPassRenderer::onDeviceCreated() {
@@ -120,7 +134,8 @@ bool VkPassRenderer::onDeviceCreated() {
     if (descriptorPool_ == VK_NULL_HANDLE) {
         VkDescriptorPoolSize size{};
         size.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        size.descriptorCount = kMaxTextures;
+        // 每个 set 按布局占用 kMaxTextures 个 sampler；池子要覆盖 maxSets 份
+        size.descriptorCount = kMaxTextures * 64;
         VkDescriptorPoolCreateInfo pi{};
         pi.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
         pi.maxSets = 64;
@@ -206,9 +221,13 @@ bool VkPassRenderer::createPipelinesLocked() {
 
         VkPipelineInputAssemblyStateCreateInfo assembly{};
         assembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-        assembly.topology = pass.triangleStrip
-                ? VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP
-                : VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+        if (pass.primitive == 2) {
+            assembly.topology = VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
+        } else if (pass.triangleStrip) {
+            assembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+        } else {
+            assembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+        }
 
         VkViewport viewport{0.0f, 0.0f,
                             static_cast<float>(swapchainExtent_.width),
@@ -428,12 +447,10 @@ void VkPassRenderer::recordFrameLocked(VkCommandBuffer cmd, uint32_t imageIndex)
     if (vkBeginCommandBuffer(cmd, &begin) != VK_SUCCESS) return;
 
     VkClearValue clear{};
-    if (!passes_.empty()) {
-        clear.color.float32[0] = passes_[0].clearColor[0];
-        clear.color.float32[1] = passes_[0].clearColor[1];
-        clear.color.float32[2] = passes_[0].clearColor[2];
-        clear.color.float32[3] = passes_[0].clearColor[3];
-    }
+    clear.color.float32[0] = clearColor_[0];
+    clear.color.float32[1] = clearColor_[1];
+    clear.color.float32[2] = clearColor_[2];
+    clear.color.float32[3] = clearColor_[3];
 
     VkRenderPassBeginInfo passBegin{};
     passBegin.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -610,6 +627,11 @@ static void JNICALL nDestroy(JNIEnv*, jclass, jlong handle) {
     }
 }
 
+static void JNICALL nSetClearColor(
+        JNIEnv*, jclass, jlong handle, jfloat r, jfloat g, jfloat b, jfloat a) {
+    if (auto* renderer = asRenderer(handle)) renderer->setClearColor(r, g, b, a);
+}
+
 static jint JNICALL nAddPass(
         JNIEnv* env, jclass, jlong handle,
         jstring vs, jstring fs, jintArray attribSizes, jint stride, jint primitive,
@@ -622,6 +644,7 @@ static jint JNICALL nAddPass(
     desc.vsPath = jstringToStd(env, vs);
     desc.fsPath = jstringToStd(env, fs);
     desc.strideBytes = static_cast<uint32_t>(stride);
+    desc.primitive = static_cast<uint32_t>(primitive);
     desc.triangleStrip = primitive == 0;
     desc.blendEnable = blend == JNI_TRUE;
     desc.srcColor = static_cast<uint32_t>(srcColor);
@@ -705,6 +728,13 @@ static void JNICALL nSetPushConstants(
     env->ReleaseFloatArrayElements(values, data, JNI_ABORT);
 }
 
+static void JNICALL nSetVertexCount(
+        JNIEnv*, jclass, jlong handle, jint passIndex, jint vertexCount) {
+    if (auto* renderer = asRenderer(handle)) {
+        renderer->setVertexCount(passIndex, static_cast<uint32_t>(vertexCount));
+    }
+}
+
 static jboolean JNICALL nSurfaceCreated(
         JNIEnv* env, jclass, jlong handle, jobject surface, jint width, jint height) {
     auto* renderer = asRenderer(handle);
@@ -735,6 +765,7 @@ static jboolean JNICALL nIsSupported(JNIEnv*, jclass) {
 static const JNINativeMethod kMethods[] = {
     {"nCreate", "(Landroid/content/res/AssetManager;)J", reinterpret_cast<void*>(nCreate)},
     {"nDestroy", "(J)V", reinterpret_cast<void*>(nDestroy)},
+    {"nSetClearColor", "(JFFFF)V", reinterpret_cast<void*>(nSetClearColor)},
     {"nAddPass",
      "(JLjava/lang/String;Ljava/lang/String;[IIIZIIIIILjava/lang/String;IZ)I",
      reinterpret_cast<void*>(nAddPass)},
@@ -745,6 +776,7 @@ static const JNINativeMethod kMethods[] = {
     {"nUploadBuffer", "(JLjava/lang/String;Ljava/nio/ByteBuffer;)V",
      reinterpret_cast<void*>(nUploadBuffer)},
     {"nSetPushConstants", "(JI[F)V", reinterpret_cast<void*>(nSetPushConstants)},
+    {"nSetVertexCount", "(JII)V", reinterpret_cast<void*>(nSetVertexCount)},
     {"nSurfaceCreated", "(JLandroid/view/Surface;II)Z",
      reinterpret_cast<void*>(nSurfaceCreated)},
     {"nSurfaceChanged", "(JLandroid/view/Surface;II)V",
