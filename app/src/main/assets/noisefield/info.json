@@ -1,4 +1,5 @@
 {
   "plugin": "com.reandroid.wallpaper.noisefield.NoiseFieldPlugin",
-  "previewClass": "com.reandroid.wallpaper.noisefield.NoiseFieldGL"
+  "previewClass": "com.reandroid.wallpaper.noisefield.NoiseFieldGL",
+  "pluginVk": "com.reandroid.wallpaper.noisefield.NoiseFieldVKPlugin"
 }
