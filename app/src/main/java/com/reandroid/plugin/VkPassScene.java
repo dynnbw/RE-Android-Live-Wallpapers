@@ -10,6 +10,17 @@ import java.util.List;
  */
 public final class VkPassScene {
 
+    /** 采样器过滤方式，数值同 Vulkan 的 VkFilter。 */
+    public static final int FILTER_NEAREST = 0;
+
+    public static final int FILTER_LINEAR = 1;
+
+    /** 采样器寻址方式，数值同 Vulkan 的 VkSamplerAddressMode。 */
+    public static final int ADDRESS_REPEAT = 0;
+
+    public static final int ADDRESS_MIRRORED_REPEAT = 1;
+    public static final int ADDRESS_CLAMP_TO_EDGE = 2;
+
     private final long handle;
     private final List<VkPass> passes = new ArrayList<>();
 
@@ -26,13 +37,37 @@ public final class VkPassScene {
         VkPassNative.nSetClearColor(handle, r, g, b, a);
     }
 
-    public void createBuffer(String name, int strideBytes, int capacityVertices,
-                             boolean dynamic) {
+    public void createBuffer(String name, int strideBytes, int capacityVertices, boolean dynamic) {
         VkPassNative.nCreateBuffer(handle, name, strideBytes, capacityVertices, dynamic);
     }
 
     public void createTexture(String name) {
         VkPassNative.nCreateTexture(handle, name);
+    }
+
+    /**
+     * 建纹理并指定采样方式。默认是 {@link #FILTER_LINEAR} + {@link #ADDRESS_CLAMP_TO_EDGE}。
+     *
+     * <p>纹理图集和不希望被平滑的近景精灵用 {@code NEAREST}；需要平铺的用 {@code REPEAT}
+     * （GLES 侧对应 {@code GL_REPEAT}）。
+     */
+    public void createTexture(String name, int filter, int addressMode) {
+        createTexture(name, filter, filter, addressMode);
+    }
+
+    /** 最小/放大用不同的过滤方式（GLES 的 {@code GL_TEXTURE_MIN_FILTER} / {@code MAG_FILTER}）。 */
+    public void createTexture(String name, int minFilter, int magFilter, int addressMode) {
+        VkPassNative.nCreateTexture(handle, name);
+        VkPassNative.nSetTextureSampler(handle, name, minFilter, magFilter, addressMode);
+    }
+
+    /** 之后改采样方式：只换 sampler，已上传的像素不动。 */
+    public void setTextureSampler(String name, int filter, int addressMode) {
+        setTextureSampler(name, filter, filter, addressMode);
+    }
+
+    public void setTextureSampler(String name, int minFilter, int magFilter, int addressMode) {
+        VkPassNative.nSetTextureSampler(handle, name, minFilter, magFilter, addressMode);
     }
 
     public void setTexture(String name, int[] argb, int width, int height) {

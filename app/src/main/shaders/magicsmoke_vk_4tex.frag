@@ -6,8 +6,8 @@
  * Mirrors the GLES fragment shader: start from the preset's clear color and
  * "over" each layer with mix(color, tex, tex.a), with blending disabled.
  *
- * The generic Vulkan uploader uses CLAMP_TO_EDGE while GLES sets GL_REPEAT;
- * fract() reproduces the wrap.
+ * The layers scroll past [0,1]; the samplers are created with GL_REPEAT's
+ * Vulkan equivalent (see MagicSmokeVkDelegate), so no manual wrap is needed.
  */
 
 layout(push_constant) uniform PushConstants {
@@ -35,16 +35,16 @@ layout(location = 0) out vec4 fragColor;
 void main() {
     vec4 color = pc.uClearColor;
 
-    vec4 tex = texture(uTexture0, fract(vTexCoord0));
+    vec4 tex = texture(uTexture0, vTexCoord0);
     color = mix(color, tex, tex.a);
 
-    tex = texture(uTexture1, fract(vTexCoord1));
+    tex = texture(uTexture1, vTexCoord1);
     color = mix(color, tex, tex.a);
 
-    tex = texture(uTexture2, fract(vTexCoord2));
+    tex = texture(uTexture2, vTexCoord2);
     color = mix(color, tex, tex.a);
 
-    tex = texture(uTexture3, fract(vTexCoord3));
+    tex = texture(uTexture3, vTexCoord3);
     color = mix(color, tex, tex.a);
 
     fragColor = color;

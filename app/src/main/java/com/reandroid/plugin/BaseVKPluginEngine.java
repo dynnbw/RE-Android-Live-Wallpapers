@@ -101,9 +101,18 @@ public abstract class BaseVKPluginEngine implements WallpaperEngine, Runnable {
     @Override
     public void onVisibilityChanged(boolean visible) {
         mVisible = visible;
+        onRendererVisibilityChanged(visible);
         if (visible) startRenderer();
         else stopRenderer();
     }
+
+    /**
+     * 可见性变化时通知渲染器（主线程，早晚于线程启停各一次，只调一次）。
+     *
+     * <p>默认空实现；{@link VkRendererEngine} 转给 delegate，让场景自己停掉音频采集之类
+     * 不随渲染线程停下来的资源。
+     */
+    protected void onRendererVisibilityChanged(boolean visible) {}
 
     @Override
     public void setPreview(boolean isPreview) {

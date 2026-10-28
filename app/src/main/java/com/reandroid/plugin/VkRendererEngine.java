@@ -78,6 +78,11 @@ public class VkRendererEngine extends BaseVKPluginEngine {
     }
 
     @Override
+    protected void onRendererVisibilityChanged(boolean visible) {
+        mDelegate.onVisibilityChanged(visible);
+    }
+
+    @Override
     protected void onSceneOffset(float xOffset) {
         mDelegate.onSceneOffset(xOffset);
     }

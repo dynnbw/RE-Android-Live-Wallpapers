@@ -4,9 +4,11 @@ import android.content.Context;
 import android.os.Process;
 import android.os.SystemClock;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.View;
 
 import com.reandroid.plugin.VkRendererDelegate;
 import com.reandroid.plugin.WallpaperPreview;
@@ -101,6 +103,33 @@ public class VKSurfaceView extends SurfaceView
             onSurfaceDestroyedNative();
             mNativeSurfaceAlive = false;
         }
+    }
+
+    // ---- 触摸与可见性 ----
+
+    /**
+     * 预览路径的触摸转发。
+     *
+     * <p>场景与 GLES 预览同一套（{@code GLESPreviewView} 也是在这里转给 scene 的），
+     * 所以这里不挑手势，整串事件都给 delegate；delegate 自己认识 ACTION_DOWN。
+     * 场景还没建时不吃事件，让设置页照常滚动。
+     */
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        if (mRendererCreated && mDelegate.getScene() != null) {
+            synchronized (mSceneLock) {
+                mDelegate.onTouchEvent(event);
+            }
+            return true;
+        }
+        return super.onTouchEvent(event);
+    }
+
+    /** 预览被挡住（切到别的页面）时，让场景停掉音频采集这类自己有生命周期的资源。 */
+    @Override
+    protected void onVisibilityChanged(View changedView, int visibility) {
+        super.onVisibilityChanged(changedView, visibility);
+        mDelegate.onVisibilityChanged(visibility == VISIBLE);
     }
 
     // ---- 公共生命周期 ----

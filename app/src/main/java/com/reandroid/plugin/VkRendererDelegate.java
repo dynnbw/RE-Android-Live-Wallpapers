@@ -62,6 +62,14 @@ public interface VkRendererDelegate {
         return true;
     }
 
+    /**
+     * 壁纸/预览是否可见。宿主在渲染线程启停之前调用（主线程）。
+     *
+     * <p>渲染线程不可见时本来就会停，但场景自己起的资源（音频采集、天气刷新）不会 ——
+     * 需要停的东西在这里停，对应 GLES 侧的 {@code scene.stop()} / {@code scene.start()}。
+     */
+    default void onVisibilityChanged(boolean visible) {}
+
     /** 场景对象；设置页要按方法名反射把 prefs 推给它。 */
     Object getScene();
 

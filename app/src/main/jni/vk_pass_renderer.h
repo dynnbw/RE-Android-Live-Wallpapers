@@ -50,6 +50,9 @@ public:
     void createBuffer(const std::string& name, uint32_t strideBytes,
                       uint32_t capacityVertices, bool dynamic);
     void createTexture(const std::string& name);
+    /** 采样器配置；数值是 Vulkan 的 VkFilter / VkSamplerAddressMode。 */
+    void setTextureSampler(const std::string& name, uint32_t minFilter, uint32_t magFilter,
+                           uint32_t addressMode);
     void bindTexture(int passIndex, uint32_t binding, const std::string& name);
     void setTexturePixels(const std::string& name, const int32_t* argb,
                           uint32_t width, uint32_t height);
@@ -95,6 +98,10 @@ private:
         uint32_t pendingHeight = 0;
         /** 有新像素、还没上传。surface 重建时全部 pending 无条件重传。 */
         bool dirty = false;
+        // 纹理图集/近景精灵要 NEAREST，重复平铺要 REPEAT；默认与旧行为一致
+        VkFilter minFilter = VK_FILTER_LINEAR;
+        VkFilter magFilter = VK_FILTER_LINEAR;
+        VkSamplerAddressMode addressMode = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
     };
 
     struct PassRuntime {

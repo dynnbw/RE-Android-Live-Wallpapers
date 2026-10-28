@@ -21,37 +21,30 @@ layout(location = 0) out vec4 fragColor;
 
 /*
  * GLES 的天气贴图统一用 GL_NEAREST + CLAMP_TO_EDGE 上传（GLTextureUtils
- * .loadTextureNearestPremult），而通用 pass 渲染器固定创建线性过滤的采样器。
- * 这里用 texelFetch 手工取最近纹素，把过滤方式拉回与 GLES 一致。
- * uv 落在 [0,1]，钳到最后一格即可复刻 CLAMP_TO_EDGE。
+ * .loadTextureNearestPremult）。采样器在 WindmillVkDelegate 里按同样的参数创建，
+ * 所以这里直接用 texture()，不再手工取纹素。
  */
-vec4 sampleNearest(sampler2D tex, vec2 uv) {
-    ivec2 size = textureSize(tex, 0);
-    ivec2 pixel = clamp(ivec2(floor(uv * vec2(size))), ivec2(0), size - 1);
-    return texelFetch(tex, pixel, 0);
-}
-
 void main() {
     // 一个 pass 里最多 8 张可替换贴图（白/夜天空、云 A/B、雨、闪电、地面昼夜……）。
     // 不做采样器数组动态下标：那需要 shaderSampledImageArrayDynamicIndexing，
     // 通用渲染器没有显式启用该特性。
     vec4 tex;
     if (vTextureSlot == 0) {
-        tex = sampleNearest(uTexture0, vTexCoord);
+        tex = texture(uTexture0, vTexCoord);
     } else if (vTextureSlot == 1) {
-        tex = sampleNearest(uTexture1, vTexCoord);
+        tex = texture(uTexture1, vTexCoord);
     } else if (vTextureSlot == 2) {
-        tex = sampleNearest(uTexture2, vTexCoord);
+        tex = texture(uTexture2, vTexCoord);
     } else if (vTextureSlot == 3) {
-        tex = sampleNearest(uTexture3, vTexCoord);
+        tex = texture(uTexture3, vTexCoord);
     } else if (vTextureSlot == 4) {
-        tex = sampleNearest(uTexture4, vTexCoord);
+        tex = texture(uTexture4, vTexCoord);
     } else if (vTextureSlot == 5) {
-        tex = sampleNearest(uTexture5, vTexCoord);
+        tex = texture(uTexture5, vTexCoord);
     } else if (vTextureSlot == 6) {
-        tex = sampleNearest(uTexture6, vTexCoord);
+        tex = texture(uTexture6, vTexCoord);
     } else {
-        tex = sampleNearest(uTexture7, vTexCoord);
+        tex = texture(uTexture7, vTexCoord);
     }
 
     // 与 GLES 的 GL_MODULATE 一致：贴图是预乘的，颜色再乘一次。

@@ -31,6 +31,7 @@ final class MagicSmokeVkDelegate extends VkPassRendererDelegate {
 
     /** vec4 layers + vec2 pan + vec2 aspect + vec4 clear。 */
     private static final int PUSH_FLOATS_5TEX = 5 * 4 + 2 + 2 + 4; // 28 floats = 112 bytes
+
     private static final int PUSH_FLOATS_4TEX = 4 * 4 + 2 + 2 + 4; // 24 floats = 96 bytes
     private static final int PUSH_BYTES_5TEX = PUSH_FLOATS_5TEX * 4;
     private static final int PUSH_BYTES_4TEX = PUSH_FLOATS_4TEX * 4;
@@ -104,17 +105,21 @@ final class MagicSmokeVkDelegate extends VkPassRendererDelegate {
 
         // 5 个纹理槽 = 5 个采样器位置。textureSwap 只改变槽里放哪张处理后的图，
         // 由 uploadPresetTextures() 决定，descriptor 绑定本身是固定的。
+        // GLES 侧这几张图是 GL_REPEAT（见 MagicSmokeGL 的 glTexParameteri），
+        // 平移后 uv 会超出 [0,1]，靠寻址方式绕回来。
         for (int i = 0; i < TEXTURE_COUNT; i++) {
-            scene.createTexture("tex" + i);
+            scene.createTexture("tex" + i, VkPassScene.FILTER_LINEAR, VkPassScene.ADDRESS_REPEAT);
         }
 
         // 全屏四边形由 gl_VertexIndex 生成（与 GLES 的顶点顺序相同），
         // 因此不需要顶点缓冲，也没有逐帧顶点上传。
         mPass5 = scene.add(new VkPass(
-                "shaders/magicsmoke_vk_5tex.vert.spv",
-                "shaders/magicsmoke_vk_5tex.frag.spv",
-                new int[] {}, 0,
-                VkPass.TOPOLOGY_TRIANGLE_STRIP, VkPass.BLEND_NONE))
+                        "shaders/magicsmoke_vk_5tex.vert.spv",
+                        "shaders/magicsmoke_vk_5tex.frag.spv",
+                        new int[] {},
+                        0,
+                        VkPass.TOPOLOGY_TRIANGLE_STRIP,
+                        VkPass.BLEND_NONE))
                 .buffer("", VERTEX_COUNT)
                 .pushConstants(PUSH_BYTES_5TEX);
         for (int i = 0; i < TEXTURE_COUNT; i++) {
@@ -122,10 +127,12 @@ final class MagicSmokeVkDelegate extends VkPassRendererDelegate {
         }
 
         mPass4 = scene.add(new VkPass(
-                "shaders/magicsmoke_vk_4tex.vert.spv",
-                "shaders/magicsmoke_vk_4tex.frag.spv",
-                new int[] {}, 0,
-                VkPass.TOPOLOGY_TRIANGLE_STRIP, VkPass.BLEND_NONE))
+                        "shaders/magicsmoke_vk_4tex.vert.spv",
+                        "shaders/magicsmoke_vk_4tex.frag.spv",
+                        new int[] {},
+                        0,
+                        VkPass.TOPOLOGY_TRIANGLE_STRIP,
+                        VkPass.BLEND_NONE))
                 .buffer("", VERTEX_COUNT)
                 .pushConstants(PUSH_BYTES_4TEX);
         for (int i = 0; i < 4; i++) {
@@ -188,8 +195,7 @@ final class MagicSmokeVkDelegate extends VkPassRendererDelegate {
 
         float alphaFactor = 1.0f;
         for (int i = 0; i < TEXTURE_COUNT; i++) {
-            Bitmap source = AssetLoader.decodeBitmap(
-                    context, NOISE_ASSET + (i + 1) + ".png");
+            Bitmap source = AssetLoader.decodeBitmap(context, NOISE_ASSET + (i + 1) + ".png");
             if (source != null) {
                 int width = source.getWidth();
                 int height = source.getHeight();

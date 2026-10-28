@@ -25,6 +25,20 @@ static VkPassRenderer* asRenderer(jlong handle) {
     return reinterpret_cast<VkPassRenderer*>(handle);
 }
 
+static VkSampler createSampler(VkDevice device, VkFilter minFilter, VkFilter magFilter,
+                               VkSamplerAddressMode addressMode) {
+    VkSamplerCreateInfo sci{};
+    sci.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+    sci.magFilter = magFilter;
+    sci.minFilter = minFilter;
+    sci.addressModeU = addressMode;
+    sci.addressModeV = addressMode;
+    sci.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+    VkSampler sampler = VK_NULL_HANDLE;
+    if (vkCreateSampler(device, &sci, nullptr, &sampler) != VK_SUCCESS) return VK_NULL_HANDLE;
+    return sampler;
+}
+
 // ─────────────────────────── scene building ───────────────────────────
 
 int VkPassRenderer::addPass(VkPassDesc desc) {
@@ -59,6 +73,21 @@ void VkPassRenderer::createBuffer(const std::string& name, uint32_t strideBytes,
 void VkPassRenderer::createTexture(const std::string& name) {
     std::lock_guard<std::mutex> lock(mutex_);
     textures_[name]; // 建一个空条目，像素后到
+}
+
+void VkPassRenderer::setTextureSampler(const std::string& name, uint32_t minFilter,
+                                       uint32_t magFilter, uint32_t addressMode) {
+    std::lock_guard<std::mutex> lock(mutex_);
+    TextureEntry& tex = textures_[name];
+    tex.minFilter = static_cast<VkFilter>(minFilter);
+    tex.magFilter = static_cast<VkFilter>(magFilter);
+    tex.addressMode = static_cast<VkSamplerAddressMode>(addressMode);
+    // 已经传过图的话只换 sampler，图像和像素都不动
+    if (device_ != VK_NULL_HANDLE && tex.sampler != VK_NULL_HANDLE) {
+        vkDestroySampler(device_, tex.sampler, nullptr);
+        tex.sampler = createSampler(device_, tex.minFilter, tex.magFilter, tex.addressMode);
+        refreshDescriptorsLocked();
+    }
 }
 
 void VkPassRenderer::bindTexture(int passIndex, uint32_t binding,
@@ -442,7 +471,7 @@ bool VkPassRenderer::uploadPendingTexturesLocked(bool force) {
                     VK_NULL_HANDLE, 0,
                     reinterpret_cast<const int32_t*>(tex.pending.data()),
                     tex.pendingWidth, tex.pendingHeight,
-                    VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE)) {
+                    tex.magFilter, tex.addressMode, tex.minFilter)) {
             LOGE("uploadTexture(%s) failed", entry.first.c_str());
             allOk = false;
         }
@@ -724,6 +753,16 @@ static void JNICALL nCreateTexture(JNIEnv* env, jclass, jlong handle, jstring na
     }
 }
 
+static void JNICALL nSetTextureSampler(
+        JNIEnv* env, jclass, jlong handle, jstring name, jint minFilter, jint magFilter,
+        jint addressMode) {
+    if (auto* renderer = asRenderer(handle)) {
+        renderer->setTextureSampler(
+                jstringToStd(env, name), static_cast<uint32_t>(minFilter),
+                static_cast<uint32_t>(magFilter), static_cast<uint32_t>(addressMode));
+    }
+}
+
 static void JNICALL nBindTexture(
         JNIEnv* env, jclass, jlong handle, jint passIndex, jint binding, jstring name) {
     if (auto* renderer = asRenderer(handle)) {
@@ -812,6 +851,8 @@ static const JNINativeMethod kMethods[] = {
      reinterpret_cast<void*>(nAddPass)},
     {"nCreateBuffer", "(JLjava/lang/String;IIZ)V", reinterpret_cast<void*>(nCreateBuffer)},
     {"nCreateTexture", "(JLjava/lang/String;)V", reinterpret_cast<void*>(nCreateTexture)},
+    {"nSetTextureSampler", "(JLjava/lang/String;III)V",
+     reinterpret_cast<void*>(nSetTextureSampler)},
     {"nBindTexture", "(JIILjava/lang/String;)V", reinterpret_cast<void*>(nBindTexture)},
     {"nSetTexture", "(JLjava/lang/String;[III)V", reinterpret_cast<void*>(nSetTexture)},
     {"nUploadBuffer", "(JLjava/lang/String;Ljava/nio/ByteBuffer;I)V",

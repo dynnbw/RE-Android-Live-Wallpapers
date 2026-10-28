@@ -52,7 +52,7 @@ final class NixieTubeVkDelegate extends VkPassRendererDelegate {
     private static final int PUSH_BYTES = 16 * 4;
 
     private final SharedPreferences mPrefs;
-    /** 预览路径没有宿主可见性回调，触摸只在这条路径上接管。 */
+    /** 预览路径的点击语义与桌面不同（直接换数字，不走 tap 命令）。 */
     private final boolean mPreview;
 
     private NixieTubeScene mScene;
@@ -64,7 +64,7 @@ final class NixieTubeVkDelegate extends VkPassRendererDelegate {
     private final float[] mPush = new float[16];
     private boolean mAtlasUploaded;
 
-    /** 可见性状态；预览路径始终为 true。 */
+    /** 是否处于可见状态（不可见时停采集，见 {@link #onVisibilityChanged}）。 */
     private boolean mAudioRequested = true;
 
     /** native 渲染器建好之前不采音频，避免 VK 初始化失败后一直录音。 */
@@ -131,6 +131,16 @@ final class NixieTubeVkDelegate extends VkPassRendererDelegate {
     /** 壁纸不可见时直接回到时钟，和 GLES 版 resetModeToTime 一致。 */
     void resetModeToTime() {
         if (mScene != null) mScene.stop();
+    }
+
+    @Override
+    public void onVisibilityChanged(boolean visible) {
+        if (visible) {
+            startAudio();
+        } else {
+            stopAudio();
+            resetModeToTime();
+        }
     }
 
     @Override

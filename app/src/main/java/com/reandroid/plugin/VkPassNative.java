@@ -47,6 +47,10 @@ public final class VkPassNative {
 
     static native void nCreateTexture(long handle, String name);
 
+    /** 采样器配置；数值是 Vulkan 的 VkFilter / VkSamplerAddressMode。 */
+    static native void nSetTextureSampler(
+            long handle, String name, int minFilter, int magFilter, int addressMode);
+
     static native void nBindTexture(long handle, int passIndex, int binding, String name);
 
     /** 像素为 Android 的 ARGB int[]；native 侧转成 RGBA 后上传。 */

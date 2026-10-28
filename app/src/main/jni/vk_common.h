@@ -155,7 +155,14 @@ public:
         qci.queueCount = 1;
         qci.pQueuePriorities = &priority;
 
+        /*
+         * 点精灵（galaxy/galaxy4 的星星）靠 gl_PointSize 画成一颗圆点；
+         * 不开 largePoints 时驱动可以把它压到 1px。设备支持才开，不支持照旧。
+         */
+        VkPhysicalDeviceFeatures supported{};
+        vkGetPhysicalDeviceFeatures(physicalDevice_, &supported);
         VkPhysicalDeviceFeatures features{};
+        features.largePoints = supported.largePoints;
         const char* devExts[] = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 
         VkDeviceCreateInfo dci{};
@@ -525,7 +532,8 @@ public:
                               VkImageView& view, VkSampler& sampler,
                               VkDescriptorSet descSet, uint32_t binding,
                               const int32_t* rgbaPixels, uint32_t w, uint32_t h,
-                              VkFilter filter, VkSamplerAddressMode addressMode) {
+                              VkFilter filter, VkSamplerAddressMode addressMode,
+                              VkFilter minFilter = VK_FILTER_MAX_ENUM) {
         if (rgbaPixels == nullptr || w == 0 || h == 0) return false;
         VkDeviceSize imageSize = static_cast<VkDeviceSize>(w) * h * 4;
 
@@ -619,7 +627,8 @@ public:
         VkSamplerCreateInfo sci{};
         sci.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
         sci.magFilter = filter;
-        sci.minFilter = filter;
+        // 没单独指定最小过滤时与放大一致（GL 的默认约定，也是旧行为）
+        sci.minFilter = (minFilter == VK_FILTER_MAX_ENUM) ? filter : minFilter;
         sci.addressModeU = addressMode;
         sci.addressModeV = addressMode;
         sci.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
