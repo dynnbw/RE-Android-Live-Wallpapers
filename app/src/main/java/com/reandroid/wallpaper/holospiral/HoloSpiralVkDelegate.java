@@ -56,8 +56,7 @@ final class HoloSpiralVkDelegate extends VkPassRendererDelegate {
     private static final String FRAGMENT_SHADER = "shaders/holospiral_vk_geometry.frag.spv";
 
     private static final String POINT_TEXTURE = "points";
-    private static final String POINT_TEXTURE_ASSET =
-            "holospiral/drawable/points_red_green.png";
+    private static final String POINT_TEXTURE_ASSET = "holospiral/drawable/points_red_green.png";
 
     private SharedPreferences mPrefs;
     private HoloSpiralScene mScene;
@@ -209,10 +208,22 @@ final class HoloSpiralVkDelegate extends VkPassRendererDelegate {
             frame.setVertexCount(mBgPass, BG_VERTICES);
 
             // 外圈绕 z 反向转、内圈正向转，角度与 GLES 同源。
-            uploadSpiral(frame, mOuterPass, "outer", mOuterVertices, mOuterCount,
-                    -scene.getOuterRotateAngle(), scene.maxPointSize);
-            uploadSpiral(frame, mInnerPass, "inner", mInnerVertices, mInnerCount,
-                    scene.getInnerRotateAngle(), scene.maxPointSize);
+            uploadSpiral(
+                    frame,
+                    mOuterPass,
+                    "outer",
+                    mOuterVertices,
+                    mOuterCount,
+                    -scene.getOuterRotateAngle(),
+                    scene.maxPointSize);
+            uploadSpiral(
+                    frame,
+                    mInnerPass,
+                    "inner",
+                    mInnerVertices,
+                    mInnerCount,
+                    scene.getInnerRotateAngle(),
+                    scene.maxPointSize);
 
             // 先按当前角度画、画完再推进（与 GLES 同序，提前推进会让相位差一帧）。
             scene.advanceRotateAngles(dt);
@@ -228,8 +239,14 @@ final class HoloSpiralVkDelegate extends VkPassRendererDelegate {
         Matrix.rotateM(mModelView, 0, mXOffset * -scene.spiralRotateSpeed, 0.0f, 1.0f, 0.0f);
     }
 
-    private void uploadSpiral(VkPassFrame frame, VkPass pass, String buffer,
-            ByteBuffer vertices, int count, float rotationZ, float maxPointSize) {
+    private void uploadSpiral(
+            VkPassFrame frame,
+            VkPass pass,
+            String buffer,
+            ByteBuffer vertices,
+            int count,
+            float rotationZ,
+            float maxPointSize) {
         if (count <= 0) {
             frame.setVertexCount(pass, 0);
             return;
