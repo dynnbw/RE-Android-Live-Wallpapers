@@ -1,4 +1,5 @@
 {
   "plugin": "com.reandroid.wallpaper.silk.SilkPlugin",
+  "pluginVk": "com.reandroid.wallpaper.silk.SilkVKPlugin",
   "previewClass": "com.reandroid.wallpaper.silk.SilkGL"
 }
