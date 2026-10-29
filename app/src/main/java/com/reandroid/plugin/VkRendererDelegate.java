@@ -70,6 +70,14 @@ public interface VkRendererDelegate {
      */
     default void onVisibilityChanged(boolean visible) {}
 
+    /**
+     * 当前的预览状态：应用内预览与系统壁纸预览都是 true，桌面上的壁纸是 false。
+     *
+     * <p>宿主知道这件事（{@code WallpaperService.Engine.isPreview()} / {@code VKSurfaceView}），
+     * 让 delegate 去猜 Context 类型不可靠。
+     */
+    default void onPreviewChanged(boolean preview) {}
+
     /** 场景对象；设置页要按方法名反射把 prefs 推给它。 */
     Object getScene();
 

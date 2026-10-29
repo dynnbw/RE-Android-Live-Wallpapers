@@ -117,7 +117,11 @@ public abstract class BaseVKPluginEngine implements WallpaperEngine, Runnable {
     @Override
     public void setPreview(boolean isPreview) {
         mPreview = isPreview;
+        onRendererPreviewChanged(isPreview);
     }
+
+    /** 预览状态变化（主线程）。默认空实现；{@link VkRendererEngine} 转给 delegate。 */
+    protected void onRendererPreviewChanged(boolean preview) {}
 
     protected boolean isPreview() {
         return mPreview;

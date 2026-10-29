@@ -83,6 +83,11 @@ public class VkRendererEngine extends BaseVKPluginEngine {
     }
 
     @Override
+    protected void onRendererPreviewChanged(boolean preview) {
+        mDelegate.onPreviewChanged(preview);
+    }
+
+    @Override
     protected void onSceneOffset(float xOffset) {
         mDelegate.onSceneOffset(xOffset);
     }

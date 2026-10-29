@@ -26,31 +26,14 @@ public class ForestVKPlugin implements WallpaperPlugin {
 
     @Override
     public WallpaperEngine createEngine(Context ctx, WallpaperPluginHost host) {
-        final ForestVkDelegate delegate = new ForestVkDelegate(ctx);
-        /*
-         * 系统壁纸预览会走 setPreview(true)；GLES 版据此把滚动偏移固定为 0。
-         * VkRendererDelegate 没有这个钩子，所以在引擎这层转给 delegate。
-         */
-        return new VkRendererEngine(ctx, host, delegate) {
-            @Override
-            public void setPreview(boolean isPreview) {
-                delegate.setPreview(isPreview);
-                super.setPreview(isPreview);
-            }
-        };
+        // 预览状态与触摸转发都在 VkRendererEngine / VKSurfaceView 里统一做了。
+        return new VkRendererEngine(ctx, host, new ForestVkDelegate(ctx));
     }
 
     @Override
     public View createVulkanPreview(Context context, SharedPreferences prefs) {
         if (!VkPassNative.nIsSupported()) return null;
-        final ForestVkDelegate delegate = new ForestVkDelegate(context);
-        delegate.setPreview(true);
-        VKSurfaceView view = new VKSurfaceView(context, delegate);
-        view.setOnTouchListener((v, event) -> {
-            delegate.onTouchEvent(event);
-            return true;
-        });
-        return view;
+        return new VKSurfaceView(context, new ForestVkDelegate(context));
     }
 
     @Override

@@ -158,8 +158,9 @@ final class ForestVkDelegate extends VkPassRendererDelegate {
         }
     }
 
-    /** 通用 VK 引擎没有 delegate 侧的预览钩子，由插件在 setPreview 时转发。 */
-    void setPreview(boolean preview) {
+    /** 预览里滚动偏移固定为 0（与 GLES 版一致）。 */
+    @Override
+    public void onPreviewChanged(boolean preview) {
         mPreview = preview;
     }
 

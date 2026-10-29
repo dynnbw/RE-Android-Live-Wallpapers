@@ -60,6 +60,7 @@ public class VKSurfaceView extends SurfaceView
     }
 
     private void init() {
+        mDelegate.onPreviewChanged(true);
         getHolder().addCallback(this);
         setFocusable(true);
         setFocusableInTouchMode(true);
