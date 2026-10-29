@@ -13,6 +13,8 @@ public final class VkPass {
     public static final int TOPOLOGY_TRIANGLE_STRIP = 0;
     public static final int TOPOLOGY_TRIANGLE_LIST = 1;
     public static final int TOPOLOGY_POINT_LIST = 2;
+    /** GLES 的 {@code GL_LINES}：两个顶点一条线，线宽固定 1px。 */
+    public static final int TOPOLOGY_LINE_LIST = 3;
 
     public static final int BLEND_NONE = 0;
     public static final int BLEND_ALPHA = 1;
@@ -21,6 +23,7 @@ public final class VkPass {
 
     /** VkBlendFactor 数值；非常规组合用 {@link #blendFactors} 直接指定。 */
     public static final int FACTOR_ZERO = 0;
+
     public static final int FACTOR_ONE = 1;
     public static final int FACTOR_SRC_COLOR = 2;
     public static final int FACTOR_ONE_MINUS_SRC_COLOR = 3;
@@ -56,10 +59,16 @@ public final class VkPass {
     private int[] blendOverride;
     /** commit 之后由 {@link VkPassScene} 填上。 */
     int index = -1;
+
     final List<TextureBinding> textures = new ArrayList<>();
 
-    public VkPass(String vsAsset, String fsAsset, int[] attribSizes,
-                  int strideBytes, int topology, int blendMode) {
+    public VkPass(
+            String vsAsset,
+            String fsAsset,
+            int[] attribSizes,
+            int strideBytes,
+            int topology,
+            int blendMode) {
         this.vsAsset = vsAsset;
         this.fsAsset = fsAsset;
         this.attribSizes = attribSizes;
@@ -96,8 +105,6 @@ public final class VkPass {
     }
 
     int[] resolveBlendFactors() {
-        return blendOverride != null
-                ? blendOverride
-                : VkPassScene.blendFactors(blendMode);
+        return blendOverride != null ? blendOverride : VkPassScene.blendFactors(blendMode);
     }
 }

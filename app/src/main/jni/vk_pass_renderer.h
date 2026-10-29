@@ -25,7 +25,7 @@ struct VkPassDesc {
     std::vector<uint32_t> attribSizes; // location 0..n-1 的分量数（float）
     uint32_t strideBytes = 0;
     bool triangleStrip = true;
-    /** 0 = strip, 1 = list, 2 = point list（与 Java 的 topology 常量一致）。 */
+    /** 0 = strip, 1 = triangle list, 2 = point list, 3 = line list（与 Java 常量一致）。 */
     uint32_t primitive = 0;
     bool blendEnable = false;
     uint32_t srcColor = 0; // VkBlendFactor
