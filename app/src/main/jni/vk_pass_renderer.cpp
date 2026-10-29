@@ -280,6 +280,8 @@ bool VkPassRenderer::createPipelinesLocked() {
             assembly.topology = VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
         } else if (pass.primitive == 3) {
             assembly.topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
+        } else if (pass.primitive == 4) {
+            assembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN;
         } else if (pass.triangleStrip) {
             assembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
         } else {

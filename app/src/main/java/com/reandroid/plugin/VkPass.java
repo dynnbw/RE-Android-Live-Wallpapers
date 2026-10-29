@@ -16,6 +16,9 @@ public final class VkPass {
     /** GLES 的 {@code GL_LINES}：两个顶点一条线，线宽固定 1px。 */
     public static final int TOPOLOGY_LINE_LIST = 3;
 
+    /** GLES 的 {@code GL_TRIANGLE_FAN}：极地时钟的圆环用这个。 */
+    public static final int TOPOLOGY_TRIANGLE_FAN = 4;
+
     public static final int BLEND_NONE = 0;
     public static final int BLEND_ALPHA = 1;
     public static final int BLEND_ADDITIVE = 2;
