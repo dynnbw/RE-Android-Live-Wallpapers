@@ -119,11 +119,9 @@ final class PhaseBeamVkDelegate extends VkPassRendererDelegate {
         if (mScene != null) mScene.setOffset(xOffset);
     }
 
-    /**
-     * 桌面报告的滚动步长。{@link com.reandroid.plugin.VkRendererDelegate} 没有这个钩子，
-     * 由插件在引擎层转发过来；场景据此区分"停泊在首页"和"本来就不滚动"。
-     */
-    void setScrollStep(float xStep) {
+    /** 场景据此区分"停泊在首页"和"本来就不滚动"。 */
+    @Override
+    public void onScrollStep(float xStep) {
         mScrollStep = xStep;
         if (mScene != null) mScene.setScrollStep(xStep);
     }

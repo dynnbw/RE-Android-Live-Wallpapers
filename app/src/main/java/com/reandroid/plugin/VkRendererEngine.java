@@ -88,6 +88,13 @@ public class VkRendererEngine extends BaseVKPluginEngine {
     }
 
     @Override
+    public void onOffsetsChanged(float xo, float yo, float xs, float ys, int xp, int yp) {
+        // 先给页间距再给比例：delegate 要靠它区分"桌面不滚动"与"停在首页"。
+        mDelegate.onScrollStep(xs);
+        super.onOffsetsChanged(xo, yo, xs, ys, xp, yp);
+    }
+
+    @Override
     protected void onSceneOffset(float xOffset) {
         mDelegate.onSceneOffset(xOffset);
     }

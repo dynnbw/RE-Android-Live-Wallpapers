@@ -87,6 +87,12 @@ public interface VkRendererDelegate {
     /** 桌面滚动（预览路径不会调）。 */
     default void onSceneOffset(float xOffset) {}
 
+    /**
+     * 桌面页间距（{@code onOffsetsChanged} 的 xStep）：{@code <= 0} 表示桌面不随之滚动，
+     * 这是部分启动器（如小米桌面）才会有的情况。宿主在 {@link #onSceneOffset} 之前调用。
+     */
+    default void onScrollStep(float xStep) {}
+
     /** 触摸的原点（预览路径不会调）。默认由 {@link #onTouchEvent} 转过来。 */
     default void onSceneTouch(float x, float y) {}
 

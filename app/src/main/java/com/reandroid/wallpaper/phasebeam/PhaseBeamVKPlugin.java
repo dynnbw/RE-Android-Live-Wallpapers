@@ -20,19 +20,9 @@ public class PhaseBeamVKPlugin implements WallpaperPlugin {
 
     @Override
     public WallpaperEngine createEngine(Context ctx, WallpaperPluginHost host) {
-        final PhaseBeamVkDelegate delegate =
-                new PhaseBeamVkDelegate(ctx, host.getSharedPreferences());
-        /*
-         * 通用 VK 引擎只转发 xOffset，把 xOffsetStep 丢了；phasebeam 靠步长区分
-         * "桌面不滚动"（xOffset 恒为 0）与"停在首页"。在引擎层补这一路。
-         */
-        return new VkRendererEngine(ctx, host, delegate) {
-            @Override
-            public void onOffsetsChanged(float xo, float yo, float xs, float ys, int xp, int yp) {
-                delegate.setScrollStep(xs);
-                super.onOffsetsChanged(xo, yo, xs, ys, xp, yp);
-            }
-        };
+        // 页间距（xStep）现在由 VkRendererEngine 直接转给 delegate。
+        return new VkRendererEngine(
+                ctx, host, new PhaseBeamVkDelegate(ctx, host.getSharedPreferences()));
     }
 
     @Override
