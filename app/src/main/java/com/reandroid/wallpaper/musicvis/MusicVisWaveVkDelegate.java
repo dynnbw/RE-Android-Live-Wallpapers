@@ -217,8 +217,7 @@ public final class MusicVisWaveVkDelegate extends VkPassRendererDelegate {
         VkPassScene passScene = mPassScene;
         if (passScene == null) return;
         if (scene != null) {
-            passScene.setClearColor(
-                    scene.mBgColor[0], scene.mBgColor[1], scene.mBgColor[2], 1.0f);
+            passScene.setClearColor(scene.mBgColor[0], scene.mBgColor[1], scene.mBgColor[2], 1.0f);
         } else {
             passScene.setClearColor(0f, 0f, 0f, 1f);
         }
@@ -284,12 +283,10 @@ public final class MusicVisWaveVkDelegate extends VkPassRendererDelegate {
                 VkPass.TOPOLOGY_LINE_LIST,
                 GREY_TEXTURE);
 
-        mPlainVertices =
-                ByteBuffer.allocateDirect(VERTEX_COUNT * PLAIN_STRIDE_BYTES)
-                        .order(ByteOrder.nativeOrder());
-        mColorVertices =
-                ByteBuffer.allocateDirect(VERTEX_COUNT * COLOR_STRIDE_BYTES)
-                        .order(ByteOrder.nativeOrder());
+        mPlainVertices = ByteBuffer.allocateDirect(VERTEX_COUNT * PLAIN_STRIDE_BYTES)
+                .order(ByteOrder.nativeOrder());
+        mColorVertices = ByteBuffer.allocateDirect(VERTEX_COUNT * COLOR_STRIDE_BYTES)
+                .order(ByteOrder.nativeOrder());
 
         mRendererBuilt = true;
         // 渲染器可用后才开始采集；prefs 已在 ensureScene 里注入。
@@ -306,17 +303,10 @@ public final class MusicVisWaveVkDelegate extends VkPassRendererDelegate {
             int topology,
             String textureName) {
         // GLES 版没有开混合（默认的 ONE / ZERO 等价于直接覆盖），这里用 BLEND_NONE。
-        VkPass pass =
-                scene.add(
-                                new VkPass(
-                                        vs,
-                                        fs,
-                                        attribSizes,
-                                        strideBytes,
-                                        topology,
-                                        VkPass.BLEND_NONE))
-                        .buffer(bufferName, 0)
-                        .pushConstants(PUSH_BYTES);
+        VkPass pass = scene.add(
+                        new VkPass(vs, fs, attribSizes, strideBytes, topology, VkPass.BLEND_NONE))
+                .buffer(bufferName, 0)
+                .pushConstants(PUSH_BYTES);
         pass.texture(0, textureName);
         return pass;
     }
@@ -366,8 +356,7 @@ public final class MusicVisWaveVkDelegate extends VkPassRendererDelegate {
                 strideBytes = PLAIN_STRIDE_BYTES;
             }
             buffer.position(0);
-            frame.upload(recolor ? COLOR_BUFFER : PLAIN_BUFFER, buffer,
-                    VERTEX_COUNT * strideBytes);
+            frame.upload(recolor ? COLOR_BUFFER : PLAIN_BUFFER, buffer, VERTEX_COUNT * strideBytes);
             frame.setVertexCount(active, VERTEX_COUNT);
             frame.pushConstants(active, mPush);
         }
