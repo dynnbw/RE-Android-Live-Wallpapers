@@ -1,5 +1,6 @@
 {
   "plugin": "com.reandroid.wallpaper.musicvis.vis2.Vis2Plugin",
   "previewClass": "com.reandroid.wallpaper.musicvis.vis2.WaveScenePCM",
+  "pluginVk": "com.reandroid.wallpaper.musicvis.vis2.Vis2VKPlugin",
   "permissions": ["RECORD_AUDIO"]
 }
