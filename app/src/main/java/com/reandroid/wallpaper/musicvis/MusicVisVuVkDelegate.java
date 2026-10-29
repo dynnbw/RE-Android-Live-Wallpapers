@@ -270,7 +270,8 @@ public final class MusicVisVuVkDelegate extends VkPassRendererDelegate {
                                 QUAD_STRIDE_BYTES,
                                 VkPass.TOPOLOGY_TRIANGLE_STRIP,
                                 VkPass.BLEND_ALPHA))
-                .buffer(bufferName, 0)
+                // 每帧只改峰值那两条的顶点数；其余四条一直是 4 个顶点。
+                .buffer(bufferName, QUAD_VERTICES)
                 .pushConstants(PUSH_BYTES)
                 .texture(0, textureName);
         // GLES 的 glBlendFunc(SRC_ALPHA, ONE_MINUS_SRC_ALPHA) 对 alpha 通道同样生效；
