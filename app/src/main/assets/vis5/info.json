@@ -1,5 +1,6 @@
 {
   "plugin": "com.reandroid.wallpaper.musicvis.vis5.Vis5Plugin",
   "previewClass": "com.reandroid.wallpaper.musicvis.MusicVisManyGL",
+  "pluginVk": "com.reandroid.wallpaper.musicvis.vis5.Vis5VKPlugin",
   "permissions": ["RECORD_AUDIO"]
 }
