@@ -44,14 +44,14 @@ Method 3: Long-press home screen → Wallpapers → find "REAndroid Live Wallpap
 
 ## Wallpaper List
 
-**34** wallpapers total (2 more are hidden and do not appear in the app's list), with **28** offering an additional Vulkan backend (see the VK column below)
+**34** wallpapers total (2 more are hidden and do not appear in the app's list), with **30** offering an additional Vulkan backend (see the VK column below)
 
 | Wallpaper | Type | VK | Description |
 | --- | --- | --- | --- |
 | Galaxy | Starfield | ✓ | Rotating star field, color gradients |
 | Galaxy4 | Starfield | ✓ | Rotating star field, color gradients |
 | NightSky | Starfield | | 9,000 real stars from the Hipparcos catalog, gyroscope tracking, long-press to accelerate star trails |
-| Microbes | Particles | | Microbial swarm AI, touch to feed, reproduction/death cycle |
+| Microbes | Particles | ✓ | Microbial swarm AI, touch to feed, reproduction/death cycle |
 | Grass | Nature | ✓ | Wind-blown grass, solar/lunar eclipses, weather integration |
 | WildWorld | Nature | ✓ | Prehistoric world with volcanoes, dinosaurs, pterosaurs, fireballs |
 | WalkAround | Nature | | Camera perspective — what you see is what you get |
@@ -69,7 +69,7 @@ Method 3: Long-press home screen → Wallpapers → find "REAndroid Live Wallpap
 | MagicSmoke | Effects | ✓ | Multi-layer smoke blending, psychedelic effect |
 | Aurora1 | Aurora | ✓ | Northern lights, 99-frame glow animation |
 | Aurora2 | Aurora | ✓ | Northern lights v2, more brilliant colors |
-| Fireworks | Effects | | Firework particles, tap to launch |
+| Fireworks | Effects | ✓ | Firework particles, tap to launch |
 | LuminousDots | Effects | ✓ | Luminous particle field |
 | CosmicFlow | Effects | ✓ | Grey ripple background with a GPU noise flow field, 8 colour themes |
 | Silk | Effects | ✓ | Flowing silk ribbons, 3 colour themes |
@@ -90,7 +90,7 @@ Compared to the original AOSP/MediaTek wallpapers:
 - **Independent Settings**: Each wallpaper has its own settings page — adjust particle count, color, animation speed, etc.
 - **Weather Integration**: Grass, Ocean, and Windmill change visuals based on real weather (requires API key).
 - **Music Visualization**: 5 audio spectrum styles — wallpapers react to music in real time.
-- **Vulkan Backend**: 28 wallpapers support optional Vulkan rendering (see the VK column in the wallpaper list).
+- **Vulkan Backend**: 30 wallpapers support optional Vulkan rendering (see the VK column in the wallpaper list).
 
 <a id="weather-setup"></a>
 ## Weather Setup
@@ -194,7 +194,7 @@ MIUI/HyperOS users need to grant "Live Wallpaper Service" permission in system s
 Check: ① Is the right source selected? (Open-Meteo and the China Meteorological Administration source both need no key — the former worldwide, the latter in the mainland) ② If you picked OpenWeather, is the key filled in? (weather icon → "Weather Source" → OpenWeather → "Configure API") ③ Is location permission granted? ④ Is the network working? — **OpenWeather is often unreachable from mainland networks**, which is why the other two sources are built in ⑤ Has the free quota run out? (1,000 calls/day) Long-press the weather icon to see the last refresh time.
 
 **Q: Why can't I see the Vulkan toggle?**
-28 wallpapers have Vulkan backends (see the VK column in the wallpaper list above). If your device doesn't support Vulkan, the toggle will be visible but switching may have no effect or cause crashes.
+30 wallpapers have Vulkan backends (see the VK column in the wallpaper list above). If your device doesn't support Vulkan, the toggle will be visible but switching may have no effect or cause crashes.
 
 **Q: Music visualization isn't responding?**
 Confirm: ① Record Audio permission is granted ② Audio is currently playing (media volume is not zero)
