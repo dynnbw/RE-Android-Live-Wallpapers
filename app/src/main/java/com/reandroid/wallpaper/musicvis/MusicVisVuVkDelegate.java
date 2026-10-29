@@ -262,14 +262,13 @@ public final class MusicVisVuVkDelegate extends VkPassRendererDelegate {
     }
 
     private VkPass addQuadPass(VkPassScene scene, String bufferName, String textureName) {
-        VkPass pass = scene.add(
-                        new VkPass(
-                                SHADER_QUAD_VS,
-                                SHADER_QUAD_FS,
-                                new int[] {3, 2},
-                                QUAD_STRIDE_BYTES,
-                                VkPass.TOPOLOGY_TRIANGLE_STRIP,
-                                VkPass.BLEND_ALPHA))
+        VkPass pass = scene.add(new VkPass(
+                        SHADER_QUAD_VS,
+                        SHADER_QUAD_FS,
+                        new int[] {3, 2},
+                        QUAD_STRIDE_BYTES,
+                        VkPass.TOPOLOGY_TRIANGLE_STRIP,
+                        VkPass.BLEND_ALPHA))
                 // 每帧只改峰值那两条的顶点数；其余四条一直是 4 个顶点。
                 .buffer(bufferName, QUAD_VERTICES)
                 .pushConstants(PUSH_BYTES)
