@@ -88,6 +88,16 @@ public interface VkRendererDelegate {
     default void onSceneOffset(float xOffset) {}
 
     /**
+     * 桌面滚动的像素偏移，与 {@code WallpaperService.Engine.onOffsetsChanged} 的 xPixels 一致。
+     *
+     * <p>比例换像素并不等于"比例 × 屏宽"（壁纸的虚拟宽度、启动器是否滚动都会影响），
+     * 需要像素的场景重写这个；默认退回只有比例的版本。
+     */
+    default void onSceneOffset(float xOffset, int xPixels) {
+        onSceneOffset(xOffset);
+    }
+
+    /**
      * 桌面页间距（{@code onOffsetsChanged} 的 xStep）：{@code <= 0} 表示桌面不随之滚动，
      * 这是部分启动器（如小米桌面）才会有的情况。宿主在 {@link #onSceneOffset} 之前调用。
      */
