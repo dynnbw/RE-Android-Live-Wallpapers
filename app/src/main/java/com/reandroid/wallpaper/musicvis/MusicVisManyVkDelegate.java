@@ -130,6 +130,7 @@ public final class MusicVisManyVkDelegate extends VkPassRendererDelegate {
 
     /** 每个波形位置的八种组合。 */
     private static final int WAVE_FIRE_STRIP = 0;
+
     private static final int WAVE_FIRE_LINE = 1;
     private static final int WAVE_ICE_STRIP = 2;
     private static final int WAVE_ICE_LINE = 3;
@@ -141,6 +142,7 @@ public final class MusicVisManyVkDelegate extends VkPassRendererDelegate {
 
     /** 每个 VU 面板的绘制顺序，与 drawVU 一致。 */
     private static final int VU_BACKGROUND = 0;
+
     private static final int VU_PEAK_ON = 1;
     private static final int VU_PEAK_OFF = 2;
     private static final int VU_NEEDLE = 3;
@@ -210,13 +212,10 @@ public final class MusicVisManyVkDelegate extends VkPassRendererDelegate {
         // vis5 要按 vis2 / vis3 自己的设置模拟它们的观感。设置只按插件隔离保存，
         // 这里按与宿主相同的命名约定取回那两份；预览路径同样适用。
         // 用 application context，避免把设置页的 Activity 留在 delegate 里。
-        Context appContext = context.getApplicationContext() != null
-                ? context.getApplicationContext()
-                : context;
-        mPrefsProvider =
-                pluginId ->
-                        appContext.getSharedPreferences(
-                                "plugin_" + pluginId, Context.MODE_PRIVATE);
+        Context appContext =
+                context.getApplicationContext() != null ? context.getApplicationContext() : context;
+        mPrefsProvider = pluginId ->
+                appContext.getSharedPreferences("plugin_" + pluginId, Context.MODE_PRIVATE);
     }
 
     @Override
@@ -398,11 +397,7 @@ public final class MusicVisManyVkDelegate extends VkPassRendererDelegate {
     }
 
     private VkPass addWavePass(
-            VkPassScene scene,
-            String bufferName,
-            boolean color,
-            int topology,
-            String textureName) {
+            VkPassScene scene, String bufferName, boolean color, int topology, String textureName) {
         int stride = color ? COLOR_STRIDE_BYTES : PLAIN_STRIDE_BYTES;
         int[] attribSizes = color ? new int[] {2, 2, 3} : new int[] {2, 2};
         String vs = color ? SHADER_COLOR_VS : SHADER_LINE_VS;
@@ -433,14 +428,13 @@ public final class MusicVisManyVkDelegate extends VkPassRendererDelegate {
     }
 
     private VkPass addQuadPass(VkPassScene scene, String bufferName, String textureName) {
-        VkPass pass = scene.add(
-                        new VkPass(
-                                SHADER_QUAD_VS,
-                                SHADER_QUAD_FS,
-                                new int[] {3, 2},
-                                QUAD_STRIDE_BYTES,
-                                VkPass.TOPOLOGY_TRIANGLE_STRIP,
-                                VkPass.BLEND_ALPHA))
+        VkPass pass = scene.add(new VkPass(
+                        SHADER_QUAD_VS,
+                        SHADER_QUAD_FS,
+                        new int[] {3, 2},
+                        QUAD_STRIDE_BYTES,
+                        VkPass.TOPOLOGY_TRIANGLE_STRIP,
+                        VkPass.BLEND_ALPHA))
                 .buffer(bufferName, 0)
                 .pushConstants(PUSH_BYTES)
                 .texture(0, textureName);
@@ -579,8 +573,7 @@ public final class MusicVisManyVkDelegate extends VkPassRendererDelegate {
         pushMvp(frame, passes[VU_FRAME], mMvp);
     }
 
-    private void drawWave(
-            VkPassFrame frame, ManyScene s, int slot, int waveIdx, float[] layer) {
+    private void drawWave(VkPassFrame frame, ManyScene s, int slot, int waveIdx, float[] layer) {
         VkPass[] passes = mWavePasses[slot];
         for (VkPass pass : passes) frame.setVertexCount(pass, 0);
 
@@ -590,8 +583,7 @@ public final class MusicVisManyVkDelegate extends VkPassRendererDelegate {
         boolean strip = s.mUseTriangleStrip;
         int variant;
         if (recolor) {
-            variant =
-                    (useFft ? WAVE_COLOR_FFT_STRIP : WAVE_COLOR_PCM_STRIP) + (strip ? 0 : 1);
+            variant = (useFft ? WAVE_COLOR_FFT_STRIP : WAVE_COLOR_PCM_STRIP) + (strip ? 0 : 1);
         } else {
             variant = (useFft ? WAVE_ICE_STRIP : WAVE_FIRE_STRIP) + (strip ? 0 : 1);
         }
