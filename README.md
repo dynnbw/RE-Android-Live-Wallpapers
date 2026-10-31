@@ -8,7 +8,7 @@
   <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/dynnbw/RE-Android-Live-Wallpapers?style=flat-square&color=green"/>
   <img alt="License" src="https://img.shields.io/badge/License-Apache_2.0-green"/>
   <img alt="Android" src="https://img.shields.io/badge/安卓-7.0%2B-3DDC84?style=flat-square&logo=android&logoColor=white&color=green"/>
-  <img alt="Wallpapers" src="https://img.shields.io/badge/壁纸总数-35-3DDC84?style=flat-square&color=green"/>
+  <img alt="Wallpapers" src="https://img.shields.io/badge/壁纸总数-37-3DDC84?style=flat-square&color=green"/>
  <img alt="Wallpapers" src="https://img.shields.io/github/downloads/dynnbw/RE-Android-Live-Wallpapers/total?logo=github&logoColor=white&label=资源下载数&color=green"/>
 
 <font color=#98FB98>Android 动态壁纸合集，将 AOSP / MediaTek 经典壁纸从 RenderScript 移植到 OpenGL ES 3.0 和 Vulkan，在新时代 Android 上继续运行。</font>
@@ -42,7 +42,7 @@
 
 ## 壁纸清单
 
-共 **34 个**壁纸（另有 2 个隐藏壁纸不在应用列表中，此处不列），其中 **32 个**额外提供 Vulkan 后端（见下表 VK 列）
+共 **35 个**壁纸（另有 2 个隐藏壁纸不在应用列表中，此处不列），其中 **32 个**额外提供 Vulkan 后端（见下表 VK 列）
 
 | 壁纸 | 类型 | VK | 说明 |
 | --- | --- | --- | --- |
@@ -69,6 +69,7 @@
 | Aurora2 | 极光 | ✓ | 北极光第二版，色彩更加绚烂 |
 | Fireworks | 特效 | ✓ | 烟花粒子，触摸发射烟花 |
 | LuminousDots | 特效 | ✓ | 发光粒子点阵 |
+| 散景彩虹 | 特效 | | 彩虹散景光斑，点击生成，随屏滚动 |
 | CosmicFlow | 特效 | ✓ | 灰底波纹 + GPU 噪声流场，8 种主题配色 |
 | Silk | 特效 | ✓ | 流动的丝带，3 种主题配色 |
 | Droid | 特效 | ✓ | 拆成部件的安卓机器人，受重力/加速度/触摸驱动（应用内名为「坠落的安卓机器人」） |
