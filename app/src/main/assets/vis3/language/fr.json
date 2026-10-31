@@ -32,5 +32,7 @@
   "musicvis_saturation": "Saturation",
   "musicvis_hue": "Teinte",
   "musicvis_follow_volume": "Suivre le volume du système",
-  "musicvis_follow_volume_summary": "Le volume multimédia détermine la taille de la visualisation"
+  "musicvis_follow_volume_summary": "Le volume multimédia détermine la taille de la visualisation",
+  "vis3_retro": "Halo froid",
+  "vis3_retro_summary": "Diffuse les hautes lumières de la glace en un halo froid ; la couleur reste inchangée"
 }

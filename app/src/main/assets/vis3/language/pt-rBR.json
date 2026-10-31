@@ -32,5 +32,7 @@
   "musicvis_saturation": "Saturação",
   "musicvis_hue": "Matiz",
   "musicvis_follow_volume": "Seguir o volume do sistema",
-  "musicvis_follow_volume_summary": "O volume de mídia define o tamanho da visualização"
+  "musicvis_follow_volume_summary": "O volume de mídia define o tamanho da visualização",
+  "vis3_retro": "Brilho frio",
+  "vis3_retro_summary": "Espalha os realces do gelo em um brilho frio; a cor não muda"
 }

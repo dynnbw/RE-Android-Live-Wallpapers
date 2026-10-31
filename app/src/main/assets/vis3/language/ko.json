@@ -32,5 +32,7 @@
   "musicvis_saturation": "채도",
   "musicvis_hue": "색조",
   "musicvis_follow_volume": "시스템 볼륨 따르기",
-  "musicvis_follow_volume_summary": "미디어 볼륨에 따라 화면의 진폭이 달라집니다"
+  "musicvis_follow_volume_summary": "미디어 볼륨에 따라 화면의 진폭이 달라집니다",
+  "vis3_retro": "차가운 빛 번짐",
+  "vis3_retro_summary": "얼음 하이라이트를 차가운 빛으로 번지게 합니다. 색은 바뀌지 않습니다"
 }

@@ -32,5 +32,7 @@
   "musicvis_saturation": "彩度",
   "musicvis_hue": "色相",
   "musicvis_follow_volume": "システム音量に追従",
-  "musicvis_follow_volume_summary": "メディア音量に応じて画面の振幅が変わります"
+  "musicvis_follow_volume_summary": "メディア音量に応じて画面の振幅が変わります",
+  "vis3_retro": "コールドブルーム",
+  "vis3_retro_summary": "氷のハイライトを冷たい光としてにじませます。色は変わりません"
 }

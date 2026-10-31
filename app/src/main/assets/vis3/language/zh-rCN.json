@@ -32,5 +32,7 @@
   "musicvis_saturation": "饱和度",
   "musicvis_hue": "色相",
   "musicvis_follow_volume": "跟随系统音量",
-  "musicvis_follow_volume_summary": "媒体音量将改变画面的幅度大小"
+  "musicvis_follow_volume_summary": "媒体音量将改变画面的幅度大小",
+  "vis3_retro": "冷光外溢",
+  "vis3_retro_summary": "让冰晶高光向外洇开成冷光；不影响调色"
 }

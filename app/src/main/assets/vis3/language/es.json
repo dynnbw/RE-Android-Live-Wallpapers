@@ -32,5 +32,7 @@
   "musicvis_saturation": "Saturación",
   "musicvis_hue": "Matiz",
   "musicvis_follow_volume": "Seguir el volumen del sistema",
-  "musicvis_follow_volume_summary": "El volumen multimedia determina el tamaño de la visualización"
+  "musicvis_follow_volume_summary": "El volumen multimedia determina el tamaño de la visualización",
+  "vis3_retro": "Brillo frío",
+  "vis3_retro_summary": "Difumina los brillos del hielo en un resplandor frío; el color no cambia"
 }

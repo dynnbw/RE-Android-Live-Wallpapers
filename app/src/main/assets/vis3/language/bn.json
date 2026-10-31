@@ -32,5 +32,7 @@
   "musicvis_saturation": "সম্পৃক্তি",
   "musicvis_hue": "রঙের ছটা",
   "musicvis_follow_volume": "সিস্টেমের ভলিউম অনুসরণ করুন",
-  "musicvis_follow_volume_summary": "মিডিয়া ভলিউম অনুযায়ী ভিজ্যুয়ালাইজেশনের আকার বদলাবে"
+  "musicvis_follow_volume_summary": "মিডিয়া ভলিউম অনুযায়ী ভিজ্যুয়ালাইজেশনের আকার বদলাবে",
+  "vis3_retro": "ঠান্ডা আভা",
+  "vis3_retro_summary": "বরফের উজ্জ্বলতা ঠান্ডা আভায় ছড়িয়ে দেয়; রঙ বদলায় না"
 }

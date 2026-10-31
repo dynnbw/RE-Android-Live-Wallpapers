@@ -61,3 +61,5 @@ git-identity.config.example.ps1
 use-work-git.bat
 use-personal-git.bat
 show-git-identity.bat
+# Brainstorming 临时文件（本地工具产物）
+.superpowers/

@@ -98,6 +98,13 @@
             "musicvis_recolor_mode_label_dynamic"
           ],
           "dependency": "musicvis_recolor"
+        },
+        {
+          "type": "switch",
+          "key": "vis3_retro",
+          "title": "vis3_retro",
+          "summary": "vis3_retro_summary",
+          "default": "false"
         }
       ]
     },

@@ -32,5 +32,7 @@
   "musicvis_saturation": "Sättigung",
   "musicvis_hue": "Farbton",
   "musicvis_follow_volume": "Systemlautstärke folgen",
-  "musicvis_follow_volume_summary": "Die Medienlautstärke bestimmt, wie groß die Visualisierung aussieht"
+  "musicvis_follow_volume_summary": "Die Medienlautstärke bestimmt, wie groß die Visualisierung aussieht",
+  "vis3_retro": "Kaltes Leuchten",
+  "vis3_retro_summary": "Lässt die Eis-Highlights kalt aufglühen; die Färbung bleibt unverändert"
 }

@@ -32,5 +32,7 @@
   "musicvis_saturation": "Насыщенность",
   "musicvis_hue": "Оттенок",
   "musicvis_follow_volume": "Следовать системной громкости",
-  "musicvis_follow_volume_summary": "Громкость медиа определяет размер визуализации"
+  "musicvis_follow_volume_summary": "Громкость медиа определяет размер визуализации",
+  "vis3_retro": "Холодное свечение",
+  "vis3_retro_summary": "Расплывает блики льда в холодное свечение; цвет не меняется"
 }

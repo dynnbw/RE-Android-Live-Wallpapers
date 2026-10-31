@@ -32,5 +32,7 @@
   "musicvis_saturation": "Saturation",
   "musicvis_hue": "Hue",
   "musicvis_follow_volume": "Follow system volume",
-  "musicvis_follow_volume_summary": "Let the media volume change how large the visualization looks"
+  "musicvis_follow_volume_summary": "Let the media volume change how large the visualization looks",
+  "vis3_retro": "Cold bloom",
+  "vis3_retro_summary": "Spreads the ice highlights into a soft cold glow; colouring is unaffected"
 }

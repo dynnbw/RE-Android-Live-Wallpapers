@@ -6,6 +6,7 @@ import android.opengl.GLES30;
 import android.util.Log;
 
 import com.reandroid.gles.GLESScene;
+import com.reandroid.gles.GlowRenderer;
 import com.reandroid.utils.AssetLoader;
 import com.reandroid.utils.GLTextureUtils;
 
@@ -45,12 +46,27 @@ public class MusicVisWaveGL extends GLESScene {
     private FloatBuffer mAdjustBuffer;
     private final String mLineTextureAssetPath;
 
+    private final int mRetroStyle;
+    private GlowRenderer mGlow;
+    private boolean mRetro;
+
     public MusicVisWaveGL(
             int width, int height, Context context, WaveScene.Mode mode, String textureAssetPath) {
+        this(width, height, context, mode, textureAssetPath, RetroProfile.STYLE_NONE);
+    }
+
+    public MusicVisWaveGL(
+            int width,
+            int height,
+            Context context,
+            WaveScene.Mode mode,
+            String textureAssetPath,
+            int retroStyle) {
         super(width, height);
         mContext = context;
         mScene = new WaveScene(width, height, mode, context);
         mLineTextureAssetPath = textureAssetPath;
+        mRetroStyle = retroStyle;
     }
 
     /** Preview-friendly constructor: uses PCM mode. */
@@ -59,6 +75,8 @@ public class MusicVisWaveGL extends GLESScene {
     }
 
     public void setPluginPrefs(SharedPreferences p) {
+        final RetroProfile profile = RetroProfile.of(mRetroStyle);
+        mRetro = p != null && !profile.isNone() && p.getBoolean(profile.settingsKey, false);
         mScene.setPluginPrefs(p);
     }
 
@@ -83,8 +101,25 @@ public class MusicVisWaveGL extends GLESScene {
     @Override
     public void drawFrame(long timeMs) {
         initGLIfNeeded();
-        if (mProgram == 0) return;
+        if (mProgram == 0) {
+            return;
+        }
 
+        final RetroProfile profile =
+                mRetro ? RetroProfile.of(mRetroStyle) : RetroProfile.of(RetroProfile.STYLE_NONE);
+        final boolean post = !profile.isNone() && mGlow != null && mGlow.isReady();
+        if (post) {
+            mGlow.beginScene();
+        }
+
+        drawScene(timeMs);
+
+        if (post) {
+            mGlow.endScene(profile.threshold, profile.softKnee, profile.radius, profile.strength);
+        }
+    }
+
+    private void drawScene(long timeMs) {
         WaveScene s = mScene;
 
         if (s.mFftSizeChanged && s.mMode == WaveScene.Mode.FFT) {
@@ -146,6 +181,23 @@ public class MusicVisWaveGL extends GLESScene {
         }
     }
 
+    @Override
+    public void resize(int width, int height) {
+        super.resize(width, height);
+        if (mGlow != null) {
+            mGlow.resize(width, height);
+        }
+    }
+
+    @Override
+    public void release() {
+        if (mGlow != null) {
+            mGlow.release();
+            mGlow = null;
+        }
+        super.release();
+    }
+
     private void initGLIfNeeded() {
         if (mProgram != 0 || mResources == null) return;
 
@@ -191,6 +243,19 @@ public class MusicVisWaveGL extends GLESScene {
         mAdjustBuffer = ByteBuffer.allocateDirect(adjSize)
                 .order(ByteOrder.nativeOrder())
                 .asFloatBuffer();
+
+        final RetroProfile profile = RetroProfile.of(mRetroStyle);
+        if (!profile.isNone()) {
+            mGlow = new GlowRenderer();
+            mGlow.init(
+                    mWidth,
+                    mHeight,
+                    RetroProfile.SHADER_QUAD,
+                    RetroProfile.SHADER_BRIGHT,
+                    RetroProfile.SHADER_BLUR,
+                    profile.compositeShader,
+                    path -> AssetLoader.readText(mContext, path));
+        }
     }
 
     private void uploadBuffers(WaveScene s) {
