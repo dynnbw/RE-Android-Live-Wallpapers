@@ -1,4 +1,5 @@
 {
   "plugin": "com.reandroid.wallpaper.deepsea.DeepSeaPlugin",
+  "pluginVk": "com.reandroid.wallpaper.deepsea.DeepSeaVKPlugin",
   "previewClass": "com.reandroid.wallpaper.deepsea.DeepSeaGL"
 }
