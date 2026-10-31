@@ -24,8 +24,7 @@ final class BokehCircle {
     int alpha;
     int step;
 
-    BokehCircle(float x, float y, float radius, int color, int steps,
-            float deltaX, float deltaY) {
+    BokehCircle(float x, float y, float radius, int color, int steps, float deltaX, float deltaY) {
         this.x = x;
         this.originX = x;
         this.y = y;

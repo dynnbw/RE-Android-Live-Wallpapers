@@ -106,8 +106,8 @@ public final class BokehScene {
         if (mWidth <= 0 || mHeight <= 0) {
             return;
         }
-        createCircle((float) (mWidth * mRandom.nextDouble()),
-                (float) (mHeight * mRandom.nextDouble()));
+        createCircle(
+                (float) (mWidth * mRandom.nextDouble()), (float) (mHeight * mRandom.nextDouble()));
     }
 
     private void createCircle(float x, float y) {
@@ -141,12 +141,36 @@ public final class BokehScene {
         int g;
         int b;
         switch (sector) {
-            case 0: r = 255; g = up; b = 0; break;
-            case 1: r = down; g = 255; b = 0; break;
-            case 2: r = 0; g = 255; b = up; break;
-            case 3: r = 0; g = down; b = 255; break;
-            case 4: r = up; g = 0; b = 255; break;
-            default: r = 255; g = 0; b = down; break;
+            case 0:
+                r = 255;
+                g = up;
+                b = 0;
+                break;
+            case 1:
+                r = down;
+                g = 255;
+                b = 0;
+                break;
+            case 2:
+                r = 0;
+                g = 255;
+                b = up;
+                break;
+            case 3:
+                r = 0;
+                g = down;
+                b = 255;
+                break;
+            case 4:
+                r = up;
+                g = 0;
+                b = 255;
+                break;
+            default:
+                r = 255;
+                g = 0;
+                b = down;
+                break;
         }
         return (r << 16) | (g << 8) | b;
     }

@@ -24,6 +24,7 @@ public class BokehGL extends GLESScene {
     private static final int MAX_CIRCLES = 360;
     /** corner(2) + center(2) + radius(1) + fill(4) + ring(3)。 */
     private static final int FLOATS_PER_VERTEX = 12;
+
     private static final int VERTICES_PER_CIRCLE = 6;
     private static final int STRIDE_BYTES = FLOATS_PER_VERTEX * 4;
 
@@ -49,11 +50,10 @@ public class BokehGL extends GLESScene {
     public BokehGL(int width, int height, Context context) {
         super(width, height);
         mContext = context;
-        mVertexBuffer =
-                ByteBuffer.allocateDirect(
-                                MAX_CIRCLES * VERTICES_PER_CIRCLE * FLOATS_PER_VERTEX * 4)
-                        .order(ByteOrder.nativeOrder())
-                        .asFloatBuffer();
+        mVertexBuffer = ByteBuffer.allocateDirect(
+                        MAX_CIRCLES * VERTICES_PER_CIRCLE * FLOATS_PER_VERTEX * 4)
+                .order(ByteOrder.nativeOrder())
+                .asFloatBuffer();
     }
 
     @Override
@@ -105,19 +105,24 @@ public class BokehGL extends GLESScene {
 
         mVertexBuffer.position(0);
         GLES30.glEnableVertexAttribArray(mCornerLoc);
-        GLES30.glVertexAttribPointer(mCornerLoc, 2, GLES30.GL_FLOAT, false, STRIDE_BYTES, mVertexBuffer);
+        GLES30.glVertexAttribPointer(
+                mCornerLoc, 2, GLES30.GL_FLOAT, false, STRIDE_BYTES, mVertexBuffer);
         mVertexBuffer.position(2);
         GLES30.glEnableVertexAttribArray(mCenterLoc);
-        GLES30.glVertexAttribPointer(mCenterLoc, 2, GLES30.GL_FLOAT, false, STRIDE_BYTES, mVertexBuffer);
+        GLES30.glVertexAttribPointer(
+                mCenterLoc, 2, GLES30.GL_FLOAT, false, STRIDE_BYTES, mVertexBuffer);
         mVertexBuffer.position(4);
         GLES30.glEnableVertexAttribArray(mRadiusLoc);
-        GLES30.glVertexAttribPointer(mRadiusLoc, 1, GLES30.GL_FLOAT, false, STRIDE_BYTES, mVertexBuffer);
+        GLES30.glVertexAttribPointer(
+                mRadiusLoc, 1, GLES30.GL_FLOAT, false, STRIDE_BYTES, mVertexBuffer);
         mVertexBuffer.position(5);
         GLES30.glEnableVertexAttribArray(mFillLoc);
-        GLES30.glVertexAttribPointer(mFillLoc, 4, GLES30.GL_FLOAT, false, STRIDE_BYTES, mVertexBuffer);
+        GLES30.glVertexAttribPointer(
+                mFillLoc, 4, GLES30.GL_FLOAT, false, STRIDE_BYTES, mVertexBuffer);
         mVertexBuffer.position(9);
         GLES30.glEnableVertexAttribArray(mRingLoc);
-        GLES30.glVertexAttribPointer(mRingLoc, 3, GLES30.GL_FLOAT, false, STRIDE_BYTES, mVertexBuffer);
+        GLES30.glVertexAttribPointer(
+                mRingLoc, 3, GLES30.GL_FLOAT, false, STRIDE_BYTES, mVertexBuffer);
 
         GLES30.glDrawArrays(GLES30.GL_TRIANGLES, 0, mVertexCount);
 
@@ -175,14 +180,32 @@ public class BokehGL extends GLESScene {
         mVertexBuffer.position(0);
     }
 
-    private void putVertex(float cornerX, float cornerY, float cx, float cy, float radius,
-            float fillR, float fillG, float fillB, float alpha,
-            float ringR, float ringG, float ringB) {
-        mVertexBuffer.put(cornerX).put(cornerY)
-                .put(cx).put(cy)
+    private void putVertex(
+            float cornerX,
+            float cornerY,
+            float cx,
+            float cy,
+            float radius,
+            float fillR,
+            float fillG,
+            float fillB,
+            float alpha,
+            float ringR,
+            float ringG,
+            float ringB) {
+        mVertexBuffer
+                .put(cornerX)
+                .put(cornerY)
+                .put(cx)
+                .put(cy)
                 .put(radius)
-                .put(fillR).put(fillG).put(fillB).put(alpha)
-                .put(ringR).put(ringG).put(ringB);
+                .put(fillR)
+                .put(fillG)
+                .put(fillB)
+                .put(alpha)
+                .put(ringR)
+                .put(ringG)
+                .put(ringB);
     }
 
     private void initGLIfNeeded() {

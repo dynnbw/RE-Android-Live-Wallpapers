@@ -1,10 +1,10 @@
 package com.reandroid.wallpaper.bokeh;
 
-import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+
+import org.junit.Test;
 
 /** 光斑生命周期与彩虹取色。两者都是纯 Java，能直接跑。 */
 public class BokehCircleTest {
