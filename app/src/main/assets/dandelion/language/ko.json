@@ -1,0 +1,10 @@
+{
+  "title": "민들레",
+  "dandelion_group": "민들레",
+  "dandelion_wind": "바람",
+  "dandelion_spores": "씨앗 밀도",
+  "dandelion_battery": "배터리에 따라 시들기",
+  "dandelion_battery_label_1": "켬",
+  "dandelion_battery_label_0": "끔",
+  "dandelion_count": "민들레 개수"
+}

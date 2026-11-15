@@ -1,0 +1,71 @@
+{
+  "prefs": [
+    {
+      "type": "group",
+      "key": "dandelion_group",
+      "title": "dandelion_group",
+      "prefs": [
+        {
+          "type": "list",
+          "key": "dandelion_count",
+          "title": "dandelion_count",
+          "default": "3",
+          "values": [
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10"
+          ],
+          "labels": [
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10"
+          ]
+        },
+        {
+          "type": "seekbar",
+          "key": "dandelion_wind",
+          "title": "dandelion_wind",
+          "default": 100,
+          "min": 0,
+          "max": 200
+        },
+        {
+          "type": "seekbar",
+          "key": "dandelion_spores",
+          "title": "dandelion_spores",
+          "default": 100,
+          "min": 0,
+          "max": 200
+        },
+        {
+          "type": "list",
+          "key": "dandelion_battery",
+          "title": "dandelion_battery",
+          "default": "1",
+          "values": [
+            "1",
+            "0"
+          ],
+          "labels": [
+            "On",
+            "Off"
+          ]
+        }
+      ]
+    }
+  ]
+}

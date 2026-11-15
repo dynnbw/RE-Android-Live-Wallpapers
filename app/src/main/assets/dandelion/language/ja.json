@@ -1,0 +1,10 @@
+{
+  "title": "タンポポ",
+  "dandelion_group": "タンポポ",
+  "dandelion_wind": "風",
+  "dandelion_spores": "種の密度",
+  "dandelion_battery": "電池残量で綿毛が減る",
+  "dandelion_battery_label_1": "オン",
+  "dandelion_battery_label_0": "オフ",
+  "dandelion_count": "タンポポの数"
+}

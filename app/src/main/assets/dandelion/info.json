@@ -1,0 +1,5 @@
+{
+  "plugin": "com.reandroid.wallpaper.dandelion.DandelionPlugin",
+  "previewClass": "com.reandroid.wallpaper.dandelion.DandelionGL",
+  "permissions": []
+}

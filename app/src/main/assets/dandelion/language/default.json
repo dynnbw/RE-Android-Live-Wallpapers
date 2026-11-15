@@ -1,0 +1,10 @@
+{
+  "title": "Dandelion",
+  "dandelion_group": "Dandelion",
+  "dandelion_wind": "Wind",
+  "dandelion_spores": "Seed density",
+  "dandelion_battery": "Fade with battery",
+  "dandelion_battery_label_1": "On",
+  "dandelion_battery_label_0": "Off",
+  "dandelion_count": "Number of dandelions"
+}

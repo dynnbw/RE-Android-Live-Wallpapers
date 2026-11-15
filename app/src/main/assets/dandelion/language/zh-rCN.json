@@ -1,0 +1,10 @@
+{
+  "title": "蒲公英",
+  "dandelion_group": "蒲公英",
+  "dandelion_wind": "风力",
+  "dandelion_spores": "种子密度",
+  "dandelion_battery": "花头随电量枯荣",
+  "dandelion_battery_label_1": "开",
+  "dandelion_battery_label_0": "关",
+  "dandelion_count": "蒲公英数量"
+}

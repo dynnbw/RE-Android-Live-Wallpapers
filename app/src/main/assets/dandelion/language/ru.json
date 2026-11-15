@@ -1,0 +1,10 @@
+{
+  "title": "Одуванчик",
+  "dandelion_group": "Одуванчик",
+  "dandelion_wind": "Ветер",
+  "dandelion_spores": "Плотность семян",
+  "dandelion_battery": "Увядать по заряду",
+  "dandelion_battery_label_1": "Вкл",
+  "dandelion_battery_label_0": "Выкл",
+  "dandelion_count": "Количество одуванчиков"
+}
