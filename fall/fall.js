@@ -16,7 +16,9 @@ attribute vec2 a_pos;
 attribute vec2 a_tex;
 varying vec2 v_tex0;
 varying vec4 v_color;
-uniform vec4 u_drop[16];
+// 与 JS 的 MAX_DROPS 一致：原来只声明 16 个，JS 却在 40 个槽里挑最弱的一个，
+// 前 16 个占满后新波纹全落进 16–39，着色器读不到 —— 表现就是"到上限后不再有新波纹"。
+uniform vec4 u_drop[40];
 uniform vec4 u_bgUV;
 uniform float u_dxMul;
 uniform vec2 u_offset;
@@ -31,7 +33,9 @@ vec2 addDrop(vec4 d, vec2 pos, float dxMul) {
         amp /= d.w * d.w;
         amp *= sin(d.w - dist);
         ret = delta * amp;
-        ret.x /= 2.2;
+        // 还原 x 的缩放，并再乘一次 H/W：UV 空间是方的，而屏幕是 W×H 的，
+        // 横向位移必须比纵向大 H/W 倍，涟漪才是正圆（安卓端同一处修正）。
+        ret.x /= 2.2 * dxMul * dxMul;
     }
     return ret;
 }
@@ -43,22 +47,9 @@ void main() {
     vec2 ripplePos = pos * vec2(25.0, 55.0) + vec2(25.0, 55.0);
     v_tex0 = a_tex + u_offset * 0.015;
     v_color = vec4(1.0, 1.0, 1.0, 1.0);
-    v_tex0 += addDrop(u_drop[0], ripplePos, dxMul);
-    v_tex0 += addDrop(u_drop[1], ripplePos, dxMul);
-    v_tex0 += addDrop(u_drop[2], ripplePos, dxMul);
-    v_tex0 += addDrop(u_drop[3], ripplePos, dxMul);
-    v_tex0 += addDrop(u_drop[4], ripplePos, dxMul);
-    v_tex0 += addDrop(u_drop[5], ripplePos, dxMul);
-    v_tex0 += addDrop(u_drop[6], ripplePos, dxMul);
-    v_tex0 += addDrop(u_drop[7], ripplePos, dxMul);
-    v_tex0 += addDrop(u_drop[8], ripplePos, dxMul);
-    v_tex0 += addDrop(u_drop[9], ripplePos, dxMul);
-    v_tex0 += addDrop(u_drop[10], ripplePos, dxMul);
-    v_tex0 += addDrop(u_drop[11], ripplePos, dxMul);
-    v_tex0 += addDrop(u_drop[12], ripplePos, dxMul);
-    v_tex0 += addDrop(u_drop[13], ripplePos, dxMul);
-    v_tex0 += addDrop(u_drop[14], ripplePos, dxMul);
-    v_tex0 += addDrop(u_drop[15], ripplePos, dxMul);
+    for (int i = 0; i < 40; i++) {
+        v_tex0 += addDrop(u_drop[i], ripplePos, dxMul);
+    }
 }`;
 
 const waterFS = `
