@@ -8,7 +8,7 @@
   <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/dynnbw/RE-Android-Live-Wallpapers?style=flat-square&color=green"/>
   <img alt="License" src="https://img.shields.io/badge/License-Apache_2.0-green"/>
   <img alt="Android" src="https://img.shields.io/badge/Android-7.0%2B-3DDC84?style=flat-square&logo=android&logoColor=white&color=green"/>
-  <img alt="Wallpapers" src="https://img.shields.io/badge/Wallpapers-38-3DDC84?style=flat-square&color=green"/>
+  <img alt="Wallpapers" src="https://img.shields.io/badge/Wallpapers-39-3DDC84?style=flat-square&color=green"/>
    <img alt="Wallpapers" src="https://img.shields.io/github/downloads/dynnbw/RE-Android-Live-Wallpapers/total?logo=github&logoColor=white&label=Release%20downloads&color=green"/>
 </p>
 
@@ -44,7 +44,7 @@ Method 3: Long-press home screen → Wallpapers → find "REAndroid Live Wallpap
 
 ## Wallpaper List
 
-**36** wallpapers total (2 more are hidden and do not appear in the app's list), with **32** offering an additional Vulkan backend (see the VK column below)
+**37** wallpapers total (2 more are hidden and do not appear in the app's list), with **32** offering an additional Vulkan backend (see the VK column below)
 
 | Wallpaper | Type | VK | Description |
 | --- | --- | --- | --- |
@@ -73,6 +73,7 @@ Method 3: Long-press home screen → Wallpapers → find "REAndroid Live Wallpap
 | LuminousDots | Effects | ✓ | Luminous particle field |
 | Bokeh Rainbow | Effects | | Rainbow bokeh spots, tap to spawn, scrolls with the launcher |
 | Dandelion | Nature | | Dandelions swaying in the wind, tap to blow the seeds away, clocks fade with battery level, 1–10 plants |
+| Ocean Waves | Effects | | Caustics and reflections over a coral seabed, the water drifts with the launcher |
 | CosmicFlow | Effects | ✓ | Grey ripple background with a GPU noise flow field, 8 colour themes |
 | Silk | Effects | ✓ | Flowing silk ribbons, 3 colour themes |
 | Droid | Effects | ✓ | Android robots in parts, driven by gravity, acceleration and touch (listed in the app as "Shake Them All") |

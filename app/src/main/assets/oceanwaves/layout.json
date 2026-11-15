@@ -1,0 +1,20 @@
+{
+  "prefs": [
+    {
+      "type": "seekbar",
+      "key": "oceanwaves_zoom",
+      "title": "oceanwaves_zoom",
+      "default": 100,
+      "min": 50,
+      "max": 250
+    },
+    {
+      "type": "seekbar",
+      "key": "oceanwaves_speed",
+      "title": "oceanwaves_speed",
+      "default": 100,
+      "min": 50,
+      "max": 200
+    }
+  ]
+}
