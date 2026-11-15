@@ -17,9 +17,12 @@ public final class RetroProfile {
     public static final String SHADER_BRIGHT = "musicvis/shaders/GLES/glow_bright_fs.glsl";
     public static final String SHADER_BLUR = "musicvis/shaders/GLES/glow_blur_fs.glsl";
 
+    /** 辉光缓冲相对屏幕的缩小倍数；与 {@link com.reandroid.gles.GlowRenderer} 的 divisor 一致。 */
+    public static final int BLOOM_DIVISOR = 4;
+
     private static final RetroProfile NONE = new RetroProfile("", "", 0f, 0f, 0f, 0f);
     private static final RetroProfile COLD_GLOW = new RetroProfile(
-            "vis3_retro", "musicvis/shaders/GLES/vis3_bloom_fs.glsl", 0.0f, 0.30f, 4.6f, 4.20f);
+            "vis3_retro", "musicvis/shaders/GLES/vis3_bloom_fs.glsl", 0.0f, 0.30f, 2.3f, 4.20f);
 
     /** 亮部提取与外溢参数。 */
     public final float threshold, softKnee, radius, strength;

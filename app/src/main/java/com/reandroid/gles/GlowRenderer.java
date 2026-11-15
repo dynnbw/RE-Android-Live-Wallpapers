@@ -26,14 +26,13 @@ public final class GlowRenderer {
 
     /** ES3 里 RGBA16F 未必能当颜色附件，所以建完必须验（见 {@link #createFbo}）。 */
     private static final int GL_RGBA16F = 0x881A;
+
     private static final int GL_HALF_FLOAT = 0x140B;
 
     /** 全屏四边形：(x, y, u, v) × 4，TRIANGLE_STRIP，已经是 NDC。 */
     private static final float[] QUAD = {
-            -1.0f, -1.0f, 0.0f, 0.0f,
-             1.0f, -1.0f, 1.0f, 0.0f,
-            -1.0f,  1.0f, 0.0f, 1.0f,
-             1.0f,  1.0f, 1.0f, 1.0f,
+        -1.0f, -1.0f, 0.0f, 0.0f, 1.0f, -1.0f, 1.0f, 0.0f, -1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f,
+        1.0f, 1.0f,
     };
 
     /** 着色器源码的读取方式由调用方提供 —— 这样它不必知道资源路径的约定。 */
@@ -43,8 +42,17 @@ public final class GlowRenderer {
 
     private int mWidth, mHeight, mHalfW, mHalfH;
 
+    /**
+     * 辉光缓冲相对屏幕的缩小的倍数：2 = 半分辨率（默认），4 = 四分之一。
+     *
+     * <p>模糊与亮部提取都在这个尺寸上做，缩得越小越便宜：4 倍面积差就是 4 倍采样差。
+     * 只有对成本敏感、又不需要保留锐利高光的场景才该改它。
+     */
+    private int mBloomDivisor = 2;
+
     /** 记住创建参数，尺寸变化时要按新尺寸原样重建。 */
     private String mVsAsset, mBrightFsAsset, mBlurFsAsset, mCompositeFsAsset;
+
     private ShaderSource mShaderSource;
 
     private int mSceneFbo, mSceneTex;
@@ -63,6 +71,7 @@ public final class GlowRenderer {
     private int mCompositeTone, mCompositeToneGamma;
     /** 合成时叠的影调曲线强度。0 = 不压，也就与没有这个功能时逐位相同。 */
     private float mTone;
+
     private float mToneGamma = 1.0f;
 
     /** 是否可用。false 时所有绘制方法都是空操作。 */
@@ -84,26 +93,50 @@ public final class GlowRenderer {
      * 建缓冲与程序。**任一步失败都返回 false 并释放已建的部分** ——
      * 不留下半建成的状态，半建成会画出花屏，比不生效糟得多。
      */
-    public boolean init(int width, int height, String vsAsset,
-                        String brightFsAsset, String blurFsAsset, String compositeFsAsset,
-                        ShaderSource source) {
+    public boolean init(
+            int width,
+            int height,
+            String vsAsset,
+            String brightFsAsset,
+            String blurFsAsset,
+            String compositeFsAsset,
+            ShaderSource source) {
+        return init(
+                width, height, vsAsset, brightFsAsset, blurFsAsset, compositeFsAsset, source, 2);
+    }
+
+    /**
+     * 同上，但可以指定辉光缓冲的缩小倍数（2 = 半分辨率，4 = 四分之一）。
+     *
+     * <p>倍数是面积的平方关系：4 倍比 2 倍便宜 4 倍，代价是光晕的边缘更软。
+     */
+    public boolean init(
+            int width,
+            int height,
+            String vsAsset,
+            String brightFsAsset,
+            String blurFsAsset,
+            String compositeFsAsset,
+            ShaderSource source,
+            int bloomDivisor) {
         release();
         mVsAsset = vsAsset;
         mBrightFsAsset = brightFsAsset;
         mBlurFsAsset = blurFsAsset;
         mCompositeFsAsset = compositeFsAsset;
         mShaderSource = source;
+        mBloomDivisor = Math.max(2, bloomDivisor);
         mWidth = width;
         mHeight = height;
-        mHalfW = GlowParams.halfSize(width);
-        mHalfH = GlowParams.halfSize(height);
+        mHalfW = GlowParams.bloomSize(width, mBloomDivisor);
+        mHalfH = GlowParams.bloomSize(height, mBloomDivisor);
 
-        mBrightProgram = GlProgramUtils.createProgram(TAG,
-                source.read(vsAsset), source.read(brightFsAsset));
-        mBlurProgram = GlProgramUtils.createProgram(TAG,
-                source.read(vsAsset), source.read(blurFsAsset));
-        mCompositeProgram = GlProgramUtils.createProgram(TAG,
-                source.read(vsAsset), source.read(compositeFsAsset));
+        mBrightProgram =
+                GlProgramUtils.createProgram(TAG, source.read(vsAsset), source.read(brightFsAsset));
+        mBlurProgram =
+                GlProgramUtils.createProgram(TAG, source.read(vsAsset), source.read(blurFsAsset));
+        mCompositeProgram = GlProgramUtils.createProgram(
+                TAG, source.read(vsAsset), source.read(compositeFsAsset));
         if (mBrightProgram == 0 || mBlurProgram == 0 || mCompositeProgram == 0) {
             Log.w(TAG, "辉光着色器没建起来，退化成不启用");
             release();
@@ -116,8 +149,12 @@ public final class GlowRenderer {
         mSceneFbo = createFbo(mSceneTex);
         mBloomFboA = createFbo(mBloomTexA);
         mBloomFboB = createFbo(mBloomTexB);
-        if (mSceneTex == 0 || mBloomTexA == 0 || mBloomTexB == 0
-                || mSceneFbo == 0 || mBloomFboA == 0 || mBloomFboB == 0) {
+        if (mSceneTex == 0
+                || mBloomTexA == 0
+                || mBloomTexB == 0
+                || mSceneFbo == 0
+                || mBloomFboA == 0
+                || mBloomFboB == 0) {
             Log.w(TAG, "HDR 缓冲建不起来（RGBA16F 可能不是颜色附件可用的），退化成不启用");
             release();
             return false;
@@ -132,8 +169,8 @@ public final class GlowRenderer {
         GLES30.glGenBuffers(1, mScratch, 0);
         mQuadVbo = mScratch[0];
         GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, mQuadVbo);
-        GLES30.glBufferData(GLES30.GL_ARRAY_BUFFER, QUAD.length * 4,
-                mQuadBuffer, GLES30.GL_STATIC_DRAW);
+        GLES30.glBufferData(
+                GLES30.GL_ARRAY_BUFFER, QUAD.length * 4, mQuadBuffer, GLES30.GL_STATIC_DRAW);
         GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, 0);
 
         mBrightPos = GLES30.glGetAttribLocation(mBrightProgram, "aPosition");
@@ -163,12 +200,16 @@ public final class GlowRenderer {
             return 0;
         }
         GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, ids[0]);
-        GLES30.glTexImage2D(GLES30.GL_TEXTURE_2D, 0, GL_RGBA16F, w, h, 0,
-                GLES30.GL_RGBA, GL_HALF_FLOAT, null);
-        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR);
-        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
-        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE);
-        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE);
+        GLES30.glTexImage2D(
+                GLES30.GL_TEXTURE_2D, 0, GL_RGBA16F, w, h, 0, GLES30.GL_RGBA, GL_HALF_FLOAT, null);
+        GLES30.glTexParameteri(
+                GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(
+                GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(
+                GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE);
+        GLES30.glTexParameteri(
+                GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE);
         GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, 0);
         return ids[0];
     }
@@ -187,8 +228,12 @@ public final class GlowRenderer {
             return 0;
         }
         GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, ids[0]);
-        GLES30.glFramebufferTexture2D(GLES30.GL_FRAMEBUFFER, GLES30.GL_COLOR_ATTACHMENT0,
-                GLES30.GL_TEXTURE_2D, texture, 0);
+        GLES30.glFramebufferTexture2D(
+                GLES30.GL_FRAMEBUFFER,
+                GLES30.GL_COLOR_ATTACHMENT0,
+                GLES30.GL_TEXTURE_2D,
+                texture,
+                0);
         int status = GLES30.glCheckFramebufferStatus(GLES30.GL_FRAMEBUFFER);
         GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0);
         if (status != GLES30.GL_FRAMEBUFFER_COMPLETE) {
@@ -214,17 +259,25 @@ public final class GlowRenderer {
         if (width == mWidth && height == mHeight) {
             return;
         }
-        init(width, height, mVsAsset, mBrightFsAsset, mBlurFsAsset, mCompositeFsAsset, mShaderSource);
+        init(
+                width,
+                height,
+                mVsAsset,
+                mBrightFsAsset,
+                mBlurFsAsset,
+                mCompositeFsAsset,
+                mShaderSource,
+                mBloomDivisor);
     }
 
     public void release() {
         mReady = false;
-        int[] fbos = { mSceneFbo, mBloomFboA, mBloomFboB };
+        int[] fbos = {mSceneFbo, mBloomFboA, mBloomFboB};
         GLES30.glDeleteFramebuffers(3, fbos, 0);
-        int[] texs = { mSceneTex, mBloomTexA, mBloomTexB };
+        int[] texs = {mSceneTex, mBloomTexA, mBloomTexB};
         GLES30.glDeleteTextures(3, texs, 0);
         if (mQuadVbo != 0) {
-            int[] vbo = { mQuadVbo };
+            int[] vbo = {mQuadVbo};
             GLES30.glDeleteBuffers(1, vbo, 0);
         }
         if (mBrightProgram != 0) GLES30.glDeleteProgram(mBrightProgram);

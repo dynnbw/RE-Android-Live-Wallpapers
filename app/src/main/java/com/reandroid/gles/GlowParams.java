@@ -10,15 +10,17 @@ package com.reandroid.gles;
  */
 final class GlowParams {
 
-    private GlowParams() {
-    }
+    private GlowParams() {}
 
     /**
-     * 半分辨率的边长。**下限 1** —— 窄屏上 {@code w / 2} 可能算出 0，
+     * 辉光缓冲的边长。**下限 1** —— 窄屏上除法可能算出 0，
      * 那会让 FBO 建失败，而症状是"辉光整个不出现"，不是报错。
+     *
+     * <p>{@code divisor} 最小按 2（半分辨率）算：1 等于全分辨率，采样量是 4 倍，
+     * 没有哪个调用方需要。
      */
-    static int halfSize(int full) {
-        return Math.max(1, full / 2);
+    static int bloomSize(int full, int divisor) {
+        return Math.max(1, full / Math.max(2, divisor));
     }
 
     /**

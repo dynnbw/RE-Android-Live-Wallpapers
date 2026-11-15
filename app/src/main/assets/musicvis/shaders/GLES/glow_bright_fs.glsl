@@ -7,20 +7,20 @@ uniform float uThreshold;   // 亮度阈值
 uniform float uSoftKnee;    // 阈值之上的过渡宽度
 in vec2 vUv;
 void main() {
-  // 5×5 高斯预采样（每格跨 2 个纹素，覆盖约 9 个全分辨率像素）。
+  // 3×3 预采样（每格跨 2 个纹素，覆盖约 9 个全分辨率像素）。
   //
-  // 谱线只有 1–2px 宽，直接降到半分辨率会把它们采样成断续的竖条；后面再怎么模糊，
-  // 也只是把这些竖条晕开 —— 看起来就是光晕里的一道道竖纹。先做一次足够宽的预采样，
-  // 把细条平均掉，外溢才是连续的雾。
-  vec3 sum = vec3(0.0);
-  float wsum = 0.0;
-  for (int j = -2; j <= 2; j++) {
-    for (int i = -2; i <= 2; i++) {
-      float d2 = float(i * i + j * j);
-      float w = exp(-0.5 * d2 / (1.5 * 1.5));
+  // 目的是把谱线这类 1–2px 的细亮条平均掉，否则降到低分辨率时会采样成断续的竖条，
+  // 模糊之后就是光晕里的一道道竖纹。用 3×3 而不是 5×5：覆盖范围一样，采样少 3 倍。
+  vec3 sum = texture(uScene, vUv).rgb * 4.0;
+  float wsum = 4.0;
+  for (int j = -1; j <= 1; j++) {
+    for (int i = -1; i <= 1; i++) {
+      if (i == 0 && j == 0) {
+        continue;
+      }
       vec2 offset = uTexel * (vec2(float(i), float(j)) * 2.0);
-      sum += texture(uScene, vUv + offset).rgb * w;
-      wsum += w;
+      sum += texture(uScene, vUv + offset).rgb;
+      wsum += 1.0;
     }
   }
   vec3 c = sum / wsum;

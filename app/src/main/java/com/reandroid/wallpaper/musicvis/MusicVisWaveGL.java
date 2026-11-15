@@ -254,7 +254,10 @@ public class MusicVisWaveGL extends GLESScene {
                     RetroProfile.SHADER_BRIGHT,
                     RetroProfile.SHADER_BLUR,
                     profile.compositeShader,
-                    path -> AssetLoader.readText(mContext, path));
+                    path -> AssetLoader.readText(mContext, path),
+                    // 四分之一分辨率：低端机上半分辨率会压垮 GPU（用户反馈卡顿/挂起）。
+                    // 光晕本来就不需要锐利高光，四分之一看不出差别，采样量降到 1/4。
+                    RetroProfile.BLOOM_DIVISOR);
         }
     }
 
