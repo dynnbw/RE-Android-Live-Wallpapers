@@ -6,8 +6,8 @@ import android.opengl.GLES30;
 import android.opengl.GLUtils;
 import android.opengl.Matrix;
 
-import com.reandroid.utils.AssetLoader;
 import com.reandroid.gles.GLESScene;
+import com.reandroid.utils.AssetLoader;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -62,11 +62,12 @@ public class WildWorldGL extends GLESScene {
      * drawRect 每帧要调几十次，模板复用避免每次重新分配整个数组。
      */
     private static final float[] QUAD_TEMPLATE = {
-            0f, 0f, 0.0f, 0.0f,
-            0f, 0f, 0.0f, 1.0f,
-            0f, 0f, 1.0f, 1.0f,
-            0f, 0f, 1.0f, 0.0f
+        0f, 0f, 0.0f, 0.0f,
+        0f, 0f, 0.0f, 1.0f,
+        0f, 0f, 1.0f, 1.0f,
+        0f, 0f, 1.0f, 0.0f
     };
+
     private final float[] mQuadVerts = QUAD_TEMPLATE.clone();
 
     // ---- 构造方法 ----
@@ -94,11 +95,11 @@ public class WildWorldGL extends GLESScene {
     @Override
     public void release() {
         int[] tex = new int[] {
-                mTexBgDay, mTexBgDay1, mTexBgNight, mTexBgNight1,
-                mTexLayer5, mTexLayer51, mTexLayer4, mTexLayer41,
-                mTexLayer3, mTexLayer31, mTexLayer2, mTexLayer21,
-                mTexLayer1, mTexLayer11, mTexPterosaur, mTexDinosaur,
-                mTexFireball
+            mTexBgDay, mTexBgDay1, mTexBgNight, mTexBgNight1,
+            mTexLayer5, mTexLayer51, mTexLayer4, mTexLayer41,
+            mTexLayer3, mTexLayer31, mTexLayer2, mTexLayer21,
+            mTexLayer1, mTexLayer11, mTexPterosaur, mTexDinosaur,
+            mTexFireball
         };
         GLES30.glDeleteTextures(tex.length, tex, 0);
         mTexBgDay = 0;
@@ -218,8 +219,7 @@ public class WildWorldGL extends GLESScene {
         }
 
         // VCN 图层
-        float offX = drawLayerSeamless(mTexLayer5, mTexLayer51,
-                mScene.mVcnLayer, mScene.mXOffset);
+        float offX = drawLayerSeamless(mTexLayer5, mTexLayer51, mScene.mVcnLayer, mScene.mXOffset);
 
         // 翼龙
         drawPterosaur();
@@ -240,8 +240,12 @@ public class WildWorldGL extends GLESScene {
         if (mScene.mPterosaur.alive != 0) {
             float offX = mScene.mPterosaur.x + mScene.mXOffset;
             if (offX + mScene.mPterosaur.w > 0 && offX < mScene.mScreenWidth) {
-                drawRect(mTexPterosaur, offX, mScene.mPterosaur.y,
-                        offX + mScene.mPterosaur.w, mScene.mPterosaur.y + mScene.mPterosaur.h);
+                drawRect(
+                        mTexPterosaur,
+                        offX,
+                        mScene.mPterosaur.y,
+                        offX + mScene.mPterosaur.w,
+                        mScene.mPterosaur.y + mScene.mPterosaur.h);
             }
         }
     }
@@ -255,8 +259,7 @@ public class WildWorldGL extends GLESScene {
         if (d.alive != 0) {
             float offX = d.x + mScene.mXOffset;
             if (offX + d.w > 0 && offX < mScene.mScreenWidth) {
-                drawRect(mTexDinosaur, offX, d.y - d.stepY,
-                        offX + d.w, d.y + d.h - d.stepY);
+                drawRect(mTexDinosaur, offX, d.y - d.stepY, offX + d.w, d.y + d.h - d.stepY);
             }
         }
     }
@@ -269,7 +272,8 @@ public class WildWorldGL extends GLESScene {
      * 绘制图层的上下两层，均循环滚动
      * @return 对齐后的 X 偏移量
      */
-    private float drawLayerSeamless(int texUp, int texDown, WildWorldScene.Layer[] layers, float gXOffset) {
+    private float drawLayerSeamless(
+            int texUp, int texDown, WildWorldScene.Layer[] layers, float gXOffset) {
         float offX = layers[WildWorldScene.UP].x + gXOffset;
         while (offX < 0) offX += layers[WildWorldScene.UP].w;
 
@@ -292,10 +296,14 @@ public class WildWorldGL extends GLESScene {
      */
     private void drawRect(int texture, float x0, float y0, float x1, float y1) {
         float[] verts = mQuadVerts;
-        verts[0] = x0; verts[1] = y0;
-        verts[4] = x0; verts[5] = y1;
-        verts[8] = x1; verts[9] = y1;
-        verts[12] = x1; verts[13] = y0;
+        verts[0] = x0;
+        verts[1] = y0;
+        verts[4] = x0;
+        verts[5] = y1;
+        verts[8] = x1;
+        verts[9] = y1;
+        verts[12] = x1;
+        verts[13] = y0;
 
         mQuadBuffer.clear();
         mQuadBuffer.put(verts).position(0);
@@ -342,25 +350,26 @@ public class WildWorldGL extends GLESScene {
         mAlphaHandle = GLES30.glGetUniformLocation(mProgram, "uAlpha");
 
         mQuadBuffer = ByteBuffer.allocateDirect(4 * 4 * 4)
-                .order(ByteOrder.nativeOrder()).asFloatBuffer();
+                .order(ByteOrder.nativeOrder())
+                .asFloatBuffer();
 
         // 加载所有纹理
         mTexBgDay = loadTexture("wildworld/drawable/ww_bgday.png");
-        mTexBgDay1 = loadTexture("wildworld/drawable/ww_bgday1.jpg");
+        mTexBgDay1 = loadTexture("wildworld/drawable/ww_bgday1.webp");
         mTexBgNight = loadTexture("wildworld/drawable/ww_bgnight.png");
-        mTexBgNight1 = loadTexture("wildworld/drawable/ww_bgnight1.jpg");
-        mTexLayer5 = loadTexture("wildworld/drawable/ww_layer5.png");
-        mTexLayer51 = loadTexture("wildworld/drawable/ww_layer51.png");
-        mTexLayer4 = loadTexture("wildworld/drawable/ww_layer4.png");
-        mTexLayer41 = loadTexture("wildworld/drawable/ww_layer41.png");
+        mTexBgNight1 = loadTexture("wildworld/drawable/ww_bgnight1.webp");
+        mTexLayer5 = loadTexture("wildworld/drawable/ww_layer5.webp");
+        mTexLayer51 = loadTexture("wildworld/drawable/ww_layer51.webp");
+        mTexLayer4 = loadTexture("wildworld/drawable/ww_layer4.webp");
+        mTexLayer41 = loadTexture("wildworld/drawable/ww_layer41.webp");
         mTexLayer3 = loadTexture("wildworld/drawable/ww_layer3.png");
-        mTexLayer31 = loadTexture("wildworld/drawable/ww_layer31.png");
-        mTexLayer2 = loadTexture("wildworld/drawable/ww_layer2.png");
-        mTexLayer21 = loadTexture("wildworld/drawable/ww_layer21.png");
-        mTexLayer1 = loadTexture("wildworld/drawable/ww_layer1.png");
-        mTexLayer11 = loadTexture("wildworld/drawable/ww_layer11.png");
-        mTexPterosaur = loadTexture("wildworld/drawable/ww_pterosaur.png");
-        mTexDinosaur = loadTexture("wildworld/drawable/ww_dinosaur.png");
+        mTexLayer31 = loadTexture("wildworld/drawable/ww_layer31.webp");
+        mTexLayer2 = loadTexture("wildworld/drawable/ww_layer2.webp");
+        mTexLayer21 = loadTexture("wildworld/drawable/ww_layer21.webp");
+        mTexLayer1 = loadTexture("wildworld/drawable/ww_layer1.webp");
+        mTexLayer11 = loadTexture("wildworld/drawable/ww_layer11.webp");
+        mTexPterosaur = loadTexture("wildworld/drawable/ww_pterosaur.webp");
+        mTexDinosaur = loadTexture("wildworld/drawable/ww_dinosaur.webp");
         mTexFireball = loadTexture("wildworld/drawable/ww_fireball.png");
     }
 
@@ -375,14 +384,17 @@ public class WildWorldGL extends GLESScene {
         GLES30.glGenTextures(1, tex, 0);
         GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, tex[0]);
 
-        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR);
-        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
-        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE);
-        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE);
+        GLES30.glTexParameteri(
+                GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(
+                GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(
+                GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE);
+        GLES30.glTexParameteri(
+                GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE);
 
         GLUtils.texImage2D(GLES30.GL_TEXTURE_2D, 0, bmp, 0);
         bmp.recycle();
         return tex[0];
     }
-
 }

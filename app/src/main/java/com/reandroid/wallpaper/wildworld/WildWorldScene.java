@@ -99,7 +99,7 @@ final class WildWorldScene {
     /**
      * 最远的一层背景。名字 `VCN` 来自原版 MediaTek RenderScript
      * （`wildworld.rs` 里的 `VCN_DISTANCE` / `VCNLAYER_*`），**不是笔误，别改**：
-     * 它画的是 `ww_layer5.png`，即资产那边的「第 5 层」。
+     * 它画的是 `ww_layer5.webp`，即资产那边的「第 5 层」。
      * 五层的距离 0.95 / 0.9 / 0.8 / 0.7 / 0.6 递减 = 由远及近，绘制顺序也是由远及近。
      */
     final Layer[] mVcnLayer = new Layer[]{new Layer(), new Layer()};

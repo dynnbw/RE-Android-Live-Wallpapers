@@ -54,23 +54,23 @@ final class WildWorldVkDelegate extends VkPassRendererDelegate {
     private static final int TEX_LAYER11 = 16;
 
     private static final String[] TEXTURE_ASSETS = {
-        "wildworld/drawable/ww_bgday1.jpg",
+        "wildworld/drawable/ww_bgday1.webp",
         "wildworld/drawable/ww_bgday.png",
-        "wildworld/drawable/ww_bgnight1.jpg",
+        "wildworld/drawable/ww_bgnight1.webp",
         "wildworld/drawable/ww_bgnight.png",
         "wildworld/drawable/ww_fireball.png",
-        "wildworld/drawable/ww_layer5.png",
-        "wildworld/drawable/ww_layer51.png",
-        "wildworld/drawable/ww_pterosaur.png",
-        "wildworld/drawable/ww_layer4.png",
-        "wildworld/drawable/ww_layer41.png",
-        "wildworld/drawable/ww_dinosaur.png",
+        "wildworld/drawable/ww_layer5.webp",
+        "wildworld/drawable/ww_layer51.webp",
+        "wildworld/drawable/ww_pterosaur.webp",
+        "wildworld/drawable/ww_layer4.webp",
+        "wildworld/drawable/ww_layer41.webp",
+        "wildworld/drawable/ww_dinosaur.webp",
         "wildworld/drawable/ww_layer3.png",
-        "wildworld/drawable/ww_layer31.png",
-        "wildworld/drawable/ww_layer2.png",
-        "wildworld/drawable/ww_layer21.png",
-        "wildworld/drawable/ww_layer1.png",
-        "wildworld/drawable/ww_layer11.png",
+        "wildworld/drawable/ww_layer31.webp",
+        "wildworld/drawable/ww_layer2.webp",
+        "wildworld/drawable/ww_layer21.webp",
+        "wildworld/drawable/ww_layer1.webp",
+        "wildworld/drawable/ww_layer11.webp",
     };
 
     // ---- pass 下标（声明顺序 = GLES 的绘制顺序）----
