@@ -10,13 +10,14 @@ struct PushConstants {
     float alpha;             // offset 64
     float leafFrameIndex;    // offset 68
     float leafFrameInvCount; // offset 72
-    float glHeight;          // offset 76
-    float bgScale;           // offset 80
-    float meshScaleX;        // offset 84
-    float meshScaleY;        // offset 88
-    float dxMul;             // offset 92
-    float xOffset;           // offset 96
-    int rotate;              // offset 100
+    float shadow;            // offset 76: 1 = 画剪影（叶子影子），0 = 正常叶片
+    float glHeight;          // offset 80
+    float bgScale;           // offset 84
+    float meshScaleX;        // offset 88
+    float meshScaleY;        // offset 92
+    float dxMul;             // offset 96
+    float xOffset;           // offset 100
+    int rotate;              // offset 104
 };
 // Drops moved to UBO (binding 1) — no hard limit
 
@@ -1105,8 +1106,17 @@ public:
     }
 
     void buildLeafModel(const LeafDraw& leaf, float xOffset, float out[16]) const {
-        const float drawX = leaf.x - xOffset * 2.0f;
-        const float drawY = leaf.y;
+        buildLeafModel(leaf, xOffset, 0.0f, 0.0f, out);
+    }
+
+    /**
+     * 影子与叶片共用同一套模型矩阵，只是整体平移 (dx, dy) —— 与 GLES 的
+     * drawLeaf 一致：offset = altitude * 0.2，x 和 y 各减一份。
+     */
+    void buildLeafModel(const LeafDraw& leaf, float xOffset, float dx, float dy,
+            float out[16]) const {
+        const float drawX = leaf.x + dx - xOffset * 2.0f;
+        const float drawY = leaf.y + dy;
         const float s = leaf.scale;
         const float angle = leaf.angleDeg * 0.01745329252f;
         const float c = std::cos(angle);
@@ -1229,16 +1239,51 @@ public:
                 continue;
             }
 
+            const int frameCount = std::max(1, leafAtlasFrameCount_);
+            const int frameIndex = ((leaf.textureIndex % frameCount) + frameCount) % frameCount;
+
+            // 影子：只在离地时出现，算法与 GLES 的 drawLeaf 逐字一致 ——
+            // 越高越淡（0.4 以上线性消失），基础不透明度 0.15，位置斜下方偏移 altitude*0.2。
+            if (leaf.altitude > 0.0f) {
+                float shadowAlpha = 1.0f;
+                if (leaf.altitude >= 0.4f) {
+                    shadowAlpha = 1.0f - (leaf.altitude - 0.4f) / 0.1f;
+                }
+                shadowAlpha = std::max(0.0f, std::min(1.0f, shadowAlpha)) * 0.15f;
+                const float offset = leaf.altitude * 0.2f;
+
+                float shadowModel[16];
+                buildLeafModel(leaf, xOffset, -offset, -offset, shadowModel);
+
+                PushConstants shadowPush{};
+                multiplyMat4(pvCorrected, shadowModel, shadowPush.mvp);
+                shadowPush.alpha = shadowAlpha;
+                shadowPush.leafFrameIndex = static_cast<float>(frameIndex);
+                shadowPush.leafFrameInvCount = 1.0f / static_cast<float>(frameCount);
+                shadowPush.shadow = 1.0f;
+                shadowPush.glHeight = pc.glHeight;
+                shadowPush.bgScale = pc.bgScale;
+                shadowPush.meshScaleX = pc.meshScaleX;
+                shadowPush.meshScaleY = pc.meshScaleY;
+                shadowPush.dxMul = pc.dxMul;
+                shadowPush.xOffset = pc.xOffset;
+                shadowPush.rotate = pc.rotate;
+
+                vkCmdPushConstants(commandBuffer, leafPipelineLayout_,
+                        VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                        0, sizeof(PushConstants), &shadowPush);
+                vkCmdDraw(commandBuffer, 4, 1, 0, 0);
+            }
+
             float model[16];
             buildLeafModel(leaf, xOffset, model);
 
             PushConstants push{};
             multiplyMat4(pvCorrected, model, push.mvp);
             push.alpha = alpha;
-            const int frameCount = std::max(1, leafAtlasFrameCount_);
-            const int frameIndex = ((leaf.textureIndex % frameCount) + frameCount) % frameCount;
             push.leafFrameIndex = static_cast<float>(frameIndex);
             push.leafFrameInvCount = 1.0f / static_cast<float>(frameCount);
+            push.shadow = 0.0f;
 
             vkCmdPushConstants(commandBuffer, leafPipelineLayout_,
                     VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,

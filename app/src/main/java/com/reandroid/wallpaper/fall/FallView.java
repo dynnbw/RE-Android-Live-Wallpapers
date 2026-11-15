@@ -17,8 +17,8 @@
 package com.reandroid.wallpaper.fall;
 
 import android.content.Context;
-import android.view.View;
 import android.view.MotionEvent;
+import android.view.View;
 
 /**
  * 落叶壁纸的自定义View
@@ -27,9 +27,8 @@ import android.view.MotionEvent;
 class FallView extends View {
     // 渲染器引用（运行时实际为FallGL实例）
     private Object mRender;
-    private static final float TRIGGER_DISTANCE_THRESHOLD_PX = 42.0f;
-    private float mLastTriggerX = -1.0f;
-    private float mLastTriggerY = -1.0f;
+    /** 多指分别计距、各自触发；见 {@link FallTouchTracker}。 */
+    private final FallTouchTracker mTouchTracker = new FallTouchTracker();
 
     /**
      * 构造方法
@@ -77,37 +76,41 @@ class FallView extends View {
      */
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        float x = event.getX();
-        float y = event.getY();
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
-                triggerRipple(x, y);
-                mLastTriggerX = x;
-                mLastTriggerY = y;
+            case MotionEvent.ACTION_POINTER_DOWN: {
+                int index = event.getActionIndex();
+                mTouchTracker.down(
+                        event.getPointerId(index),
+                        event.getX(index),
+                        event.getY(index),
+                        event.getEventTime());
+                triggerRipple(event.getX(index), event.getY(index));
                 break;
+            }
             case MotionEvent.ACTION_MOVE:
                 if (!isSwipeRippleEnabled()) {
                     break;
                 }
-                if (mLastTriggerX < 0.0f || mLastTriggerY < 0.0f) {
-                    triggerRipple(x, y);
-                    mLastTriggerX = x;
-                    mLastTriggerY = y;
-                    break;
+                for (int i = 0; i < event.getPointerCount(); i++) {
+                    float power = mTouchTracker.move(
+                            event.getPointerId(i),
+                            event.getX(i),
+                            event.getY(i),
+                            event.getEventTime());
+                    if (power >= 0f) {
+                        triggerRipple(event.getX(i), event.getY(i));
+                    }
                 }
-                float deltaX = x - mLastTriggerX;
-                float deltaY = y - mLastTriggerY;
-                float distance = (float) Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-                if (distance >= TRIGGER_DISTANCE_THRESHOLD_PX) {
-                    triggerRipple(x, y);
-                    mLastTriggerX = x;
-                    mLastTriggerY = y;
-                }
+                break;
+            case MotionEvent.ACTION_POINTER_UP:
+                mTouchTracker.up(event.getPointerId(event.getActionIndex()));
                 break;
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
-                mLastTriggerX = -1.0f;
-                mLastTriggerY = -1.0f;
+                mTouchTracker.reset();
+                break;
+            default:
                 break;
         }
         // 返回true表示消费了该触摸事件

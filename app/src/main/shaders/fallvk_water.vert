@@ -10,6 +10,7 @@ layout(push_constant) uniform PushConstants {
     float uAlpha;
     float uLeafFrameIndex;
     float uLeafFrameInvCount;
+    float uShadow;      // 叶片影子标志；水面不用，只为与 C++ 结构体对齐
     float u_glHeight;
     float u_bgScale;
     float u_meshScaleX;

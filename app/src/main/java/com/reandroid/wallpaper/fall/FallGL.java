@@ -177,10 +177,6 @@ public class FallGL extends GLESScene {
     private static final String ALGAE_NOISE_ASSET = "fall/drawable/algae_noise.png";
     /** 叶片局部坐标的旋转方向，见 drawLeafQuad 里的说明。 */
     private static final float LEAF_AXIS_ROTATION_SIGN = 1.0f;
-    /** 滑动多快算"满强度"（像素/秒）。 */
-    private static final float TOUCH_FULL_SPEED_PX_S = 2600.0f;
-    /** 轻点（没有位移）的扰动强度，见 onTouchEvent。 */
-    private static final float TAP_POWER = 0.5f;
 
     // ---- 天空里的发光体 ----
 
@@ -361,11 +357,8 @@ public class FallGL extends GLESScene {
     private final Context mContext;
     private boolean mAnrDiagEnabled = false;
     private long mLastPerfSyncMs = 0L;
-    private static final float TOUCH_TRIGGER_DISTANCE_THRESHOLD_PX = 42.0f;
-    private float mLastTouchTriggerX = -1.0f;
-    private float mLastTouchTriggerY = -1.0f;
-    /** 上一次触发波纹的事件时刻，用来算滑动速度（= 扰动强度）。 */
-    private long mLastTouchTimeMs;
+    /** 多指分别计距、各自触发；见 {@link FallTouchTracker}。 */
+    private final FallTouchTracker mTouchTracker = new FallTouchTracker();
 
     public FallGL(Context context, int width, int height) {
         super(width, height);
@@ -506,64 +499,46 @@ public class FallGL extends GLESScene {
         if (event == null) {
             return;
         }
-        float x = event.getX();
-        float y = event.getY();
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
+            case MotionEvent.ACTION_POINTER_DOWN: {
                 /*
                  * 轻点没有速度，但**不等于没有扰动** —— 手指按下去一样会激起涟漪。
-                 * 给 0 的话它在阈值（0.35）之下，最常用的"点一下"会完全不发光。
-                 * 梯度应当是：落叶 0.3 < 阈值 0.35 < 轻点 0.5 < 快划 1.0。
+                 * 强度由 FallTouchTracker 统一给出（轻点 0.5：落叶 0.3 < 阈值 0.35 < 轻点）。
+                 * 每根手指单独记录，第二根不会冲掉第一根的起点。
                  */
-                mScene.addDrop((int) x, (int) y, TAP_POWER);
-                mLastTouchTriggerX = x;
-                mLastTouchTriggerY = y;
-                mLastTouchTimeMs = event.getEventTime();
+                int index = event.getActionIndex();
+                int id = event.getPointerId(index);
+                float x = event.getX(index);
+                float y = event.getY(index);
+                mScene.addDrop(
+                        (int) x, (int) y, mTouchTracker.down(id, x, y, event.getEventTime()));
                 break;
+            }
             case MotionEvent.ACTION_MOVE:
                 if (!mScene.isSwipeRippleEnabled()) {
                     break;
                 }
-                if (mLastTouchTriggerX < 0.0f || mLastTouchTriggerY < 0.0f) {
-                    mScene.addDrop((int) x, (int) y, TAP_POWER);
-                    mLastTouchTriggerX = x;
-                    mLastTouchTriggerY = y;
-                    mLastTouchTimeMs = event.getEventTime();
-                    break;
+                for (int i = 0; i < event.getPointerCount(); i++) {
+                    int id = event.getPointerId(i);
+                    float x = event.getX(i);
+                    float y = event.getY(i);
+                    float power = mTouchTracker.move(id, x, y, event.getEventTime());
+                    if (power >= 0f) {
+                        mScene.addDrop((int) x, (int) y, power);
+                    }
                 }
-                float dx = x - mLastTouchTriggerX;
-                float dy = y - mLastTouchTriggerY;
-                float distance = (float) Math.sqrt(dx * dx + dy * dy);
-                if (distance >= TOUCH_TRIGGER_DISTANCE_THRESHOLD_PX) {
-                    mScene.addDrop((int) x, (int) y, swipePower(distance, event.getEventTime()));
-                    mLastTouchTriggerX = x;
-                    mLastTouchTriggerY = y;
-                    mLastTouchTimeMs = event.getEventTime();
-                }
+                break;
+            case MotionEvent.ACTION_POINTER_UP:
+                mTouchTracker.up(event.getPointerId(event.getActionIndex()));
                 break;
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
-                mLastTouchTriggerX = -1.0f;
-                mLastTouchTriggerY = -1.0f;
+                mTouchTracker.reset();
                 break;
             default:
                 break;
         }
-    }
-
-    /**
-     * 这一段滑动的强度 0..1，由速度决定 —— 只有蓝藻用它。
-     *
-     * <p>轻点没有位移，天然是最弱的一档；越快地划过去，水里的藻被惊动得越厉害。
-     * 时间差为 0（同一毫秒内两个事件）时返回 0，而不是除出 Infinity。
-     */
-    private float swipePower(float distancePx, long eventTimeMs) {
-        long dtMs = eventTimeMs - mLastTouchTimeMs;
-        if (dtMs <= 0L) {
-            return 0.0f;
-        }
-        float speed = distancePx / (dtMs * 0.001f);
-        return MathUtils.clamp(speed / TOUCH_FULL_SPEED_PX_S, 0.0f, 1.0f);
     }
 
     /** 滑动水波纹开关（滑动每 42px 触发一次水波纹），供 FallView 查询。 */

@@ -19,8 +19,6 @@ import com.reandroid.settings.WallpaperSettings;
 final class FallVkDelegate implements VkRendererDelegate {
 
     private static final long SETTINGS_SYNC_INTERVAL_MS = 1000L;
-    /** 滑动时每隔这么远落一片叶子，免得手指一动就刷一片。 */
-    private static final float TOUCH_TRIGGER_DISTANCE_THRESHOLD_PX = 42.0f;
 
     private final Context mContext;
     private final SharedPreferences mPrefs;
@@ -30,8 +28,8 @@ final class FallVkDelegate implements VkRendererDelegate {
     private int mLeafTextureCount = 1;
     private boolean mGreenLeavesEnabled;
     private long mLastAtlasSyncCheckMs;
-    private float mLastTouchTriggerX = -1.0f;
-    private float mLastTouchTriggerY = -1.0f;
+    /** 多指分别计距、各自落点；见 {@link FallTouchTracker}。 */
+    private final FallTouchTracker mTouchTracker = new FallTouchTracker();
 
     FallVkDelegate(Context context, SharedPreferences prefs) {
         mContext = context.getApplicationContext();
@@ -168,34 +166,35 @@ final class FallVkDelegate implements VkRendererDelegate {
     @Override
     public void onTouchEvent(MotionEvent event) {
         if (event == null || mScene == null) return;
-        float x = event.getX();
-        float y = event.getY();
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
+            case MotionEvent.ACTION_POINTER_DOWN: {
+                int index = event.getActionIndex();
+                float x = event.getX(index);
+                float y = event.getY(index);
+                mTouchTracker.down(event.getPointerId(index), x, y, event.getEventTime());
                 mScene.addDrop((int) x, (int) y);
-                mLastTouchTriggerX = x;
-                mLastTouchTriggerY = y;
                 break;
+            }
             case MotionEvent.ACTION_MOVE:
                 if (!mScene.isSwipeRippleEnabled()) break;
-                if (mLastTouchTriggerX < 0.0f || mLastTouchTriggerY < 0.0f) {
-                    mScene.addDrop((int) x, (int) y);
-                    mLastTouchTriggerX = x;
-                    mLastTouchTriggerY = y;
-                    break;
+                for (int i = 0; i < event.getPointerCount(); i++) {
+                    float power = mTouchTracker.move(
+                            event.getPointerId(i),
+                            event.getX(i),
+                            event.getY(i),
+                            event.getEventTime());
+                    if (power >= 0f) {
+                        mScene.addDrop((int) event.getX(i), (int) event.getY(i));
+                    }
                 }
-                float dx = x - mLastTouchTriggerX;
-                float dy = y - mLastTouchTriggerY;
-                if ((float) Math.sqrt(dx * dx + dy * dy) >= TOUCH_TRIGGER_DISTANCE_THRESHOLD_PX) {
-                    mScene.addDrop((int) x, (int) y);
-                    mLastTouchTriggerX = x;
-                    mLastTouchTriggerY = y;
-                }
+                break;
+            case MotionEvent.ACTION_POINTER_UP:
+                mTouchTracker.up(event.getPointerId(event.getActionIndex()));
                 break;
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
-                mLastTouchTriggerX = -1.0f;
-                mLastTouchTriggerY = -1.0f;
+                mTouchTracker.reset();
                 break;
             default:
                 break;
