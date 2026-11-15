@@ -1,6 +1,7 @@
 package com.reandroid.wallpaper.wildworld;
 
 import android.os.SystemClock;
+
 import java.util.Random;
 
 /**
@@ -13,6 +14,7 @@ final class WildWorldScene {
 
     /** 单帧 dt 上限（秒）。原来叫 MIN_DT，但它做的是 clamping 到最大值。 */
     private static final float MAX_DT = 0.2f;
+
     static final long DINO_DT = 1000;
     static final long PTERO_DT = 2400;
     private static final long GEN_TIME = 4000;
@@ -94,23 +96,24 @@ final class WildWorldScene {
     // ---- 场景状态（包级可见，供 GL 层直接读取）----
 
     // 图层数组（上下两层）
-    final Layer[] mDay = new Layer[]{new Layer(), new Layer()};
-    final Layer[] mNight = new Layer[]{new Layer(), new Layer()};
+    final Layer[] mDay = new Layer[] {new Layer(), new Layer()};
+    final Layer[] mNight = new Layer[] {new Layer(), new Layer()};
     /**
      * 最远的一层背景。名字 `VCN` 来自原版 MediaTek RenderScript
      * （`wildworld.rs` 里的 `VCN_DISTANCE` / `VCNLAYER_*`），**不是笔误，别改**：
      * 它画的是 `ww_layer5.webp`，即资产那边的「第 5 层」。
      * 五层的距离 0.95 / 0.9 / 0.8 / 0.7 / 0.6 递减 = 由远及近，绘制顺序也是由远及近。
      */
-    final Layer[] mVcnLayer = new Layer[]{new Layer(), new Layer()};
-    final Layer[] mLayer4 = new Layer[]{new Layer(), new Layer()};
-    final Layer[] mLayer3 = new Layer[]{new Layer(), new Layer()};
-    final Layer[] mLayer2 = new Layer[]{new Layer(), new Layer()};
-    final Layer[] mLayer1 = new Layer[]{new Layer(), new Layer()};
+    final Layer[] mVcnLayer = new Layer[] {new Layer(), new Layer()};
+
+    final Layer[] mLayer4 = new Layer[] {new Layer(), new Layer()};
+    final Layer[] mLayer3 = new Layer[] {new Layer(), new Layer()};
+    final Layer[] mLayer2 = new Layer[] {new Layer(), new Layer()};
+    final Layer[] mLayer1 = new Layer[] {new Layer(), new Layer()};
 
     // 角色
     final Pterosaur mPterosaur = new Pterosaur();
-    final Dinosaur[] mDinosaur = new Dinosaur[]{new Dinosaur(), new Dinosaur()};
+    final Dinosaur[] mDinosaur = new Dinosaur[] {new Dinosaur(), new Dinosaur()};
     final Fireball[] mFireballs;
 
     // 屏幕尺寸
@@ -172,8 +175,9 @@ final class WildWorldScene {
      * 顺序就是绘制顺序。
      */
     private final Layer[][] mBgLayers;
+
     private static final float[] BG_LAYER_DISTANCES = {
-            VCN_DISTANCE, LAYER4_DISTANCE, LAYER3_DISTANCE, LAYER2_DISTANCE, LAYER1_DISTANCE
+        VCN_DISTANCE, LAYER4_DISTANCE, LAYER3_DISTANCE, LAYER2_DISTANCE, LAYER1_DISTANCE
     };
 
     WildWorldScene() {
@@ -182,7 +186,7 @@ final class WildWorldScene {
             mFireballs[i] = new Fireball();
             mFireballs[i].steps = 0;
         }
-        mBgLayers = new Layer[][]{mVcnLayer, mLayer4, mLayer3, mLayer2, mLayer1};
+        mBgLayers = new Layer[][] {mVcnLayer, mLayer4, mLayer3, mLayer2, mLayer1};
     }
 
     // ---- 初始化 ----
@@ -220,6 +224,7 @@ final class WildWorldScene {
      * 这里只保留 480x800 作为唯一基准，参数值一字未改。
      */
     private static final float BASE_WIDTH = 480.0f;
+
     private static final float BASE_HEIGHT = 800.0f;
 
     private void applyMetrics() {
@@ -273,13 +278,13 @@ final class WildWorldScene {
         mMoonRight = Math.round(200 * mScaleX);
         mMoonTop = Math.round(100 * mScaleY);
         mMoonBottom = Math.round(300 * mScaleY);
-    
     }
 
     /**
      * 初始化图层参数
      */
-    private void initLayer(Layer[] layers, float x, float yUp, float w, float hUp, float yDown, float hDown) {
+    private void initLayer(
+            Layer[] layers, float x, float yUp, float w, float hUp, float yDown, float hDown) {
         layers[UP].x = x * mScaleX;
         layers[UP].y = yUp * mScaleY;
         layers[UP].w = w;
@@ -304,7 +309,7 @@ final class WildWorldScene {
         if (mOldTime == 0L) {
             mOldTime = mCurTime;
         }
-        mDT = (float)(mCurTime - mOldTime) / 1000.0f;
+        mDT = (float) (mCurTime - mOldTime) / 1000.0f;
         if (mDT > MAX_DT) mDT = MAX_DT;
         mOldTime = mCurTime;
 
@@ -510,10 +515,14 @@ final class WildWorldScene {
             float vcn2MouseLeft = vcn1MouseLeft - mScreenWidth;
             float vcn2MouseRight = vcn2MouseLeft + mVcnMouseW;
 
-            if (x > vcn1MouseLeft && x < vcn1MouseRight && y > mVcnLayer[UP].y
+            if (x > vcn1MouseLeft
+                    && x < vcn1MouseRight
+                    && y > mVcnLayer[UP].y
                     && y < mVcnLayer[UP].y + mVcnLayer[UP].h) {
                 createFireballs(vcn1MouseLeft + mVcnMouseW / 2.0f - mXOffset);
-            } else if (x > vcn2MouseLeft && x < vcn2MouseRight && y > mVcnLayer[UP].y
+            } else if (x > vcn2MouseLeft
+                    && x < vcn2MouseRight
+                    && y > mVcnLayer[UP].y
                     && y < mVcnLayer[UP].y + mVcnLayer[UP].h) {
                 createFireballs(vcn2MouseLeft + mVcnMouseW / 2.0f - mXOffset);
             }
@@ -537,7 +546,7 @@ final class WildWorldScene {
                 f.speed = mFireballBaseSpeed + mFireballBaseSpeed * random;
                 f.dir = 0.3f - randf(0.6f);
                 f.steps = (int) (30 + random * 40);
-                f.startTime = uptimeMillis() + (long)(randf(0.4f) * 10000.0f);
+                f.startTime = uptimeMillis() + (long) (randf(0.4f) * 10000.0f);
             }
         }
         mFireballsShow = 1;

@@ -1,9 +1,9 @@
 package com.reandroid.wallpaper.fall;
 
-import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+
+import org.junit.Test;
 
 /** 多指落点判定：每根手指各自计距、互不干扰。 */
 public class FallTouchTrackerTest {
