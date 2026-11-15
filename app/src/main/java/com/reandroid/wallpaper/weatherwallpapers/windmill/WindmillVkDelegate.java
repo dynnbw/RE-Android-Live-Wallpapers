@@ -421,10 +421,11 @@ final class WindmillVkDelegate extends VkPassRendererDelegate
         scene.setClearColor(0f, 0f, 0f, 0f);
         mSpritePasses = new SpritePass[PASS_COUNT];
 
-        // GLES 侧天气贴图统一 GL_NEAREST + CLAMP_TO_EDGE（GLTextureUtils），这里与之对齐。
+        // 风车的素材是写实向的，GLES 侧现在用 LINEAR + mipmap；这里没有 mipmap，
+        // 但仍用 LINEAR，避免高分辨率原画在缩小时出现 NEAREST 的硬边闪烁。
         for (int i = 0; i < TEX_COUNT; i++) {
             scene.createTexture(
-                    "t" + i, VkPassScene.FILTER_NEAREST, VkPassScene.ADDRESS_CLAMP_TO_EDGE);
+                    "t" + i, VkPassScene.FILTER_LINEAR, VkPassScene.ADDRESS_CLAMP_TO_EDGE);
         }
 
         // 声明顺序就是 GLES 的绘制顺序，见 WindmillGL.drawObjects。

@@ -1,15 +1,12 @@
 package com.reandroid.wallpaper.weatherwallpapers.windmill;
 
-import android.opengl.GLES30;
-import android.util.Log;
-
 import android.content.Context;
+import android.opengl.GLES30;
 
-import com.reandroid.utils.AssetLoader;
 import com.reandroid.gles.GLESScene;
 import com.reandroid.gles.GLESWallpaper;
+import com.reandroid.utils.AssetLoader;
 import com.reandroid.utils.GLTextureUtils;
-import com.reandroid.wallpaper.weatherwallpapers.AnimationController;
 import com.reandroid.wallpaper.weatherwallpapers.CloudRenderer;
 import com.reandroid.wallpaper.weatherwallpapers.FogIceRenderer;
 import com.reandroid.wallpaper.weatherwallpapers.PrecipitationRenderer;
@@ -52,7 +49,12 @@ public class WindmillGL extends GLESScene {
     private int mWaterdrop, mFrostE, mFrostF;
     private int mSnow1, mSnow2, mSnow3, mSnow4;
     private int mNightcover, mSkyFlash, mLightning1, mLightning2, mLightning3;
-    private int mCloudLightA1, mCloudLightA2, mCloudLightA3, mCloudLightB1, mCloudLightB2, mCloudLightB3;
+    private int mCloudLightA1,
+            mCloudLightA2,
+            mCloudLightA3,
+            mCloudLightB1,
+            mCloudLightB2,
+            mCloudLightB3;
     private int mWindmillWing, mWindmillWingBlur, mWindmillCenter1, mWindmillCenter2;
     private int mWindmillPillar1, mWindmillPillar2, mWindmillPillarFlip1, mWindmillPillarFlip2;
     private int mLand01, mLand02, mLand03, mLand04, mLand05, mLand06, mLand07, mLand08, mLand09;
@@ -74,39 +76,86 @@ public class WindmillGL extends GLESScene {
     private final PrecipitationRenderer.Drawer mPrecipitationDrawer = mDrawerBridge;
     private final ThunderRenderer.Drawer mThunderDrawer = mDrawerBridge;
 
-    private final class DrawerBridge implements WindmillRenderer.Drawer,
-            GroundRenderer.Drawer,
-            CloudRenderer.Drawer,
-            FogIceRenderer.Drawer,
-            SkyRenderer.Drawer,
-            PrecipitationRenderer.Drawer,
-            ThunderRenderer.Drawer {
+    private final class DrawerBridge
+            implements WindmillRenderer.Drawer,
+                    GroundRenderer.Drawer,
+                    CloudRenderer.Drawer,
+                    FogIceRenderer.Drawer,
+                    SkyRenderer.Drawer,
+                    PrecipitationRenderer.Drawer,
+                    ThunderRenderer.Drawer {
         @Override
-        public void drawSprite(int texture, float x, float y, float z,
-                               float scaleX, float scaleY, float rotation, float alpha) {
+        public void drawSprite(
+                int texture,
+                float x,
+                float y,
+                float z,
+                float scaleX,
+                float scaleY,
+                float rotation,
+                float alpha) {
             mSpriteDrawer.drawSprite(texture, x, y, z, scaleX, scaleY, rotation, alpha);
         }
+
         @Override
-        public void drawSpriteRectOneToTwo(int texture, float x, float y, float z,
-                                           float scaleX, float scaleY, float rotation, float alpha) {
+        public void drawSpriteRectOneToTwo(
+                int texture,
+                float x,
+                float y,
+                float z,
+                float scaleX,
+                float scaleY,
+                float rotation,
+                float alpha) {
             mSpriteDrawer.drawSpriteRectOneToTwo(texture, x, y, z, scaleX, scaleY, rotation, alpha);
         }
+
         @Override
-        public void drawSpriteColoredRectOneToTwo(int texture, float x, float y, float z,
-                                                  float scaleX, float scaleY, float rotation,
-                                                  float r, float g, float b, float alpha) {
-            mSpriteDrawer.drawSpriteColoredRectOneToTwo(texture, x, y, z, scaleX, scaleY, rotation, r, g, b, alpha);
+        public void drawSpriteColoredRectOneToTwo(
+                int texture,
+                float x,
+                float y,
+                float z,
+                float scaleX,
+                float scaleY,
+                float rotation,
+                float r,
+                float g,
+                float b,
+                float alpha) {
+            mSpriteDrawer.drawSpriteColoredRectOneToTwo(
+                    texture, x, y, z, scaleX, scaleY, rotation, r, g, b, alpha);
         }
+
         @Override
-        public void drawSpriteRectOneToFour(int texture, float x, float y, float z,
-                                            float scaleX, float scaleY, float rotation, float alpha) {
-            mSpriteDrawer.drawSpriteRectOneToFour(texture, x, y, z, scaleX, scaleY, rotation, alpha);
+        public void drawSpriteRectOneToFour(
+                int texture,
+                float x,
+                float y,
+                float z,
+                float scaleX,
+                float scaleY,
+                float rotation,
+                float alpha) {
+            mSpriteDrawer.drawSpriteRectOneToFour(
+                    texture, x, y, z, scaleX, scaleY, rotation, alpha);
         }
+
         @Override
-        public void drawSpriteColored(int texture, float x, float y, float z,
-                                      float scaleX, float scaleY, float rotation,
-                                      float r, float g, float b, float alpha) {
-            mSpriteDrawer.drawSpriteColored(texture, x, y, z, scaleX, scaleY, rotation, r, g, b, alpha);
+        public void drawSpriteColored(
+                int texture,
+                float x,
+                float y,
+                float z,
+                float scaleX,
+                float scaleY,
+                float rotation,
+                float r,
+                float g,
+                float b,
+                float alpha) {
+            mSpriteDrawer.drawSpriteColored(
+                    texture, x, y, z, scaleX, scaleY, rotation, r, g, b, alpha);
         }
     }
 
@@ -199,23 +248,44 @@ public class WindmillGL extends GLESScene {
         mColorHandle = GLES30.glGetUniformLocation(mProgram, "uColor");
         mSamplerHandle = GLES30.glGetUniformLocation(mProgram, "uTexture");
 
-        float[] quadVertices = AssetLoader.readFloatArray(mContext, "windmill/data/windmill_quad_vertices.csv");
-        float[] rectOneToTwoVertices = AssetLoader.readFloatArray(mContext, "windmill/data/windmill_rect_one_to_two_vertices.csv");
-        float[] rectOneToFourVertices = AssetLoader.readFloatArray(mContext, "windmill/data/windmill_rect_one_to_four_vertices.csv");
-        float[] quadTex = AssetLoader.readFloatArray(mContext, "windmill/data/windmill_quad_tex.csv");
+        float[] quadVertices =
+                AssetLoader.readFloatArray(mContext, "windmill/data/windmill_quad_vertices.csv");
+        float[] rectOneToTwoVertices = AssetLoader.readFloatArray(
+                mContext, "windmill/data/windmill_rect_one_to_two_vertices.csv");
+        float[] rectOneToFourVertices = AssetLoader.readFloatArray(
+                mContext, "windmill/data/windmill_rect_one_to_four_vertices.csv");
+        float[] quadTex =
+                AssetLoader.readFloatArray(mContext, "windmill/data/windmill_quad_tex.csv");
 
-        mVertexBuffer = ByteBuffer.allocateDirect(quadVertices.length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
+        mVertexBuffer = ByteBuffer.allocateDirect(quadVertices.length * 4)
+                .order(ByteOrder.nativeOrder())
+                .asFloatBuffer();
         mVertexBuffer.put(quadVertices).position(0);
-        mRectOneToTwoBuffer = ByteBuffer.allocateDirect(rectOneToTwoVertices.length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
+        mRectOneToTwoBuffer = ByteBuffer.allocateDirect(rectOneToTwoVertices.length * 4)
+                .order(ByteOrder.nativeOrder())
+                .asFloatBuffer();
         mRectOneToTwoBuffer.put(rectOneToTwoVertices).position(0);
-        mRectVertexBuffer = ByteBuffer.allocateDirect(rectOneToFourVertices.length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
+        mRectVertexBuffer = ByteBuffer.allocateDirect(rectOneToFourVertices.length * 4)
+                .order(ByteOrder.nativeOrder())
+                .asFloatBuffer();
         mRectVertexBuffer.put(rectOneToFourVertices).position(0);
-        mTexBuffer = ByteBuffer.allocateDirect(quadTex.length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
+        mTexBuffer = ByteBuffer.allocateDirect(quadTex.length * 4)
+                .order(ByteOrder.nativeOrder())
+                .asFloatBuffer();
         mTexBuffer.put(quadTex).position(0);
 
-        mSpriteDrawer.configure(mProgram, mPositionHandle, mTexCoordHandle, mMatrixHandle,
-                mColorHandle, mSamplerHandle, mScene.mProjectionMatrix,
-                mVertexBuffer, mTexBuffer, mRectOneToTwoBuffer, mRectVertexBuffer);
+        mSpriteDrawer.configure(
+                mProgram,
+                mPositionHandle,
+                mTexCoordHandle,
+                mMatrixHandle,
+                mColorHandle,
+                mSamplerHandle,
+                mScene.mProjectionMatrix,
+                mVertexBuffer,
+                mTexBuffer,
+                mRectOneToTwoBuffer,
+                mRectVertexBuffer);
 
         GLES30.glClearColor(0f, 0f, 0f, 0f);
         GLES30.glEnable(GLES30.GL_BLEND);
@@ -226,81 +296,212 @@ public class WindmillGL extends GLESScene {
     }
 
     private void loadTextures() {
-        mSky01 = GLTextureUtils.loadTextureNearestPremult(mContext, "windmill/drawable/sky_01.jpg");
-        mSky02 = GLTextureUtils.loadTextureNearestPremult(mContext, "windmill/drawable/sky_02.jpg");
-        mSky03 = GLTextureUtils.loadTextureNearestPremult(mContext, "windmill/drawable/sky_03.png");
-        mSky04 = GLTextureUtils.loadTextureNearestPremult(mContext, "windmill/drawable/sky_04.png");
-        mSkyStars = GLTextureUtils.loadTextureNearestPremult(mContext, "weatherwallpapers/common/drawable/d_sky_stars.png");
-        mCloudA01 = GLTextureUtils.loadTextureNearestPremult(mContext, "weatherwallpapers/common/drawable/cloud_a_01.png");
-        mCloudA02 = GLTextureUtils.loadTextureNearestPremult(mContext, "weatherwallpapers/common/drawable/cloud_a_02.png");
-        mCloudA03 = GLTextureUtils.loadTextureNearestPremult(mContext, "weatherwallpapers/common/drawable/cloud_a_03.png");
-        mCloudB01 = GLTextureUtils.loadTextureNearestPremult(mContext, "weatherwallpapers/common/drawable/cloud_b_01.png");
-        mCloudB02 = GLTextureUtils.loadTextureNearestPremult(mContext, "weatherwallpapers/common/drawable/cloud_b_02.png");
-        mCloudB03 = GLTextureUtils.loadTextureNearestPremult(mContext, "weatherwallpapers/common/drawable/cloud_b_03.png");
-        mSun1 = GLTextureUtils.loadTextureNearestPremult(mContext, "weatherwallpapers/common/drawable/a_sun_01.png");
-        mSun2 = GLTextureUtils.loadTextureNearestPremult(mContext, "weatherwallpapers/common/drawable/a_sun_02.png");
-        mSun3 = GLTextureUtils.loadTextureNearestPremult(mContext, "weatherwallpapers/common/drawable/a_sun_03.png");
-        mSun4 = GLTextureUtils.loadTextureNearestPremult(mContext, "windmill/drawable/a_sun_04.png");
-        mStar = GLTextureUtils.loadTextureNearestPremult(mContext, "weatherwallpapers/common/drawable/d_star.png");
-        mMeteor = GLTextureUtils.loadTextureNearestPremult(mContext, "windmill/drawable/d_meteor.png");
-        mMoon = GLTextureUtils.loadTextureNearestPremult(mContext, "windmill/drawable/d_moon.png");
-        mRain1 = GLTextureUtils.loadTextureNearestPremult(mContext, "weatherwallpapers/common/drawable/c_rain_01.png");
-        mRain2 = GLTextureUtils.loadTextureNearestPremult(mContext, "weatherwallpapers/common/drawable/c_rain_02.png");
-        mRain3 = GLTextureUtils.loadTextureNearestPremult(mContext, "weatherwallpapers/common/drawable/c_rain_03.png");
-        mRain4 = GLTextureUtils.loadTextureNearestPremult(mContext, "weatherwallpapers/common/drawable/c_rain_04.png");
-        mFog02 = GLTextureUtils.loadTextureNearestPremult(mContext, "weatherwallpapers/common/drawable/fog_02.png");
-        mIce = GLTextureUtils.loadTextureNearestPremult(mContext, "weatherwallpapers/common/drawable/ice.png");
-        mWaterdrop = GLTextureUtils.loadTextureNearestPremult(mContext, "weatherwallpapers/common/drawable/c_waterdrop.png");
-        mFrostE = GLTextureUtils.loadTextureNearestPremult(mContext, "weatherwallpapers/common/drawable/e_frost.png");
-        mFrostF = GLTextureUtils.loadTextureNearestPremult(mContext, "weatherwallpapers/common/drawable/f_frost.png");
-        mSnow1 = GLTextureUtils.loadTextureNearestPremult(mContext, "weatherwallpapers/common/drawable/e_snow_01.png");
-        mSnow2 = GLTextureUtils.loadTextureNearestPremult(mContext, "weatherwallpapers/common/drawable/e_snow_02.png");
-        mSnow3 = GLTextureUtils.loadTextureNearestPremult(mContext, "weatherwallpapers/common/drawable/e_snow_03.png");
-        mSnow4 = GLTextureUtils.loadTextureNearestPremult(mContext, "weatherwallpapers/common/drawable/e_snow_04.png");
-        mNightcover = GLTextureUtils.loadTextureNearestPremult(mContext, "weatherwallpapers/common/drawable/nightcover_01.png");
-        mSkyFlash = GLTextureUtils.loadTextureNearestPremult(mContext, "weatherwallpapers/common/drawable/g_sky_flash.png");
-        mLightning1 = GLTextureUtils.loadTextureNearestPremult(mContext, "weatherwallpapers/common/drawable/g_lightning_01.png");
-        mLightning2 = GLTextureUtils.loadTextureNearestPremult(mContext, "weatherwallpapers/common/drawable/g_lightning_02.png");
-        mLightning3 = GLTextureUtils.loadTextureNearestPremult(mContext, "weatherwallpapers/common/drawable/g_lightning_03.png");
-        mCloudLightA1 = GLTextureUtils.loadTextureNearestPremult(mContext, "weatherwallpapers/common/drawable/cloud_a_light_01.png");
-        mCloudLightA2 = GLTextureUtils.loadTextureNearestPremult(mContext, "weatherwallpapers/common/drawable/cloud_a_light_02.png");
-        mCloudLightA3 = GLTextureUtils.loadTextureNearestPremult(mContext, "weatherwallpapers/common/drawable/cloud_a_light_03.png");
-        mCloudLightB1 = GLTextureUtils.loadTextureNearestPremult(mContext, "weatherwallpapers/common/drawable/cloud_b_light_01.png");
-        mCloudLightB2 = GLTextureUtils.loadTextureNearestPremult(mContext, "weatherwallpapers/common/drawable/cloud_b_light_02.png");
-        mCloudLightB3 = GLTextureUtils.loadTextureNearestPremult(mContext, "weatherwallpapers/common/drawable/cloud_b_light_03.png");
-        mWindmillWing = GLTextureUtils.loadTextureNearestPremult(mContext, "windmill/drawable/a_windmill_wing.png");
-        mWindmillWingBlur = GLTextureUtils.loadTextureNearestPremult(mContext, "windmill/drawable/a_windmill_wing_blur2.png");
-        mWindmillCenter1 = GLTextureUtils.loadTextureNearestPremult(mContext, "windmill/drawable/a_windmill_center_01.png");
-        mWindmillCenter2 = GLTextureUtils.loadTextureNearestPremult(mContext, "windmill/drawable/a_windmill_center_02.png");
-        mWindmillPillar1 = GLTextureUtils.loadTextureNearestPremult(mContext, "windmill/drawable/a_windmill_pillar_01.png");
-        mWindmillPillar2 = GLTextureUtils.loadTextureNearestPremult(mContext, "windmill/drawable/a_windmill_pillar_02.png");
-        mWindmillPillarFlip1 = GLTextureUtils.loadTextureNearestPremult(mContext, "windmill/drawable/a_windmill_pillar_flip_01.png");
-        mWindmillPillarFlip2 = GLTextureUtils.loadTextureNearestPremult(mContext, "windmill/drawable/a_windmill_pillar_flip_blur2_02.png");
-        mLand01 = GLTextureUtils.loadTextureNearestPremult(mContext, "windmill/drawable/a_land_01.png");
-        mLand02 = GLTextureUtils.loadTextureNearestPremult(mContext, "windmill/drawable/a_land_02.png");
-        mLand03 = GLTextureUtils.loadTextureNearestPremult(mContext, "windmill/drawable/a_land_03.png");
-        mLand04 = GLTextureUtils.loadTextureNearestPremult(mContext, "windmill/drawable/a_land_04.png");
-        mLand05 = GLTextureUtils.loadTextureNearestPremult(mContext, "windmill/drawable/a_land_05.png");
-        mLand06 = GLTextureUtils.loadTextureNearestPremult(mContext, "windmill/drawable/a_land_06.png");
-        mLand07 = GLTextureUtils.loadTextureNearestPremult(mContext, "windmill/drawable/a_land_07.png");
-        mLand08 = GLTextureUtils.loadTextureNearestPremult(mContext, "windmill/drawable/a_land_08.png");
-        mLand09 = GLTextureUtils.loadTextureNearestPremult(mContext, "windmill/drawable/a_land_09.png");
-        mLawn01 = GLTextureUtils.loadTextureNearestPremult(mContext, "windmill/drawable/a_lawn_01.png");
-        mLawn02 = GLTextureUtils.loadTextureNearestPremult(mContext, "windmill/drawable/a_lawn_02.png");
-        mLawn03 = GLTextureUtils.loadTextureNearestPremult(mContext, "windmill/drawable/a_lawn_03.png");
-        mLawn04 = GLTextureUtils.loadTextureNearestPremult(mContext, "windmill/drawable/a_lawn_04.png");
-        mLawn05 = GLTextureUtils.loadTextureNearestPremult(mContext, "windmill/drawable/a_lawn_05.png");
+        mSky01 = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "windmill/drawable/sky_01.jpg");
+        mSky02 = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "windmill/drawable/sky_02.jpg");
+        mSky03 = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "windmill/drawable/sky_03.png");
+        mSky04 = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "windmill/drawable/sky_04.png");
+        mSkyStars = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "weatherwallpapers/common/drawable/d_sky_stars.png");
+        mCloudA01 = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "weatherwallpapers/common/drawable/cloud_a_01.png");
+        mCloudA02 = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "weatherwallpapers/common/drawable/cloud_a_02.png");
+        mCloudA03 = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "weatherwallpapers/common/drawable/cloud_a_03.png");
+        mCloudB01 = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "weatherwallpapers/common/drawable/cloud_b_01.png");
+        mCloudB02 = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "weatherwallpapers/common/drawable/cloud_b_02.png");
+        mCloudB03 = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "weatherwallpapers/common/drawable/cloud_b_03.png");
+        mSun1 = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "weatherwallpapers/common/drawable/a_sun_01.png");
+        mSun2 = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "weatherwallpapers/common/drawable/a_sun_02.png");
+        mSun3 = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "weatherwallpapers/common/drawable/a_sun_03.png");
+        mSun4 = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "windmill/drawable/a_sun_04.png");
+        mStar = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "weatherwallpapers/common/drawable/d_star.png");
+        mMeteor = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "windmill/drawable/d_meteor.png");
+        mMoon = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "windmill/drawable/d_moon.png");
+        mRain1 = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "weatherwallpapers/common/drawable/c_rain_01.png");
+        mRain2 = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "weatherwallpapers/common/drawable/c_rain_02.png");
+        mRain3 = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "weatherwallpapers/common/drawable/c_rain_03.png");
+        mRain4 = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "weatherwallpapers/common/drawable/c_rain_04.png");
+        mFog02 = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "weatherwallpapers/common/drawable/fog_02.png");
+        mIce = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "weatherwallpapers/common/drawable/ice.png");
+        mWaterdrop = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "weatherwallpapers/common/drawable/c_waterdrop.png");
+        mFrostE = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "weatherwallpapers/common/drawable/e_frost.png");
+        mFrostF = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "weatherwallpapers/common/drawable/f_frost.png");
+        mSnow1 = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "weatherwallpapers/common/drawable/e_snow_01.png");
+        mSnow2 = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "weatherwallpapers/common/drawable/e_snow_02.png");
+        mSnow3 = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "weatherwallpapers/common/drawable/e_snow_03.png");
+        mSnow4 = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "weatherwallpapers/common/drawable/e_snow_04.png");
+        mNightcover = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "weatherwallpapers/common/drawable/nightcover_01.png");
+        mSkyFlash = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "weatherwallpapers/common/drawable/g_sky_flash.png");
+        mLightning1 = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "weatherwallpapers/common/drawable/g_lightning_01.png");
+        mLightning2 = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "weatherwallpapers/common/drawable/g_lightning_02.png");
+        mLightning3 = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "weatherwallpapers/common/drawable/g_lightning_03.png");
+        mCloudLightA1 = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "weatherwallpapers/common/drawable/cloud_a_light_01.png");
+        mCloudLightA2 = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "weatherwallpapers/common/drawable/cloud_a_light_02.png");
+        mCloudLightA3 = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "weatherwallpapers/common/drawable/cloud_a_light_03.png");
+        mCloudLightB1 = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "weatherwallpapers/common/drawable/cloud_b_light_01.png");
+        mCloudLightB2 = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "weatherwallpapers/common/drawable/cloud_b_light_02.png");
+        mCloudLightB3 = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "weatherwallpapers/common/drawable/cloud_b_light_03.png");
+        mWindmillWing = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "windmill/drawable/a_windmill_wing.png");
+        mWindmillWingBlur = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "windmill/drawable/a_windmill_wing_blur2.png");
+        mWindmillCenter1 = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "windmill/drawable/a_windmill_center_01.png");
+        mWindmillCenter2 = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "windmill/drawable/a_windmill_center_02.png");
+        mWindmillPillar1 = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "windmill/drawable/a_windmill_pillar_01.png");
+        mWindmillPillar2 = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "windmill/drawable/a_windmill_pillar_02.png");
+        mWindmillPillarFlip1 = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "windmill/drawable/a_windmill_pillar_flip_01.png");
+        mWindmillPillarFlip2 = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "windmill/drawable/a_windmill_pillar_flip_blur2_02.png");
+        mLand01 = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "windmill/drawable/a_land_01.png");
+        mLand02 = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "windmill/drawable/a_land_02.png");
+        mLand03 = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "windmill/drawable/a_land_03.png");
+        mLand04 = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "windmill/drawable/a_land_04.png");
+        mLand05 = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "windmill/drawable/a_land_05.png");
+        mLand06 = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "windmill/drawable/a_land_06.png");
+        mLand07 = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "windmill/drawable/a_land_07.png");
+        mLand08 = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "windmill/drawable/a_land_08.png");
+        mLand09 = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "windmill/drawable/a_land_09.png");
+        mLawn01 = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "windmill/drawable/a_lawn_01.png");
+        mLawn02 = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "windmill/drawable/a_lawn_02.png");
+        mLawn03 = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "windmill/drawable/a_lawn_03.png");
+        mLawn04 = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "windmill/drawable/a_lawn_04.png");
+        mLawn05 = GLTextureUtils.loadTextureLinearMipmapPremult(
+                mContext, "windmill/drawable/a_lawn_05.png");
 
         mRaindrop1 = new int[25];
         mRaindrop2 = new int[25];
         for (int i = 0; i < 25; i++) {
-            mRaindrop1[i] = GLTextureUtils.loadTextureNearestPremult(mContext, "weatherwallpapers/common/drawable/waterdrop_a_" + i + ".png");
-            mRaindrop2[i] = GLTextureUtils.loadTextureNearestPremult(mContext, "weatherwallpapers/common/drawable/waterdrop_b_" + i + ".png");
+            mRaindrop1[i] = GLTextureUtils.loadTextureLinearMipmapPremult(
+                    mContext, "weatherwallpapers/common/drawable/waterdrop_a_" + i + ".png");
+            mRaindrop2[i] = GLTextureUtils.loadTextureLinearMipmapPremult(
+                    mContext, "weatherwallpapers/common/drawable/waterdrop_b_" + i + ".png");
         }
     }
 
     private void deleteTextures() {
-        int[] textures = {mSky01,mSky02,mSky03,mSky04,mSkyStars,mCloudA01,mCloudA02,mCloudA03,mCloudB01,mCloudB02,mCloudB03,mSun1,mSun2,mSun3,mSun4,mStar,mMeteor,mMoon,mRain1,mRain2,mRain3,mRain4,mFog02,mIce,mWaterdrop,mFrostE,mFrostF,mSnow1,mSnow2,mSnow3,mSnow4,mNightcover,mSkyFlash,mLightning1,mLightning2,mLightning3,mCloudLightA1,mCloudLightA2,mCloudLightA3,mCloudLightB1,mCloudLightB2,mCloudLightB3,mWindmillWing,mWindmillWingBlur,mWindmillCenter1,mWindmillCenter2,mWindmillPillar1,mWindmillPillar2,mWindmillPillarFlip1,mWindmillPillarFlip2,mLand01,mLand02,mLand03,mLand04,mLand05,mLand06,mLand07,mLand08,mLand09,mLawn01,mLawn02,mLawn03,mLawn04,mLawn05};
+        int[] textures = {
+            mSky01,
+            mSky02,
+            mSky03,
+            mSky04,
+            mSkyStars,
+            mCloudA01,
+            mCloudA02,
+            mCloudA03,
+            mCloudB01,
+            mCloudB02,
+            mCloudB03,
+            mSun1,
+            mSun2,
+            mSun3,
+            mSun4,
+            mStar,
+            mMeteor,
+            mMoon,
+            mRain1,
+            mRain2,
+            mRain3,
+            mRain4,
+            mFog02,
+            mIce,
+            mWaterdrop,
+            mFrostE,
+            mFrostF,
+            mSnow1,
+            mSnow2,
+            mSnow3,
+            mSnow4,
+            mNightcover,
+            mSkyFlash,
+            mLightning1,
+            mLightning2,
+            mLightning3,
+            mCloudLightA1,
+            mCloudLightA2,
+            mCloudLightA3,
+            mCloudLightB1,
+            mCloudLightB2,
+            mCloudLightB3,
+            mWindmillWing,
+            mWindmillWingBlur,
+            mWindmillCenter1,
+            mWindmillCenter2,
+            mWindmillPillar1,
+            mWindmillPillar2,
+            mWindmillPillarFlip1,
+            mWindmillPillarFlip2,
+            mLand01,
+            mLand02,
+            mLand03,
+            mLand04,
+            mLand05,
+            mLand06,
+            mLand07,
+            mLand08,
+            mLand09,
+            mLawn01,
+            mLawn02,
+            mLawn03,
+            mLawn04,
+            mLawn05
+        };
         GLES30.glDeleteTextures(textures.length, textures, 0);
         if (mRaindrop1 != null) GLES30.glDeleteTextures(mRaindrop1.length, mRaindrop1, 0);
         if (mRaindrop2 != null) GLES30.glDeleteTextures(mRaindrop2.length, mRaindrop2, 0);
@@ -311,65 +512,183 @@ public class WindmillGL extends GLESScene {
 
         GroundRenderer.GroundTextures groundTextures = mGroundRenderer.selectTextures(
                 mScene.mCondition,
-                mLand01,mLand02,mLand03,mLand04,mLand05,mLand06,mLand07,mLand08,mLand09,
-                mLawn01,mLawn02,mLawn03,mLawn04,mLawn05);
+                mLand01,
+                mLand02,
+                mLand03,
+                mLand04,
+                mLand05,
+                mLand06,
+                mLand07,
+                mLand08,
+                mLand09,
+                mLawn01,
+                mLawn02,
+                mLawn03,
+                mLawn04,
+                mLawn05);
 
         boolean clearOn = mScene.mWeatherFlagManager.isClearOn();
         boolean rainOn = mScene.mWeatherFlagManager.isRainOn();
         boolean snowOn = mScene.mWeatherFlagManager.isSnowOn();
         boolean thunderOn = mScene.mWeatherFlagManager.isThunderOn();
 
-        clearOn = mSkyRenderer.drawSkyAndCelestial(mSkyDrawer, mScene.mCondition, mScene.mNightWeight,
-                mScene.mFrameCnt, mScene.mOffset, mScene.mLandscape, mScene.mFillScaleY,
-                mSky01,mSky02,mSky03,mSky04,mSky04,mSkyStars,
-                mSun1,mSun2,mSun3,mMoon,mStar,mMeteor, clearOn, SkyRenderer.Config.WINDMILL);
+        clearOn = mSkyRenderer.drawSkyAndCelestial(
+                mSkyDrawer,
+                mScene.mCondition,
+                mScene.mNightWeight,
+                mScene.mFrameCnt,
+                mScene.mOffset,
+                mScene.mLandscape,
+                mScene.mFillScaleY,
+                mSky01,
+                mSky02,
+                mSky03,
+                mSky04,
+                mSky04,
+                mSkyStars,
+                mSun1,
+                mSun2,
+                mSun3,
+                mMoon,
+                mStar,
+                mMeteor,
+                clearOn,
+                SkyRenderer.Config.WINDMILL);
 
         // 夜罩随夜色渐入；白天权重为 0 时整块跳过，不白画一张全透明的
         if (mScene.mNightWeight > 0.0f
                 && (mScene.mCondition == com.reandroid.weather.WeatherCondition.D3_DREARY
-                || mScene.mCondition == com.reandroid.weather.WeatherCondition.D4_FOG
-                || mScene.mCondition == com.reandroid.weather.WeatherCondition.D5_RAIN_SHOWERS
-                || mScene.mCondition == com.reandroid.weather.WeatherCondition.D6_THUNDERSTORMS
-                || mScene.mCondition == com.reandroid.weather.WeatherCondition.D9_SLEET)) {
-            mSpriteDrawer.drawSprite(mNightcover, (-1.5f) + ((1.5f - mScene.mOffset) * 5.0f), -2.3f, -29.9f,
-                    2.0f * mScene.mLandscape, 2.0f * mScene.mFillScaleY, 0.0f, mScene.mNightWeight);
+                        || mScene.mCondition == com.reandroid.weather.WeatherCondition.D4_FOG
+                        || mScene.mCondition
+                                == com.reandroid.weather.WeatherCondition.D5_RAIN_SHOWERS
+                        || mScene.mCondition
+                                == com.reandroid.weather.WeatherCondition.D6_THUNDERSTORMS
+                        || mScene.mCondition == com.reandroid.weather.WeatherCondition.D9_SLEET)) {
+            mSpriteDrawer.drawSprite(
+                    mNightcover,
+                    (-1.5f) + ((1.5f - mScene.mOffset) * 5.0f),
+                    -2.3f,
+                    -29.9f,
+                    2.0f * mScene.mLandscape,
+                    2.0f * mScene.mFillScaleY,
+                    0.0f,
+                    mScene.mNightWeight);
         }
 
-        thunderOn = mCloudRenderer.drawClouds(mCloudDrawer, mScene.mCondition, mScene.mNightWeight,
-                mScene.mFrameCnt, mScene.mOffset, mScene.mLandscape,
-                mCloudA01,mCloudA02,mCloudA03,mCloudB01,mCloudB02,mCloudB03,
-                mCloudLightA1,mCloudLightA2,mCloudLightA3,mCloudLightB1,mCloudLightB2,mCloudLightB3,
-                thunderOn, CloudRenderer.Config.WINDMILL);
+        thunderOn = mCloudRenderer.drawClouds(
+                mCloudDrawer,
+                mScene.mCondition,
+                mScene.mNightWeight,
+                mScene.mFrameCnt,
+                mScene.mOffset,
+                mScene.mLandscape,
+                mCloudA01,
+                mCloudA02,
+                mCloudA03,
+                mCloudB01,
+                mCloudB02,
+                mCloudB03,
+                mCloudLightA1,
+                mCloudLightA2,
+                mCloudLightA3,
+                mCloudLightB1,
+                mCloudLightB2,
+                mCloudLightB3,
+                thunderOn,
+                CloudRenderer.Config.WINDMILL);
 
-        mWindmillRenderer.drawByDistance(mWindmillDrawer, 2, mScene.mFrameCnt, mScene.mOffset,
-                mScene.mLandscape, mScene.mNightWeight,
-                mWindmillWing,mWindmillWingBlur,mWindmillCenter1,mWindmillCenter2,
-                mWindmillPillar1,mWindmillPillar2,mWindmillPillarFlip1,mWindmillPillarFlip2);
+        mWindmillRenderer.drawByDistance(
+                mWindmillDrawer,
+                2,
+                mScene.mFrameCnt,
+                mScene.mOffset,
+                mScene.mLandscape,
+                mScene.mNightWeight,
+                mWindmillWing,
+                mWindmillWingBlur,
+                mWindmillCenter1,
+                mWindmillCenter2,
+                mWindmillPillar1,
+                mWindmillPillar2,
+                mWindmillPillarFlip1,
+                mWindmillPillarFlip2);
 
-        mGroundRenderer.drawFarLand(mGroundDrawer, groundTextures.farLand, groundTextures.farLandNight,
-                mScene.mOffset, mScene.mLandscape, mScene.mNightWeight);
+        mGroundRenderer.drawFarLand(
+                mGroundDrawer,
+                groundTextures.farLand,
+                groundTextures.farLandNight,
+                mScene.mOffset,
+                mScene.mLandscape,
+                mScene.mNightWeight);
 
-        mWindmillRenderer.drawByDistance(mWindmillDrawer, 1, mScene.mFrameCnt, mScene.mOffset,
-                mScene.mLandscape, mScene.mNightWeight,
-                mWindmillWing,mWindmillWingBlur,mWindmillCenter1,mWindmillCenter2,
-                mWindmillPillar1,mWindmillPillar2,mWindmillPillarFlip1,mWindmillPillarFlip2);
+        mWindmillRenderer.drawByDistance(
+                mWindmillDrawer,
+                1,
+                mScene.mFrameCnt,
+                mScene.mOffset,
+                mScene.mLandscape,
+                mScene.mNightWeight,
+                mWindmillWing,
+                mWindmillWingBlur,
+                mWindmillCenter1,
+                mWindmillCenter2,
+                mWindmillPillar1,
+                mWindmillPillar2,
+                mWindmillPillarFlip1,
+                mWindmillPillarFlip2);
 
-        mGroundRenderer.drawNearLand(mGroundDrawer, groundTextures.nearLand, groundTextures.nearLandNight,
-                mScene.mOffset, mScene.mLandscape, mScene.mNightWeight);
+        mGroundRenderer.drawNearLand(
+                mGroundDrawer,
+                groundTextures.nearLand,
+                groundTextures.nearLandNight,
+                mScene.mOffset,
+                mScene.mLandscape,
+                mScene.mNightWeight);
 
-        mWindmillRenderer.drawByDistance(mWindmillDrawer, 0, mScene.mFrameCnt, mScene.mOffset,
-                mScene.mLandscape, mScene.mNightWeight,
-                mWindmillWing,mWindmillWingBlur,mWindmillCenter1,mWindmillCenter2,
-                mWindmillPillar1,mWindmillPillar2,mWindmillPillarFlip1,mWindmillPillarFlip2);
+        mWindmillRenderer.drawByDistance(
+                mWindmillDrawer,
+                0,
+                mScene.mFrameCnt,
+                mScene.mOffset,
+                mScene.mLandscape,
+                mScene.mNightWeight,
+                mWindmillWing,
+                mWindmillWingBlur,
+                mWindmillCenter1,
+                mWindmillCenter2,
+                mWindmillPillar1,
+                mWindmillPillar2,
+                mWindmillPillarFlip1,
+                mWindmillPillarFlip2);
 
-        mGroundRenderer.drawLawn(mGroundDrawer, groundTextures.lawn, groundTextures.lawnNight,
-                mScene.mOffset, mScene.mLandscape, mScene.mNightWeight);
+        mGroundRenderer.drawLawn(
+                mGroundDrawer,
+                groundTextures.lawn,
+                groundTextures.lawnNight,
+                mScene.mOffset,
+                mScene.mLandscape,
+                mScene.mNightWeight);
 
-        clearOn = mSkyRenderer.drawSunlight(mSkyDrawer, mScene.mCondition, mScene.mNightWeight,
-                mScene.mFrameCnt, mScene.mOffset, mScene.mLandscape, mSun4, clearOn, SkyRenderer.Config.WINDMILL);
+        clearOn = mSkyRenderer.drawSunlight(
+                mSkyDrawer,
+                mScene.mCondition,
+                mScene.mNightWeight,
+                mScene.mFrameCnt,
+                mScene.mOffset,
+                mScene.mLandscape,
+                mSun4,
+                clearOn,
+                SkyRenderer.Config.WINDMILL);
 
-        mFogIceRenderer.drawFogIce(mFogIceDrawer, mScene.mCondition, mScene.mNightWeight,
-                mScene.mLandscape, mFog02, mFog02, mIce, FogIceRenderer.Config.WINDMILL);
+        mFogIceRenderer.drawFogIce(
+                mFogIceDrawer,
+                mScene.mCondition,
+                mScene.mNightWeight,
+                mScene.mLandscape,
+                mFog02,
+                mFog02,
+                mIce,
+                FogIceRenderer.Config.WINDMILL);
 
         rainOn = drawRain(rainOn);
         snowOn = drawSnow(snowOn);
@@ -382,32 +701,78 @@ public class WindmillGL extends GLESScene {
     }
 
     private boolean drawRain(boolean rainOn) {
-        return mPrecipitationRenderer.drawRain(mPrecipitationDrawer, mScene.mCondition,
-                mScene.mFrameCnt, mScene.mLandscape, mScene.mFillScaleY,
-                mRain1,mRain2,mRain3,mRain4,0,mWaterdrop,mRaindrop1,mRaindrop2,
-                rainOn, PrecipitationRenderer.Config.WINDMILL);
+        return mPrecipitationRenderer.drawRain(
+                mPrecipitationDrawer,
+                mScene.mCondition,
+                mScene.mFrameCnt,
+                mScene.mLandscape,
+                mScene.mFillScaleY,
+                mRain1,
+                mRain2,
+                mRain3,
+                mRain4,
+                0,
+                mWaterdrop,
+                mRaindrop1,
+                mRaindrop2,
+                rainOn,
+                PrecipitationRenderer.Config.WINDMILL);
     }
 
     private boolean drawSnow(boolean snowOn) {
         if (mScene.mCondition == com.reandroid.weather.WeatherCondition.D7_FLURRIES_SNOW
                 || mScene.mCondition == com.reandroid.weather.WeatherCondition.D9_SLEET) {
-            int frostTex = mScene.mCondition == com.reandroid.weather.WeatherCondition.D9_SLEET ? mFrostF : mFrostE;
+            int frostTex = mScene.mCondition == com.reandroid.weather.WeatherCondition.D9_SLEET
+                    ? mFrostF
+                    : mFrostE;
             if (mScene.mCondition == com.reandroid.weather.WeatherCondition.D9_SLEET) {
-                mSpriteDrawer.drawSprite(frostTex, -0.1f, -0.5f, -20.3f, 0.65f * mScene.mLandscape, 1.05f, 0.0f, 1.0f);
+                mSpriteDrawer.drawSprite(
+                        frostTex,
+                        -0.1f,
+                        -0.5f,
+                        -20.3f,
+                        0.65f * mScene.mLandscape,
+                        1.05f,
+                        0.0f,
+                        1.0f);
             } else {
-                mSpriteDrawer.drawSprite(frostTex, 0.0f, -0.5f, -20.3f, 0.63f * mScene.mLandscape, 1.05f, 0.0f, 1.0f);
+                mSpriteDrawer.drawSprite(
+                        frostTex,
+                        0.0f,
+                        -0.5f,
+                        -20.3f,
+                        0.63f * mScene.mLandscape,
+                        1.05f,
+                        0.0f,
+                        1.0f);
             }
         }
-        return mPrecipitationRenderer.drawSnow(mPrecipitationDrawer, mScene.mCondition,
-                mScene.mFrameCnt, mScene.mOffset, mScene.mLandscape,
-                mSnow1,mSnow2,mSnow3,mSnow4, snowOn, PrecipitationRenderer.Config.WINDMILL);
+        return mPrecipitationRenderer.drawSnow(
+                mPrecipitationDrawer,
+                mScene.mCondition,
+                mScene.mFrameCnt,
+                mScene.mOffset,
+                mScene.mLandscape,
+                mSnow1,
+                mSnow2,
+                mSnow3,
+                mSnow4,
+                snowOn,
+                PrecipitationRenderer.Config.WINDMILL);
     }
 
     private boolean drawThunder(boolean thunderOn) {
-        return mThunderRenderer.drawThunder(mThunderDrawer, mScene.mCondition,
-                mScene.mFrameCnt, mScene.mOffset, mScene.mLandscape,
-                mSkyFlash,mLightning1,mLightning2,mLightning3, thunderOn, ThunderRenderer.Config.WINDMILL);
+        return mThunderRenderer.drawThunder(
+                mThunderDrawer,
+                mScene.mCondition,
+                mScene.mFrameCnt,
+                mScene.mOffset,
+                mScene.mLandscape,
+                mSkyFlash,
+                mLightning1,
+                mLightning2,
+                mLightning3,
+                thunderOn,
+                ThunderRenderer.Config.WINDMILL);
     }
-
-    
-    }
+}

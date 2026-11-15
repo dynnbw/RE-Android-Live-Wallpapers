@@ -1,7 +1,6 @@
 package com.reandroid.utils;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.opengl.GLES30;
@@ -13,7 +12,6 @@ public final class GLTextureUtils {
 
     private GLTextureUtils() {}
 
-
     public static int loadTextureFromAsset(Context context, String assetPath) {
         return loadTextureFromAsset(context, assetPath, true, false);
     }
@@ -21,12 +19,27 @@ public final class GLTextureUtils {
     /** Load with GL_NEAREST min + premultiplied alpha. For windmill/weather wallpapers
      *  that use GL_ONE blend matching original GLES 1.x fixed-function behavior. */
     public static int loadTextureNearestPremult(Context context, String assetPath) {
-        return loadTextureEx(context, assetPath, false, true, false, true);
+        return loadTextureEx(context, assetPath, false, true, false, true, false);
     }
 
-    private static int loadTextureEx(Context context, String assetPath,
-                                      boolean minLinear, boolean magLinear, boolean repeat,
-                                      boolean premultAlpha) {
+    /**
+     * GL_LINEAR 双线性 + mipmap + 预乘 alpha。
+     *
+     * <p>给写实向的贴图用：素材分辨率远高于屏幕上的实际尺寸，NEAREST 缩小时会闪烁
+     * （风车的叶片和立柱就是这种情况，原素材小是当年性能妥协，不是像素风）。
+     */
+    public static int loadTextureLinearMipmapPremult(Context context, String assetPath) {
+        return loadTextureEx(context, assetPath, true, true, false, true, true);
+    }
+
+    private static int loadTextureEx(
+            Context context,
+            String assetPath,
+            boolean minLinear,
+            boolean magLinear,
+            boolean repeat,
+            boolean premultAlpha,
+            boolean mipmap) {
         Bitmap bitmap;
         try {
             if (premultAlpha) {
@@ -45,12 +58,21 @@ public final class GLTextureUtils {
         int[] textures = new int[1];
         GLES30.glGenTextures(1, textures, 0);
         int textureId = textures[0];
-        if (textureId == 0) { bitmap.recycle(); return 0; }
+        if (textureId == 0) {
+            bitmap.recycle();
+            return 0;
+        }
 
         GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, textureId);
-        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER,
-                minLinear ? GLES30.GL_LINEAR : GLES30.GL_NEAREST);
-        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER,
+        GLES30.glTexParameteri(
+                GLES30.GL_TEXTURE_2D,
+                GLES30.GL_TEXTURE_MIN_FILTER,
+                minLinear
+                        ? (mipmap ? GLES30.GL_LINEAR_MIPMAP_LINEAR : GLES30.GL_LINEAR)
+                        : GLES30.GL_NEAREST);
+        GLES30.glTexParameteri(
+                GLES30.GL_TEXTURE_2D,
+                GLES30.GL_TEXTURE_MAG_FILTER,
                 magLinear ? GLES30.GL_LINEAR : GLES30.GL_NEAREST);
         int wrap = repeat ? GLES30.GL_REPEAT : GLES30.GL_CLAMP_TO_EDGE;
         GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, wrap);
@@ -58,11 +80,15 @@ public final class GLTextureUtils {
 
         GLES30.glPixelStorei(GLES30.GL_UNPACK_ALIGNMENT, 1);
         GLUtils.texImage2D(GLES30.GL_TEXTURE_2D, 0, bitmap, 0);
+        if (mipmap) {
+            GLES30.glGenerateMipmap(GLES30.GL_TEXTURE_2D);
+        }
         bitmap.recycle();
         return textureId;
     }
 
-    public static int loadTextureFromAsset(Context context, String assetPath, boolean linear, boolean repeat) {
+    public static int loadTextureFromAsset(
+            Context context, String assetPath, boolean linear, boolean repeat) {
         Bitmap bitmap;
         try {
             bitmap = AssetLoader.decodeBitmap(context, assetPath);
