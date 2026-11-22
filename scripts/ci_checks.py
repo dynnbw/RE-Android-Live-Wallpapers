@@ -251,6 +251,27 @@ def check_shaders():
           % (checked, linked, skipped))
 
 
+def check_asset_notices():
+    """每个壁纸目录都要有一份 NOTICE.md。
+
+    图片素材的版权不在 Apache-2.0 范围内，来源说明必须跟着目录走 —— 它会被打进
+    APK，新增壁纸时也顺带逼作者交代图片来源。缺了这一份，分发出去就只剩一句
+    "整个仓库都是 Apache"，正是最容易出问题的地方。
+    """
+    count = 0
+    for info in glob.glob(ASSETS + "/*/info.json"):
+        directory = os.path.dirname(info)
+        notice = os.path.join(directory, "NOTICE.md")
+        if not os.path.exists(notice):
+            fail("notice", "%s 缺少 NOTICE.md（图片素材来源说明）" % directory)
+            continue
+        text = io.open(notice, encoding="utf-8", errors="replace").read()
+        if "Apache" not in text:
+            fail("notice", "%s 的 NOTICE.md 没写许可边界" % directory)
+        count += 1
+    print("素材说明：%d 个壁纸目录带 NOTICE.md" % count)
+
+
 def check_strings_alignment():
     """13 个 strings.xml 必须**逐行对齐**：同一行提到的是同一个键。
 
@@ -308,6 +329,7 @@ def main():
     check_xml()
     check_language_keys()
     check_labels()
+    check_asset_notices()
     check_strings_alignment()
     check_shaders()
     check_no_secrets()

@@ -218,4 +218,4 @@ checklist, commit rules — see [CONTRIBUTING-en.md](CONTRIBUTING-en.md).
 
 ## License
 
-[LICENSE](LICENSE) · [NOTICE](NOTICE.md)
+Code: [Apache-2.0](LICENSE). Wallpaper images: copyright remains with their respective owners; each wallpaper directory has a `NOTICE.md` naming its image source (see [NOTICE](NOTICE.md)).
