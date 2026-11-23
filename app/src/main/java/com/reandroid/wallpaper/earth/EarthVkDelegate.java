@@ -59,9 +59,7 @@ final class EarthVkDelegate extends VkPassRendererDelegate {
     private static final float LIGHT_Z = 10.0f;
     private static final float AMBIENT = 0.2f;
     private static final float NIGHT_GAIN = 3.0f;
-    private static final float[] CLOSEUP_DELTA = {
-        -49.0f / 255.0f, 11.0f / 255.0f, 38.0f / 255.0f
-    };
+    private static final float[] CLOSEUP_DELTA = {-49.0f / 255.0f, 11.0f / 255.0f, 38.0f / 255.0f};
     private static final float SPIN_MAX_DEG_PER_SEC = 30.0f;
     private static final float HALO_RADIUS_SCALE = 1.0f / 0.672f;
     private static final long CLOCK_REFRESH_MS = 60000L;
@@ -71,7 +69,7 @@ final class EarthVkDelegate extends VkPassRendererDelegate {
 
     // ---- 顶点布局：x,y,z, nx,ny,nz, u,v ----
     private static final int ATTRS = EarthGlobe.FLOATS_PER_VERTEX; // 8
-    private static final int STRIDE = ATTRS * 4;                   // 32
+    private static final int STRIDE = ATTRS * 4; // 32
     private static final int[] GLOBE_ATTRIBS = {3, 3, 2};
 
     private static final int HALO_STRIDE = 16;
@@ -81,13 +79,16 @@ final class EarthVkDelegate extends VkPassRendererDelegate {
     // ---- 推送常量 ----
     /** mat4 + angle/scale/tx/tz + 光源 3 + delta 3 + ambient/nightGain/useNight。 */
     private static final int PLANET_PUSH_FLOATS = 16 + 4 + 3 + 3 + 3;
+
     private static final int PLANET_PUSH_BYTES = PLANET_PUSH_FLOATS * 4; // 116
     /** mat4 + angle + scale。 */
     private static final int SKY_PUSH_FLOATS = 16 + 2;
-    private static final int SKY_PUSH_BYTES = SKY_PUSH_FLOATS * 4;       // 72
+
+    private static final int SKY_PUSH_BYTES = SKY_PUSH_FLOATS * 4; // 72
     /** mat4。 */
     private static final int HALO_PUSH_FLOATS = 16;
-    private static final int HALO_PUSH_BYTES = HALO_PUSH_FLOATS * 4;     // 64
+
+    private static final int HALO_PUSH_BYTES = HALO_PUSH_FLOATS * 4; // 64
 
     private static final String PLANET_VERT = "shaders/earth_planet_vk.vert.spv";
     private static final String PLANET_FRAG = "shaders/earth_planet_vk.frag.spv";
@@ -173,8 +174,7 @@ final class EarthVkDelegate extends VkPassRendererDelegate {
     private final float[] mHaloPush = new float[HALO_PUSH_FLOATS];
 
     private final ByteBuffer mHaloVertices =
-            ByteBuffer.allocateDirect(HALO_VERTICES * HALO_STRIDE)
-                    .order(ByteOrder.nativeOrder());
+            ByteBuffer.allocateDirect(HALO_VERTICES * HALO_STRIDE).order(ByteOrder.nativeOrder());
 
     // ---- 时钟与帧间隔 ----
     private long mLastFrameMs;
@@ -264,22 +264,65 @@ final class EarthVkDelegate extends VkPassRendererDelegate {
         for (String name : textures) scene.createTexture(name);
 
         // ① 星空：不测深度、不写深度、不混合，后面的球体才能盖住它。
-        mSkyPass = addPass(scene, SKY_VERT, SKY_FRAG, GLOBE_ATTRIBS, STRIDE,
-                VkPass.BLEND_NONE, SKY_PUSH_BYTES, false, false, TEX_SKY);
+        mSkyPass = addPass(
+                scene,
+                SKY_VERT,
+                SKY_FRAG,
+                GLOBE_ATTRIBS,
+                STRIDE,
+                VkPass.BLEND_NONE,
+                SKY_PUSH_BYTES,
+                false,
+                false,
+                TEX_SKY);
 
         // ② 地球：不透明，测深度 + 写深度。
-        mEarthPass = addPass(scene, PLANET_VERT, PLANET_FRAG, GLOBE_ATTRIBS, STRIDE,
-                VkPass.BLEND_NONE, PLANET_PUSH_BYTES, true, true, TEX_DAY, TEX_NIGHT);
+        mEarthPass = addPass(
+                scene,
+                PLANET_VERT,
+                PLANET_FRAG,
+                GLOBE_ATTRIBS,
+                STRIDE,
+                VkPass.BLEND_NONE,
+                PLANET_PUSH_BYTES,
+                true,
+                true,
+                TEX_DAY,
+                TEX_NIGHT);
 
         // ③ 云层 / 高光：glBlendFunc(SRC_ALPHA, ONE)，测深度但不写深度。
-        mCloudsPass = addAdditivePass(scene, GLOBE_ATTRIBS, STRIDE, PLANET_PUSH_BYTES,
-                true, false, TEX_CLOUDS, TEX_CLOUDS);
-        mSpecularPass = addAdditivePass(scene, GLOBE_ATTRIBS, STRIDE, PLANET_PUSH_BYTES,
-                true, false, TEX_SPECULAR, TEX_SPECULAR);
+        mCloudsPass = addAdditivePass(
+                scene,
+                GLOBE_ATTRIBS,
+                STRIDE,
+                PLANET_PUSH_BYTES,
+                true,
+                false,
+                TEX_CLOUDS,
+                TEX_CLOUDS);
+        mSpecularPass = addAdditivePass(
+                scene,
+                GLOBE_ATTRIBS,
+                STRIDE,
+                PLANET_PUSH_BYTES,
+                true,
+                false,
+                TEX_SPECULAR,
+                TEX_SPECULAR);
 
         // ④ 月球：不透明，测深度 + 写深度。
-        mMoonPass = addPass(scene, PLANET_VERT, PLANET_FRAG, GLOBE_ATTRIBS, STRIDE,
-                VkPass.BLEND_NONE, PLANET_PUSH_BYTES, true, true, TEX_MOON, TEX_MOON);
+        mMoonPass = addPass(
+                scene,
+                PLANET_VERT,
+                PLANET_FRAG,
+                GLOBE_ATTRIBS,
+                STRIDE,
+                VkPass.BLEND_NONE,
+                PLANET_PUSH_BYTES,
+                true,
+                true,
+                TEX_MOON,
+                TEX_MOON);
 
         // ⑤ 光晕：屏幕空间四边形，加色，不测深度。远近两份贴图各一个 pass，
         //    每帧把不用的那个顶点数置 0 —— pass 的纹理绑定是静态的，不能逐帧换。
@@ -319,8 +362,7 @@ final class EarthVkDelegate extends VkPassRendererDelegate {
             boolean depthWrite,
             String... textures) {
         VkPass pass = new VkPass(
-                        vert, frag, attribSizes, stride, VkPass.TOPOLOGY_TRIANGLE_LIST,
-                        blendMode)
+                        vert, frag, attribSizes, stride, VkPass.TOPOLOGY_TRIANGLE_LIST, blendMode)
                 .buffer(GLOBE_BUFFER, 0)
                 .pushConstants(pushBytes)
                 .depthTest(depthTest)
@@ -374,9 +416,8 @@ final class EarthVkDelegate extends VkPassRendererDelegate {
         short[] indices = mGlobe.indices;
         float[] vertices = mGlobe.vertices;
         mGlobeVertexCount = indices.length;
-        mGlobeExpanded =
-                ByteBuffer.allocateDirect(mGlobeVertexCount * STRIDE)
-                        .order(ByteOrder.nativeOrder());
+        mGlobeExpanded = ByteBuffer.allocateDirect(mGlobeVertexCount * STRIDE)
+                .order(ByteOrder.nativeOrder());
         for (int i = 0; i < indices.length; i++) {
             int base = (indices[i] & 0xFFFF) * ATTRS;
             for (int a = 0; a < ATTRS; a++) {
@@ -468,13 +509,7 @@ final class EarthVkDelegate extends VkPassRendererDelegate {
             return;
         }
         fillPlanetPush(
-                mVkViewProj,
-                scene.cloudAngleY(),
-                EarthScene.CLOUDS_SCALE,
-                0.0f,
-                0.0f,
-                null,
-                false);
+                mVkViewProj, scene.cloudAngleY(), EarthScene.CLOUDS_SCALE, 0.0f, 0.0f, null, false);
         frame.pushConstants(mCloudsPass, mPlanetPush);
         frame.setVertexCount(mCloudsPass, mGlobeVertexCount);
     }
@@ -519,8 +554,7 @@ final class EarthVkDelegate extends VkPassRendererDelegate {
      */
     private void drawHalo(VkPassFrame frame, boolean closeup) {
         // 与 GLES 的 drawHalo 相同：近景需要 closeup 贴图，缺了就不画（不退回远景贴图）。
-        boolean draw = mPrefHalo && mHasHalo
-                && (!closeup || mHasHaloCloseup);
+        boolean draw = mPrefHalo && mHasHalo && (!closeup || mHasHaloCloseup);
         if (!draw || !buildHaloGeometry()) {
             frame.setVertexCount(mHaloPass, 0);
             frame.setVertexCount(mHaloCloseupPass, 0);
@@ -557,15 +591,30 @@ final class EarthVkDelegate extends VkPassRendererDelegate {
         // 球体的角半径 → 屏幕半径。mProj[5] = 1/tan(垂直半视场角)
         float worldR = EarthScene.EARTH_SCALE * EarthGlobe.NORMALIZED_RADIUS;
         float angR = (float) Math.asin(Math.min(1.0f, worldR / d));
-        float screenR = (mHeight * 0.5f) * mProj[5] * (float) Math.tan(angR)
-                * HALO_RADIUS_SCALE;
+        float screenR = (mHeight * 0.5f) * mProj[5] * (float) Math.tan(angR) * HALO_RADIUS_SCALE;
         if (screenR <= 0.0f) return false;
 
         mHaloVertices.clear();
-        mHaloVertices.putFloat(sx - screenR).putFloat(sy - screenR).putFloat(0.0f).putFloat(0.0f);
-        mHaloVertices.putFloat(sx - screenR).putFloat(sy + screenR).putFloat(0.0f).putFloat(1.0f);
-        mHaloVertices.putFloat(sx + screenR).putFloat(sy + screenR).putFloat(1.0f).putFloat(1.0f);
-        mHaloVertices.putFloat(sx + screenR).putFloat(sy - screenR).putFloat(1.0f).putFloat(0.0f);
+        mHaloVertices
+                .putFloat(sx - screenR)
+                .putFloat(sy - screenR)
+                .putFloat(0.0f)
+                .putFloat(0.0f);
+        mHaloVertices
+                .putFloat(sx - screenR)
+                .putFloat(sy + screenR)
+                .putFloat(0.0f)
+                .putFloat(1.0f);
+        mHaloVertices
+                .putFloat(sx + screenR)
+                .putFloat(sy + screenR)
+                .putFloat(1.0f)
+                .putFloat(1.0f);
+        mHaloVertices
+                .putFloat(sx + screenR)
+                .putFloat(sy - screenR)
+                .putFloat(1.0f)
+                .putFloat(0.0f);
         mHaloVertices.position(0);
         return true;
     }
@@ -615,8 +664,8 @@ final class EarthVkDelegate extends VkPassRendererDelegate {
 
     private void zeroAll(VkPassFrame frame) {
         for (VkPass pass : new VkPass[] {
-                mSkyPass, mEarthPass, mCloudsPass, mSpecularPass,
-                mMoonPass, mHaloPass, mHaloCloseupPass}) {
+            mSkyPass, mEarthPass, mCloudsPass, mSpecularPass, mMoonPass, mHaloPass, mHaloCloseupPass
+        }) {
             if (pass != null) frame.setVertexCount(pass, 0);
         }
     }
@@ -632,12 +681,13 @@ final class EarthVkDelegate extends VkPassRendererDelegate {
         Calendar cal = Calendar.getInstance();
         TimeZone tz = cal.getTimeZone();
         long msSinceNoon = (((cal.get(Calendar.HOUR_OF_DAY) - 12L) * 3600L
-                + cal.get(Calendar.MINUTE) * 60L
-                + cal.get(Calendar.SECOND)) * 1000L)
+                                + cal.get(Calendar.MINUTE) * 60L
+                                + cal.get(Calendar.SECOND))
+                        * 1000L)
                 + cal.get(Calendar.MILLISECOND);
         double daysSinceEpoch = System.currentTimeMillis() / 86400000.0;
-        scene.setClock(msSinceNoon, tz.getRawOffset(), cal.get(Calendar.DAY_OF_YEAR),
-                daysSinceEpoch);
+        scene.setClock(
+                msSinceNoon, tz.getRawOffset(), cal.get(Calendar.DAY_OF_YEAR), daysSinceEpoch);
     }
 
     // ─────────────────────────── 纹理 ───────────────────────────
