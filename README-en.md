@@ -44,13 +44,13 @@ Method 3: Long-press home screen → Wallpapers → find "REAndroid Live Wallpap
 
 ## Wallpaper List
 
-**37** wallpapers total (2 more are hidden and do not appear in the app's list), with **32** offering an additional Vulkan backend (see the VK column below)
+**37** wallpapers total (2 more are hidden and do not appear in the app's list), with **36** offering an additional Vulkan backend (see the VK column below; only WalkAround has none)
 
 | Wallpaper | Type | VK | Description |
 | --- | --- | --- | --- |
 | Galaxy | Starfield | ✓ | Rotating star field, color gradients |
 | Galaxy4 | Starfield | ✓ | Rotating star field, color gradients |
-| NightSky | Starfield | | 9,000 real stars from the Hipparcos catalog, gyroscope tracking, long-press to accelerate star trails |
+| NightSky | Starfield | ✓ | 9,000 real stars from the Hipparcos catalog, gyroscope tracking, long-press to accelerate star trails |
 | Microbes | Particles | ✓ | Microbial swarm AI, touch to feed, reproduction/death cycle |
 | Grass | Nature | ✓ | Wind-blown grass, solar/lunar eclipses, weather integration |
 | WildWorld | Nature | ✓ | Prehistoric world with volcanoes, dinosaurs, pterosaurs, fireballs |
@@ -71,9 +71,9 @@ Method 3: Long-press home screen → Wallpapers → find "REAndroid Live Wallpap
 | Aurora2 | Aurora | ✓ | Northern lights v2, more brilliant colors |
 | Fireworks | Effects | ✓ | Firework particles, tap to launch |
 | LuminousDots | Effects | ✓ | Luminous particle field |
-| Bokeh Rainbow | Effects | | Rainbow bokeh spots, tap to spawn, scrolls with the launcher |
-| Dandelion | Nature | | Dandelions swaying in the wind, tap to blow the seeds away, clocks fade with battery level, 1–10 plants |
-| Ocean Waves | Effects | | Caustics and reflections over a coral seabed, the water drifts with the launcher |
+| Bokeh Rainbow | Effects | ✓ | Rainbow bokeh spots, tap to spawn, scrolls with the launcher |
+| Dandelion | Nature | ✓ | Dandelions swaying in the wind, tap to blow the seeds away, clocks fade with battery level, 1–10 plants |
+| Ocean Waves | Effects | ✓ | Caustics and reflections over a coral seabed, the water drifts with the launcher |
 | CosmicFlow | Effects | ✓ | Grey ripple background with a GPU noise flow field, 8 colour themes |
 | Silk | Effects | ✓ | Flowing silk ribbons, 3 colour themes |
 | Droid | Effects | ✓ | Android robots in parts, driven by gravity, acceleration and touch (listed in the app as "Shake Them All") |
