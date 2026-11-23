@@ -1,5 +1,6 @@
 {
   "plugin": "com.reandroid.wallpaper.oceanwaves.OceanWavesPlugin",
+  "pluginVk": "com.reandroid.wallpaper.oceanwaves.OceanWavesVKPlugin",
   "previewClass": "com.reandroid.wallpaper.oceanwaves.OceanWavesGL",
   "permissions": []
 }
