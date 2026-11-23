@@ -203,6 +203,8 @@ public:
     bool createRenderPassLocked() {
         if (renderPass_ != VK_NULL_HANDLE) return true;
 
+        std::vector<VkAttachmentDescription> attachments;
+
         VkAttachmentDescription ca{};
         ca.format = swapchainFormat_;
         ca.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -212,28 +214,52 @@ public:
         ca.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
         ca.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         ca.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+        attachments.push_back(ca);
+
+        VkAttachmentDescription depth{};
+        if (depthEnabled_) {
+            depth.format = depthFormat_;
+            depth.samples = VK_SAMPLE_COUNT_1_BIT;
+            depth.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+            depth.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            depth.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            depth.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            depth.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            depth.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+            attachments.push_back(depth);
+        }
 
         VkAttachmentReference ar{};
         ar.attachment = 0;
         ar.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
+        VkAttachmentReference depthRef{};
+        depthRef.attachment = 1;
+        depthRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
         VkSubpassDescription sp{};
         sp.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
         sp.colorAttachmentCount = 1;
         sp.pColorAttachments = &ar;
+        if (depthEnabled_) {
+            sp.pDepthStencilAttachment = &depthRef;
+        }
 
         VkSubpassDependency dep{};
         dep.srcSubpass = VK_SUBPASS_EXTERNAL;
         dep.dstSubpass = 0;
-        dep.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        dep.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        dep.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+                | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+        dep.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+                | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
         dep.srcAccessMask = 0;
-        dep.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        dep.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
+                | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 
         VkRenderPassCreateInfo rpi{};
         rpi.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-        rpi.attachmentCount = 1;
-        rpi.pAttachments = &ca;
+        rpi.attachmentCount = static_cast<uint32_t>(attachments.size());
+        rpi.pAttachments = attachments.data();
         rpi.subpassCount = 1;
         rpi.pSubpasses = &sp;
         rpi.dependencyCount = 1;
@@ -312,13 +338,18 @@ public:
 
         static_cast<Derived*>(this)->createRenderPassLocked();
 
+        if (depthEnabled_) {
+            if (!createDepthResourcesLocked(extent)) return false;
+        }
+
         swapchainFramebuffers_.resize(imageCount);
         for (uint32_t i = 0; i < imageCount; ++i) {
+            VkImageView attachments[2] = {swapchainImageViews_[i], depthView_};
             VkFramebufferCreateInfo fi{};
             fi.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
             fi.renderPass = renderPass_;
-            fi.attachmentCount = 1;
-            fi.pAttachments = &swapchainImageViews_[i];
+            fi.attachmentCount = depthEnabled_ ? 2 : 1;
+            fi.pAttachments = attachments;
             fi.width = extent.width;
             fi.height = extent.height;
             fi.layers = 1;
@@ -351,6 +382,7 @@ public:
         }
         for (auto& fb : swapchainFramebuffers_) { if (fb) vkDestroyFramebuffer(device_, fb, nullptr); }
         swapchainFramebuffers_.clear();
+        destroyDepthResourcesLocked();
         static_cast<Derived*>(this)->destroyPipelinesLocked();
         for (auto& iv : swapchainImageViews_) { if (iv) vkDestroyImageView(device_, iv, nullptr); }
         swapchainImageViews_.clear();
@@ -665,7 +697,68 @@ public:
             && static_cast<const Derived*>(this)->isSceneReadyLocked();
     }
 
+    /** 申请一个深度缓冲（需要在建 swapchain 资源之前调用，比如 onDeviceCreated 里）。 */
+    void enableDepthBuffer() { depthEnabled_ = true; }
+
+    bool createDepthResourcesLocked(VkExtent2D extent) {
+        destroyDepthResourcesLocked();
+        VkImageCreateInfo ii{};
+        ii.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+        ii.imageType = VK_IMAGE_TYPE_2D;
+        ii.format = depthFormat_;
+        ii.extent = {extent.width, extent.height, 1};
+        ii.mipLevels = 1;
+        ii.arrayLayers = 1;
+        ii.samples = VK_SAMPLE_COUNT_1_BIT;
+        ii.tiling = VK_IMAGE_TILING_OPTIMAL;
+        ii.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+        ii.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        ii.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        if (vkCreateImage(device_, &ii, nullptr, &depthImage_) != VK_SUCCESS) {
+            LOGE("vkCreateImage(depth) failed");
+            return false;
+        }
+        VkMemoryRequirements req{};
+        vkGetImageMemoryRequirements(device_, depthImage_, &req);
+        VkMemoryAllocateInfo ai{};
+        ai.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+        ai.allocationSize = req.size;
+        ai.memoryTypeIndex = vkFindMemoryType(
+                physicalDevice_, req.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+        if (vkAllocateMemory(device_, &ai, nullptr, &depthMemory_) != VK_SUCCESS) {
+            LOGE("vkAllocateMemory(depth) failed");
+            return false;
+        }
+        vkBindImageMemory(device_, depthImage_, depthMemory_, 0);
+        VkImageViewCreateInfo vi{};
+        vi.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+        vi.image = depthImage_;
+        vi.viewType = VK_IMAGE_VIEW_TYPE_2D;
+        vi.format = depthFormat_;
+        vi.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+        vi.subresourceRange.levelCount = 1;
+        vi.subresourceRange.layerCount = 1;
+        if (vkCreateImageView(device_, &vi, nullptr, &depthView_) != VK_SUCCESS) {
+            LOGE("vkCreateImageView(depth) failed");
+            return false;
+        }
+        return true;
+    }
+
+    void destroyDepthResourcesLocked() {
+        if (device_ == VK_NULL_HANDLE) return;
+        if (depthView_ != VK_NULL_HANDLE) { vkDestroyImageView(device_, depthView_, nullptr); depthView_ = VK_NULL_HANDLE; }
+        if (depthImage_ != VK_NULL_HANDLE) { vkDestroyImage(device_, depthImage_, nullptr); depthImage_ = VK_NULL_HANDLE; }
+        if (depthMemory_ != VK_NULL_HANDLE) { vkFreeMemory(device_, depthMemory_, nullptr); depthMemory_ = VK_NULL_HANDLE; }
+    }
+
 protected:
+    bool depthEnabled_ = false;
+    VkFormat depthFormat_ = VK_FORMAT_D32_SFLOAT;
+    VkImage depthImage_ = VK_NULL_HANDLE;
+    VkDeviceMemory depthMemory_ = VK_NULL_HANDLE;
+    VkImageView depthView_ = VK_NULL_HANDLE;
+
     // ─── Vulkan state (shared) ───
     VkInstance instance_ = VK_NULL_HANDLE;
     VkPhysicalDevice physicalDevice_ = VK_NULL_HANDLE;

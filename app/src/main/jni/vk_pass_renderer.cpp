@@ -43,6 +43,9 @@ static VkSampler createSampler(VkDevice device, VkFilter minFilter, VkFilter mag
 
 int VkPassRenderer::addPass(VkPassDesc desc) {
     std::lock_guard<std::mutex> lock(mutex_);
+    if (desc.depthTest || desc.depthWrite) {
+        enableDepthBuffer();
+    }
     passes_.push_back(std::move(desc));
     return static_cast<int>(passes_.size()) - 1;
 }
@@ -320,6 +323,16 @@ bool VkPassRenderer::createPipelinesLocked() {
         blendState.attachmentCount = 1;
         blendState.pAttachments = &blend;
 
+        VkPipelineDepthStencilStateCreateInfo depthState{};
+        depthState.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+        if (depthEnabled_) {
+            depthState.depthTestEnable = pass.depthTest ? VK_TRUE : VK_FALSE;
+            depthState.depthWriteEnable = pass.depthWrite ? VK_TRUE : VK_FALSE;
+            depthState.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
+            depthState.depthBoundsTestEnable = VK_FALSE;
+            depthState.stencilTestEnable = VK_FALSE;
+        }
+
         VkPushConstantRange pushRange{};
         pushRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
         pushRange.size = pass.pushConstantBytes;
@@ -352,6 +365,7 @@ bool VkPassRenderer::createPipelinesLocked() {
         pipelineInfo.pRasterizationState = &raster;
         pipelineInfo.pMultisampleState = &multisample;
         pipelineInfo.pColorBlendState = &blendState;
+        pipelineInfo.pDepthStencilState = depthEnabled_ ? &depthState : nullptr;
         pipelineInfo.layout = rt.layout;
         pipelineInfo.renderPass = renderPass_;
         pipelineInfo.subpass = 0;
@@ -520,13 +534,16 @@ void VkPassRenderer::recordFrameLocked(VkCommandBuffer cmd, uint32_t imageIndex)
     clear.color.float32[2] = clearColor_[2];
     clear.color.float32[3] = clearColor_[3];
 
+    VkClearValue clears[2] = {clear, {}};
+    clears[1].depthStencil.depth = 1.0f;
+
     VkRenderPassBeginInfo passBegin{};
     passBegin.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     passBegin.renderPass = renderPass_;
     passBegin.framebuffer = swapchainFramebuffers_[imageIndex];
     passBegin.renderArea = {{0, 0}, swapchainExtent_};
-    passBegin.clearValueCount = 1;
-    passBegin.pClearValues = &clear;
+    passBegin.clearValueCount = depthEnabled_ ? 2 : 1;
+    passBegin.pClearValues = clears;
     vkCmdBeginRenderPass(cmd, &passBegin, VK_SUBPASS_CONTENTS_INLINE);
 
     for (size_t i = 0; i < passes_.size() && i < runtime_.size(); ++i) {
@@ -710,7 +727,8 @@ static jint JNICALL nAddPass(
         JNIEnv* env, jclass, jlong handle,
         jstring vs, jstring fs, jintArray attribSizes, jint stride, jint primitive,
         jboolean blend, jint srcColor, jint dstColor, jint srcAlpha, jint dstAlpha,
-        jint pushBytes, jstring bufferName, jint vertexCount, jboolean clear) {
+        jint pushBytes, jstring bufferName, jint vertexCount, jboolean clear,
+        jboolean depthTest, jboolean depthWrite) {
     auto* renderer = asRenderer(handle);
     if (renderer == nullptr) return -1;
 
@@ -729,6 +747,8 @@ static jint JNICALL nAddPass(
     desc.bufferName = jstringToStd(env, bufferName);
     desc.vertexCount = static_cast<uint32_t>(vertexCount);
     desc.clear = clear == JNI_TRUE;
+    desc.depthTest = depthTest == JNI_TRUE;
+    desc.depthWrite = depthWrite == JNI_TRUE;
 
     if (attribSizes != nullptr) {
         const jsize count = env->GetArrayLength(attribSizes);
@@ -851,7 +871,7 @@ static const JNINativeMethod kMethods[] = {
     {"nDestroy", "(J)V", reinterpret_cast<void*>(nDestroy)},
     {"nSetClearColor", "(JFFFF)V", reinterpret_cast<void*>(nSetClearColor)},
     {"nAddPass",
-     "(JLjava/lang/String;Ljava/lang/String;[IIIZIIIIILjava/lang/String;IZ)I",
+     "(JLjava/lang/String;Ljava/lang/String;[IIIZIIIIILjava/lang/String;IZZZ)I",
      reinterpret_cast<void*>(nAddPass)},
     {"nCreateBuffer", "(JLjava/lang/String;IIZ)V", reinterpret_cast<void*>(nCreateBuffer)},
     {"nCreateTexture", "(JLjava/lang/String;)V", reinterpret_cast<void*>(nCreateTexture)},

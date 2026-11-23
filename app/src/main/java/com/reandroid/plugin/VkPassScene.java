@@ -92,7 +92,9 @@ public final class VkPassScene {
                     pass.pushConstantBytes,
                     pass.bufferName,
                     pass.vertexCount,
-                    pass.clear);
+                    pass.clear,
+                    pass.depthTest,
+                    pass.depthWrite);
             for (VkPass.TextureBinding texture : pass.textures) {
                 VkPassNative.nBindTexture(handle, pass.index, texture.binding, texture.name);
             }

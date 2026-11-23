@@ -40,7 +40,9 @@ public final class VkPassNative {
             int pushConstantBytes,
             String bufferName,
             int vertexCount,
-            boolean clear);
+            boolean clear,
+            boolean depthTest,
+            boolean depthWrite);
 
     static native void nCreateBuffer(
             long handle, String name, int strideBytes, int capacityVertices, boolean dynamic);

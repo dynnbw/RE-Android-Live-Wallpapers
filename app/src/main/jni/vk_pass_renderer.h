@@ -36,6 +36,9 @@ struct VkPassDesc {
     std::string bufferName;
     uint32_t vertexCount = 0;
     bool clear = true;
+    /** 深度测试/写入；任一为 true 时渲染器会申请深度缓冲。 */
+    bool depthTest = false;
+    bool depthWrite = false;
     float clearColor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
     std::vector<std::pair<uint32_t, std::string>> textures; // binding -> texture name
 };

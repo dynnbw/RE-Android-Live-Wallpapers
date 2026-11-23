@@ -54,6 +54,9 @@ public final class VkPass {
     final int topology;
     final int blendMode;
 
+    boolean depthTest;
+    boolean depthWrite;
+
     String bufferName = "";
     int vertexCount;
     boolean clear;
@@ -83,6 +86,18 @@ public final class VkPass {
     public VkPass buffer(String name, int vertexCount) {
         this.bufferName = name;
         this.vertexCount = vertexCount;
+        return this;
+    }
+
+    /** 打开深度测试；任一 pass 需要时渲染器会给整帧申请深度缓冲。 */
+    public VkPass depthTest(boolean depthTest) {
+        this.depthTest = depthTest;
+        return this;
+    }
+
+    /** 深度写入，通常和 {@link #depthTest} 一起开。 */
+    public VkPass depthWrite(boolean depthWrite) {
+        this.depthWrite = depthWrite;
         return this;
     }
 
