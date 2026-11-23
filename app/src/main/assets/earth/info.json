@@ -1,5 +1,6 @@
 {
   "plugin": "com.reandroid.wallpaper.earth.EarthPlugin",
+  "pluginVk": "com.reandroid.wallpaper.earth.EarthVKPlugin",
   "previewClass": "com.reandroid.wallpaper.earth.EarthGL",
   "hidden": true
 }
