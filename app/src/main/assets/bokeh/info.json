@@ -1,5 +1,6 @@
 {
   "plugin": "com.reandroid.wallpaper.bokeh.BokehPlugin",
+  "pluginVk": "com.reandroid.wallpaper.bokeh.BokehVKPlugin",
   "previewClass": "com.reandroid.wallpaper.bokeh.BokehGL",
   "permissions": []
 }

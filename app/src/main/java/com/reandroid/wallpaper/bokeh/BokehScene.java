@@ -19,7 +19,9 @@ public final class BokehScene {
     private static final float BASE_AREA = 480f * 800f;
 
     private static final int BASE_INITIAL_CIRCLES = 20;
-    private static final int MAX_CIRCLES = 360;
+    /** 渲染侧按这个上限预分配顶点缓冲，所以不是私有的。 */
+    static final int MAX_CIRCLES = 360;
+
     private static final int RING_PX = 3;
 
     private final Random mRandom = new Random();
