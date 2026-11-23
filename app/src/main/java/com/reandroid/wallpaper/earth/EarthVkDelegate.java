@@ -518,8 +518,9 @@ final class EarthVkDelegate extends VkPassRendererDelegate {
      * 远近两份贴图各一个 pass，不用的那个顶点数置 0。
      */
     private void drawHalo(VkPassFrame frame, boolean closeup) {
-        boolean draw = mPrefHalo && mHasHalo;
-        boolean useCloseup = closeup && mHasHaloCloseup;
+        // 与 GLES 的 drawHalo 相同：近景需要 closeup 贴图，缺了就不画（不退回远景贴图）。
+        boolean draw = mPrefHalo && mHasHalo
+                && (!closeup || mHasHaloCloseup);
         if (!draw || !buildHaloGeometry()) {
             frame.setVertexCount(mHaloPass, 0);
             frame.setVertexCount(mHaloCloseupPass, 0);
@@ -529,8 +530,8 @@ final class EarthVkDelegate extends VkPassRendererDelegate {
         frame.upload(HALO_BUFFER, mHaloVertices, HALO_VERTICES * HALO_STRIDE);
         System.arraycopy(mVkOrtho, 0, mHaloPush, 0, 16);
 
-        VkPass pass = useCloseup ? mHaloCloseupPass : mHaloPass;
-        VkPass other = useCloseup ? mHaloPass : mHaloCloseupPass;
+        VkPass pass = closeup ? mHaloCloseupPass : mHaloPass;
+        VkPass other = closeup ? mHaloPass : mHaloCloseupPass;
         frame.pushConstants(pass, mHaloPush);
         frame.setVertexCount(pass, HALO_VERTICES);
         frame.setVertexCount(other, 0);
