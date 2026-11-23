@@ -82,9 +82,16 @@ final class GeekLogVkDelegate extends VkPassRendererDelegate {
         return TAG;
     }
 
+    /**
+     * 设置页按方法名反射 {@code setPluginPrefs(SharedPreferences)} 把新设置推给预览。
+     *
+     * <p>{@link GeekLogScene} 是纯逻辑层、没有这个方法（GLES 版的设置也保存在
+     * {@link GeekLogGL} 里），所以这里返回 delegate 自身；返回场景对象的话，
+     * 设置页每改一次都得整块重建预览。
+     */
     @Override
     public Object getScene() {
-        return mScene;
+        return this;
     }
 
     @Override
@@ -110,13 +117,18 @@ final class GeekLogVkDelegate extends VkPassRendererDelegate {
         }
     }
 
-    @Override
-    public void onPluginPrefsChanged(SharedPreferences prefs) {
+    /** 设置页反射调用的入口；壁纸路径走 {@link #onPluginPrefsChanged}。 */
+    public void setPluginPrefs(SharedPreferences prefs) {
         mPrefs = prefs;
         synchronized (mLock) {
             readPrefsLocked();
         }
         mScene.onPrefsChanged(null);
+    }
+
+    @Override
+    public void onPluginPrefsChanged(SharedPreferences prefs) {
+        setPluginPrefs(prefs);
     }
 
     // ---- 事件转发（与 GeekLogEngine 相同）----
