@@ -1,5 +1,6 @@
 {
   "plugin": "com.reandroid.wallpaper.geeklog.GeekLogPlugin",
+  "pluginVk": "com.reandroid.wallpaper.geeklog.GeekLogVKPlugin",
   "previewClass": "com.reandroid.wallpaper.geeklog.GeekLogGL",
   "hidden": true
 }

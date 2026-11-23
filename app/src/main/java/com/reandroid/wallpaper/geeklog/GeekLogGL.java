@@ -11,60 +11,32 @@ import android.os.Build;
 import android.os.SystemClock;
 import android.util.Log;
 
-import com.reandroid.utils.AssetLoader;
 import com.reandroid.gles.GLESScene;
+import com.reandroid.utils.AssetLoader;
 
 import java.nio.FloatBuffer;
-import java.util.List;
 import java.util.Locale;
 
 /**
  * GeekLog GLES2 渲染层。
  * 字符图集（Bitmap+Paint 生成一次）+ 每帧 quad 批量绘制 + 行级着色 + 顶部渐隐 + 闪烁光标。
+ *
+ * <p>顶点数据由 {@link GeekLogVertexBuilder} 统一构建，与 Vulkan 后端共用。
  */
 public class GeekLogGL extends GLESScene {
     private static final String TAG = "GeekLogGL";
 
-    // 预烘焙字符图集（assets/geeklog/drawable/glyph_00.png）：
-    // 256x256 RGBA，16 列 x 16 行槽位，每槽 16x16 px，槽位索引 = 字符码
-    // （左上角槽位为字符 0x00，char 码 0x00-0xFF 按行列顺序排列）
-    private static final int ATLAS_COLS = 16;
-    private static final int ATLAS_ROWS = 16;
-
-    /** 主色主题（0=green 1=amber 2=cyan 3=white），与 layout.json 的 values 顺序一致 */
-    static final float[][] THEME_COLORS = {
-        { 0.0f, 1.0f, 0.255f },   // #00FF41
-        { 1.0f, 0.69f, 0.0f },    // #FFB000
-        { 0.0f, 0.898f, 1.0f },   // #00E5FF
-        { 1.0f, 1.0f, 1.0f },     // #FFFFFF
-    };
-    static final float[] WARN_COLOR = { 1.0f, 0.69f, 0.0f };    // #FFB000 琥珀
-    static final float[] ERROR_COLOR = { 1.0f, 0.2f, 0.2f };    // #FF3333 红
-
-    private static final int FLOATS_PER_VERTEX = 7; // x, y, u, v, r, g, b
-
-    /** buildVertices 里每行算一次的暗色（前缀字符用），原先每行都新建数组。 */
-    private final float[] mDimColor = new float[3];
-
     private final Context mContext;
     private final GeekLogScene mScene = new GeekLogScene();
+    private final GeekLogVertexBuilder mVertexBuilder = new GeekLogVertexBuilder();
     private SharedPreferences mPluginPrefs;
 
     private int mProgram;
     private int mPosLoc, mUVLoc, mColorLoc, mTexLoc;
     private int mGlyphTexture;
 
-    private FloatBuffer mVertexBuffer;   // 复用缓冲
-    private int mVertexCount;
-
-    // 布局（NDC）
-    private int mRows = 30;              // 屏幕行数
-    private float mRowHeight;            // 2f / mRows
-    private float mCharWidthNDC;         // mRowHeight * 0.6f
-    private int mCols;                   // 每行最多字符数
-
     private boolean mInitialized;
-    private boolean mLoggedShaderFail;   // mProgram==0 持久失败态只记一次 logcat
+    private boolean mLoggedShaderFail; // mProgram==0 持久失败态只记一次 logcat
 
     // 渲染统计窗口（15s）：帧率均值 + 帧耗时均值 + 顶点数
     private static final long STATS_INTERVAL_MS = 1500;
@@ -97,10 +69,21 @@ public class GeekLogGL extends GLESScene {
 
     // ---- 事件转发（Engine 调用）----
 
-    public void onVisibility(boolean visible) { mScene.onVisibility(visible); }
-    public void logOffsetsChanged() { mScene.onOffsetsChanged(); }
-    public void logTap(int x, int y) { mScene.onTap(x, y); }
-    public void logDrag(int x, int y) { mScene.onDrag(x, y); }
+    public void onVisibility(boolean visible) {
+        mScene.onVisibility(visible);
+    }
+
+    public void logOffsetsChanged() {
+        mScene.onOffsetsChanged();
+    }
+
+    public void logTap(int x, int y) {
+        mScene.onTap(x, y);
+    }
+
+    public void logDrag(int x, int y) {
+        mScene.onDrag(x, y);
+    }
 
     // ---- GL 生命周期 ----
 
@@ -115,7 +98,7 @@ public class GeekLogGL extends GLESScene {
             readPrefs();
             createProgram();
             createGlyphTexture();
-            layoutMetrics();
+            mVertexBuilder.layoutMetrics(mWidth, mHeight);
             logStartupInfo();
         } catch (Exception e) {
             Log.e(TAG, "init failed", e);
@@ -126,9 +109,12 @@ public class GeekLogGL extends GLESScene {
 
     @Override
     public void release() {
-        if (mProgram != 0) { GLES30.glDeleteProgram(mProgram); mProgram = 0; }
+        if (mProgram != 0) {
+            GLES30.glDeleteProgram(mProgram);
+            mProgram = 0;
+        }
         if (mGlyphTexture != 0) {
-            int[] tex = { mGlyphTexture };
+            int[] tex = {mGlyphTexture};
             GLES30.glDeleteTextures(1, tex, 0);
             mGlyphTexture = 0;
         }
@@ -138,7 +124,7 @@ public class GeekLogGL extends GLESScene {
     @Override
     public void resize(int width, int height) {
         super.resize(width, height);
-        layoutMetrics();
+        mVertexBuilder.layoutMetrics(width, height);
     }
 
     // ---- 帧渲染 ----
@@ -171,9 +157,14 @@ public class GeekLogGL extends GLESScene {
             if (fps < 20f) {
                 mScene.onFpsDrop((int) fps);
             } else {
-                mScene.log(GeekLogScene.LEVEL_INFO, String.format(Locale.US,
-                        "render: %.1ffps, %.1fms, %dv",
-                        fps, avgFrameMs, mLastReportedVerts));
+                mScene.log(
+                        GeekLogScene.LEVEL_INFO,
+                        String.format(
+                                Locale.US,
+                                "render: %.1ffps, %.1fms, %dv",
+                                fps,
+                                avgFrameMs,
+                                mLastReportedVerts));
             }
             mFpsFrameCount = 0;
             mFpsWindowStartMs = now;
@@ -189,10 +180,11 @@ public class GeekLogGL extends GLESScene {
         GLES30.glClearColor(0f, 0f, 0f, 1f);
         GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT);
 
-        buildVertices(timeMs);
-        mLastReportedVerts = mVertexCount;
+        mVertexBuilder.buildVertices(mScene, timeMs);
+        int vertexCount = mVertexBuilder.vertexCount();
+        mLastReportedVerts = vertexCount;
 
-        if (mVertexCount == 0) return;
+        if (vertexCount == 0) return;
         GLES30.glUseProgram(mProgram);
         GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
         GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mGlyphTexture);
@@ -202,118 +194,23 @@ public class GeekLogGL extends GLESScene {
         GLES30.glEnableVertexAttribArray(mUVLoc);
         GLES30.glEnableVertexAttribArray(mColorLoc);
 
-        mVertexBuffer.position(0);
-        GLES30.glVertexAttribPointer(mPosLoc, 2, GLES30.GL_FLOAT, false,
-                FLOATS_PER_VERTEX * 4, mVertexBuffer);
-        mVertexBuffer.position(2);
-        GLES30.glVertexAttribPointer(mUVLoc, 2, GLES30.GL_FLOAT, false,
-                FLOATS_PER_VERTEX * 4, mVertexBuffer);
-        mVertexBuffer.position(4);
-        GLES30.glVertexAttribPointer(mColorLoc, 3, GLES30.GL_FLOAT, false,
-                FLOATS_PER_VERTEX * 4, mVertexBuffer);
-        mVertexBuffer.position(0);
+        FloatBuffer vertices = mVertexBuilder.floatBuffer();
+        vertices.position(0);
+        GLES30.glVertexAttribPointer(
+                mPosLoc, 2, GLES30.GL_FLOAT, false, GeekLogVertexBuilder.STRIDE_BYTES, vertices);
+        vertices.position(2);
+        GLES30.glVertexAttribPointer(
+                mUVLoc, 2, GLES30.GL_FLOAT, false, GeekLogVertexBuilder.STRIDE_BYTES, vertices);
+        vertices.position(4);
+        GLES30.glVertexAttribPointer(
+                mColorLoc, 3, GLES30.GL_FLOAT, false, GeekLogVertexBuilder.STRIDE_BYTES, vertices);
+        vertices.position(0);
 
-        GLES30.glDrawArrays(GLES30.GL_TRIANGLES, 0, mVertexCount);
+        GLES30.glDrawArrays(GLES30.GL_TRIANGLES, 0, vertexCount);
 
         GLES30.glDisableVertexAttribArray(mPosLoc);
         GLES30.glDisableVertexAttribArray(mUVLoc);
         GLES30.glDisableVertexAttribArray(mColorLoc);
-    }
-
-    // ---- 顶点构建 ----
-
-    private void buildVertices(long timeMs) {
-        List<GeekLogScene.Entry> entries = mScene.snapshot();
-        int shown = Math.min(entries.size(), mRows);
-        if (shown == 0) { mVertexCount = 0; return; }
-
-        int capacity = (shown * mCols + 1) * 6 * FLOATS_PER_VERTEX;
-        if (mVertexBuffer == null || mVertexBuffer.capacity() < capacity) {
-            mVertexBuffer = createFloatBuffer(new float[capacity]);
-        }
-        mVertexBuffer.position(0);
-
-        int vCount = 0;
-
-        int start = entries.size() - 1;
-        for (int r = 0; r < shown; r++) {
-            GeekLogScene.Entry e = entries.get(start - r);
-            float y0 = -1f + r * mRowHeight;
-            float alpha = 1f - r / (float) Math.max(1, shown - 1) * 0.6f;
-
-            float[] lineColor = colorFor(e.level);
-            float[] dimColor = mDimColor;
-            dimColor[0] = lineColor[0] * 0.6f;
-            dimColor[1] = lineColor[1] * 0.6f;
-            dimColor[2] = lineColor[2] * 0.6f;
-
-            String text = e.text;
-            int len = Math.min(text.length(), mCols);
-            for (int c = 0; c < len; c++) {
-                char ch = text.charAt(c);
-                if (ch < 0x20 || ch > 0x7E) continue;
-                float x0 = -1f + c * mCharWidthNDC;
-                float[] col = (c < GeekLogScene.PREFIX_LEN) ? dimColor : lineColor;
-                vCount = addQuad(vCount, x0, y0, ch, col, alpha);
-            }
-        }
-
-        // 光标：最新一行末尾闪烁块（'#' 字符槽）
-        if (timeMs % 1000 < 500) {
-            GeekLogScene.Entry last = entries.get(entries.size() - 1);
-            int cursorCol = Math.min(last.text.length(), mCols - 1);
-            float x0 = -1f + cursorCol * mCharWidthNDC;
-            vCount = addCursorQuad(vCount, x0, -1f, 0x23, THEME_COLORS[mScene.mColorIndex]);
-        }
-
-        mVertexCount = vCount;
-    }
-
-    /** 一个字符 quad = 6 顶点（triangles 展开） */
-    private int addQuad(int vCount, float x0, float y0, int glyph, float[] col, float alpha) {
-        int colIdx = glyph % ATLAS_COLS;
-        int rowIdx = glyph / ATLAS_COLS;
-        float u0 = colIdx / (float) ATLAS_COLS;
-        float u1 = (colIdx + 1) / (float) ATLAS_COLS;
-        float v0 = rowIdx / (float) ATLAS_ROWS;
-        float v1 = (rowIdx + 1) / (float) ATLAS_ROWS;
-        float x1 = x0 + mCharWidthNDC;
-        float y1 = y0 + mRowHeight;
-        addVertex(vCount, x0, y0, u0, v1, col, alpha);
-        addVertex(vCount + 1, x1, y0, u1, v1, col, alpha);
-        addVertex(vCount + 2, x0, y1, u0, v0, col, alpha);
-        addVertex(vCount + 3, x1, y1, u1, v0, col, alpha);
-        addVertex(vCount + 4, x0, y1, u0, v0, col, alpha);
-        addVertex(vCount + 5, x1, y0, u1, v1, col, alpha);
-        return vCount + 6;
-    }
-
-    /** 光标块：0.4 字符宽 x 0.8 行高，用图集 '#' 槽位保证可见 */
-    private int addCursorQuad(int vCount, float x0, float y0, int glyph, float[] col) {
-        float w = mCharWidthNDC * 0.4f;
-        float h = mRowHeight * 0.8f;
-        float x1 = x0 + w;
-        float y1 = y0 + h;
-        int colIdx = glyph % ATLAS_COLS;
-        int rowIdx = glyph / ATLAS_COLS;
-        float u0 = colIdx / (float) ATLAS_COLS, u1 = (colIdx + 1) / (float) ATLAS_COLS;
-        float v0 = rowIdx / (float) ATLAS_ROWS, v1 = (rowIdx + 1) / (float) ATLAS_ROWS;
-        addVertex(vCount, x0, y0, u0, v1, col, 1f);
-        addVertex(vCount + 1, x1, y0, u1, v1, col, 1f);
-        addVertex(vCount + 2, x0, y1, u0, v0, col, 1f);
-        addVertex(vCount + 3, x1, y1, u1, v0, col, 1f);
-        addVertex(vCount + 4, x0, y1, u0, v0, col, 1f);
-        addVertex(vCount + 5, x1, y0, u1, v1, col, 1f);
-        return vCount + 6;
-    }
-
-    private void addVertex(int vCount, float x, float y, float u, float v, float[] col, float alpha) {
-        int o = vCount * FLOATS_PER_VERTEX;
-        mVertexBuffer.put(o, x); mVertexBuffer.put(o + 1, y);
-        mVertexBuffer.put(o + 2, u); mVertexBuffer.put(o + 3, v);
-        mVertexBuffer.put(o + 4, col[0] * alpha);
-        mVertexBuffer.put(o + 5, col[1] * alpha);
-        mVertexBuffer.put(o + 6, col[2] * alpha);
     }
 
     // ---- 初始化辅助 ----
@@ -336,14 +233,6 @@ public class GeekLogGL extends GLESScene {
         mScene.setMaxLines(p.getInt("geeklog_max_lines", 80));
     }
 
-    private float[] colorFor(int level) {
-        if (mScene.mHighlightErrors) {
-            if (level == GeekLogScene.LEVEL_WARN) return WARN_COLOR;
-            if (level == GeekLogScene.LEVEL_ERROR) return ERROR_COLOR;
-        }
-        return THEME_COLORS[mScene.mColorIndex];
-    }
-
     /** 周期系统状态（60s）：电量、内存、充电状态。静态读取，无需权限。 */
     private void logSystemState() {
         try {
@@ -357,15 +246,21 @@ public class GeekLogGL extends GLESScene {
                 }
             }
             long memFreeMb = -1;
-            ActivityManager am = (ActivityManager) mContext.getSystemService(Context.ACTIVITY_SERVICE);
+            ActivityManager am =
+                    (ActivityManager) mContext.getSystemService(Context.ACTIVITY_SERVICE);
             if (am != null) {
                 ActivityManager.MemoryInfo mi = new ActivityManager.MemoryInfo();
                 am.getMemoryInfo(mi);
                 memFreeMb = mi.availMem / (1024L * 1024L);
             }
-            mScene.log(GeekLogScene.LEVEL_INFO, String.format(Locale.US,
-                    "system: bat %d%% %s, mem %dM",
-                    battery, charging ? "chg" : "nochg", memFreeMb));
+            mScene.log(
+                    GeekLogScene.LEVEL_INFO,
+                    String.format(
+                            Locale.US,
+                            "system: bat %d%% %s, mem %dM",
+                            battery,
+                            charging ? "chg" : "nochg",
+                            memFreeMb));
         } catch (Exception e) {
             Log.w(TAG, "system state read failed", e);
         }
@@ -375,26 +270,21 @@ public class GeekLogGL extends GLESScene {
     private void logStartupInfo() {
         try {
             long uptimeSec = SystemClock.elapsedRealtime() / 1000;
-            String uptime = String.format(Locale.US, "%dh%02dm",
-                    uptimeSec / 3600, (uptimeSec % 3600) / 60);
+            String uptime =
+                    String.format(Locale.US, "%dh%02dm", uptimeSec / 3600, (uptimeSec % 3600) / 60);
             float density = mResources != null ? mResources.getDisplayMetrics().density : 1f;
-            mScene.log(GeekLogScene.LEVEL_INFO, String.format(Locale.US,
-                    "system: up %s, %dx%d, a%s",
-                    uptime, mWidth, mHeight, Build.VERSION.RELEASE));
+            mScene.log(
+                    GeekLogScene.LEVEL_INFO,
+                    String.format(
+                            Locale.US,
+                            "system: up %s, %dx%d, a%s",
+                            uptime,
+                            mWidth,
+                            mHeight,
+                            Build.VERSION.RELEASE));
         } catch (Exception e) {
             Log.w(TAG, "startup info read failed", e);
         }
-    }
-
-    private void layoutMetrics() {
-        // 每行 80 字符（终端风格列宽，比 60 列再缩 25% 字宽）。
-        // 字符宽按屏幕宽度分配，行高按像素宽高比 0.6 计算，
-        // 并折算 NDC 纵横比——否则字形会被拉成高瘦条。
-        float aspect = (float) mWidth / Math.max(1, mHeight);
-        mCols = 80;
-        mCharWidthNDC = 2f / mCols;
-        mRowHeight = mCharWidthNDC * aspect / 0.6f;
-        mRows = Math.max(10, (int) (2f / mRowHeight));
     }
 
     private void createProgram() {
@@ -420,10 +310,14 @@ public class GeekLogGL extends GLESScene {
         mGlyphTexture = tex[0];
         GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mGlyphTexture);
         // LINEAR：无 NEAREST 的槽边界硬切问题（部分设备 NEAREST+收缩 UV 会黑屏）
-        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR);
-        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
-        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE);
-        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE);
+        GLES30.glTexParameteri(
+                GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(
+                GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(
+                GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE);
+        GLES30.glTexParameteri(
+                GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE);
         GLUtils.texImage2D(GLES30.GL_TEXTURE_2D, 0, bmp, 0);
         bmp.recycle();
     }
