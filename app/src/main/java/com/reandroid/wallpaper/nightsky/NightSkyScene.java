@@ -8,7 +8,6 @@ import android.view.WindowManager;
 
 import com.reandroid.astronomy.DayNightResolver;
 import com.reandroid.astronomy.DeviceLocation;
-import com.reandroid.gles.GLESWallpaper;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -18,6 +17,8 @@ import java.util.TimeZone;
 final class NightSkyScene {
 
     private SharedPreferences mPluginPrefs;
+    /** 设置轮询要读定位/传感器，两条渲染路径都要有自己的 Context。 */
+    private Context mContext;
 
     static final float MILKY_BRIGHTNESS = 0.9f;
     static final String PREF_CAMERA_FOCAL_MM = "nightsky_camera_focal_mm";
@@ -46,6 +47,7 @@ final class NightSkyScene {
      * 拿不到定位时是按时区反推的兜底，不是"没有"。
      */
     float latitudeDeg;
+
     float longitudeDeg;
 
     NightSkyCatalog catalog;
@@ -69,6 +71,7 @@ final class NightSkyScene {
     }
 
     void init(Context context) {
+        mContext = context != null ? context.getApplicationContext() : null;
         sensorController.init(context);
         updateLocation();
         touchTimeController.init();
@@ -97,7 +100,7 @@ final class NightSkyScene {
         }
         lastPrefPollMs = nowMs;
         try {
-            Context context = GLESWallpaper.getAppContext();
+            Context context = mContext;
             if (context == null) return;
             SharedPreferences prefs = mPluginPrefs;
             if (prefs == null) return;
@@ -117,7 +120,8 @@ final class NightSkyScene {
             boolean autoTimeAccel = prefs.getBoolean(PREF_AUTO_TIME_ACCEL, false);
             touchTimeController.setAutoAccelerating(autoTimeAccel);
             int accelSpeed = parseIntPreference(
-                    prefs.getString(PREF_TIME_ACCEL_SPEED, String.valueOf(DEFAULT_TIME_ACCEL_SPEED)),
+                    prefs.getString(
+                            PREF_TIME_ACCEL_SPEED, String.valueOf(DEFAULT_TIME_ACCEL_SPEED)),
                     DEFAULT_TIME_ACCEL_SPEED);
             accelSpeed = Math.max(MIN_TIME_ACCEL_SPEED, Math.min(MAX_TIME_ACCEL_SPEED, accelSpeed));
             touchTimeController.setAccelerationScale(accelSpeed);
@@ -150,16 +154,26 @@ final class NightSkyScene {
             float v0 = y / (float) latSteps, v1 = (y + 1) / (float) latSteps;
             for (int x = 0; x < lonSteps; x++) {
                 float u0 = x / (float) lonSteps, u1 = (x + 1) / (float) lonSteps;
-                p = putUv(uv, p, u0, v0); p = putUv(uv, p, u0, v1); p = putUv(uv, p, u1, v1);
-                p = putUv(uv, p, u0, v0); p = putUv(uv, p, u1, v1); p = putUv(uv, p, u1, v0);
+                p = putUv(uv, p, u0, v0);
+                p = putUv(uv, p, u0, v1);
+                p = putUv(uv, p, u1, v1);
+                p = putUv(uv, p, u0, v0);
+                p = putUv(uv, p, u1, v1);
+                p = putUv(uv, p, u1, v0);
             }
         }
         sphereVertexCount = vertexCount;
-        sphereUvBuffer = ByteBuffer.allocateDirect(uv.length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
+        sphereUvBuffer = ByteBuffer.allocateDirect(uv.length * 4)
+                .order(ByteOrder.nativeOrder())
+                .asFloatBuffer();
         sphereUvBuffer.put(uv).position(0);
     }
 
-    private static int putUv(float[] out, int start, float u, float v) { out[start] = u; out[start + 1] = v; return start + 2; }
+    private static int putUv(float[] out, int start, float u, float v) {
+        out[start] = u;
+        out[start + 1] = v;
+        return start + 2;
+    }
 
     static float focalMmToFovDeg(float focalMm) {
         float f = Math.max(1.0f, focalMm);
@@ -169,7 +183,11 @@ final class NightSkyScene {
 
     static int parseIntPreference(String value, int fallback) {
         if (value == null) return fallback;
-        try { return Integer.parseInt(value); } catch (NumberFormatException ignored) { return fallback; }
+        try {
+            return Integer.parseInt(value);
+        } catch (NumberFormatException ignored) {
+            return fallback;
+        }
     }
 
     static int getDisplayRotation(Context context) {

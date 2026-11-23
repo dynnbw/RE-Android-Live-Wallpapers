@@ -1,5 +1,6 @@
 {
   "plugin": "com.reandroid.wallpaper.nightsky.NightSkyPlugin",
+  "pluginVk": "com.reandroid.wallpaper.nightsky.NightSkyVKPlugin",
   "previewClass": "com.reandroid.wallpaper.nightsky.NightSkyGL",
   "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"]
 }

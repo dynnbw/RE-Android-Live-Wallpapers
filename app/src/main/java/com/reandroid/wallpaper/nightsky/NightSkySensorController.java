@@ -58,6 +58,10 @@ final class NightSkySensorController implements SensorEventListener {
         currentSamplingDelay = 0;
     }
 
+    boolean isStarted() {
+        return started;
+    }
+
     void copyViewMatrix(float[] out16) {
         synchronized (viewRot) {
             System.arraycopy(viewRot, 0, out16, 0, 16);
@@ -133,8 +137,7 @@ final class NightSkySensorController implements SensorEventListener {
     }
 
     @Override
-    public void onAccuracyChanged(Sensor sensor, int accuracy) {
-    }
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {}
 
     private float computeRotationDelta(float[] values) {
         float x = values[0];
