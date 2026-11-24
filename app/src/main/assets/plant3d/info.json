@@ -1,0 +1,6 @@
+{
+  "plugin": "com.reandroid.wallpaper.plant3d.Plant3DPlugin",
+  "previewClass": "com.reandroid.wallpaper.plant3d.Plant3DGL",
+  "permissions": [],
+  "hidden": true
+}
