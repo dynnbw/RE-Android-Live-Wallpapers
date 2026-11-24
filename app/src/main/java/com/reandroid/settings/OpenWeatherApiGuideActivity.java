@@ -20,6 +20,7 @@ public class OpenWeatherApiGuideActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_openweather_api_guide);
+        SystemBars.applyLightStatusBar(this);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -39,7 +40,8 @@ public class OpenWeatherApiGuideActivity extends AppCompatActivity {
         try {
             startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(OPENWEATHER_URL)));
         } catch (Exception e) {
-            Toast.makeText(this, R.string.config_open_browser_failed, Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.config_open_browser_failed, Toast.LENGTH_SHORT)
+                    .show();
         }
     }
 

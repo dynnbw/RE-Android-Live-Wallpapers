@@ -52,6 +52,7 @@ public class PluginSettingsActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_wallpaper_preview);
+        SystemBars.applyLightStatusBar(this);
 
         // 与主设置页一致：挂接支持 ActionBar，返回箭头 + 标题（setTitle 经此渲染）
         androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);

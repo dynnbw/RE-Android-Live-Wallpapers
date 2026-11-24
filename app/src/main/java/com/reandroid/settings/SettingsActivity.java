@@ -29,10 +29,7 @@ public class SettingsActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
         mToolbarHelper = new SettingsToolbarHelper(this, toolbar);
         mToolbarHelper.setup();
-
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        }
+        SystemBars.applyLightStatusBar(this);
 
         if (savedInstanceState == null) {
             getSupportFragmentManager()
@@ -43,7 +40,12 @@ public class SettingsActivity extends AppCompatActivity
         }
 
         getSupportFragmentManager().addOnBackStackChangedListener(() -> {
-            if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
+            // 主界面没有上一级，返回箭头点了也没反应，只在子页面显示。
+            boolean root = getSupportFragmentManager().getBackStackEntryCount() == 0;
+            if (getSupportActionBar() != null) {
+                getSupportActionBar().setDisplayHomeAsUpEnabled(!root);
+            }
+            if (root) {
                 setTitle(R.string.settings_title);
             }
         });

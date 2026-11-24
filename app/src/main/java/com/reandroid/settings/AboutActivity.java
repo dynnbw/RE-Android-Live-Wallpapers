@@ -12,6 +12,7 @@ public class AboutActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_about);
+        SystemBars.applyLightStatusBar(this);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -23,9 +24,9 @@ public class AboutActivity extends AppCompatActivity {
         // 加载新版 AboutFragment
         if (savedInstanceState == null) {
             getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.about_fragment_container, new AboutFragment())
-                .commit();
+                    .beginTransaction()
+                    .replace(R.id.about_fragment_container, new AboutFragment())
+                    .commit();
         }
     }
 
