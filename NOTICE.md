@@ -29,7 +29,7 @@ asset, please open an issue and it will be removed.
   luminousdots, ocean, oceanwaves, windmill
 - MediaTek platform wallpapers: bokeh, fireworks, microbes, wildworld
 - Sony: cosmicflow, earth
-- OPPO: silk
+- Vivo: silk
 - Android Studio sample: cube
 - Third-party commercial wallpaper (no longer updated): droid
 - AOSP with additional sources: phasebeam (textures and rules from AOSP PhaseBeam,
