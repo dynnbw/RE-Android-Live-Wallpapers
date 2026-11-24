@@ -28,6 +28,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.reandroid.plugin.PluginResources;
 import com.reandroid.utils.IoUtils;
+import com.reandroid.wallpaper.BuildConfig;
 import com.reandroid.wallpaper.R;
 
 import org.json.JSONObject;
@@ -162,8 +163,9 @@ public class SettingsMainFragment extends PreferenceFragmentCompat {
                     Log.w(TAG, "Failed to parse info.json", e);
                     continue;
                 }
-                // 隐藏入口：info.json 中 "hidden": true 时不在列表显示
-                if (hidden) continue;
+                // 隐藏入口：info.json 中 "hidden": true 时不在列表显示。
+                // debug 版例外：开发时经常需要打开还没做完的壁纸来验证。
+                if (hidden && !BuildConfig.DEBUG) continue;
 
                 // 名字来自这个壁纸自己的 assets（language/<locale>.json 的 title），
                 // 不再是 info.json 里的 @string/ 引用 —— 见 PluginResources.resolveLabel
