@@ -716,6 +716,11 @@ final class GrassScene {
 
     // ---- Sun / Moon position computation ----
 
+    /** 贴图按短边缩放：横竖屏下同一元素保持相同像素尺寸。 */
+    private float compositionWidth() {
+        return Math.min(mWidth, mHeight);
+    }
+
     private void computeSunPosition(Calendar now, MoonCalculator.MoonData moonData) {
         SunCalculator sunCalculator = mDayNightSystem.getSunCalculator();
         if (sunCalculator == null) {
@@ -727,7 +732,12 @@ final class GrassScene {
         float sunX = celestialXFromHourAngle(hourAngleDeg);
         float clampedAlt = clamp((float) mDayNightSystem.getLastSunAltitude(), 0.0f, 90.0f);
         float sunY = mHeight * (1.0f - clampedAlt / 90.0f);
-        float sunSize = mWidth * 0.32f;
+        /*
+         * 贴图的尺寸按**短边**算：竖屏时短边是宽、横屏时是高，同一台设备两种朝向
+         * 得到相同的像素尺寸。按宽度算的话，横屏宽度翻倍、贴图也跟着翻倍，而外面那圈
+         * 程序化辉光按屏高走 —— 月亮就会变成"盘大晕小"。程序化太阳整条路径不受影响。
+         */
+        float sunSize = compositionWidth() * 0.32f;
         // 地平线以上一律实心，只在地平线以下淡出 —— 见 GrassSunAppearance.opacity。
         // 原来这里是 (alt + 6) / 12，地平线处只有 0.5，低空的太阳于是是半透明的。
         float sunAlpha = GrassSunAppearance.opacity((float) mDayNightSystem.getLastSunAltitude());
@@ -779,7 +789,7 @@ final class GrassScene {
         float moonX = moonXFromHourAngle(data.moonHourAngleDeg);
         float clampedAlt = clamp((float) data.moonAltitudeDeg, 0.0f, 90.0f);
         float moonY = mHeight * (1.0f - clampedAlt / 90.0f);
-        float size = mWidth * 0.24f;
+        float size = compositionWidth() * 0.24f;
         float baseBrightness = clamp((float) ((data.moonAltitudeDeg + 2.0) / 30.0), 0.0f, 1.0f);
         MoonEclipse eclipse = computeMoonEclipse(data);
 

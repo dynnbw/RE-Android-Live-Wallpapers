@@ -5,11 +5,11 @@ import android.graphics.Color;
 import android.opengl.GLES30;
 
 import com.reandroid.settings.WallpaperSettings;
+import com.reandroid.utils.MathUtils;
 import com.reandroid.weather.WeatherCondition;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import com.reandroid.utils.MathUtils;
 
 final class GrassWeatherRenderer {
 
@@ -21,6 +21,7 @@ final class GrassWeatherRenderer {
 
     /** 雨丝现在只有一张贴图、一个批次（原来三张固定尺寸的精灵已删除）。 */
     private static final int RAIN_BATCH_GROUP_COUNT = 1;
+
     private static final int SNOW_BATCH_GROUP_COUNT = 4;
     private static final int CLOUD_BATCH_GROUP_COUNT = 4;
     /**
@@ -30,6 +31,7 @@ final class GrassWeatherRenderer {
      * 逐顶点那份留给粒子/星空。
      */
     private static final int FLOATS_PER_VERTEX = 5;
+
     private static final int FLOATS_PER_QUAD = 6 * FLOATS_PER_VERTEX;
 
     interface TextureLoader {
@@ -59,12 +61,14 @@ final class GrassWeatherRenderer {
      * {@code inTargetDensity=设备 dpi}，所以云在原版里是 256dp。在**同一台机器上**按
      * {@code density} 缩放是对的 —— 但资源是照 320dp 屏宽设计的：256dp 的云在原版屏上占
      * 80% 屏宽，到 393dp 的现代屏上只剩 65%，整个构图等比缩水（与烟花那次同一个根因）。
-     * 这里改成按屏宽还原原版比例。
+     * 这里改成按**短边**还原原版比例：竖屏时短边就是宽（与原来的行为一致），
+     * 横屏时用高，云就不会因为宽度翻倍而跟着翻倍 —— 与太阳/月亮的贴图尺寸取同一个基准。
      *
-     * <p>不按屏高：云是横向铺开的，用屏高当基准会让云比屏幕还宽。
+     * <p>不按长边/屏高：云是横向铺开的，参照边一变长，云就比屏幕还宽、还会向下压。
      */
     private float cloudScale() {
-        return width > 0 ? width / REFERENCE_WIDTH_DP : 1.0f;
+        int reference = Math.min(width, height);
+        return reference > 0 ? reference / REFERENCE_WIDTH_DP : 1.0f;
     }
 
     private int texRainStreak;
@@ -79,6 +83,7 @@ final class GrassWeatherRenderer {
     private long mRainSteppedAtMs = -1L;
     /** 上一帧是否在降雨；用来检测"刚切进降雨"并重置粒子。 */
     private boolean mRainActive;
+
     private int texWeatherSnow1;
     private int texWeatherSnow2;
     private int texWeatherSnow3;
@@ -97,6 +102,7 @@ final class GrassWeatherRenderer {
 
     /** 本帧的天气精灵染色，由 {@link #updateWeatherTint} 从 {@code sd.dayWeight} 算出。 */
     private float weatherTintR = 1.0f;
+
     private float weatherTintG = 1.0f;
     private float weatherTintB = 1.0f;
 
@@ -139,21 +145,34 @@ final class GrassWeatherRenderer {
         texWeatherCloud2 = loader.load("grass/drawable/grass_weather_cloud_02.png", false, false);
         texWeatherCloud3 = loader.load("grass/drawable/grass_weather_cloud_03.png", false, false);
         texWeatherCloud4 = loader.load("grass/drawable/grass_weather_cloud_04.png", false, false);
-        texWeatherLightning1 = loader.load("grass/drawable/grass_weather_lightning_01.png", false, false);
-        texWeatherLightning2 = loader.load("grass/drawable/grass_weather_lightning_02.png", false, false);
-        texWeatherLightning3 = loader.load("grass/drawable/grass_weather_lightning_03.png", false, false);
+        texWeatherLightning1 =
+                loader.load("grass/drawable/grass_weather_lightning_01.png", false, false);
+        texWeatherLightning2 =
+                loader.load("grass/drawable/grass_weather_lightning_02.png", false, false);
+        texWeatherLightning3 =
+                loader.load("grass/drawable/grass_weather_lightning_03.png", false, false);
         texWeatherFlash = solidColorFactory.create((byte) 255, (byte) 255, (byte) 255, (byte) 255);
         texWeatherTone = createWeatherToneTexture();
     }
 
     void releaseTextures() {
-        int[] tex = new int[]{
-                texRainStreak,
-                texWeatherSnow1, texWeatherSnow2, texWeatherSnow3, texWeatherSnow4,
-                texWeatherFog1, texWeatherFog2,
-                texWeatherCloud1, texWeatherCloud2, texWeatherCloud3, texWeatherCloud4,
-                texWeatherLightning1, texWeatherLightning2, texWeatherLightning3,
-                texWeatherFlash, texWeatherTone
+        int[] tex = new int[] {
+            texRainStreak,
+            texWeatherSnow1,
+            texWeatherSnow2,
+            texWeatherSnow3,
+            texWeatherSnow4,
+            texWeatherFog1,
+            texWeatherFog2,
+            texWeatherCloud1,
+            texWeatherCloud2,
+            texWeatherCloud3,
+            texWeatherCloud4,
+            texWeatherLightning1,
+            texWeatherLightning2,
+            texWeatherLightning3,
+            texWeatherFlash,
+            texWeatherTone
         };
         GLES30.glDeleteTextures(tex.length, tex, 0);
 
@@ -176,7 +195,11 @@ final class GrassWeatherRenderer {
         resetThunderState();
     }
 
-    void drawWeatherBackground(SceneData sd, boolean weatherEnabled, RenderOps ops, GrassSpriteRenderer spriteRenderer) {
+    void drawWeatherBackground(
+            SceneData sd,
+            boolean weatherEnabled,
+            RenderOps ops,
+            GrassSpriteRenderer spriteRenderer) {
         if (!weatherEnabled || sd.weatherCondition == null) {
             return;
         }
@@ -186,8 +209,12 @@ final class GrassWeatherRenderer {
         drawWeatherTone(sd, spriteRenderer);
     }
 
-    void drawWeatherOverlays(SceneData sd, boolean frontPass, boolean weatherEnabled,
-            RenderOps ops, GrassSpriteRenderer spriteRenderer) {
+    void drawWeatherOverlays(
+            SceneData sd,
+            boolean frontPass,
+            boolean weatherEnabled,
+            RenderOps ops,
+            GrassSpriteRenderer spriteRenderer) {
         if (!weatherEnabled || sd.weatherCondition == null) {
             return;
         }
@@ -247,8 +274,14 @@ final class GrassWeatherRenderer {
                 if (frontPass && thunderFlashAlpha > 0.0f && texWeatherFlash != 0) {
                     float fullSize = Math.max(width, height) * 2.4f;
                     spriteRenderer.setTintWhite();
-                    spriteRenderer.drawSprite(texWeatherFlash, width * 0.5f, height * 0.5f,
-                            fullSize, MathUtils.clamp(thunderFlashAlpha, 0.0f, 0.58f), false, 0.0f);
+                    spriteRenderer.drawSprite(
+                            texWeatherFlash,
+                            width * 0.5f,
+                            height * 0.5f,
+                            fullSize,
+                            MathUtils.clamp(thunderFlashAlpha, 0.0f, 0.58f),
+                            false,
+                            0.0f);
                     restoreWeatherTint(spriteRenderer);
                 }
                 break;
@@ -308,11 +341,8 @@ final class GrassWeatherRenderer {
             return;
         }
 
-        spriteRenderer.drawRectUv(texWeatherTone,
-                0.0f, -32.0f, width, height + 32.0f,
-                0.0f, 0.0f,
-                1.0f, 1.0f,
-                alpha);
+        spriteRenderer.drawRectUv(
+                texWeatherTone, 0.0f, -32.0f, width, height + 32.0f, 0.0f, 0.0f, 1.0f, 1.0f, alpha);
     }
 
     private void drawFogLayer(WeatherCondition condition, GrassSpriteRenderer spriteRenderer) {
@@ -330,9 +360,12 @@ final class GrassWeatherRenderer {
     /** 按昼夜权重算出本帧的天气精灵染色。 */
     private void updateWeatherTint(SceneData sd) {
         float day = sd.dayWeight;
-        weatherTintR = GrassWeatherSystem.weatherSpriteTint(GrassWeatherSystem.NIGHT_WEATHER_R, day);
-        weatherTintG = GrassWeatherSystem.weatherSpriteTint(GrassWeatherSystem.NIGHT_WEATHER_G, day);
-        weatherTintB = GrassWeatherSystem.weatherSpriteTint(GrassWeatherSystem.NIGHT_WEATHER_B, day);
+        weatherTintR =
+                GrassWeatherSystem.weatherSpriteTint(GrassWeatherSystem.NIGHT_WEATHER_R, day);
+        weatherTintG =
+                GrassWeatherSystem.weatherSpriteTint(GrassWeatherSystem.NIGHT_WEATHER_G, day);
+        weatherTintB =
+                GrassWeatherSystem.weatherSpriteTint(GrassWeatherSystem.NIGHT_WEATHER_B, day);
     }
 
     private void restoreWeatherTint(GrassSpriteRenderer spriteRenderer) {
@@ -372,7 +405,10 @@ final class GrassWeatherRenderer {
         }
     }
 
-    private void drawCloudLayer(WeatherCondition condition, long animNowMs, int cloudCount,
+    private void drawCloudLayer(
+            WeatherCondition condition,
+            long animNowMs,
+            int cloudCount,
             GrassSpriteRenderer spriteRenderer) {
         int cond = condition.ordinal();
         float tSec = animNowMs / 1000.0f;
@@ -398,10 +434,20 @@ final class GrassWeatherRenderer {
             double cycleLen = cloudW + width;
             double phase = hash01((long) (i * 13 + cond * 17 + 1000)) * cycleLen;
             double xPos = (phase + (double) speed * tSec) % cycleLen - cloudW;
-            float yOff = hash01((long) (i * 11 + cond * 7 + 2000)) * (cloudH / 2.0f) - cloudH / 4.0f;
-            appendQuadToGroup(cloudBatchVertices, cloudBatchFloatCounts, texIdx,
-                    (float) xPos, yOff, (float) xPos + cloudW, yOff + cloudH,
-                    0.0f, 0.0f, 1.0f, 1.0f);
+            float yOff =
+                    hash01((long) (i * 11 + cond * 7 + 2000)) * (cloudH / 2.0f) - cloudH / 4.0f;
+            appendQuadToGroup(
+                    cloudBatchVertices,
+                    cloudBatchFloatCounts,
+                    texIdx,
+                    (float) xPos,
+                    yOff,
+                    (float) xPos + cloudW,
+                    yOff + cloudH,
+                    0.0f,
+                    0.0f,
+                    1.0f,
+                    1.0f);
         }
         /*
          * 云不按昼夜调透明度 —— 原版 {@code Cloud.draw} 是
@@ -426,8 +472,8 @@ final class GrassWeatherRenderer {
      * 画雨丝。前后两遍各调一次，但**粒子系统每帧只推进一次** ——
      * 否则 dt 翻倍、雨速是标称的两倍，而且看起来还挺正常，不容易发现。
      */
-    private void drawRainLayer(SceneData sd, int count, boolean frontPass,
-                               GrassSpriteRenderer spriteRenderer) {
+    private void drawRainLayer(
+            SceneData sd, int count, boolean frontPass, GrassSpriteRenderer spriteRenderer) {
         if (texRainStreak == 0) return;
 
         if (mRainParticles == null || mRainParticles.count() != count) {
@@ -469,17 +515,32 @@ final class GrassWeatherRenderer {
             float h = mRainParticles.quadHeightPx(i);
             float x0 = mRainParticles.x(i) - w * 0.5f;
             float y0 = mRainParticles.y(i) - h * 0.5f;
-            appendQuadToGroup(rainBatchVertices, rainBatchFloatCounts, 0,
-                    x0, y0, x0 + w, y0 + h, 0.0f, 0.0f, 1.0f, 1.0f, alpha);
+            appendQuadToGroup(
+                    rainBatchVertices,
+                    rainBatchFloatCounts,
+                    0,
+                    x0,
+                    y0,
+                    x0 + w,
+                    y0 + h,
+                    0.0f,
+                    0.0f,
+                    1.0f,
+                    1.0f,
+                    alpha);
         }
         if (rainBatchFloatCounts[0] > 0) {
-            spriteRenderer.drawBatch(texRainStreak, rainBatchVertices[0],
-                    rainBatchFloatCounts[0], 1.0f);
+            spriteRenderer.drawBatch(
+                    texRainStreak, rainBatchVertices[0], rainBatchFloatCounts[0], 1.0f);
         }
     }
 
-    private void drawSnowLayer(long animNowMs, int count, boolean frontPass, GrassSpriteRenderer spriteRenderer) {
-        if (texWeatherSnow1 == 0 || texWeatherSnow2 == 0 || texWeatherSnow3 == 0 || texWeatherSnow4 == 0) {
+    private void drawSnowLayer(
+            long animNowMs, int count, boolean frontPass, GrassSpriteRenderer spriteRenderer) {
+        if (texWeatherSnow1 == 0
+                || texWeatherSnow2 == 0
+                || texWeatherSnow3 == 0
+                || texWeatherSnow4 == 0) {
             return;
         }
         float tSec = animNowMs / 1000.0f;
@@ -489,7 +550,8 @@ final class GrassWeatherRenderer {
             if (front != frontPass) continue;
             float radiusOffset = hash01((long) (i * 7 + 101)) * 4.0f;
             float size = (2.0f + radiusOffset) * 2.0f;
-            float speed = 40.0f + hash01((long) (i * 11 + 137)) * (6.0f - (2.0f + radiusOffset)) * 5.0f;
+            float speed =
+                    40.0f + hash01((long) (i * 11 + 137)) * (6.0f - (2.0f + radiusOffset)) * 5.0f;
             float xPos = hash01((long) (i * 13 + 199)) * width;
             float cycleLen = size + height;
             float phase = hash01((long) (i * 19 + 317)) * cycleLen;
@@ -497,9 +559,18 @@ final class GrassWeatherRenderer {
             int texIdx = i & 3;
             float cy = yPos + size * 0.5f;
             float half = size * 0.5f;
-            appendQuadToGroup(snowBatchVertices, snowBatchFloatCounts, texIdx,
-                    xPos - half, cy - half, xPos + half, cy + half,
-                    0.0f, 1.0f, 1.0f, 0.0f);
+            appendQuadToGroup(
+                    snowBatchVertices,
+                    snowBatchFloatCounts,
+                    texIdx,
+                    xPos - half,
+                    cy - half,
+                    xPos + half,
+                    cy + half,
+                    0.0f,
+                    1.0f,
+                    1.0f,
+                    0.0f);
         }
         for (int i = 0; i < SNOW_BATCH_GROUP_COUNT; i++) {
             int floatCount = snowBatchFloatCounts[i];
@@ -553,17 +624,37 @@ final class GrassWeatherRenderer {
         }
     }
 
-    private void appendQuadToGroup(float[][] groups, int[] counts, int group,
-            float left, float top, float right, float bottom,
-            float uLeft, float vTop, float uRight, float vBottom) {
-        appendQuadToGroup(groups, counts, group, left, top, right, bottom,
-                uLeft, vTop, uRight, vBottom, 1.0f);
+    private void appendQuadToGroup(
+            float[][] groups,
+            int[] counts,
+            int group,
+            float left,
+            float top,
+            float right,
+            float bottom,
+            float uLeft,
+            float vTop,
+            float uRight,
+            float vBottom) {
+        appendQuadToGroup(
+                groups, counts, group, left, top, right, bottom, uLeft, vTop, uRight, vBottom,
+                1.0f);
     }
 
     /** 带逐四边形透明度的版本 —— 雨丝按深度给浓淡要它。 */
-    private void appendQuadToGroup(float[][] groups, int[] counts, int group,
-            float left, float top, float right, float bottom,
-            float uLeft, float vTop, float uRight, float vBottom, float alpha) {
+    private void appendQuadToGroup(
+            float[][] groups,
+            int[] counts,
+            int group,
+            float left,
+            float top,
+            float right,
+            float bottom,
+            float uLeft,
+            float vTop,
+            float uRight,
+            float vBottom,
+            float alpha) {
         ensureGroupCapacity(groups, counts, group, FLOATS_PER_QUAD);
         float[] out = groups[group];
         int cursor = counts[group];
@@ -584,7 +675,7 @@ final class GrassWeatherRenderer {
         out[cursor++] = y;
         out[cursor++] = u;
         out[cursor++] = v;
-        out[cursor++] = 1.0f;   // 逐顶点 alpha：本层不用，整批透明度走 uniform
+        out[cursor++] = 1.0f; // 逐顶点 alpha：本层不用，整批透明度走 uniform
         return cursor;
     }
 
@@ -623,7 +714,8 @@ final class GrassWeatherRenderer {
         }
 
         if (thunderActiveStartMs == 0L && thunderNextStartMs == 0L) {
-            thunderNextStartMs = animNowMs + 2000L + (long) (hash01(animNowMs * 31L + 7L) * 6000.0f);
+            thunderNextStartMs =
+                    animNowMs + 2000L + (long) (hash01(animNowMs * 31L + 7L) * 6000.0f);
         }
 
         if (thunderActiveStartMs == 0L && animNowMs >= thunderNextStartMs) {
@@ -639,7 +731,8 @@ final class GrassWeatherRenderer {
         long elapsed = animNowMs - thunderActiveStartMs;
         if (elapsed >= 200L) {
             thunderActiveStartMs = 0L;
-            thunderNextStartMs = animNowMs + 2000L + (long) (hash01(animNowMs * 29L + 31L) * 6000.0f);
+            thunderNextStartMs =
+                    animNowMs + 2000L + (long) (hash01(animNowMs * 29L + 31L) * 6000.0f);
             return 0.0f;
         }
 
@@ -662,10 +755,16 @@ final class GrassWeatherRenderer {
                 texture = texWeatherLightning3;
                 break;
         }
-        spriteRenderer.drawRectUv(texture,
-                left, top, right, bottom,
-                left / width, 1.0f - top / height,
-                right / width, 1.0f - bottom / height,
+        spriteRenderer.drawRectUv(
+                texture,
+                left,
+                top,
+                right,
+                bottom,
+                left / width,
+                1.0f - top / height,
+                right / width,
+                1.0f - bottom / height,
                 1.0f);
 
         return MathUtils.clamp(((elapsed / 200.0f) + 0.2f) * 0.5f, 0.0f, 1.0f);
@@ -681,10 +780,14 @@ final class GrassWeatherRenderer {
         int[] tex = new int[1];
         GLES30.glGenTextures(1, tex, 0);
         GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, tex[0]);
-        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR);
-        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
-        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE);
-        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE);
+        GLES30.glTexParameteri(
+                GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(
+                GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(
+                GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE);
+        GLES30.glTexParameteri(
+                GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE);
 
         byte[] rgba = new byte[texWidth * texHeight * 4];
         for (int y = 0; y < texHeight; y++) {
@@ -704,8 +807,16 @@ final class GrassWeatherRenderer {
 
         ByteBuffer buf = ByteBuffer.allocateDirect(rgba.length).order(ByteOrder.nativeOrder());
         buf.put(rgba).position(0);
-        GLES30.glTexImage2D(GLES30.GL_TEXTURE_2D, 0, GLES30.GL_RGBA, texWidth, texHeight, 0,
-                GLES30.GL_RGBA, GLES30.GL_UNSIGNED_BYTE, buf);
+        GLES30.glTexImage2D(
+                GLES30.GL_TEXTURE_2D,
+                0,
+                GLES30.GL_RGBA,
+                texWidth,
+                texHeight,
+                0,
+                GLES30.GL_RGBA,
+                GLES30.GL_UNSIGNED_BYTE,
+                buf);
         return tex[0];
     }
 
@@ -717,5 +828,4 @@ final class GrassWeatherRenderer {
         long masked = x & 0x7fffffffL;
         return masked / 2147483647.0f;
     }
-
 }
