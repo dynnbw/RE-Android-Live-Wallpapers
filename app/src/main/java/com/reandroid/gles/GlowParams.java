@@ -23,8 +23,15 @@ final class GlowParams {
         return Math.max(1, full / Math.max(2, divisor));
     }
 
+    /** 高斯核的 σ，单位是"采样步数"：9 抽头覆盖 ±2σ。 */
+    static final float BLUR_SIGMA_STEPS = 2.0f;
+
     /**
-     * 模糊步长（纹理坐标）：半径（像素）除以该遍的边长。
+     * 模糊步长（纹理坐标）。
+     *
+     * <p>σ 取半径的一半、每步取 σ/2，所以 4 步正好覆盖 ±2σ（≈±半径）。
+     * 单遍 5 抽头那条老路把步长直接设成半径，采样点间隔太大，看起来是几个错位副本；
+     * 这里把步长压到半径的 1/4，9 个采样点之间的空隙小于 σ，叠起来才是连续的晕。
      *
      * <p>分母取 {@code max(1, ·)} 是防 0 除。尺寸为 0 时算出 Infinity，
      * 模糊着色器会采样到 NaN —— 症状是**整片辉光变成黑色**，而且不报任何错。
@@ -32,6 +39,6 @@ final class GlowParams {
      * <p>半径为 0 时返回 0，那一遍退化成"原样拷贝"，是良定义的。
      */
     static float blurStep(int size, float radius) {
-        return radius / Math.max(1, size);
+        return (radius * 0.25f) / Math.max(1, size);
     }
 }

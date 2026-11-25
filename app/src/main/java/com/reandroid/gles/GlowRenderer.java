@@ -66,7 +66,7 @@ public final class GlowRenderer {
     private int mBrightProgram, mBlurProgram, mCompositeProgram;
     private int mBrightPos, mBrightUv, mBlurPos, mBlurUv, mCompositePos, mCompositeUv;
     private int mBrightScene, mBrightTexel, mBrightThreshold, mBrightKnee;
-    private int mBlurSource, mBlurStep;
+    private int mBlurSource, mBlurStep, mBlurSigma;
     private int mCompositeScene, mCompositeBloom, mCompositeStrength;
     private int mCompositeTone, mCompositeToneGamma;
     /** 合成时叠的影调曲线强度。0 = 不压，也就与没有这个功能时逐位相同。 */
@@ -186,6 +186,7 @@ public final class GlowRenderer {
         mBrightKnee = GLES30.glGetUniformLocation(mBrightProgram, "uSoftKnee");
         mBlurSource = GLES30.glGetUniformLocation(mBlurProgram, "uSource");
         mBlurStep = GLES30.glGetUniformLocation(mBlurProgram, "uStep");
+        mBlurSigma = GLES30.glGetUniformLocation(mBlurProgram, "uSigma");
         mCompositeScene = GLES30.glGetUniformLocation(mCompositeProgram, "uScene");
         mCompositeBloom = GLES30.glGetUniformLocation(mCompositeProgram, "uBloom");
         mCompositeStrength = GLES30.glGetUniformLocation(mCompositeProgram, "uStrength");
@@ -354,6 +355,7 @@ public final class GlowRenderer {
         GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mBloomTexA);
         GLES30.glUniform1i(mBlurSource, 0);
         GLES30.glUniform2f(mBlurStep, GlowParams.blurStep(mHalfW, radius), 0.0f);
+        GLES30.glUniform1f(mBlurSigma, GlowParams.BLUR_SIGMA_STEPS);
         GLES30.glDrawArrays(GLES30.GL_TRIANGLE_STRIP, 0, 4);
 
         // 纵向 → A
@@ -361,6 +363,7 @@ public final class GlowRenderer {
         GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mBloomTexB);
         GLES30.glUniform1i(mBlurSource, 0);
         GLES30.glUniform2f(mBlurStep, 0.0f, GlowParams.blurStep(mHalfH, radius));
+        GLES30.glUniform1f(mBlurSigma, GlowParams.BLUR_SIGMA_STEPS);
         GLES30.glDrawArrays(GLES30.GL_TRIANGLE_STRIP, 0, 4);
 
         // 合成 → 默认帧缓冲

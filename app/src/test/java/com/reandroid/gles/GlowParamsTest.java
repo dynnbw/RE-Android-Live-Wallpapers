@@ -34,7 +34,8 @@ public class GlowParamsTest {
     /** 模糊步长 = 半径 / 边长；尺寸为 0 时也必须是有限值。 */
     @Test
     public void blurStepIsFiniteEvenForZeroSize() {
-        assertEquals("半径 8、边长 540", 8.0f / 540.0f, GlowParams.blurStep(540, 8.0f), 1.0E-6f);
+        // 步长是半径的 1/4（σ = 半径/2，每步 σ/2）
+        assertEquals("半径 8、边长 540", 2.0f / 540.0f, GlowParams.blurStep(540, 8.0f), 1.0E-6f);
         // 半径为 0 → 步长为 0，那一遍退化成"原样拷贝"，是良定义的
         assertEquals(0.0f, GlowParams.blurStep(540, 0.0f), 0.0f);
         // 尺寸为 0 → 不能是 Infinity / NaN
@@ -42,6 +43,6 @@ public class GlowParamsTest {
         assertTrue(
                 "尺寸为 0 时算出了 " + degenerate,
                 !Float.isInfinite(degenerate) && !Float.isNaN(degenerate));
-        assertEquals(8.0f, degenerate, 1.0E-6f);
+        assertEquals(2.0f, degenerate, 1.0E-6f);
     }
 }
