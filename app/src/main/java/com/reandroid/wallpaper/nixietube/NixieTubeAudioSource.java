@@ -6,11 +6,13 @@ import android.media.MediaRecorder;
 import android.media.audiofx.Visualizer;
 import android.util.Log;
 
+import com.reandroid.utils.VisualizerArbiter;
+
 /**
  * Unified audio capture: system audio (Visualizer) or microphone (AudioRecord).
  * Calls back with instantaneous dBFS level at ~30 Hz.
  */
-final class NixieTubeAudioSource {
+final class NixieTubeAudioSource implements VisualizerArbiter.Owner {
     private static final String TAG = "NixieTubeAudio";
     private static final int SAMPLE_RATE = 16000;
     private static final int CAPTURE_SIZE = 512;
@@ -22,7 +24,11 @@ final class NixieTubeAudioSource {
     private final Callback mCallback;
     private final int mSource;
 
-    private Visualizer mVisualizer;
+    private volatile Visualizer mVisualizer;
+
+    /** 被同进程其他采集器顶掉后，等宿主下次 start() 再重新仲裁。 */
+    private volatile boolean mSuperseded;
+
     private AudioRecord mAudioRecord;
     private Thread mMicThread;
     private volatile boolean mRunning;
@@ -52,16 +58,26 @@ final class NixieTubeAudioSource {
         mRunning = false;
 
         if (mVisualizer != null) {
-            try { mVisualizer.setEnabled(false); } catch (Exception ignored) {}
+            try {
+                mVisualizer.setEnabled(false);
+            } catch (Exception ignored) {
+            }
         }
         if (mAudioRecord != null) {
-            try { mAudioRecord.stop(); } catch (Exception ignored) {}
+            try {
+                mAudioRecord.stop();
+            } catch (Exception ignored) {
+            }
         }
         if (mMicThread != null) {
-            try { mMicThread.join(500); } catch (InterruptedException ignored) {}
+            try {
+                mMicThread.join(500);
+            } catch (InterruptedException ignored) {
+            }
             mMicThread = null;
         }
         if (mVisualizer != null) {
+            VisualizerArbiter.unregister(this);
             mVisualizer.release();
             mVisualizer = null;
         }
@@ -71,6 +87,16 @@ final class NixieTubeAudioSource {
         }
     }
 
+    @Override
+    public Visualizer visualizer() {
+        return mVisualizer;
+    }
+
+    @Override
+    public void onSuperseded() {
+        mSuperseded = true;
+    }
+
     // ---- System audio (Visualizer with DataCaptureListener) ----
 
     private void startSystemAudio() {
@@ -78,6 +104,9 @@ final class NixieTubeAudioSource {
         try {
             mVisualizer = new Visualizer(0);
             mVisualizer.setCaptureSize(size);
+            VisualizerArbiter.register(this);
+            mSuperseded = false;
+            VisualizerArbiter.acquire(this);
             mVisualizer.setEnabled(true);
         } catch (Exception e) {
             /*
@@ -88,44 +117,88 @@ final class NixieTubeAudioSource {
              */
             Log.w(TAG, "System audio unavailable; no capture started", e);
             if (mVisualizer != null) {
-                try { mVisualizer.release(); } catch (Exception ignored) {}
+                VisualizerArbiter.unregister(this);
+                try {
+                    mVisualizer.release();
+                } catch (Exception ignored) {
+                }
                 mVisualizer = null;
             }
             return;
         }
 
         final NixieTubeAudioSource self = this;
-        mMicThread = new Thread(() -> {
-            byte[] buf = new byte[size];
-            while (mRunning && mVisualizer != null) {
-                try {
-                    int status = mVisualizer.getWaveForm(buf);
-                    if (status == Visualizer.SUCCESS) {
-                        float rms = computeRms(buf);
-                        mCallback.onLevel(linearToDb(rms));
-                    } else {
-                        // No waveform available (e.g. no audio playing).
-                        // Send silence so the scene's peak can decay and
-                        // switch back to clock display.
-                        mCallback.onLevel(-60f);
+        mMicThread = new Thread(
+                () -> {
+                    byte[] buf = new byte[size];
+                    while (mRunning && mVisualizer != null) {
+                        if (mSuperseded) {
+                            // 被顶掉时先静默；顶掉自己的采集器退场后重建实例（旧实例不会自己恢复）。
+                            if (!VisualizerArbiter.isAnyOtherEnabled(this)) {
+                                // 就地重建：不能调 startSystemAudio()，那会再起一个采集线程。
+                                VisualizerArbiter.unregister(NixieTubeAudioSource.this);
+                                try {
+                                    mVisualizer.release();
+                                } catch (Exception ignored) {
+                                }
+                                try {
+                                    mVisualizer = new Visualizer(0);
+                                    mVisualizer.setCaptureSize(size);
+                                    VisualizerArbiter.register(NixieTubeAudioSource.this);
+                                    mSuperseded = false;
+                                    VisualizerArbiter.acquire(NixieTubeAudioSource.this);
+                                    mVisualizer.setEnabled(true);
+                                } catch (Exception e) {
+                                    Log.w(TAG, "Failed to rebuild the visualizer", e);
+                                    mVisualizer = null;
+                                    break;
+                                }
+                                continue;
+                            } else {
+                                mCallback.onLevel(-60f);
+                                try {
+                                    Thread.sleep(100);
+                                } catch (InterruptedException ignored) {
+                                }
+                                continue;
+                            }
+                        }
+                        try {
+                            int status = mVisualizer.getWaveForm(buf);
+                            if (status == Visualizer.SUCCESS) {
+                                float rms = computeRms(buf);
+                                mCallback.onLevel(linearToDb(rms));
+                            } else {
+                                // No waveform available (e.g. no audio playing).
+                                // Send silence so the scene's peak can decay and
+                                // switch back to clock display.
+                                mCallback.onLevel(-60f);
+                            }
+                        } catch (Exception ignored) {
+                        }
+                        try {
+                            Thread.sleep(30);
+                        } catch (InterruptedException ignored) {
+                        }
                     }
-                } catch (Exception ignored) {}
-                try { Thread.sleep(30); } catch (InterruptedException ignored) {}
-            }
-        }, "NixieTube-SysAudio");
+                },
+                "NixieTube-SysAudio");
         mMicThread.start();
     }
 
     // ---- Microphone (AudioRecord) ----
 
     private void startMicrophone() {
-        int minBuf = AudioRecord.getMinBufferSize(SAMPLE_RATE,
-                AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT);
+        int minBuf = AudioRecord.getMinBufferSize(
+                SAMPLE_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT);
         int bufSize = Math.max(minBuf, CAPTURE_SIZE * 2);
         try {
-            mAudioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC,
-                    SAMPLE_RATE, AudioFormat.CHANNEL_IN_MONO,
-                    AudioFormat.ENCODING_PCM_16BIT, bufSize);
+            mAudioRecord = new AudioRecord(
+                    MediaRecorder.AudioSource.MIC,
+                    SAMPLE_RATE,
+                    AudioFormat.CHANNEL_IN_MONO,
+                    AudioFormat.ENCODING_PCM_16BIT,
+                    bufSize);
             if (mAudioRecord.getState() != AudioRecord.STATE_INITIALIZED) {
                 Log.e(TAG, "Mic: AudioRecord state=" + mAudioRecord.getState());
                 mAudioRecord.release();
@@ -139,19 +212,24 @@ final class NixieTubeAudioSource {
             return;
         }
 
-        mMicThread = new Thread(() -> {
-            short[] buf = new short[CAPTURE_SIZE];
-            while (mRunning && mAudioRecord != null) {
-                int read = mAudioRecord.read(buf, 0, buf.length);
-                if (read > 0) {
-                    float rms = computeRmsShort(buf, read);
-                    mCallback.onLevel(linearToDb(rms));
-                } else {
-                    mCallback.onLevel(-60f); // silence
-                }
-                try { Thread.sleep(30); } catch (InterruptedException ignored) {}
-            }
-        }, "NixieTube-Mic");
+        mMicThread = new Thread(
+                () -> {
+                    short[] buf = new short[CAPTURE_SIZE];
+                    while (mRunning && mAudioRecord != null) {
+                        int read = mAudioRecord.read(buf, 0, buf.length);
+                        if (read > 0) {
+                            float rms = computeRmsShort(buf, read);
+                            mCallback.onLevel(linearToDb(rms));
+                        } else {
+                            mCallback.onLevel(-60f); // silence
+                        }
+                        try {
+                            Thread.sleep(30);
+                        } catch (InterruptedException ignored) {
+                        }
+                    }
+                },
+                "NixieTube-Mic");
         mMicThread.start();
     }
 

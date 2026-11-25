@@ -3,7 +3,9 @@ package com.reandroid.wallpaper.musicvis;
 import android.media.audiofx.Visualizer;
 import android.util.Log;
 
-public class AudioCapture {
+import com.reandroid.utils.VisualizerArbiter;
+
+public class AudioCapture implements VisualizerArbiter.Owner {
     private static final String TAG = "AudioCapture";
     private static final long MAX_IDLE_TIME_MS = 3000;
 
@@ -20,7 +22,10 @@ public class AudioCapture {
     private final int mType;
     private final int mSize;
 
-    private Visualizer mVisualizer;
+    private volatile Visualizer mVisualizer;
+
+    /** 被进程内其他采集器顶掉了；此时不要主动抢回来，等宿主下次 start() 重新仲裁。 */
+    private volatile boolean mSuperseded;
 
     /** 幅度增益（1 = 不跟随）；由采集线程按 {@link #VOLUME_POLL_INTERVAL_MS} 刷新。 */
     private volatile float mVolumeGain = 1f;
@@ -75,14 +80,19 @@ public class AudioCapture {
             mFftFmtB = new int[size];
         }
 
+        createVisualizer();
+    }
+
+    /** 新建并登记一个采集实例（不 enable，enable 由 {@link #start()} 仲裁后做）。 */
+    private synchronized void createVisualizer() {
         try {
-            mVisualizer = new Visualizer(0);
-            if (mVisualizer != null) {
-                if (mVisualizer.getEnabled()) {
-                    mVisualizer.setEnabled(false);
-                }
-                mVisualizer.setCaptureSize(size);
+            Visualizer visualizer = new Visualizer(0);
+            if (visualizer.getEnabled()) {
+                visualizer.setEnabled(false);
             }
+            visualizer.setCaptureSize(mSize);
+            mVisualizer = visualizer;
+            VisualizerArbiter.register(this);
         } catch (UnsupportedOperationException e) {
             Log.e(TAG, "Visualizer cstor UnsupportedOperationException");
         } catch (IllegalStateException e) {
@@ -90,6 +100,55 @@ public class AudioCapture {
         } catch (RuntimeException e) {
             Log.e(TAG, "Visualizer cstor RuntimeException");
         }
+    }
+
+    /**
+     * 重建采集实例。被同进程另一个 Visualizer 顶掉之后，旧实例即使 getEnabled() 仍为
+     * true 也不会再产生数据（平台对同一 session 的实例是排他的），只能换一个新的。
+     */
+    private void rebuildVisualizer() {
+        releaseVisualizer();
+        createVisualizer();
+        mSuperseded = false;
+        VisualizerArbiter.acquire(this);
+        mLastValidCaptureTimeMs = System.currentTimeMillis();
+    }
+
+    private synchronized void releaseVisualizer() {
+        VisualizerArbiter.unregister(this);
+        if (mVisualizer != null) {
+            try {
+                mVisualizer.setEnabled(false);
+            } catch (Exception ignored) {
+            }
+            try {
+                mVisualizer.release();
+            } catch (Exception ignored) {
+            }
+            mVisualizer = null;
+        }
+    }
+
+    private boolean isVisualizerEnabled() {
+        Visualizer visualizer = mVisualizer;
+        if (visualizer == null) {
+            return false;
+        }
+        try {
+            return visualizer.getEnabled();
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    @Override
+    public Visualizer visualizer() {
+        return mVisualizer;
+    }
+
+    @Override
+    public void onSuperseded() {
+        mSuperseded = true;
     }
 
     public int getSize() {
@@ -160,15 +219,18 @@ public class AudioCapture {
     }
 
     public void start() {
-        if (mVisualizer == null) return;
-        try {
-            if (!mVisualizer.getEnabled()) {
-                mVisualizer.setEnabled(true);
-                mLastValidCaptureTimeMs = System.currentTimeMillis();
-            }
-        } catch (IllegalStateException e) {
-            Log.e(TAG, "start() IllegalStateException");
+        if (mVisualizer == null) {
+            createVisualizer();
+        }
+        if (mVisualizer == null) {
             return;
+        }
+        if (mSuperseded) {
+            // 旧实例已经被别人顶掉且不会自己恢复，只能重建。
+            rebuildVisualizer();
+        } else {
+            VisualizerArbiter.acquire(this);
+            mLastValidCaptureTimeMs = System.currentTimeMillis();
         }
 
         if (mCaptureThread == null) {
@@ -209,10 +271,7 @@ public class AudioCapture {
 
     public void release() {
         stop();
-        if (mVisualizer != null) {
-            mVisualizer.release();
-            mVisualizer = null;
-        }
+        releaseVisualizer();
     }
 
     public byte[] getRawData() {
@@ -325,6 +384,19 @@ public class AudioCapture {
                         mReadyFftFmt = (mCaptureIndex == 0) ? fftFmtA : fftFmtB;
                     }
                     // Silent FFT: don't publish — keep last valid frame.
+                }
+
+                // 长时间收不到数据就重建一次采集实例：被同进程另一个 Visualizer
+                // 顶掉之后，旧实例永远不会自己恢复。
+                if (mRunning
+                        && mSuperseded
+                        && !VisualizerArbiter.isAnyOtherEnabled(AudioCapture.this)) {
+                    // 顶掉自己的那个采集器已经退场（从系统选择器退回应用内预览就是这条）。
+                    // 旧实例已经废了，重建一个新的。
+                    rebuildVisualizer();
+                } else if (mRunning && !mSuperseded && !isVisualizerEnabled()) {
+                    // 没被标记却已经被关掉了：同样重建一次。
+                    rebuildVisualizer();
                 }
 
                 // Adaptive polling: fast (200 Hz) when audio is present,
