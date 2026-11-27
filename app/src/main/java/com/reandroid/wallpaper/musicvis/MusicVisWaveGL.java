@@ -94,6 +94,13 @@ public class MusicVisWaveGL extends GLESScene {
     }
 
     @Override
+    public void setScrollStep(float xStep) {
+        super.setScrollStep(xStep);
+        // GLESScene 只留了「桌面滚不滚」的布尔值；翻页角度需要真实步长，转给场景。
+        mScene.setScrollStep(xStep);
+    }
+
+    @Override
     public void setOffset(float xOffset, float yOffset, int xPixels, int yPixels) {
         mScene.setOffset(xOffset, yOffset, xPixels, yPixels);
     }

@@ -159,6 +159,15 @@ public final class MusicVisWaveVkDelegate extends VkPassRendererDelegate {
     }
 
     @Override
+    public void onScrollStep(float xStep) {
+        WaveScene scene = mScene;
+        if (scene == null) return;
+        synchronized (scene) {
+            scene.setScrollStep(xStep);
+        }
+    }
+
+    @Override
     public void onSceneOffset(float xOffset) {
         WaveScene scene = mScene;
         if (scene == null) return;

@@ -58,6 +58,20 @@
           "title": "musicvis_fit_screen",
           "summary": "musicvis_fit_screen_summary",
           "default": "false"
+        },
+        {
+          "type": "list",
+          "key": "musicvis_page_rotation_mode",
+          "title": "musicvis_page_rotation_mode",
+          "default": "legacy",
+          "values": [
+            "legacy",
+            "per_page"
+          ],
+          "labels": [
+            "musicvis_page_rotation_mode_label_legacy",
+            "musicvis_page_rotation_mode_label_per_page"
+          ]
         }
       ]
     },

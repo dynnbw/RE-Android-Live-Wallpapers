@@ -40,6 +40,10 @@ public final class WaveScene extends AudioVisBase {
     int mIdle = 0;
     int mWaveCounter = 0;
     float mYRotation = 0f;
+    /** 桌面每页的偏移步长；{@code <= 0} 表示还没收到，或桌面不随屏滚动。 */
+    float mScrollStep = -1f;
+    /** 翻页旋转模式；默认原版整圈，见 {@link PageRotation}。 */
+    String mRotationMode = PageRotation.MODE_LEGACY;
 
     int fadeoutcounter = 0;
     int fadeincounter = 0;
@@ -150,11 +154,18 @@ public final class WaveScene extends AudioVisBase {
         if ("simulate".equals(v)) mIdleMode = IDLE_SIMULATE;
         else if ("flat".equals(v)) mIdleMode = IDLE_FLAT;
         else mIdleMode = IDLE_WAVE;
+        mRotationMode = p.getString("musicvis_page_rotation_mode", PageRotation.MODE_LEGACY);
+    }
+
+    /** 桌面每页的偏移步长，来自 {@code onOffsetsChanged} 的 xStep。 */
+    void setScrollStep(float xStep) {
+        mScrollStep = xStep;
     }
 
     @Override
     public void setOffset(float xOffset, float yOffset, int xPixels, int yPixels) {
-        mYRotation = (xOffset * 4f) * (mMode == Mode.FFT ? 360f : 180f);
+        mYRotation = PageRotation.degrees(
+                xOffset, mScrollStep, mMode == Mode.FFT ? 360f : 180f, mRotationMode);
     }
 
     // ---- point data init ----
