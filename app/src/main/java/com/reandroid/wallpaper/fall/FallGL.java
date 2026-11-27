@@ -655,7 +655,8 @@ public class FallGL extends GLESScene {
          * 叶子的受光与水面是**同一套算法**（遍历所有波纹累加），所以这一整套参数
          * 必须与 drawWaterQuad 那边保持一致 —— 否则"水里那圈光"和"叶子被照到哪"会对不上。
          */
-        GLES30.glUniform1f(mLeafAlgaeAmountHandle, mScene.getAlgaeAmount());
+        // 叶子这一侧可以单独关掉：水面照旧发光，叶子不再被照亮（见 FallScene）
+        GLES30.glUniform1f(mLeafAlgaeAmountHandle, mScene.getLeafAlgaeAmount());
         GLES30.glUniform2f(
                 mLeafAlgaeMetricHandle,
                 sceneData.getMeshScaleX() * sceneData.getDxMul(),

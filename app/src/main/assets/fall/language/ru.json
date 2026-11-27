@@ -10,6 +10,8 @@
   "pref_fall_green_leaves": "Зелёные листья",
   "pref_fall_swipe_ripple": "Непрерывные волны при свайпе",
   "pref_fall_swipe_ripple_desc": "Непрерывно создаёт волны при свайпе",
+  "pref_fall_leaf_algae": "Подсветка листьев",
+  "pref_fall_leaf_algae_desc": "Ночное свечение воды подсвечивает падающие листья",
   "pref_fall_day_night": "Небо днём и ночью",
   "pref_fall_day_night_desc": "Небо меняется в зависимости от времени суток",
   "pref_fall_glow": "Свечение",

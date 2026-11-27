@@ -143,6 +143,7 @@ final class FallScene {
          * 免得着色器里再塞 meshScale / halfH / offset 四个 uniform。
          */
         private float[] algaeWorld = new float[0];
+
         private int activeDropCount;
         private float glHeight;
         private float bgScale;
@@ -151,25 +152,81 @@ final class FallScene {
         private float dxMul;
         private int rotate;
 
-        float[] getProjectionMatrix() { return projectionMatrix; }
-        float[] getViewMatrix() { return viewMatrix; }
-        Leaf[] getLeaves() { return leaves; }
-        float[] getWaterMeshVertices() { return waterMeshVertices; }
-        float[] getWaterMeshTexCoords() { return waterMeshTexCoords; }
-        short[] getWaterMeshIndices() { return waterMeshIndices; }
-        int getWaterMeshVertexCount() { return waterMeshVertexCount; }
-        int getWaterMeshIndexCount() { return waterMeshIndexCount; }
-        float getXOffset() { return xOffset; }
-        float[] getDropData() { return dropData; }
-        float[] getAlgaePower() { return algaePower; }
-        float[] getAlgaeWorld() { return algaeWorld; }
-        int getActiveDropCount() { return activeDropCount; }
-        float getGlHeight() { return glHeight; }
-        float getBgScale() { return bgScale; }
-        float getMeshScaleX() { return meshScaleX; }
-        float getMeshScaleY() { return meshScaleY; }
-        float getDxMul() { return dxMul; }
-        int getRotate() { return rotate; }
+        float[] getProjectionMatrix() {
+            return projectionMatrix;
+        }
+
+        float[] getViewMatrix() {
+            return viewMatrix;
+        }
+
+        Leaf[] getLeaves() {
+            return leaves;
+        }
+
+        float[] getWaterMeshVertices() {
+            return waterMeshVertices;
+        }
+
+        float[] getWaterMeshTexCoords() {
+            return waterMeshTexCoords;
+        }
+
+        short[] getWaterMeshIndices() {
+            return waterMeshIndices;
+        }
+
+        int getWaterMeshVertexCount() {
+            return waterMeshVertexCount;
+        }
+
+        int getWaterMeshIndexCount() {
+            return waterMeshIndexCount;
+        }
+
+        float getXOffset() {
+            return xOffset;
+        }
+
+        float[] getDropData() {
+            return dropData;
+        }
+
+        float[] getAlgaePower() {
+            return algaePower;
+        }
+
+        float[] getAlgaeWorld() {
+            return algaeWorld;
+        }
+
+        int getActiveDropCount() {
+            return activeDropCount;
+        }
+
+        float getGlHeight() {
+            return glHeight;
+        }
+
+        float getBgScale() {
+            return bgScale;
+        }
+
+        float getMeshScaleX() {
+            return meshScaleX;
+        }
+
+        float getMeshScaleY() {
+            return meshScaleY;
+        }
+
+        float getDxMul() {
+            return dxMul;
+        }
+
+        int getRotate() {
+            return rotate;
+        }
     }
 
     private final Random mRandom = new Random();
@@ -195,6 +252,7 @@ final class FallScene {
 
     /** 当前屏幕上可见的世界半宽/半高。铺满+裁切之后它与世界半宽/半高不一定相等。 */
     private float mVisibleHalfW = WORLD_HALF_WIDTH;
+
     private float mVisibleHalfH = WORLD_HEIGHT * 0.5f;
     private float mBackgroundScale = 0.75f;
     private Drop[] mDrops;
@@ -295,7 +353,9 @@ final class FallScene {
     private float mLeafSizeMultiplier = 1.0f;
     private float mFallSpeedMultiplier = 1.0f;
 
-    float getLeafSizeMultiplier() { return effectiveLeafSizeMultiplier(); }
+    float getLeafSizeMultiplier() {
+        return effectiveLeafSizeMultiplier();
+    }
 
     /** 设置里的倍率 × 朝向补偿（竖屏时补偿恒为 1）。 */
     private float effectiveLeafSizeMultiplier() {
@@ -306,7 +366,9 @@ final class FallScene {
      * 实际会用到的叶子贴图数（绿叶开 20、关 14，见 prepareNonGLResources）。
      * GL 侧据此只加载需要的那几张，别把用不到的也传上显存。
      */
-    int getLeafTextureCount() { return mLeafTextureCount; }
+    int getLeafTextureCount() {
+        return mLeafTextureCount;
+    }
 
     /** Plugin path: use host-provided prefs instead of WallpaperSettings. */
     void setPluginPrefs(SharedPreferences prefs) {
@@ -385,9 +447,8 @@ final class FallScene {
     private static float pixelsPerWorldUnit(int width, int height) {
         float screenAspect = (float) width / height;
         float worldAspect = (2.0f * WORLD_HALF_WIDTH) / WORLD_HEIGHT;
-        float halfW = screenAspect < worldAspect
-                ? WORLD_HEIGHT * 0.5f * screenAspect
-                : WORLD_HALF_WIDTH;
+        float halfW =
+                screenAspect < worldAspect ? WORLD_HEIGHT * 0.5f * screenAspect : WORLD_HALF_WIDTH;
         return width / (2.0f * halfW);
     }
 
@@ -534,8 +595,7 @@ final class FallScene {
          * 投影一改成裁切，横屏点击就整体偏掉了。
          */
         float posX = (((float) x / (float) mWidth) * 2.0f - 1.0f) * mVisibleHalfW;
-        float posY = (1.0f - (float) y / (float) mHeight) * 2.0f * mVisibleHalfH
-                - mVisibleHalfH;
+        float posY = (1.0f - (float) y / (float) mHeight) * 2.0f * mVisibleHalfH - mVisibleHalfH;
         if (mRotate == 0) {
             posX += mSceneData.xOffset * 2.0f;
         }
@@ -655,8 +715,7 @@ final class FallScene {
 
         mVisibleHalfW = halfW;
         mVisibleHalfH = halfH;
-        Matrix.orthoM(mSceneData.projectionMatrix, 0,
-                -halfW, halfW, -halfH, halfH, 0.1f, 10.0f);
+        Matrix.orthoM(mSceneData.projectionMatrix, 0, -halfW, halfW, -halfH, halfH, 0.1f, 10.0f);
     }
 
     /**
@@ -667,8 +726,7 @@ final class FallScene {
      * 这样 {@code addDrop()} 在网格单位里算的等距线投到屏幕上才是圆。
      */
     static int meshYIntervals(int wIntervals) {
-        return Math.max(2, Math.round(
-                wIntervals * WORLD_HEIGHT / (2.0f * WORLD_HALF_WIDTH)));
+        return Math.max(2, Math.round(wIntervals * WORLD_HEIGHT / (2.0f * WORLD_HALF_WIDTH)));
     }
 
     /**
@@ -887,7 +945,7 @@ final class FallScene {
         for (int i = 0; i < mWaterDropCount; i++) {
             int off = i * 4;
             Drop drop = mWaterDrops[i];
-            d[off]     = drop.x;
+            d[off] = drop.x;
             d[off + 1] = drop.y;
             /*
              * 半径与幅度一起乘朝向系数 —— 这样波纹是**整体缩小**，形状不变。
@@ -932,17 +990,20 @@ final class FallScene {
     // ---- Plugin-aware settings fallback ----
 
     private boolean isGreenLeaves() {
-        if (mPrefs != null) return mPrefs.getBoolean(WallpaperSettings.KEY_FALL_GREEN_LEAVES, false);
+        if (mPrefs != null)
+            return mPrefs.getBoolean(WallpaperSettings.KEY_FALL_GREEN_LEAVES, false);
         return WallpaperSettings.isGreenLeavesEnabled(false);
     }
 
     private int getLeafCount() {
-        if (mPrefs != null) return mPrefs.getInt(WallpaperSettings.KEY_FALL_LEAF_COUNT, DEFAULT_LEAVES_COUNT);
+        if (mPrefs != null)
+            return mPrefs.getInt(WallpaperSettings.KEY_FALL_LEAF_COUNT, DEFAULT_LEAVES_COUNT);
         return WallpaperSettings.getFallLeafCount(DEFAULT_LEAVES_COUNT);
     }
 
     private int getMaxDrops() {
-        if (mPrefs != null) return mPrefs.getInt(WallpaperSettings.KEY_FALL_MAX_DROPS, DEFAULT_WATER_MESH_DROPS);
+        if (mPrefs != null)
+            return mPrefs.getInt(WallpaperSettings.KEY_FALL_MAX_DROPS, DEFAULT_WATER_MESH_DROPS);
         return WallpaperSettings.getFallMaxDrops(DEFAULT_WATER_MESH_DROPS);
     }
 
@@ -956,6 +1017,23 @@ final class FallScene {
     boolean isGlowEnabled() {
         if (mPrefs != null) return mPrefs.getBoolean(WallpaperSettings.KEY_FALL_GLOW, false);
         return WallpaperSettings.isFallGlowEnabled(false);
+    }
+
+    /**
+     * 落叶受水面夜光照明的开关（默认开）。
+     *
+     * <p>只关叶子这一侧：水面照旧发光。叶子着色器里的蓝藻循环按片元、按活跃波纹走，
+     * 是"夜光 + 落叶"这个交互里最贵的一段；归零后叶子着色器在
+     * {@code uAlgaeAmount > 0.001} 处整段跳过。
+     */
+    private boolean isLeafAlgaeEnabled() {
+        if (mPrefs != null) return mPrefs.getBoolean(WallpaperSettings.KEY_FALL_LEAF_ALGAE, true);
+        return WallpaperSettings.isFallLeafAlgaeEnabled(true);
+    }
+
+    /** 叶子那边看到的夜光强度：关掉"落叶受光"后为 0，水面不受影响。 */
+    float getLeafAlgaeAmount() {
+        return isLeafAlgaeEnabled() ? mAlgaeAmount : 0.0f;
     }
 
     /** 滑动水波纹开关：滑动每 42px 触发一次点击水波纹（默认开启） */
