@@ -88,7 +88,7 @@ public class PluginSettingsFragment extends PreferenceFragmentCompat
          * 自己画，所以这里把内置那条彻底关掉。
          */
         setDivider(null);
-        // 分组卡片的整卡背景/阴影/分隔线（PreferenceGroup 的子项没法用一张 CardView 包住）
+        // 分组卡片的整卡背景与分隔线（PreferenceGroup 的子项没法用一张 CardView 包住）
         getListView().addItemDecoration(new GroupCardDecoration(requireContext()));
     }
 
@@ -144,7 +144,10 @@ public class PluginSettingsFragment extends PreferenceFragmentCompat
                 @Override
                 public void onBindViewHolder(PreferenceViewHolder holder) {
                     super.onBindViewHolder(holder);
-                    holder.itemView.setAlpha(vulkanSupported ? 1f : 0.4f);
+                    float alpha = vulkanSupported ? 1f : 0.4f;
+                    // 登记静止 alpha：分组展开动画按它恢复，不会把这行点亮
+                    PreferenceAlpha.set(this, alpha);
+                    holder.itemView.setAlpha(alpha);
                 }
             };
             vkSwitch.setKey(USE_VULKAN_KEY);

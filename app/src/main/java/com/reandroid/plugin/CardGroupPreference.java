@@ -163,13 +163,15 @@ public class CardGroupPreference extends PreferenceGroup {
             if (position == RecyclerView.NO_POSITION) continue;
             Preference preference = pga.getItem(position);
             Integer oldTop = preference != null ? oldTops.get(preference) : null;
+            // 置灰行要回到 0.4，不能一律写 1（那会把其他组里被禁用的行也点亮）
+            float restingAlpha = preference != null ? PreferenceAlpha.of(preference) : 1f;
             child.animate().cancel();
             if (oldTop == null) {
-                // 新出现的行：淡入
+                // 新出现的行：从透明淡入到它自己的静止 alpha
                 child.setAlpha(0f);
-                child.animate().alpha(1f).setDuration(ANIM_MS).start();
+                child.animate().alpha(restingAlpha).setDuration(ANIM_MS).start();
             } else {
-                child.setAlpha(1f);
+                child.setAlpha(restingAlpha);
                 float dy = oldTop - child.getTop();
                 if (dy != 0) {
                     child.setTranslationY(dy);

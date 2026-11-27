@@ -358,6 +358,8 @@ public final class DynamicPreferenceFactory {
         if (state != null) {
             state.satisfied = satisfied;
         }
+        // 分组展开动画按这个值恢复 alpha，否则置灰会被复位成不透明
+        PreferenceAlpha.set(pref, satisfied ? 1f : GRAY_ALPHA);
         pref.setSelectable(satisfied);
     }
 
@@ -562,7 +564,9 @@ public final class DynamicPreferenceFactory {
     /** Apply gray-out alpha in onBindViewHolder of the anonymous preference subclasses. */
     private static void applyGrayAlpha(
             androidx.preference.PreferenceViewHolder holder, Preference pref) {
-        holder.itemView.setAlpha(grayAlpha(pref));
+        float alpha = grayAlpha(pref);
+        PreferenceAlpha.set(pref, alpha);
+        holder.itemView.setAlpha(alpha);
         // 组内行按位置换水波纹，避免方形波纹溢出卡片圆角
         Integer rowStyle = sGroupRowStyles.get(pref);
         if (rowStyle != null) {
