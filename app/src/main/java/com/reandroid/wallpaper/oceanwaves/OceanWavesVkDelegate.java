@@ -231,7 +231,8 @@ final class OceanWavesVkDelegate extends VkPassRendererDelegate {
         mPush[16] = scene.scale();
         mPush[17] = scene.time();
         mPush[18] = scene.panX();
-        mPush[19] = IMAGE_WIDTH / scene.zoom();
+        // 与 GLES 一致：缩放值越大越近
+        mPush[19] = IMAGE_WIDTH * scene.zoom();
         mPush[20] = OceanWavesScene.DESIGN_WIDTH;
         mPush[21] = scene.viewHeightDesign();
         mPush[22] = 0f;

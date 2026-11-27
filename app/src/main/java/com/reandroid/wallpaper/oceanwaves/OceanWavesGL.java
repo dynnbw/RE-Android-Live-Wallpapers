@@ -104,7 +104,8 @@ public class OceanWavesGL extends GLESScene {
         GLES30.glUniform1f(mTimeLoc, mScene.time());
         GLES30.glUniform1f(mPanLoc, mScene.panX());
         GLES30.glUniform2f(mDesignSizeLoc, OceanWavesScene.DESIGN_WIDTH, mScene.viewHeightDesign());
-        GLES30.glUniform1f(mImageWidthLoc, IMAGE_WIDTH / mScene.zoom());
+        // 缩放值越大越近：一张贴图占的设计单位跟着变大，屏幕上看到的范围变小。
+        GLES30.glUniform1f(mImageWidthLoc, IMAGE_WIDTH * mScene.zoom());
         bindTexture(GLES30.GL_TEXTURE0, mSeabedTexture, mSeabedLoc);
         bindTexture(GLES30.GL_TEXTURE1, mEnvmapTexture, mEnvmapLoc);
         bindTexture(GLES30.GL_TEXTURE2, mRippleTexture, mRippleLoc);
