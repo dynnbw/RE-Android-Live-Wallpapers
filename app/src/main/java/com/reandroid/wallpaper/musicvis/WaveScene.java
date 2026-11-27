@@ -45,6 +45,14 @@ public final class WaveScene extends AudioVisBase {
     /** 翻页旋转模式；默认原版整圈，见 {@link PageRotation}。 */
     String mRotationMode = PageRotation.MODE_LEGACY;
 
+    private final BeatDetector mBeatDetector = new BeatDetector();
+    private final BeatRotation mBeatRotation = new BeatRotation();
+    /** 上一帧的低频 bin，用于算频谱通量。 */
+    private final float[] mPreviousLowBins = new float[64];
+
+    /** 通量需要上一帧做基准；切换进节拍模式后的第一帧只填基准，不判节拍。 */
+    private boolean mFluxPrimed;
+
     int fadeoutcounter = 0;
     int fadeincounter = 0;
     int wave1pos = 0, wave1amp = 0;
@@ -154,7 +162,11 @@ public final class WaveScene extends AudioVisBase {
         if ("simulate".equals(v)) mIdleMode = IDLE_SIMULATE;
         else if ("flat".equals(v)) mIdleMode = IDLE_FLAT;
         else mIdleMode = IDLE_WAVE;
-        mRotationMode = p.getString("musicvis_page_rotation_mode", PageRotation.MODE_LEGACY);
+        String mode = p.getString("musicvis_page_rotation_mode", PageRotation.MODE_LEGACY);
+        if (PageRotation.MODE_BEAT.equals(mode) && !PageRotation.MODE_BEAT.equals(mRotationMode)) {
+            mFluxPrimed = false;
+        }
+        mRotationMode = mode;
     }
 
     /** 桌面每页的偏移步长，来自 {@code onOffsetsChanged} 的 xStep。 */
@@ -164,6 +176,8 @@ public final class WaveScene extends AudioVisBase {
 
     @Override
     public void setOffset(float xOffset, float yOffset, int xPixels, int yPixels) {
+        // 节拍模式不响应桌面偏移，角度交给 BeatRotation
+        if (PageRotation.MODE_BEAT.equals(mRotationMode)) return;
         mYRotation = PageRotation.degrees(
                 xOffset, mScrollStep, mMode == Mode.FFT ? 360f : 180f, mRotationMode);
     }
@@ -185,7 +199,7 @@ public final class WaveScene extends AudioVisBase {
 
     // ---- wave data update ----
 
-    void updateWaveData() {
+    void updateWaveData(long nowMs) {
         int len = 0;
         if (mAudioCapture != null) {
             if (mMode == Mode.PCM) {
@@ -204,9 +218,13 @@ public final class WaveScene extends AudioVisBase {
                 // behave exactly as with real audio.
                 mIdle = 0;
                 len = synthesizeData();
-                if (len == 0) return;
+                if (len == 0) {
+                    updateBeatAngle(nowMs);
+                    return;
+                }
             } else {
                 if (mIdle == 0) mIdle = 1;
+                updateBeatAngle(nowMs);
                 return;
             }
         }
@@ -242,6 +260,14 @@ public final class WaveScene extends AudioVisBase {
                 mAnalyzer[i] = newval;
             }
 
+            if (isBeatMode()) {
+                float flux = lowFrequencyFlux(len);
+                if (flux >= 0f) {
+                    float strength = mBeatDetector.onEnergy(flux, nowMs);
+                    if (strength >= 0f) mBeatRotation.onBeat(strength, nowMs);
+                }
+            }
+
             int outlen = mPointData.length / 8;
             int width = Math.min(mWidth, outlen);
             int skip = (outlen - width) / 2;
@@ -264,6 +290,35 @@ public final class WaveScene extends AudioVisBase {
         if (mRecolorDynamic && mRecolorEnabled && len > 0) {
             updateDynamicHue();
         }
+        updateBeatAngle(nowMs);
+    }
+
+    private boolean isBeatMode() {
+        return PageRotation.MODE_BEAT.equals(mRotationMode);
+    }
+
+    private void updateBeatAngle(long nowMs) {
+        if (isBeatMode()) mYRotation = mBeatRotation.update(nowMs);
+    }
+
+    /**
+     * 低频段（前 1/8 组 bin，最多 64 组）的频谱通量：只累加相邻帧的上升量。
+     * 稳态低音不会被当成节拍，鼓点这类瞬态才有明显峰值。
+     */
+    private float lowFrequencyFlux(int bins) {
+        int low = Math.min(Math.min(bins, mPreviousLowBins.length), Math.max(8, bins / 8));
+        float flux = 0f;
+        for (int i = 1; i < low; i++) {
+            float value = mAnalyzer[i];
+            float delta = value - mPreviousLowBins[i];
+            if (delta > 0f) flux += delta;
+            mPreviousLowBins[i] = value;
+        }
+        if (!mFluxPrimed) {
+            mFluxPrimed = true;
+            return -1f;
+        }
+        return flux / Math.max(1, low - 1);
     }
 
     /**

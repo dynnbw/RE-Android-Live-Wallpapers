@@ -142,7 +142,7 @@ public class MusicVisWaveGL extends GLESScene {
             s.mAudioCapture.start();
         }
 
-        s.updateWaveData();
+        s.updateWaveData(timeMs);
         s.applyIdleAndFade();
         s.updateBuffers();
         s.updateAdjustBuffer();

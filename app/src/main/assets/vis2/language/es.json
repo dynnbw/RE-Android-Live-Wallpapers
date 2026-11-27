@@ -5,7 +5,7 @@
   "pref_vis2_group_background": "Fondo",
   "musicvis_fit_screen": "Mostrar más muestras",
   "musicvis_fit_screen_summary": "Escala la onda al lado corto de la pantalla",
-  "musicvis_page_rotation_mode": "Rotación de páginas",
+  "musicvis_page_rotation_mode": "Modo de rotación",
   "musicvis_page_rotation_mode_label_legacy": "Giro completo original",
   "musicvis_page_rotation_mode_label_per_page": "120° por página",
   "musicvis_use_triangle_strip": "Usar malla de tiras de triángulos heredada",

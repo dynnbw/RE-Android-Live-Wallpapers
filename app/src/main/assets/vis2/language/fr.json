@@ -5,7 +5,7 @@
   "pref_vis2_group_background": "Arrière-plan",
   "musicvis_fit_screen": "Afficher plus d'échantillons",
   "musicvis_fit_screen_summary": "Met la forme d'onde à l'échelle du petit côté de l'écran",
-  "musicvis_page_rotation_mode": "Rotation des pages",
+  "musicvis_page_rotation_mode": "Mode de rotation",
   "musicvis_page_rotation_mode_label_legacy": "Tour complet d'origine",
   "musicvis_page_rotation_mode_label_per_page": "120° par page",
   "musicvis_use_triangle_strip": "Utiliser le maillage hérité en bandes de triangles",

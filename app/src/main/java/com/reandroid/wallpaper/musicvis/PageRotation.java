@@ -17,6 +17,9 @@ public final class PageRotation {
     /** 每页固定 +120°，与桌面页数无关。 */
     public static final String MODE_PER_PAGE = "per_page";
 
+    /** 节拍驱动：不响应桌面偏移，角度由 {@link BeatRotation} 维护。 */
+    public static final String MODE_BEAT = "beat";
+
     /** {@link #MODE_PER_PAGE} 每页的旋转角度。 */
     public static final float DEGREES_PER_PAGE = 120f;
 

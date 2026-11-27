@@ -335,7 +335,7 @@ public final class MusicVisWaveVkDelegate extends VkPassRendererDelegate {
         synchronized (s) {
             recreateFftCaptureIfNeeded(s);
 
-            s.updateWaveData();
+            s.updateWaveData(timeMs);
             s.applyIdleAndFade();
             s.updateBuffers();
             s.updateAdjustBuffer();

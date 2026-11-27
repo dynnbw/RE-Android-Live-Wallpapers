@@ -5,7 +5,7 @@
   "pref_vis2_group_background": "背景",
   "musicvis_fit_screen": "顯示更多取樣",
   "musicvis_fit_screen_summary": "橫向比例依螢幕短邊縮放",
-  "musicvis_page_rotation_mode": "翻頁旋轉",
+  "musicvis_page_rotation_mode": "旋轉方式",
   "musicvis_page_rotation_mode_label_legacy": "原版整圈",
   "musicvis_page_rotation_mode_label_per_page": "每頁 120°",
   "musicvis_use_triangle_strip": "使用經典版三角條帶網格",

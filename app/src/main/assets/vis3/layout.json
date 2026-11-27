@@ -66,11 +66,13 @@
           "default": "legacy",
           "values": [
             "legacy",
-            "per_page"
+            "per_page",
+            "beat"
           ],
           "labels": [
             "musicvis_page_rotation_mode_label_legacy",
-            "musicvis_page_rotation_mode_label_per_page"
+            "musicvis_page_rotation_mode_label_per_page",
+            "musicvis_page_rotation_mode_label_beat"
           ]
         }
       ]
