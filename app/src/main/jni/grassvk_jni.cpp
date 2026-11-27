@@ -570,6 +570,8 @@ public:
 
     bool createMappedBufferLocked(VkDeviceSize size, VkBufferUsageFlags usage,
             VkBuffer& outBuf, VkDeviceMemory& outMem, void*& outMapped) {
+        // 设备没建起来（没有 Vulkan 设备）时直接失败，别拿空 device 调 vkCreateBuffer
+        if (device_ == VK_NULL_HANDLE) return false;
         VkBufferCreateInfo bi{};
         bi.sType       = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
         bi.size        = size;
@@ -1206,6 +1208,7 @@ public:
 
     bool uploadTextureLocked(const uint8_t* rgbaPixels, uint32_t width, uint32_t height,
             VkFilter filter, VkSamplerAddressMode addressMode, GpuTexture& tex) {
+        if (device_ == VK_NULL_HANDLE) return false;
         destroyGpuTextureLocked(tex);
 
         VkDeviceSize imageSize = static_cast<VkDeviceSize>(width) * height * 4u;

@@ -21,6 +21,12 @@ final class GrassVkDelegate implements VkRendererDelegate {
 
     private GrassScene mScene;
     private long mRendererHandle;
+    /**
+     * native 侧 Vulkan 初始化是否成功。没有 Vulkan 物理设备时为 false
+     * （Stack G11 / Android 9 实测就是这样），这时不能进 native 画帧。
+     */
+    private boolean mSurfaceReady;
+
     private int mWidth, mHeight;
     private short[] mCachedIndices = new short[0];
     private final NightStarsLayer mNightStars = new NightStarsLayer();
@@ -45,7 +51,7 @@ final class GrassVkDelegate implements VkRendererDelegate {
 
     @Override
     public boolean isReady() {
-        return mScene != null;
+        return mScene != null && mSurfaceReady;
     }
 
     @Override
@@ -89,7 +95,7 @@ final class GrassVkDelegate implements VkRendererDelegate {
     public void onSurfaceCreated(Surface surface, int width, int height) {
         mWidth = width;
         mHeight = height;
-        GrassVKNative.nOnSurfaceCreated(mRendererHandle, surface, width, height);
+        mSurfaceReady = GrassVKNative.nOnSurfaceCreated(mRendererHandle, surface, width, height);
     }
 
     @Override
@@ -101,6 +107,7 @@ final class GrassVkDelegate implements VkRendererDelegate {
 
     @Override
     public void onSurfaceDestroyed() {
+        mSurfaceReady = false;
         GrassVKNative.nOnSurfaceDestroyed(mRendererHandle);
     }
 
@@ -110,6 +117,7 @@ final class GrassVkDelegate implements VkRendererDelegate {
 
     @Override
     public void renderFrame() {
+        if (!mSurfaceReady) return;
         long now = SystemClock.uptimeMillis();
         mScene.update(now);
         SceneData sd = mScene.getSceneData();

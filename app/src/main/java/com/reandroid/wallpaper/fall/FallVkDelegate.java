@@ -28,6 +28,11 @@ final class FallVkDelegate implements VkRendererDelegate {
     private int mLeafTextureCount = 1;
     private boolean mGreenLeavesEnabled;
     private long mLastAtlasSyncCheckMs;
+    /**
+     * native 侧 Vulkan 初始化是否成功。没有 Vulkan 物理设备时为 false
+     * （Stack G11 / Android 9 实测就是这样），这时不能进 native 画帧。
+     */
+    private boolean mSurfaceReady;
     /** 多指分别计距、各自落点；见 {@link FallTouchTracker}。 */
     private final FallTouchTracker mTouchTracker = new FallTouchTracker();
 
@@ -48,7 +53,7 @@ final class FallVkDelegate implements VkRendererDelegate {
 
     @Override
     public boolean isReady() {
-        return mScene != null;
+        return mScene != null && mSurfaceReady;
     }
 
     @Override
@@ -85,7 +90,7 @@ final class FallVkDelegate implements VkRendererDelegate {
 
     @Override
     public void onSurfaceCreated(Surface surface, int width, int height) {
-        FallVKNative.nOnSurfaceCreated(mRendererHandle, surface, width, height);
+        mSurfaceReady = FallVKNative.nOnSurfaceCreated(mRendererHandle, surface, width, height);
     }
 
     @Override
@@ -95,6 +100,7 @@ final class FallVkDelegate implements VkRendererDelegate {
 
     @Override
     public void onSurfaceDestroyed() {
+        mSurfaceReady = false;
         FallVKNative.nOnSurfaceDestroyed(mRendererHandle);
     }
 
@@ -114,6 +120,7 @@ final class FallVkDelegate implements VkRendererDelegate {
 
     @Override
     public void renderFrame() {
+        if (!mSurfaceReady) return;
         long now = SystemClock.uptimeMillis();
         mScene.update(now);
         FallScene.SceneData data = mScene.getSceneData();

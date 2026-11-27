@@ -17,6 +17,12 @@ public abstract class VkPassRendererDelegate implements VkRendererDelegate {
     protected final Context context;
 
     private long handle;
+    /**
+     * native 侧 Vulkan 初始化是否成功。没有 Vulkan 物理设备时为 false
+     * （Stack G11 / Android 9 实测就是这样），这时不能进 native 画帧。
+     */
+    private boolean surfaceReady;
+
     private VkPassScene scene;
     private VkPassFrame frame;
 
@@ -49,12 +55,13 @@ public abstract class VkPassRendererDelegate implements VkRendererDelegate {
             handle = 0;
             scene = null;
             frame = null;
+            surfaceReady = false;
         }
     }
 
     @Override
     public void onSurfaceCreated(Surface surface, int width, int height) {
-        VkPassNative.nSurfaceCreated(handle, surface, width, height);
+        surfaceReady = VkPassNative.nSurfaceCreated(handle, surface, width, height);
     }
 
     @Override
@@ -64,6 +71,7 @@ public abstract class VkPassRendererDelegate implements VkRendererDelegate {
 
     @Override
     public void onSurfaceDestroyed() {
+        surfaceReady = false;
         VkPassNative.nSurfaceDestroyed(handle);
     }
 
@@ -72,7 +80,7 @@ public abstract class VkPassRendererDelegate implements VkRendererDelegate {
 
     @Override
     public void renderFrame() {
-        if (frame == null || handle == 0) return;
+        if (!surfaceReady || frame == null || handle == 0) return;
         updateFrame(frame, SystemClock.uptimeMillis());
         VkPassNative.nRenderFrame(handle);
     }
@@ -85,7 +93,7 @@ public abstract class VkPassRendererDelegate implements VkRendererDelegate {
 
     @Override
     public boolean isReady() {
-        return handle != 0;
+        return handle != 0 && surfaceReady;
     }
 
     /** native 自己会重建 swapchain，surface 变化时不需要整块销毁。 */

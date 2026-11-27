@@ -629,6 +629,7 @@ public:
 
     bool uploadTextureLocked(TextureResource& texture, VkDescriptorSet descriptorSet,
             const uint8_t* pixels, uint32_t width, uint32_t height) {
+        if (device_ == VK_NULL_HANDLE) return false;
         if (pixels == nullptr || width == 0 || height == 0) {
             return false;
         }
@@ -852,6 +853,14 @@ public:
 
     bool uploadWaterMeshLocked(JNIEnv* env, jfloatArray waterVertices, jfloatArray waterTexCoords,
             jshortArray waterIndices, jint waterVertexCount, jint waterIndexCount) {
+        /*
+         * 设备没建起来时直接退出。Stack G11（Android 9 / SDK 28，STA 固件）就是这种情况：
+         * 它 vkEnumeratePhysicalDevices 返回 0，日志里只有一行 "No Vulkan physical devices"。
+         * 这条路径在 isReadyLocked() 之前跑，漏了这道判断就是 vkCreateBuffer(nullptr)
+         * —— 表现是预览线程里 SIGSEGV，看着像帧数据的问题，其实是初始化失败没传出来。
+         */
+        if (device_ == VK_NULL_HANDLE) return false;
+
         // Full mesh upload only (positions + static texcoords + indices).
         // Per-frame texcoord upload removed — ripple computed in vertex shader.
         if (waterVertices == nullptr || waterTexCoords == nullptr || waterIndices == nullptr
@@ -1001,6 +1010,7 @@ public:
     // ── Drop UBO (no hard limit, replaces push constants for ripple data) ──
 
     bool ensureDropUboLocked() {
+        if (device_ == VK_NULL_HANDLE) return false;
         if (dropUbo_ != VK_NULL_HANDLE) return true;
 
         const VkDeviceSize uboSize = sizeof(DropUbo);
