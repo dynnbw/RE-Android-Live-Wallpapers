@@ -19,6 +19,7 @@ import androidx.core.content.ContextCompat;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceScreen;
+import androidx.preference.PreferenceViewHolder;
 import androidx.preference.SwitchPreferenceCompat;
 
 import com.reandroid.gles.GLESScene;
@@ -129,12 +130,36 @@ public class PluginSettingsFragment extends PreferenceFragmentCompat
 
         // Vulkan renderer toggle (if a VK plugin is available)
         if (pluginVk != null) {
-            SwitchPreferenceCompat vkSwitch = new SwitchPreferenceCompat(ctx);
+            final boolean vulkanSupported = VulkanSupport.isSupported();
+            if (!vulkanSupported && prefs.getBoolean(USE_VULKAN_KEY, false)) {
+                prefs.edit().putBoolean(USE_VULKAN_KEY, false).apply();
+            }
+            /*
+             * 设备不支持 Vulkan 时开关仍然显示，但置灰、写不进值：直接隐藏会让
+             * 用户以为功能被删了，也看不出当前设备为什么没有。置灰用 alpha 而不
+             * setEnabled —— 与动态偏好区里被依赖项禁用的行保持同一套视觉，
+             * 那套写法同时也是为了避开个别驱动上绘制禁用控件导致的崩溃。
+             */
+            SwitchPreferenceCompat vkSwitch = new SwitchPreferenceCompat(ctx) {
+                @Override
+                public void onBindViewHolder(PreferenceViewHolder holder) {
+                    super.onBindViewHolder(holder);
+                    holder.itemView.setAlpha(vulkanSupported ? 1f : 0.4f);
+                }
+            };
             vkSwitch.setKey(USE_VULKAN_KEY);
             vkSwitch.setTitle(com.reandroid.wallpaper.R.string.pref_use_vulkan_title);
-            vkSwitch.setSummary(com.reandroid.wallpaper.R.string.pref_use_vulkan_summary);
+            vkSwitch.setSummary(
+                    vulkanSupported
+                            ? com.reandroid.wallpaper.R.string.pref_use_vulkan_summary
+                            : com.reandroid.wallpaper.R.string.pref_use_vulkan_unsupported);
             vkSwitch.setDefaultValue(false);
             vkSwitch.setLayoutResource(com.reandroid.wallpaper.R.layout.preference_modern_item);
+            if (!vulkanSupported) {
+                vkSwitch.setSelectable(false);
+                // 与动态偏好区的软禁用一致：视觉归视觉，值由监听器拦截
+                vkSwitch.setOnPreferenceChangeListener((pref, newValue) -> false);
+            }
             screen.addPreference(vkSwitch);
         }
 

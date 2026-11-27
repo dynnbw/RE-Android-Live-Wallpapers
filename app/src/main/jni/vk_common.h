@@ -62,8 +62,50 @@ inline bool vkIsVulkanSupported() {
 
     VkInstance probe = VK_NULL_HANDLE;
     VkResult result = vkCreateInstance(&createInfo, nullptr, &probe);
-    bool supported = (result == VK_SUCCESS && probe != VK_NULL_HANDLE);
-    if (probe != VK_NULL_HANDLE) vkDestroyInstance(probe, nullptr);
+    if (result != VK_SUCCESS || probe == VK_NULL_HANDLE) return false;
+
+    /*
+     * 建得起 instance 不等于画得出帧：Android 9 的 Stack G11（STA 固件）能加载
+     * libvulkan.so，但 vkEnumeratePhysicalDevices 返回 0，渲染器直到
+     * vkCreateBuffer 才第一次碰到空 device 而崩溃。这里按渲染器真正的启动前提
+     * 查一遍 —— 至少一台物理设备，带 swapchain 扩展和一个图形队列。
+     */
+    uint32_t deviceCount = 0;
+    vkEnumeratePhysicalDevices(probe, &deviceCount, nullptr);
+    bool supported = false;
+    if (deviceCount > 0) {
+        std::vector<VkPhysicalDevice> devices(deviceCount);
+        vkEnumeratePhysicalDevices(probe, &deviceCount, devices.data());
+        for (VkPhysicalDevice device : devices) {
+            uint32_t extensionCount = 0;
+            vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
+            std::vector<VkExtensionProperties> deviceExtensions(extensionCount);
+            vkEnumerateDeviceExtensionProperties(
+                    device, nullptr, &extensionCount, deviceExtensions.data());
+            bool hasSwapchain = false;
+            for (const VkExtensionProperties& extension : deviceExtensions) {
+                if (std::strcmp(extension.extensionName, VK_KHR_SWAPCHAIN_EXTENSION_NAME) == 0) {
+                    hasSwapchain = true;
+                    break;
+                }
+            }
+            if (!hasSwapchain) continue;
+
+            uint32_t queueFamilyCount = 0;
+            vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
+            std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+            vkGetPhysicalDeviceQueueFamilyProperties(
+                    device, &queueFamilyCount, queueFamilies.data());
+            for (const VkQueueFamilyProperties& family : queueFamilies) {
+                if ((family.queueFlags & VK_QUEUE_GRAPHICS_BIT) != 0) {
+                    supported = true;
+                    break;
+                }
+            }
+            if (supported) break;
+        }
+    }
+    vkDestroyInstance(probe, nullptr);
     return supported;
 }
 

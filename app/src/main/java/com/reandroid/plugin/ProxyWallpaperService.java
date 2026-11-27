@@ -430,11 +430,11 @@ public class ProxyWallpaperService extends WallpaperService {
                 Log.w(TAG, "No info.json for " + pluginId + ", trying convention");
             }
 
-            // Check for Vulkan renderer preference
+            // Check for Vulkan renderer preference, but only where Vulkan can actually run
             if (pluginVk != null) {
                 SharedPreferences prefs =
                         getSharedPreferences("plugin_" + pluginId, Context.MODE_PRIVATE);
-                if (prefs.getBoolean("use_vulkan", false)) {
+                if (prefs.getBoolean("use_vulkan", false) && VulkanSupport.isSupported()) {
                     className = pluginVk;
                 }
             }

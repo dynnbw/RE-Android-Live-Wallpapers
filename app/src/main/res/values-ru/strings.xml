@@ -92,6 +92,7 @@
     <string name="pref_open_wallpaper_picker_failed">Предпросмотр обоев не поддерживается</string>
     <string name="pref_openweather_api_key_title">API-ключ OpenWeather</string>
     <string name="pref_use_vulkan_summary">Экспериментально, пока нестабильно. Переприменить обои.</string>
+    <string name="pref_use_vulkan_unsupported">Это устройство не поддерживает Vulkan.</string>
     <string name="pref_use_vulkan_title">Vulkan рендерер</string>
     <string name="pref_weather_api_guide_common">Шаг 6: Поиск и устранение неисправностей\n- Убедитесь, что ключ скопирован полностью без лишних пробелов или переносов строк.\n- Новый API-ключ может активироваться 10–30 минут; подождите и попробуйте снова.\n- Убедитесь, что разрешение на определение местоположения включено в приложении.</string>
     <string name="pref_weather_api_guide_illustration">Иллюстрация руководства по API</string>
