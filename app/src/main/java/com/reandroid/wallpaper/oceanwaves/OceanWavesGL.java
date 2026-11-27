@@ -194,7 +194,13 @@ public class OceanWavesGL extends GLESScene {
         mEnvmapLoc = GLES30.glGetUniformLocation(mProgram, "uEnvmap");
         mRippleLoc = GLES30.glGetUniformLocation(mProgram, "uRipple");
 
-        mSeabedTexture = GLTextureUtils.loadTextureFromAsset(mContext, TEX_SEABED, true, true);
+        /*
+         * 海床不是无缝贴图：上下两端像素对不齐，平铺到第二张时接缝会落在屏幕中间
+         * （缩放拉到最远端时一定会铺到第二张）。用镜像重复，接缝两侧是同一列像素，
+         * 看不出分界；横向跟着桌面滚动平铺时同理。
+         */
+        mSeabedTexture = GLTextureUtils.loadTextureFromAsset(
+                mContext, TEX_SEABED, true, GLES30.GL_MIRRORED_REPEAT);
         mEnvmapTexture = GLTextureUtils.loadTextureFromAsset(mContext, TEX_ENVMAP, true, false);
         mRippleTexture = GLTextureUtils.loadTextureFromAsset(mContext, TEX_RIPPLE, true, true);
         if (!mGridBuilt) {

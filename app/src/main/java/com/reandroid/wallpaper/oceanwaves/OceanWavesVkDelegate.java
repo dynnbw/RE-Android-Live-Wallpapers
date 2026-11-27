@@ -138,8 +138,10 @@ final class OceanWavesVkDelegate extends VkPassRendererDelegate {
 
         scene.setClearColor(0.05f, 0.12f, 0.2f, 1f);
         scene.createBuffer("grid", STRIDE_BYTES, VERTEX_COUNT, true);
-        // 与 GLES 的采样方式一致：海床与波纹平铺，环境图夹边。
-        scene.createTexture("seabed", VkPassScene.FILTER_LINEAR, VkPassScene.ADDRESS_REPEAT);
+        // 与 GLES 的采样方式一致：海床镜像平铺（贴图不是无缝的，普通平铺会露出接缝），
+        // 波纹平铺，环境图夹边。
+        scene.createTexture(
+                "seabed", VkPassScene.FILTER_LINEAR, VkPassScene.ADDRESS_MIRRORED_REPEAT);
         scene.createTexture("envmap", VkPassScene.FILTER_LINEAR, VkPassScene.ADDRESS_CLAMP_TO_EDGE);
         scene.createTexture("ripple", VkPassScene.FILTER_LINEAR, VkPassScene.ADDRESS_REPEAT);
 

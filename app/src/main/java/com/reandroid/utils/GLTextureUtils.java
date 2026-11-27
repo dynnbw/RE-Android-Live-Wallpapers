@@ -89,6 +89,18 @@ public final class GLTextureUtils {
 
     public static int loadTextureFromAsset(
             Context context, String assetPath, boolean linear, boolean repeat) {
+        return loadTextureFromAsset(
+                context, assetPath, linear, repeat ? GLES30.GL_REPEAT : GLES30.GL_CLAMP_TO_EDGE);
+    }
+
+    /**
+     * 同上，采样方式直接给 GL 的 wrap 常量。
+     *
+     * <p>需要 {@code GL_MIRRORED_REPEAT} 的贴图走这个：素材两端对不齐、又必须平铺时，
+     * 镜像铺法在接缝处两边是同一列像素，看不出分界。
+     */
+    public static int loadTextureFromAsset(
+            Context context, String assetPath, boolean linear, int wrap) {
         Bitmap bitmap;
         try {
             bitmap = AssetLoader.decodeBitmap(context, assetPath);
@@ -113,7 +125,6 @@ public final class GLTextureUtils {
         GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, textureId);
         int minFilter = linear ? GLES30.GL_LINEAR : GLES30.GL_NEAREST;
         int magFilter = linear ? GLES30.GL_LINEAR : GLES30.GL_NEAREST;
-        int wrap = repeat ? GLES30.GL_REPEAT : GLES30.GL_CLAMP_TO_EDGE;
         GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, minFilter);
         GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, magFilter);
         GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, wrap);
