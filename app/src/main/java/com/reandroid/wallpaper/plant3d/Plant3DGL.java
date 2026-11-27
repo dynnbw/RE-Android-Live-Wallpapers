@@ -150,15 +150,32 @@ public class Plant3DGL extends GLESScene {
 
         // 看向点是模型自身的包围盒中心：原版相机常数只给出机位（模型空间，
         // 随模型一起做 Z->Y 旋转），视线方向按舞台实际内容对准。
+        updateCamera();
+
+        GLES30.glEnable(GLES30.GL_DEPTH_TEST);
+        GLES30.glDisable(GLES30.GL_CULL_FACE);
+    }
+
+    @Override
+    public void resize(int width, int height) {
+        super.resize(width, height);
+        // 桌面横竖屏切换只 resize、不重建场景：投影的宽高比必须跟着表面走，
+        // 否则竖屏建好的投影套在横屏视口上，画面就被横向拉扁了。
+        updateCamera();
+    }
+
+    private void updateCamera() {
+        if (mScene == null || mWidth <= 0 || mHeight <= 0) {
+            return;
+        }
+        if (mViewProjectionMatrix == null) {
+            mViewProjectionMatrix = new float[16];
+        }
         mTarget = mScene.centre();
         float[] view = lookAt(CAMERA_POSITION, mTarget, new float[] {0f, 1f, 0f});
         float[] projection =
                 perspective(CAMERA_FOV, (float) mWidth / mHeight, CAMERA_NEAR, CAMERA_FAR);
-        mViewProjectionMatrix = new float[16];
         PlantScene.multiply(mViewProjectionMatrix, view, projection);
-
-        GLES30.glEnable(GLES30.GL_DEPTH_TEST);
-        GLES30.glDisable(GLES30.GL_CULL_FACE);
     }
 
     @Override
@@ -452,13 +469,20 @@ public class Plant3DGL extends GLESScene {
      */
     private static float[] perspective(float fovDegrees, float aspect, float near, float far) {
         float f = 1f / (float) Math.tan(Math.toRadians(fovDegrees) / 2f);
+        // 竖屏固定水平视场角（x = f，y = f * aspect）；横屏反过来，固定竖直。
+        float x = f;
+        float y = aspect * f;
+        if (aspect > 1f) {
+            x = f / aspect;
+            y = f;
+        }
         return new float[] {
-            f,
+            x,
             0f,
             0f,
             0f,
             0f,
-            aspect * f,
+            y,
             0f,
             0f,
             0f,
