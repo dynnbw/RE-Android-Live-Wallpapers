@@ -9,9 +9,7 @@ import com.reandroid.utils.AssetLoader;
 import com.reandroid.utils.SkyField;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 final class FallVKNative {
     static {
@@ -84,26 +82,29 @@ final class FallVKNative {
 
     /** 四条天空色带：晨、昼、昏、夜。首次用到时解析并缓存。 */
     private static int[][] sSkyFields;
+
     /**
-     * 每个渲染器上一次真正上传的权重（顺序 [夜,晨,昏,昼]）与时间，用来节流。
+     * 河床的天空：四条 24x64 色带按 [夜,晨,昏,昼] 竖排成 24x256，只上传这一次。
      *
-     * <p>必须按 handle 分开：壁纸用真实时间、预览用压缩时间，两个渲染器可能同时在跑，
-     * 共用一个“上次权重”会让一方误以为自己的天空已经是最新的。
+     * <p>混色放在水面着色器里做（权重每帧随 drop UBO 传入），所以日夜过渡是逐帧连续的，
+     * 也不会每一帧都重建一次贴图。
      */
-    private static final Map<Long, float[]> sLastSkyWeights = new HashMap<>();
-
-    private static final Map<Long, Long> sLastSkyUploadMs = new HashMap<>();
-
-    /** 河床的天空：从 pond_sky_fields.txt 生成 24x64 色带；初始用黄昏，之后按权重混。 */
     private static void uploadSkyTexture(Context context, long handle) {
         if (context == null || handle == 0L) {
             return;
         }
         int[][] fields = loadSkyFields(context);
         if (fields == null) return;
-        nSetSkyTexture(handle, fields[2], SkyField.WIDTH, SkyField.HEIGHT);
-        sLastSkyWeights.put(handle, new float[] {0f, 0f, 1f, 0f});
-        sLastSkyUploadMs.put(handle, 0L);
+        int width = SkyField.WIDTH;
+        int height = SkyField.HEIGHT;
+        int size = width * height;
+        // 带的顺序必须与 FallDayNightSystem 的权重顺序 [夜,晨,昏,昼] 一致
+        int[] stacked = new int[size * 4];
+        System.arraycopy(fields[3], 0, stacked, 0, size);
+        System.arraycopy(fields[0], 0, stacked, size, size);
+        System.arraycopy(fields[2], 0, stacked, size * 2, size);
+        System.arraycopy(fields[1], 0, stacked, size * 3, size);
+        nSetSkyTexture(handle, stacked, width, height * 4);
     }
 
     private static int[][] loadSkyFields(Context context) {
@@ -119,63 +120,6 @@ final class FallVKNative {
         }
         sSkyFields = fields;
         return fields;
-    }
-
-    /**
-     * 按权重把四条色带预混成一张 24x64 色带再上传。
-     *
-     * @param weights 顺序 [夜,晨,昏,昼]，与 {@code FallDayNightSystem} 一致
-     */
-    static void updateSkyTexture(long handle, float[] weights, long nowMs) {
-        if (handle == 0L || weights == null || weights.length < 4) return;
-        int[][] fields = sSkyFields;
-        if (fields == null) return;
-        if (!skyWeightsChanged(handle, weights)) return;
-        Long lastMs = sLastSkyUploadMs.get(handle);
-        if (lastMs != null && nowMs - lastMs < 250L) return;
-        sLastSkyUploadMs.put(handle, nowMs);
-
-        float night = weights[0];
-        float morning = weights[1];
-        float dusk = weights[2];
-        float day = weights[3];
-        int count = SkyField.WIDTH * SkyField.HEIGHT;
-        int[] out = new int[count];
-        for (int i = 0; i < count; i++) {
-            int a = blendChannel(fields, i, 24, night, morning, dusk, day);
-            int r = blendChannel(fields, i, 16, night, morning, dusk, day);
-            int g = blendChannel(fields, i, 8, night, morning, dusk, day);
-            int b = blendChannel(fields, i, 0, night, morning, dusk, day);
-            out[i] = (a << 24) | (r << 16) | (g << 8) | b;
-        }
-        nSetSkyTexture(handle, out, SkyField.WIDTH, SkyField.HEIGHT);
-        sLastSkyWeights.put(handle, weights.clone());
-    }
-
-    private static boolean skyWeightsChanged(long handle, float[] weights) {
-        float[] last = sLastSkyWeights.get(handle);
-        if (last == null) return true;
-        // 权重变化很小的时候不重传（色带是 24x64，4Hz 已经足够平滑）
-        return Math.abs(last[0] - weights[0]) > 0.004f
-                || Math.abs(last[1] - weights[1]) > 0.004f
-                || Math.abs(last[2] - weights[2]) > 0.004f
-                || Math.abs(last[3] - weights[3]) > 0.004f;
-    }
-
-    private static int blendChannel(
-            int[][] fields,
-            int index,
-            int shift,
-            float night,
-            float morning,
-            float dusk,
-            float day) {
-        float value = ((fields[3][index] >>> shift) & 0xFF) * night
-                + ((fields[0][index] >>> shift) & 0xFF) * morning
-                + ((fields[2][index] >>> shift) & 0xFF) * dusk
-                + ((fields[1][index] >>> shift) & 0xFF) * day;
-        int result = Math.round(value);
-        return result < 0 ? 0 : Math.min(result, 255);
     }
 
     private static int uploadLeafAtlas(Context context, long handle, boolean greenLeavesEnabled) {

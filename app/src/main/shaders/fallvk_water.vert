@@ -3,6 +3,7 @@
 layout(set = 0, binding = 1) uniform DropBlock {
     vec4 u_drop[80];
     int u_dropCount;
+    vec4 uSkyWeights;   // [夜,晨,昏,昼]；片元着色器混天空用
 } dropBlock;
 
 layout(push_constant) uniform PushConstants {

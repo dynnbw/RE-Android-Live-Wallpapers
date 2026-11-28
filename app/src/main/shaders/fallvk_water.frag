@@ -1,9 +1,16 @@
 #version 450
 
 // binding 0: 河床的树遮罩（R8_UNORM，白=天空 黑=树）
-// binding 2: 天空色带（24x64，纯竖直渐变）
+// binding 1: 雨滴与天空权重（与顶点着色器同一块）
+// binding 2: 天空色带（24x256，四条 24x64 竖直渐变竖排）
 layout(set = 0, binding = 0) uniform sampler2D uMaskTex;
 layout(set = 0, binding = 2) uniform sampler2D uSkyTex;
+
+layout(set = 0, binding = 1) uniform DropBlock {
+    vec4 u_drop[80];
+    int u_dropCount;
+    vec4 uSkyWeights;
+} dropBlock;
 
 layout(push_constant) uniform PushConstants {
     mat4 uMvpMatrix;
@@ -70,11 +77,24 @@ vec3 starField(vec2 uv) {
          + starLayer(uv, 100.0, 3.1, 0.94);
 }
 
+/*
+ * 天空取第 band 条色带。四条带各占贴图 1/4 高度；先夹到带内首末行的纹素中心，
+ * 线性过滤就不会跨带取样（边缘行为与原单条 24x64 贴图的 CLAMP_TO_EDGE 相同）。
+ */
+vec3 skyBand(float v, float band) {
+    float local = clamp(v, 0.5 / 64.0, 63.5 / 64.0);
+    return texture(uSkyTex, vec2(0.5, (band + local) * 0.25)).rgb;
+}
+
 void main() {
     // 天空只取 v，并且和树用同一个 vUv —— 顶点着色器把 UV 按水面波纹扭曲过，
     // 天空跟着一起扭，与两者烤在一张贴图里时观感一致。
     float m = texture(uMaskTex, vUv).r;
-    vec3 sky = texture(uSkyTex, vec2(0.5, vUv.y)).rgb;
+    // 权重每帧更新，日夜过渡因此是连续的
+    vec3 sky = skyBand(vUv.y, 0.0) * dropBlock.uSkyWeights.x
+             + skyBand(vUv.y, 1.0) * dropBlock.uSkyWeights.y
+             + skyBand(vUv.y, 2.0) * dropBlock.uSkyWeights.z
+             + skyBand(vUv.y, 3.0) * dropBlock.uSkyWeights.w;
     // 星星乘遮罩之前：树的倒影应当挡住它们
     if (pc.uStarAmount > 0.001) {
         sky += starField(vScreenUv) * pc.uStarAmount;

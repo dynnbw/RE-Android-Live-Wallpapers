@@ -139,8 +139,8 @@ final class FallVkDelegate implements VkRendererDelegate {
         float[] leafData = mScene.buildLeafDataForVK();
         int leafCount = mScene.getVKLeafCount();
         boolean meshRebuild = mScene.consumeMeshBufferRebuildRequested();
-        FallVKNative.updateSkyTexture(mRendererHandle, mScene.getSkyWeights(), now);
         float[] tint = mScene.getLeafTintRgb();
+        float[] sky = mScene.getSkyWeights();
         float[] lighting = {
             mScene.getStarAmount(),
             (now % 30000L) * 0.001f,
@@ -149,7 +149,12 @@ final class FallVkDelegate implements VkRendererDelegate {
             tint[1],
             tint[2],
             mScene.getLeafTintAmount(),
-            mScene.getLeafTintValue()
+            mScene.getLeafTintValue(),
+            // [夜,晨,昏,昼]：水面着色器按这四条权重混天空色带
+            sky[0],
+            sky[1],
+            sky[2],
+            sky[3]
         };
         FallVKNative.nRenderFrame(
                 mRendererHandle,

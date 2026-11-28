@@ -31,7 +31,8 @@ struct PushConstants {
 struct DropUbo {
     float drops[80 * 4];  // 80 drops × 4 floats, offset 0
     int dropCount;         // offset 1280
-    int _pad[3];          // align to 16-byte boundary (1296 total)
+    int _pad[3];           // align to 16-byte boundary (offset 1296)
+    float skyWeights[4];   // offset 1296: [夜,晨,昏,昼]，水面片元着色器混天空用
 };
 
 struct TextureResource {
@@ -253,6 +254,9 @@ public:
         env->GetFloatArrayRegion(projectionArray, 0, 16, projection);
         env->GetFloatArrayRegion(viewArray, 0, 16, view);
 
+        // 先把上一帧等完，再覆写 UBO —— 否则 GPU 可能还在读正在被改写的常量
+        vkWaitForFences(device_, 1, &inFlightFence_, VK_TRUE, UINT64_MAX);
+
         // Write drop data to UBO (no hard limit — matches GLES behavior)
         if (!ensureDropUboLocked()) {
             return;
@@ -264,6 +268,10 @@ public:
                 env->GetFloatArrayRegion(dropDataArray, 0, maxDrops * 4, ubo->drops);
             }
             ubo->dropCount = maxDrops;
+            // 天空权重：[夜,晨,昏,昼]，每条都逐帧更新，日夜过渡才不会跳
+            for (int i = 0; i < 4; i++) {
+                ubo->skyWeights[i] = lighting != nullptr ? lighting[8 + i] : 0.0f;
+            }
         }
 
         // Build slim push constants (drops now in UBO)
@@ -275,8 +283,6 @@ public:
         pc.dxMul = dxMul;
         pc.xOffset = xOffset;
         pc.rotate = rotate;
-
-        vkWaitForFences(device_, 1, &inFlightFence_, VK_TRUE, UINT64_MAX);
 
         uint32_t imageIndex = 0;
         VkResult acquire = vkAcquireNextImageKHR(device_, swapchain_, UINT64_MAX,
@@ -585,7 +591,8 @@ public:
         bindings[1].binding = 1;
         bindings[1].descriptorCount = 1;
         bindings[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        bindings[1].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+        // 顶点读雨滴，片元读天空权重
+        bindings[1].stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 
         bindings[2].binding = 2;
         bindings[2].descriptorCount = 1;
@@ -1424,9 +1431,9 @@ static void JNICALL nRenderFrame(
         jfloat dxMul, jint rotate) {
     auto* renderer = asRenderer(handle);
     if (renderer != nullptr) {
-        float lighting[8]{};
+        float lighting[12]{};
         if (lightingArray != nullptr) {
-            env->GetFloatArrayRegion(lightingArray, 0, 8, lighting);
+            env->GetFloatArrayRegion(lightingArray, 0, 12, lighting);
         }
         renderer->render(env, lighting, projectionMatrix, viewMatrix, leavesData, leafCount, xOffset,
                 waterVertices, waterTexCoords, waterIndices, waterVertexCount, waterIndexCount,

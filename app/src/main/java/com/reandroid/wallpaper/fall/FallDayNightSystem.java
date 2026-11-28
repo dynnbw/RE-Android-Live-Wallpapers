@@ -29,8 +29,14 @@ final class FallDayNightSystem {
     /** 太阳落到这个高度角就完全是夜晚。 */
     private static final float NIGHT_FULL_DEG = -10.0f;
 
-    /** 权重的更新间隔。高度角变化本来就慢，没必要每帧算。 */
-    private static final long WEIGHT_UPDATE_INTERVAL_MS = 60000L;
+    /**
+     * 权重的更新间隔。
+     *
+     * <p>色带本身是每帧在着色器里按这四条权重混的，所以这里只节流天文计算。
+     * 一秒一次时每次的权重变化不到 0.02%，看不出台阶；一分钟一次反而会把
+     * 过渡割成肉眼可见的跳变。
+     */
+    private static final long WEIGHT_UPDATE_INTERVAL_MS = 1000L;
     /**
      * 预览下的更新间隔：0 = 每帧都算。
      *
@@ -123,6 +129,7 @@ final class FallDayNightSystem {
      * <p>两端仍然是平滑的（两个阈值之间过渡），不是硬开关 —— 硬切会在日出那一刻整帧跳一下。
      */
     private static final float EMITTER_DAY_LO = 0.72f;
+
     private static final float EMITTER_DAY_HI = 1.0f;
 
     float emitterWeight() {
@@ -136,6 +143,7 @@ final class FallDayNightSystem {
      * 换算成太阳高度角大约是 −5.6° 到 −8.7°，正是民用暮光快结束的那一段。
      */
     private static final float STAR_NIGHT_LO = 0.55f;
+
     private static final float STAR_NIGHT_HI = 0.95f;
 
     float starAmount() {
@@ -154,6 +162,7 @@ final class FallDayNightSystem {
      * 而不是要等到满天星。这两条曲线刻意分开。
      */
     private static final float ALGAE_NIGHT_LO = 0.18f;
+
     private static final float ALGAE_NIGHT_HI = 0.70f;
 
     float algaeAmount() {
@@ -180,10 +189,10 @@ final class FallDayNightSystem {
      * 原版观感就是这样，不该被这套染色洗掉。
      */
     private static final float[][] LEAF_TINT = {
-            {0.10f, 0.16f, 0.38f},   // 夜：深蓝
-            {0.72f, 0.70f, 0.70f},   // 晨：近中性
-            {0.88f, 0.74f, 0.58f},   // 昏：暖
-            {0.80f, 0.88f, 1.00f},   // 昼：蓝白
+        {0.10f, 0.16f, 0.38f}, // 夜：深蓝
+        {0.72f, 0.70f, 0.70f}, // 晨：近中性
+        {0.88f, 0.74f, 0.58f}, // 昏：暖
+        {0.80f, 0.88f, 1.00f}, // 昼：蓝白
     };
     /**
      * 各档染色的强度，与 {@link #LEAF_TINT} 同序。
