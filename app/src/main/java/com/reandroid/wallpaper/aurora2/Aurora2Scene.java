@@ -1,11 +1,12 @@
 package com.reandroid.wallpaper.aurora2;
 
-import android.opengl.Matrix;
 import android.content.SharedPreferences;
+import android.opengl.Matrix;
 import android.view.MotionEvent;
 
-import java.util.Calendar;
 import com.reandroid.utils.MathUtils;
+
+import java.util.Calendar;
 import java.util.Random;
 
 final class Aurora2Scene {
@@ -36,20 +37,78 @@ final class Aurora2Scene {
     private static final float PORTRAIT_WIDTH = 800.0f;
     private static final float PORTRAIT_HEIGHT = 1280.0f;
 
-    private static final float[] SHOOTING_X = new float[] {120.0f, 280.0f, 350.0f, 490.0f, 560.0f, 620.0f, 760.0f, 830.0f, 890.0f, 950.0f};
-    private static final float[] SHOOTING_Y = new float[] {200.0f, 450.0f, 300.0f, 590.0f, 400.0f, 760.0f, 380.0f, 460.0f, 660.0f, 520.0f};
+    private static final float[] SHOOTING_X = new float[] {
+        120.0f, 280.0f, 350.0f, 490.0f, 560.0f, 620.0f, 760.0f, 830.0f, 890.0f, 950.0f
+    };
+    private static final float[] SHOOTING_Y = new float[] {
+        200.0f, 450.0f, 300.0f, 590.0f, 400.0f, 760.0f, 380.0f, 460.0f, 660.0f, 520.0f
+    };
 
-    private static final float[] SHINING_STAR_X = new float[] {80.0f, 95.0f, 120.0f, 180.0f, 200.0f, 220.0f, 240.0f, 310.0f, 330.0f, 350.0f, 360.0f, 390.0f, 400.0f, 460.0f, 510.0f, 550.0f, 620.0f, 650.0f, 680.0f, 750.0f, 880.0f, 920.0f, 990.0f, 1010.0f, 1030.0f, 1060.0f, 1110.0f, 1180.0f, 1200.0f, 1230.0f, 1260.0f, 1300.0f, 1310.0f, 1340.0f, 1460.0f, 1480.0f, 1500.0f, 1520.0f, 1550.0f, 1580.0f, 1610.0f, 1650.0f, 1700.0f, 1740.0f, 1780.0f, 1820.0f, 1840.0f, 1880.0f, 1890.0f, 1900.0f};
-    private static final float[] SHINING_STAR_Y = new float[] {620.0f, 330.0f, 160.0f, 490.0f, 480.0f, 360.0f, 680.0f, 480.0f, 200.0f, 530.0f, 380.0f, 700.0f, 480.0f, 160.0f, 620.0f, 460.0f, 280.0f, 510.0f, 340.0f, 160.0f, 580.0f, 260.0f, 490.0f, 300.0f, 720.0f, 470.0f, 280.0f, 360.0f, 140.0f, 460.0f, 260.0f, 620.0f, 420.0f, 180.0f, 690.0f, 510.0f, 400.0f, 270.0f, 680.0f, 340.0f, 520.0f, 780.0f, 460.0f, 190.0f, 560.0f, 410.0f, 600.0f, 580.0f, 490.0f, 530.0f};
-    private static final float[] SHINING_STAR_S = new float[] {1.2f, 0.4f, 1.5f, 0.9f, 0.6f, 1.3f, 0.8f, 1.5f, 1.0f, 0.7f, 1.2f, 0.5f, 1.0f, 1.4f, 0.9f, 1.3f, 0.6f, 0.9f, 1.0f, 0.5f, 0.8f, 1.3f, 0.5f, 1.2f, 1.5f, 0.4f, 1.5f, 0.7f, 1.0f, 0.5f, 0.8f, 1.3f, 0.4f, 1.0f, 0.7f, 1.3f, 0.5f, 0.9f, 1.2f, 0.3f, 0.8f, 1.3f, 1.0f, 1.4f, 0.8f, 1.5f, 0.7f, 1.0f, 0.5f, 1.3f};
-    private static final float[] SHINING_STAR_A = new float[] {1.0f, 0.1f, 0.6f, 0.2f, 0.8f, 0.3f, 0.7f, 0.1f, 1.0f, 0.5f, 0.2f, 0.6f, 1.0f, 0.1f, 0.8f, 0.3f, 1.0f, 0.4f, 0.2f, 1.0f, 0.2f, 0.8f, 0.3f, 0.7f, 0.1f, 1.0f, 0.5f, 0.8f, 0.2f, 1.0f, 0.2f, 0.6f, 0.9f, 0.1f, 0.8f, 0.6f, 0.2f, 0.9f, 0.3f, 1.0f, 0.3f, 0.8f, 0.5f, 0.2f, 0.9f, 0.2f, 0.6f, 0.3f, 0.7f, 0.1f};
-    private static final float[] SHINING_STAR_OP = new float[] {0.009f, 0.01f, 0.03f, 0.07f, 0.01f, 0.004f, 0.09f, 0.01f, 0.03f, 0.06f, 0.08f, 0.02f, 0.05f, 0.01f, 0.07f, 0.03f, 0.006f, 0.03f, 0.01f, 0.05f, 0.01f, 0.007f, 0.05f, 0.02f, 0.007f, 0.02f, 0.05f, 0.03f, 0.008f, 0.01f, 0.05f, 0.02f, 0.009f, 0.05f, 0.07f, 0.008f, 0.06f, 0.03f, 0.02f, 0.05f, 0.01f, 0.05f, 0.009f, 0.06f, 0.007f, 0.02f, 0.008f, 0.08f, 0.05f, 0.01f};
+    private static final float[] SHINING_STAR_X = new float[] {
+        80.0f, 95.0f, 120.0f, 180.0f, 200.0f, 220.0f, 240.0f, 310.0f, 330.0f, 350.0f, 360.0f,
+        390.0f, 400.0f, 460.0f, 510.0f, 550.0f, 620.0f, 650.0f, 680.0f, 750.0f, 880.0f, 920.0f,
+        990.0f, 1010.0f, 1030.0f, 1060.0f, 1110.0f, 1180.0f, 1200.0f, 1230.0f, 1260.0f, 1300.0f,
+        1310.0f, 1340.0f, 1460.0f, 1480.0f, 1500.0f, 1520.0f, 1550.0f, 1580.0f, 1610.0f, 1650.0f,
+        1700.0f, 1740.0f, 1780.0f, 1820.0f, 1840.0f, 1880.0f, 1890.0f, 1900.0f
+    };
+    private static final float[] SHINING_STAR_Y = new float[] {
+        620.0f, 330.0f, 160.0f, 490.0f, 480.0f, 360.0f, 680.0f, 480.0f, 200.0f, 530.0f, 380.0f,
+        700.0f, 480.0f, 160.0f, 620.0f, 460.0f, 280.0f, 510.0f, 340.0f, 160.0f, 580.0f, 260.0f,
+        490.0f, 300.0f, 720.0f, 470.0f, 280.0f, 360.0f, 140.0f, 460.0f, 260.0f, 620.0f, 420.0f,
+        180.0f, 690.0f, 510.0f, 400.0f, 270.0f, 680.0f, 340.0f, 520.0f, 780.0f, 460.0f, 190.0f,
+        560.0f, 410.0f, 600.0f, 580.0f, 490.0f, 530.0f
+    };
+    private static final float[] SHINING_STAR_S = new float[] {
+        1.2f, 0.4f, 1.5f, 0.9f, 0.6f, 1.3f, 0.8f, 1.5f, 1.0f, 0.7f, 1.2f, 0.5f, 1.0f, 1.4f, 0.9f,
+        1.3f, 0.6f, 0.9f, 1.0f, 0.5f, 0.8f, 1.3f, 0.5f, 1.2f, 1.5f, 0.4f, 1.5f, 0.7f, 1.0f, 0.5f,
+        0.8f, 1.3f, 0.4f, 1.0f, 0.7f, 1.3f, 0.5f, 0.9f, 1.2f, 0.3f, 0.8f, 1.3f, 1.0f, 1.4f, 0.8f,
+        1.5f, 0.7f, 1.0f, 0.5f, 1.3f
+    };
+    private static final float[] SHINING_STAR_A = new float[] {
+        1.0f, 0.1f, 0.6f, 0.2f, 0.8f, 0.3f, 0.7f, 0.1f, 1.0f, 0.5f, 0.2f, 0.6f, 1.0f, 0.1f, 0.8f,
+        0.3f, 1.0f, 0.4f, 0.2f, 1.0f, 0.2f, 0.8f, 0.3f, 0.7f, 0.1f, 1.0f, 0.5f, 0.8f, 0.2f, 1.0f,
+        0.2f, 0.6f, 0.9f, 0.1f, 0.8f, 0.6f, 0.2f, 0.9f, 0.3f, 1.0f, 0.3f, 0.8f, 0.5f, 0.2f, 0.9f,
+        0.2f, 0.6f, 0.3f, 0.7f, 0.1f
+    };
+    private static final float[] SHINING_STAR_OP = new float[] {
+        0.009f, 0.01f, 0.03f, 0.07f, 0.01f, 0.004f, 0.09f, 0.01f, 0.03f, 0.06f, 0.08f, 0.02f, 0.05f,
+        0.01f, 0.07f, 0.03f, 0.006f, 0.03f, 0.01f, 0.05f, 0.01f, 0.007f, 0.05f, 0.02f, 0.007f,
+        0.02f, 0.05f, 0.03f, 0.008f, 0.01f, 0.05f, 0.02f, 0.009f, 0.05f, 0.07f, 0.008f, 0.06f,
+        0.03f, 0.02f, 0.05f, 0.01f, 0.05f, 0.009f, 0.06f, 0.007f, 0.02f, 0.008f, 0.08f, 0.05f, 0.01f
+    };
 
-    private static final float[] SHINING_STAR_X2 = new float[] {65.0f, 130.0f, 200.0f, 310.0f, 380.0f, 80.0f, 160.0f, 220.0f, 280.0f, 320.0f, 420.0f, 460.0f, 560.0f, 590.0f, 620.0f, 480.0f, 210.0f, 530.0f, 1000.0f, 1010.0f, 680.0f, 720.0f, 760.0f, 850.0f, 910.0f, 990.0f, 1050.0f, 1130.0f, 1280.0f, 1350.0f, 1100.0f, 1230.0f, 1340.0f, 1450.0f, 1500.0f, 1260.0f, 1790.0f, 1410.0f, 1580.0f, 1790.0f, 1390.0f, 1420.0f, 1490.0f, 1520.0f, 1590.0f, 1680.0f, 1750.0f, 1800.0f, 1860.0f, 1900.0f};
-    private static final float[] SHINING_STAR_Y2 = new float[] {360.0f, 280.0f, 580.0f, 680.0f, 310.0f, 80.0f, 480.0f, 210.0f, 240.0f, 190.0f, 280.0f, 660.0f, 490.0f, 300.0f, 420.0f, 380.0f, 200.0f, 480.0f, 150.0f, 620.0f, 500.0f, 280.0f, 360.0f, 540.0f, 130.0f, 560.0f, 480.0f, 700.0f, 340.0f, 160.0f, 260.0f, 320.0f, 520.0f, 300.0f, 620.0f, 120.0f, 480.0f, 270.0f, 680.0f, 340.0f, 580.0f, 260.0f, 490.0f, 300.0f, 720.0f, 100.0f, 280.0f, 360.0f, 140.0f, 460.0f};
-    private static final float[] SHINING_STAR_S2 = new float[] {0.3f, 1.1f, 0.5f, 0.3f, 0.7f, 1.2f, 0.8f, 0.3f, 0.8f, 1.0f, 0.6f, 0.9f, 0.2f, 0.6f, 0.7f, 0.8f, 0.3f, 0.9f, 1.2f, 0.5f, 1.0f, 0.5f, 0.8f, 0.3f, 0.7f, 0.2f, 0.8f, 0.5f, 0.2f, 1.0f, 0.3f, 0.7f, 0.4f, 0.9f, 0.8f, 0.3f, 0.8f, 0.2f, 0.6f, 0.9f, 1.2f, 0.3f, 0.9f, 0.5f, 0.7f, 0.3f, 0.5f, 0.7f, 1.2f, 0.7f};
-    private static final float[] SHINING_STAR_A2 = new float[] {0.2f, 0.8f, 0.3f, 0.7f, 0.8f, 1.0f, 0.1f, 0.6f, 0.2f, 0.8f, 0.3f, 1.0f, 0.4f, 0.2f, 1.0f, 0.2f, 0.8f, 0.3f, 0.7f, 0.8f, 1.0f, 1.0f, 0.4f, 0.8f, 0.3f, 0.3f, 0.7f, 0.5f, 1.0f, 0.5f, 0.2f, 0.6f, 1.0f, 0.1f, 0.8f, 0.3f, 1.0f, 0.4f, 0.2f, 1.0f, 0.2f, 0.8f, 0.3f, 0.7f, 0.8f, 1.0f, 1.0f, 0.4f, 0.8f, 0.3f};
-    private static final float[] SHINING_STAR_OP2 = new float[] {0.03f, 0.08f, 0.05f, 0.01f, 0.09f, 0.02f, 0.07f, 0.03f, 0.008f, 0.01f, 0.05f, 0.009f, 0.08f, 0.04f, 0.01f, 0.01f, 0.007f, 0.05f, 0.02f, 0.07f, 0.01f, 0.05f, 0.03f, 0.006f, 0.07f, 0.04f, 0.09f, 0.01f, 0.03f, 0.06f, 0.008f, 0.02f, 0.05f, 0.01f, 0.07f, 0.03f, 0.06f, 0.03f, 0.01f, 0.05f, 0.01f, 0.007f, 0.05f, 0.02f, 0.07f, 0.02f, 0.05f, 0.03f, 0.08f, 0.01f};
+    private static final float[] SHINING_STAR_X2 = new float[] {
+        65.0f, 130.0f, 200.0f, 310.0f, 380.0f, 80.0f, 160.0f, 220.0f, 280.0f, 320.0f, 420.0f,
+        460.0f, 560.0f, 590.0f, 620.0f, 480.0f, 210.0f, 530.0f, 1000.0f, 1010.0f, 680.0f, 720.0f,
+        760.0f, 850.0f, 910.0f, 990.0f, 1050.0f, 1130.0f, 1280.0f, 1350.0f, 1100.0f, 1230.0f,
+        1340.0f, 1450.0f, 1500.0f, 1260.0f, 1790.0f, 1410.0f, 1580.0f, 1790.0f, 1390.0f, 1420.0f,
+        1490.0f, 1520.0f, 1590.0f, 1680.0f, 1750.0f, 1800.0f, 1860.0f, 1900.0f
+    };
+    private static final float[] SHINING_STAR_Y2 = new float[] {
+        360.0f, 280.0f, 580.0f, 680.0f, 310.0f, 80.0f, 480.0f, 210.0f, 240.0f, 190.0f, 280.0f,
+        660.0f, 490.0f, 300.0f, 420.0f, 380.0f, 200.0f, 480.0f, 150.0f, 620.0f, 500.0f, 280.0f,
+        360.0f, 540.0f, 130.0f, 560.0f, 480.0f, 700.0f, 340.0f, 160.0f, 260.0f, 320.0f, 520.0f,
+        300.0f, 620.0f, 120.0f, 480.0f, 270.0f, 680.0f, 340.0f, 580.0f, 260.0f, 490.0f, 300.0f,
+        720.0f, 100.0f, 280.0f, 360.0f, 140.0f, 460.0f
+    };
+    private static final float[] SHINING_STAR_S2 = new float[] {
+        0.3f, 1.1f, 0.5f, 0.3f, 0.7f, 1.2f, 0.8f, 0.3f, 0.8f, 1.0f, 0.6f, 0.9f, 0.2f, 0.6f, 0.7f,
+        0.8f, 0.3f, 0.9f, 1.2f, 0.5f, 1.0f, 0.5f, 0.8f, 0.3f, 0.7f, 0.2f, 0.8f, 0.5f, 0.2f, 1.0f,
+        0.3f, 0.7f, 0.4f, 0.9f, 0.8f, 0.3f, 0.8f, 0.2f, 0.6f, 0.9f, 1.2f, 0.3f, 0.9f, 0.5f, 0.7f,
+        0.3f, 0.5f, 0.7f, 1.2f, 0.7f
+    };
+    private static final float[] SHINING_STAR_A2 = new float[] {
+        0.2f, 0.8f, 0.3f, 0.7f, 0.8f, 1.0f, 0.1f, 0.6f, 0.2f, 0.8f, 0.3f, 1.0f, 0.4f, 0.2f, 1.0f,
+        0.2f, 0.8f, 0.3f, 0.7f, 0.8f, 1.0f, 1.0f, 0.4f, 0.8f, 0.3f, 0.3f, 0.7f, 0.5f, 1.0f, 0.5f,
+        0.2f, 0.6f, 1.0f, 0.1f, 0.8f, 0.3f, 1.0f, 0.4f, 0.2f, 1.0f, 0.2f, 0.8f, 0.3f, 0.7f, 0.8f,
+        1.0f, 1.0f, 0.4f, 0.8f, 0.3f
+    };
+    private static final float[] SHINING_STAR_OP2 = new float[] {
+        0.03f, 0.08f, 0.05f, 0.01f, 0.09f, 0.02f, 0.07f, 0.03f, 0.008f, 0.01f, 0.05f, 0.009f, 0.08f,
+        0.04f, 0.01f, 0.01f, 0.007f, 0.05f, 0.02f, 0.07f, 0.01f, 0.05f, 0.03f, 0.006f, 0.07f, 0.04f,
+        0.09f, 0.01f, 0.03f, 0.06f, 0.008f, 0.02f, 0.05f, 0.01f, 0.07f, 0.03f, 0.06f, 0.03f, 0.01f,
+        0.05f, 0.01f, 0.007f, 0.05f, 0.02f, 0.07f, 0.02f, 0.05f, 0.03f, 0.08f, 0.01f
+    };
 
     static final class Sprite {
         int textureId = -1;
@@ -85,6 +144,8 @@ final class Aurora2Scene {
         final AuroraMeshState fadeAurora = new AuroraMeshState();
         boolean fadeActive;
         float fadeAlpha;
+        boolean procedural;
+        int paletteIndex;
 
         private static Sprite[] createSprites(int count) {
             Sprite[] sprites = new Sprite[count];
@@ -108,6 +169,8 @@ final class Aurora2Scene {
     private int mResolution;
     static final String PREF_THEME = "aurora2_theme";
     static final String VALUE_THEME_AUTO = "auto";
+    static final String PREF_PROCEDURAL = "pref_aurora2_procedural";
+    static final String PREF_PROCEDURAL_PALETTE = "pref_aurora2_procedural_palette";
     private static final int THEME_COUNT = 4;
     private int mThemeId;
     private SharedPreferences mPrefs;
@@ -180,7 +243,8 @@ final class Aurora2Scene {
         setParallax(0.0f, 0.0f);
         float logicalW = mVerticalMode ? PORTRAIT_WIDTH : LANDSCAPE_WIDTH;
         float logicalH = mVerticalMode ? PORTRAIT_HEIGHT : LANDSCAPE_HEIGHT;
-        Matrix.orthoM(mSceneData.projectionMatrix, 0, 0.0f, logicalW, 0.0f, logicalH, -1000.0f, 1000.0f);
+        Matrix.orthoM(
+                mSceneData.projectionMatrix, 0, 0.0f, logicalW, 0.0f, logicalH, -1000.0f, 1000.0f);
         updateThemeFromClock(true);
     }
 
@@ -188,8 +252,7 @@ final class Aurora2Scene {
         setParallax(0.0f, 0.0f);
     }
 
-    void onTouchEvent(MotionEvent event) {
-    }
+    void onTouchEvent(MotionEvent event) {}
 
     SceneData getSceneData() {
         return mSceneData;
@@ -199,6 +262,7 @@ final class Aurora2Scene {
         mFrame = (mFrame + 1) % 240;
         mXDrawOffset = mXBias;
         mYDrawOffset = mYBias;
+        updateProcedural();
         updateThemeFromClock(false);
         updateShine();
         updateAurora(mSceneData.aurora, currentAuroraTexture(), 0.6f);
@@ -213,6 +277,16 @@ final class Aurora2Scene {
     /** 由设置页注入插件设置(引擎在设置变更时会重新注入,主题即时生效)。 */
     void setPluginPrefs(SharedPreferences prefs) {
         mPrefs = prefs;
+    }
+
+    private void updateProcedural() {
+        SharedPreferences prefs = mPrefs;
+        boolean enabled = prefs != null && prefs.getBoolean(PREF_PROCEDURAL, false);
+        String palette = prefs != null
+                ? prefs.getString(PREF_PROCEDURAL_PALETTE, Aurora2Procedural.PALETTE_KEYS[0])
+                : Aurora2Procedural.PALETTE_KEYS[0];
+        mSceneData.procedural = Aurora2Procedural.enabledFromPref(enabled);
+        mSceneData.paletteIndex = Aurora2Procedural.paletteIndex(palette);
     }
 
     /**
@@ -320,7 +394,9 @@ final class Aurora2Scene {
     }
 
     private float effectiveAuroraHeight(int textureId) {
-        if (mVerticalMode && mResolution == 1 && (textureId == TEXTURE_AURORA_01_WSVGA || textureId == TEXTURE_AURORA_03_WSVGA)) {
+        if (mVerticalMode
+                && mResolution == 1
+                && (textureId == TEXTURE_AURORA_01_WSVGA || textureId == TEXTURE_AURORA_03_WSVGA)) {
             return 50.0f + mAuroraH;
         }
         return mAuroraH;
@@ -331,7 +407,8 @@ final class Aurora2Scene {
         if (mResolution == 1) {
             if (!mVerticalMode) {
                 y -= 90.0f;
-            } else if (textureId == TEXTURE_AURORA_01_WSVGA || textureId == TEXTURE_AURORA_03_WSVGA) {
+            } else if (textureId == TEXTURE_AURORA_01_WSVGA
+                    || textureId == TEXTURE_AURORA_03_WSVGA) {
                 y -= 40.0f;
             }
         }
@@ -551,7 +628,6 @@ final class Aurora2Scene {
         }
     }
 
-
     private static String[] buildTextureNames() {
         String[] names = new String[TEXTURE_COUNT];
         names[TEXTURE_BG_01] = "aurora2_bg_01";
@@ -569,7 +645,8 @@ final class Aurora2Scene {
         names[TEXTURE_AURORA_03_WSVGA] = "aurora2_aurora_03_wsvga";
         names[TEXTURE_SHINE_00] = "aurora2_shine_00";
         for (int i = 0; i < SHOOTING_FRAME_COUNT; i++) {
-            names[TEXTURE_SHOOTING_START + i] = String.format(java.util.Locale.US, "aurora2_shootingstar%02d", i + 1);
+            names[TEXTURE_SHOOTING_START + i] =
+                    String.format(java.util.Locale.US, "aurora2_shootingstar%02d", i + 1);
         }
         return names;
     }

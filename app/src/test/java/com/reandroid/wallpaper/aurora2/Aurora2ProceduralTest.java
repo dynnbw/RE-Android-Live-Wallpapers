@@ -1,6 +1,7 @@
 package com.reandroid.wallpaper.aurora2;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
@@ -55,5 +56,11 @@ public class Aurora2ProceduralTest {
     public void paramsSurviveAZeroHeight() {
         float[] p = Aurora2Procedural.packParams(0f, 0f, 0f, 0f, 0, 1.0f);
         assertEquals(1.0f, p[6], 1e-4f);
+    }
+
+    @Test
+    public void proceduralModeIsOffUnlessThePrefSaysOtherwise() {
+        assertFalse(Aurora2Procedural.enabledFromPref(false));
+        assertTrue(Aurora2Procedural.enabledFromPref(true));
     }
 }

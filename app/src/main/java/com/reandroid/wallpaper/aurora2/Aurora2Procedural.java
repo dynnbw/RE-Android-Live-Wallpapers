@@ -12,6 +12,10 @@ final class Aurora2Procedural {
 
     private Aurora2Procedural() {}
 
+    static boolean enabledFromPref(boolean pref) {
+        return pref;
+    }
+
     static int paletteIndex(String key) {
         if (key != null) {
             for (int i = 0; i < PALETTE_KEYS.length; i++) {
