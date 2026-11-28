@@ -18,6 +18,13 @@ struct PushConstants {
     float dxMul;             // offset 96
     float xOffset;           // offset 100
     int rotate;              // offset 104
+    /*
+     * 最后 5 个 float（108..127）按 pass 复用：
+     *   水面 = 星空的 amount / time / aspect；
+     *   叶子 = 日夜染色的 rgb / amount / value。
+     * 两块需要的字段互不重叠，共用正好压进 128 字节的 push constant 上限。
+     */
+    float lighting[5];       // offset 108
 };
 // Drops moved to UBO (binding 1) — no hard limit
 
@@ -207,7 +214,8 @@ public:
         leafAtlasFrameCount_ = std::max(1, frameCount);
     }
 
-    void render(JNIEnv* env, jfloatArray projectionArray, jfloatArray viewArray,
+    void render(JNIEnv* env, const float* lighting,
+            jfloatArray projectionArray, jfloatArray viewArray,
             jfloatArray leavesArray, jint leafCount, jfloat xOffset,
             jfloatArray waterVertices, jfloatArray waterTexCoords, jshortArray waterIndices,
             jint waterVertexCount, jint waterIndexCount,
@@ -289,7 +297,7 @@ public:
         VkCommandBuffer commandBuffer = swapchainCommandBuffers_[imageIndex];
         vkResetCommandBuffer(commandBuffer, 0);
         if (!recordCommandBufferLocked(commandBuffer, imageIndex, projection, view, leaves, xOffset,
-            waterIndexCount_, pc)) {
+            waterIndexCount_, pc, lighting)) {
             return;
         }
 
@@ -1175,7 +1183,7 @@ public:
 
     bool recordCommandBufferLocked(VkCommandBuffer commandBuffer, uint32_t imageIndex,
             const float projection[16], const float view[16], const std::vector<LeafDraw>& leaves,
-            float xOffset, int waterIndexCount, const PushConstants& pc) {
+            float xOffset, int waterIndexCount, const PushConstants& pc, const float* lighting) {
         VkCommandBufferBeginInfo beginInfo{};
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
         if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS) {
@@ -1234,6 +1242,12 @@ public:
         waterPush.dxMul = pc.dxMul;
         waterPush.xOffset = pc.xOffset;
         waterPush.rotate = pc.rotate;
+        // 水面的三个星空参数
+        waterPush.lighting[0] = lighting != nullptr ? lighting[0] : 0.0f;
+        waterPush.lighting[1] = lighting != nullptr ? lighting[1] : 0.0f;
+        waterPush.lighting[2] = lighting != nullptr ? lighting[2] : 0.0f;
+        waterPush.lighting[3] = 0.0f;
+        waterPush.lighting[4] = 0.0f;
         vkCmdPushConstants(commandBuffer, bgPipelineLayout_,
             VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
             0, sizeof(PushConstants), &waterPush);
@@ -1278,6 +1292,9 @@ public:
                 shadowPush.dxMul = pc.dxMul;
                 shadowPush.xOffset = pc.xOffset;
                 shadowPush.rotate = pc.rotate;
+                if (lighting != nullptr) {
+                    for (int i = 0; i < 5; i++) shadowPush.lighting[i] = lighting[3 + i];
+                }
 
                 vkCmdPushConstants(commandBuffer, leafPipelineLayout_,
                         VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
@@ -1294,6 +1311,9 @@ public:
             push.leafFrameIndex = static_cast<float>(frameIndex);
             push.leafFrameInvCount = 1.0f / static_cast<float>(frameCount);
             push.shadow = 0.0f;
+            if (lighting != nullptr) {
+                for (int i = 0; i < 5; i++) push.lighting[i] = lighting[3 + i];
+            }
 
             vkCmdPushConstants(commandBuffer, leafPipelineLayout_,
                     VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
@@ -1394,7 +1414,8 @@ static void JNICALL nOnSurfaceDestroyed(
 }
 
 static void JNICALL nRenderFrame(
-        JNIEnv* env, jclass, jlong handle, jfloatArray projectionMatrix, jfloatArray viewMatrix,
+        JNIEnv* env, jclass, jlong handle, jfloatArray lightingArray,
+        jfloatArray projectionMatrix, jfloatArray viewMatrix,
         jfloatArray leavesData, jint leafCount, jfloat xOffset,
         jfloatArray waterVertices, jfloatArray waterTexCoords, jshortArray waterIndices,
         jint waterVertexCount, jint waterIndexCount,
@@ -1403,7 +1424,11 @@ static void JNICALL nRenderFrame(
         jfloat dxMul, jint rotate) {
     auto* renderer = asRenderer(handle);
     if (renderer != nullptr) {
-        renderer->render(env, projectionMatrix, viewMatrix, leavesData, leafCount, xOffset,
+        float lighting[8]{};
+        if (lightingArray != nullptr) {
+            env->GetFloatArrayRegion(lightingArray, 0, 8, lighting);
+        }
+        renderer->render(env, lighting, projectionMatrix, viewMatrix, leavesData, leafCount, xOffset,
                 waterVertices, waterTexCoords, waterIndices, waterVertexCount, waterIndexCount,
                 dropData, dropCount,
                 glHeight, bgScale, meshScaleX, meshScaleY, dxMul, rotate);
@@ -1456,7 +1481,7 @@ static const JNINativeMethod kMethods[] = {
     {"nOnSurfaceCreated", "(JLandroid/view/Surface;II)Z", reinterpret_cast<void*>(nOnSurfaceCreated)},
     {"nOnSurfaceChanged", "(JLandroid/view/Surface;II)V", reinterpret_cast<void*>(nOnSurfaceChanged)},
     {"nOnSurfaceDestroyed", "(J)V", reinterpret_cast<void*>(nOnSurfaceDestroyed)},
-    {"nRenderFrame", "(J[F[F[FIF[F[F[SII[FIFFFFFI)V", reinterpret_cast<void*>(nRenderFrame)},
+    {"nRenderFrame", "(J[F[F[F[FIF[F[F[SII[FIFFFFFI)V", reinterpret_cast<void*>(nRenderFrame)},
     {"nSetMaskTexture", "(J[BII)V", reinterpret_cast<void*>(nSetMaskTexture)},
     {"nSetSkyTexture", "(J[III)V", reinterpret_cast<void*>(nSetSkyTexture)},
     {"nSetLeafTexture", "(J[III)V", reinterpret_cast<void*>(nSetLeafTexture)},

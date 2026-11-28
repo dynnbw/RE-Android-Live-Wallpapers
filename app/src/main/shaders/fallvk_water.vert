@@ -18,12 +18,18 @@ layout(push_constant) uniform PushConstants {
     float u_dxMul;
     float u_xOffset;
     int u_rotate;
+    float uStarAmount;
+    float uStarTime;
+    float uStarAspect;
+    float _pad0;
+    float _pad1;
 } pc;
 
 layout(location = 0) in vec3 aPosition;
 layout(location = 1) in vec2 aTexCoord;
 
 layout(location = 0) out vec2 vUv;
+layout(location = 1) out vec2 vScreenUv;
 
 vec2 addDrop(vec4 d, vec2 ripplePos, float dxMul) {
     vec2 delta = vec2((d.x - ripplePos.x) * dxMul, d.y - ripplePos.y);
@@ -37,6 +43,7 @@ vec2 addDrop(vec4 d, vec2 ripplePos, float dxMul) {
 
 void main() {
     gl_Position = pc.uMvpMatrix * vec4(aPosition, 1.0);
+    vScreenUv = gl_Position.xy / gl_Position.w * 0.5 + 0.5;
     vec2 pos = aPosition.xy;
 
     float posScaledY = ((pos.y / (pc.u_glHeight * 0.5)) + 1.0) * pc.u_meshScaleY;

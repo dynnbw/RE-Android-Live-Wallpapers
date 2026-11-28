@@ -33,6 +33,11 @@ final class FallVkDelegate implements VkRendererDelegate {
      * （Stack G11 / Android 9 实测就是这样），这时不能进 native 画帧。
      */
     private boolean mSurfaceReady;
+
+    private int mSurfaceWidth;
+    private int mSurfaceHeight;
+    /** 预览里把一天压进 30 秒；壁纸路径用真实时间。 */
+    private boolean mPreview;
     /** 多指分别计距、各自落点；见 {@link FallTouchTracker}。 */
     private final FallTouchTracker mTouchTracker = new FallTouchTracker();
 
@@ -61,6 +66,7 @@ final class FallVkDelegate implements VkRendererDelegate {
         if (width <= 0 || height <= 0) return;
         if (mScene == null) {
             mScene = new FallScene(width, height);
+            mScene.setPreview(mPreview);
             mScene.setLeafTextureCount(mLeafTextureCount);
             if (mPrefs != null) mScene.setPluginPrefs(mPrefs);
         } else {
@@ -73,8 +79,9 @@ final class FallVkDelegate implements VkRendererDelegate {
         if (mRendererHandle != 0L) return mRendererHandle;
         mRendererHandle = FallVKNative.nCreateRenderer(mContext.getAssets());
         if (mRendererHandle != 0L) {
-            mLeafTextureCount = Math.max(1, FallVKNative.uploadTextures(mContext, mRendererHandle));
-            mGreenLeavesEnabled = WallpaperSettings.isGreenLeavesEnabled(false);
+            mGreenLeavesEnabled = greenLeavesEnabled();
+            mLeafTextureCount = Math.max(
+                    1, FallVKNative.uploadTextures(mContext, mRendererHandle, mGreenLeavesEnabled));
             if (mScene != null) mScene.setLeafTextureCount(mLeafTextureCount);
         }
         return mRendererHandle;
@@ -90,11 +97,15 @@ final class FallVkDelegate implements VkRendererDelegate {
 
     @Override
     public void onSurfaceCreated(Surface surface, int width, int height) {
+        mSurfaceWidth = width;
+        mSurfaceHeight = height;
         mSurfaceReady = FallVKNative.nOnSurfaceCreated(mRendererHandle, surface, width, height);
     }
 
     @Override
     public void onSurfaceChanged(Surface surface, int width, int height) {
+        mSurfaceWidth = width;
+        mSurfaceHeight = height;
         FallVKNative.nOnSurfaceChanged(mRendererHandle, surface, width, height);
     }
 
@@ -111,9 +122,10 @@ final class FallVkDelegate implements VkRendererDelegate {
         long now = SystemClock.uptimeMillis();
         if (now - mLastAtlasSyncCheckMs < SETTINGS_SYNC_INTERVAL_MS) return;
         mLastAtlasSyncCheckMs = now;
-        boolean enabled = WallpaperSettings.isGreenLeavesEnabled(false);
+        boolean enabled = greenLeavesEnabled();
         if (enabled == mGreenLeavesEnabled) return;
-        mLeafTextureCount = Math.max(1, FallVKNative.uploadTextures(mContext, mRendererHandle));
+        mLeafTextureCount =
+                Math.max(1, FallVKNative.uploadTextures(mContext, mRendererHandle, enabled));
         mGreenLeavesEnabled = enabled;
         if (mScene != null) mScene.setLeafTextureCount(mLeafTextureCount);
     }
@@ -127,8 +139,21 @@ final class FallVkDelegate implements VkRendererDelegate {
         float[] leafData = mScene.buildLeafDataForVK();
         int leafCount = mScene.getVKLeafCount();
         boolean meshRebuild = mScene.consumeMeshBufferRebuildRequested();
+        FallVKNative.updateSkyTexture(mRendererHandle, mScene.getSkyWeights(), now);
+        float[] tint = mScene.getLeafTintRgb();
+        float[] lighting = {
+            mScene.getStarAmount(),
+            (now % 30000L) * 0.001f,
+            mSurfaceWidth > 0 ? mSurfaceHeight / (float) mSurfaceWidth : 1f,
+            tint[0],
+            tint[1],
+            tint[2],
+            mScene.getLeafTintAmount(),
+            mScene.getLeafTintValue()
+        };
         FallVKNative.nRenderFrame(
                 mRendererHandle,
+                lighting,
                 data.getProjectionMatrix(),
                 data.getViewMatrix(),
                 leafData,
@@ -147,6 +172,17 @@ final class FallVkDelegate implements VkRendererDelegate {
                 data.getMeshScaleY(),
                 data.getDxMul(),
                 data.getRotate());
+    }
+
+    /** 与 GLES 同源：直接读插件自己的 prefs。 */
+    private boolean greenLeavesEnabled() {
+        return mPrefs != null && mPrefs.getBoolean(WallpaperSettings.KEY_FALL_GREEN_LEAVES, false);
+    }
+
+    @Override
+    public void onPreviewChanged(boolean preview) {
+        mPreview = preview;
+        if (mScene != null) mScene.setPreview(preview);
     }
 
     @Override
