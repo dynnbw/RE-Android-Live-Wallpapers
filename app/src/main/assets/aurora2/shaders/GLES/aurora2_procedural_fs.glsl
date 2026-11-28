@@ -1,6 +1,6 @@
 #version 300 es
-// 程序化极光: 伪体积帘幕. 颜色按帘内高度分层(低缘蓝紫/主体绿/顶部暗红),
-// 色相档只旋转色相, 不改变分层结构.
+// 程序化极光: 参考实现(SurAurora)的低步数版本. 30 步 raymarch 降到 12 步,
+// 每步 5 次三角域扭曲降到 4 次; 步距、权重与逐层配色都是预计算常量.
 precision highp float;
 
 out vec4 fragColor;
@@ -12,9 +12,28 @@ uniform float uPalette;  // 0 物理绿 / 1 青绿 / 2 冷紫 / 3 暖红
 
 in vec2 vUv;
 
-const vec3 AURORA_BLUE = vec3(0.10, 0.25, 1.00);
-const vec3 AURORA_GREEN = vec3(0.10, 1.00, 0.30);
-const vec3 AURORA_RED = vec3(1.00, 0.15, 0.10);
+// 0.8 + i^1.4 * 0.002
+const float STEP_PT[12] = float[12](
+        0.80000, 0.80200, 0.80528, 0.80931, 0.81393, 0.81904, 0.82457, 0.83049, 0.83676,
+        0.84335, 0.85024, 0.85741);
+// exp2(-i*0.12 - 2.2) * smoothstep(0, 5, i)
+const float STEP_W[12] = float[12](
+        0.000000, 0.020828, 0.064868, 0.109885, 0.139813, 0.143587, 0.132127, 0.121582,
+        0.111878, 0.102949, 0.094732, 0.087171);
+// sin(1 - vec3(2.15,-0.5,1.2) + i*0.2251) * 0.8 + 0.5, 12 步铺满原版 30 步的色相行程
+const vec3 STEP_TINT[12] = vec3[12](
+        vec3(0.0000, 1.2980, 0.3411),
+        vec3(0.0000, 1.2905, 0.5201),
+        vec3(0.0000, 1.2431, 0.6981),
+        vec3(0.1344, 1.1582, 0.8662),
+        vec3(0.3025, 1.0400, 1.0157),
+        vec3(0.4806, 0.8946, 1.1392),
+        vec3(0.6596, 0.7293, 1.2305),
+        vec3(0.8306, 0.5524, 1.2849),
+        vec3(0.9849, 0.3729, 1.2996),
+        vec3(1.1147, 0.1998, 1.2740),
+        vec3(1.2135, 0.0418, 1.2094),
+        vec3(1.2763, 0.0000, 1.1089));
 
 float hash21(vec2 p) {
     p = fract(p * vec2(123.34, 456.21));
@@ -22,18 +41,12 @@ float hash21(vec2 p) {
     return fract(p.x * p.y);
 }
 
-float noise(vec2 p) {
-    vec2 i = floor(p);
-    vec2 f = fract(p);
-    vec2 u = f * f * (3.0 - 2.0 * f);
-    return mix(
-        mix(hash21(i), hash21(i + vec2(1.0, 0.0)), u.x),
-        mix(hash21(i + vec2(0.0, 1.0)), hash21(i + vec2(1.0, 1.0)), u.x),
-        u.y);
+float tri(float x) {
+    return clamp(abs(fract(x) - 0.5), 0.01, 0.49);
 }
 
-float fbm2(vec2 p) {
-    return 0.6 * noise(p) + 0.4 * noise(p * 2.0 + 7.3);
+vec2 tri2(vec2 p) {
+    return vec2(tri(p.x) + tri(p.y), tri(p.y + tri(p.x)));
 }
 
 /** 绕 RGB 灰轴旋转, 只改色相. */
@@ -43,80 +56,67 @@ vec3 hueRotate(vec3 c, float angle) {
     return c * cosA + cross(k, c) * sin(angle) + k * dot(k, c) * (1.0 - cosA);
 }
 
-/** 帘内高度决定颜色: 低缘蓝紫, 主体绿, 顶部暗红只在亮处出现. */
-vec3 paletteColor(float h, float shape) {
-    vec3 c = mix(AURORA_BLUE, AURORA_GREEN, smoothstep(0.0, 0.10, h));
-    float redMix = smoothstep(0.72, 0.98, h) * smoothstep(0.45, 0.85, shape);
-    c = mix(c, AURORA_RED, redMix * 0.22);
-    if (uPalette > 2.5) {
-        c = hueRotate(c, -2.2);
-    } else if (uPalette > 1.5) {
-        c = hueRotate(c, 2.1);
-    } else if (uPalette > 0.5) {
-        c = hueRotate(c, 0.5);
+/** 参考实现的三角域扭曲噪声; 迭代次数从 5 降到 4. */
+float surNoise(vec2 p, float timeCos, float timeSin) {
+    float intensity = 1.8;
+    float size = 2.5;
+    float rz = 0.0;
+    // 起始按 p.x*0.06 旋转, 角度很小, 用泰勒展开免掉三角函数
+    float a = p.x * 0.06;
+    float ca = 1.0 - a * a * 0.5;
+    float sa = a - a * a * a * 0.1666667;
+    p = vec2(ca * p.x - sa * p.y, sa * p.x + ca * p.y);
+    vec2 bp = p;
+    for (int i = 0; i < 3; i++) {
+        vec2 dg = tri2(bp * 1.85) * 0.75;
+        dg = vec2(timeCos * dg.x - timeSin * dg.y, timeSin * dg.x + timeCos * dg.y);
+        p -= dg / size;
+        bp *= 1.3;
+        size *= 0.45;
+        intensity *= 0.42;
+        p *= 1.21 + (rz - 1.0) * 0.02;
+        rz += tri(p.x + tri(p.y)) * intensity;
+        // 固定 -0.3 弧度旋转
+        p = vec2(0.95534 * p.x + 0.29552 * p.y, -0.29552 * p.x + 0.95534 * p.y);
     }
-    return c;
+    return clamp(1.0 / pow(max(rz * 29.0, 1e-6), 1.3), 0.0, 0.55);
 }
 
 void main() {
-    float t = uTime;
-
-    // 帘面折皱: 整条帘在横向被缓慢推来推去
-    float warp = (fbm2(vec2(vUv.x * 3.0 + t * 0.02, 11.0)) - 0.5) * 0.18;
-    float x = vUv.x + warp;
-
-    // 丝缕在竖直方向被折皱带偏, 不是笔直的栅栏
-    float vvMid = (vUv.y - 0.16) / 0.78;
-    float xf = x + 0.05 * (noise(vec2(x * 4.0, vvMid * 2.5 - t * 0.04)) - 0.5);
-
-    // 帘面自身的疏密与丝缕: 四层共用同一份, 只在帘底高度上错开
-    float density = smoothstep(0.28, 0.75, fbm2(vec2(xf * 2.6 + t * 0.02, vvMid * 1.4 + 2.0)));
-    float ra = noise(vec2(xf * 95.0, vvMid * 1.6 + t * 0.8));
-    float rb = noise(vec2(xf * 21.0 - 4.0, vvMid * 0.8 + t * 0.35));
-    float rays = smoothstep(0.22, 0.78, ra * 0.62 + rb * 0.52);
-    float topJitter = noise(vec2(x * 5.0 - t * 0.05, 9.0));
-
-    // 大尺度分片: 全屏两三条主帘, 之间留暗
-    float lobes = 0.30 + 0.70 * smoothstep(0.34, 0.62, noise(vec2(vUv.x * 2.4 + t * 0.008, 2.7)));
+    float aspect = uResolution.x / max(uResolution.y, 1.0);
+    vec3 dir = normalize(vec3((vUv.x * 2.0 - 1.0) * aspect, vUv.y, -1.0));
+    // 缓慢漂移: 参考实现是 1 rad/s, 这里压到 0.025 rad/s
+    float ct = cos(uTime * 0.025);
+    float st = sin(uTime * 0.025);
 
     vec3 color = vec3(0.0);
-    float energySum = 0.0;
-    const float depths[4] = float[4](0.6, 0.8, 1.0, 1.25);
-    for (int i = 0; i < 4; i++) {
-        float depth = depths[i];
-        // 每条帘的下缘都不一样高, 高频抖动让边缘参差
-        float bottom =
-                0.16
-                + (depth - 1.0) * 0.05
-                + 0.13 * (fbm2(vec2(x * 1.3, t * 0.008 + depth * 3.0)) - 0.5)
-                + 0.035 * (noise(vec2(x * 30.0, t * 0.2 + depth * 2.0)) - 0.5);
-        float height = 0.72 + 0.06 * depth;
-        float vv = (vUv.y - bottom) / height;
-        float h = clamp(vv, 0.0, 1.0);
+    vec3 avg = vec3(0.0);
+    for (int i = 0; i < 12; i++) {
+        float fi = float(i);
+        float of = 0.006 * hash21(vec2(dir.x, dir.y) * 64.0) * smoothstep(0.0, 5.0, fi);
+        // 视线到第 i 层帘幕的交点, p = bpos.zx
+        float pt = STEP_PT[i] / max(dir.y * 2.0 + 0.8, 0.8) - of;
+        vec2 p = vec2(-6.7 + pt * dir.z, pt * dir.x);
+        float n = surNoise(p, ct, st);
+        avg = mix(avg, STEP_TINT[i] * n, 0.5);
+        color += avg * STEP_W[i];
+    }
+    color = max(color, vec3(0.0)) * (0.9 + 0.5 * uEnvelope) * 1.7;
 
-        // 上缘被噪声溶解, 不是整齐的横切
-        float top = 1.0 - smoothstep(0.45, 1.05, vv + 0.35 * (topJitter - 0.5));
-        float band = smoothstep(-0.03, 0.03, vv) * top;
-        float raysLayer = rays * (1.0 - 0.6 * smoothstep(0.15, 0.95, vv));
-        // 帘底亮边
-        float rim = 1.0 - smoothstep(0.0, 0.10, abs(vv - 0.02));
-
-        float energy =
-                band * (0.10 + 0.9 * density) * (0.30 + 0.9 * raysLayer) * lobes
-                * (1.0 + 0.3 * rim);
-        float brightness = 0.55 + 0.45 * depth;
-        color += paletteColor(h, energy) * energy * brightness;
-        energySum += energy * brightness;
+    if (uPalette > 2.5) {
+        color = hueRotate(color, -2.2);
+    } else if (uPalette > 1.5) {
+        color = hueRotate(color, 2.1);
+    } else if (uPalette > 0.5) {
+        color = hueRotate(color, 0.5);
     }
 
-    // 色调映射: 亮帘不至于削顶成白色
-    color = 1.0 - exp(-color * (0.9 + 0.6 * uEnvelope) * 1.6);
-
-    // 贴近地面的一侧淡出, 极光只留在天空里
-    float horizon = smoothstep(0.03, 0.14, vUv.y);
-    color *= horizon;
+    // 极光占天幕约四分之三, 靠近地面淡出
+    float mask = smoothstep(0.03, 0.15, vUv.y);
+    color *= mask;
 
     // 加色叠加(SRC_ALPHA, ONE): alpha 作为极光浓淡, 天空与星星不受影响
-    float coverage = clamp(0.10 + energySum * 1.0, 0.0, 0.9) * horizon;
+    float peak = max(max(color.r, color.g), color.b);
+    float coverage = clamp(0.05 + peak * 1.6, 0.0, 0.9) * mask;
     fragColor = vec4(color, coverage);
 }

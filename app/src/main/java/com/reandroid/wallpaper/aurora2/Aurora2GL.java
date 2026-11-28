@@ -21,7 +21,7 @@ public class Aurora2GL extends GLESScene {
     private static final String TAG = "Aurora2GL";
     private static final int AURORA_STRIPS = 40;
     /** 程序化极光的渲染倍率: 片元成本高, 半分辨率再放大. */
-    private static final float PROCEDURAL_SCALE = 0.45f;
+    private static final float PROCEDURAL_SCALE = 0.42f;
 
     private final Context mContext;
     private final Aurora2Scene mScene;
