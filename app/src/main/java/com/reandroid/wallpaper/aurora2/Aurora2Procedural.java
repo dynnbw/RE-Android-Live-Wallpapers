@@ -32,4 +32,26 @@ final class Aurora2Procedural {
         float x = phase / (float) BURST_LEN_MS;
         return (float) (0.5 - 0.5 * Math.cos(x * Math.PI * 2.0));
     }
+
+    /**
+     * 每帧参数，顺序与 aurora2_procedural_fs.glsl 的 uAurora 各字段一一对应。VK 端接同一份数组即可。
+     */
+    static float[] packParams(
+            float timeSec,
+            float width,
+            float height,
+            float envelope,
+            int palette,
+            float resolutionScale) {
+        float[] p = new float[8];
+        p[0] = timeSec;
+        p[1] = width;
+        p[2] = height;
+        p[3] = envelope;
+        p[4] = palette;
+        p[5] = resolutionScale;
+        p[6] = height > 0f ? width / height : 1.0f;
+        p[7] = 0f;
+        return p;
+    }
 }

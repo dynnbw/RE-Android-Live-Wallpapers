@@ -36,4 +36,24 @@ public class Aurora2ProceduralTest {
         }
         assertTrue("包络从不回到 0", calm);
     }
+
+    @Test
+    public void paramsCarryTimePaletteEnvelopeAndAspect() {
+        float[] p = Aurora2Procedural.packParams(12.5f, 1080f, 2400f, 0.75f, 2, 1.0f);
+        assertEquals(8, p.length);
+        assertEquals(12.5f, p[0], 1e-4f); // time (s)
+        assertEquals(1080f, p[1], 1e-4f); // width
+        assertEquals(2400f, p[2], 1e-4f); // height
+        assertEquals(0.75f, p[3], 1e-4f); // envelope
+        assertEquals(2f, p[4], 1e-4f); // palette index
+        assertEquals(1.0f, p[5], 1e-4f); // resolution scale
+        assertEquals(1080f / 2400f, p[6], 1e-4f); // aspect
+        assertEquals(0f, p[7], 1e-4f); // reserved
+    }
+
+    @Test
+    public void paramsSurviveAZeroHeight() {
+        float[] p = Aurora2Procedural.packParams(0f, 0f, 0f, 0f, 0, 1.0f);
+        assertEquals(1.0f, p[6], 1e-4f);
+    }
 }
