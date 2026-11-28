@@ -85,8 +85,8 @@ float surNoise(vec2 p, float timeCos, float timeSin) {
 void main() {
     float aspect = uResolution.x / max(uResolution.y, 1.0);
     vec3 dir = normalize(vec3((vUv.x * 2.0 - 1.0) * aspect, vUv.y, -1.0));
-    // 缓慢漂移: 参考实现是 1 rad/s, 这里压到 0.012 rad/s; +5 rad 让启动时正对一条帘幕
-    float ang = uTime * 0.012 + 5.0;
+    // 漂移速度: 参考实现是 1 rad/s, 这里压到 0.018 rad/s; +5 rad 让启动时正对一条帘幕
+    float ang = uTime * 0.018 + 5.0;
     float ct = cos(ang);
     float st = sin(ang);
 
@@ -97,7 +97,8 @@ void main() {
         float of = 0.006 * hash21(vec2(dir.x, dir.y) * 64.0) * smoothstep(0.0, 5.0, fi);
         // 视线到第 i 层帘幕的交点, p = bpos.zx
         float pt = STEP_PT[i] / max(dir.y * 2.0 + 0.8, 0.8) - of;
-        vec2 p = vec2(-6.7 + pt * dir.z, pt * dir.x);
+        // 横向放大采样频率: 单场在高频下会分成多条帘, 左右更均匀
+        vec2 p = vec2(-6.7 + pt * dir.z, pt * dir.x * 2.0);
         float n = surNoise(p, ct, st);
         avg = mix(avg, STEP_TINT[i] * n, 0.5);
         color += avg * STEP_W[i];
