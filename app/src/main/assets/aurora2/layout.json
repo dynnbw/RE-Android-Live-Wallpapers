@@ -33,12 +33,14 @@
       "default": "physical",
       "values": [
         "physical",
+        "cyan",
         "teal",
         "violet",
         "warm"
       ],
       "labels": [
         "pref_aurora2_procedural_palette_label_physical",
+        "pref_aurora2_procedural_palette_label_cyan",
         "pref_aurora2_procedural_palette_label_teal",
         "pref_aurora2_procedural_palette_label_violet",
         "pref_aurora2_procedural_palette_label_warm"

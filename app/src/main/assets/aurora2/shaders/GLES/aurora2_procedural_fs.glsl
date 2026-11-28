@@ -85,9 +85,10 @@ float surNoise(vec2 p, float timeCos, float timeSin) {
 void main() {
     float aspect = uResolution.x / max(uResolution.y, 1.0);
     vec3 dir = normalize(vec3((vUv.x * 2.0 - 1.0) * aspect, vUv.y, -1.0));
-    // 缓慢漂移: 参考实现是 1 rad/s, 这里压到 0.025 rad/s
-    float ct = cos(uTime * 0.025);
-    float st = sin(uTime * 0.025);
+    // 缓慢漂移: 参考实现是 1 rad/s, 这里压到 0.012 rad/s; +5 rad 让启动时正对一条帘幕
+    float ang = uTime * 0.012 + 5.0;
+    float ct = cos(ang);
+    float st = sin(ang);
 
     vec3 color = vec3(0.0);
     vec3 avg = vec3(0.0);
@@ -101,14 +102,19 @@ void main() {
         avg = mix(avg, STEP_TINT[i] * n, 0.5);
         color += avg * STEP_W[i];
     }
-    color = max(color, vec3(0.0)) * (0.9 + 0.5 * uEnvelope) * 1.7;
+    color = max(color, vec3(0.0)) * (0.9 + 0.5 * uEnvelope) * 2.0;
 
-    if (uPalette > 2.5) {
+    if (uPalette > 3.5) {
+        // 青色: 参考实现的原始配色, 不做任何偏移
+    } else if (uPalette > 2.5) {
         color = hueRotate(color, -2.2);
     } else if (uPalette > 1.5) {
         color = hueRotate(color, 2.1);
     } else if (uPalette > 0.5) {
         color = hueRotate(color, 0.5);
+    } else {
+        // 物理绿: 压青蓝, 抬绿, 更接近 557.7nm 的氧原子绿
+        color *= vec3(1.0, 1.3, 0.55);
     }
 
     // 极光占天幕约四分之三, 靠近地面淡出
@@ -117,6 +123,6 @@ void main() {
 
     // 加色叠加(SRC_ALPHA, ONE): alpha 作为极光浓淡, 天空与星星不受影响
     float peak = max(max(color.r, color.g), color.b);
-    float coverage = clamp(0.05 + peak * 1.6, 0.0, 0.9) * mask;
+    float coverage = clamp(0.06 + peak * 1.9, 0.0, 0.9) * mask;
     fragColor = vec4(color, coverage);
 }

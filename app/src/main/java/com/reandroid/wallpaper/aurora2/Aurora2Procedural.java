@@ -3,7 +3,7 @@ package com.reandroid.wallpaper.aurora2;
 /** 程序化极光的纯逻辑：色相档与强度包络。不依赖 Android。 */
 final class Aurora2Procedural {
 
-    static final String[] PALETTE_KEYS = {"physical", "teal", "violet", "warm"};
+    static final String[] PALETTE_KEYS = {"physical", "teal", "violet", "warm", "cyan"};
 
     /** 亚暴式增亮的周期：每 3 分钟一次，持续约 40 秒。 */
     private static final long BURST_PERIOD_MS = 180_000L;

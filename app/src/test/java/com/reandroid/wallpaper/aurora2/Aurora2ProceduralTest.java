@@ -14,6 +14,7 @@ public class Aurora2ProceduralTest {
         assertEquals(1, Aurora2Procedural.paletteIndex("teal"));
         assertEquals(2, Aurora2Procedural.paletteIndex("violet"));
         assertEquals(3, Aurora2Procedural.paletteIndex("warm"));
+        assertEquals(4, Aurora2Procedural.paletteIndex("cyan"));
         assertEquals(0, Aurora2Procedural.paletteIndex("nonsense"));
         assertEquals(0, Aurora2Procedural.paletteIndex(null));
     }
