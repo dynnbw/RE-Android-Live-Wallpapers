@@ -5,5 +5,11 @@
   "aurora2_theme_label_0": "Aurora 1",
   "aurora2_theme_label_1": "Aurora 2",
   "aurora2_theme_label_2": "Aurora 3",
-  "aurora2_theme_label_3": "Aurora 4"
+  "aurora2_theme_label_3": "Aurora 4",
+  "pref_aurora2_procedural": "Aurora procedural",
+  "pref_aurora2_procedural_palette": "Paleta de aurora",
+  "pref_aurora2_procedural_palette_label_physical": "Verde físico",
+  "pref_aurora2_procedural_palette_label_teal": "Verde azulado",
+  "pref_aurora2_procedural_palette_label_violet": "Violeta",
+  "pref_aurora2_procedural_palette_label_warm": "Rojo cálido"
 }

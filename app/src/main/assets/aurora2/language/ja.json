@@ -5,5 +5,11 @@
   "aurora2_theme_label_0": "オーロラ1",
   "aurora2_theme_label_1": "オーロラ2",
   "aurora2_theme_label_2": "オーロラ3",
-  "aurora2_theme_label_3": "オーロラ4"
+  "aurora2_theme_label_3": "オーロラ4",
+  "pref_aurora2_procedural": "プロシージャルオーロラ",
+  "pref_aurora2_procedural_palette": "オーロラ配色",
+  "pref_aurora2_procedural_palette_label_physical": "物理的な緑",
+  "pref_aurora2_procedural_palette_label_teal": "ティール",
+  "pref_aurora2_procedural_palette_label_violet": "バイオレット",
+  "pref_aurora2_procedural_palette_label_warm": "暖かい赤"
 }

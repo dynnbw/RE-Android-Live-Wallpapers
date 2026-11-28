@@ -5,5 +5,11 @@
   "aurora2_theme_label_0": "Аврора 1",
   "aurora2_theme_label_1": "Аврора 2",
   "aurora2_theme_label_2": "Аврора 3",
-  "aurora2_theme_label_3": "Аврора 4"
+  "aurora2_theme_label_3": "Аврора 4",
+  "pref_aurora2_procedural": "Процедурное сияние",
+  "pref_aurora2_procedural_palette": "Палитра сияния",
+  "pref_aurora2_procedural_palette_label_physical": "Физический зелёный",
+  "pref_aurora2_procedural_palette_label_teal": "Бирюзовый",
+  "pref_aurora2_procedural_palette_label_violet": "Фиолетовый",
+  "pref_aurora2_procedural_palette_label_warm": "Тёплый красный"
 }

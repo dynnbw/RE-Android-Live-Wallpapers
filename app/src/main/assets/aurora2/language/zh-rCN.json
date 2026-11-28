@@ -5,5 +5,11 @@
   "aurora2_theme_label_0": "极光一",
   "aurora2_theme_label_1": "极光二",
   "aurora2_theme_label_2": "极光三",
-  "aurora2_theme_label_3": "极光四"
+  "aurora2_theme_label_3": "极光四",
+  "pref_aurora2_procedural": "程序化极光",
+  "pref_aurora2_procedural_palette": "极光配色",
+  "pref_aurora2_procedural_palette_label_physical": "物理绿",
+  "pref_aurora2_procedural_palette_label_teal": "青绿",
+  "pref_aurora2_procedural_palette_label_violet": "冷紫",
+  "pref_aurora2_procedural_palette_label_warm": "暖红"
 }
