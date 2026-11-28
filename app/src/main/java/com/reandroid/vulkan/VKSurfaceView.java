@@ -91,8 +91,17 @@ public class VKSurfaceView extends SurfaceView
         ensureRenderer();
         Surface surface = holder.getSurface();
         if (surface != null && surface.isValid()) {
-            mNativeSurfaceAlive = true;
-            onSurfaceChangedNative(surface);
+            if (mNativeSurfaceAlive) {
+                onSurfaceChangedNative(surface);
+            } else {
+                /*
+                 * surfaceCreated 时还拿不到尺寸（mWidth/mHeight 为 0），原生 surface 没有建；
+                 * 第一次 surfaceChanged 就是真正的创建时机。delegate 只在 onSurfaceCreated
+                 * 里把 surfaceReady 置 true，走 onSurfaceChanged 会让渲染线程永远空转。
+                 */
+                mNativeSurfaceAlive = true;
+                onSurfaceCreatedNative(surface);
+            }
         }
         startRenderer();
     }
