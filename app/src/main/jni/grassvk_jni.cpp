@@ -130,6 +130,7 @@ public:
     }
 
     bool onDeviceCreated() {
+        glowFormatSupported_ = queryGlowFormatSupportLocked();
         if (!createGrassGeometryBuffersLocked()) return false;
         if (!createSpriteGeometryBuffersLocked()) return false;
         if (!createSkyDescriptorResourcesLocked()) return false;
@@ -149,6 +150,8 @@ public:
     }
 
     bool onSwapchainCreated() {
+        // 建不起来只是没有辉光，不阻止画面
+        createGlowResourcesLocked();
         return true;
     }
 
@@ -311,7 +314,8 @@ public:
             jfloatArray fireflyFlareVertsArr, jint fireflyFlareVertCount,
             jfloatArray moonVertsArr, jint moonVertCount,
             jfloatArray moonParamsArr,
-            jfloatArray grassLightArr, jfloatArray fireflyLightsArr) {
+            jfloatArray grassLightArr, jfloatArray fireflyLightsArr,
+            jfloatArray glowParamsArr, jboolean glowEnabled) {
         std::lock_guard<std::mutex> lock(mutex_);
 
         if (!isReadyLocked()) {
@@ -329,6 +333,20 @@ public:
          * 撞不上；夜里每帧上万顶点，撞上就看得见。
          */
         vkWaitForFences(device_, 1, &inFlightFence_, VK_TRUE, UINT64_MAX);
+
+        // 辉光走不走离屏路径
+        glowRequested_ = glowEnabled == JNI_TRUE;
+        if (glowParamsArr != nullptr) {
+            float gp[6] = {};
+            env->GetFloatArrayRegion(glowParamsArr, 0, 6, gp);
+            glowThreshold_ = gp[0];
+            glowSoftKnee_ = gp[1];
+            glowRadius_ = gp[2];
+            glowStrength_ = gp[3];
+            glowTone_ = gp[4];
+            glowToneGamma_ = gp[5];
+        }
+        glowActive_ = glowRequested_ && glowFormatSupported_ && glowReady_;
 
         // --- upload grass geometry ---
         const uint32_t vertexCount = static_cast<uint32_t>(
@@ -759,16 +777,479 @@ public:
         moonPipelineLayout_ = createPipelineLayoutLocked(PIPELINE_MOON);
         if (!skyPipelineLayout_ || !grassPipelineLayout_ || !spritePipelineLayout_ || !moonPipelineLayout_) { cleanup(); return false; }
 
-        skyPipeline_   = createGraphicsPipelineLocked(skyVert,  skyFrag,  skyPipelineLayout_,   PIPELINE_SKY);
-        grassPipeline_ = createGraphicsPipelineLocked(gVert,    gFrag,    grassPipelineLayout_,  PIPELINE_GRASS);
-        spritePipeline_ = createGraphicsPipelineLocked(sVert,    sFrag,    spritePipelineLayout_, PIPELINE_SPRITE);
-        moonPipeline_ = createGraphicsPipelineLocked(mVert,    mFrag,    moonPipelineLayout_, PIPELINE_MOON);
-        moonDayPipeline_ = createGraphicsPipelineLocked(mVert, mFrag,    moonPipelineLayout_, PIPELINE_MOON_DAY);
+        skyPipeline_   = createGraphicsPipelineLocked(skyVert,  skyFrag,  skyPipelineLayout_,   PIPELINE_SKY, renderPass_);
+        grassPipeline_ = createGraphicsPipelineLocked(gVert,    gFrag,    grassPipelineLayout_,  PIPELINE_GRASS, renderPass_);
+        spritePipeline_ = createGraphicsPipelineLocked(sVert,    sFrag,    spritePipelineLayout_, PIPELINE_SPRITE, renderPass_);
+        moonPipeline_ = createGraphicsPipelineLocked(mVert,    mFrag,    moonPipelineLayout_, PIPELINE_MOON, renderPass_);
+        moonDayPipeline_ = createGraphicsPipelineLocked(mVert, mFrag,    moonPipelineLayout_, PIPELINE_MOON_DAY, renderPass_);
 
         cleanup();
         return skyPipeline_ != VK_NULL_HANDLE && grassPipeline_ != VK_NULL_HANDLE
             && spritePipeline_ != VK_NULL_HANDLE
             && moonPipeline_ != VK_NULL_HANDLE && moonDayPipeline_ != VK_NULL_HANDLE;
+    }
+
+    // ── 辉光：离屏场景 → 亮部提取 → 横纵模糊 → 合成（含黄昏影调）──
+    //
+    // 与 GLES 的 GlowRenderer 逐遍对应；与 fall 的 VK 版是同一套结构。
+
+    struct GlowBrightPush {
+        float texelX, texelY, threshold, knee;
+    };
+    struct GlowBlurPush {
+        float stepX, stepY, sigma, pad;
+    };
+    struct GlowCompositePush {
+        float strength, tone, toneGamma, pad;
+    };
+
+    bool queryGlowFormatSupportLocked() const {
+        VkFormatProperties props{};
+        vkGetPhysicalDeviceFormatProperties(
+                physicalDevice_, VK_FORMAT_R16G16B16A16_SFLOAT, &props);
+        const VkFormatFeatureFlags need = VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT
+                | VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT
+                | VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT;
+        return (props.optimalTilingFeatures & need) == need;
+    }
+
+    bool createGlowColorTargetLocked(
+            VkImage& image, VkDeviceMemory& memory, VkImageView& view,
+            uint32_t width, uint32_t height) {
+        VkImageCreateInfo ii{};
+        ii.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+        ii.imageType = VK_IMAGE_TYPE_2D;
+        ii.extent = {width, height, 1};
+        ii.mipLevels = 1;
+        ii.arrayLayers = 1;
+        ii.format = VK_FORMAT_R16G16B16A16_SFLOAT;
+        ii.tiling = VK_IMAGE_TILING_OPTIMAL;
+        ii.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        ii.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+        ii.samples = VK_SAMPLE_COUNT_1_BIT;
+        ii.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        if (vkCreateImage(device_, &ii, nullptr, &image) != VK_SUCCESS) {
+            image = VK_NULL_HANDLE;
+            return false;
+        }
+        VkMemoryRequirements req{};
+        vkGetImageMemoryRequirements(device_, image, &req);
+        VkMemoryAllocateInfo ai{};
+        ai.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+        ai.allocationSize = req.size;
+        ai.memoryTypeIndex = vkFindMemoryType(
+                physicalDevice_, req.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+        if (vkAllocateMemory(device_, &ai, nullptr, &memory) != VK_SUCCESS) {
+            memory = VK_NULL_HANDLE;
+            destroyGlowResourcesLocked();
+            return false;
+        }
+        vkBindImageMemory(device_, image, memory, 0);
+
+        VkImageViewCreateInfo vi{};
+        vi.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+        vi.image = image;
+        vi.viewType = VK_IMAGE_VIEW_TYPE_2D;
+        vi.format = VK_FORMAT_R16G16B16A16_SFLOAT;
+        vi.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        vi.subresourceRange.levelCount = 1;
+        vi.subresourceRange.layerCount = 1;
+        if (vkCreateImageView(device_, &vi, nullptr, &view) != VK_SUCCESS) {
+            view = VK_NULL_HANDLE;
+            destroyGlowResourcesLocked();
+            return false;
+        }
+        return true;
+    }
+
+    VkRenderPass createGlowRenderPassLocked() {
+        VkAttachmentDescription ca{};
+        ca.format = VK_FORMAT_R16G16B16A16_SFLOAT;
+        ca.samples = VK_SAMPLE_COUNT_1_BIT;
+        ca.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        ca.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        ca.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        ca.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        ca.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        ca.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+        VkAttachmentReference ref{};
+        ref.attachment = 0;
+        ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+        VkSubpassDescription sp{};
+        sp.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        sp.colorAttachmentCount = 1;
+        sp.pColorAttachments = &ref;
+
+        VkSubpassDependency dep{};
+        dep.srcSubpass = VK_SUBPASS_EXTERNAL;
+        dep.dstSubpass = 0;
+        dep.srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT
+                | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        dep.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        dep.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        dep.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
+        VkRenderPassCreateInfo rp{};
+        rp.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+        rp.attachmentCount = 1;
+        rp.pAttachments = &ca;
+        rp.subpassCount = 1;
+        rp.pSubpasses = &sp;
+        rp.dependencyCount = 1;
+        rp.pDependencies = &dep;
+        VkRenderPass pass = VK_NULL_HANDLE;
+        if (vkCreateRenderPass(device_, &rp, nullptr, &pass) != VK_SUCCESS) {
+            return VK_NULL_HANDLE;
+        }
+        return pass;
+    }
+
+    VkDescriptorSetLayout createGlowSetLayoutLocked(uint32_t samplerCount) {
+        VkDescriptorSetLayoutBinding bindings[2]{};
+        for (uint32_t i = 0; i < samplerCount; i++) {
+            bindings[i].binding = i;
+            bindings[i].descriptorCount = 1;
+            bindings[i].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+            bindings[i].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+        }
+        VkDescriptorSetLayoutCreateInfo li{};
+        li.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+        li.bindingCount = samplerCount;
+        li.pBindings = bindings;
+        VkDescriptorSetLayout layout = VK_NULL_HANDLE;
+        if (vkCreateDescriptorSetLayout(device_, &li, nullptr, &layout) != VK_SUCCESS) {
+            return VK_NULL_HANDLE;
+        }
+        return layout;
+    }
+
+    VkPipelineLayout createGlowPipelineLayoutLocked(
+            VkDescriptorSetLayout setLayout, uint32_t pushSize) {
+        VkPipelineLayoutCreateInfo li{};
+        li.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+        li.setLayoutCount = 1;
+        li.pSetLayouts = &setLayout;
+        VkPushConstantRange range{};
+        range.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+        range.offset = 0;
+        range.size = pushSize;
+        li.pushConstantRangeCount = 1;
+        li.pPushConstantRanges = &range;
+        VkPipelineLayout layout = VK_NULL_HANDLE;
+        if (vkCreatePipelineLayout(device_, &li, nullptr, &layout) != VK_SUCCESS) {
+            return VK_NULL_HANDLE;
+        }
+        return layout;
+    }
+
+    VkPipeline createGlowPipelineLocked(VkShaderModule vert, VkShaderModule frag,
+            VkPipelineLayout layout, VkRenderPass pass) {
+        VkPipelineShaderStageCreateInfo stages[2]{};
+        stages[0].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+        stages[0].stage = VK_SHADER_STAGE_VERTEX_BIT;
+        stages[0].module = vert;
+        stages[0].pName = "main";
+        stages[1].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+        stages[1].stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+        stages[1].module = frag;
+        stages[1].pName = "main";
+
+        VkPipelineVertexInputStateCreateInfo vinput{};
+        vinput.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+
+        VkPipelineInputAssemblyStateCreateInfo ia{};
+        ia.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+        ia.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+
+        VkPipelineViewportStateCreateInfo vp{};
+        vp.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+        vp.viewportCount = 1;
+        vp.scissorCount = 1;
+
+        VkPipelineRasterizationStateCreateInfo rs{};
+        rs.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+        rs.polygonMode = VK_POLYGON_MODE_FILL;
+        rs.cullMode = VK_CULL_MODE_NONE;
+        rs.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+        rs.lineWidth = 1.0f;
+
+        VkPipelineMultisampleStateCreateInfo ms{};
+        ms.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+        ms.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+
+        VkPipelineColorBlendAttachmentState cb{};
+        cb.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT
+                | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+        cb.blendEnable = VK_FALSE;
+
+        VkPipelineColorBlendStateCreateInfo colorBlend{};
+        colorBlend.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+        colorBlend.attachmentCount = 1;
+        colorBlend.pAttachments = &cb;
+
+        std::array<VkDynamicState, 2> dynamicStates = {
+                VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
+        VkPipelineDynamicStateCreateInfo dyn{};
+        dyn.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+        dyn.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
+        dyn.pDynamicStates = dynamicStates.data();
+
+        VkGraphicsPipelineCreateInfo pi{};
+        pi.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+        pi.stageCount = 2;
+        pi.pStages = stages;
+        pi.pVertexInputState = &vinput;
+        pi.pInputAssemblyState = &ia;
+        pi.pViewportState = &vp;
+        pi.pRasterizationState = &rs;
+        pi.pMultisampleState = &ms;
+        pi.pColorBlendState = &colorBlend;
+        pi.pDynamicState = &dyn;
+        pi.layout = layout;
+        pi.renderPass = pass;
+
+        VkPipeline pipeline = VK_NULL_HANDLE;
+        if (vkCreateGraphicsPipelines(device_, VK_NULL_HANDLE, 1, &pi, nullptr, &pipeline) != VK_SUCCESS) {
+            return VK_NULL_HANDLE;
+        }
+        return pipeline;
+    }
+
+    static void writeGlowSamplerLocked(VkDevice dev, VkDescriptorSet set,
+            uint32_t binding, VkImageView view, VkSampler sampler) {
+        if (set == VK_NULL_HANDLE || view == VK_NULL_HANDLE) return;
+        VkDescriptorImageInfo info{};
+        info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        info.imageView = view;
+        info.sampler = sampler;
+        VkWriteDescriptorSet write{};
+        write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        write.dstSet = set;
+        write.dstBinding = binding;
+        write.descriptorCount = 1;
+        write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        write.pImageInfo = &info;
+        vkUpdateDescriptorSets(dev, 1, &write, 0, nullptr);
+    }
+
+    /** 建离屏场景与辉光缓冲；任何一步失败都整体退化（glowReady_ = false）。 */
+    bool createGlowResourcesLocked() {
+        destroyGlowResourcesLocked();
+        if (!glowFormatSupported_ || device_ == VK_NULL_HANDLE
+                || swapchainExtent_.width == 0 || swapchainExtent_.height == 0) {
+            return true;
+        }
+
+        glowWidth_ = swapchainExtent_.width;
+        glowHeight_ = swapchainExtent_.height;
+        bloomWidth_ = std::max(1u, glowWidth_ / 2);
+        bloomHeight_ = std::max(1u, glowHeight_ / 2);
+
+        if (!createGlowColorTargetLocked(
+                    sceneImage_, sceneMemory_, sceneView_, glowWidth_, glowHeight_)) {
+            return true;
+        }
+        if (!createGlowColorTargetLocked(
+                    bloomImageA_, bloomMemoryA_, bloomViewA_, bloomWidth_, bloomHeight_)) {
+            return true;
+        }
+        if (!createGlowColorTargetLocked(
+                    bloomImageB_, bloomMemoryB_, bloomViewB_, bloomWidth_, bloomHeight_)) {
+            return true;
+        }
+
+        scenePass_ = createGlowRenderPassLocked();
+        bloomPass_ = createGlowRenderPassLocked();
+        if (scenePass_ == VK_NULL_HANDLE || bloomPass_ == VK_NULL_HANDLE) {
+            return true;
+        }
+
+        const VkImageView targets[3] = {sceneView_, bloomViewA_, bloomViewB_};
+        VkExtent2D extents[3] = {
+                {glowWidth_, glowHeight_}, {bloomWidth_, bloomHeight_}, {bloomWidth_, bloomHeight_}};
+        VkFramebuffer* framebuffers[3] = {&sceneFramebuffer_, &bloomFramebufferA_, &bloomFramebufferB_};
+        for (int i = 0; i < 3; i++) {
+            VkFramebufferCreateInfo fi{};
+            fi.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+            fi.renderPass = i == 0 ? scenePass_ : bloomPass_;
+            fi.attachmentCount = 1;
+            fi.pAttachments = &targets[i];
+            fi.width = extents[i].width;
+            fi.height = extents[i].height;
+            fi.layers = 1;
+            if (vkCreateFramebuffer(device_, &fi, nullptr, framebuffers[i]) != VK_SUCCESS) {
+                return true;
+            }
+        }
+
+        VkSamplerCreateInfo si{};
+        si.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+        si.magFilter = VK_FILTER_LINEAR;
+        si.minFilter = VK_FILTER_LINEAR;
+        si.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+        si.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        si.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        si.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        if (vkCreateSampler(device_, &si, nullptr, &glowSampler_) != VK_SUCCESS) {
+            return true;
+        }
+
+        glowOneSetLayout_ = createGlowSetLayoutLocked(1);
+        glowTwoSetLayout_ = createGlowSetLayoutLocked(2);
+        if (glowOneSetLayout_ == VK_NULL_HANDLE || glowTwoSetLayout_ == VK_NULL_HANDLE) {
+            return true;
+        }
+
+        VkDescriptorPoolSize poolSize{};
+        poolSize.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        poolSize.descriptorCount = 5;
+        VkDescriptorPoolCreateInfo pi{};
+        pi.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+        pi.poolSizeCount = 1;
+        pi.pPoolSizes = &poolSize;
+        pi.maxSets = 4;
+        if (vkCreateDescriptorPool(device_, &pi, nullptr, &glowPool_) != VK_SUCCESS) {
+            return true;
+        }
+
+        const VkDescriptorSetLayout layouts[4] = {
+                glowOneSetLayout_, glowOneSetLayout_, glowOneSetLayout_, glowTwoSetLayout_};
+        VkDescriptorSet sets[4] = {VK_NULL_HANDLE, VK_NULL_HANDLE, VK_NULL_HANDLE, VK_NULL_HANDLE};
+        VkDescriptorSetAllocateInfo ai{};
+        ai.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+        ai.descriptorPool = glowPool_;
+        ai.descriptorSetCount = 4;
+        ai.pSetLayouts = layouts;
+        if (vkAllocateDescriptorSets(device_, &ai, sets) != VK_SUCCESS) {
+            return true;
+        }
+        brightSet_ = sets[0];
+        blurSetA_ = sets[1];
+        blurSetB_ = sets[2];
+        compositeSet_ = sets[3];
+
+        brightLayout_ = createGlowPipelineLayoutLocked(glowOneSetLayout_, sizeof(GlowBrightPush));
+        blurLayout_ = createGlowPipelineLayoutLocked(glowOneSetLayout_, sizeof(GlowBlurPush));
+        compositeLayout_ = createGlowPipelineLayoutLocked(
+                glowTwoSetLayout_, sizeof(GlowCompositePush));
+        if (brightLayout_ == VK_NULL_HANDLE || blurLayout_ == VK_NULL_HANDLE
+                || compositeLayout_ == VK_NULL_HANDLE) {
+            return true;
+        }
+
+        VkShaderModule vert = createShaderModuleLocked(
+                {"shaders/grassvk_glow.vert.spv", "shaders/grassvk_glow.vert.spv"});
+        VkShaderModule brightFrag = createShaderModuleLocked(
+                {"shaders/grassvk_glow_bright.frag.spv", "shaders/grassvk_glow_bright.frag.spv"});
+        VkShaderModule blurFrag = createShaderModuleLocked(
+                {"shaders/grassvk_glow_blur.frag.spv", "shaders/grassvk_glow_blur.frag.spv"});
+        VkShaderModule compositeFrag = createShaderModuleLocked(
+                {"shaders/grassvk_glow_composite.frag.spv", "shaders/grassvk_glow_composite.frag.spv"});
+        if (vert == VK_NULL_HANDLE || brightFrag == VK_NULL_HANDLE
+                || blurFrag == VK_NULL_HANDLE || compositeFrag == VK_NULL_HANDLE) {
+            if (vert) vkDestroyShaderModule(device_, vert, nullptr);
+            if (brightFrag) vkDestroyShaderModule(device_, brightFrag, nullptr);
+            if (blurFrag) vkDestroyShaderModule(device_, blurFrag, nullptr);
+            if (compositeFrag) vkDestroyShaderModule(device_, compositeFrag, nullptr);
+            return true;
+        }
+        brightPipeline_ = createGlowPipelineLocked(vert, brightFrag, brightLayout_, bloomPass_);
+        blurPipeline_ = createGlowPipelineLocked(vert, blurFrag, blurLayout_, bloomPass_);
+        compositePipeline_ = createGlowPipelineLocked(
+                vert, compositeFrag, compositeLayout_, renderPass_);
+        vkDestroyShaderModule(device_, vert, nullptr);
+        vkDestroyShaderModule(device_, brightFrag, nullptr);
+        vkDestroyShaderModule(device_, blurFrag, nullptr);
+        vkDestroyShaderModule(device_, compositeFrag, nullptr);
+        if (brightPipeline_ == VK_NULL_HANDLE || blurPipeline_ == VK_NULL_HANDLE
+                || compositePipeline_ == VK_NULL_HANDLE) {
+            return true;
+        }
+
+        /*
+         * 场景那一遍的附件是 RGBA16F，与交换链不是同一个 render pass ——
+         * 五个场景管线必须按它再建一套，否则整帧什么都画不出来。
+         */
+        VkShaderModule skyVert = createShaderModuleLocked({"shaders/grassvk_sky.vert.spv", "shaders/grassvk_sky.vert.spv"});
+        VkShaderModule skyFrag = createShaderModuleLocked({"shaders/grassvk_sky.frag.spv", "shaders/grassvk_sky.frag.spv"});
+        VkShaderModule gVert = createShaderModuleLocked({"shaders/grassvk_grass.vert.spv", "shaders/grassvk_grass.vert.spv"});
+        VkShaderModule gFrag = createShaderModuleLocked({"shaders/grassvk_grass.frag.spv", "shaders/grassvk_grass.frag.spv"});
+        VkShaderModule sVert = createShaderModuleLocked({"shaders/grassvk_sprite.vert.spv", "shaders/grassvk_sprite.vert.spv"});
+        VkShaderModule sFrag = createShaderModuleLocked({"shaders/grassvk_sprite.frag.spv", "shaders/grassvk_sprite.frag.spv"});
+        VkShaderModule mVert = createShaderModuleLocked({"shaders/grassvk_moon.vert.spv", "shaders/grassvk_moon.vert.spv"});
+        VkShaderModule mFrag = createShaderModuleLocked({"shaders/grassvk_moon.frag.spv", "shaders/grassvk_moon.frag.spv"});
+        if (skyVert && skyFrag && gVert && gFrag && sVert && sFrag && mVert && mFrag) {
+            skyPipelineScene_ = createGraphicsPipelineLocked(
+                    skyVert, skyFrag, skyPipelineLayout_, PIPELINE_SKY, scenePass_);
+            grassPipelineScene_ = createGraphicsPipelineLocked(
+                    gVert, gFrag, grassPipelineLayout_, PIPELINE_GRASS, scenePass_);
+            spritePipelineScene_ = createGraphicsPipelineLocked(
+                    sVert, sFrag, spritePipelineLayout_, PIPELINE_SPRITE, scenePass_);
+            moonPipelineScene_ = createGraphicsPipelineLocked(
+                    mVert, mFrag, moonPipelineLayout_, PIPELINE_MOON, scenePass_);
+            moonDayPipelineScene_ = createGraphicsPipelineLocked(
+                    mVert, mFrag, moonPipelineLayout_, PIPELINE_MOON_DAY, scenePass_);
+        }
+        if (skyVert) vkDestroyShaderModule(device_, skyVert, nullptr);
+        if (skyFrag) vkDestroyShaderModule(device_, skyFrag, nullptr);
+        if (gVert) vkDestroyShaderModule(device_, gVert, nullptr);
+        if (gFrag) vkDestroyShaderModule(device_, gFrag, nullptr);
+        if (sVert) vkDestroyShaderModule(device_, sVert, nullptr);
+        if (sFrag) vkDestroyShaderModule(device_, sFrag, nullptr);
+        if (mVert) vkDestroyShaderModule(device_, mVert, nullptr);
+        if (mFrag) vkDestroyShaderModule(device_, mFrag, nullptr);
+        if (skyPipelineScene_ == VK_NULL_HANDLE || grassPipelineScene_ == VK_NULL_HANDLE
+                || spritePipelineScene_ == VK_NULL_HANDLE
+                || moonPipelineScene_ == VK_NULL_HANDLE
+                || moonDayPipelineScene_ == VK_NULL_HANDLE) {
+            return true;
+        }
+
+        writeGlowSamplerLocked(device_, brightSet_, 0, sceneView_, glowSampler_);
+        writeGlowSamplerLocked(device_, blurSetA_, 0, bloomViewA_, glowSampler_);
+        writeGlowSamplerLocked(device_, blurSetB_, 0, bloomViewB_, glowSampler_);
+        writeGlowSamplerLocked(device_, compositeSet_, 0, sceneView_, glowSampler_);
+        writeGlowSamplerLocked(device_, compositeSet_, 1, bloomViewA_, glowSampler_);
+
+        glowReady_ = true;
+        return true;
+    }
+
+    void destroyGlowResourcesLocked() {
+        glowReady_ = false;
+        if (device_ == VK_NULL_HANDLE) return;
+        if (skyPipelineScene_ != VK_NULL_HANDLE) { vkDestroyPipeline(device_, skyPipelineScene_, nullptr); skyPipelineScene_ = VK_NULL_HANDLE; }
+        if (grassPipelineScene_ != VK_NULL_HANDLE) { vkDestroyPipeline(device_, grassPipelineScene_, nullptr); grassPipelineScene_ = VK_NULL_HANDLE; }
+        if (spritePipelineScene_ != VK_NULL_HANDLE) { vkDestroyPipeline(device_, spritePipelineScene_, nullptr); spritePipelineScene_ = VK_NULL_HANDLE; }
+        if (moonPipelineScene_ != VK_NULL_HANDLE) { vkDestroyPipeline(device_, moonPipelineScene_, nullptr); moonPipelineScene_ = VK_NULL_HANDLE; }
+        if (moonDayPipelineScene_ != VK_NULL_HANDLE) { vkDestroyPipeline(device_, moonDayPipelineScene_, nullptr); moonDayPipelineScene_ = VK_NULL_HANDLE; }
+        if (brightPipeline_ != VK_NULL_HANDLE) { vkDestroyPipeline(device_, brightPipeline_, nullptr); brightPipeline_ = VK_NULL_HANDLE; }
+        if (blurPipeline_ != VK_NULL_HANDLE) { vkDestroyPipeline(device_, blurPipeline_, nullptr); blurPipeline_ = VK_NULL_HANDLE; }
+        if (compositePipeline_ != VK_NULL_HANDLE) { vkDestroyPipeline(device_, compositePipeline_, nullptr); compositePipeline_ = VK_NULL_HANDLE; }
+        if (brightLayout_ != VK_NULL_HANDLE) { vkDestroyPipelineLayout(device_, brightLayout_, nullptr); brightLayout_ = VK_NULL_HANDLE; }
+        if (blurLayout_ != VK_NULL_HANDLE) { vkDestroyPipelineLayout(device_, blurLayout_, nullptr); blurLayout_ = VK_NULL_HANDLE; }
+        if (compositeLayout_ != VK_NULL_HANDLE) { vkDestroyPipelineLayout(device_, compositeLayout_, nullptr); compositeLayout_ = VK_NULL_HANDLE; }
+        brightSet_ = blurSetA_ = blurSetB_ = compositeSet_ = VK_NULL_HANDLE;
+        if (glowPool_ != VK_NULL_HANDLE) { vkDestroyDescriptorPool(device_, glowPool_, nullptr); glowPool_ = VK_NULL_HANDLE; }
+        if (glowOneSetLayout_ != VK_NULL_HANDLE) { vkDestroyDescriptorSetLayout(device_, glowOneSetLayout_, nullptr); glowOneSetLayout_ = VK_NULL_HANDLE; }
+        if (glowTwoSetLayout_ != VK_NULL_HANDLE) { vkDestroyDescriptorSetLayout(device_, glowTwoSetLayout_, nullptr); glowTwoSetLayout_ = VK_NULL_HANDLE; }
+        if (glowSampler_ != VK_NULL_HANDLE) { vkDestroySampler(device_, glowSampler_, nullptr); glowSampler_ = VK_NULL_HANDLE; }
+        if (sceneFramebuffer_ != VK_NULL_HANDLE) { vkDestroyFramebuffer(device_, sceneFramebuffer_, nullptr); sceneFramebuffer_ = VK_NULL_HANDLE; }
+        if (bloomFramebufferA_ != VK_NULL_HANDLE) { vkDestroyFramebuffer(device_, bloomFramebufferA_, nullptr); bloomFramebufferA_ = VK_NULL_HANDLE; }
+        if (bloomFramebufferB_ != VK_NULL_HANDLE) { vkDestroyFramebuffer(device_, bloomFramebufferB_, nullptr); bloomFramebufferB_ = VK_NULL_HANDLE; }
+        if (scenePass_ != VK_NULL_HANDLE) { vkDestroyRenderPass(device_, scenePass_, nullptr); scenePass_ = VK_NULL_HANDLE; }
+        if (bloomPass_ != VK_NULL_HANDLE) { vkDestroyRenderPass(device_, bloomPass_, nullptr); bloomPass_ = VK_NULL_HANDLE; }
+        if (sceneView_ != VK_NULL_HANDLE) { vkDestroyImageView(device_, sceneView_, nullptr); sceneView_ = VK_NULL_HANDLE; }
+        if (bloomViewA_ != VK_NULL_HANDLE) { vkDestroyImageView(device_, bloomViewA_, nullptr); bloomViewA_ = VK_NULL_HANDLE; }
+        if (bloomViewB_ != VK_NULL_HANDLE) { vkDestroyImageView(device_, bloomViewB_, nullptr); bloomViewB_ = VK_NULL_HANDLE; }
+        if (sceneImage_ != VK_NULL_HANDLE) { vkDestroyImage(device_, sceneImage_, nullptr); sceneImage_ = VK_NULL_HANDLE; }
+        if (bloomImageA_ != VK_NULL_HANDLE) { vkDestroyImage(device_, bloomImageA_, nullptr); bloomImageA_ = VK_NULL_HANDLE; }
+        if (bloomImageB_ != VK_NULL_HANDLE) { vkDestroyImage(device_, bloomImageB_, nullptr); bloomImageB_ = VK_NULL_HANDLE; }
+        if (sceneMemory_ != VK_NULL_HANDLE) { vkFreeMemory(device_, sceneMemory_, nullptr); sceneMemory_ = VK_NULL_HANDLE; }
+        if (bloomMemoryA_ != VK_NULL_HANDLE) { vkFreeMemory(device_, bloomMemoryA_, nullptr); bloomMemoryA_ = VK_NULL_HANDLE; }
+        if (bloomMemoryB_ != VK_NULL_HANDLE) { vkFreeMemory(device_, bloomMemoryB_, nullptr); bloomMemoryB_ = VK_NULL_HANDLE; }
     }
 
     void destroyPipelinesLocked() {
@@ -781,7 +1262,60 @@ public:
         if (grassPipelineLayout_ != VK_NULL_HANDLE) { vkDestroyPipelineLayout(device_, grassPipelineLayout_, nullptr); grassPipelineLayout_ = VK_NULL_HANDLE; }
         if (spritePipelineLayout_ != VK_NULL_HANDLE) { vkDestroyPipelineLayout(device_, spritePipelineLayout_, nullptr); spritePipelineLayout_ = VK_NULL_HANDLE; }
         if (moonPipelineLayout_ != VK_NULL_HANDLE) { vkDestroyPipelineLayout(device_, moonPipelineLayout_, nullptr); moonPipelineLayout_ = VK_NULL_HANDLE; }
+        destroyGlowResourcesLocked();
     }
+
+    bool glowFormatSupported_ = false;
+    bool glowRequested_ = false;
+    bool glowActive_ = false;
+    bool glowReady_ = false;
+    float glowThreshold_ = 0.75f;
+    float glowSoftKnee_ = 0.25f;
+    float glowRadius_ = 8.0f;
+    float glowStrength_ = 0.85f;
+    float glowTone_ = 0.0f;
+    float glowToneGamma_ = 1.45f;
+    /** 与 GLES 的 GlowParams.BLUR_SIGMA_STEPS 一致：9 抽头覆盖 ±2σ。 */
+    float glowBlurSigma_ = 2.0f;
+
+    VkImage sceneImage_ = VK_NULL_HANDLE;
+    VkDeviceMemory sceneMemory_ = VK_NULL_HANDLE;
+    VkImageView sceneView_ = VK_NULL_HANDLE;
+    VkImage bloomImageA_ = VK_NULL_HANDLE;
+    VkDeviceMemory bloomMemoryA_ = VK_NULL_HANDLE;
+    VkImageView bloomViewA_ = VK_NULL_HANDLE;
+    VkImage bloomImageB_ = VK_NULL_HANDLE;
+    VkDeviceMemory bloomMemoryB_ = VK_NULL_HANDLE;
+    VkImageView bloomViewB_ = VK_NULL_HANDLE;
+    VkRenderPass scenePass_ = VK_NULL_HANDLE;
+    VkRenderPass bloomPass_ = VK_NULL_HANDLE;
+    VkFramebuffer sceneFramebuffer_ = VK_NULL_HANDLE;
+    VkFramebuffer bloomFramebufferA_ = VK_NULL_HANDLE;
+    VkFramebuffer bloomFramebufferB_ = VK_NULL_HANDLE;
+    VkSampler glowSampler_ = VK_NULL_HANDLE;
+    VkDescriptorSetLayout glowOneSetLayout_ = VK_NULL_HANDLE;
+    VkDescriptorSetLayout glowTwoSetLayout_ = VK_NULL_HANDLE;
+    VkDescriptorPool glowPool_ = VK_NULL_HANDLE;
+    VkDescriptorSet brightSet_ = VK_NULL_HANDLE;
+    VkDescriptorSet blurSetA_ = VK_NULL_HANDLE;
+    VkDescriptorSet blurSetB_ = VK_NULL_HANDLE;
+    VkDescriptorSet compositeSet_ = VK_NULL_HANDLE;
+    VkPipelineLayout brightLayout_ = VK_NULL_HANDLE;
+    VkPipelineLayout blurLayout_ = VK_NULL_HANDLE;
+    VkPipelineLayout compositeLayout_ = VK_NULL_HANDLE;
+    VkPipeline brightPipeline_ = VK_NULL_HANDLE;
+    VkPipeline blurPipeline_ = VK_NULL_HANDLE;
+    VkPipeline compositePipeline_ = VK_NULL_HANDLE;
+    /** 与 scenePass_（RGBA16F）相容的那一套场景管线。 */
+    VkPipeline skyPipelineScene_ = VK_NULL_HANDLE;
+    VkPipeline grassPipelineScene_ = VK_NULL_HANDLE;
+    VkPipeline spritePipelineScene_ = VK_NULL_HANDLE;
+    VkPipeline moonPipelineScene_ = VK_NULL_HANDLE;
+    VkPipeline moonDayPipelineScene_ = VK_NULL_HANDLE;
+    uint32_t glowWidth_ = 0;
+    uint32_t glowHeight_ = 0;
+    uint32_t bloomWidth_ = 0;
+    uint32_t bloomHeight_ = 0;
 
     VkPipelineLayout createPipelineLayoutLocked(PipelineType type) {
         VkDescriptorSetLayout dsl = grassDescriptorSetLayout_;
@@ -819,7 +1353,7 @@ public:
     }
 
     VkPipeline createGraphicsPipelineLocked(VkShaderModule vert, VkShaderModule frag,
-            VkPipelineLayout layout, PipelineType type) {
+            VkPipelineLayout layout, PipelineType type, VkRenderPass pass) {
         VkPipelineShaderStageCreateInfo stages[2]{};
         stages[0].sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
         stages[0].stage  = VK_SHADER_STAGE_VERTEX_BIT;
@@ -956,7 +1490,7 @@ public:
         gpci.pColorBlendState    = &cbs;
         gpci.pDynamicState       = &dyn;
         gpci.layout              = layout;
-        gpci.renderPass          = renderPass_;
+        gpci.renderPass          = pass;
         gpci.subpass             = 0;
 
         VkPipeline pl = VK_NULL_HANDLE;
@@ -1505,15 +2039,37 @@ public:
         bi.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
         if (vkBeginCommandBuffer(cb, &bi) != VK_SUCCESS) { LOGE("vkBeginCommandBuffer failed"); return false; }
 
+        if (glowActive_) {
+            recordGlowLocked(cb, imageIndex,
+                    vertexCount, indexCount, sunCount, starWhiteCount, starWarmCount,
+                    starCoolCount, starYellowCount, dandelionCount, fireflyCount,
+                    fireflyFlareCount, moonCount, skyPC, grassPC, moonPC);
+        } else {
+            // 辉光关掉时走原来的单遍路径，画面与加这套之前逐位相同
+            beginGrassPassLocked(cb, renderPass_,
+                    swapchainFramebuffers_[imageIndex], swapchainExtent_);
+            recordSceneDrawsLocked(cb, false,
+                    vertexCount, indexCount, sunCount, starWhiteCount, starWarmCount,
+                    starCoolCount, starYellowCount, dandelionCount, fireflyCount,
+                    fireflyFlareCount, moonCount, skyPC, grassPC, moonPC);
+            vkCmdEndRenderPass(cb);
+        }
+        if (vkEndCommandBuffer(cb) != VK_SUCCESS) { LOGE("vkEndCommandBuffer failed"); return false; }
+        return true;
+    }
+
+    /** 开始一遍渲染并设好视口与裁剪区。 */
+    static void beginGrassPassLocked(VkCommandBuffer cb, VkRenderPass pass,
+            VkFramebuffer framebuffer, VkExtent2D extent) {
         VkClearValue clear{};
         clear.color = {{0.0f, 0.0f, 0.0f, 1.0f}};
 
         VkRenderPassBeginInfo rpbi{};
         rpbi.sType             = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        rpbi.renderPass        = renderPass_;
-        rpbi.framebuffer       = swapchainFramebuffers_[imageIndex];
+        rpbi.renderPass        = pass;
+        rpbi.framebuffer       = framebuffer;
         rpbi.renderArea.offset = {0, 0};
-        rpbi.renderArea.extent = swapchainExtent_;
+        rpbi.renderArea.extent = extent;
         rpbi.clearValueCount   = 1;
         rpbi.pClearValues      = &clear;
 
@@ -1522,20 +2078,42 @@ public:
         VkViewport vp{};
         vp.x        = 0.0f;
         vp.y        = 0.0f;
-        vp.width    = static_cast<float>(swapchainExtent_.width);
-        vp.height   = static_cast<float>(swapchainExtent_.height);
+        vp.width    = static_cast<float>(extent.width);
+        vp.height   = static_cast<float>(extent.height);
         vp.minDepth = 0.0f;
         vp.maxDepth = 1.0f;
         vkCmdSetViewport(cb, 0, 1, &vp);
 
         VkRect2D scissor{};
         scissor.offset = {0,0};
-        scissor.extent = swapchainExtent_;
+        scissor.extent = extent;
         vkCmdSetScissor(cb, 0, 1, &scissor);
+    }
+
+    /**
+     * 场景本身（天空、太阳、星、月、草、精灵）。
+     *
+     * <p>{@code glowPass} 时用离屏那一套管线 —— 它们与 RGBA16F 的 render pass 相容；
+     * 两套管线内容完全一样，只是 render pass 不同。
+     */
+    void recordSceneDrawsLocked(VkCommandBuffer cb, bool glowPass,
+            uint32_t vertexCount, uint32_t indexCount,
+            uint32_t sunCount,
+            uint32_t starWhiteCount, uint32_t starWarmCount, uint32_t starCoolCount,
+            uint32_t starYellowCount,
+            uint32_t dandelionCount, uint32_t fireflyCount,
+            uint32_t fireflyFlareCount, uint32_t moonCount,
+            const SkyPushConstants& skyPC, const GrassPushConstants& grassPC,
+            const MoonPushConstants& moonPC) {
+        VkPipeline skyPipeline = glowPass ? skyPipelineScene_ : skyPipeline_;
+        VkPipeline grassPipeline = glowPass ? grassPipelineScene_ : grassPipeline_;
+        VkPipeline spritePipeline = glowPass ? spritePipelineScene_ : spritePipeline_;
+        VkPipeline moonPipeline = glowPass ? moonPipelineScene_ : moonPipeline_;
+        VkPipeline moonDayPipeline = glowPass ? moonDayPipelineScene_ : moonDayPipeline_;
 
         // ----- sky pass -----
         if (skyDescriptorSet_ != VK_NULL_HANDLE) {
-            vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, skyPipeline_);
+            vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, skyPipeline);
             vkCmdPushConstants(cb, skyPipelineLayout_,
                     VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                     0, sizeof(SkyPushConstants), &skyPC);
@@ -1545,8 +2123,8 @@ public:
         }
 
         // ----- sun sprite pass (before grass so blades can occlude the horizon) -----
-        if (spritePipeline_ != VK_NULL_HANDLE && spritePipelineLayout_ != VK_NULL_HANDLE) {
-            vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, spritePipeline_);
+        if (spritePipeline != VK_NULL_HANDLE && spritePipelineLayout_ != VK_NULL_HANDLE) {
+            vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, spritePipeline);
             vkCmdPushConstants(cb, spritePipelineLayout_,
                     VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                     0, sizeof(GrassPushConstants), &grassPC);
@@ -1565,8 +2143,8 @@ public:
         }
 
         // ----- dynamic night stars pass (after sun, before moon, matching GL order) -----
-        if (spritePipeline_ != VK_NULL_HANDLE && spritePipelineLayout_ != VK_NULL_HANDLE) {
-            vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, spritePipeline_);
+        if (spritePipeline != VK_NULL_HANDLE && spritePipelineLayout_ != VK_NULL_HANDLE) {
+            vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, spritePipeline);
             vkCmdPushConstants(cb, spritePipelineLayout_,
                     VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                     0, sizeof(GrassPushConstants), &grassPC);
@@ -1588,13 +2166,13 @@ public:
         }
 
         // ----- moon pass (before grass so blades can occlude the horizon) -----
-        if (moonPipeline_ != VK_NULL_HANDLE && moonPipelineLayout_ != VK_NULL_HANDLE
+        if (moonPipeline != VK_NULL_HANDLE && moonPipelineLayout_ != VK_NULL_HANDLE
                 && moonDescriptorSet_ != VK_NULL_HANDLE && moonVertexBuffer_ != VK_NULL_HANDLE
                 && moonCount > 0) {
             // p0.w is the isDaytime flag the shader also uses
             const bool moonIsDay = moonPC.p0[3] > 0.5f;
             vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                    moonIsDay ? moonDayPipeline_ : moonPipeline_);
+                    moonIsDay ? moonDayPipeline : moonPipeline);
             vkCmdPushConstants(cb, moonPipelineLayout_,
                     VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                     0, sizeof(MoonPushConstants), &moonPC);
@@ -1610,7 +2188,7 @@ public:
                 && grassVertexBuffer_ != VK_NULL_HANDLE
                 && grassIndexBuffer_  != VK_NULL_HANDLE
                 && vertexCount > 0 && indexCount > 0) {
-            vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, grassPipeline_);
+            vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, grassPipeline);
             vkCmdPushConstants(cb, grassPipelineLayout_,
                     VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                     0, sizeof(GrassPushConstants), &grassPC);
@@ -1623,8 +2201,8 @@ public:
         }
 
         // ----- foreground sprite pass: dandelion / firefly (above grass) -----
-        if (spritePipeline_ != VK_NULL_HANDLE && spritePipelineLayout_ != VK_NULL_HANDLE) {
-            vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, spritePipeline_);
+        if (spritePipeline != VK_NULL_HANDLE && spritePipelineLayout_ != VK_NULL_HANDLE) {
+            vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, spritePipeline);
             vkCmdPushConstants(cb, spritePipelineLayout_,
                     VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                     0, sizeof(GrassPushConstants), &grassPC);
@@ -1643,10 +2221,108 @@ public:
             drawSpriteGroup(2, fireflyVertexBuffer_, fireflyCount);
             drawSpriteGroup(4, fireflyFlareVertexBuffer_, fireflyFlareCount);
         }
+    }
 
+    /** 离屏图在"刚写完"与"马上要被采样"之间加一道依赖。 */
+    static void glowReadBarrierLocked(VkCommandBuffer cb, VkImage image) {
+        VkImageMemoryBarrier barrier{};
+        barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        barrier.oldLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.image = image;
+        barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        barrier.subresourceRange.levelCount = 1;
+        barrier.subresourceRange.layerCount = 1;
+        barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+        vkCmdPipelineBarrier(cb,
+                VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+                0, 0, nullptr, 0, nullptr, 1, &barrier);
+    }
+
+    /**
+     * 辉光的五遍：场景 → 亮部提取 → 横向模糊 → 纵向模糊 → 合成（含黄昏影调）。
+     *
+     * <p>与 GLES 的 GlowRenderer 一一对应。模糊步长取半径的 1/4，5 抽头对着
+     * ±1.38 / ±3.23 步采样，等效 9 抽头 —— 都是照搬那边的取值。
+     */
+    void recordGlowLocked(VkCommandBuffer cb, uint32_t imageIndex,
+            uint32_t vertexCount, uint32_t indexCount,
+            uint32_t sunCount,
+            uint32_t starWhiteCount, uint32_t starWarmCount, uint32_t starCoolCount,
+            uint32_t starYellowCount,
+            uint32_t dandelionCount, uint32_t fireflyCount,
+            uint32_t fireflyFlareCount, uint32_t moonCount,
+            const SkyPushConstants& skyPC, const GrassPushConstants& grassPC,
+            const MoonPushConstants& moonPC) {
+        const VkExtent2D sceneExtent = {glowWidth_, glowHeight_};
+        const VkExtent2D bloomExtent = {bloomWidth_, bloomHeight_};
+
+        beginGrassPassLocked(cb, scenePass_, sceneFramebuffer_, sceneExtent);
+        recordSceneDrawsLocked(cb, true,
+                vertexCount, indexCount, sunCount, starWhiteCount, starWarmCount,
+                starCoolCount, starYellowCount, dandelionCount, fireflyCount,
+                fireflyFlareCount, moonCount, skyPC, grassPC, moonPC);
         vkCmdEndRenderPass(cb);
-        if (vkEndCommandBuffer(cb) != VK_SUCCESS) { LOGE("vkEndCommandBuffer failed"); return false; }
-        return true;
+        glowReadBarrierLocked(cb, sceneImage_);
+
+        beginGrassPassLocked(cb, bloomPass_, bloomFramebufferA_, bloomExtent);
+        vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, brightPipeline_);
+        vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                brightLayout_, 0, 1, &brightSet_, 0, nullptr);
+        GlowBrightPush brightPush{};
+        brightPush.texelX = 1.0f / static_cast<float>(glowWidth_);
+        brightPush.texelY = 1.0f / static_cast<float>(glowHeight_);
+        brightPush.threshold = glowThreshold_;
+        brightPush.knee = glowSoftKnee_;
+        vkCmdPushConstants(cb, brightLayout_, VK_SHADER_STAGE_FRAGMENT_BIT,
+                0, sizeof(brightPush), &brightPush);
+        vkCmdDraw(cb, 4, 1, 0, 0);
+        vkCmdEndRenderPass(cb);
+        glowReadBarrierLocked(cb, bloomImageA_);
+
+        beginGrassPassLocked(cb, bloomPass_, bloomFramebufferB_, bloomExtent);
+        vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, blurPipeline_);
+        vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                blurLayout_, 0, 1, &blurSetA_, 0, nullptr);
+        GlowBlurPush blurPush{};
+        blurPush.stepX = glowRadius_ * 0.25f / static_cast<float>(std::max(1u, bloomWidth_));
+        blurPush.stepY = 0.0f;
+        blurPush.sigma = glowBlurSigma_;
+        vkCmdPushConstants(cb, blurLayout_, VK_SHADER_STAGE_FRAGMENT_BIT,
+                0, sizeof(blurPush), &blurPush);
+        vkCmdDraw(cb, 4, 1, 0, 0);
+        vkCmdEndRenderPass(cb);
+        glowReadBarrierLocked(cb, bloomImageB_);
+
+        beginGrassPassLocked(cb, bloomPass_, bloomFramebufferA_, bloomExtent);
+        vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                blurLayout_, 0, 1, &blurSetB_, 0, nullptr);
+        blurPush.stepX = 0.0f;
+        blurPush.stepY = glowRadius_ * 0.25f / static_cast<float>(std::max(1u, bloomHeight_));
+        blurPush.sigma = glowBlurSigma_;
+        vkCmdPushConstants(cb, blurLayout_, VK_SHADER_STAGE_FRAGMENT_BIT,
+                0, sizeof(blurPush), &blurPush);
+        vkCmdDraw(cb, 4, 1, 0, 0);
+        vkCmdEndRenderPass(cb);
+        glowReadBarrierLocked(cb, bloomImageA_);
+
+        beginGrassPassLocked(cb, renderPass_,
+                swapchainFramebuffers_[imageIndex], swapchainExtent_);
+        vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, compositePipeline_);
+        vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                compositeLayout_, 0, 1, &compositeSet_, 0, nullptr);
+        GlowCompositePush compositePush{};
+        compositePush.strength = glowStrength_;
+        compositePush.tone = glowTone_;
+        compositePush.toneGamma = glowToneGamma_;
+        vkCmdPushConstants(cb, compositeLayout_, VK_SHADER_STAGE_FRAGMENT_BIT,
+                0, sizeof(compositePush), &compositePush);
+        vkCmdDraw(cb, 4, 1, 0, 0);
+        vkCmdEndRenderPass(cb);
     }
 
     // ===== members =====
@@ -1800,7 +2476,8 @@ static void JNICALL nRenderFrame(
         jfloatArray fireflyFlareVerts, jint fireflyFlareVertCount,
         jfloatArray moonVerts, jint moonVertCount,
         jfloatArray moonParams,
-        jfloatArray grassLight, jfloatArray fireflyLights) {
+        jfloatArray grassLight, jfloatArray fireflyLights,
+        jfloatArray glowParams, jboolean glowEnabled) {
     auto* r = asRenderer(handle);
     if (r) r->render(env, skyWeights, grassMvp,
             grassVerts, grassVertCount,
@@ -1815,7 +2492,8 @@ static void JNICALL nRenderFrame(
             fireflyFlareVerts, fireflyFlareVertCount,
             moonVerts, moonVertCount,
             moonParams,
-            grassLight, fireflyLights);
+            grassLight, fireflyLights,
+            glowParams, glowEnabled);
 }
 
 static void JNICALL nSetSkyTexture(
@@ -1850,7 +2528,7 @@ static const JNINativeMethod kMethods[] = {
     {"nOnSurfaceCreated", "(JLandroid/view/Surface;II)Z", reinterpret_cast<void*>(nOnSurfaceCreated)},
     {"nOnSurfaceChanged", "(JLandroid/view/Surface;II)V", reinterpret_cast<void*>(nOnSurfaceChanged)},
     {"nOnSurfaceDestroyed", "(J)V", reinterpret_cast<void*>(nOnSurfaceDestroyed)},
-    {"nRenderFrame", "(J[F[F[FI[SI[FI[FI[FI[FI[FI[FI[FI[FI[FI[F[F[F)V", reinterpret_cast<void*>(nRenderFrame)},
+    {"nRenderFrame", "(J[F[F[FI[SI[FI[FI[FI[FI[FI[FI[FI[FI[FI[F[F[F[FZ)V", reinterpret_cast<void*>(nRenderFrame)},
     {"nSetSkyTexture", "(JI[III)V", reinterpret_cast<void*>(nSetSkyTexture)},
     {"nSetAATexture", "(J[III)V", reinterpret_cast<void*>(nSetAATexture)},
     {"nSetSpriteTexture", "(JI[III)V", reinterpret_cast<void*>(nSetSpriteTexture)},

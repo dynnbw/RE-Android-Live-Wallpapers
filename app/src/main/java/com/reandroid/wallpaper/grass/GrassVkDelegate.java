@@ -39,6 +39,8 @@ final class GrassVkDelegate implements VkRendererDelegate {
     private final GrassFireflyLighting mFireflyLighting = new GrassFireflyLighting();
     /** 草叶光照的每帧参数，见 {@link #buildGrassLightParams}。 */
     private final float[] mGrassLightParams = new float[GRASS_LIGHT_PARAM_COUNT];
+    /** 辉光的每帧参数，见 {@link #buildGlowParams}。 */
+    private final float[] mGlowParams = new float[6];
 
     GrassVkDelegate(Context context, SharedPreferences prefs, boolean preview) {
         mContext = context.getApplicationContext();
@@ -187,7 +189,9 @@ final class GrassVkDelegate implements VkRendererDelegate {
                 mScene.mRenderDataBuilder.getMoonVertexCount(),
                 mScene.mRenderDataBuilder.buildMoonParams(sd),
                 buildGrassLightParams(sd),
-                mFireflyLighting.lights);
+                mFireflyLighting.lights,
+                buildGlowParams(sd),
+                sd.glowEnabled);
     }
 
     /**
@@ -221,6 +225,23 @@ final class GrassVkDelegate implements VkRendererDelegate {
         out[19] = GrassConstants.FIREFLY_LIGHT_TINT[0];
         out[20] = GrassConstants.FIREFLY_LIGHT_TINT[1];
         out[21] = GrassConstants.FIREFLY_LIGHT_TINT[2];
+        return out;
+    }
+
+    /**
+     * 辉光的每帧参数：阈值 / 过渡宽度 / 模糊半径 / 叠加强度 / 黄昏影调强度 / 影调指数。
+     *
+     * <p>与 GLES 的 {@code GlowRenderer.endScene} + {@code setTone} 一一对应；
+     * 影调**每帧都要给**，黄昏过去之后必须回到 0（见 GrassScene.duskTone）。
+     */
+    private float[] buildGlowParams(SceneData sd) {
+        float[] out = mGlowParams;
+        out[0] = GrassConstants.GLOW_THRESHOLD;
+        out[1] = GrassConstants.GLOW_SOFT_KNEE;
+        out[2] = GrassConstants.GLOW_RADIUS;
+        out[3] = GrassConstants.GLOW_STRENGTH;
+        out[4] = sd.duskTone;
+        out[5] = GrassConstants.DUSK_TONE_GAMMA;
         return out;
     }
 

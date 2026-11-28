@@ -27,6 +27,11 @@ public class GrassVkParityTest {
             new File("src/main/assets/grass/shaders/GLES/grass_grass_fs.glsl");
     private static final File GRASS_FS_VK = new File("src/main/shaders/grassvk_grass.frag");
     private static final File GRASS_JNI = new File("src/main/jni/grassvk_jni.cpp");
+    private static final File GLOW_BLUR_GLES =
+            new File("src/main/assets/grass/shaders/GLES/glow_blur_fs.glsl");
+    private static final File GLOW_BLUR_VK = new File("src/main/shaders/grassvk_glow_blur.frag");
+    private static final File GLOW_PARAMS =
+            new File("src/main/java/com/reandroid/gles/GlowParams.java");
 
     private static String read(File file) throws IOException {
         assertTrue(file + " 不存在", file.isFile());
@@ -61,6 +66,25 @@ public class GrassVkParityTest {
         assertTrue(
                 "GLES 着色器的 FLY_MAX 与 FIREFLY_LIGHT_MAX 不一致",
                 read(GRASS_FS_GLES).contains("#define FLY_MAX 16"));
+    }
+
+    /**
+     * 辉光模糊的核两份着色器必须一致（grass 用的是现算权重的 9 抽头，不是 fall 那套固定权重）。
+     *
+     * <p>抄错一个数只是光晕观感不同，不会报错；σ 也得两边同一个来源。
+     */
+    @Test
+    public void glowBlurKernelMatchesBetweenTheEngines() throws IOException {
+        String gles = read(GLOW_BLUR_GLES);
+        String vk = read(GLOW_BLUR_VK);
+        for (String snippet : new String[] {"const int TAPS = 4;", "exp(-0.5 * f * f * inv)"}) {
+            assertTrue(GLOW_BLUR_GLES.getName() + " 缺少 " + snippet, gles.contains(snippet));
+            assertTrue(GLOW_BLUR_VK.getName() + " 缺少 " + snippet, vk.contains(snippet));
+        }
+        // σ 在 GLES 侧是 GlowParams.BLUR_SIGMA_STEPS，VK 侧是 native 里的常量
+        assertTrue("GlowParams 的 σ 变了", read(GLOW_PARAMS).contains("BLUR_SIGMA_STEPS = 2.0f"));
+        assertTrue(
+                "grassvk 的 σ 与 GlowParams 对不上", read(GRASS_JNI).contains("glowBlurSigma_ = 2.0f"));
     }
 
     /** native 登记的描述符必须与 Java 声明一致（多一个少一个参数都会崩在 loadLibrary）。 */
