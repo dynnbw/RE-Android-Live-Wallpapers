@@ -167,6 +167,21 @@ final class GrassRenderDataBuilder {
      * <p>条件里带上 {@code fireflyEnabled}：没有萤火虫的时候不必动夜里的底色，
      * 免得"开了特效但没开萤火虫"的人白白看到一片发灰的草。
      */
+    /**
+     * 把叶片颜色还原成**本色**的增益 = 当帧夜色系数的倒数（封顶）。
+     *
+     * <p>顶点里的颜色是「本色 × 夜色系数」（见 {@link #bladeValueScale}），
+     * 而萤火虫的光必须照在**本色**上，否则夜里底色是黑的，加出来只剩灯自己的颜色。
+     * 两条渲染路径用的是同一个函数，所以系数不会各算各的。
+     */
+    static float fireflyAlbedoBoost(SceneData sd) {
+        float scale = bladeValueScale(sd, bladeBrightness(sd));
+        if (!(scale > 0.0f)) {
+            return GrassConstants.FIREFLY_LIGHT_MAX_BOOST;
+        }
+        return Math.min(1.0f / scale, GrassConstants.FIREFLY_LIGHT_MAX_BOOST);
+    }
+
     static float bladeValueScale(SceneData sd, float brightness) {
         boolean keepOwnColour =
                 sd.backlightEnabled || (sd.fireflyLightEnabled && sd.fireflyEnabled);

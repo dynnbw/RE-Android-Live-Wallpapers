@@ -15,6 +15,9 @@ import com.reandroid.plugin.VkRendererDelegate;
  */
 final class GrassVkDelegate implements VkRendererDelegate {
 
+    /** {@link #buildGrassLightParams} 的长度，与 grassvk_jni.cpp 的偏移一一对应。 */
+    private static final int GRASS_LIGHT_PARAM_COUNT = 22;
+
     private final Context mContext;
     private final SharedPreferences mPrefs;
     private final boolean mPreview;
@@ -32,6 +35,10 @@ final class GrassVkDelegate implements VkRendererDelegate {
     private final NightStarsLayer mNightStars = new NightStarsLayer();
     private final GrassRenderDataBuilder.StarBatches mStarBatches =
             new GrassRenderDataBuilder.StarBatches();
+    /** 光源与逐叶萤火虫遮挡，与 GLES 路径共用同一份逻辑。 */
+    private final GrassFireflyLighting mFireflyLighting = new GrassFireflyLighting();
+    /** 草叶光照的每帧参数，见 {@link #buildGrassLightParams}。 */
+    private final float[] mGrassLightParams = new float[GRASS_LIGHT_PARAM_COUNT];
 
     GrassVkDelegate(Context context, SharedPreferences prefs, boolean preview) {
         mContext = context.getApplicationContext();
@@ -126,6 +133,25 @@ final class GrassVkDelegate implements VkRendererDelegate {
             mCachedIndices = mScene.mRenderDataBuilder.buildGrassIndexArray();
         }
 
+        /*
+         * 萤火虫批必须建在草叶顶点**之前**：光源与逐叶遮挡都从这一批里取
+         * （见 GrassFireflyLighting），而遮挡会进顶点数组。两批都只建一次 ——
+         * 传统萤火虫那条路有状态，建两次 flare 计时会走双倍。
+         */
+        GrassRenderDataBuilder builder = mScene.mRenderDataBuilder;
+        final int spriteStride = GrassRenderDataBuilder.FLOATS_PER_SPRITE_VERTEX;
+        float[] fireflyBody = builder.buildFireflySpriteVertices(sd);
+        int fireflyBodyCount = builder.getFireflyVertexCount();
+        float[] fireflyFlare = builder.buildFireflyFlareSpriteVertices(sd);
+        int fireflyFlareCount = builder.getFireflyFlareVertexCount();
+        mFireflyLighting.update(
+                sd,
+                fireflyBody,
+                fireflyBodyCount * spriteStride,
+                fireflyFlare,
+                fireflyFlareCount * spriteStride,
+                now);
+
         float[] sky = mScene.mRenderDataBuilder.computeSkyParams(sd);
         float[] verts = mScene.mRenderDataBuilder.buildGrassVertexArray(sd);
         int vertCount = mScene.mRenderDataBuilder.getGrassVertexCount();
@@ -153,13 +179,49 @@ final class GrassVkDelegate implements VkRendererDelegate {
                 stars.yellowCount,
                 mScene.mRenderDataBuilder.buildDandelionSpriteVertices(sd),
                 mScene.mRenderDataBuilder.getDandelionVertexCount(),
-                mScene.mRenderDataBuilder.buildFireflySpriteVertices(sd),
-                mScene.mRenderDataBuilder.getFireflyVertexCount(),
-                mScene.mRenderDataBuilder.buildFireflyFlareSpriteVertices(sd),
-                mScene.mRenderDataBuilder.getFireflyFlareVertexCount(),
+                fireflyBody,
+                fireflyBodyCount,
+                fireflyFlare,
+                fireflyFlareCount,
                 mScene.mRenderDataBuilder.buildMoonSpriteVertices(sd),
                 mScene.mRenderDataBuilder.getMoonVertexCount(),
-                mScene.mRenderDataBuilder.buildMoonParams(sd));
+                mScene.mRenderDataBuilder.buildMoonParams(sd),
+                buildGrassLightParams(sd),
+                mFireflyLighting.lights);
+    }
+
+    /**
+     * 草叶光照的每帧参数，顺序与 grassvk_jni.cpp 的 {@code unlockGrassLight} 一一对应：
+     * {@code [0..4]} 总强度 / 高光门控 / 横截面张角 / 叶根系数 / 叶尖系数，
+     * {@code [5..7]} 透射色、{@code [8..10]} 冷影、{@code [11..13]} 迎光边颜色，
+     * {@code [14..15]} 迎光边增益 / 阴影增益，
+     * {@code [16..18]} 萤火虫增益 / 半径 / 本色还原增益，{@code [19..21]} 萤火虫光色。
+     */
+    private float[] buildGrassLightParams(SceneData sd) {
+        float[] out = mGrassLightParams;
+        out[0] = sd.lightStrength;
+        out[1] = sd.lightHighlight;
+        out[2] = GrassConstants.GRASS_LIGHT_CROSS_ANGLE;
+        out[3] = GrassConstants.GRASS_LIGHT_HEIGHT_DIM;
+        out[4] = GrassConstants.GRASS_LIGHT_HEIGHT_GAIN;
+        out[5] = sd.lightTransmit[0];
+        out[6] = sd.lightTransmit[1];
+        out[7] = sd.lightTransmit[2];
+        out[8] = sd.lightCool[0];
+        out[9] = sd.lightCool[1];
+        out[10] = sd.lightCool[2];
+        out[11] = GrassConstants.GRASS_LIGHT_RIM[0];
+        out[12] = GrassConstants.GRASS_LIGHT_RIM[1];
+        out[13] = GrassConstants.GRASS_LIGHT_RIM[2];
+        out[14] = GrassConstants.GRASS_LIGHT_RIM_GAIN;
+        out[15] = GrassConstants.GRASS_LIGHT_SHADOW_GAIN;
+        out[16] = sd.fireflyLightEnabled ? GrassConstants.FIREFLY_LIGHT_GAIN : 0.0f;
+        out[17] = GrassConstants.FIREFLY_LIGHT_RADIUS;
+        out[18] = mFireflyLighting.albedoBoost;
+        out[19] = GrassConstants.FIREFLY_LIGHT_TINT[0];
+        out[20] = GrassConstants.FIREFLY_LIGHT_TINT[1];
+        out[21] = GrassConstants.FIREFLY_LIGHT_TINT[2];
+        return out;
     }
 
     @Override

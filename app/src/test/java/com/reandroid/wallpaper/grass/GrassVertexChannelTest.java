@@ -1,13 +1,13 @@
 package com.reandroid.wallpaper.grass;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Test;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 /**
  * 顶点通道约定的守卫。
@@ -25,8 +25,7 @@ public class GrassVertexChannelTest {
         return new String(Files.readAllBytes(new File(path).toPath()), StandardCharsets.UTF_8);
     }
 
-    private static final String GLES_FS =
-            "src/main/assets/grass/shaders/GLES/grass_grass_fs.glsl";
+    private static final String GLES_FS = "src/main/assets/grass/shaders/GLES/grass_grass_fs.glsl";
     private static final String VK_FS = "src/main/shaders/grassvk_grass.frag";
 
     /**
@@ -38,21 +37,18 @@ public class GrassVertexChannelTest {
         String gles = read(GLES_FS);
         String vk = read(VK_FS);
 
-        assertFalse("GLES 草叶着色器又把 vColor.a 乘进输出 alpha 了",
-                gles.contains("vColor.a * a"));
-        assertFalse("VK 草叶着色器又把 vColor.a 乘进输出 alpha 了",
-                vk.contains("vColor.a * a"));
+        assertFalse("GLES 草叶着色器又把 vColor.a 乘进输出 alpha 了", gles.contains("vColor.a * a"));
+        assertFalse("VK 草叶着色器又把 vColor.a 乘进输出 alpha 了", vk.contains("vColor.a * a"));
     }
 
     /** 顶点构建器必须往 alpha 里写叶尖位置，而不是常数 1。 */
     @Test
     public void theBuilderWritesTheTipFractionIntoAlpha() throws Exception {
-        String builder = read(
-                "src/main/java/com/reandroid/wallpaper/grass/GrassRenderDataBuilder.java");
+        String builder =
+                read("src/main/java/com/reandroid/wallpaper/grass/GrassRenderDataBuilder.java");
 
         assertTrue("构建器没有写 tipFraction", builder.contains("tipFraction"));
-        assertFalse("构建器还在往 alpha 里写常数 1.0f",
-                builder.contains("b, 1.0f, 0.0f, 0.0f)"));
+        assertFalse("构建器还在往 alpha 里写常数 1.0f", builder.contains("b, 1.0f, 0.0f, 0.0f)"));
     }
 
     /**
@@ -68,7 +64,8 @@ public class GrassVertexChannelTest {
         String cpp = read("src/main/jni/grassvk_jni.cpp");
         int bytes = GrassRenderDataBuilder.FLOATS_PER_GRASS_VERTEX * 4;
 
-        assertTrue("grassvk_jni.cpp 里的 GrassVertex 不是 " + bytes + " 字节："
+        assertTrue(
+                "grassvk_jni.cpp 里的 GrassVertex 不是 " + bytes + " 字节："
                         + "FLOATS_PER_GRASS_VERTEX 与 C++ 结构体对不上了",
                 cpp.contains("static_assert(sizeof(GrassVertex) == " + bytes));
     }
@@ -83,11 +80,9 @@ public class GrassVertexChannelTest {
         String fs = read("src/main/assets/grass/shaders/GLES/grass_grass_fs.glsl");
 
         assertTrue("顶点着色器没有收 aFireflyShadow", vs.contains("in float aFireflyShadow"));
-        assertTrue("顶点着色器没有把 aFireflyShadow 传下去",
-                vs.contains("vFireflyShadow = aFireflyShadow"));
+        assertTrue("顶点着色器没有把 aFireflyShadow 传下去", vs.contains("vFireflyShadow = aFireflyShadow"));
         assertTrue("片元着色器没有收 vFireflyShadow", fs.contains("in float vFireflyShadow"));
-        assertTrue("片元着色器没有把 vFireflyShadow 乘进萤火虫的光里",
-                fs.contains("* vFireflyShadow"));
+        assertTrue("片元着色器没有把 vFireflyShadow 乘进萤火虫的光里", fs.contains("* vFireflyShadow"));
     }
 
     /**
@@ -104,21 +99,23 @@ public class GrassVertexChannelTest {
         assertTrue("片元着色器里找不到萤火虫那一项", at > 0);
         // 取那一行往前一点，看它乘的是不是 vColor.rgb
         String around = fs.substring(Math.max(0, at - 160), at);
-        assertTrue("萤火虫的光没有乘在 vColor.rgb（叶片本色）上：往黑底上加光，颜色会完全偏离",
-                around.contains("vColor.rgb"));
+        assertTrue("萤火虫的光没有乘在 vColor.rgb（叶片本色）上：往黑底上加光，颜色会完全偏离", around.contains("vColor.rgb"));
         assertTrue("萤火虫的光没有乘本色还原增益", around.contains("uFireflyAlbedoBoost"));
     }
 
     /** 本色还原增益与顶点里那个夜色系数必须同源 —— 各写一份会对不上。 */
     @Test
     public void theAlbedoBoostSharesTheNightScaleWithTheVertexColour() throws Exception {
-        String builder = read(
-                "src/main/java/com/reandroid/wallpaper/grass/GrassRenderDataBuilder.java");
-        String gl = read("src/main/java/com/reandroid/wallpaper/grass/GrassGL.java");
+        String builder =
+                read("src/main/java/com/reandroid/wallpaper/grass/GrassRenderDataBuilder.java");
 
-        assertTrue("顶点颜色没有用 bladeValueScale",
+        assertTrue(
+                "顶点颜色没有用 bladeValueScale",
                 builder.contains("blade.b * GrassRenderDataBuilder.bladeValueScale("));
-        assertTrue("增益没有用 bladeValueScale",
-                gl.contains("GrassRenderDataBuilder.bladeValueScale("));
+        // 增益原先在 GrassGL，两条渲染路径共用之后搬进了 builder（fireflyAlbedoBoost），
+        // 所以"同源"这件事也一并看 builder
+        assertTrue(
+                "增益没有用 bladeValueScale",
+                builder.contains("float scale = bladeValueScale(sd, bladeBrightness(sd));"));
     }
 }

@@ -48,6 +48,23 @@ struct GrassPushConstants {
     float mvp[16];
 };
 
+/**
+ * 草叶光照的每帧参数（binding 1）。
+ *
+ * <p>push constant 里已经放了 mvp（64 字节），再塞 20 多个标量会超 128 的上限，
+ * 所以光照走 UBO。布局与 grassvk_grass.frag 里的 GrassLightBlock 逐字节对应。
+ */
+struct GrassLightUbo {
+    float firefly[16 * 4];   // 每只光源 (x, y, 亮度, 0)
+    float tint[4];           // rgb = 萤火虫光色，w = 本色还原增益
+    float fireflyParams[4];  // x = 增益，y = 半径
+    float lightParams[4];    // x = 总强度，y = 高光门控，z = 横截面张角，w = 叶根系数
+    float lightParams2[4];   // x = 叶尖系数，y = 迎光边增益，z = 阴影增益
+    float transmit[4];       // rgb = 透过的光色
+    float cool[4];           // rgb = 冷影
+    float rim[4];            // rgb = 迎光边颜色
+};
+
 struct MoonPushConstants {
     float mvp[16];
     float p0[4];
@@ -158,6 +175,18 @@ public:
             vkDestroyDescriptorSetLayout(device_, grassDescriptorSetLayout_, nullptr);
             grassDescriptorSetLayout_ = VK_NULL_HANDLE;
         }
+        if (grassLightUboMapped_ != nullptr && grassLightUboMemory_ != VK_NULL_HANDLE) {
+            vkUnmapMemory(device_, grassLightUboMemory_);
+            grassLightUboMapped_ = nullptr;
+        }
+        if (grassLightUbo_ != VK_NULL_HANDLE) {
+            vkDestroyBuffer(device_, grassLightUbo_, nullptr);
+            grassLightUbo_ = VK_NULL_HANDLE;
+        }
+        if (grassLightUboMemory_ != VK_NULL_HANDLE) {
+            vkFreeMemory(device_, grassLightUboMemory_, nullptr);
+            grassLightUboMemory_ = VK_NULL_HANDLE;
+        }
         if (spriteDescriptorPool_ != VK_NULL_HANDLE) {
             vkDestroyDescriptorPool(device_, spriteDescriptorPool_, nullptr);
             spriteDescriptorPool_ = VK_NULL_HANDLE;
@@ -224,6 +253,49 @@ public:
         }
     }
 
+    /**
+     * 把 Java 侧的每帧光照参数与光源写进 UBO。
+     *
+     * <p>{@code params} 顺序见 {@code GrassVkDelegate#buildGrassLightParams}；
+     * {@code lights} 每只 3 个 float（x, y, 亮度），与 GLES 的 uFirefly 同布局。
+     */
+    static void unlockGrassLightLocked(GrassLightUbo* ubo, const float* params, const float* lights) {
+        if (ubo == nullptr) return;
+        std::memset(ubo->firefly, 0, sizeof(ubo->firefly));
+        for (int i = 0; i < 16; i++) {
+            if (lights != nullptr) {
+                ubo->firefly[i * 4 + 0] = lights[i * 3 + 0];
+                ubo->firefly[i * 4 + 1] = lights[i * 3 + 1];
+                ubo->firefly[i * 4 + 2] = lights[i * 3 + 2];
+            }
+            ubo->firefly[i * 4 + 3] = 0.0f;
+        }
+        if (params == nullptr) return;
+
+        ubo->lightParams[0] = params[0];
+        ubo->lightParams[1] = params[1];
+        ubo->lightParams[2] = params[2];
+        ubo->lightParams[3] = params[3];
+        ubo->lightParams2[0] = params[4];
+        ubo->lightParams2[1] = params[14];
+        ubo->lightParams2[2] = params[15];
+        ubo->lightParams2[3] = 0.0f;
+        for (int i = 0; i < 3; i++) {
+            ubo->transmit[i] = params[5 + i];
+            ubo->cool[i] = params[8 + i];
+            ubo->rim[i] = params[11 + i];
+            ubo->tint[i] = params[19 + i];
+        }
+        ubo->transmit[3] = 0.0f;
+        ubo->cool[3] = 0.0f;
+        ubo->rim[3] = 0.0f;
+        ubo->tint[3] = params[18];
+        ubo->fireflyParams[0] = params[16];
+        ubo->fireflyParams[1] = params[17];
+        ubo->fireflyParams[2] = 0.0f;
+        ubo->fireflyParams[3] = 0.0f;
+    }
+
     void render(JNIEnv* env,
             jfloatArray skyWeightsArr,
             jfloatArray grassMvpArr,
@@ -238,7 +310,8 @@ public:
             jfloatArray fireflyVertsArr, jint fireflyVertCount,
             jfloatArray fireflyFlareVertsArr, jint fireflyFlareVertCount,
             jfloatArray moonVertsArr, jint moonVertCount,
-            jfloatArray moonParamsArr) {
+            jfloatArray moonParamsArr,
+            jfloatArray grassLightArr, jfloatArray fireflyLightsArr) {
         std::lock_guard<std::mutex> lock(mutex_);
 
         if (!isReadyLocked()) {
@@ -350,6 +423,21 @@ public:
                 moonPC.p3[3] = mp[15];
                 env->ReleaseFloatArrayElements(moonParamsArr, mp, JNI_ABORT);
             }
+        }
+
+        // --- grass lighting UBO（光源 + 逆光参数）---
+        if (grassLightUboMapped_ != nullptr) {
+            float grassLight[22] = {};
+            float fireflyLights[48] = {};
+            if (grassLightArr != nullptr) {
+                env->GetFloatArrayRegion(grassLightArr, 0, 22, grassLight);
+            }
+            if (fireflyLightsArr != nullptr) {
+                jsize len = std::min<jsize>(48, env->GetArrayLength(fireflyLightsArr));
+                env->GetFloatArrayRegion(fireflyLightsArr, 0, len, fireflyLights);
+            }
+            unlockGrassLightLocked(static_cast<GrassLightUbo*>(grassLightUboMapped_),
+                    grassLight, fireflyLights);
         }
 
         // --- acquire image ---
@@ -747,7 +835,7 @@ public:
         vis.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 
         VkVertexInputBindingDescription binding{};
-        VkVertexInputAttributeDescription attrs[3]{};
+        VkVertexInputAttributeDescription attrs[4]{};
 
         if (type == PIPELINE_GRASS) {
             binding.binding   = 0;
@@ -764,9 +852,14 @@ public:
             attrs[2].format   = VK_FORMAT_R32G32_SFLOAT;
             attrs[2].offset   = offsetof(GrassVertex, s);
 
+            // 逐叶萤火虫遮挡：两条渲染路径现在都读它（VK 的片元着色器同样有光照）
+            attrs[3].binding  = 0; attrs[3].location = 3;
+            attrs[3].format   = VK_FORMAT_R32_SFLOAT;
+            attrs[3].offset   = offsetof(GrassVertex, fireflyShadow);
+
             vis.vertexBindingDescriptionCount   = 1;
             vis.pVertexBindingDescriptions      = &binding;
-            vis.vertexAttributeDescriptionCount = 3;
+            vis.vertexAttributeDescriptionCount = 4;
             vis.pVertexAttributeDescriptions    = attrs;
         } else if (type == PIPELINE_SPRITE || isMoonPipeline(type)) {
             binding.binding = 0;
@@ -925,28 +1018,36 @@ public:
                 && grassDescriptorPool_      != VK_NULL_HANDLE
                 && grassDescriptorSet_       != VK_NULL_HANDLE) return true;
 
-        VkDescriptorSetLayoutBinding binding{};
-        binding.binding         = 0;
-        binding.descriptorCount = 1;
-        binding.descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        binding.stageFlags      = VK_SHADER_STAGE_FRAGMENT_BIT;
+        // Binding 0: 叶片 AA 贴图；Binding 1: 草叶光照的 UBO
+        VkDescriptorSetLayoutBinding bindings[2]{};
+        bindings[0].binding         = 0;
+        bindings[0].descriptorCount = 1;
+        bindings[0].descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        bindings[0].stageFlags      = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+        bindings[1].binding         = 1;
+        bindings[1].descriptorCount = 1;
+        bindings[1].descriptorType  = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        bindings[1].stageFlags      = VK_SHADER_STAGE_FRAGMENT_BIT;
 
         VkDescriptorSetLayoutCreateInfo lci{};
         lci.sType        = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-        lci.bindingCount = 1;
-        lci.pBindings    = &binding;
+        lci.bindingCount = 2;
+        lci.pBindings    = bindings;
         if (vkCreateDescriptorSetLayout(device_, &lci, nullptr, &grassDescriptorSetLayout_) != VK_SUCCESS) {
             LOGE("vkCreateDescriptorSetLayout(grass) failed"); return false;
         }
 
-        VkDescriptorPoolSize ps{};
-        ps.type            = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        ps.descriptorCount = 1;
+        VkDescriptorPoolSize ps[2]{};
+        ps[0].type            = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        ps[0].descriptorCount = 1;
+        ps[1].type            = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        ps[1].descriptorCount = 1;
 
         VkDescriptorPoolCreateInfo pci{};
         pci.sType         = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-        pci.poolSizeCount = 1;
-        pci.pPoolSizes    = &ps;
+        pci.poolSizeCount = 2;
+        pci.pPoolSizes    = ps;
         pci.maxSets       = 1;
         if (vkCreateDescriptorPool(device_, &pci, nullptr, &grassDescriptorPool_) != VK_SUCCESS) {
             LOGE("vkCreateDescriptorPool(grass) failed"); return false;
@@ -960,6 +1061,45 @@ public:
         if (vkAllocateDescriptorSets(device_, &ai, &grassDescriptorSet_) != VK_SUCCESS) {
             LOGE("vkAllocateDescriptorSets(grass) failed"); return false;
         }
+
+        // 光照 UBO：持久映射，每帧直接 memcpy 进去
+        VkBufferCreateInfo bci{};
+        bci.sType       = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        bci.size        = sizeof(GrassLightUbo);
+        bci.usage       = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+        bci.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        if (vkCreateBuffer(device_, &bci, nullptr, &grassLightUbo_) != VK_SUCCESS) {
+            LOGE("vkCreateBuffer(grass light) failed"); return false;
+        }
+        VkMemoryRequirements memReq{};
+        vkGetBufferMemoryRequirements(device_, grassLightUbo_, &memReq);
+        VkMemoryAllocateInfo mai{};
+        mai.sType           = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+        mai.allocationSize  = memReq.size;
+        mai.memoryTypeIndex = vkFindMemoryType(physicalDevice_, memReq.memoryTypeBits,
+                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+        if (vkAllocateMemory(device_, &mai, nullptr, &grassLightUboMemory_) != VK_SUCCESS) {
+            LOGE("vkAllocateMemory(grass light) failed"); return false;
+        }
+        vkBindBufferMemory(device_, grassLightUbo_, grassLightUboMemory_, 0);
+        if (vkMapMemory(device_, grassLightUboMemory_, 0, sizeof(GrassLightUbo), 0,
+                &grassLightUboMapped_) != VK_SUCCESS) {
+            grassLightUboMapped_ = nullptr;
+            return false;
+        }
+
+        VkDescriptorBufferInfo bufferInfo{};
+        bufferInfo.buffer = grassLightUbo_;
+        bufferInfo.offset = 0;
+        bufferInfo.range  = sizeof(GrassLightUbo);
+        VkWriteDescriptorSet write{};
+        write.sType           = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        write.dstSet          = grassDescriptorSet_;
+        write.dstBinding      = 1;
+        write.descriptorCount = 1;
+        write.descriptorType  = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        write.pBufferInfo     = &bufferInfo;
+        vkUpdateDescriptorSets(device_, 1, &write, 0, nullptr);
         return true;
     }
 
@@ -1534,6 +1674,9 @@ public:
 
     // Grass descriptor set (1 AA texture)
     VkDescriptorSetLayout grassDescriptorSetLayout_ = VK_NULL_HANDLE;
+    VkBuffer grassLightUbo_ = VK_NULL_HANDLE;
+    VkDeviceMemory grassLightUboMemory_ = VK_NULL_HANDLE;
+    void* grassLightUboMapped_ = nullptr;
     VkDescriptorPool      grassDescriptorPool_      = VK_NULL_HANDLE;
     VkDescriptorSet       grassDescriptorSet_       = VK_NULL_HANDLE;
 
@@ -1656,7 +1799,8 @@ static void JNICALL nRenderFrame(
         jfloatArray fireflyVerts, jint fireflyVertCount,
         jfloatArray fireflyFlareVerts, jint fireflyFlareVertCount,
         jfloatArray moonVerts, jint moonVertCount,
-        jfloatArray moonParams) {
+        jfloatArray moonParams,
+        jfloatArray grassLight, jfloatArray fireflyLights) {
     auto* r = asRenderer(handle);
     if (r) r->render(env, skyWeights, grassMvp,
             grassVerts, grassVertCount,
@@ -1670,7 +1814,8 @@ static void JNICALL nRenderFrame(
             fireflyVerts, fireflyVertCount,
             fireflyFlareVerts, fireflyFlareVertCount,
             moonVerts, moonVertCount,
-            moonParams);
+            moonParams,
+            grassLight, fireflyLights);
 }
 
 static void JNICALL nSetSkyTexture(
@@ -1705,7 +1850,7 @@ static const JNINativeMethod kMethods[] = {
     {"nOnSurfaceCreated", "(JLandroid/view/Surface;II)Z", reinterpret_cast<void*>(nOnSurfaceCreated)},
     {"nOnSurfaceChanged", "(JLandroid/view/Surface;II)V", reinterpret_cast<void*>(nOnSurfaceChanged)},
     {"nOnSurfaceDestroyed", "(J)V", reinterpret_cast<void*>(nOnSurfaceDestroyed)},
-    {"nRenderFrame", "(J[F[F[FI[SI[FI[FI[FI[FI[FI[FI[FI[FI[FI[F)V", reinterpret_cast<void*>(nRenderFrame)},
+    {"nRenderFrame", "(J[F[F[FI[SI[FI[FI[FI[FI[FI[FI[FI[FI[FI[F[F[F)V", reinterpret_cast<void*>(nRenderFrame)},
     {"nSetSkyTexture", "(JI[III)V", reinterpret_cast<void*>(nSetSkyTexture)},
     {"nSetAATexture", "(J[III)V", reinterpret_cast<void*>(nSetAATexture)},
     {"nSetSpriteTexture", "(JI[III)V", reinterpret_cast<void*>(nSetSpriteTexture)},

@@ -50,7 +50,9 @@ final class GrassVKNative {
             int fireflyFlareVertCount,
             float[] moonVerts,
             int moonVertCount,
-            float[] moonParams);
+            float[] moonParams,
+            float[] grassLightParams,
+            float[] fireflyLights);
 
     static native void nSetSkyTexture(
             long handle, int slot, int[] argbPixels, int width, int height);

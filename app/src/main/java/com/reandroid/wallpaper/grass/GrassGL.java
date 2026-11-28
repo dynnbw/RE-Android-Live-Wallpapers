@@ -134,10 +134,10 @@ public class GrassGL extends GLESScene {
     private int mGrassFireflyTintHandle;
     private int mGrassFireflyGainHandle;
     private int mGrassFireflyRadiusHandle;
-    /** 把被夜色压过的叶片颜色还原成本色的增益，见 {@link #fireflyAlbedoBoost}。 */
+    /** 把被夜色压过的叶片颜色还原成本色的增益，见 GrassFireflyLighting。 */
     private int mGrassFireflyBoostHandle;
-    /** 光源数组（每只 3 个 float），见 {@link GrassFireflyLight}。 */
-    private final float[] mFireflyLights = new float[GrassConstants.FIREFLY_LIGHT_MAX * 3];
+    /** 光源与逐叶遮挡，与 VK 路径共用同一份，见 {@link GrassFireflyLighting}。 */
+    private final GrassFireflyLighting mFireflyLighting = new GrassFireflyLighting();
     /**
      * 这一帧的萤火虫精灵批。
      *
@@ -152,8 +152,6 @@ public class GrassGL extends GLESScene {
     private float[] mFireflyFlareBatch;
 
     private int mFireflyFlareBatchFloats;
-    /** 上次重算逐叶萤火虫遮挡的时刻，见 {@link #updateFireflyShadow}。 */
-    private long mLastFireflyShadowMs;
 
     // Moon program handles
     private int mMoonPositionHandle;
@@ -1378,6 +1376,15 @@ public class GrassGL extends GLESScene {
         mFireflyFlareBatch = b.buildFireflyFlareSpriteVertices(sd);
         mFireflyFlareBatchFloats = b.getFireflyFlareVertexCount() * spriteStride;
 
+        // 光源与逐叶遮挡由两条渲染路径共用同一份逻辑（见 GrassFireflyLighting）
+        mFireflyLighting.update(
+                sd,
+                mFireflyBatch,
+                mFireflyBatchFloats,
+                mFireflyFlareBatch,
+                mFireflyFlareBatchFloats,
+                SystemClock.uptimeMillis());
+
         float gain = sd.fireflyLightEnabled ? GrassConstants.FIREFLY_LIGHT_GAIN : 0.0f;
         GLES30.glUniform1f(mGrassFireflyGainHandle, gain);
         if (gain <= 0.0f) {
@@ -1385,77 +1392,15 @@ public class GrassGL extends GLESScene {
             return;
         }
 
-        // 两个批都要收：传统萤火虫按"是否正在闪光"把它们劈成互斥的两半，只收本体的话，
-        // 萤火虫最亮的那一刻恰好从这个批里消失 —— 地上的光会跟着灭，与直觉正相反。
-        int lightCount = GrassFireflyLight.clear(mFireflyLights);
-        lightCount = GrassFireflyLight.append(
-                mFireflyBatch, mFireflyBatchFloats, mFireflyLights, lightCount);
-        lightCount = GrassFireflyLight.append(
-                mFireflyFlareBatch, mFireflyFlareBatchFloats, mFireflyLights, lightCount);
         GLES30.glUniform3fv(
-                mGrassFireflyHandle, GrassConstants.FIREFLY_LIGHT_MAX, mFireflyLights, 0);
+                mGrassFireflyHandle, GrassConstants.FIREFLY_LIGHT_MAX, mFireflyLighting.lights, 0);
         GLES30.glUniform1f(mGrassFireflyRadiusHandle, GrassConstants.FIREFLY_LIGHT_RADIUS);
         GLES30.glUniform3f(
                 mGrassFireflyTintHandle,
                 GrassConstants.FIREFLY_LIGHT_TINT[0],
                 GrassConstants.FIREFLY_LIGHT_TINT[1],
                 GrassConstants.FIREFLY_LIGHT_TINT[2]);
-        GLES30.glUniform1f(mGrassFireflyBoostHandle, fireflyAlbedoBoost(sd));
-
-        updateFireflyShadow(sd, lightCount);
-    }
-
-    /**
-     * 把叶片颜色还原成**本色**的增益 = 当帧夜色系数的倒数（封顶）。
-     *
-     * <p>顶点里的颜色是「本色 × 夜色系数」（见 {@code GrassRenderDataBuilder.bladeValueScale}），
-     * 而萤火虫的光必须照在**本色**上，否则夜里底色是黑的，加出来只剩灯自己的颜色。
-     * 两处用的是同一个函数，所以系数不会各算各的。
-     */
-    private static float fireflyAlbedoBoost(SceneData sd) {
-        float scale = GrassRenderDataBuilder.bladeValueScale(
-                sd, GrassRenderDataBuilder.bladeBrightness(sd));
-        if (!(scale > 0.0f)) {
-            return GrassConstants.FIREFLY_LIGHT_MAX_BOOST;
-        }
-        return Math.min(1.0f / scale, GrassConstants.FIREFLY_LIGHT_MAX_BOOST);
-    }
-
-    /**
-     * 逐叶的萤火虫遮挡（近处的草挡住远处草的光）。
-     *
-     * <p><b>限频</b>，与太阳那套同一个理由与同一个间隔：遮挡是 O(叶数²) 的包围盒测试，
-     * 而它会变的原因只有"萤火虫在动"—— 它们每秒只走十几个像素（{@code Firefly.vx}
-     * 的量级就是 10），250 毫秒里挪不到 3 个像素，逐帧重算纯属浪费。
-     *
-     * <p>结果写进 {@code sd}。写在这里而不是场景里，是因为**光源列表只在这边有**
-     * （它是从画出去的那一份精灵批里取的，见 {@link #prepareFireflyLights}）。
-     * 另算一份光源就又多一个可能与画面不一致的地方。
-     */
-    private void updateFireflyShadow(SceneData sd, int lightCount) {
-        Blade[] blades = sd.blades;
-        if (blades == null || blades.length == 0) {
-            return;
-        }
-        long nowMs = SystemClock.uptimeMillis();
-        if (nowMs - mLastFireflyShadowMs < GrassBladeLighting.OCCLUSION_INTERVAL_MS
-                && sd.bladeFireflyShadow != null
-                && sd.bladeFireflyShadow.length == blades.length) {
-            return;
-        }
-        mLastFireflyShadowMs = nowMs;
-
-        if (sd.bladeFireflyShadow == null || sd.bladeFireflyShadow.length != blades.length) {
-            sd.bladeFireflyShadow = new float[blades.length];
-        }
-        GrassFireflyShadow.compute(
-                blades,
-                mFireflyLights,
-                lightCount,
-                GrassConstants.FIREFLY_LIGHT_RADIUS,
-                sd.bladeFireflyShadow);
-        // 顶点数组是"外观没变就不重建"的，得让它知道阴影换了一版
-        sd.fireflyShadowVersion++;
+        GLES30.glUniform1f(mGrassFireflyBoostHandle, mFireflyLighting.albedoBoost);
     }
 
     private void drawBlades(SceneData sd, float brightness, float xOffset, float nightDesat) {
