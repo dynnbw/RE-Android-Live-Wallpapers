@@ -4,6 +4,21 @@ layout(set = 0, binding = 1) uniform DropBlock {
     vec4 u_drop[80];
     int u_dropCount;
     vec4 uSkyWeights;   // [夜,晨,昏,昼]；片元着色器混天空用
+    vec4 uAlgae[80];    // (强度, 世界x, 世界y, 0)；片元着色器算蓝藻用
+    float uAlgaeAmount;
+    float uLeafAlgaeAmount;
+    float uAlgaeMetricX;
+    float uAlgaeMetricY;
+    vec2 uAlgaeMeshScale;
+    vec2 uAlgaeMeshOffset;
+    float uAlgaeThreshold;
+    float uAlgaeBand;
+    float uAlgaeNoiseTile;
+    float uAlgaeArcScale;
+    float uAlgaeGain;
+    vec4 uAlgaeLow;
+    vec4 uAlgaeHigh;
+    vec4 uLightColor;
 } dropBlock;
 
 layout(push_constant) uniform PushConstants {
@@ -31,6 +46,8 @@ layout(location = 1) in vec2 aTexCoord;
 
 layout(location = 0) out vec2 vUv;
 layout(location = 1) out vec2 vScreenUv;
+/** 网格坐标（和 UBO 里的 u_drop 同一套单位）：蓝藻要在片元里按同一套距离算光。 */
+layout(location = 2) out vec2 vMeshPos;
 
 vec2 addDrop(vec4 d, vec2 ripplePos, float dxMul) {
     vec2 delta = vec2((d.x - ripplePos.x) * dxMul, d.y - ripplePos.y);
@@ -69,6 +86,7 @@ void main() {
     float posScaledX = (pxAdj + 1.0) * pc.u_meshScaleX;
 
     vec2 ripplePos = vec2(posScaledX, posScaledY);
+    vMeshPos = ripplePos;
     vec2 texOffset = vec2(0.0);
     float dxMul = pc.u_dxMul;
 

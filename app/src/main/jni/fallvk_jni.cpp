@@ -29,10 +29,25 @@ struct PushConstants {
 // Drops moved to UBO (binding 1) — no hard limit
 
 struct DropUbo {
-    float drops[80 * 4];  // 80 drops × 4 floats, offset 0
-    int dropCount;         // offset 1280
-    int _pad[3];           // align to 16-byte boundary (offset 1296)
-    float skyWeights[4];   // offset 1296: [夜,晨,昏,昼]，水面片元着色器混天空用
+    float drops[80 * 4];    // 80 drops × 4 floats, offset 0
+    int dropCount;          // offset 1280
+    int _pad[3];            // align to 16-byte boundary (offset 1296)
+    float skyWeights[4];    // offset 1296: [夜,晨,昏,昼]，水面片元着色器混天空用
+    float algae[80 * 4];    // offset 1312: (power, worldX, worldY, 0)，蓝藻用
+    float algaeAmount;      // offset 2592: 水面蓝藻可见度
+    float leafAlgaeAmount;  // offset 2596: 叶片受光可见度
+    float algaeMetric[2];   // offset 2600: 世界→网格的距离度量
+    float algaeMeshScale[2];// offset 2608: 世界→网格的坐标尺度
+    float algaeMeshOffset[2];// offset 2616: 世界→网格的坐标偏移
+    float algaeThreshold;   // offset 2624
+    float algaeBand;        // offset 2628
+    float algaeNoiseTile;   // offset 2632
+    float algaeArcScale;    // offset 2636
+    float algaeGain;        // offset 2640
+    int _pad2[3];           // 对齐 vec4（2656）
+    float algaeLow[4];      // offset 2656
+    float algaeHigh[4];     // offset 2672
+    float lightColor[4];    // offset 2688
 };
 
 struct TextureResource {
@@ -50,6 +65,11 @@ struct TextureResource {
     std::vector<uint8_t> pendingPixels;
     uint32_t pendingWidth = 0;
     uint32_t pendingHeight = 0;
+    // 同一张图要同时喂两个描述符集时用：蓝藻噪声水面在 binding 3、叶子在 binding 2
+    VkDescriptorSet extraSet = VK_NULL_HANDLE;
+    uint32_t extraBinding = 0;
+    /** 平铺采样。噪声贴图必须能重复铺满整片水面。 */
+    bool repeat = false;
 };
 
 struct LeafDraw {
@@ -87,13 +107,17 @@ public:
             && bgTexture_.imageView != VK_NULL_HANDLE && bgTexture_.sampler != VK_NULL_HANDLE
             && skyTexture_.imageView != VK_NULL_HANDLE && skyTexture_.sampler != VK_NULL_HANDLE
             && leafTexture_.imageView != VK_NULL_HANDLE && leafTexture_.sampler != VK_NULL_HANDLE
+            && algaeTexture_.imageView != VK_NULL_HANDLE && algaeTexture_.sampler != VK_NULL_HANDLE
             && waterVertexBuffer_ != VK_NULL_HANDLE && waterIndexBuffer_ != VK_NULL_HANDLE;
     }
 
     bool onDeviceCreated() {
         if (!createDescriptorResourcesLocked()) return false;
+        // 蓝藻噪声同时喂水面与叶子两个描述符集，所以在这里补上第二个目标
+        configureAlgaeTextureLocked();
         if (!ensureTextureLocked(bgTexture_, bgDescriptorSet_)) return false;
         if (!ensureTextureLocked(skyTexture_, bgDescriptorSet_)) return false;
+        if (!ensureTextureLocked(algaeTexture_, bgDescriptorSet_)) return false;
         return ensureTextureLocked(leafTexture_, leafDescriptorSet_);
     }
 
@@ -105,6 +129,7 @@ public:
         destroyTextureLocked(bgTexture_);
         destroyTextureLocked(skyTexture_);
         destroyTextureLocked(leafTexture_);
+        destroyTextureLocked(algaeTexture_);
         destroyWaterBuffersLocked();
         destroyDropUboLocked();
         if (bgDescriptorPool_ != VK_NULL_HANDLE) {
@@ -202,6 +227,31 @@ public:
         }
     }
 
+    /**
+     * 蓝藻噪声：单通道 R8、REPEAT 采样。
+     *
+     * <p>水面与叶子用的是同一张图，所以在两个描述符集里各占一个 binding
+     * （水面 3、叶子 2）—— 见 {@link TextureResource#extraSet}。
+     */
+    void setAlgaeTexture(JNIEnv* env, jbyteArray pixels, jint width, jint height) {
+        std::lock_guard<std::mutex> lock(mutex_);
+        configureAlgaeTextureLocked();
+        destroyTextureLocked(algaeTexture_);
+        storePendingMaskLocked(env, pixels, width, height, algaeTexture_);
+        if (device_ != VK_NULL_HANDLE) {
+            ensureTextureLocked(algaeTexture_, bgDescriptorSet_);
+        }
+    }
+
+    void configureAlgaeTextureLocked() {
+        algaeTexture_.format = VK_FORMAT_R8_UNORM;
+        algaeTexture_.bytesPerPixel = 1;
+        algaeTexture_.descriptorBinding = 3;
+        algaeTexture_.extraSet = leafDescriptorSet_;
+        algaeTexture_.extraBinding = 2;
+        algaeTexture_.repeat = true;
+    }
+
     void setLeafTexture(JNIEnv* env, jintArray argbPixels, jint width, jint height) {
         std::lock_guard<std::mutex> lock(mutex_);
         storePendingTextureLocked(env, argbPixels, width, height, leafTexture_);
@@ -215,12 +265,38 @@ public:
         leafAtlasFrameCount_ = std::max(1, frameCount);
     }
 
-    void render(JNIEnv* env, const float* lighting,
+    /** 蓝藻的每帧参数，顺序见 {@code FallVkDelegate#buildAlgaeParams}。 */
+    static void writeAlgaeParamsLocked(DropUbo* ubo, const float* p) {
+        if (ubo == nullptr || p == nullptr) return;
+        ubo->algaeAmount = p[0];
+        ubo->leafAlgaeAmount = p[1];
+        ubo->algaeThreshold = p[2];
+        ubo->algaeBand = p[3];
+        ubo->algaeGain = p[4];
+        ubo->algaeNoiseTile = p[5];
+        ubo->algaeArcScale = p[6];
+        for (int i = 0; i < 3; i++) {
+            ubo->algaeLow[i] = p[7 + i];
+            ubo->algaeHigh[i] = p[10 + i];
+            ubo->lightColor[i] = p[13 + i];
+        }
+        ubo->algaeLow[3] = 0.0f;
+        ubo->algaeHigh[3] = 0.0f;
+        ubo->lightColor[3] = 0.0f;
+        for (int i = 0; i < 2; i++) {
+            ubo->algaeMetric[i] = p[16 + i];
+            ubo->algaeMeshScale[i] = p[18 + i];
+            ubo->algaeMeshOffset[i] = p[20 + i];
+        }
+    }
+
+    void render(JNIEnv* env, const float* lighting, const float* algaeParams,
             jfloatArray projectionArray, jfloatArray viewArray,
             jfloatArray leavesArray, jint leafCount, jfloat xOffset,
             jfloatArray waterVertices, jfloatArray waterTexCoords, jshortArray waterIndices,
             jint waterVertexCount, jint waterIndexCount,
-            jfloatArray dropDataArray, jint dropCount,
+            jfloatArray dropDataArray, jfloatArray algaePowerArray, jfloatArray algaeWorldArray,
+            jint dropCount,
             jfloat glHeight, jfloat bgScale, jfloat meshScaleX, jfloat meshScaleY,
             jfloat dxMul, jint rotate) {
         std::lock_guard<std::mutex> lock(mutex_);
@@ -272,6 +348,24 @@ public:
             for (int i = 0; i < 4; i++) {
                 ubo->skyWeights[i] = lighting != nullptr ? lighting[8 + i] : 0.0f;
             }
+            // 蓝藻：每次扰动的强度与世界坐标，与 u_drop 一一对应
+            if (maxDrops > 0) {
+                float power[80] = {};
+                float world[160] = {};
+                if (algaePowerArray != nullptr) {
+                    env->GetFloatArrayRegion(algaePowerArray, 0, maxDrops, power);
+                }
+                if (algaeWorldArray != nullptr) {
+                    env->GetFloatArrayRegion(algaeWorldArray, 0, maxDrops * 2, world);
+                }
+                for (int i = 0; i < maxDrops; i++) {
+                    ubo->algae[i * 4 + 0] = power[i];
+                    ubo->algae[i * 4 + 1] = world[i * 2];
+                    ubo->algae[i * 4 + 2] = world[i * 2 + 1];
+                    ubo->algae[i * 4 + 3] = 0.0f;
+                }
+            }
+            writeAlgaeParamsLocked(ubo, algaeParams);
         }
 
         // Build slim push constants (drops now in UBO)
@@ -539,27 +633,42 @@ public:
             return true;
         }
 
-        VkDescriptorSetLayoutBinding binding{};
-        binding.binding = 0;
-        binding.descriptorCount = 1;
-        binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        binding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+        // Binding 0: 叶片图集
+        // Binding 1: 与水面共用的 UBO（蓝藻的波纹、噪声参数）
+        // Binding 2: 蓝藻噪声
+        VkDescriptorSetLayoutBinding bindings[3]{};
+        bindings[0].binding = 0;
+        bindings[0].descriptorCount = 1;
+        bindings[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        bindings[0].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+        bindings[1].binding = 1;
+        bindings[1].descriptorCount = 1;
+        bindings[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        bindings[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+        bindings[2].binding = 2;
+        bindings[2].descriptorCount = 1;
+        bindings[2].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        bindings[2].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
         VkDescriptorSetLayoutCreateInfo layoutInfo{};
         layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-        layoutInfo.bindingCount = 1;
-        layoutInfo.pBindings = &binding;
+        layoutInfo.bindingCount = 3;
+        layoutInfo.pBindings = bindings;
         if (vkCreateDescriptorSetLayout(device_, &layoutInfo, nullptr, &leafDescriptorSetLayout_) != VK_SUCCESS) {
             return false;
         }
 
-        VkDescriptorPoolSize poolSize{};
-        poolSize.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        poolSize.descriptorCount = 1;
+        VkDescriptorPoolSize poolSizes[2]{};
+        poolSizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        poolSizes[0].descriptorCount = 2;
+        poolSizes[1].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        poolSizes[1].descriptorCount = 1;
         VkDescriptorPoolCreateInfo poolInfo{};
         poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-        poolInfo.poolSizeCount = 1;
-        poolInfo.pPoolSizes = &poolSize;
+        poolInfo.poolSizeCount = 2;
+        poolInfo.pPoolSizes = poolSizes;
         poolInfo.maxSets = 1;
         if (vkCreateDescriptorPool(device_, &poolInfo, nullptr, &leafDescriptorPool_) != VK_SUCCESS) {
             return false;
@@ -582,7 +691,8 @@ public:
         // Binding 0: background texture sampler
         // Binding 1: drop uniform buffer
         // Binding 2: sky gradient sampler
-        VkDescriptorSetLayoutBinding bindings[3]{};
+        // Binding 3: algae noise sampler
+        VkDescriptorSetLayoutBinding bindings[4]{};
         bindings[0].binding = 0;
         bindings[0].descriptorCount = 1;
         bindings[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -591,7 +701,7 @@ public:
         bindings[1].binding = 1;
         bindings[1].descriptorCount = 1;
         bindings[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        // 顶点读雨滴，片元读天空权重
+        // 顶点读雨滴，片元读天空权重与蓝藻
         bindings[1].stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 
         bindings[2].binding = 2;
@@ -599,9 +709,14 @@ public:
         bindings[2].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
         bindings[2].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
+        bindings[3].binding = 3;
+        bindings[3].descriptorCount = 1;
+        bindings[3].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        bindings[3].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
         VkDescriptorSetLayoutCreateInfo layoutInfo{};
         layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-        layoutInfo.bindingCount = 3;
+        layoutInfo.bindingCount = 4;
         layoutInfo.pBindings = bindings;
         if (vkCreateDescriptorSetLayout(device_, &layoutInfo, nullptr, &bgDescriptorSetLayout_) != VK_SUCCESS) {
             return false;
@@ -609,7 +724,7 @@ public:
 
         VkDescriptorPoolSize poolSizes[2]{};
         poolSizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        poolSizes[0].descriptorCount = 2;
+        poolSizes[0].descriptorCount = 3;
         poolSizes[1].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
         poolSizes[1].descriptorCount = 1;
         VkDescriptorPoolCreateInfo poolInfo{};
@@ -768,9 +883,12 @@ public:
         samplerInfo.magFilter = VK_FILTER_LINEAR;
         samplerInfo.minFilter = VK_FILTER_LINEAR;
         samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-        samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-        samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-        samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        const VkSamplerAddressMode addressMode = texture.repeat
+                ? VK_SAMPLER_ADDRESS_MODE_REPEAT
+                : VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        samplerInfo.addressModeU = addressMode;
+        samplerInfo.addressModeV = addressMode;
+        samplerInfo.addressModeW = addressMode;
         if (vkCreateSampler(device_, &samplerInfo, nullptr, &texture.sampler) != VK_SUCCESS) {
             return false;
         }
@@ -780,14 +898,21 @@ public:
         imageDesc.imageView = texture.imageView;
         imageDesc.sampler = texture.sampler;
 
-        VkWriteDescriptorSet write{};
-        write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        write.dstSet = descriptorSet;
-        write.dstBinding = texture.descriptorBinding;
-        write.descriptorCount = 1;
-        write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        write.pImageInfo = &imageDesc;
-        vkUpdateDescriptorSets(device_, 1, &write, 0, nullptr);
+        VkWriteDescriptorSet writes[2]{};
+        uint32_t writeCount = 1;
+        writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        writes[0].dstSet = descriptorSet;
+        writes[0].dstBinding = texture.descriptorBinding;
+        writes[0].descriptorCount = 1;
+        writes[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        writes[0].pImageInfo = &imageDesc;
+        if (texture.extraSet != VK_NULL_HANDLE) {
+            writes[1] = writes[0];
+            writes[1].dstSet = texture.extraSet;
+            writes[1].dstBinding = texture.extraBinding;
+            writeCount = 2;
+        }
+        vkUpdateDescriptorSets(device_, writeCount, writes, 0, nullptr);
 
         texture.width = width;
         texture.height = height;
@@ -1055,20 +1180,27 @@ public:
             dropUboMapped_ = nullptr;
         }
 
-        // Write descriptor set for binding 1
+        // Write descriptor set for binding 1 —— 水面（顶点+片元）与叶子（片元）共用这一个 UBO
         VkDescriptorBufferInfo descInfo{};
         descInfo.buffer = dropUbo_;
         descInfo.offset = 0;
         descInfo.range = uboSize;
 
-        VkWriteDescriptorSet write{};
-        write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        write.dstSet = bgDescriptorSet_;
-        write.dstBinding = 1;
-        write.descriptorCount = 1;
-        write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        write.pBufferInfo = &descInfo;
-        vkUpdateDescriptorSets(device_, 1, &write, 0, nullptr);
+        VkWriteDescriptorSet writes[2]{};
+        writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        writes[0].dstSet = bgDescriptorSet_;
+        writes[0].dstBinding = 1;
+        writes[0].descriptorCount = 1;
+        writes[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        writes[0].pBufferInfo = &descInfo;
+
+        uint32_t writeCount = 1;
+        if (leafDescriptorSet_ != VK_NULL_HANDLE) {
+            writes[1] = writes[0];
+            writes[1].dstSet = leafDescriptorSet_;
+            writeCount = 2;
+        }
+        vkUpdateDescriptorSets(device_, writeCount, writes, 0, nullptr);
 
         return dropUboMapped_ != nullptr;
     }
@@ -1318,6 +1450,24 @@ public:
             push.leafFrameIndex = static_cast<float>(frameIndex);
             push.leafFrameInvCount = 1.0f / static_cast<float>(frameCount);
             push.shadow = 0.0f;
+            /*
+             * 蓝藻受光要逐像素知道"这个像素在世界里的位置"。这六个槽在水面着色器里
+             * 是涟漪参数，叶子用不到，于是挪来放叶片中心与两个半轴（含缩放与旋转）——
+             * 与 GLES 的 drawLeafQuad 同一套算式。影子不发光，那六个槽留空。
+             */
+            {
+                const float drawX = leaf.x - xOffset * 2.0f;
+                const float half = 0.55f * leaf.scale;
+                const float leafAngle = leaf.angleDeg * 0.01745329252f;
+                const float leafCos = std::cos(leafAngle);
+                const float leafSin = std::sin(leafAngle);
+                push.glHeight = drawX;              // 中心 x
+                push.bgScale = leaf.y;              // 中心 y
+                push.meshScaleX = leafCos * half;   // axisX.x
+                push.meshScaleY = leafSin * half;   // axisX.y
+                push.dxMul = -leafSin * half;       // axisY.x
+                push.xOffset = leafCos * half;      // axisY.y
+            }
             if (lighting != nullptr) {
                 for (int i = 0; i < 5; i++) push.lighting[i] = lighting[3 + i];
             }
@@ -1355,6 +1505,7 @@ public:
     TextureResource bgTexture_;    // 河床遮罩（R8，binding 0）
     TextureResource skyTexture_;   // 天空色带（RGBA8，binding 2）
     TextureResource leafTexture_;
+    TextureResource algaeTexture_; // 蓝藻噪声（R8，水面 binding 3 / 叶子 binding 2）
 
     VkBuffer waterVertexBuffer_ = VK_NULL_HANDLE;
     VkDeviceMemory waterVertexMemory_ = VK_NULL_HANDLE;
@@ -1421,12 +1572,12 @@ static void JNICALL nOnSurfaceDestroyed(
 }
 
 static void JNICALL nRenderFrame(
-        JNIEnv* env, jclass, jlong handle, jfloatArray lightingArray,
+        JNIEnv* env, jclass, jlong handle, jfloatArray lightingArray, jfloatArray algaeParamsArray,
         jfloatArray projectionMatrix, jfloatArray viewMatrix,
         jfloatArray leavesData, jint leafCount, jfloat xOffset,
         jfloatArray waterVertices, jfloatArray waterTexCoords, jshortArray waterIndices,
         jint waterVertexCount, jint waterIndexCount,
-        jfloatArray dropData, jint dropCount,
+        jfloatArray dropData, jfloatArray algaePower, jfloatArray algaeWorld, jint dropCount,
         jfloat glHeight, jfloat bgScale, jfloat meshScaleX, jfloat meshScaleY,
         jfloat dxMul, jint rotate) {
     auto* renderer = asRenderer(handle);
@@ -1435,9 +1586,14 @@ static void JNICALL nRenderFrame(
         if (lightingArray != nullptr) {
             env->GetFloatArrayRegion(lightingArray, 0, 12, lighting);
         }
-        renderer->render(env, lighting, projectionMatrix, viewMatrix, leavesData, leafCount, xOffset,
+        float algaeParams[22]{};
+        if (algaeParamsArray != nullptr) {
+            env->GetFloatArrayRegion(algaeParamsArray, 0, 22, algaeParams);
+        }
+        renderer->render(env, lighting, algaeParams,
+                projectionMatrix, viewMatrix, leavesData, leafCount, xOffset,
                 waterVertices, waterTexCoords, waterIndices, waterVertexCount, waterIndexCount,
-                dropData, dropCount,
+                dropData, algaePower, algaeWorld, dropCount,
                 glHeight, bgScale, meshScaleX, meshScaleY, dxMul, rotate);
     }
 }
@@ -1455,6 +1611,14 @@ static void JNICALL nSetSkyTexture(
     auto* renderer = asRenderer(handle);
     if (renderer != nullptr) {
         renderer->setSkyTexture(env, argbPixels, width, height);
+    }
+}
+
+static void JNICALL nSetAlgaeTexture(
+        JNIEnv* env, jclass, jlong handle, jbyteArray pixels, jint width, jint height) {
+    auto* renderer = asRenderer(handle);
+    if (renderer != nullptr) {
+        renderer->setAlgaeTexture(env, pixels, width, height);
     }
 }
 
@@ -1488,9 +1652,10 @@ static const JNINativeMethod kMethods[] = {
     {"nOnSurfaceCreated", "(JLandroid/view/Surface;II)Z", reinterpret_cast<void*>(nOnSurfaceCreated)},
     {"nOnSurfaceChanged", "(JLandroid/view/Surface;II)V", reinterpret_cast<void*>(nOnSurfaceChanged)},
     {"nOnSurfaceDestroyed", "(J)V", reinterpret_cast<void*>(nOnSurfaceDestroyed)},
-    {"nRenderFrame", "(J[F[F[F[FIF[F[F[SII[FIFFFFFI)V", reinterpret_cast<void*>(nRenderFrame)},
+    {"nRenderFrame", "(J[F[F[F[F[FIF[F[F[SII[F[F[FIFFFFFI)V", reinterpret_cast<void*>(nRenderFrame)},
     {"nSetMaskTexture", "(J[BII)V", reinterpret_cast<void*>(nSetMaskTexture)},
     {"nSetSkyTexture", "(J[III)V", reinterpret_cast<void*>(nSetSkyTexture)},
+    {"nSetAlgaeTexture", "(J[BII)V", reinterpret_cast<void*>(nSetAlgaeTexture)},
     {"nSetLeafTexture", "(J[III)V", reinterpret_cast<void*>(nSetLeafTexture)},
     {"nSetLeafAtlasFrameCount", "(JI)V", reinterpret_cast<void*>(nSetLeafAtlasFrameCount)},
     {"nIsVulkanSupported", "()Z", reinterpret_cast<void*>(nIsVulkanSupported)},

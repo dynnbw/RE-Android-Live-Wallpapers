@@ -19,6 +19,8 @@ import com.reandroid.settings.WallpaperSettings;
 final class FallVkDelegate implements VkRendererDelegate {
 
     private static final long SETTINGS_SYNC_INTERVAL_MS = 1000L;
+    /** {@link #buildAlgaeParams} 的长度，与 fallvk_jni.cpp 里的偏移一一对应。 */
+    private static final int ALGAE_PARAM_COUNT = 22;
 
     private final Context mContext;
     private final SharedPreferences mPrefs;
@@ -40,6 +42,8 @@ final class FallVkDelegate implements VkRendererDelegate {
     private boolean mPreview;
     /** 多指分别计距、各自落点；见 {@link FallTouchTracker}。 */
     private final FallTouchTracker mTouchTracker = new FallTouchTracker();
+    /** 每帧复用的蓝藻参数，见 {@link #buildAlgaeParams}。 */
+    private final float[] mAlgaeParams = new float[ALGAE_PARAM_COUNT];
 
     FallVkDelegate(Context context, SharedPreferences prefs) {
         mContext = context.getApplicationContext();
@@ -159,6 +163,7 @@ final class FallVkDelegate implements VkRendererDelegate {
         FallVKNative.nRenderFrame(
                 mRendererHandle,
                 lighting,
+                buildAlgaeParams(data),
                 data.getProjectionMatrix(),
                 data.getViewMatrix(),
                 leafData,
@@ -170,6 +175,8 @@ final class FallVkDelegate implements VkRendererDelegate {
                 meshRebuild ? data.getWaterMeshVertexCount() : 0,
                 meshRebuild ? data.getWaterMeshIndexCount() : 0,
                 data.getDropData(),
+                data.getAlgaePower(),
+                data.getAlgaeWorld(),
                 data.getActiveDropCount(),
                 data.getGlHeight(),
                 data.getBgScale(),
@@ -177,6 +184,46 @@ final class FallVkDelegate implements VkRendererDelegate {
                 data.getMeshScaleY(),
                 data.getDxMul(),
                 data.getRotate());
+    }
+
+    /**
+     * 蓝藻的每帧参数，顺序与 fallvk_jni.cpp 的 unpackAlgae* 一一对应：
+     * {@code [0]} 水面可见度，{@code [1]} 叶子受光可见度，
+     * {@code [2..6]} 阈值 / 波带 / 增益 / 噪声尺度 / 亮弧尺度，
+     * {@code [7..9]} low、{@code [10..12]} high、{@code [13..15]} 叶子受光色，
+     * {@code [16..21]} 世界→网格的度量、坐标尺度与偏移。
+     *
+     * <p>世界→网格的后三项与 {@code FallGL.drawLeaves} 里那组 uniform 同一套算式，
+     * 少一项叶子上的光就和水面那圈错位。
+     */
+    private float[] buildAlgaeParams(FallScene.SceneData data) {
+        float[] out = mAlgaeParams;
+        float meshScaleX = data.getMeshScaleX();
+        float meshScaleY = data.getMeshScaleY();
+        float halfH = Math.max(1e-4f, data.getGlHeight() * 0.5f);
+        out[0] = mScene.getAlgaeAmount();
+        out[1] = mScene.getLeafAlgaeAmount();
+        out[2] = FallScene.ALGAE_THRESHOLD;
+        out[3] = FallScene.ALGAE_BAND;
+        out[4] = FallScene.ALGAE_GAIN;
+        out[5] = FallScene.ALGAE_NOISE_TILE;
+        out[6] = FallScene.ALGAE_ARC_SCALE;
+        out[7] = FallScene.ALGAE_LOW[0];
+        out[8] = FallScene.ALGAE_LOW[1];
+        out[9] = FallScene.ALGAE_LOW[2];
+        out[10] = FallScene.ALGAE_HIGH[0];
+        out[11] = FallScene.ALGAE_HIGH[1];
+        out[12] = FallScene.ALGAE_HIGH[2];
+        out[13] = FallScene.LEAF_LIGHT_COLOR[0];
+        out[14] = FallScene.LEAF_LIGHT_COLOR[1];
+        out[15] = FallScene.LEAF_LIGHT_COLOR[2];
+        out[16] = meshScaleX * data.getDxMul();
+        out[17] = meshScaleY / halfH;
+        out[18] = meshScaleX;
+        out[19] = meshScaleY / halfH;
+        out[20] = (data.getXOffset() * 2.0f + 1.0f) * meshScaleX;
+        out[21] = meshScaleY;
+        return out;
     }
 
     /** 与 GLES 同源：直接读插件自己的 prefs。 */

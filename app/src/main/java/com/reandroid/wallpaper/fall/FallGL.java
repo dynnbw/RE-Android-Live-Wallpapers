@@ -119,62 +119,10 @@ public class FallGL extends GLESScene {
     // 依据实测的甲藻发光行为：过阈值才闪、极短、颗粒状。详见 fall_water_fs.glsl。
     // 取值都是上机起点，观感不对就调这里。
 
-    /**
-     * 峰值亮度。
-     *
-     * <p>**最亮处是刻意过曝的。** 蓝眼泪的照片里最亮处本来就是白的，所以峰值要推进截断区：蓝色通道先被截成 1，
-     * 亮度再往上顶，最后读作"白得发亮、边缘一圈蓝"。
-     *
-     * <p>（这与**白色发光体**那边是相反的取舍：那个的峰值压到 1 附近是为了保住黄色。
-     * 这里保住的是"过曝"本身。）
-     */
-    private static final float ALGAE_GAIN = 4.0f;
-    /*
-     * 触发阈值与波带宽度定义在 FallScene —— 那边要用同一套去算逐叶受光，
-     * 两份代码必须对齐。这里只负责把它们喂给着色器。
-     */
-    /**
-     * 噪声贴图每铺满一次覆盖多少网格单位。
-     *
-     * <p>颗粒**必须用有机的团状噪声**，不能用方格哈希 —— 第一版是
-     * {@code hash21(floor(uv * 密度))}，上机看是"一片细密的均匀点子糊在屏幕上"。
-     * 贴图取自本项目 magicsmoke 壁纸的 noise2.png。这个值越小颗粒越细。
-     *
-     * <p>**16 是照着参考那边的密度定的。** 它那几层在整个屏幕宽度上只铺
-     * 1.05~1.47 次，而 6 网格单位等于铺 8.3 次 —— 密太多，同形重复一眼可见。
-     * 16 对应约 3 次，配合多层错开的旋转。
-     * 想更细就调小，想更团就调大。
-     */
-    private static final float ALGAE_NOISE_TILE = 16.0f;
-    /**
-     * 噪声的密度增益，类比 magicsmoke 的 `alphaFactor`。
-     *
-     * <p>噪声本身的明度是铺满 0~1 的，直接拿来当密度会显得"到处都有藻"。
-     * 乘一个大于 1 的数、再 clamp，等于把低密度那一半压没，只剩成团的地方。
-     */
-    private static final float ALGAE_NOISE_GAIN = 1.8f;
-    /**
-     * 亮弧场的尺度：方向坐标乘它再去采噪声。**与波纹大小无关。**
-     *
-     * <p>同一时刻沿波前只有一部分细胞在闪 —— 每个细胞的阈值不同（文献里的 "cell anxiety"），
-     * 触发时刻也就各不相同，所以真实的光从来不是一整圈，而是几段亮弧。
-     *
-     * <p>取 0.28 是仿真定的：40 组随机种子里一圈得到 2~6 段弧、亮的比例 21%~76%
-     * （中位 54%），**没有一次整圈全暗**。值越大弧段越多越碎。
-     */
-    private static final float ALGAE_ARC_SCALE = 0.28f;
-    /**
-     * 一团藻的颜色范围（疏 → 密）。**算法取自 magicsmoke**：
-     * 噪声亮度当密度，颜色在两端之间走，而不是"同一个颜色乘亮度"。
-     *
-     * <p>low 是稀疏处的深蓝（几乎融进夜色），high 是密集处的亮蓝白 ——
-     * 于是每一团自带深浅，边缘偏深、中心偏亮。
-     */
-    private static final float[] ALGAE_LOW = {0.03f, 0.07f, 0.42f};
-
-    private static final float[] ALGAE_HIGH = {0.12f, 0.38f, 1.00f};
     /** 噪声贴图在 assets 里的路径。 */
     private static final String ALGAE_NOISE_ASSET = "fall/drawable/algae_noise.png";
+    /** 噪声的密度增益。**当前两份着色器都没有读它**，只留着设值的位置。 */
+    private static final float ALGAE_NOISE_GAIN = 1.8f;
     /** 叶片局部坐标的旋转方向，见 drawLeafQuad 里的说明。 */
     private static final float LEAF_AXIS_ROTATION_SIGN = 1.0f;
 
@@ -254,7 +202,7 @@ public class FallGL extends GLESScene {
     private int mWAlgaeNoiseHandle;
     private int mWAlgaeNoiseTileHandle;
     private int mWAlgaeNoiseGainHandle;
-    /** 亮弧场的尺度（见 {@link #ALGAE_ARC_SCALE}），水面与叶子各一份。 */
+    /** 亮弧场的尺度（见 {@link FallScene#ALGAE_ARC_SCALE}），水面与叶子各一份。 */
     private int mWAlgaeArcScaleHandle;
 
     private int mWAlgaeLowHandle;
@@ -677,11 +625,19 @@ public class FallGL extends GLESScene {
                 meshScaleY);
         GLES30.glUniform1f(mLeafAlgaeThresholdHandle, FallScene.ALGAE_THRESHOLD);
         GLES30.glUniform1f(mLeafAlgaeBandHandle, FallScene.ALGAE_BAND);
-        GLES30.glUniform1f(mLeafAlgaeNoiseTileHandle, ALGAE_NOISE_TILE);
+        GLES30.glUniform1f(mLeafAlgaeNoiseTileHandle, FallScene.ALGAE_NOISE_TILE);
         GLES30.glUniform1f(mLeafAlgaeNoiseGainHandle, ALGAE_NOISE_GAIN);
-        GLES30.glUniform1f(mLeafAlgaeArcScaleHandle, ALGAE_ARC_SCALE);
-        GLES30.glUniform3f(mLeafAlgaeLowHandle, ALGAE_LOW[0], ALGAE_LOW[1], ALGAE_LOW[2]);
-        GLES30.glUniform3f(mLeafAlgaeHighHandle, ALGAE_HIGH[0], ALGAE_HIGH[1], ALGAE_HIGH[2]);
+        GLES30.glUniform1f(mLeafAlgaeArcScaleHandle, FallScene.ALGAE_ARC_SCALE);
+        GLES30.glUniform3f(
+                mLeafAlgaeLowHandle,
+                FallScene.ALGAE_LOW[0],
+                FallScene.ALGAE_LOW[1],
+                FallScene.ALGAE_LOW[2]);
+        GLES30.glUniform3f(
+                mLeafAlgaeHighHandle,
+                FallScene.ALGAE_HIGH[0],
+                FallScene.ALGAE_HIGH[1],
+                FallScene.ALGAE_HIGH[2]);
         GLES30.glUniform3f(
                 mLightColorHandle,
                 FallScene.LEAF_LIGHT_COLOR[0],
@@ -805,14 +761,22 @@ public class FallGL extends GLESScene {
          * 因为波纹槽位是复用的，上一次的强度会残留在没被覆盖的槽里。
          */
         GLES30.glUniform1f(mWAlgaeAmountHandle, mScene.getAlgaeAmount());
-        GLES30.glUniform1f(mWAlgaeGainHandle, ALGAE_GAIN);
+        GLES30.glUniform1f(mWAlgaeGainHandle, FallScene.ALGAE_GAIN);
         GLES30.glUniform1f(mWAlgaeThresholdHandle, FallScene.ALGAE_THRESHOLD);
         GLES30.glUniform1f(mWAlgaeBandHandle, FallScene.ALGAE_BAND);
-        GLES30.glUniform1f(mWAlgaeNoiseTileHandle, ALGAE_NOISE_TILE);
+        GLES30.glUniform1f(mWAlgaeNoiseTileHandle, FallScene.ALGAE_NOISE_TILE);
         GLES30.glUniform1f(mWAlgaeNoiseGainHandle, ALGAE_NOISE_GAIN);
-        GLES30.glUniform1f(mWAlgaeArcScaleHandle, ALGAE_ARC_SCALE);
-        GLES30.glUniform3f(mWAlgaeLowHandle, ALGAE_LOW[0], ALGAE_LOW[1], ALGAE_LOW[2]);
-        GLES30.glUniform3f(mWAlgaeHighHandle, ALGAE_HIGH[0], ALGAE_HIGH[1], ALGAE_HIGH[2]);
+        GLES30.glUniform1f(mWAlgaeArcScaleHandle, FallScene.ALGAE_ARC_SCALE);
+        GLES30.glUniform3f(
+                mWAlgaeLowHandle,
+                FallScene.ALGAE_LOW[0],
+                FallScene.ALGAE_LOW[1],
+                FallScene.ALGAE_LOW[2]);
+        GLES30.glUniform3f(
+                mWAlgaeHighHandle,
+                FallScene.ALGAE_HIGH[0],
+                FallScene.ALGAE_HIGH[1],
+                FallScene.ALGAE_HIGH[2]);
         // 噪声贴图接在天空色带之后那一个单元
         int noiseUnit = 1 + mSkyTextures.length;
         GLES30.glActiveTexture(GLES30.GL_TEXTURE0 + noiseUnit);

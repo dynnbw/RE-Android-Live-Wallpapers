@@ -1,5 +1,9 @@
 package com.reandroid.wallpaper.fall;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import com.reandroid.utils.SkyField;
 
 import org.junit.Test;
@@ -9,10 +13,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.regex.Pattern;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  * 资源文件与着色器的对表。
@@ -33,8 +33,11 @@ public class FallAssetsTest {
             new File("src/main/assets/fall/data/pond_sky_fields.txt");
     private static final File WATER_FS =
             new File("src/main/assets/fall/shaders/GLES/fall_water_fs.glsl");
-    private static final File LEAF_FS =
-            new File("src/main/assets/fall/shaders/GLES/fall_fs.glsl");
+    private static final File LEAF_FS = new File("src/main/assets/fall/shaders/GLES/fall_fs.glsl");
+    /** VK 的两份着色器也留了一份蓝藻的场，常量同样要逐条相等。 */
+    private static final File VK_WATER_FS = new File("src/main/shaders/fallvk_water.frag");
+
+    private static final File VK_LEAF_FS = new File("src/main/shaders/fallvk_leaf.frag");
     /** 只为了核对 {@code STAR_WRAP_MS} —— 它与着色器的 STAR_WRAP_S 是一对。 */
     private static final File FALL_GL =
             new File("src/main/java/com/reandroid/wallpaper/fall/FallGL.java");
@@ -44,7 +47,7 @@ public class FallAssetsTest {
      * 但这里的断言不依赖顺序，只要求四段都在。
      */
     private static final String[] SECTIONS = {
-            "SKY_FIELD_MORNING", "SKY_FIELD_DAY", "SKY_FIELD_DUSK", "SKY_FIELD_NIGHT"
+        "SKY_FIELD_MORNING", "SKY_FIELD_DAY", "SKY_FIELD_DUSK", "SKY_FIELD_NIGHT"
     };
 
     /** {@link SkyField} 把色场重采样成固定 64 行，于是每条色带必须正好 64 个色值。 */
@@ -66,10 +69,10 @@ public class FallAssetsTest {
      * 漏掉这一支会把它当成"没声明"。数组下标同理（{@code uniform float uAlgaePower[$DROP_SIZE];}）。
      */
     private static boolean declaresUniform(String glsl, String name) {
-        return Pattern.compile(
-                        "uniform\\s+(?:(?:lowp|mediump|highp)\\s+)?\\w+\\s+"
-                                + Pattern.quote(name) + "(?:\\[[\\w$]+\\])?\\s*;")
-                .matcher(glsl).find();
+        return Pattern.compile("uniform\\s+(?:(?:lowp|mediump|highp)\\s+)?\\w+\\s+"
+                        + Pattern.quote(name) + "(?:\\[[\\w$]+\\])?\\s*;")
+                .matcher(glsl)
+                .find();
     }
 
     @Test
@@ -103,7 +106,8 @@ public class FallAssetsTest {
             for (int j = i + 1; j < SECTIONS.length; j++) {
                 int[] a = SkyField.parseSection(text, SECTIONS[i])[0];
                 int[] b = SkyField.parseSection(text, SECTIONS[j])[0];
-                assertTrue(SECTIONS[i] + " 与 " + SECTIONS[j] + " 完全相同，八成是漏改了",
+                assertTrue(
+                        SECTIONS[i] + " 与 " + SECTIONS[j] + " 完全相同，八成是漏改了",
                         !java.util.Arrays.equals(a, b));
             }
         }
@@ -129,11 +133,10 @@ public class FallAssetsTest {
         String fs = read(WATER_FS);
         for (String section : SECTIONS) {
             String suffix = section.substring("SKY_FIELD_".length());
-            String camel = suffix.charAt(0) + suffix.substring(1).toLowerCase(java.util.Locale.ROOT);
-            assertTrue("着色器缺少 uniform uSky" + camel,
-                    declaresUniform(fs, "uSky" + camel));
-            assertTrue("着色器缺少 uniform uWeight" + camel,
-                    declaresUniform(fs, "uWeight" + camel));
+            String camel =
+                    suffix.charAt(0) + suffix.substring(1).toLowerCase(java.util.Locale.ROOT);
+            assertTrue("着色器缺少 uniform uSky" + camel, declaresUniform(fs, "uSky" + camel));
+            assertTrue("着色器缺少 uniform uWeight" + camel, declaresUniform(fs, "uWeight" + camel));
         }
     }
 
@@ -144,14 +147,26 @@ public class FallAssetsTest {
     @Test
     public void waterShaderDeclaresTheEmitterUniforms() throws IOException {
         String fs = read(WATER_FS);
-        for (String name : new String[]{
-                "uEmitterPos", "uEmitterRadius", "uEmitterColor", "uEmitterGain",
-                "uStarAmount", "uStarTime", "uStarAspect",
-                "uAlgaeAmount", "uAlgaeGain",
-                "uAlgaeThreshold", "uAlgaeBand", "uAlgaePower",
-                "uAlgaeNoise", "uAlgaeNoiseTile", "uAlgaeNoiseGain",
-                "uAlgaeArcScale",
-                "uAlgaeLow", "uAlgaeHigh"}) {
+        for (String name : new String[] {
+            "uEmitterPos",
+            "uEmitterRadius",
+            "uEmitterColor",
+            "uEmitterGain",
+            "uStarAmount",
+            "uStarTime",
+            "uStarAspect",
+            "uAlgaeAmount",
+            "uAlgaeGain",
+            "uAlgaeThreshold",
+            "uAlgaeBand",
+            "uAlgaePower",
+            "uAlgaeNoise",
+            "uAlgaeNoiseTile",
+            "uAlgaeNoiseGain",
+            "uAlgaeArcScale",
+            "uAlgaeLow",
+            "uAlgaeHigh"
+        }) {
             assertTrue("水面着色器缺少 uniform " + name, declaresUniform(fs, name));
         }
     }
@@ -165,11 +180,10 @@ public class FallAssetsTest {
      */
     @Test
     public void algaeArcUniformExistsInBothShaders() throws IOException {
-        for (File file : new File[]{WATER_FS, LEAF_FS}) {
+        for (File file : new File[] {WATER_FS, LEAF_FS}) {
             String fs = read(file);
-            for (String name : new String[]{"uAlgaeArcScale", "uAlgaeLow", "uAlgaeHigh"}) {
-                assertTrue(file.getName() + " 缺少 uniform " + name,
-                        declaresUniform(fs, name));
+            for (String name : new String[] {"uAlgaeArcScale", "uAlgaeLow", "uAlgaeHigh"}) {
+                assertTrue(file.getName() + " 缺少 uniform " + name, declaresUniform(fs, name));
             }
         }
     }
@@ -182,24 +196,26 @@ public class FallAssetsTest {
      */
     @Test
     public void algaeConstantsMatchBetweenTheTwoShaders() throws IOException {
-        java.util.regex.Matcher m = Pattern
-                .compile("const\\s+float\\s+(ALGAE_\\w+)\\s*=\\s*([0-9.]+)")
-                .matcher(read(WATER_FS));
-        java.util.Map<String, String> water = new java.util.TreeMap<>();
-        while (m.find()) {
-            water.put(m.group(1), m.group(2));
+        java.util.Map<String, String> reference = algaeConstants(WATER_FS);
+        assertTrue("水面着色器里一个 ALGAE_ 常量都没找到", reference.size() >= 4);
+        for (File file : new File[] {LEAF_FS, VK_WATER_FS, VK_LEAF_FS}) {
+            assertEquals(
+                    file.getName() + " 的 ALGAE_ 常量与 GLES 水面那套对不上：" + "叶子上的光会和水里那圈错位",
+                    reference.toString(),
+                    algaeConstants(file).toString());
         }
-        assertTrue("水面着色器里一个 ALGAE_ 常量都没找到", water.size() >= 4);
+    }
 
-        java.util.regex.Matcher n = Pattern
-                .compile("const\\s+float\\s+(ALGAE_\\w+)\\s*=\\s*([0-9.]+)")
-                .matcher(read(LEAF_FS));
-        java.util.Map<String, String> leaf = new java.util.TreeMap<>();
-        while (n.find()) {
-            leaf.put(n.group(1), n.group(2));
+    /** 一份着色器里的 {@code ALGAE_*} 常量表。 */
+    private static java.util.Map<String, String> algaeConstants(File file) throws IOException {
+        java.util.Map<String, String> values = new java.util.TreeMap<>();
+        java.util.regex.Matcher m = Pattern.compile(
+                        "const\\s+float\\s+(ALGAE_\\w+)\\s*=\\s*([0-9.]+)")
+                .matcher(read(file));
+        while (m.find()) {
+            values.put(m.group(1), m.group(2));
         }
-        assertEquals("两份着色器的 ALGAE_ 常量对不上：叶子上的光会和水里那圈错位",
-                water.toString(), leaf.toString());
+        return values;
     }
 
     /**
@@ -211,9 +227,11 @@ public class FallAssetsTest {
     @Test
     public void starTimeIsDeclaredHighPrecision() throws IOException {
         String fs = read(WATER_FS);
-        assertTrue("uStarTime 必须以 highp 声明，否则闪烁会变成阶梯",
+        assertTrue(
+                "uStarTime 必须以 highp 声明，否则闪烁会变成阶梯",
                 Pattern.compile("uniform\\s+highp\\s+float\\s+uStarTime\\s*;")
-                        .matcher(fs).find());
+                        .matcher(fs)
+                        .find());
     }
 
     /**
@@ -224,28 +242,27 @@ public class FallAssetsTest {
      */
     @Test
     public void starWrapPeriodMatchesBetweenJavaAndShader() throws IOException {
-        java.util.regex.Matcher shader = Pattern
-                .compile("STAR_WRAP_S\\s*=\\s*([0-9.]+)")
-                .matcher(read(WATER_FS));
+        java.util.regex.Matcher shader =
+                Pattern.compile("STAR_WRAP_S\\s*=\\s*([0-9.]+)").matcher(read(WATER_FS));
         assertTrue("着色器里找不到 STAR_WRAP_S", shader.find());
         float shaderSeconds = Float.parseFloat(shader.group(1));
 
-        java.util.regex.Matcher java = Pattern
-                .compile("STAR_WRAP_MS\\s*=\\s*(\\d+)L")
-                .matcher(read(FALL_GL));
+        java.util.regex.Matcher java =
+                Pattern.compile("STAR_WRAP_MS\\s*=\\s*(\\d+)L").matcher(read(FALL_GL));
         assertTrue("FallGL 里找不到 STAR_WRAP_MS", java.find());
         long javaMs = Long.parseLong(java.group(1));
 
-        assertEquals("着色器的 STAR_WRAP_S 与 FallGL 的 STAR_WRAP_MS 必须对得上，"
-                        + "否则回绕处星星会一起跳",
-                (long) (shaderSeconds * 1000), javaMs);
+        assertEquals(
+                "着色器的 STAR_WRAP_S 与 FallGL 的 STAR_WRAP_MS 必须对得上，" + "否则回绕处星星会一起跳",
+                (long) (shaderSeconds * 1000),
+                javaMs);
     }
 
     /** 落叶的染色 uniform 同理：少了就是"染色没效果"。 */
     @Test
     public void leafShaderDeclaresTheTintUniforms() throws IOException {
         String fs = read(LEAF_FS);
-        for (String name : new String[]{"uTint", "uTintAmount", "uValue"}) {
+        for (String name : new String[] {"uTint", "uTintAmount", "uValue"}) {
             assertTrue("落叶着色器缺少 uniform " + name, declaresUniform(fs, name));
         }
     }

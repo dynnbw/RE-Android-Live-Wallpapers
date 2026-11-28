@@ -31,6 +31,7 @@ final class FallVKNative {
     static native void nRenderFrame(
             long handle,
             float[] lighting,
+            float[] algaeParams,
             float[] projectionMatrix,
             float[] viewMatrix,
             float[] leavesData,
@@ -42,6 +43,8 @@ final class FallVKNative {
             int waterVertexCount,
             int waterIndexCount,
             float[] dropData,
+            float[] algaePower,
+            float[] algaeWorld,
             int dropCount,
             float glHeight,
             float bgScale,
@@ -56,6 +59,9 @@ final class FallVKNative {
     /** 河床天空：24x64 的色带像素。 */
     static native void nSetSkyTexture(long handle, int[] argbPixels, int width, int height);
 
+    /** 蓝藻噪声：单通道字节，REPEAT 采样（水面与叶子共用一张）。 */
+    static native void nSetAlgaeTexture(long handle, byte[] pixels, int width, int height);
+
     static native void nSetLeafTexture(long handle, int[] argbPixels, int width, int height);
 
     static native void nSetLeafAtlasFrameCount(long handle, int frameCount);
@@ -65,7 +71,20 @@ final class FallVKNative {
     static int uploadTextures(Context context, long handle, boolean greenLeaves) {
         uploadMaskTexture(context, handle);
         uploadSkyTexture(context, handle);
+        uploadAlgaeTexture(context, handle);
         return uploadLeafAtlas(context, handle, greenLeaves);
+    }
+
+    /** 蓝藻的团状噪声：灰度图，只取红通道（与 GLES 的 decodeMask 同一条路径）。 */
+    private static void uploadAlgaeTexture(Context context, long handle) {
+        if (context == null || handle == 0L) {
+            return;
+        }
+        AssetLoader.Mask noise = AssetLoader.decodeMask(context, "fall/drawable/algae_noise.png");
+        if (noise == null || noise.pixels.length == 0) {
+            return;
+        }
+        nSetAlgaeTexture(handle, noise.pixels, noise.width, noise.height);
     }
 
     /** 河床的树：白底黑图 -> 单通道遮罩。 */
