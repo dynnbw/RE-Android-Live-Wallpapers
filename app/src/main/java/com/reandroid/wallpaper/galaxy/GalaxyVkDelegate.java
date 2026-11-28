@@ -4,12 +4,12 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.os.SystemClock;
+import android.view.Surface;
 
 import com.reandroid.plugin.VkPass;
 import com.reandroid.plugin.VkPassFrame;
 import com.reandroid.plugin.VkPassRendererDelegate;
 import com.reandroid.plugin.VkPassScene;
-import com.reandroid.settings.WallpaperSettings;
 import com.reandroid.utils.AssetLoader;
 
 import java.nio.ByteBuffer;
@@ -29,7 +29,7 @@ final class GalaxyVkDelegate extends VkPassRendererDelegate {
 
     private static final int MAX_PARTICLES = 20000;
     private static final int FLOATS_PER_VERTEX = 7; // angle, dist, z, r, g, b, size
-    private static final int PUSH_BYTES = 20 * 4;  // mat4 + alpha + twist + 2 padding
+    private static final int PUSH_BYTES = 20 * 4; // mat4 + alpha + twist + light scale
 
     private final SharedPreferences mPrefs;
     private GalaxyScene mScene;
@@ -44,6 +44,7 @@ final class GalaxyVkDelegate extends VkPassRendererDelegate {
 
     private boolean mUseLight2;
     private long mLastLightSyncCheckMs;
+    private int mSurfaceWidth;
 
     GalaxyVkDelegate(Context context, SharedPreferences prefs) {
         super(context);
@@ -77,6 +78,18 @@ final class GalaxyVkDelegate extends VkPassRendererDelegate {
     }
 
     @Override
+    public void onSurfaceCreated(Surface surface, int width, int height) {
+        mSurfaceWidth = width;
+        super.onSurfaceCreated(surface, width, height);
+    }
+
+    @Override
+    public void onSurfaceChanged(Surface surface, int width, int height) {
+        mSurfaceWidth = width;
+        super.onSurfaceChanged(surface, width, height);
+    }
+
+    @Override
     public void onPluginPrefsChanged(SharedPreferences prefs) {
         if (mScene != null) mScene.setPluginPrefs(prefs);
     }
@@ -93,7 +106,7 @@ final class GalaxyVkDelegate extends VkPassRendererDelegate {
         long now = SystemClock.uptimeMillis();
         if (now - mLastLightSyncCheckMs < SETTINGS_SYNC_INTERVAL_MS) return;
         mLastLightSyncCheckMs = now;
-        boolean desired = WallpaperSettings.isGalaxyLight2Enabled(false);
+        boolean desired = light2Enabled();
         if (desired == mUseLight2) return;
         mUseLight2 = desired;
         if (mPassScene != null) uploadLightTexture(mPassScene);
@@ -106,37 +119,45 @@ final class GalaxyVkDelegate extends VkPassRendererDelegate {
         scene.createBuffer("particles", FLOATS_PER_VERTEX * 4, MAX_PARTICLES, true);
         scene.createTexture("bg");
         scene.createTexture("light");
+        scene.createTexture("flares");
         uploadBackgroundTexture(scene);
-        mUseLight2 = WallpaperSettings.isGalaxyLight2Enabled(false);
+        mUseLight2 = light2Enabled();
         uploadLightTexture(scene);
+        uploadTexture(scene, "flares", "galaxy/drawable/galaxy_flares.png");
 
         mBgPass = scene.add(new VkPass(
-                "shaders/galaxyvk_bg.vert.spv",
-                "shaders/galaxyvk_bg.frag.spv",
-                new int[] {}, 0,
-                VkPass.TOPOLOGY_TRIANGLE_LIST, VkPass.BLEND_NONE))
+                        "shaders/galaxyvk_bg.vert.spv",
+                        "shaders/galaxyvk_bg.frag.spv",
+                        new int[] {},
+                        0,
+                        VkPass.TOPOLOGY_TRIANGLE_LIST,
+                        VkPass.BLEND_NONE))
                 .buffer("", 3);
         mBgPass.texture(0, "bg");
 
         mParticlePass = scene.add(new VkPass(
-                "shaders/galaxyvk_particles.vert.spv",
-                "shaders/galaxyvk_particles.frag.spv",
-                new int[] {3, 4}, FLOATS_PER_VERTEX * 4,
-                VkPass.TOPOLOGY_POINT_LIST, VkPass.BLEND_ADDITIVE))
+                        "shaders/galaxyvk_particles.vert.spv",
+                        "shaders/galaxyvk_particles.frag.spv",
+                        new int[] {3, 4},
+                        FLOATS_PER_VERTEX * 4,
+                        VkPass.TOPOLOGY_POINT_LIST,
+                        VkPass.BLEND_ADDITIVE))
                 .buffer("particles", 0)
                 .pushConstants(PUSH_BYTES);
+        mParticlePass.texture(0, "flares");
 
         mLightPass = scene.add(new VkPass(
-                "shaders/galaxyvk_light.vert.spv",
-                "shaders/galaxyvk_light.frag.spv",
-                new int[] {}, 0,
-                VkPass.TOPOLOGY_TRIANGLE_STRIP, VkPass.BLEND_ADDITIVE))
+                        "shaders/galaxyvk_light.vert.spv",
+                        "shaders/galaxyvk_light.frag.spv",
+                        new int[] {},
+                        0,
+                        VkPass.TOPOLOGY_TRIANGLE_STRIP,
+                        VkPass.BLEND_ADDITIVE))
                 .buffer("", 4)
                 .pushConstants(PUSH_BYTES);
         mLightPass.texture(0, "light");
 
-        mParticleBuffer = ByteBuffer
-                .allocateDirect(MAX_PARTICLES * FLOATS_PER_VERTEX * 4)
+        mParticleBuffer = ByteBuffer.allocateDirect(MAX_PARTICLES * FLOATS_PER_VERTEX * 4)
                 .order(ByteOrder.nativeOrder());
     }
 
@@ -171,10 +192,22 @@ final class GalaxyVkDelegate extends VkPassRendererDelegate {
         System.arraycopy(data.getMvpMatrix(), 0, mPush, 0, 16);
         mPush[16] = data.getParticleAlphaMultiplier();
         mPush[17] = data.getTwist();
-        mPush[18] = 0.0f;
-        mPush[19] = 0.0f;
+        // 与 GLES 的 drawLights 同一套尺寸公式：光晕随 galaxy_radius 缩放
+        float baseSize = mScene.getGalaxyRadius() * 512.0f / 300.0f;
+        if (mSurfaceWidth > 0) {
+            mPush[18] = (baseSize / mSurfaceWidth) * 1.1f;
+            mPush[19] = (baseSize / mSurfaceWidth) * 1.2f;
+        } else {
+            mPush[18] = 0.56f;
+            mPush[19] = 0.61f;
+        }
         frame.pushConstants(mParticlePass, mPush);
         frame.pushConstants(mLightPass, mPush);
+    }
+
+    /** 与 GLES 的 readLight2FromPrefs 同源：直接读插件自己的 prefs。 */
+    private boolean light2Enabled() {
+        return mPrefs != null && mPrefs.getBoolean("pref_galaxy_use_light2", false);
     }
 
     private void uploadBackgroundTexture(VkPassScene scene) {
@@ -182,9 +215,7 @@ final class GalaxyVkDelegate extends VkPassRendererDelegate {
     }
 
     private void uploadLightTexture(VkPassScene scene) {
-        String path = mUseLight2
-                ? "galaxy/drawable/light2.png"
-                : "galaxy/drawable/light1.jpg";
+        String path = mUseLight2 ? "galaxy/drawable/light2.png" : "galaxy/drawable/light1.jpg";
         uploadTexture(scene, "light", path);
     }
 
