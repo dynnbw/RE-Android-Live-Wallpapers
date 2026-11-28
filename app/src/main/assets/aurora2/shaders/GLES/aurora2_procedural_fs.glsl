@@ -108,11 +108,11 @@ void main() {
     if (uPalette > 3.5) {
         // 青色: 参考实现的原始配色, 不做任何偏移
     } else if (uPalette > 2.5) {
-        color = hueRotate(color, -2.2);
+        color = hueRotate(color, -3.3);
     } else if (uPalette > 1.5) {
-        color = hueRotate(color, 2.1);
+        color = hueRotate(color, 1.4);
     } else if (uPalette > 0.5) {
-        color = hueRotate(color, 0.5);
+        color = hueRotate(color, -0.55);
     } else {
         // 物理绿: 压青蓝, 抬绿, 更接近 557.7nm 的氧原子绿
         color *= vec3(1.0, 1.3, 0.55);
