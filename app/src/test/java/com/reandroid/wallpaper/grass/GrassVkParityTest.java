@@ -32,6 +32,8 @@ public class GrassVkParityTest {
     private static final File GLOW_BLUR_VK = new File("src/main/shaders/grassvk_glow_blur.frag");
     private static final File GLOW_PARAMS =
             new File("src/main/java/com/reandroid/gles/GlowParams.java");
+    private static final File GRASS_VNATIVE =
+            new File("src/main/java/com/reandroid/wallpaper/grass/GrassVKNative.java");
 
     private static String read(File file) throws IOException {
         assertTrue(file + " 不存在", file.isFile());
@@ -66,6 +68,28 @@ public class GrassVkParityTest {
         assertTrue(
                 "GLES 着色器的 FLY_MAX 与 FIREFLY_LIGHT_MAX 不一致",
                 read(GRASS_FS_GLES).contains("#define FLY_MAX 16"));
+    }
+
+    /**
+     * 精灵槽位表：Java 上传的槽位与 native 的 {@code kSpriteTextureCount} 必须对得上。
+     *
+     * <p>漏一个槽位的症状是"那张天气贴图永远不出现"，不报错；多一个则会有未写的描述符。
+     */
+    @Test
+    public void weatherSpriteSlotsMatchTheNativeTable() throws IOException {
+        String java = read(GRASS_VNATIVE);
+        java.util.regex.Matcher m = Pattern.compile(
+                        "upload(?:Sprite|Solid)Texture\\(handle, (\\d+),")
+                .matcher(java);
+        int maxSlot = -1;
+        while (m.find()) {
+            maxSlot = Math.max(maxSlot, Integer.parseInt(m.group(1)));
+        }
+        assertTrue("GrassVKNative 里一个精灵槽位都没找到", maxSlot >= 0);
+        assertTrue("槽位 " + maxSlot + " 超出了 native 的 kSpriteTextureCount = 24", maxSlot < 24);
+        // VK 那边加槽位时这边也要动，所以把两边的"表"钉在一起
+        String jni = read(GRASS_JNI);
+        assertTrue("native 的槽位数与 Java 的 24 槽约定对不上", jni.contains("kSpriteTextureCount = 24"));
     }
 
     /**

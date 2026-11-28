@@ -6,9 +6,11 @@ layout(location = 2) in float aAlpha;
 
 layout(location = 0) out vec2 vTexCoord;
 layout(location = 1) out float vAlpha;
+layout(location = 2) out vec4 vTint;
 
 layout(push_constant) uniform SpritePushConstants {
     mat4 uMVP;
+    vec4 uTint;   // rgb = 染色，a = 整批透明度（天气图层按昼夜染色）
 } uPush;
 
 void main() {
@@ -16,4 +18,5 @@ void main() {
     gl_Position.y = -gl_Position.y;
     vTexCoord = aTexCoord;
     vAlpha = aAlpha;
+    vTint = uPush.uTint;
 }

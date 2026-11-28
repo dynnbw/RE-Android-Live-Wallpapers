@@ -6,7 +6,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
-final class GrassSpriteRenderer {
+final class GrassSpriteRenderer implements GrassSpriteSink {
     /**
      * 精灵顶点格式：x, y, u, v, a —— 每顶点一个 alpha。
      *
@@ -16,6 +16,7 @@ final class GrassSpriteRenderer {
      * 透明度仍走 uAlpha uniform —— 两者在片元里相乘。
      */
     private static final int FLOATS_PER_VERTEX = 5;
+
     private static final int VERTEX_STRIDE_BYTES = FLOATS_PER_VERTEX * 4;
 
     private int positionHandle = -1;
@@ -37,6 +38,7 @@ final class GrassSpriteRenderer {
      * </ul>
      */
     private float tintR = 1.0f;
+
     private float tintG = 1.0f;
     private float tintB = 1.0f;
 
@@ -59,17 +61,24 @@ final class GrassSpriteRenderer {
         this.vertexAlphaHandle = vertexAlphaHandle;
     }
 
-    void setTint(float r, float g, float b) {
+    public void setTint(float r, float g, float b) {
         tintR = r;
         tintG = g;
         tintB = b;
     }
 
-    void setTintWhite() {
+    public void setTintWhite() {
         setTint(1.0f, 1.0f, 1.0f);
     }
 
-    void drawSprite(int texture, float cx, float cy, float size, float alpha, boolean flipV, float rotationDeg) {
+    public void drawSprite(
+            int texture,
+            float cx,
+            float cy,
+            float size,
+            float alpha,
+            boolean flipV,
+            float rotationDeg) {
         ensureBuffer();
         float half = size * 0.5f;
         float rad = (float) Math.toRadians(rotationDeg);
@@ -87,28 +96,39 @@ final class GrassSpriteRenderer {
 
         float v0 = flipV ? 0.0f : 1.0f;
         float v1 = flipV ? 1.0f : 0.0f;
-        appendSpriteQuadVertices(x0, y0, x1, y1, x2, y2, x3, y3, 0.0f, v0, 0.0f, v1, 1.0f, v1, 1.0f, v0);
+        appendSpriteQuadVertices(
+                x0, y0, x1, y1, x2, y2, x3, y3, 0.0f, v0, 0.0f, v1, 1.0f, v1, 1.0f, v0);
         flush(texture, alpha);
     }
 
-    void drawRect(int texture, float left, float top, float width, float height, float alpha) {
+    public void drawRect(
+            int texture, float left, float top, float width, float height, float alpha) {
         float right = left + width;
         float bottom = top + height;
-        appendSpriteQuadVertices(left, top, left, bottom, right, bottom, right, top,
-                0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f);
+        appendSpriteQuadVertices(
+                left, top, left, bottom, right, bottom, right, top, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+                0.0f, 1.0f, 1.0f);
         flush(texture, alpha);
     }
 
-    void drawRectUv(int texture,
-            float left, float top, float right, float bottom,
-            float uLeft, float vTop, float uRight, float vBottom,
+    public void drawRectUv(
+            int texture,
+            float left,
+            float top,
+            float right,
+            float bottom,
+            float uLeft,
+            float vTop,
+            float uRight,
+            float vBottom,
             float alpha) {
-        appendSpriteQuadVertices(left, top, left, bottom, right, bottom, right, top,
-                uLeft, vTop, uLeft, vBottom, uRight, vBottom, uRight, vTop);
+        appendSpriteQuadVertices(
+                left, top, left, bottom, right, bottom, right, top, uLeft, vTop, uLeft, vBottom,
+                uRight, vBottom, uRight, vTop);
         flush(texture, alpha);
     }
 
-    void drawBatch(int texture, float[] vertices, int floatCount, float alpha) {
+    public void drawBatch(int texture, float[] vertices, int floatCount, float alpha) {
         if (vertices == null || floatCount <= 0 || (floatCount % FLOATS_PER_VERTEX) != 0) {
             return;
         }
@@ -124,13 +144,16 @@ final class GrassSpriteRenderer {
         batchBuffer.put(vertices, 0, floatCount).position(0);
 
         GLES30.glEnableVertexAttribArray(positionHandle);
-        GLES30.glVertexAttribPointer(positionHandle, 2, GLES30.GL_FLOAT, false, VERTEX_STRIDE_BYTES, batchBuffer);
+        GLES30.glVertexAttribPointer(
+                positionHandle, 2, GLES30.GL_FLOAT, false, VERTEX_STRIDE_BYTES, batchBuffer);
         batchBuffer.position(2);
         GLES30.glEnableVertexAttribArray(texHandle);
-        GLES30.glVertexAttribPointer(texHandle, 2, GLES30.GL_FLOAT, false, VERTEX_STRIDE_BYTES, batchBuffer);
+        GLES30.glVertexAttribPointer(
+                texHandle, 2, GLES30.GL_FLOAT, false, VERTEX_STRIDE_BYTES, batchBuffer);
         batchBuffer.position(4);
         GLES30.glEnableVertexAttribArray(vertexAlphaHandle);
-        GLES30.glVertexAttribPointer(vertexAlphaHandle, 1, GLES30.GL_FLOAT, false, VERTEX_STRIDE_BYTES, batchBuffer);
+        GLES30.glVertexAttribPointer(
+                vertexAlphaHandle, 1, GLES30.GL_FLOAT, false, VERTEX_STRIDE_BYTES, batchBuffer);
 
         GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
         GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, texture);
@@ -145,10 +168,22 @@ final class GrassSpriteRenderer {
     }
 
     private void appendSpriteQuadVertices(
-            float x0, float y0, float x1, float y1,
-            float x2, float y2, float x3, float y3,
-            float u0, float v0, float u1, float v1,
-            float u2, float v2, float u3, float v3) {
+            float x0,
+            float y0,
+            float x1,
+            float y1,
+            float x2,
+            float y2,
+            float x3,
+            float y3,
+            float u0,
+            float v0,
+            float u1,
+            float v1,
+            float u2,
+            float v2,
+            float u3,
+            float v3) {
         ensureBuffer();
         int cursor = 0;
         cursor = putSpriteVertex(cursor, x0, y0, u0, v0, 1.0f);
@@ -178,13 +213,16 @@ final class GrassSpriteRenderer {
         }
 
         GLES30.glEnableVertexAttribArray(positionHandle);
-        GLES30.glVertexAttribPointer(positionHandle, 2, GLES30.GL_FLOAT, false, VERTEX_STRIDE_BYTES, spriteBuffer);
+        GLES30.glVertexAttribPointer(
+                positionHandle, 2, GLES30.GL_FLOAT, false, VERTEX_STRIDE_BYTES, spriteBuffer);
         spriteBuffer.position(2);
         GLES30.glEnableVertexAttribArray(texHandle);
-        GLES30.glVertexAttribPointer(texHandle, 2, GLES30.GL_FLOAT, false, VERTEX_STRIDE_BYTES, spriteBuffer);
+        GLES30.glVertexAttribPointer(
+                texHandle, 2, GLES30.GL_FLOAT, false, VERTEX_STRIDE_BYTES, spriteBuffer);
         spriteBuffer.position(4);
         GLES30.glEnableVertexAttribArray(vertexAlphaHandle);
-        GLES30.glVertexAttribPointer(vertexAlphaHandle, 1, GLES30.GL_FLOAT, false, VERTEX_STRIDE_BYTES, spriteBuffer);
+        GLES30.glVertexAttribPointer(
+                vertexAlphaHandle, 1, GLES30.GL_FLOAT, false, VERTEX_STRIDE_BYTES, spriteBuffer);
 
         GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
         GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, texture);

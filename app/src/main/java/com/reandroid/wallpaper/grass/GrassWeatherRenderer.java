@@ -71,6 +71,40 @@ final class GrassWeatherRenderer {
         return reference > 0 ? reference / REFERENCE_WIDTH_DP : 1.0f;
     }
 
+    /** VK 路径：没有 GL 上下文，纹理由调用方按槽位给。 */
+    private boolean mHeadless;
+
+    void setHeadless(boolean headless) {
+        mHeadless = headless;
+    }
+
+    void setToneTexture(int texture) {
+        texWeatherTone = texture;
+    }
+
+    /**
+     * 天气色调贴图的像素（1x64 的竖直渐变，ARGB）。
+     *
+     * <p>GLES 用它建 GL 纹理，VK 用它传给精灵槽位 —— 两边同一份渐变。
+     */
+    static int[] weatherToneArgb() {
+        final int topColor = 0xFF517398;
+        final int bottomColor = 0xFF6B9EBF;
+        final int texHeight = 64;
+        final float gradientEnd = 0.75f;
+        int[] argb = new int[texHeight];
+        for (int y = 0; y < texHeight; y++) {
+            float v = y / (float) (texHeight - 1);
+            float t = MathUtils.clamp(v / gradientEnd, 0.0f, 1.0f);
+            argb[y] = Color.argb(
+                    Math.round(MathUtils.lerp(Color.alpha(topColor), Color.alpha(bottomColor), t)),
+                    Math.round(MathUtils.lerp(Color.red(topColor), Color.red(bottomColor), t)),
+                    Math.round(MathUtils.lerp(Color.green(topColor), Color.green(bottomColor), t)),
+                    Math.round(MathUtils.lerp(Color.blue(topColor), Color.blue(bottomColor), t)));
+        }
+        return argb;
+    }
+
     private int texRainStreak;
 
     /**
@@ -152,10 +186,23 @@ final class GrassWeatherRenderer {
         texWeatherLightning3 =
                 loader.load("grass/drawable/grass_weather_lightning_03.png", false, false);
         texWeatherFlash = solidColorFactory.create((byte) 255, (byte) 255, (byte) 255, (byte) 255);
-        texWeatherTone = createWeatherToneTexture();
+        // VK 那条路没有 GL 上下文，色调贴图由调用方 setToneTexture 给槽位
+        texWeatherTone = mHeadless ? 0 : createWeatherToneTexture();
     }
 
     void releaseTextures() {
+        if (mHeadless) {
+            // 纹理归 VK 渲染器管，这里没有 GL 东西可删
+            texRainStreak = 0;
+            texWeatherSnow1 = texWeatherSnow2 = texWeatherSnow3 = texWeatherSnow4 = 0;
+            texWeatherFog1 = texWeatherFog2 = 0;
+            texWeatherCloud1 = texWeatherCloud2 = texWeatherCloud3 = texWeatherCloud4 = 0;
+            texWeatherLightning1 = texWeatherLightning2 = texWeatherLightning3 = 0;
+            texWeatherFlash = 0;
+            texWeatherTone = 0;
+            resetThunderState();
+            return;
+        }
         int[] tex = new int[] {
             texRainStreak,
             texWeatherSnow1,
@@ -196,16 +243,16 @@ final class GrassWeatherRenderer {
     }
 
     void drawWeatherBackground(
-            SceneData sd,
-            boolean weatherEnabled,
-            RenderOps ops,
-            GrassSpriteRenderer spriteRenderer) {
+            SceneData sd, boolean weatherEnabled, RenderOps ops, GrassSpriteSink spriteRenderer) {
         if (!weatherEnabled || sd.weatherCondition == null) {
             return;
         }
-        ops.useBackgroundProgram();
-        ops.setAlphaBlend();
-        GLES30.glUniformMatrix4fv(bgMatrixHandle, 1, false, sd.projectionMatrix, 0);
+        // VK 那条路传 null：几何录进 recorder，program 与矩阵都不需要
+        if (ops != null) {
+            ops.useBackgroundProgram();
+            ops.setAlphaBlend();
+            GLES30.glUniformMatrix4fv(bgMatrixHandle, 1, false, sd.projectionMatrix, 0);
+        }
         drawWeatherTone(sd, spriteRenderer);
     }
 
@@ -214,14 +261,16 @@ final class GrassWeatherRenderer {
             boolean frontPass,
             boolean weatherEnabled,
             RenderOps ops,
-            GrassSpriteRenderer spriteRenderer) {
+            GrassSpriteSink spriteRenderer) {
         if (!weatherEnabled || sd.weatherCondition == null) {
             return;
         }
 
-        ops.useBackgroundProgram();
-        ops.setAlphaBlend();
-        GLES30.glUniformMatrix4fv(bgMatrixHandle, 1, false, sd.projectionMatrix, 0);
+        if (ops != null) {
+            ops.useBackgroundProgram();
+            ops.setAlphaBlend();
+            GLES30.glUniformMatrix4fv(bgMatrixHandle, 1, false, sd.projectionMatrix, 0);
+        }
 
         /*
          * 整个天气图层按昼夜染色：白天是白的，夜里压暗。
@@ -328,7 +377,7 @@ final class GrassWeatherRenderer {
         thunderFlashAlpha = 0.0f;
     }
 
-    private void drawWeatherTone(SceneData sd, GrassSpriteRenderer spriteRenderer) {
+    private void drawWeatherTone(SceneData sd, GrassSpriteSink spriteRenderer) {
         /*
          * 透明度由场景算好（白天权重 × 天气开关的淡入淡出），这里不再自己判断昼夜 ——
          * 原先那句 `if (sd.isNight) return;` 会让日出那一刻天空瞬间换色。
@@ -345,7 +394,7 @@ final class GrassWeatherRenderer {
                 texWeatherTone, 0.0f, -32.0f, width, height + 32.0f, 0.0f, 0.0f, 1.0f, 1.0f, alpha);
     }
 
-    private void drawFogLayer(WeatherCondition condition, GrassSpriteRenderer spriteRenderer) {
+    private void drawFogLayer(WeatherCondition condition, GrassSpriteSink spriteRenderer) {
         if (texWeatherFog1 == 0 || texWeatherFog2 == 0) return;
         if (condition != WeatherCondition.D4_FOG) return;
         float hazeDrawW = width + 40f;
@@ -368,7 +417,7 @@ final class GrassWeatherRenderer {
                 GrassWeatherSystem.weatherSpriteTint(GrassWeatherSystem.NIGHT_WEATHER_B, day);
     }
 
-    private void restoreWeatherTint(GrassSpriteRenderer spriteRenderer) {
+    private void restoreWeatherTint(GrassSpriteSink spriteRenderer) {
         spriteRenderer.setTint(weatherTintR, weatherTintG, weatherTintB);
     }
 
@@ -409,7 +458,7 @@ final class GrassWeatherRenderer {
             WeatherCondition condition,
             long animNowMs,
             int cloudCount,
-            GrassSpriteRenderer spriteRenderer) {
+            GrassSpriteSink spriteRenderer) {
         int cond = condition.ordinal();
         float tSec = animNowMs / 1000.0f;
         clearBatchCounts(cloudBatchFloatCounts);
@@ -473,7 +522,7 @@ final class GrassWeatherRenderer {
      * 否则 dt 翻倍、雨速是标称的两倍，而且看起来还挺正常，不容易发现。
      */
     private void drawRainLayer(
-            SceneData sd, int count, boolean frontPass, GrassSpriteRenderer spriteRenderer) {
+            SceneData sd, int count, boolean frontPass, GrassSpriteSink spriteRenderer) {
         if (texRainStreak == 0) return;
 
         if (mRainParticles == null || mRainParticles.count() != count) {
@@ -536,7 +585,7 @@ final class GrassWeatherRenderer {
     }
 
     private void drawSnowLayer(
-            long animNowMs, int count, boolean frontPass, GrassSpriteRenderer spriteRenderer) {
+            long animNowMs, int count, boolean frontPass, GrassSpriteSink spriteRenderer) {
         if (texWeatherSnow1 == 0
                 || texWeatherSnow2 == 0
                 || texWeatherSnow3 == 0
@@ -708,7 +757,7 @@ final class GrassWeatherRenderer {
         groups[group] = expanded;
     }
 
-    private float drawLightningSweep(long animNowMs, GrassSpriteRenderer spriteRenderer) {
+    private float drawLightningSweep(long animNowMs, GrassSpriteSink spriteRenderer) {
         if (texWeatherLightning1 == 0 || texWeatherLightning2 == 0 || texWeatherLightning3 == 0) {
             return 0.0f;
         }

@@ -54,7 +54,10 @@ final class GrassVKNative {
             float[] grassLightParams,
             float[] fireflyLights,
             float[] glowParams,
-            boolean glowEnabled);
+            boolean glowEnabled,
+            float[] weatherTone,
+            float[] weatherBack,
+            float[] weatherFront);
 
     static native void nSetSkyTexture(
             long handle, int slot, int[] argbPixels, int width, int height);
@@ -90,6 +93,24 @@ final class GrassVKNative {
         uploadSolidTexture(handle, 6, (byte) 255, (byte) 168, (byte) 152, (byte) 255); // warm
         uploadSolidTexture(handle, 7, (byte) 158, (byte) 202, (byte) 255, (byte) 255); // cool
         uploadSolidTexture(handle, 8, (byte) 255, (byte) 238, (byte) 170, (byte) 255); // yellow
+
+        // 天气图层（槽位 9..22）与 GLES 的 GrassWeatherRenderer 同一批资源
+        uploadSpriteTexture(context, handle, 9, "grass/drawable/grass_rain_streak.png");
+        uploadSpriteTexture(context, handle, 10, "grass/drawable/grass_weather_snow_01.png");
+        uploadSpriteTexture(context, handle, 11, "grass/drawable/grass_weather_snow_02.png");
+        uploadSpriteTexture(context, handle, 12, "grass/drawable/grass_weather_snow_03.png");
+        uploadSpriteTexture(context, handle, 13, "grass/drawable/grass_weather_snow_04.png");
+        uploadSpriteTexture(context, handle, 14, "grass/drawable/grass_weather_fog_01.png");
+        uploadSpriteTexture(context, handle, 15, "grass/drawable/grass_weather_fog_02.png");
+        uploadSpriteTexture(context, handle, 16, "grass/drawable/grass_weather_cloud_01.png");
+        uploadSpriteTexture(context, handle, 17, "grass/drawable/grass_weather_cloud_02.png");
+        uploadSpriteTexture(context, handle, 18, "grass/drawable/grass_weather_cloud_03.png");
+        uploadSpriteTexture(context, handle, 19, "grass/drawable/grass_weather_cloud_04.png");
+        uploadSpriteTexture(context, handle, 20, "grass/drawable/grass_weather_lightning_01.png");
+        uploadSpriteTexture(context, handle, 21, "grass/drawable/grass_weather_lightning_02.png");
+        uploadSpriteTexture(context, handle, 22, "grass/drawable/grass_weather_lightning_03.png");
+        // 23：1x64 的天气色调渐变（与 GLES 的 createWeatherToneTexture 同一份像素）
+        nSetSpriteTexture(handle, 23, GrassWeatherRenderer.weatherToneArgb(), 1, 64);
     }
 
     static void uploadAATexture(long handle) {

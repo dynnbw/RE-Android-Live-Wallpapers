@@ -8,7 +8,8 @@ constexpr uint32_t kMaxGrassVertices = 50000;
 constexpr uint32_t kMaxGrassIndices  = 150000;
 constexpr uint32_t kSkyTextureCount  = 5; // night, sunrise, sunset, sky, solar eclipse
 // sun, dandelion, firefly1, moon, firefly2, starWhite, starWarm, starCool, starYellow
-constexpr uint32_t kSpriteTextureCount = 9;
+// 0..8 是太阳/蒲公英/萤火虫/月亮/星星；9..23 是天气图层（与 GrassVKNative 的槽位表一致）
+constexpr uint32_t kSpriteTextureCount = 24;
 // 16384 = enough for 2048 stars x 6 vertices per quad (largest tint group)
 constexpr uint32_t kMaxSpriteVertices = 16384;
 // Star buffers sized for the full setting range (0..10000 stars x 6 vertices per quad)
@@ -46,6 +47,8 @@ struct SkyPushConstants {
 
 struct GrassPushConstants {
     float mvp[16];
+    /** 精灵批的染色（rgb）与整批透明度；草与天空不读它。 */
+    float tint[4];
 };
 
 /**
@@ -315,7 +318,9 @@ public:
             jfloatArray moonVertsArr, jint moonVertCount,
             jfloatArray moonParamsArr,
             jfloatArray grassLightArr, jfloatArray fireflyLightsArr,
-            jfloatArray glowParamsArr, jboolean glowEnabled) {
+            jfloatArray glowParamsArr, jboolean glowEnabled,
+            jfloatArray weatherToneArr, jfloatArray weatherBackArr,
+            jfloatArray weatherFrontArr) {
         std::lock_guard<std::mutex> lock(mutex_);
 
         if (!isReadyLocked()) {
@@ -410,6 +415,7 @@ public:
         }
 
         GrassPushConstants grassPC{};
+        grassPC.tint[0] = grassPC.tint[1] = grassPC.tint[2] = grassPC.tint[3] = 1.0f;
         {
             jfloat* mp = env->GetFloatArrayElements(grassMvpArr, nullptr);
             if (mp) {
@@ -440,6 +446,38 @@ public:
                 moonPC.p3[2] = mp[14];
                 moonPC.p3[3] = mp[15];
                 env->ReleaseFloatArrayElements(moonParamsArr, mp, JNI_ABORT);
+            }
+        }
+
+        // --- 天气图层：录好的三趟精灵批 ---
+        copyPackedBatches(env, weatherToneArr, weatherTonePacked_);
+        copyPackedBatches(env, weatherBackArr, weatherBackPacked_);
+        copyPackedBatches(env, weatherFrontArr, weatherFrontPacked_);
+        {
+            int n = 0;
+            const float* h = nullptr;
+            const float* toneVerts = nullptr;
+            const float* backVerts = nullptr;
+            const float* frontVerts = nullptr;
+            size_t toneFloats = 0, backFloats = 0, frontFloats = 0;
+            unpackBatches(weatherTonePacked_, n, &h, &toneVerts, toneFloats);
+            unpackBatches(weatherBackPacked_, n, &h, &backVerts, backFloats);
+            unpackBatches(weatherFrontPacked_, n, &h, &frontVerts, frontFloats);
+            const size_t total = toneFloats + backFloats + frontFloats;
+            weatherToneBase_ = 0;
+            weatherBackBase_ = static_cast<uint32_t>(toneFloats);
+            weatherFrontBase_ = static_cast<uint32_t>(toneFloats + backFloats);
+            if (total > 0 && ensureWeatherVertexBufferLocked(total)
+                    && weatherVertexMapped_ != nullptr) {
+                float* dst = static_cast<float*>(weatherVertexMapped_);
+                if (toneFloats > 0) std::memcpy(dst, toneVerts, toneFloats * sizeof(float));
+                if (backFloats > 0) {
+                    std::memcpy(dst + toneFloats, backVerts, backFloats * sizeof(float));
+                }
+                if (frontFloats > 0) {
+                    std::memcpy(dst + toneFloats + backFloats, frontVerts,
+                            frontFloats * sizeof(float));
+                }
             }
         }
 
@@ -2122,6 +2160,9 @@ public:
             vkCmdDraw(cb, 3, 1, 0, 0); // full-screen triangle
         }
 
+        // ----- 天气色调（天空之后、太阳之前，与 GLES 的顺序一致）-----
+        drawWeatherPassLocked(cb, spritePipeline, weatherTonePacked_, weatherToneBase_, grassPC);
+
         // ----- sun sprite pass (before grass so blades can occlude the horizon) -----
         if (spritePipeline != VK_NULL_HANDLE && spritePipelineLayout_ != VK_NULL_HANDLE) {
             vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, spritePipeline);
@@ -2183,6 +2224,9 @@ public:
             vkCmdDraw(cb, moonCount, 1, 0, 0);
         }
 
+        // ----- 草后的天气图层（云、雾、远处雨雪；GLES 顺序在草之前）-----
+        drawWeatherPassLocked(cb, spritePipeline, weatherBackPacked_, weatherBackBase_, grassPC);
+
         // ----- grass pass (after sun/moon, before foreground sprites) -----
         if (grassDescriptorSet_ != VK_NULL_HANDLE
                 && grassVertexBuffer_ != VK_NULL_HANDLE
@@ -2220,6 +2264,124 @@ public:
             drawSpriteGroup(1, dandelionVertexBuffer_, dandelionCount);
             drawSpriteGroup(2, fireflyVertexBuffer_, fireflyCount);
             drawSpriteGroup(4, fireflyFlareVertexBuffer_, fireflyFlareCount);
+        }
+
+        // ----- 草前的天气图层（近处雨雪、闪电闪光）-----
+        drawWeatherPassLocked(cb, spritePipeline, weatherFrontPacked_, weatherFrontBase_, grassPC);
+    }
+
+    // ── 天气图层：Java 录好的精灵批，按三趟画（天空之后 / 草后 / 草前）──
+
+    /** 录好的批：[批数][每批 8 个 float 的头部][顶点…]。 */
+    static void copyPackedBatches(JNIEnv* env, jfloatArray arr, std::vector<float>& out) {
+        out.clear();
+        if (arr == nullptr) return;
+        const jsize len = env->GetArrayLength(arr);
+        if (len <= 0) return;
+        out.resize(static_cast<size_t>(len));
+        env->GetFloatArrayRegion(arr, 0, len, out.data());
+    }
+
+    /** 一份录好的批里有几批、头部在哪、顶点在哪。 */
+    static bool unpackBatches(const std::vector<float>& packed,
+            int& batchCount, const float** headers, const float** verts, size_t& vertexFloats) {
+        if (packed.size() < 1) return false;
+        batchCount = static_cast<int>(packed[0]);
+        if (batchCount <= 0) return false;
+        const size_t headerFloats = static_cast<size_t>(batchCount) * 8;
+        if (packed.size() < 1 + headerFloats) return false;
+        *headers = packed.data() + 1;
+        *verts = packed.data() + 1 + headerFloats;
+        vertexFloats = packed.size() - 1 - headerFloats;
+        return true;
+    }
+
+    bool ensureWeatherVertexBufferLocked(size_t floats) {
+        if (weatherVertexBuffer_ != VK_NULL_HANDLE && floats <= weatherVertexCapacityFloats_) {
+            return true;
+        }
+        destroyWeatherVertexBufferLocked();
+        size_t capacity = std::max<size_t>(floats, 16384);
+        VkBufferCreateInfo bci{};
+        bci.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        bci.size = capacity * sizeof(float);
+        bci.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+        bci.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        if (vkCreateBuffer(device_, &bci, nullptr, &weatherVertexBuffer_) != VK_SUCCESS) {
+            weatherVertexBuffer_ = VK_NULL_HANDLE;
+            return false;
+        }
+        VkMemoryRequirements req{};
+        vkGetBufferMemoryRequirements(device_, weatherVertexBuffer_, &req);
+        VkMemoryAllocateInfo ai{};
+        ai.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+        ai.allocationSize = req.size;
+        ai.memoryTypeIndex = vkFindMemoryType(physicalDevice_, req.memoryTypeBits,
+                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+        if (vkAllocateMemory(device_, &ai, nullptr, &weatherVertexMemory_) != VK_SUCCESS) {
+            destroyWeatherVertexBufferLocked();
+            return false;
+        }
+        vkBindBufferMemory(device_, weatherVertexBuffer_, weatherVertexMemory_, 0);
+        if (vkMapMemory(device_, weatherVertexMemory_, 0, capacity * sizeof(float), 0,
+                &weatherVertexMapped_) != VK_SUCCESS) {
+            weatherVertexMapped_ = nullptr;
+            destroyWeatherVertexBufferLocked();
+            return false;
+        }
+        weatherVertexCapacityFloats_ = capacity;
+        return true;
+    }
+
+    void destroyWeatherVertexBufferLocked() {
+        if (weatherVertexMapped_ != nullptr && weatherVertexMemory_ != VK_NULL_HANDLE) {
+            vkUnmapMemory(device_, weatherVertexMemory_);
+            weatherVertexMapped_ = nullptr;
+        }
+        if (weatherVertexBuffer_ != VK_NULL_HANDLE) {
+            vkDestroyBuffer(device_, weatherVertexBuffer_, nullptr);
+            weatherVertexBuffer_ = VK_NULL_HANDLE;
+        }
+        if (weatherVertexMemory_ != VK_NULL_HANDLE) {
+            vkFreeMemory(device_, weatherVertexMemory_, nullptr);
+            weatherVertexMemory_ = VK_NULL_HANDLE;
+        }
+        weatherVertexCapacityFloats_ = 0;
+    }
+
+    /** 画一趟录好的天气批。{@code baseVertex} 是这一趟顶点在共享缓冲里的起点。 */
+    void drawWeatherPassLocked(VkCommandBuffer cb, VkPipeline spritePipeline,
+            const std::vector<float>& packed, uint32_t baseVertex,
+            const GrassPushConstants& basePC) {
+        int batchCount = 0;
+        const float* headers = nullptr;
+        const float* verts = nullptr;
+        size_t vertexFloats = 0;
+        if (!unpackBatches(packed, batchCount, &headers, &verts, vertexFloats)) return;
+        if (weatherVertexBuffer_ == VK_NULL_HANDLE) return;
+
+        vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, spritePipeline);
+        VkDeviceSize offsets[] = {0};
+        vkCmdBindVertexBuffers(cb, 0, 1, &weatherVertexBuffer_, offsets);
+        for (int i = 0; i < batchCount; i++) {
+            const float* h = headers + i * 8;
+            const int slot = static_cast<int>(h[0]);
+            const int first = static_cast<int>(h[1]);
+            const int count = static_cast<int>(h[2]);
+            if (slot < 0 || slot >= static_cast<int>(kSpriteTextureCount) || count <= 0) continue;
+            if (spriteDescriptorSets_[slot] == VK_NULL_HANDLE) continue;
+            GrassPushConstants pc = basePC;
+            pc.tint[0] = h[3];
+            pc.tint[1] = h[4];
+            pc.tint[2] = h[5];
+            pc.tint[3] = h[6];
+            vkCmdPushConstants(cb, spritePipelineLayout_,
+                    VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                    0, sizeof(GrassPushConstants), &pc);
+            vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                    spritePipelineLayout_, 0, 1, &spriteDescriptorSets_[slot], 0, nullptr);
+            vkCmdDraw(cb, static_cast<uint32_t>(count), 1,
+                    static_cast<uint32_t>(first) + baseVertex, 0);
         }
     }
 
@@ -2324,6 +2486,19 @@ public:
         vkCmdDraw(cb, 4, 1, 0, 0);
         vkCmdEndRenderPass(cb);
     }
+
+    // ===== 天气图层状态 =====
+
+    std::vector<float> weatherTonePacked_;
+    std::vector<float> weatherBackPacked_;
+    std::vector<float> weatherFrontPacked_;
+    uint32_t weatherToneBase_ = 0;
+    uint32_t weatherBackBase_ = 0;
+    uint32_t weatherFrontBase_ = 0;
+    VkBuffer weatherVertexBuffer_ = VK_NULL_HANDLE;
+    VkDeviceMemory weatherVertexMemory_ = VK_NULL_HANDLE;
+    void* weatherVertexMapped_ = nullptr;
+    size_t weatherVertexCapacityFloats_ = 0;
 
     // ===== members =====
 
@@ -2477,7 +2652,8 @@ static void JNICALL nRenderFrame(
         jfloatArray moonVerts, jint moonVertCount,
         jfloatArray moonParams,
         jfloatArray grassLight, jfloatArray fireflyLights,
-        jfloatArray glowParams, jboolean glowEnabled) {
+        jfloatArray glowParams, jboolean glowEnabled,
+        jfloatArray weatherTone, jfloatArray weatherBack, jfloatArray weatherFront) {
     auto* r = asRenderer(handle);
     if (r) r->render(env, skyWeights, grassMvp,
             grassVerts, grassVertCount,
@@ -2493,7 +2669,8 @@ static void JNICALL nRenderFrame(
             moonVerts, moonVertCount,
             moonParams,
             grassLight, fireflyLights,
-            glowParams, glowEnabled);
+            glowParams, glowEnabled,
+            weatherTone, weatherBack, weatherFront);
 }
 
 static void JNICALL nSetSkyTexture(
@@ -2528,7 +2705,7 @@ static const JNINativeMethod kMethods[] = {
     {"nOnSurfaceCreated", "(JLandroid/view/Surface;II)Z", reinterpret_cast<void*>(nOnSurfaceCreated)},
     {"nOnSurfaceChanged", "(JLandroid/view/Surface;II)V", reinterpret_cast<void*>(nOnSurfaceChanged)},
     {"nOnSurfaceDestroyed", "(J)V", reinterpret_cast<void*>(nOnSurfaceDestroyed)},
-    {"nRenderFrame", "(J[F[F[FI[SI[FI[FI[FI[FI[FI[FI[FI[FI[FI[F[F[F[FZ)V", reinterpret_cast<void*>(nRenderFrame)},
+    {"nRenderFrame", "(J[F[F[FI[SI[FI[FI[FI[FI[FI[FI[FI[FI[FI[F[F[F[FZ[F[F[F)V", reinterpret_cast<void*>(nRenderFrame)},
     {"nSetSkyTexture", "(JI[III)V", reinterpret_cast<void*>(nSetSkyTexture)},
     {"nSetAATexture", "(J[III)V", reinterpret_cast<void*>(nSetAATexture)},
     {"nSetSpriteTexture", "(JI[III)V", reinterpret_cast<void*>(nSetSpriteTexture)},

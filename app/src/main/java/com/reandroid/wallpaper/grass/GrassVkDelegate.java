@@ -42,6 +42,24 @@ final class GrassVkDelegate implements VkRendererDelegate {
     /** 辉光的每帧参数，见 {@link #buildGlowParams}。 */
     private final float[] mGlowParams = new float[6];
 
+    /** 天气状态（预览里按固定间隔轮播，壁纸路径读联网天气）。 */
+    private final GrassWeatherIntegration mWeatherIntegration = new GrassWeatherIntegration();
+    /** 天气图层几何，与 GLES 共用；这里录成顶点数组交给 native。 */
+    private final GrassWeatherRenderer mWeatherRenderer = new GrassWeatherRenderer();
+
+    private final GrassSpriteRecorder mWeatherTone = new GrassSpriteRecorder();
+    private final GrassSpriteRecorder mWeatherBack = new GrassSpriteRecorder();
+    private final GrassSpriteRecorder mWeatherFront = new GrassSpriteRecorder();
+    /** 空批，见 {@link #pack}。 */
+    private static final float[] EMPTY_BATCHES = {0f};
+
+    private boolean mVisible = true;
+    private boolean mSceneCreated;
+
+    private static final int SLOT_WEATHER_TONE = 23;
+    /** 白色 1x1：天气的闪电闪光直接复用星空那颗白星槽位。 */
+    private static final int SLOT_WHITE = 5;
+
     GrassVkDelegate(Context context, SharedPreferences prefs, boolean preview) {
         mContext = context.getApplicationContext();
         mPrefs = prefs;
@@ -73,11 +91,107 @@ final class GrassVkDelegate implements VkRendererDelegate {
             if (mPrefs != null) {
                 mScene.setPluginPrefs(mPrefs);
                 mNightStars.setPluginPrefs(mPrefs);
+                mWeatherIntegration.setPluginPrefs(mPrefs);
+                mWeatherRenderer.setPluginPrefs(mPrefs);
             }
             mScene.init(mPreview);
+            initWeather();
         } else {
             mScene.resize(width, height);
         }
+        mWeatherRenderer.setViewport(mWidth, mHeight);
+    }
+
+    /**
+     * 天气图层初始化：几何与 GLES 同一份，只是纹理由精灵槽位代替 GL 纹理 id。
+     *
+     * <p>天气在 VK 上走"录顶点 → native 画"这条路，所以这里没有 GL 上下文可用
+     * （{@code setHeadless}）。
+     */
+    private void initWeather() {
+        if (mSceneCreated) {
+            return;
+        }
+        mSceneCreated = true;
+        mWeatherRenderer.setHeadless(true);
+        mWeatherRenderer.setViewport(mWidth, mHeight);
+        mWeatherRenderer.setDensity(mContext.getResources().getDisplayMetrics().density);
+        mWeatherRenderer.loadTextures(
+                (path, repeat, mipmap) -> weatherSlotForAsset(path), (r, g, b, a) -> SLOT_WHITE);
+        mWeatherRenderer.setToneTexture(SLOT_WEATHER_TONE);
+        mWeatherIntegration.onCreate(mContext);
+        if (mVisible) {
+            mWeatherIntegration.start(mPreview);
+        }
+    }
+
+    /** 资产路径 → VK 精灵槽位，与 {@code GrassVKNative.uploadSpriteTextures} 一致。 */
+    private int weatherSlotForAsset(String assetPath) {
+        switch (assetPath) {
+            case "grass/drawable/grass_rain_streak.png":
+                return 9;
+            case "grass/drawable/grass_weather_snow_01.png":
+                return 10;
+            case "grass/drawable/grass_weather_snow_02.png":
+                return 11;
+            case "grass/drawable/grass_weather_snow_03.png":
+                return 12;
+            case "grass/drawable/grass_weather_snow_04.png":
+                return 13;
+            case "grass/drawable/grass_weather_fog_01.png":
+                return 14;
+            case "grass/drawable/grass_weather_fog_02.png":
+                return 15;
+            case "grass/drawable/grass_weather_cloud_01.png":
+                return 16;
+            case "grass/drawable/grass_weather_cloud_02.png":
+                return 17;
+            case "grass/drawable/grass_weather_cloud_03.png":
+                return 18;
+            case "grass/drawable/grass_weather_cloud_04.png":
+                return 19;
+            case "grass/drawable/grass_weather_lightning_01.png":
+                return 20;
+            case "grass/drawable/grass_weather_lightning_02.png":
+                return 21;
+            case "grass/drawable/grass_weather_lightning_03.png":
+                return 22;
+            default:
+                return 0;
+        }
+    }
+
+    @Override
+    public void onVisibilityChanged(boolean visible) {
+        mVisible = visible;
+        if (!mSceneCreated) {
+            return;
+        }
+        if (visible) {
+            mWeatherIntegration.start(mPreview);
+        } else {
+            mWeatherIntegration.stop();
+        }
+    }
+
+    /**
+     * 把录好的一趟批压成一个数组交给 native：
+     * {@code [批数][每批 8 个 float 的头部][顶点…]}。
+     *
+     * <p>按实际长度复制，native 用数组长度推顶点数 —— 复用超长数组会把上一帧的尾巴带过去。
+     */
+    private static float[] pack(GrassSpriteRecorder recorder) {
+        int batchCount = recorder.batchCount();
+        if (batchCount <= 0) {
+            return EMPTY_BATCHES;
+        }
+        int headerFloats = batchCount * GrassSpriteRecorder.HEADER_FLOATS;
+        int vertexFloats = recorder.vertexFloats();
+        float[] out = new float[1 + headerFloats + vertexFloats];
+        out[0] = batchCount;
+        System.arraycopy(recorder.headers(), 0, out, 1, headerFloats);
+        System.arraycopy(recorder.vertices(), 0, out, 1 + headerFloats, vertexFloats);
+        return out;
     }
 
     @Override
@@ -128,6 +242,17 @@ final class GrassVkDelegate implements VkRendererDelegate {
     public void renderFrame() {
         if (!mSurfaceReady) return;
         long now = SystemClock.uptimeMillis();
+
+        // 天气要先于场景更新：颜色/透明度/粒子都挂在 SceneData 上
+        GrassWeatherIntegration.FrameUpdate weatherUpdate =
+                mWeatherIntegration.update(now, mPreview);
+        if (weatherUpdate.clearSceneWeather) {
+            mScene.setWeatherState(null);
+        }
+        if (weatherUpdate.stateToApply != null) {
+            mScene.setWeatherState(weatherUpdate.stateToApply);
+        }
+
         mScene.update(now);
         SceneData sd = mScene.getSceneData();
 
@@ -161,6 +286,18 @@ final class GrassVkDelegate implements VkRendererDelegate {
         GrassRenderDataBuilder.StarBatches stars = mScene.mRenderDataBuilder.buildStarBatches(
                 mNightStars, sd, mWidth, mHeight, mStarBatches);
 
+        /*
+         * 天气图层：几何与 GLES 同一份（GrassWeatherRenderer），这里录成顶点批。
+         * 三趟的顺序与 GLES 一致：色调在天空之后、云雨雪分草后/草前两趟。
+         */
+        boolean weatherOn = mWeatherIntegration.isWeatherEnabled();
+        mWeatherTone.begin();
+        mWeatherRenderer.drawWeatherBackground(sd, weatherOn, null, mWeatherTone);
+        mWeatherBack.begin();
+        mWeatherRenderer.drawWeatherOverlays(sd, false, weatherOn, null, mWeatherBack);
+        mWeatherFront.begin();
+        mWeatherRenderer.drawWeatherOverlays(sd, true, weatherOn, null, mWeatherFront);
+
         GrassVKNative.nRenderFrame(
                 mRendererHandle,
                 sky,
@@ -191,7 +328,10 @@ final class GrassVkDelegate implements VkRendererDelegate {
                 buildGrassLightParams(sd),
                 mFireflyLighting.lights,
                 buildGlowParams(sd),
-                sd.glowEnabled);
+                sd.glowEnabled,
+                pack(mWeatherTone),
+                pack(mWeatherBack),
+                pack(mWeatherFront));
     }
 
     /**

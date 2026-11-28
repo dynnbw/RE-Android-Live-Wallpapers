@@ -82,8 +82,7 @@
           "type": "switch",
           "key": "pref_grass_weather_enabled",
           "title": "pref_grass_weather_enabled",
-          "default": "false",
-          "disableOn": "use_vulkan"
+          "default": "false"
         },
         {
           "type": "seekbar",
