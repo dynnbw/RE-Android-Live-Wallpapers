@@ -41,6 +41,8 @@ final class GrassVkDelegate implements VkRendererDelegate {
     private final float[] mGrassLightParams = new float[GRASS_LIGHT_PARAM_COUNT];
     /** 辉光的每帧参数，见 {@link #buildGlowParams}。 */
     private final float[] mGlowParams = new float[6];
+    /** 程序化太阳的每帧参数，见 {@link #buildSunParams}。 */
+    private final float[] mSunParams = new float[19];
 
     /** 天气状态（预览里按固定间隔轮播，壁纸路径读联网天气）。 */
     private final GrassWeatherIntegration mWeatherIntegration = new GrassWeatherIntegration();
@@ -202,6 +204,7 @@ final class GrassVkDelegate implements VkRendererDelegate {
             GrassVKNative.uploadSkyTextures(mContext, mRendererHandle);
             GrassVKNative.uploadAATexture(mRendererHandle);
             GrassVKNative.uploadSpriteTextures(mContext, mRendererHandle);
+            GrassVKNative.uploadSunTextures(mContext, mRendererHandle);
         }
         return mRendererHandle;
     }
@@ -331,7 +334,9 @@ final class GrassVkDelegate implements VkRendererDelegate {
                 sd.glowEnabled,
                 pack(mWeatherTone),
                 pack(mWeatherBack),
-                pack(mWeatherFront));
+                pack(mWeatherFront),
+                sd.proceduralSunEnabled,
+                buildSunParams(sd));
     }
 
     /**
@@ -383,6 +388,35 @@ final class GrassVkDelegate implements VkRendererDelegate {
         out[4] = sd.duskTone;
         out[5] = GrassConstants.DUSK_TONE_GAMMA;
         return out;
+    }
+
+    /**
+     * 程序化太阳的每帧参数，顺序见 grassvk_jni.cpp 的 {@code drawProceduralSunLocked}：
+     * 分辨率 / 太阳位置 / 时间 / 不透明度 / 本体染色，然后是 {@code GrassConstants} 里
+     * 那组观感常量（两个渲染器同一份）。
+     */
+    private float[] buildSunParams(SceneData sd) {
+        float[] p = mSunParams;
+        p[0] = mWidth;
+        p[1] = mHeight;
+        p[2] = sd.sunX;
+        p[3] = sd.sunY;
+        p[4] = sd.animNowMs * 0.001f;
+        p[5] = sd.sunAlpha;
+        p[6] = sd.sunTint[0];
+        p[7] = sd.sunTint[1];
+        p[8] = sd.sunTint[2];
+        p[9] = GrassConstants.SUN_CIRCLE_ALPHA;
+        p[10] = GrassConstants.SUN_CIRCLE_OFFSET;
+        p[11] = GrassConstants.SUN_CIRCLE_OFFSET_RATIO;
+        p[12] = GrassConstants.SUN_ANNULUS_ALPHA;
+        p[13] = GrassConstants.SUN_RAY_ALPHA;
+        p[14] = GrassConstants.SUN_DYNAMIC_RAY_ALPHA;
+        p[15] = GrassConstants.SUN_FLARE_BRIGHTNESS;
+        p[16] = GrassConstants.SUN_CORE_GAIN;
+        p[17] = GrassConstants.SUN_QUALITY;
+        p[18] = GrassConstants.SUN_22_OPEN;
+        return p;
     }
 
     @Override

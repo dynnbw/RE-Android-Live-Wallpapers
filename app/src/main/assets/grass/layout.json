@@ -130,8 +130,7 @@
           "key": "pref_grass_procedural_sun",
           "title": "pref_grass_procedural_sun",
           "default": "true",
-          "dependency": "pref_grass_sun",
-          "disableOn": "use_vulkan"
+          "dependency": "pref_grass_sun"
         },
         {
           "type": "switch",

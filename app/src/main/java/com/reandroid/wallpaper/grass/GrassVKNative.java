@@ -57,12 +57,17 @@ final class GrassVKNative {
             boolean glowEnabled,
             float[] weatherTone,
             float[] weatherBack,
-            float[] weatherFront);
+            float[] weatherFront,
+            boolean proceduralSun,
+            float[] sunParams);
 
     static native void nSetSkyTexture(
             long handle, int slot, int[] argbPixels, int width, int height);
 
     static native void nSetAATexture(long handle, int[] argbPixels, int width, int height);
+
+    /** 程序化太阳的 ASTC 块数据：slot 0/1/2 = sun_ramp / annulus_ramp / rays。 */
+    static native void nSetSunTexture(long handle, int slot, byte[] payload, int width, int height);
 
     static native void nSetSpriteTexture(
             long handle, int slot, int[] argbPixels, int width, int height);
@@ -111,6 +116,37 @@ final class GrassVKNative {
         uploadSpriteTexture(context, handle, 22, "grass/drawable/grass_weather_lightning_03.png");
         // 23：1x64 的天气色调渐变（与 GLES 的 createWeatherToneTexture 同一份像素）
         nSetSpriteTexture(handle, 23, GrassWeatherRenderer.weatherToneArgb(), 1, 64);
+    }
+
+    /**
+     * 程序化太阳的三张 LUT。与 GLES 那边是同一批 ASTC 资源，这里只拆掉 16 字节的
+     * 文件头再把块数据原样交给 native —— 能不能用由设备对 ASTC 的支持决定，
+     * 不支持时 native 会继续用贴图太阳。
+     */
+    static void uploadSunTextures(Context context, long handle) {
+        uploadAstc(context, handle, 0, "grass/drawable/sun_ramp.astc");
+        uploadAstc(context, handle, 1, "grass/drawable/sun_annulus_ramp.astc");
+        uploadAstc(context, handle, 2, "grass/drawable/sun_rays.astc");
+    }
+
+    private static void uploadAstc(Context context, long handle, int slot, String assetPath) {
+        if (context == null || handle == 0L) return;
+        byte[] data = AssetLoader.readBytes(context, assetPath);
+        if (data == null || data.length <= 16) return;
+        int magic = (data[0] & 0xFF)
+                | ((data[1] & 0xFF) << 8)
+                | ((data[2] & 0xFF) << 16)
+                | ((data[3] & 0xFF) << 24);
+        if (magic != 0x5CA1AB13) return;
+        int blockX = data[4] & 0xFF;
+        int blockY = data[5] & 0xFF;
+        if (blockX != 4 || blockY != 4) return;
+        int width = (data[7] & 0xFF) | ((data[8] & 0xFF) << 8) | ((data[9] & 0xFF) << 16);
+        int height = (data[10] & 0xFF) | ((data[11] & 0xFF) << 8) | ((data[12] & 0xFF) << 16);
+        if (width <= 0 || height <= 0 || data.length <= 16) return;
+        byte[] payload = new byte[data.length - 16];
+        System.arraycopy(data, 16, payload, 0, payload.length);
+        nSetSunTexture(handle, slot, payload, width, height);
     }
 
     static void uploadAATexture(long handle) {

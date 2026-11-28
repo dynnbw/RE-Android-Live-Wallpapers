@@ -51,6 +51,38 @@ struct GrassPushConstants {
     float tint[4];
 };
 
+/** 程序化太阳：顶点阶段（与 grassvk_sun.vert 的 SunVertexPush 对应）。 */
+struct SunVertexPush {
+    float mvp[16];
+    float resolution[2];
+    float sunPos[2];
+    float time;
+    float sunPosOffsetY;
+    float lineAlpha;
+    float pad;
+};
+
+/** 程序化太阳：片元阶段。 */
+struct SunFragmentPush {
+    float opacity;
+    float circleAlpha;
+    float circleOffset;
+    float circleOffsetRatio;
+    float annulusAlpha;
+    float rayAlpha;
+    float dynamicRayAlpha;
+    float flareBrightness;
+    float coreGain;
+    float quality;
+    float open22;
+    float lensFlare;
+    float closeCircle;
+    float pad0;
+    float pad1;
+    float pad2;
+    float sunTint[4];
+};
+
 /**
  * 草叶光照的每帧参数（binding 1）。
  *
@@ -134,6 +166,14 @@ public:
 
     bool onDeviceCreated() {
         glowFormatSupported_ = queryGlowFormatSupportLocked();
+        sunFormatSupported_ = querySunFormatSupportLocked();
+        if (sunFormatSupported_) {
+            createSunDescriptorResourcesLocked();
+            sunPipelineLayout_ = createSunPipelineLayoutLocked();
+            for (uint32_t s = 0; s < 3; s++) ensureSunTextureLocked(s);
+        }
+        LOGI("GrassVK sun: astcSupported=%d ready=%d", sunFormatSupported_ ? 1 : 0,
+                sunReady_ ? 1 : 0);
         if (!createGrassGeometryBuffersLocked()) return false;
         if (!createSpriteGeometryBuffersLocked()) return false;
         if (!createSkyDescriptorResourcesLocked()) return false;
@@ -160,6 +200,34 @@ public:
 
     void destroyTexturesLocked() {
         for (auto& st : skyTextures_) destroyGpuTextureLocked(st);
+        for (auto& st : sunTextures_) destroyGpuTextureLocked(st);
+        sunReady_ = false;
+        if (sunDescriptorPool_ != VK_NULL_HANDLE) {
+            vkDestroyDescriptorPool(device_, sunDescriptorPool_, nullptr);
+            sunDescriptorPool_ = VK_NULL_HANDLE;
+            sunDescriptorSet_ = VK_NULL_HANDLE;
+        }
+        if (sunDescriptorSetLayout_ != VK_NULL_HANDLE) {
+            vkDestroyDescriptorSetLayout(device_, sunDescriptorSetLayout_, nullptr);
+            sunDescriptorSetLayout_ = VK_NULL_HANDLE;
+        }
+        if (sunFragmentUboMapped_ != nullptr && sunFragmentUboMemory_ != VK_NULL_HANDLE) {
+            vkUnmapMemory(device_, sunFragmentUboMemory_);
+            sunFragmentUboMapped_ = nullptr;
+        }
+        if (sunFragmentUbo_ != VK_NULL_HANDLE) {
+            vkDestroyBuffer(device_, sunFragmentUbo_, nullptr);
+            sunFragmentUbo_ = VK_NULL_HANDLE;
+        }
+        if (sunFragmentUboMemory_ != VK_NULL_HANDLE) {
+            vkFreeMemory(device_, sunFragmentUboMemory_, nullptr);
+            sunFragmentUboMemory_ = VK_NULL_HANDLE;
+        }
+        // 管线条已经在本函数之前（destroySwapchainResourcesLocked）销毁，这里再放布局
+        if (sunPipelineLayout_ != VK_NULL_HANDLE) {
+            vkDestroyPipelineLayout(device_, sunPipelineLayout_, nullptr);
+            sunPipelineLayout_ = VK_NULL_HANDLE;
+        }
         destroyGpuTextureLocked(aaTexture_);
         for (auto& st : spriteTextures_) destroyGpuTextureLocked(st);
 
@@ -320,7 +388,8 @@ public:
             jfloatArray grassLightArr, jfloatArray fireflyLightsArr,
             jfloatArray glowParamsArr, jboolean glowEnabled,
             jfloatArray weatherToneArr, jfloatArray weatherBackArr,
-            jfloatArray weatherFrontArr) {
+            jfloatArray weatherFrontArr,
+            jboolean proceduralSun, jfloatArray sunParamsArr) {
         std::lock_guard<std::mutex> lock(mutex_);
 
         if (!isReadyLocked()) {
@@ -338,6 +407,12 @@ public:
          * 撞不上；夜里每帧上万顶点，撞上就看得见。
          */
         vkWaitForFences(device_, 1, &inFlightFence_, VK_TRUE, UINT64_MAX);
+
+        // 程序化太阳
+        sunProcedural_ = proceduralSun == JNI_TRUE;
+        if (sunParamsArr != nullptr) {
+            env->GetFloatArrayRegion(sunParamsArr, 0, 19, sunParams_);
+        }
 
         // 辉光走不走离屏路径
         glowRequested_ = glowEnabled == JNI_TRUE;
@@ -821,6 +896,19 @@ public:
         moonPipeline_ = createGraphicsPipelineLocked(mVert,    mFrag,    moonPipelineLayout_, PIPELINE_MOON, renderPass_);
         moonDayPipeline_ = createGraphicsPipelineLocked(mVert, mFrag,    moonPipelineLayout_, PIPELINE_MOON_DAY, renderPass_);
 
+        if (sunFormatSupported_ && sunPipelineLayout_ != VK_NULL_HANDLE) {
+            VkShaderModule sunVert = createShaderModuleLocked(
+                    {"shaders/grassvk_sun.vert.spv", "shaders/grassvk_sun.vert.spv"});
+            VkShaderModule sunFrag = createShaderModuleLocked(
+                    {"shaders/grassvk_sun.frag.spv", "shaders/grassvk_sun.frag.spv"});
+            if (sunVert != VK_NULL_HANDLE && sunFrag != VK_NULL_HANDLE) {
+                sunPipeline_ = createSunPipelineLocked(
+                        sunVert, sunFrag, sunPipelineLayout_, renderPass_);
+            }
+            if (sunVert != VK_NULL_HANDLE) vkDestroyShaderModule(device_, sunVert, nullptr);
+            if (sunFrag != VK_NULL_HANDLE) vkDestroyShaderModule(device_, sunFrag, nullptr);
+        }
+
         cleanup();
         return skyPipeline_ != VK_NULL_HANDLE && grassPipeline_ != VK_NULL_HANDLE
             && spritePipeline_ != VK_NULL_HANDLE
@@ -1251,6 +1339,20 @@ public:
         writeGlowSamplerLocked(device_, compositeSet_, 0, sceneView_, glowSampler_);
         writeGlowSamplerLocked(device_, compositeSet_, 1, bloomViewA_, glowSampler_);
 
+        // 离屏那一遍的程序化太阳管线（与场景管线同一个理由：render pass 不同）
+        if (sunFormatSupported_ && sunPipelineLayout_ != VK_NULL_HANDLE) {
+            VkShaderModule sunVert = createShaderModuleLocked(
+                    {"shaders/grassvk_sun.vert.spv", "shaders/grassvk_sun.vert.spv"});
+            VkShaderModule sunFrag = createShaderModuleLocked(
+                    {"shaders/grassvk_sun.frag.spv", "shaders/grassvk_sun.frag.spv"});
+            if (sunVert != VK_NULL_HANDLE && sunFrag != VK_NULL_HANDLE) {
+                sunPipelineScene_ = createSunPipelineLocked(
+                        sunVert, sunFrag, sunPipelineLayout_, scenePass_);
+            }
+            if (sunVert != VK_NULL_HANDLE) vkDestroyShaderModule(device_, sunVert, nullptr);
+            if (sunFrag != VK_NULL_HANDLE) vkDestroyShaderModule(device_, sunFrag, nullptr);
+        }
+
         glowReady_ = true;
         return true;
     }
@@ -1290,12 +1392,417 @@ public:
         if (bloomMemoryB_ != VK_NULL_HANDLE) { vkFreeMemory(device_, bloomMemoryB_, nullptr); bloomMemoryB_ = VK_NULL_HANDLE; }
     }
 
+    // ── 程序化太阳（三张 ASTC LUT + 全屏 pass）──
+
+    bool querySunFormatSupportLocked() const {
+        VkFormatProperties props{};
+        vkGetPhysicalDeviceFormatProperties(
+                physicalDevice_, VK_FORMAT_ASTC_4x4_UNORM_BLOCK, &props);
+        return (props.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT) != 0;
+    }
+
+    /** ASTC 块数据直接上传：不经过 RGBA 解码，格式与 GLES 那边同一张资源。 */
+    bool uploadAstcTextureLocked(const uint8_t* payload, uint32_t byteSize,
+            uint32_t width, uint32_t height, GpuTexture& tex) {
+        if (device_ == VK_NULL_HANDLE || payload == nullptr || byteSize == 0) return false;
+        destroyGpuTextureLocked(tex);
+
+        VkBufferCreateInfo bi{};
+        bi.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        bi.size = byteSize;
+        bi.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+        bi.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        VkBuffer stageBuf = VK_NULL_HANDLE;
+        if (vkCreateBuffer(device_, &bi, nullptr, &stageBuf) != VK_SUCCESS) return false;
+        VkMemoryRequirements bufReq{};
+        vkGetBufferMemoryRequirements(device_, stageBuf, &bufReq);
+        VkMemoryAllocateInfo bai{};
+        bai.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+        bai.allocationSize = bufReq.size;
+        bai.memoryTypeIndex = vkFindMemoryType(physicalDevice_, bufReq.memoryTypeBits,
+                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+        VkDeviceMemory stageMem = VK_NULL_HANDLE;
+        if (vkAllocateMemory(device_, &bai, nullptr, &stageMem) != VK_SUCCESS) {
+            vkDestroyBuffer(device_, stageBuf, nullptr);
+            return false;
+        }
+        vkBindBufferMemory(device_, stageBuf, stageMem, 0);
+        void* mapped = nullptr;
+        if (vkMapMemory(device_, stageMem, 0, byteSize, 0, &mapped) != VK_SUCCESS) {
+            vkFreeMemory(device_, stageMem, nullptr);
+            vkDestroyBuffer(device_, stageBuf, nullptr);
+            return false;
+        }
+        std::memcpy(mapped, payload, byteSize);
+        vkUnmapMemory(device_, stageMem);
+
+        VkImageCreateInfo ii{};
+        ii.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+        ii.imageType = VK_IMAGE_TYPE_2D;
+        ii.extent = {width, height, 1};
+        ii.mipLevels = 1;
+        ii.arrayLayers = 1;
+        ii.format = VK_FORMAT_ASTC_4x4_UNORM_BLOCK;
+        ii.tiling = VK_IMAGE_TILING_OPTIMAL;
+        ii.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        ii.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+        ii.samples = VK_SAMPLE_COUNT_1_BIT;
+        ii.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        if (vkCreateImage(device_, &ii, nullptr, &tex.image) != VK_SUCCESS) {
+            tex.image = VK_NULL_HANDLE;
+            vkFreeMemory(device_, stageMem, nullptr);
+            vkDestroyBuffer(device_, stageBuf, nullptr);
+            return false;
+        }
+        VkMemoryRequirements imgReq{};
+        vkGetImageMemoryRequirements(device_, tex.image, &imgReq);
+        VkMemoryAllocateInfo iai{};
+        iai.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+        iai.allocationSize = imgReq.size;
+        iai.memoryTypeIndex = vkFindMemoryType(physicalDevice_, imgReq.memoryTypeBits,
+                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+        if (vkAllocateMemory(device_, &iai, nullptr, &tex.memory) != VK_SUCCESS) {
+            destroyGpuTextureLocked(tex);
+            vkFreeMemory(device_, stageMem, nullptr);
+            vkDestroyBuffer(device_, stageBuf, nullptr);
+            return false;
+        }
+        vkBindImageMemory(device_, tex.image, tex.memory, 0);
+
+        VkCommandBuffer cb = beginOneTimeCommandsLocked();
+        if (cb == VK_NULL_HANDLE) {
+            destroyGpuTextureLocked(tex);
+            vkFreeMemory(device_, stageMem, nullptr);
+            vkDestroyBuffer(device_, stageBuf, nullptr);
+            return false;
+        }
+        transitionImageLayoutLocked(cb, tex.image,
+                VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+        VkBufferImageCopy region{};
+        region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        region.imageSubresource.layerCount = 1;
+        region.imageExtent = {width, height, 1};
+        vkCmdCopyBufferToImage(cb, stageBuf, tex.image,
+                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+        transitionImageLayoutLocked(cb, tex.image,
+                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        const bool ok = endOneTimeCommandsLocked(cb);
+        vkFreeMemory(device_, stageMem, nullptr);
+        vkDestroyBuffer(device_, stageBuf, nullptr);
+        if (!ok) {
+            destroyGpuTextureLocked(tex);
+            return false;
+        }
+
+        VkImageViewCreateInfo vi{};
+        vi.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+        vi.image = tex.image;
+        vi.viewType = VK_IMAGE_VIEW_TYPE_2D;
+        vi.format = VK_FORMAT_ASTC_4x4_UNORM_BLOCK;
+        vi.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        vi.subresourceRange.levelCount = 1;
+        vi.subresourceRange.layerCount = 1;
+        if (vkCreateImageView(device_, &vi, nullptr, &tex.view) != VK_SUCCESS) {
+            tex.view = VK_NULL_HANDLE;
+            destroyGpuTextureLocked(tex);
+            return false;
+        }
+        VkSamplerCreateInfo si{};
+        si.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+        si.magFilter = VK_FILTER_LINEAR;
+        si.minFilter = VK_FILTER_LINEAR;
+        si.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+        si.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        si.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        si.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        if (vkCreateSampler(device_, &si, nullptr, &tex.sampler) != VK_SUCCESS) {
+            tex.sampler = VK_NULL_HANDLE;
+            destroyGpuTextureLocked(tex);
+            return false;
+        }
+        tex.width = width;
+        tex.height = height;
+        return true;
+    }
+
+    bool createSunDescriptorResourcesLocked() {
+        if (!sunFormatSupported_) return false;
+        if (sunDescriptorSetLayout_ != VK_NULL_HANDLE && sunDescriptorSet_ != VK_NULL_HANDLE) {
+            return true;
+        }
+        VkDescriptorSetLayoutBinding bindings[4]{};
+        for (uint32_t i = 0; i < 3; i++) {
+            bindings[i].binding = i;
+            bindings[i].descriptorCount = 1;
+            bindings[i].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+            bindings[i].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+        }
+        // binding 3：片元参数（push constant 只有 128 字节，顶点那边已经占掉 96）
+        bindings[3].binding = 3;
+        bindings[3].descriptorCount = 1;
+        bindings[3].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        bindings[3].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+        VkDescriptorSetLayoutCreateInfo li{};
+        li.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+        li.bindingCount = 4;
+        li.pBindings = bindings;
+        if (vkCreateDescriptorSetLayout(device_, &li, nullptr, &sunDescriptorSetLayout_) != VK_SUCCESS) {
+            return false;
+        }
+        VkDescriptorPoolSize ps[2]{};
+        ps[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        ps[0].descriptorCount = 3;
+        ps[1].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        ps[1].descriptorCount = 1;
+        VkDescriptorPoolCreateInfo pci{};
+        pci.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+        pci.poolSizeCount = 2;
+        pci.pPoolSizes = ps;
+        pci.maxSets = 1;
+        if (vkCreateDescriptorPool(device_, &pci, nullptr, &sunDescriptorPool_) != VK_SUCCESS) {
+            return false;
+        }
+        VkDescriptorSetAllocateInfo ai{};
+        ai.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+        ai.descriptorPool = sunDescriptorPool_;
+        ai.descriptorSetCount = 1;
+        ai.pSetLayouts = &sunDescriptorSetLayout_;
+        if (vkAllocateDescriptorSets(device_, &ai, &sunDescriptorSet_) != VK_SUCCESS) return false;
+
+        // 片元参数的 UBO：持久映射，每帧 memcpy
+        VkBufferCreateInfo bci{};
+        bci.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        bci.size = sizeof(SunFragmentPush);
+        bci.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+        bci.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        if (vkCreateBuffer(device_, &bci, nullptr, &sunFragmentUbo_) != VK_SUCCESS) return false;
+        VkMemoryRequirements req{};
+        vkGetBufferMemoryRequirements(device_, sunFragmentUbo_, &req);
+        VkMemoryAllocateInfo mai{};
+        mai.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+        mai.allocationSize = req.size;
+        mai.memoryTypeIndex = vkFindMemoryType(physicalDevice_, req.memoryTypeBits,
+                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+        if (vkAllocateMemory(device_, &mai, nullptr, &sunFragmentUboMemory_) != VK_SUCCESS) {
+            return false;
+        }
+        vkBindBufferMemory(device_, sunFragmentUbo_, sunFragmentUboMemory_, 0);
+        if (vkMapMemory(device_, sunFragmentUboMemory_, 0, sizeof(SunFragmentPush), 0,
+                &sunFragmentUboMapped_) != VK_SUCCESS) {
+            sunFragmentUboMapped_ = nullptr;
+            return false;
+        }
+        VkDescriptorBufferInfo bufferInfo{};
+        bufferInfo.buffer = sunFragmentUbo_;
+        bufferInfo.offset = 0;
+        bufferInfo.range = sizeof(SunFragmentPush);
+        VkWriteDescriptorSet write{};
+        write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        write.dstSet = sunDescriptorSet_;
+        write.dstBinding = 3;
+        write.descriptorCount = 1;
+        write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        write.pBufferInfo = &bufferInfo;
+        vkUpdateDescriptorSets(device_, 1, &write, 0, nullptr);
+        return true;
+    }
+
+    /**
+     * 程序化太阳的 LUT。**上传发生在渲染器创建时、设备还没建好** —— 所以这里先存起来，
+     * 等 onDeviceCreated 再真正上传（与 sprite / sky 贴图同一条待上传路径）。
+     */
+    void setSunTexture(JNIEnv* env, jint slot, jbyteArray payload, jint width, jint height) {
+        std::lock_guard<std::mutex> lock(mutex_);
+        // 不能在这里查 sunFormatSupported_：它要到建好设备才知道，而这时设备还没建
+        if (slot < 0 || slot >= 3 || payload == nullptr) return;
+        const jsize len = env->GetArrayLength(payload);
+        if (len <= 0) return;
+        pendingSunPayload_[slot].resize(static_cast<size_t>(len));
+        env->GetByteArrayRegion(payload, 0, len,
+                reinterpret_cast<jbyte*>(pendingSunPayload_[slot].data()));
+        pendingSunWidth_[slot] = static_cast<uint32_t>(width);
+        pendingSunHeight_[slot] = static_cast<uint32_t>(height);
+        ensureSunTextureLocked(static_cast<uint32_t>(slot));
+    }
+
+    void ensureSunTextureLocked(uint32_t slot) {
+        if (slot >= 3 || device_ == VK_NULL_HANDLE) return;
+        if (sunTextures_[slot].isValid()) return;
+        if (pendingSunPayload_[slot].empty()
+                || pendingSunWidth_[slot] == 0 || pendingSunHeight_[slot] == 0) {
+            return;
+        }
+        if (!uploadAstcTextureLocked(pendingSunPayload_[slot].data(),
+                static_cast<uint32_t>(pendingSunPayload_[slot].size()),
+                pendingSunWidth_[slot], pendingSunHeight_[slot], sunTextures_[slot])) {
+            return;
+        }
+        VkDescriptorImageInfo info{};
+        info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        info.imageView = sunTextures_[slot].view;
+        info.sampler = sunTextures_[slot].sampler;
+        VkWriteDescriptorSet write{};
+        write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        write.dstSet = sunDescriptorSet_;
+        write.dstBinding = static_cast<uint32_t>(slot);
+        write.descriptorCount = 1;
+        write.pImageInfo = &info;
+        write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        vkUpdateDescriptorSets(device_, 1, &write, 0, nullptr);
+        sunReady_ = sunTextures_[0].isValid() && sunTextures_[1].isValid()
+                && sunTextures_[2].isValid();
+    }
+
+    VkPipelineLayout createSunPipelineLayoutLocked() {
+        VkPushConstantRange ranges[1]{};
+        ranges[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+        ranges[0].offset = 0;
+        ranges[0].size = sizeof(SunVertexPush);
+        VkPipelineLayoutCreateInfo li{};
+        li.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+        li.setLayoutCount = 1;
+        li.pSetLayouts = &sunDescriptorSetLayout_;
+        li.pushConstantRangeCount = 1;
+        li.pPushConstantRanges = ranges;
+        VkPipelineLayout layout = VK_NULL_HANDLE;
+        if (vkCreatePipelineLayout(device_, &li, nullptr, &layout) != VK_SUCCESS) {
+            return VK_NULL_HANDLE;
+        }
+        return layout;
+    }
+
+    VkPipeline createSunPipelineLocked(VkShaderModule vert, VkShaderModule frag,
+            VkPipelineLayout layout, VkRenderPass pass) {
+        VkPipelineShaderStageCreateInfo stages[2]{};
+        stages[0].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+        stages[0].stage = VK_SHADER_STAGE_VERTEX_BIT;
+        stages[0].module = vert;
+        stages[0].pName = "main";
+        stages[1].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+        stages[1].stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+        stages[1].module = frag;
+        stages[1].pName = "main";
+
+        VkPipelineVertexInputStateCreateInfo vinput{};
+        vinput.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+
+        VkPipelineInputAssemblyStateCreateInfo ia{};
+        ia.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+        ia.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+
+        VkPipelineViewportStateCreateInfo vp{};
+        vp.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+        vp.viewportCount = 1;
+        vp.scissorCount = 1;
+
+        VkPipelineRasterizationStateCreateInfo rs{};
+        rs.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+        rs.polygonMode = VK_POLYGON_MODE_FILL;
+        rs.cullMode = VK_CULL_MODE_NONE;
+        rs.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+        rs.lineWidth = 1.0f;
+
+        VkPipelineMultisampleStateCreateInfo ms{};
+        ms.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+        ms.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+
+        // 与 GLES 的 drawProceduralSun 一致：SRC_ALPHA / ONE
+        VkPipelineColorBlendAttachmentState cb{};
+        cb.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT
+                | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+        cb.blendEnable = VK_TRUE;
+        cb.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+        cb.dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
+        cb.colorBlendOp = VK_BLEND_OP_ADD;
+        cb.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+        cb.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+        cb.alphaBlendOp = VK_BLEND_OP_ADD;
+
+        VkPipelineColorBlendStateCreateInfo colorBlend{};
+        colorBlend.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+        colorBlend.attachmentCount = 1;
+        colorBlend.pAttachments = &cb;
+
+        std::array<VkDynamicState, 2> dynamicStates = {
+                VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
+        VkPipelineDynamicStateCreateInfo dyn{};
+        dyn.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+        dyn.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
+        dyn.pDynamicStates = dynamicStates.data();
+
+        VkGraphicsPipelineCreateInfo pi{};
+        pi.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+        pi.stageCount = 2;
+        pi.pStages = stages;
+        pi.pVertexInputState = &vinput;
+        pi.pInputAssemblyState = &ia;
+        pi.pViewportState = &vp;
+        pi.pRasterizationState = &rs;
+        pi.pMultisampleState = &ms;
+        pi.pColorBlendState = &colorBlend;
+        pi.pDynamicState = &dyn;
+        pi.layout = layout;
+        pi.renderPass = pass;
+        VkPipeline pipeline = VK_NULL_HANDLE;
+        if (vkCreateGraphicsPipelines(device_, VK_NULL_HANDLE, 1, &pi, nullptr, &pipeline) != VK_SUCCESS) {
+            return VK_NULL_HANDLE;
+        }
+        return pipeline;
+    }
+
+    void drawProceduralSunLocked(VkCommandBuffer cb, VkPipeline pipeline,
+            const GrassPushConstants& basePC) {
+        if (!sunReady_ || !sunProcedural_) return;
+        SunVertexPush vp{};
+        std::memcpy(vp.mvp, basePC.mvp, sizeof(vp.mvp));
+        vp.resolution[0] = sunParams_[0];
+        vp.resolution[1] = sunParams_[1];
+        vp.sunPos[0] = sunParams_[2];
+        vp.sunPos[1] = sunParams_[3];
+        vp.time = sunParams_[4];
+        vp.sunPosOffsetY = 0.0f;
+        vp.lineAlpha = 320.0f;
+
+        SunFragmentPush fp{};
+        fp.opacity = sunParams_[5];
+        fp.sunTint[0] = sunParams_[6];
+        fp.sunTint[1] = sunParams_[7];
+        fp.sunTint[2] = sunParams_[8];
+        fp.circleAlpha = sunParams_[9];
+        fp.circleOffset = sunParams_[10];
+        fp.circleOffsetRatio = sunParams_[11];
+        fp.annulusAlpha = sunParams_[12];
+        fp.rayAlpha = sunParams_[13];
+        fp.dynamicRayAlpha = sunParams_[14];
+        fp.flareBrightness = sunParams_[15];
+        fp.coreGain = sunParams_[16];
+        fp.quality = sunParams_[17];
+        fp.open22 = sunParams_[18];
+        fp.lensFlare = sunParams_[18];
+        fp.closeCircle = 0.0f;
+
+        vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+        vkCmdPushConstants(cb, sunPipelineLayout_, VK_SHADER_STAGE_VERTEX_BIT,
+                0, sizeof(SunVertexPush), &vp);
+        if (sunFragmentUboMapped_ != nullptr) {
+            std::memcpy(sunFragmentUboMapped_, &fp, sizeof(SunFragmentPush));
+        }
+        vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                sunPipelineLayout_, 0, 1, &sunDescriptorSet_, 0, nullptr);
+        vkCmdDraw(cb, 4, 1, 0, 0);
+    }
+
     void destroyPipelinesLocked() {
         if (skyPipeline_   != VK_NULL_HANDLE) { vkDestroyPipeline(device_, skyPipeline_,   nullptr); skyPipeline_   = VK_NULL_HANDLE; }
         if (grassPipeline_ != VK_NULL_HANDLE) { vkDestroyPipeline(device_, grassPipeline_, nullptr); grassPipeline_ = VK_NULL_HANDLE; }
         if (spritePipeline_ != VK_NULL_HANDLE) { vkDestroyPipeline(device_, spritePipeline_, nullptr); spritePipeline_ = VK_NULL_HANDLE; }
         if (moonPipeline_ != VK_NULL_HANDLE) { vkDestroyPipeline(device_, moonPipeline_, nullptr); moonPipeline_ = VK_NULL_HANDLE; }
         if (moonDayPipeline_ != VK_NULL_HANDLE) { vkDestroyPipeline(device_, moonDayPipeline_, nullptr); moonDayPipeline_ = VK_NULL_HANDLE; }
+        if (sunPipeline_ != VK_NULL_HANDLE) { vkDestroyPipeline(device_, sunPipeline_, nullptr); sunPipeline_ = VK_NULL_HANDLE; }
+        if (sunPipelineScene_ != VK_NULL_HANDLE) { vkDestroyPipeline(device_, sunPipelineScene_, nullptr); sunPipelineScene_ = VK_NULL_HANDLE; }
+        // **不要在这里销毁 sunPipelineLayout_**：它只在 onDeviceCreated 建一次，而交换链重建
+        // 会走本函数。销毁掉的话重建时太阳管线会被跳过，sunPipeline_ 留空 -> vkCmdBindPipeline 崩。
+        // 布局与描述符集同生命周期，见 destroyTexturesLocked。
         if (skyPipelineLayout_   != VK_NULL_HANDLE) { vkDestroyPipelineLayout(device_, skyPipelineLayout_,   nullptr); skyPipelineLayout_   = VK_NULL_HANDLE; }
         if (grassPipelineLayout_ != VK_NULL_HANDLE) { vkDestroyPipelineLayout(device_, grassPipelineLayout_, nullptr); grassPipelineLayout_ = VK_NULL_HANDLE; }
         if (spritePipelineLayout_ != VK_NULL_HANDLE) { vkDestroyPipelineLayout(device_, spritePipelineLayout_, nullptr); spritePipelineLayout_ = VK_NULL_HANDLE; }
@@ -2180,7 +2687,14 @@ public:
                 vkCmdDraw(cb, count, 1, 0, 0);
             };
 
-            drawSpriteGroup(0, sunVertexBuffer_, sunCount);
+            VkPipeline sunPipeline = glowPass ? sunPipelineScene_ : sunPipeline_;
+            if (sunProcedural_ && sunReady_ && sunDescriptorSet_ != VK_NULL_HANDLE
+                    && sunPipeline != VK_NULL_HANDLE) {
+                // 程序化太阳：全屏 pass，叠加混合；拿不到 ASTC 就退回贴图精灵
+                drawProceduralSunLocked(cb, sunPipeline, grassPC);
+            } else {
+                drawSpriteGroup(0, sunVertexBuffer_, sunCount);
+            }
         }
 
         // ----- dynamic night stars pass (after sun, before moon, matching GL order) -----
@@ -2359,6 +2873,7 @@ public:
         size_t vertexFloats = 0;
         if (!unpackBatches(packed, batchCount, &headers, &verts, vertexFloats)) return;
         if (weatherVertexBuffer_ == VK_NULL_HANDLE) return;
+        if (spritePipeline == VK_NULL_HANDLE) return;
 
         vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, spritePipeline);
         VkDeviceSize offsets[] = {0};
@@ -2486,6 +3001,26 @@ public:
         vkCmdDraw(cb, 4, 1, 0, 0);
         vkCmdEndRenderPass(cb);
     }
+
+    // ===== 程序化太阳状态 =====
+
+    bool sunFormatSupported_ = false;
+    bool sunReady_ = false;
+    bool sunProcedural_ = false;
+    float sunParams_[19] = {};
+    GpuTexture sunTextures_[3];
+    std::vector<uint8_t> pendingSunPayload_[3];
+    uint32_t pendingSunWidth_[3] = {0, 0, 0};
+    uint32_t pendingSunHeight_[3] = {0, 0, 0};
+    VkDescriptorSetLayout sunDescriptorSetLayout_ = VK_NULL_HANDLE;
+    VkDescriptorPool sunDescriptorPool_ = VK_NULL_HANDLE;
+    VkDescriptorSet sunDescriptorSet_ = VK_NULL_HANDLE;
+    VkBuffer sunFragmentUbo_ = VK_NULL_HANDLE;
+    VkDeviceMemory sunFragmentUboMemory_ = VK_NULL_HANDLE;
+    void* sunFragmentUboMapped_ = nullptr;
+    VkPipelineLayout sunPipelineLayout_ = VK_NULL_HANDLE;
+    VkPipeline sunPipeline_ = VK_NULL_HANDLE;
+    VkPipeline sunPipelineScene_ = VK_NULL_HANDLE;
 
     // ===== 天气图层状态 =====
 
@@ -2653,7 +3188,8 @@ static void JNICALL nRenderFrame(
         jfloatArray moonParams,
         jfloatArray grassLight, jfloatArray fireflyLights,
         jfloatArray glowParams, jboolean glowEnabled,
-        jfloatArray weatherTone, jfloatArray weatherBack, jfloatArray weatherFront) {
+        jfloatArray weatherTone, jfloatArray weatherBack, jfloatArray weatherFront,
+        jboolean proceduralSun, jfloatArray sunParams) {
     auto* r = asRenderer(handle);
     if (r) r->render(env, skyWeights, grassMvp,
             grassVerts, grassVertCount,
@@ -2670,13 +3206,21 @@ static void JNICALL nRenderFrame(
             moonParams,
             grassLight, fireflyLights,
             glowParams, glowEnabled,
-            weatherTone, weatherBack, weatherFront);
+            weatherTone, weatherBack, weatherFront,
+            proceduralSun, sunParams);
 }
 
 static void JNICALL nSetSkyTexture(
         JNIEnv* env, jclass, jlong handle, jint slot, jintArray argbPixels, jint width, jint height) {
     auto* r = asRenderer(handle);
     if (r) r->setSkyTexture(env, slot, argbPixels, width, height);
+}
+
+static void JNICALL nSetSunTexture(
+        JNIEnv* env, jclass, jlong handle, jint slot,
+        jbyteArray payload, jint width, jint height) {
+    auto* r = asRenderer(handle);
+    if (r) r->setSunTexture(env, slot, payload, width, height);
 }
 
 static void JNICALL nSetAATexture(
@@ -2705,7 +3249,8 @@ static const JNINativeMethod kMethods[] = {
     {"nOnSurfaceCreated", "(JLandroid/view/Surface;II)Z", reinterpret_cast<void*>(nOnSurfaceCreated)},
     {"nOnSurfaceChanged", "(JLandroid/view/Surface;II)V", reinterpret_cast<void*>(nOnSurfaceChanged)},
     {"nOnSurfaceDestroyed", "(J)V", reinterpret_cast<void*>(nOnSurfaceDestroyed)},
-    {"nRenderFrame", "(J[F[F[FI[SI[FI[FI[FI[FI[FI[FI[FI[FI[FI[F[F[F[FZ[F[F[F)V", reinterpret_cast<void*>(nRenderFrame)},
+    {"nRenderFrame", "(J[F[F[FI[SI[FI[FI[FI[FI[FI[FI[FI[FI[FI[F[F[F[FZ[F[F[FZ[F)V", reinterpret_cast<void*>(nRenderFrame)},
+    {"nSetSunTexture", "(JI[BII)V", reinterpret_cast<void*>(nSetSunTexture)},
     {"nSetSkyTexture", "(JI[III)V", reinterpret_cast<void*>(nSetSkyTexture)},
     {"nSetAATexture", "(J[III)V", reinterpret_cast<void*>(nSetAATexture)},
     {"nSetSpriteTexture", "(JI[III)V", reinterpret_cast<void*>(nSetSpriteTexture)},
