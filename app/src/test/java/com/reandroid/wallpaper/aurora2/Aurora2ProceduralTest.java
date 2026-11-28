@@ -63,4 +63,30 @@ public class Aurora2ProceduralTest {
         assertFalse(Aurora2Procedural.enabledFromPref(false));
         assertTrue(Aurora2Procedural.enabledFromPref(true));
     }
+
+    @Test
+    public void secondsSinceKeepsTheShaderTimeSmall() {
+        long epoch = 1_784_000_000_000L;
+        assertEquals(0f, Aurora2Procedural.secondsSince(epoch, epoch), 1e-4f);
+        assertEquals(12.5f, Aurora2Procedural.secondsSince(epoch + 12_500L, epoch), 1e-4f);
+        assertEquals(0f, Aurora2Procedural.secondsSince(epoch, epoch + 5_000L), 1e-4f);
+    }
+
+    @Test
+    public void everyPaletteKeyHasLabelsInEveryLanguage() throws Exception {
+        java.io.File dir = new java.io.File("src/main/assets/aurora2/language");
+        java.io.File[] files = dir.listFiles((d, name) -> name.endsWith(".json"));
+        assertTrue("找不到语言文件: " + dir.getAbsolutePath(), files != null && files.length > 0);
+        for (java.io.File file : files) {
+            String json = new String(
+                    java.nio.file.Files.readAllBytes(file.toPath()),
+                    java.nio.charset.StandardCharsets.UTF_8);
+            for (String key : Aurora2Procedural.PALETTE_KEYS) {
+                assertTrue(
+                        file.getName() + " 缺少 pref_aurora2_procedural_palette_label_" + key,
+                        json.contains("pref_aurora2_procedural_palette_label_" + key));
+            }
+            assertTrue(file.getName() + " 缺少开关文案", json.contains("\"pref_aurora2_procedural\""));
+        }
+    }
 }

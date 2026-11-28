@@ -9,8 +9,8 @@ import android.os.Process;
 import android.util.Log;
 import android.view.MotionEvent;
 
-import com.reandroid.utils.AssetLoader;
 import com.reandroid.gles.GLESScene;
+import com.reandroid.utils.AssetLoader;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -20,6 +20,8 @@ import java.nio.ShortBuffer;
 public class Aurora2GL extends GLESScene {
     private static final String TAG = "Aurora2GL";
     private static final int AURORA_STRIPS = 40;
+    /** 程序化极光的渲染倍率: 片元成本高, 半分辨率再放大. */
+    private static final float PROCEDURAL_SCALE = 0.45f;
 
     private final Context mContext;
     private final Aurora2Scene mScene;
@@ -29,6 +31,8 @@ public class Aurora2GL extends GLESScene {
 
     private FloatBuffer mQuadVertexBuffer;
     private FloatBuffer mQuadTexCoordBuffer;
+    private FloatBuffer mFullQuadVertexBuffer;
+    private FloatBuffer mFullQuadTexCoordBuffer;
     private FloatBuffer mAuroraVertexBuffer;
     private FloatBuffer mAuroraTexCoordBuffer;
     private ShortBuffer mAuroraIndexBuffer;
@@ -40,6 +44,21 @@ public class Aurora2GL extends GLESScene {
     private int mMatrixHandle;
     private int mColorHandle;
     private int mTextureHandle;
+
+    private long mProceduralStartMs;
+    private int mProceduralFbo;
+    private int mProceduralTexture;
+    private int mProceduralTargetWidth;
+    private int mProceduralTargetHeight;
+    private FloatBuffer mBlitVertexBuffer;
+
+    private int mProceduralProgram;
+    private int mProceduralPositionHandle;
+    private int mProceduralTexCoordHandle;
+    private int mProceduralResolutionHandle;
+    private int mProceduralTimeHandle;
+    private int mProceduralEnvelopeHandle;
+    private int mProceduralPaletteHandle;
 
     public Aurora2GL(Context context, int width, int height) {
         super(width, height);
@@ -59,6 +78,8 @@ public class Aurora2GL extends GLESScene {
     public void resize(int width, int height) {
         super.resize(width, height);
         mScene.resize(width, height);
+        mProceduralTargetWidth = 0;
+        mProceduralTargetHeight = 0;
     }
 
     /** 引擎注入插件设置(设置变更时会重新调用,主题等改动即时生效)。 */
@@ -82,6 +103,20 @@ public class Aurora2GL extends GLESScene {
             GLES30.glDeleteProgram(mProgram);
             mProgram = 0;
         }
+        if (mProceduralProgram != 0) {
+            GLES30.glDeleteProgram(mProceduralProgram);
+            mProceduralProgram = 0;
+        }
+        if (mProceduralFbo != 0) {
+            GLES30.glDeleteFramebuffers(1, new int[] {mProceduralFbo}, 0);
+            mProceduralFbo = 0;
+        }
+        if (mProceduralTexture != 0) {
+            GLES30.glDeleteTextures(1, new int[] {mProceduralTexture}, 0);
+            mProceduralTexture = 0;
+        }
+        mProceduralTargetWidth = 0;
+        mProceduralTargetHeight = 0;
         GLES30.glDeleteTextures(mTextures.length, mTextures, 0);
         for (int i = 0; i < mTextures.length; i++) {
             mTextures[i] = 0;
@@ -114,11 +149,17 @@ public class Aurora2GL extends GLESScene {
         //   shine(覆盖写入) → 极光(SRC_ALPHA,SRC_ALPHA:极光外区域压黑)
         //   → 背景(SRC_ALPHA,DST_ALPHA:加色叠在极光之上)
         //   → 闪耀星/流星/树(标准 alpha 混合)
-        GLES30.glBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ZERO);
-        drawQuad(data.projectionMatrix, data.shine);
+        // 程序化极光自带光晕, 打开开关时不再画 shine, 否则两套光晕叠在一起。
+        if (data.procedural) {
+            GLES30.glBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ONE);
+            drawProceduralAurora(data, timeMs);
+        } else {
+            GLES30.glBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ZERO);
+            drawQuad(data.projectionMatrix, data.shine);
 
-        GLES30.glBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_SRC_ALPHA);
-        drawAurora(data.projectionMatrix, data.aurora);
+            GLES30.glBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_SRC_ALPHA);
+            drawAurora(data.projectionMatrix, data.aurora);
+        }
 
         GLES30.glBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_DST_ALPHA);
         drawQuad(data.projectionMatrix, data.background);
@@ -136,7 +177,9 @@ public class Aurora2GL extends GLESScene {
         if (data.fadeActive) {
             GLES30.glBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ONE_MINUS_SRC_ALPHA);
             drawQuad(data.projectionMatrix, data.fadeBackground);
-            drawAurora(data.projectionMatrix, data.fadeAurora);
+            if (!data.procedural) {
+                drawAurora(data.projectionMatrix, data.fadeAurora);
+            }
         }
 
         GLES30.glDisableVertexAttribArray(mPositionHandle);
@@ -161,8 +204,10 @@ public class Aurora2GL extends GLESScene {
     }
 
     private void initBuffers() {
-        float[] quadVertices = AssetLoader.readFloatArray(mContext, "aurora2/data/aurora2_quad_pos3.csv");
-        float[] quadTexCoords = AssetLoader.readFloatArray(mContext, "aurora2/data/aurora2_quad_tex.csv");
+        float[] quadVertices =
+                AssetLoader.readFloatArray(mContext, "aurora2/data/aurora2_quad_pos3.csv");
+        float[] quadTexCoords =
+                AssetLoader.readFloatArray(mContext, "aurora2/data/aurora2_quad_tex.csv");
         if (quadVertices.length != 12 || quadTexCoords.length != 8) {
             throw new IllegalStateException("Aurora2 quad data size mismatch");
         }
@@ -175,6 +220,26 @@ public class Aurora2GL extends GLESScene {
                 .order(ByteOrder.nativeOrder())
                 .asFloatBuffer();
         mQuadTexCoordBuffer.put(quadTexCoords).position(0);
+
+        // 全屏四边形: 顶点已是 NDC, uv 原点在左下(着色器里 0 = 地面)
+        float[] fullQuadVertices = {-1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f};
+        float[] fullQuadTexCoords = {0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f};
+        mFullQuadVertexBuffer = ByteBuffer.allocateDirect(fullQuadVertices.length * 4)
+                .order(ByteOrder.nativeOrder())
+                .asFloatBuffer();
+        mFullQuadVertexBuffer.put(fullQuadVertices).position(0);
+        mFullQuadTexCoordBuffer = ByteBuffer.allocateDirect(fullQuadTexCoords.length * 4)
+                .order(ByteOrder.nativeOrder())
+                .asFloatBuffer();
+        mFullQuadTexCoordBuffer.put(fullQuadTexCoords).position(0);
+
+        float[] blitVertices = {
+            -1.0f, -1.0f, 0.0f, 1.0f, -1.0f, 0.0f, -1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f
+        };
+        mBlitVertexBuffer = ByteBuffer.allocateDirect(blitVertices.length * 4)
+                .order(ByteOrder.nativeOrder())
+                .asFloatBuffer();
+        mBlitVertexBuffer.put(blitVertices).position(0);
 
         float[] auroraVertices = new float[AURORA_STRIPS * 2 * 3];
         float[] auroraTexCoords = new float[AURORA_STRIPS * 2 * 2];
@@ -222,6 +287,17 @@ public class Aurora2GL extends GLESScene {
         mMatrixHandle = GLES30.glGetUniformLocation(mProgram, "uMatrix");
         mColorHandle = GLES30.glGetUniformLocation(mProgram, "uColor");
         mTextureHandle = GLES30.glGetUniformLocation(mProgram, "uTexture");
+
+        mProceduralProgram = createProgram(
+                AssetLoader.readText(mContext, "aurora2/shaders/GLES/aurora2_procedural_vs.glsl"),
+                AssetLoader.readText(mContext, "aurora2/shaders/GLES/aurora2_procedural_fs.glsl"));
+        mProceduralPositionHandle = GLES30.glGetAttribLocation(mProceduralProgram, "aPosition");
+        mProceduralTexCoordHandle = GLES30.glGetAttribLocation(mProceduralProgram, "aTexCoord");
+        mProceduralResolutionHandle =
+                GLES30.glGetUniformLocation(mProceduralProgram, "uResolution");
+        mProceduralTimeHandle = GLES30.glGetUniformLocation(mProceduralProgram, "uTime");
+        mProceduralEnvelopeHandle = GLES30.glGetUniformLocation(mProceduralProgram, "uEnvelope");
+        mProceduralPaletteHandle = GLES30.glGetUniformLocation(mProceduralProgram, "uPalette");
     }
 
     private void initTextures() {
@@ -243,10 +319,14 @@ public class Aurora2GL extends GLESScene {
         int[] texture = new int[1];
         GLES30.glGenTextures(1, texture, 0);
         GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, texture[0]);
-        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR);
-        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
-        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE);
-        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE);
+        GLES30.glTexParameteri(
+                GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(
+                GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(
+                GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE);
+        GLES30.glTexParameteri(
+                GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE);
         GLUtils.texImage2D(GLES30.GL_TEXTURE_2D, 0, bitmap, 0);
         bitmap.recycle();
         return texture[0];
@@ -254,9 +334,11 @@ public class Aurora2GL extends GLESScene {
 
     private void setQuadBuffers() {
         mQuadVertexBuffer.position(0);
-        GLES30.glVertexAttribPointer(mPositionHandle, 3, GLES30.GL_FLOAT, false, 0, mQuadVertexBuffer);
+        GLES30.glVertexAttribPointer(
+                mPositionHandle, 3, GLES30.GL_FLOAT, false, 0, mQuadVertexBuffer);
         mQuadTexCoordBuffer.position(0);
-        GLES30.glVertexAttribPointer(mTexCoordHandle, 2, GLES30.GL_FLOAT, false, 0, mQuadTexCoordBuffer);
+        GLES30.glVertexAttribPointer(
+                mTexCoordHandle, 2, GLES30.GL_FLOAT, false, 0, mQuadTexCoordBuffer);
     }
 
     private void drawQuad(float[] projectionMatrix, Aurora2Scene.Sprite sprite) {
@@ -264,7 +346,10 @@ public class Aurora2GL extends GLESScene {
             return;
         }
         int texture = mTextures[sprite.textureId];
-        if (texture == 0 || sprite.alpha <= 0.001f || sprite.width <= 0.0f || sprite.height <= 0.0f) {
+        if (texture == 0
+                || sprite.alpha <= 0.001f
+                || sprite.width <= 0.0f
+                || sprite.height <= 0.0f) {
             return;
         }
         setQuadBuffers();
@@ -285,15 +370,20 @@ public class Aurora2GL extends GLESScene {
             return;
         }
         int texture = mTextures[aurora.textureId];
-        if (texture == 0 || aurora.alpha <= 0.001f || aurora.width <= 0.0f || aurora.height <= 0.0f) {
+        if (texture == 0
+                || aurora.alpha <= 0.001f
+                || aurora.width <= 0.0f
+                || aurora.height <= 0.0f) {
             return;
         }
 
         updateAuroraMeshVertices(aurora.width, aurora.height, aurora.rippleFrame);
         mAuroraVertexBuffer.position(0);
-        GLES30.glVertexAttribPointer(mPositionHandle, 3, GLES30.GL_FLOAT, false, 0, mAuroraVertexBuffer);
+        GLES30.glVertexAttribPointer(
+                mPositionHandle, 3, GLES30.GL_FLOAT, false, 0, mAuroraVertexBuffer);
         mAuroraTexCoordBuffer.position(0);
-        GLES30.glVertexAttribPointer(mTexCoordHandle, 2, GLES30.GL_FLOAT, false, 0, mAuroraTexCoordBuffer);
+        GLES30.glVertexAttribPointer(
+                mTexCoordHandle, 2, GLES30.GL_FLOAT, false, 0, mAuroraTexCoordBuffer);
 
         Matrix.setIdentityM(mModelMatrix, 0);
         Matrix.translateM(mModelMatrix, 0, aurora.x, aurora.y, aurora.z);
@@ -304,7 +394,137 @@ public class Aurora2GL extends GLESScene {
         GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, texture);
         GLES30.glUniform1i(mTextureHandle, 0);
         mAuroraIndexBuffer.position(0);
-        GLES30.glDrawElements(GLES30.GL_TRIANGLE_STRIP, AURORA_STRIPS * 2, GLES30.GL_UNSIGNED_SHORT, mAuroraIndexBuffer);
+        GLES30.glDrawElements(
+                GLES30.GL_TRIANGLE_STRIP,
+                AURORA_STRIPS * 2,
+                GLES30.GL_UNSIGNED_SHORT,
+                mAuroraIndexBuffer);
+    }
+
+    /** 全屏叠加的程序化极光. 参数与 packParams 一一对应, 打开开关时替代贴图极光. */
+    private void drawProceduralAurora(Aurora2Scene.SceneData data, long timeMs) {
+        if (mProceduralProgram == 0 || !ensureProceduralTarget()) {
+            return;
+        }
+        if (mProceduralStartMs == 0L) {
+            mProceduralStartMs = timeMs;
+        }
+        float[] params = Aurora2Procedural.packParams(
+                Aurora2Procedural.secondsSince(timeMs, mProceduralStartMs),
+                mWidth,
+                mHeight,
+                Aurora2Procedural.envelope(timeMs),
+                data.paletteIndex,
+                PROCEDURAL_SCALE);
+
+        // 半分辨率离屏渲染: 片元成本是像素数乘噪声次数
+        GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, mProceduralFbo);
+        GLES30.glViewport(0, 0, mProceduralTargetWidth, mProceduralTargetHeight);
+        GLES30.glDisable(GLES30.GL_BLEND);
+        GLES30.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+        GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT);
+        GLES30.glUseProgram(mProceduralProgram);
+        GLES30.glEnableVertexAttribArray(mProceduralPositionHandle);
+        GLES30.glEnableVertexAttribArray(mProceduralTexCoordHandle);
+        mFullQuadVertexBuffer.position(0);
+        GLES30.glVertexAttribPointer(
+                mProceduralPositionHandle, 2, GLES30.GL_FLOAT, false, 0, mFullQuadVertexBuffer);
+        mFullQuadTexCoordBuffer.position(0);
+        GLES30.glVertexAttribPointer(
+                mProceduralTexCoordHandle, 2, GLES30.GL_FLOAT, false, 0, mFullQuadTexCoordBuffer);
+        GLES30.glUniform2f(
+                mProceduralResolutionHandle, mProceduralTargetWidth, mProceduralTargetHeight);
+        GLES30.glUniform1f(mProceduralTimeHandle, params[0]);
+        GLES30.glUniform1f(mProceduralEnvelopeHandle, params[3]);
+        GLES30.glUniform1f(mProceduralPaletteHandle, params[4]);
+        GLES30.glDrawArrays(GLES30.GL_TRIANGLE_STRIP, 0, 4);
+
+        // 放大回主画布, 沿用 SRC_ALPHA,SRC_ALPHA 与贴图版一致的合成方式
+        GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0);
+        GLES30.glViewport(0, 0, mWidth, mHeight);
+        GLES30.glEnable(GLES30.GL_BLEND);
+        GLES30.glUseProgram(mProgram);
+        mBlitVertexBuffer.position(0);
+        GLES30.glVertexAttribPointer(
+                mPositionHandle, 3, GLES30.GL_FLOAT, false, 0, mBlitVertexBuffer);
+        mFullQuadTexCoordBuffer.position(0);
+        GLES30.glVertexAttribPointer(
+                mTexCoordHandle, 2, GLES30.GL_FLOAT, false, 0, mFullQuadTexCoordBuffer);
+        Matrix.setIdentityM(mModelMatrix, 0);
+        GLES30.glUniformMatrix4fv(mMatrixHandle, 1, false, mModelMatrix, 0);
+        GLES30.glUniform4f(mColorHandle, 1.0f, 1.0f, 1.0f, 1.0f);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mProceduralTexture);
+        GLES30.glUniform1i(mTextureHandle, 0);
+        GLES30.glDrawArrays(GLES30.GL_TRIANGLE_STRIP, 0, 4);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, 0);
+
+        setQuadBuffers();
+    }
+
+    /** 惰性创建(或按新尺寸重建)半分辨率的离屏目标. */
+    private boolean ensureProceduralTarget() {
+        int width = Math.max(1, Math.round(mWidth * PROCEDURAL_SCALE));
+        int height = Math.max(1, Math.round(mHeight * PROCEDURAL_SCALE));
+        if (mProceduralFbo != 0
+                && width == mProceduralTargetWidth
+                && height == mProceduralTargetHeight) {
+            return true;
+        }
+        if (mProceduralFbo != 0) {
+            GLES30.glDeleteFramebuffers(1, new int[] {mProceduralFbo}, 0);
+            mProceduralFbo = 0;
+        }
+        if (mProceduralTexture != 0) {
+            GLES30.glDeleteTextures(1, new int[] {mProceduralTexture}, 0);
+            mProceduralTexture = 0;
+        }
+        int[] texture = new int[1];
+        GLES30.glGenTextures(1, texture, 0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, texture[0]);
+        GLES30.glTexImage2D(
+                GLES30.GL_TEXTURE_2D,
+                0,
+                GLES30.GL_RGBA,
+                width,
+                height,
+                0,
+                GLES30.GL_RGBA,
+                GLES30.GL_UNSIGNED_BYTE,
+                null);
+        GLES30.glTexParameteri(
+                GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(
+                GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameteri(
+                GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE);
+        GLES30.glTexParameteri(
+                GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, 0);
+
+        int[] framebuffer = new int[1];
+        GLES30.glGenFramebuffers(1, framebuffer, 0);
+        GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, framebuffer[0]);
+        GLES30.glFramebufferTexture2D(
+                GLES30.GL_FRAMEBUFFER,
+                GLES30.GL_COLOR_ATTACHMENT0,
+                GLES30.GL_TEXTURE_2D,
+                texture[0],
+                0);
+        boolean complete = GLES30.glCheckFramebufferStatus(GLES30.GL_FRAMEBUFFER)
+                == GLES30.GL_FRAMEBUFFER_COMPLETE;
+        GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0);
+        if (!complete) {
+            Log.e(TAG, "procedural aurora framebuffer incomplete");
+            GLES30.glDeleteFramebuffers(1, framebuffer, 0);
+            GLES30.glDeleteTextures(1, texture, 0);
+            return false;
+        }
+        mProceduralTexture = texture[0];
+        mProceduralFbo = framebuffer[0];
+        mProceduralTargetWidth = width;
+        mProceduralTargetHeight = height;
+        return true;
     }
 
     private void updateAuroraMeshVertices(float width, float height, float frame) {
@@ -313,7 +533,9 @@ public class Aurora2GL extends GLESScene {
         int vertexIndex = 0;
         for (int y = 0; y < AURORA_STRIPS; y++) {
             float yRatio = ((float) y) / (AURORA_STRIPS - 1);
-            float wave = (float) Math.sin((((double) (y * 6)) * Math.PI / 180.0d * 4.5d) - (Math.PI / 180.0d * rippleOffset)) * 10.0f;
+            float wave = (float) Math.sin((((double) (y * 6)) * Math.PI / 180.0d * 4.5d)
+                            - (Math.PI / 180.0d * rippleOffset))
+                    * 10.0f;
             mAuroraVertexBuffer.put(vertexIndex++, wave);
             mAuroraVertexBuffer.put(vertexIndex++, yRatio * height);
             mAuroraVertexBuffer.put(vertexIndex++, 0.0f);
@@ -323,6 +545,4 @@ public class Aurora2GL extends GLESScene {
         }
         mAuroraVertexBuffer.position(0);
     }
-
-
 }

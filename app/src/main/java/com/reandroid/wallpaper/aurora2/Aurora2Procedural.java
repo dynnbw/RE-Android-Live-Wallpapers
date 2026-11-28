@@ -16,6 +16,14 @@ final class Aurora2Procedural {
         return pref;
     }
 
+    /**
+     * 相对起始时刻的秒数. 引擎传进来的是 System.currentTimeMillis(), 直接当秒用会让
+     * 着色器里的噪声坐标超出 float 精度, 所以必须先做差.
+     */
+    static float secondsSince(long nowMs, long startMs) {
+        return Math.max(0L, nowMs - startMs) * 0.001f;
+    }
+
     static int paletteIndex(String key) {
         if (key != null) {
             for (int i = 0; i < PALETTE_KEYS.length; i++) {
