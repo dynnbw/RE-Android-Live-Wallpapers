@@ -48,6 +48,8 @@ struct DropUbo {
     float algaeLow[4];      // offset 2656
     float algaeHigh[4];     // offset 2672
     float lightColor[4];    // offset 2688
+    float emitter[4];       // offset 2704: (屏幕 x, y, 横向半宽, 纵向半宽)
+    float emitterColor[4];  // offset 2720: rgb + 增益
 };
 
 struct TextureResource {
@@ -112,6 +114,7 @@ public:
     }
 
     bool onDeviceCreated() {
+        glowFormatSupported_ = queryGlowFormatSupportLocked();
         if (!createDescriptorResourcesLocked()) return false;
         // 蓝藻噪声同时喂水面与叶子两个描述符集，所以在这里补上第二个目标
         configureAlgaeTextureLocked();
@@ -122,6 +125,8 @@ public:
     }
 
     bool onSwapchainCreated() {
+        // 建不起来只是没有辉光，不阻止画面
+        createGlowResourcesLocked();
         return true;
     }
 
@@ -265,6 +270,36 @@ public:
         leafAtlasFrameCount_ = std::max(1, frameCount);
     }
 
+    /** 辉光的每帧参数，顺序见 {@code FallVkDelegate#buildGlowParams}。 */
+    static void writeGlowParamsLocked(DropUbo* ubo, const float* p) {
+        if (ubo == nullptr || p == nullptr) return;
+        ubo->emitter[0] = p[5];
+        ubo->emitter[1] = p[6];
+        ubo->emitter[2] = p[7];
+        ubo->emitter[3] = p[8];
+        ubo->emitterColor[0] = p[9];
+        ubo->emitterColor[1] = p[10];
+        ubo->emitterColor[2] = p[11];
+        ubo->emitterColor[3] = p[4];
+    }
+
+    /**
+     * 本帧走不走离屏 + 辉光。
+     *
+     * <p>三个条件缺一不可：开关打开、设备的格式支持、离屏资源建起来了。
+     * 任何一项不满足就退回原来的单遍路径 —— 画面照常，只是没有辉光。
+     */
+    void applyGlowParams(const float* p, bool enabled) {
+        glowRequested_ = enabled;
+        if (p != nullptr) {
+            glowThreshold_ = p[0];
+            glowSoftKnee_ = p[1];
+            glowRadius_ = p[2];
+            glowStrength_ = p[3];
+        }
+        glowActive_ = glowRequested_ && glowFormatSupported_ && glowReady_;
+    }
+
     /** 蓝藻的每帧参数，顺序见 {@code FallVkDelegate#buildAlgaeParams}。 */
     static void writeAlgaeParamsLocked(DropUbo* ubo, const float* p) {
         if (ubo == nullptr || p == nullptr) return;
@@ -291,6 +326,7 @@ public:
     }
 
     void render(JNIEnv* env, const float* lighting, const float* algaeParams,
+            const float* glowParams, bool glowEnabled,
             jfloatArray projectionArray, jfloatArray viewArray,
             jfloatArray leavesArray, jint leafCount, jfloat xOffset,
             jfloatArray waterVertices, jfloatArray waterTexCoords, jshortArray waterIndices,
@@ -333,6 +369,9 @@ public:
         // 先把上一帧等完，再覆写 UBO —— 否则 GPU 可能还在读正在被改写的常量
         vkWaitForFences(device_, 1, &inFlightFence_, VK_TRUE, UINT64_MAX);
 
+        // 辉光走不走离屏路径要在写 UBO 之前定下来：发光体也要跟着开关
+        applyGlowParams(glowParams, glowEnabled);
+
         // Write drop data to UBO (no hard limit — matches GLES behavior)
         if (!ensureDropUboLocked()) {
             return;
@@ -366,6 +405,11 @@ public:
                 }
             }
             writeAlgaeParamsLocked(ubo, algaeParams);
+            writeGlowParamsLocked(ubo, glowParams);
+            // 辉光没生效时发光体也不画：一个没有辉光收尾的高斯斑看着就是块白渍
+            if (!glowActive_) {
+                ubo->emitterColor[3] = 0.0f;
+            }
         }
 
         // Build slim push constants (drops now in UBO)
@@ -473,8 +517,10 @@ public:
             return false;
         }
 
-        bgPipeline_ = createGraphicsPipelineLocked(bgVert, bgFrag, bgPipelineLayout_, false);
-        leafPipeline_ = createGraphicsPipelineLocked(leafVert, leafFrag, leafPipelineLayout_, true);
+        bgPipeline_ = createGraphicsPipelineLocked(
+                bgVert, bgFrag, bgPipelineLayout_, false, renderPass_);
+        leafPipeline_ = createGraphicsPipelineLocked(
+                leafVert, leafFrag, leafPipelineLayout_, true, renderPass_);
 
         vkDestroyShaderModule(device_, bgVert, nullptr);
         vkDestroyShaderModule(device_, bgFrag, nullptr);
@@ -489,6 +535,472 @@ public:
         if (leafPipeline_ != VK_NULL_HANDLE) { vkDestroyPipeline(device_, leafPipeline_, nullptr); leafPipeline_ = VK_NULL_HANDLE; }
         if (bgPipelineLayout_ != VK_NULL_HANDLE) { vkDestroyPipelineLayout(device_, bgPipelineLayout_, nullptr); bgPipelineLayout_ = VK_NULL_HANDLE; }
         if (leafPipelineLayout_ != VK_NULL_HANDLE) { vkDestroyPipelineLayout(device_, leafPipelineLayout_, nullptr); leafPipelineLayout_ = VK_NULL_HANDLE; }
+        destroyGlowResourcesLocked();
+    }
+
+    // ── 辉光：离屏场景 → 亮部提取 → 横纵模糊 → 合成 ──
+    //
+    // 结构与 GLES 的 GlowRenderer 逐遍对应。差别只在平台细节：Vulkan 的纹理 v 朝下、
+    // NDC y 也朝下，所以全屏四边形不需要翻转；格式支持要自己查。
+
+    struct GlowBrightPush {
+        float texelX, texelY, threshold, knee;
+    };
+    struct GlowBlurPush {
+        float stepX, stepY, sigma, pad;
+    };
+    struct GlowCompositePush {
+        float strength, pad0, pad1, pad2;
+    };
+
+    /**
+     * 离屏场景与辉光缓冲的格式支持。
+     *
+     * <p>要同时能做颜色附件、能被采样、能线性过滤 —— 缺任何一项就整体退化：
+     * 换成 8 位缓冲也能跑，但亮部会被截断成一块死白，那正是这个功能要解决的问题。
+     */
+    bool queryGlowFormatSupportLocked() const {
+        VkFormatProperties props{};
+        vkGetPhysicalDeviceFormatProperties(
+                physicalDevice_, VK_FORMAT_R16G16B16A16_SFLOAT, &props);
+        const VkFormatFeatureFlags need = VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT
+                | VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT
+                | VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT;
+        return (props.optimalTilingFeatures & need) == need;
+    }
+
+    bool createGlowColorTargetLocked(
+            VkImage& image, VkDeviceMemory& memory, VkImageView& view,
+            uint32_t width, uint32_t height) {
+        VkImageCreateInfo ii{};
+        ii.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+        ii.imageType = VK_IMAGE_TYPE_2D;
+        ii.extent = {width, height, 1};
+        ii.mipLevels = 1;
+        ii.arrayLayers = 1;
+        ii.format = VK_FORMAT_R16G16B16A16_SFLOAT;
+        ii.tiling = VK_IMAGE_TILING_OPTIMAL;
+        ii.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        ii.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+        ii.samples = VK_SAMPLE_COUNT_1_BIT;
+        ii.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        if (vkCreateImage(device_, &ii, nullptr, &image) != VK_SUCCESS) {
+            image = VK_NULL_HANDLE;
+            return false;
+        }
+
+        VkMemoryRequirements req{};
+        vkGetImageMemoryRequirements(device_, image, &req);
+        VkMemoryAllocateInfo ai{};
+        ai.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+        ai.allocationSize = req.size;
+        ai.memoryTypeIndex = vkFindMemoryType(
+                physicalDevice_, req.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+        if (vkAllocateMemory(device_, &ai, nullptr, &memory) != VK_SUCCESS) {
+            memory = VK_NULL_HANDLE;
+            destroyGlowResourcesLocked();
+            return false;
+        }
+        vkBindImageMemory(device_, image, memory, 0);
+
+        VkImageViewCreateInfo vi{};
+        vi.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+        vi.image = image;
+        vi.viewType = VK_IMAGE_VIEW_TYPE_2D;
+        vi.format = VK_FORMAT_R16G16B16A16_SFLOAT;
+        vi.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        vi.subresourceRange.levelCount = 1;
+        vi.subresourceRange.layerCount = 1;
+        if (vkCreateImageView(device_, &vi, nullptr, &view) != VK_SUCCESS) {
+            view = VK_NULL_HANDLE;
+            destroyGlowResourcesLocked();
+            return false;
+        }
+        return true;
+    }
+
+    /** 单附件、清屏、结束即转成可采样 —— 场景与辉光缓冲共用这一个。 */
+    VkRenderPass createGlowRenderPassLocked() {
+        VkAttachmentDescription ca{};
+        ca.format = VK_FORMAT_R16G16B16A16_SFLOAT;
+        ca.samples = VK_SAMPLE_COUNT_1_BIT;
+        ca.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        ca.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        ca.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        ca.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        ca.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        ca.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+        VkAttachmentReference ref{};
+        ref.attachment = 0;
+        ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+        VkSubpassDescription sp{};
+        sp.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        sp.colorAttachmentCount = 1;
+        sp.pColorAttachments = &ref;
+
+        // 上一遍读完这张图、这一遍又要写它 —— 读→写的依赖挂在外部依赖上
+        VkSubpassDependency dep{};
+        dep.srcSubpass = VK_SUBPASS_EXTERNAL;
+        dep.dstSubpass = 0;
+        dep.srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT
+                | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        dep.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        dep.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        dep.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
+        VkRenderPassCreateInfo rp{};
+        rp.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+        rp.attachmentCount = 1;
+        rp.pAttachments = &ca;
+        rp.subpassCount = 1;
+        rp.pSubpasses = &sp;
+        rp.dependencyCount = 1;
+        rp.pDependencies = &dep;
+        VkRenderPass pass = VK_NULL_HANDLE;
+        if (vkCreateRenderPass(device_, &rp, nullptr, &pass) != VK_SUCCESS) {
+            return VK_NULL_HANDLE;
+        }
+        return pass;
+    }
+
+    VkDescriptorSetLayout createGlowSetLayoutLocked(uint32_t samplerCount) {
+        VkDescriptorSetLayoutBinding bindings[2]{};
+        for (uint32_t i = 0; i < samplerCount; i++) {
+            bindings[i].binding = i;
+            bindings[i].descriptorCount = 1;
+            bindings[i].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+            bindings[i].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+        }
+        VkDescriptorSetLayoutCreateInfo li{};
+        li.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+        li.bindingCount = samplerCount;
+        li.pBindings = bindings;
+        VkDescriptorSetLayout layout = VK_NULL_HANDLE;
+        if (vkCreateDescriptorSetLayout(device_, &li, nullptr, &layout) != VK_SUCCESS) {
+            return VK_NULL_HANDLE;
+        }
+        return layout;
+    }
+
+    VkPipelineLayout createGlowPipelineLayoutLocked(
+            VkDescriptorSetLayout setLayout, uint32_t pushSize) {
+        VkPipelineLayoutCreateInfo li{};
+        li.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+        li.setLayoutCount = 1;
+        li.pSetLayouts = &setLayout;
+        VkPushConstantRange range{};
+        range.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+        range.offset = 0;
+        range.size = pushSize;
+        li.pushConstantRangeCount = 1;
+        li.pPushConstantRanges = &range;
+        VkPipelineLayout layout = VK_NULL_HANDLE;
+        if (vkCreatePipelineLayout(device_, &li, nullptr, &layout) != VK_SUCCESS) {
+            return VK_NULL_HANDLE;
+        }
+        return layout;
+    }
+
+    /** 全屏四边形：顶点在着色器里按 gl_VertexIndex 生成，不接任何缓冲。 */
+    VkPipeline createGlowPipelineLocked(VkShaderModule vert, VkShaderModule frag,
+            VkPipelineLayout layout, VkRenderPass pass) {
+        VkPipelineShaderStageCreateInfo stages[2]{};
+        stages[0].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+        stages[0].stage = VK_SHADER_STAGE_VERTEX_BIT;
+        stages[0].module = vert;
+        stages[0].pName = "main";
+        stages[1].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+        stages[1].stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+        stages[1].module = frag;
+        stages[1].pName = "main";
+
+        VkPipelineVertexInputStateCreateInfo vinput{};
+        vinput.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+
+        VkPipelineInputAssemblyStateCreateInfo ia{};
+        ia.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+        ia.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+
+        VkPipelineViewportStateCreateInfo vp{};
+        vp.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+        vp.viewportCount = 1;
+        vp.scissorCount = 1;
+
+        VkPipelineRasterizationStateCreateInfo rs{};
+        rs.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+        rs.polygonMode = VK_POLYGON_MODE_FILL;
+        rs.cullMode = VK_CULL_MODE_NONE;
+        rs.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+        rs.lineWidth = 1.0f;
+
+        VkPipelineMultisampleStateCreateInfo ms{};
+        ms.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+        ms.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+
+        VkPipelineColorBlendAttachmentState cb{};
+        cb.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT
+                | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+        cb.blendEnable = VK_FALSE;
+
+        VkPipelineColorBlendStateCreateInfo colorBlend{};
+        colorBlend.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+        colorBlend.attachmentCount = 1;
+        colorBlend.pAttachments = &cb;
+
+        std::array<VkDynamicState, 2> dynamicStates = {
+                VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
+        VkPipelineDynamicStateCreateInfo dyn{};
+        dyn.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+        dyn.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
+        dyn.pDynamicStates = dynamicStates.data();
+
+        VkGraphicsPipelineCreateInfo pi{};
+        pi.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+        pi.stageCount = 2;
+        pi.pStages = stages;
+        pi.pVertexInputState = &vinput;
+        pi.pInputAssemblyState = &ia;
+        pi.pViewportState = &vp;
+        pi.pRasterizationState = &rs;
+        pi.pMultisampleState = &ms;
+        pi.pColorBlendState = &colorBlend;
+        pi.pDynamicState = &dyn;
+        pi.layout = layout;
+        pi.renderPass = pass;
+
+        VkPipeline pipeline = VK_NULL_HANDLE;
+        if (vkCreateGraphicsPipelines(device_, VK_NULL_HANDLE, 1, &pi, nullptr, &pipeline) != VK_SUCCESS) {
+            return VK_NULL_HANDLE;
+        }
+        return pipeline;
+    }
+
+    static void writeGlowSamplerLocked(VkDevice descriptorDevice, VkDescriptorSet set,
+            uint32_t binding, VkImageView view, VkSampler sampler) {
+        if (set == VK_NULL_HANDLE || view == VK_NULL_HANDLE) return;
+        VkDescriptorImageInfo info{};
+        info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        info.imageView = view;
+        info.sampler = sampler;
+        VkWriteDescriptorSet write{};
+        write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        write.dstSet = set;
+        write.dstBinding = binding;
+        write.descriptorCount = 1;
+        write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        write.pImageInfo = &info;
+        vkUpdateDescriptorSets(descriptorDevice, 1, &write, 0, nullptr);
+    }
+
+    /**
+     * 建离屏场景与辉光缓冲。**任何一步失败都整体退化**（{@code glowReady_} = false），
+     * 调用方照常用单遍路径画 —— 增强可以没有，但不能把画面弄坏。
+     */
+    bool createGlowResourcesLocked() {
+        destroyGlowResourcesLocked();
+        if (!glowFormatSupported_ || device_ == VK_NULL_HANDLE
+                || swapchainExtent_.width == 0 || swapchainExtent_.height == 0) {
+            return true;
+        }
+
+        sceneWidth_ = swapchainExtent_.width;
+        sceneHeight_ = swapchainExtent_.height;
+        bloomWidth_ = std::max(1u, sceneWidth_ / 2);
+        bloomHeight_ = std::max(1u, sceneHeight_ / 2);
+
+        if (!createGlowColorTargetLocked(
+                    sceneImage_, sceneMemory_, sceneView_, sceneWidth_, sceneHeight_)) {
+            return true;
+        }
+        if (!createGlowColorTargetLocked(
+                    bloomImageA_, bloomMemoryA_, bloomViewA_, bloomWidth_, bloomHeight_)) {
+            return true;
+        }
+        if (!createGlowColorTargetLocked(
+                    bloomImageB_, bloomMemoryB_, bloomViewB_, bloomWidth_, bloomHeight_)) {
+            return true;
+        }
+
+        scenePass_ = createGlowRenderPassLocked();
+        bloomPass_ = createGlowRenderPassLocked();
+        if (scenePass_ == VK_NULL_HANDLE || bloomPass_ == VK_NULL_HANDLE) {
+            return true;
+        }
+
+        /*
+         * 场景管线要再建一对：Vulkan 要求管线与 render pass 相容，而离屏那一遍的
+         * 附件是 RGBA16F、交换链是 8 位 —— 拿交换链的管线去画离屏遍什么都画不出来。
+         */
+        VkShaderModule sceneVert = createShaderModuleLocked(
+                {"shaders/fallvk_water.vert.spv", "shaders/fallvk_water.vert.spv"});
+        VkShaderModule sceneFrag = createShaderModuleLocked(
+                {"shaders/fallvk_water.frag.spv", "shaders/fallvk_water.frag.spv"});
+        VkShaderModule sceneLeafVert = createShaderModuleLocked(
+                {"shaders/fallvk_leaf.vert.spv", "shaders/fallvk_leaf.vert.spv"});
+        VkShaderModule sceneLeafFrag = createShaderModuleLocked(
+                {"shaders/fallvk_leaf.frag.spv", "shaders/fallvk_leaf.frag.spv"});
+        if (sceneVert != VK_NULL_HANDLE && sceneFrag != VK_NULL_HANDLE
+                && sceneLeafVert != VK_NULL_HANDLE && sceneLeafFrag != VK_NULL_HANDLE) {
+            bgPipelineScene_ = createGraphicsPipelineLocked(
+                    sceneVert, sceneFrag, bgPipelineLayout_, false, scenePass_);
+            leafPipelineScene_ = createGraphicsPipelineLocked(
+                    sceneLeafVert, sceneLeafFrag, leafPipelineLayout_, true, scenePass_);
+        }
+        if (sceneVert != VK_NULL_HANDLE) vkDestroyShaderModule(device_, sceneVert, nullptr);
+        if (sceneFrag != VK_NULL_HANDLE) vkDestroyShaderModule(device_, sceneFrag, nullptr);
+        if (sceneLeafVert != VK_NULL_HANDLE) vkDestroyShaderModule(device_, sceneLeafVert, nullptr);
+        if (sceneLeafFrag != VK_NULL_HANDLE) vkDestroyShaderModule(device_, sceneLeafFrag, nullptr);
+        if (bgPipelineScene_ == VK_NULL_HANDLE || leafPipelineScene_ == VK_NULL_HANDLE) {
+            return true;
+        }
+
+        const VkImageView targets[3] = {sceneView_, bloomViewA_, bloomViewB_};
+        VkExtent2D extents[3] = {
+                {sceneWidth_, sceneHeight_}, {bloomWidth_, bloomHeight_}, {bloomWidth_, bloomHeight_}};
+        VkFramebuffer* framebuffers[3] = {&sceneFramebuffer_, &bloomFramebufferA_, &bloomFramebufferB_};
+        for (int i = 0; i < 3; i++) {
+            VkFramebufferCreateInfo fi{};
+            fi.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+            fi.renderPass = i == 0 ? scenePass_ : bloomPass_;
+            fi.attachmentCount = 1;
+            fi.pAttachments = &targets[i];
+            fi.width = extents[i].width;
+            fi.height = extents[i].height;
+            fi.layers = 1;
+            if (vkCreateFramebuffer(device_, &fi, nullptr, framebuffers[i]) != VK_SUCCESS) {
+                return true;
+            }
+        }
+
+        VkSamplerCreateInfo si{};
+        si.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+        si.magFilter = VK_FILTER_LINEAR;
+        si.minFilter = VK_FILTER_LINEAR;
+        si.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+        si.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        si.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        si.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        if (vkCreateSampler(device_, &si, nullptr, &glowSampler_) != VK_SUCCESS) {
+            return true;
+        }
+
+        glowOneSetLayout_ = createGlowSetLayoutLocked(1);
+        glowTwoSetLayout_ = createGlowSetLayoutLocked(2);
+        if (glowOneSetLayout_ == VK_NULL_HANDLE || glowTwoSetLayout_ == VK_NULL_HANDLE) {
+            return true;
+        }
+
+        VkDescriptorPoolSize poolSize{};
+        poolSize.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        poolSize.descriptorCount = 5;
+        VkDescriptorPoolCreateInfo pi{};
+        pi.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+        pi.poolSizeCount = 1;
+        pi.pPoolSizes = &poolSize;
+        pi.maxSets = 4;
+        if (vkCreateDescriptorPool(device_, &pi, nullptr, &glowPool_) != VK_SUCCESS) {
+            return true;
+        }
+
+        const VkDescriptorSetLayout layouts[4] = {
+                glowOneSetLayout_, glowOneSetLayout_, glowOneSetLayout_, glowTwoSetLayout_};
+        VkDescriptorSet sets[4] = {
+                VK_NULL_HANDLE, VK_NULL_HANDLE, VK_NULL_HANDLE, VK_NULL_HANDLE};
+        VkDescriptorSetAllocateInfo ai{};
+        ai.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+        ai.descriptorPool = glowPool_;
+        ai.descriptorSetCount = 4;
+        ai.pSetLayouts = layouts;
+        if (vkAllocateDescriptorSets(device_, &ai, sets) != VK_SUCCESS) {
+            return true;
+        }
+        brightSet_ = sets[0];
+        blurSetA_ = sets[1];
+        blurSetB_ = sets[2];
+        compositeSet_ = sets[3];
+
+        brightLayout_ = createGlowPipelineLayoutLocked(glowOneSetLayout_, sizeof(GlowBrightPush));
+        blurLayout_ = createGlowPipelineLayoutLocked(glowOneSetLayout_, sizeof(GlowBlurPush));
+        compositeLayout_ = createGlowPipelineLayoutLocked(
+                glowTwoSetLayout_, sizeof(GlowCompositePush));
+        if (brightLayout_ == VK_NULL_HANDLE || blurLayout_ == VK_NULL_HANDLE
+                || compositeLayout_ == VK_NULL_HANDLE) {
+            return true;
+        }
+
+        VkShaderModule vert = createShaderModuleLocked(
+                {"shaders/fallvk_glow.vert.spv", "shaders/fallvk_glow.vert.spv"});
+        VkShaderModule brightFrag = createShaderModuleLocked(
+                {"shaders/fallvk_glow_bright.frag.spv", "shaders/fallvk_glow_bright.frag.spv"});
+        VkShaderModule blurFrag = createShaderModuleLocked(
+                {"shaders/fallvk_glow_blur.frag.spv", "shaders/fallvk_glow_blur.frag.spv"});
+        VkShaderModule compositeFrag = createShaderModuleLocked(
+                {"shaders/fallvk_glow_composite.frag.spv", "shaders/fallvk_glow_composite.frag.spv"});
+        if (vert == VK_NULL_HANDLE || brightFrag == VK_NULL_HANDLE
+                || blurFrag == VK_NULL_HANDLE || compositeFrag == VK_NULL_HANDLE) {
+            if (vert) vkDestroyShaderModule(device_, vert, nullptr);
+            if (brightFrag) vkDestroyShaderModule(device_, brightFrag, nullptr);
+            if (blurFrag) vkDestroyShaderModule(device_, blurFrag, nullptr);
+            if (compositeFrag) vkDestroyShaderModule(device_, compositeFrag, nullptr);
+            return true;
+        }
+
+        brightPipeline_ = createGlowPipelineLocked(vert, brightFrag, brightLayout_, bloomPass_);
+        blurPipeline_ = createGlowPipelineLocked(vert, blurFrag, blurLayout_, bloomPass_);
+        compositePipeline_ = createGlowPipelineLocked(
+                vert, compositeFrag, compositeLayout_, renderPass_);
+        vkDestroyShaderModule(device_, vert, nullptr);
+        vkDestroyShaderModule(device_, brightFrag, nullptr);
+        vkDestroyShaderModule(device_, blurFrag, nullptr);
+        vkDestroyShaderModule(device_, compositeFrag, nullptr);
+
+        if (brightPipeline_ == VK_NULL_HANDLE || blurPipeline_ == VK_NULL_HANDLE
+                || compositePipeline_ == VK_NULL_HANDLE) {
+            return true;
+        }
+
+        writeGlowSamplerLocked(device_, brightSet_, 0, sceneView_, glowSampler_);
+        writeGlowSamplerLocked(device_, blurSetA_, 0, bloomViewA_, glowSampler_);
+        writeGlowSamplerLocked(device_, blurSetB_, 0, bloomViewB_, glowSampler_);
+        writeGlowSamplerLocked(device_, compositeSet_, 0, sceneView_, glowSampler_);
+        writeGlowSamplerLocked(device_, compositeSet_, 1, bloomViewA_, glowSampler_);
+
+        glowReady_ = true;
+        return true;
+    }
+
+    void destroyGlowResourcesLocked() {
+        glowReady_ = false;
+        if (device_ == VK_NULL_HANDLE) return;
+        if (bgPipelineScene_ != VK_NULL_HANDLE) { vkDestroyPipeline(device_, bgPipelineScene_, nullptr); bgPipelineScene_ = VK_NULL_HANDLE; }
+        if (leafPipelineScene_ != VK_NULL_HANDLE) { vkDestroyPipeline(device_, leafPipelineScene_, nullptr); leafPipelineScene_ = VK_NULL_HANDLE; }
+        if (brightPipeline_ != VK_NULL_HANDLE) { vkDestroyPipeline(device_, brightPipeline_, nullptr); brightPipeline_ = VK_NULL_HANDLE; }
+        if (blurPipeline_ != VK_NULL_HANDLE) { vkDestroyPipeline(device_, blurPipeline_, nullptr); blurPipeline_ = VK_NULL_HANDLE; }
+        if (compositePipeline_ != VK_NULL_HANDLE) { vkDestroyPipeline(device_, compositePipeline_, nullptr); compositePipeline_ = VK_NULL_HANDLE; }
+        if (brightLayout_ != VK_NULL_HANDLE) { vkDestroyPipelineLayout(device_, brightLayout_, nullptr); brightLayout_ = VK_NULL_HANDLE; }
+        if (blurLayout_ != VK_NULL_HANDLE) { vkDestroyPipelineLayout(device_, blurLayout_, nullptr); blurLayout_ = VK_NULL_HANDLE; }
+        if (compositeLayout_ != VK_NULL_HANDLE) { vkDestroyPipelineLayout(device_, compositeLayout_, nullptr); compositeLayout_ = VK_NULL_HANDLE; }
+        brightSet_ = blurSetA_ = blurSetB_ = compositeSet_ = VK_NULL_HANDLE;
+        if (glowPool_ != VK_NULL_HANDLE) { vkDestroyDescriptorPool(device_, glowPool_, nullptr); glowPool_ = VK_NULL_HANDLE; }
+        if (glowOneSetLayout_ != VK_NULL_HANDLE) { vkDestroyDescriptorSetLayout(device_, glowOneSetLayout_, nullptr); glowOneSetLayout_ = VK_NULL_HANDLE; }
+        if (glowTwoSetLayout_ != VK_NULL_HANDLE) { vkDestroyDescriptorSetLayout(device_, glowTwoSetLayout_, nullptr); glowTwoSetLayout_ = VK_NULL_HANDLE; }
+        if (glowSampler_ != VK_NULL_HANDLE) { vkDestroySampler(device_, glowSampler_, nullptr); glowSampler_ = VK_NULL_HANDLE; }
+        if (sceneFramebuffer_ != VK_NULL_HANDLE) { vkDestroyFramebuffer(device_, sceneFramebuffer_, nullptr); sceneFramebuffer_ = VK_NULL_HANDLE; }
+        if (bloomFramebufferA_ != VK_NULL_HANDLE) { vkDestroyFramebuffer(device_, bloomFramebufferA_, nullptr); bloomFramebufferA_ = VK_NULL_HANDLE; }
+        if (bloomFramebufferB_ != VK_NULL_HANDLE) { vkDestroyFramebuffer(device_, bloomFramebufferB_, nullptr); bloomFramebufferB_ = VK_NULL_HANDLE; }
+        if (scenePass_ != VK_NULL_HANDLE) { vkDestroyRenderPass(device_, scenePass_, nullptr); scenePass_ = VK_NULL_HANDLE; }
+        if (bloomPass_ != VK_NULL_HANDLE) { vkDestroyRenderPass(device_, bloomPass_, nullptr); bloomPass_ = VK_NULL_HANDLE; }
+        if (sceneView_ != VK_NULL_HANDLE) { vkDestroyImageView(device_, sceneView_, nullptr); sceneView_ = VK_NULL_HANDLE; }
+        if (bloomViewA_ != VK_NULL_HANDLE) { vkDestroyImageView(device_, bloomViewA_, nullptr); bloomViewA_ = VK_NULL_HANDLE; }
+        if (bloomViewB_ != VK_NULL_HANDLE) { vkDestroyImageView(device_, bloomViewB_, nullptr); bloomViewB_ = VK_NULL_HANDLE; }
+        if (sceneImage_ != VK_NULL_HANDLE) { vkDestroyImage(device_, sceneImage_, nullptr); sceneImage_ = VK_NULL_HANDLE; }
+        if (bloomImageA_ != VK_NULL_HANDLE) { vkDestroyImage(device_, bloomImageA_, nullptr); bloomImageA_ = VK_NULL_HANDLE; }
+        if (bloomImageB_ != VK_NULL_HANDLE) { vkDestroyImage(device_, bloomImageB_, nullptr); bloomImageB_ = VK_NULL_HANDLE; }
+        if (sceneMemory_ != VK_NULL_HANDLE) { vkFreeMemory(device_, sceneMemory_, nullptr); sceneMemory_ = VK_NULL_HANDLE; }
+        if (bloomMemoryA_ != VK_NULL_HANDLE) { vkFreeMemory(device_, bloomMemoryA_, nullptr); bloomMemoryA_ = VK_NULL_HANDLE; }
+        if (bloomMemoryB_ != VK_NULL_HANDLE) { vkFreeMemory(device_, bloomMemoryB_, nullptr); bloomMemoryB_ = VK_NULL_HANDLE; }
     }
 
     VkPipelineLayout createPipelineLayoutLocked(bool withPushConstants, VkDescriptorSetLayout descriptorSetLayout) {
@@ -516,7 +1028,7 @@ public:
     }
 
     VkPipeline createGraphicsPipelineLocked(VkShaderModule vert, VkShaderModule frag,
-            VkPipelineLayout layout, bool leafPipeline) {
+            VkPipelineLayout layout, bool leafPipeline, VkRenderPass renderPassToUse) {
         VkPipelineShaderStageCreateInfo vertStage{};
         vertStage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
         vertStage.stage = VK_SHADER_STAGE_VERTEX_BIT;
@@ -611,7 +1123,7 @@ public:
         pipelineInfo.pColorBlendState = &colorBlending;
         pipelineInfo.pDynamicState = &dynamicState;
         pipelineInfo.layout = layout;
-        pipelineInfo.renderPass = renderPass_;
+        pipelineInfo.renderPass = renderPassToUse;
 
         VkPipeline pipeline = VK_NULL_HANDLE;
         if (vkCreateGraphicsPipelines(device_, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline) != VK_SUCCESS) {
@@ -1329,30 +1841,152 @@ public:
             return false;
         }
 
+        if (glowActive_) {
+            recordGlowLocked(commandBuffer, imageIndex, projection, view, leaves, xOffset,
+                    waterIndexCount, pc, lighting);
+        } else {
+            // 辉光关掉时走原来的单遍路径，画面与加这套之前逐位相同
+            beginGlowPassLocked(commandBuffer, renderPass_,
+                    swapchainFramebuffers_[imageIndex], swapchainExtent_);
+            recordSceneDrawsLocked(commandBuffer, false, projection, view, leaves, xOffset,
+                    waterIndexCount, pc, lighting);
+            vkCmdEndRenderPass(commandBuffer);
+        }
+        return vkEndCommandBuffer(commandBuffer) == VK_SUCCESS;
+    }
+
+    /** 开始一遍全屏绘制并设好视口与裁剪区。 */
+    static void beginGlowPassLocked(VkCommandBuffer commandBuffer, VkRenderPass pass,
+            VkFramebuffer framebuffer, VkExtent2D extent) {
         VkClearValue clearValue{};
         clearValue.color = {{0.0f, 0.0f, 0.0f, 1.0f}};
 
         VkRenderPassBeginInfo rpInfo{};
         rpInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        rpInfo.renderPass = renderPass_;
-        rpInfo.framebuffer = swapchainFramebuffers_[imageIndex];
+        rpInfo.renderPass = pass;
+        rpInfo.framebuffer = framebuffer;
         rpInfo.renderArea.offset = {0, 0};
-        rpInfo.renderArea.extent = swapchainExtent_;
+        rpInfo.renderArea.extent = extent;
         rpInfo.clearValueCount = 1;
         rpInfo.pClearValues = &clearValue;
-
         vkCmdBeginRenderPass(commandBuffer, &rpInfo, VK_SUBPASS_CONTENTS_INLINE);
 
         VkViewport viewport{};
-        viewport.width = static_cast<float>(swapchainExtent_.width);
-        viewport.height = static_cast<float>(swapchainExtent_.height);
+        viewport.width = static_cast<float>(extent.width);
+        viewport.height = static_cast<float>(extent.height);
         viewport.maxDepth = 1.0f;
         vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
 
         VkRect2D scissor{};
-        scissor.extent = swapchainExtent_;
+        scissor.extent = extent;
         vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+    }
 
+    /**
+     * 离屏图在"刚写完"与"马上要被采样"之间加一道依赖。
+     *
+     * <p>布局不变（两遍之间都是 SHADER_READ_ONLY），要的只是可见性 ——
+     * 少了这道屏障，手机上多半看不出问题，换台机器就是辉光偶尔缺一块。
+     */
+    static void glowReadBarrierLocked(VkCommandBuffer commandBuffer, VkImage image) {
+        VkImageMemoryBarrier barrier{};
+        barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        barrier.oldLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.image = image;
+        barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        barrier.subresourceRange.levelCount = 1;
+        barrier.subresourceRange.layerCount = 1;
+        barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+        vkCmdPipelineBarrier(commandBuffer,
+                VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+                0, 0, nullptr, 0, nullptr, 1, &barrier);
+    }
+
+    /**
+     * 辉光的五遍：场景 → 亮部提取 → 横向模糊 → 纵向模糊 → 合成到交换链。
+     *
+     * <p>与 GLES 的 {@code GlowRenderer.endScene} 一一对应；模糊步长取半径的 1/4，
+     * 5 抽头对着 ±1.38 / ±3.23 步采样，等效 9 抽头 —— 都是照搬那边的取值。
+     */
+    void recordGlowLocked(VkCommandBuffer commandBuffer, uint32_t imageIndex,
+            const float projection[16], const float view[16], const std::vector<LeafDraw>& leaves,
+            float xOffset, int waterIndexCount, const PushConstants& pc, const float* lighting) {
+        const VkExtent2D sceneExtent = {sceneWidth_, sceneHeight_};
+        const VkExtent2D bloomExtent = {bloomWidth_, bloomHeight_};
+
+        beginGlowPassLocked(commandBuffer, scenePass_, sceneFramebuffer_, sceneExtent);
+        recordSceneDrawsLocked(commandBuffer, true, projection, view, leaves, xOffset,
+                waterIndexCount, pc, lighting);
+        vkCmdEndRenderPass(commandBuffer);
+        glowReadBarrierLocked(commandBuffer, sceneImage_);
+
+        beginGlowPassLocked(commandBuffer, bloomPass_, bloomFramebufferA_, bloomExtent);
+        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, brightPipeline_);
+        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                brightLayout_, 0, 1, &brightSet_, 0, nullptr);
+        GlowBrightPush brightPush{};
+        brightPush.texelX = 1.0f / static_cast<float>(sceneWidth_);
+        brightPush.texelY = 1.0f / static_cast<float>(sceneHeight_);
+        brightPush.threshold = glowThreshold_;
+        brightPush.knee = glowSoftKnee_;
+        vkCmdPushConstants(commandBuffer, brightLayout_, VK_SHADER_STAGE_FRAGMENT_BIT,
+                0, sizeof(brightPush), &brightPush);
+        vkCmdDraw(commandBuffer, 4, 1, 0, 0);
+        vkCmdEndRenderPass(commandBuffer);
+        glowReadBarrierLocked(commandBuffer, bloomImageA_);
+
+        // 横向 → B
+        beginGlowPassLocked(commandBuffer, bloomPass_, bloomFramebufferB_, bloomExtent);
+        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, blurPipeline_);
+        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                blurLayout_, 0, 1, &blurSetA_, 0, nullptr);
+        GlowBlurPush blurPush{};
+        blurPush.stepX = glowRadius_ * 0.25f / static_cast<float>(std::max(1u, bloomWidth_));
+        blurPush.stepY = 0.0f;
+        vkCmdPushConstants(commandBuffer, blurLayout_, VK_SHADER_STAGE_FRAGMENT_BIT,
+                0, sizeof(blurPush), &blurPush);
+        vkCmdDraw(commandBuffer, 4, 1, 0, 0);
+        vkCmdEndRenderPass(commandBuffer);
+        glowReadBarrierLocked(commandBuffer, bloomImageB_);
+
+        // 纵向 → A
+        beginGlowPassLocked(commandBuffer, bloomPass_, bloomFramebufferA_, bloomExtent);
+        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                blurLayout_, 0, 1, &blurSetB_, 0, nullptr);
+        blurPush.stepX = 0.0f;
+        blurPush.stepY = glowRadius_ * 0.25f / static_cast<float>(std::max(1u, bloomHeight_));
+        vkCmdPushConstants(commandBuffer, blurLayout_, VK_SHADER_STAGE_FRAGMENT_BIT,
+                0, sizeof(blurPush), &blurPush);
+        vkCmdDraw(commandBuffer, 4, 1, 0, 0);
+        vkCmdEndRenderPass(commandBuffer);
+        glowReadBarrierLocked(commandBuffer, bloomImageA_);
+
+        // 合成 → 交换链
+        beginGlowPassLocked(commandBuffer, renderPass_,
+                swapchainFramebuffers_[imageIndex], swapchainExtent_);
+        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, compositePipeline_);
+        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                compositeLayout_, 0, 1, &compositeSet_, 0, nullptr);
+        GlowCompositePush compositePush{};
+        compositePush.strength = glowStrength_;
+        vkCmdPushConstants(commandBuffer, compositeLayout_, VK_SHADER_STAGE_FRAGMENT_BIT,
+                0, sizeof(compositePush), &compositePush);
+        vkCmdDraw(commandBuffer, 4, 1, 0, 0);
+        vkCmdEndRenderPass(commandBuffer);
+    }
+
+    /** 场景本身（水面 + 落叶）。render pass 的开始与结束由调用方管。 */
+    void recordSceneDrawsLocked(VkCommandBuffer commandBuffer, bool glowPass,
+            const float projection[16], const float view[16], const std::vector<LeafDraw>& leaves,
+            float xOffset, int waterIndexCount, const PushConstants& pc, const float* lighting) {
+        // 离屏那一遍的 render pass 附件是 RGBA16F，管线必须与它相容，不能共用交换链那对
+        VkPipeline bgPipeline = glowPass ? bgPipelineScene_ : bgPipeline_;
+        VkPipeline leafPipeline = glowPass ? leafPipelineScene_ : leafPipeline_;
         float pv[16];
         multiplyMat4(projection, view, pv);
 
@@ -1362,7 +1996,7 @@ public:
         float pvCorrected[16];
         multiplyMat4(clipCorrection, pv, pvCorrected);
 
-        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, bgPipeline_);
+        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, bgPipeline);
         vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
             bgPipelineLayout_, 0, 1, &bgDescriptorSet_, 0, nullptr);
         VkDeviceSize offsets[] = {0};
@@ -1392,7 +2026,7 @@ public:
             0, sizeof(PushConstants), &waterPush);
         vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(std::max(0, waterIndexCount)), 1, 0, 0, 0);
 
-        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, leafPipeline_);
+        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, leafPipeline);
         vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
                 leafPipelineLayout_, 0, 1, &leafDescriptorSet_, 0, nullptr);
 
@@ -1477,10 +2111,54 @@ public:
                     0, sizeof(PushConstants), &push);
             vkCmdDraw(commandBuffer, 4, 1, 0, 0);
         }
-
-        vkCmdEndRenderPass(commandBuffer);
-        return vkEndCommandBuffer(commandBuffer) == VK_SUCCESS;
     }
+
+    // ── 辉光状态 ──
+
+    bool glowFormatSupported_ = false;  // 设备能不能拿 RGBA16F 当颜色附件并线性采样
+    bool glowRequested_ = false;        // 设置里的开关
+    bool glowActive_ = false;           // 本帧真的走离屏路径
+    bool glowReady_ = false;            // 离屏资源建起来了
+    float glowThreshold_ = 0.80f;
+    float glowSoftKnee_ = 0.25f;
+    float glowRadius_ = 9.0f;
+    float glowStrength_ = 0.70f;
+
+    VkImage sceneImage_ = VK_NULL_HANDLE;
+    VkDeviceMemory sceneMemory_ = VK_NULL_HANDLE;
+    VkImageView sceneView_ = VK_NULL_HANDLE;
+    VkImage bloomImageA_ = VK_NULL_HANDLE;
+    VkDeviceMemory bloomMemoryA_ = VK_NULL_HANDLE;
+    VkImageView bloomViewA_ = VK_NULL_HANDLE;
+    VkImage bloomImageB_ = VK_NULL_HANDLE;
+    VkDeviceMemory bloomMemoryB_ = VK_NULL_HANDLE;
+    VkImageView bloomViewB_ = VK_NULL_HANDLE;
+    VkRenderPass scenePass_ = VK_NULL_HANDLE;
+    VkRenderPass bloomPass_ = VK_NULL_HANDLE;
+    VkFramebuffer sceneFramebuffer_ = VK_NULL_HANDLE;
+    VkFramebuffer bloomFramebufferA_ = VK_NULL_HANDLE;
+    VkFramebuffer bloomFramebufferB_ = VK_NULL_HANDLE;
+    VkSampler glowSampler_ = VK_NULL_HANDLE;
+    VkDescriptorSetLayout glowOneSetLayout_ = VK_NULL_HANDLE;
+    VkDescriptorSetLayout glowTwoSetLayout_ = VK_NULL_HANDLE;
+    VkDescriptorPool glowPool_ = VK_NULL_HANDLE;
+    VkDescriptorSet brightSet_ = VK_NULL_HANDLE;
+    VkDescriptorSet blurSetA_ = VK_NULL_HANDLE;
+    VkDescriptorSet blurSetB_ = VK_NULL_HANDLE;
+    VkDescriptorSet compositeSet_ = VK_NULL_HANDLE;
+    VkPipelineLayout brightLayout_ = VK_NULL_HANDLE;
+    VkPipelineLayout blurLayout_ = VK_NULL_HANDLE;
+    VkPipelineLayout compositeLayout_ = VK_NULL_HANDLE;
+    VkPipeline brightPipeline_ = VK_NULL_HANDLE;
+    VkPipeline blurPipeline_ = VK_NULL_HANDLE;
+    VkPipeline compositePipeline_ = VK_NULL_HANDLE;
+    /** 与 scenePass_（RGBA16F）相容的那一对场景管线。 */
+    VkPipeline bgPipelineScene_ = VK_NULL_HANDLE;
+    VkPipeline leafPipelineScene_ = VK_NULL_HANDLE;
+    uint32_t sceneWidth_ = 0;
+    uint32_t sceneHeight_ = 0;
+    uint32_t bloomWidth_ = 0;
+    uint32_t bloomHeight_ = 0;
 
     // ── Members ──
 
@@ -1573,6 +2251,7 @@ static void JNICALL nOnSurfaceDestroyed(
 
 static void JNICALL nRenderFrame(
         JNIEnv* env, jclass, jlong handle, jfloatArray lightingArray, jfloatArray algaeParamsArray,
+        jfloatArray glowParamsArray, jboolean glowEnabled,
         jfloatArray projectionMatrix, jfloatArray viewMatrix,
         jfloatArray leavesData, jint leafCount, jfloat xOffset,
         jfloatArray waterVertices, jfloatArray waterTexCoords, jshortArray waterIndices,
@@ -1590,7 +2269,11 @@ static void JNICALL nRenderFrame(
         if (algaeParamsArray != nullptr) {
             env->GetFloatArrayRegion(algaeParamsArray, 0, 22, algaeParams);
         }
-        renderer->render(env, lighting, algaeParams,
+        float glowParams[12]{};
+        if (glowParamsArray != nullptr) {
+            env->GetFloatArrayRegion(glowParamsArray, 0, 12, glowParams);
+        }
+        renderer->render(env, lighting, algaeParams, glowParams, glowEnabled == JNI_TRUE,
                 projectionMatrix, viewMatrix, leavesData, leafCount, xOffset,
                 waterVertices, waterTexCoords, waterIndices, waterVertexCount, waterIndexCount,
                 dropData, algaePower, algaeWorld, dropCount,
@@ -1652,7 +2335,7 @@ static const JNINativeMethod kMethods[] = {
     {"nOnSurfaceCreated", "(JLandroid/view/Surface;II)Z", reinterpret_cast<void*>(nOnSurfaceCreated)},
     {"nOnSurfaceChanged", "(JLandroid/view/Surface;II)V", reinterpret_cast<void*>(nOnSurfaceChanged)},
     {"nOnSurfaceDestroyed", "(J)V", reinterpret_cast<void*>(nOnSurfaceDestroyed)},
-    {"nRenderFrame", "(J[F[F[F[F[FIF[F[F[SII[F[F[FIFFFFFI)V", reinterpret_cast<void*>(nRenderFrame)},
+    {"nRenderFrame", "(J[F[F[FZ[F[F[FIF[F[F[SII[F[F[FIFFFFFI)V", reinterpret_cast<void*>(nRenderFrame)},
     {"nSetMaskTexture", "(J[BII)V", reinterpret_cast<void*>(nSetMaskTexture)},
     {"nSetSkyTexture", "(J[III)V", reinterpret_cast<void*>(nSetSkyTexture)},
     {"nSetAlgaeTexture", "(J[BII)V", reinterpret_cast<void*>(nSetAlgaeTexture)},

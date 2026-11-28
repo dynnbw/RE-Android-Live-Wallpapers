@@ -24,6 +24,8 @@ layout(set = 0, binding = 1) uniform DropBlock {
     vec4 uAlgaeLow;
     vec4 uAlgaeHigh;
     vec4 uLightColor;
+    vec4 uEmitter;       // (屏幕 x, y, 横向半宽, 纵向半宽)
+    vec4 uEmitterColor;  // rgb + 增益
 } dropBlock;
 
 layout(push_constant) uniform PushConstants {

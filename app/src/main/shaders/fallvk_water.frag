@@ -27,6 +27,8 @@ layout(set = 0, binding = 1) uniform DropBlock {
     vec4 uAlgaeLow;
     vec4 uAlgaeHigh;
     vec4 uLightColor;
+    vec4 uEmitter;       // (屏幕 x, y, 横向半宽, 纵向半宽)
+    vec4 uEmitterColor;  // rgb + 增益
 } dropBlock;
 
 layout(push_constant) uniform PushConstants {
@@ -193,6 +195,21 @@ void main() {
     if (pc.uStarAmount > 0.001) {
         sky += starField(vScreenUv) * pc.uStarAmount;
     }
+
+    /*
+     * 天空里的发光体：固定屏幕位置的一团黄白亮斑。
+     *
+     * 强度可以远大于 1 —— 它自己会被辉光糊掉，看不到本体的边界（参考图里根本没有
+     * 能辨认的太阳圆面）。加在乘遮罩之前，于是树叶天然挡在它前面。
+     *
+     * 屏幕 y 要翻一下：Vulkan 的 NDC y 朝下，而 EMITTER_Y 是按 GL 的"0 = 屏幕底"给的。
+     */
+    vec2 emitterUv = vec2(vScreenUv.x, 1.0 - vScreenUv.y);
+    vec2 emitterDelta = (emitterUv - dropBlock.uEmitter.xy)
+            / max(dropBlock.uEmitter.zw, vec2(1e-4));
+    float emitterD = length(emitterDelta);
+    sky += dropBlock.uEmitterColor.rgb
+            * (dropBlock.uEmitterColor.w * exp(-emitterD * emitterD * 2.0));
 
     vec3 color = sky * m;
     // 蓝藻是水面自己发出的光，在倒影**前面** —— 所以加在乘遮罩之后，树挡不住它

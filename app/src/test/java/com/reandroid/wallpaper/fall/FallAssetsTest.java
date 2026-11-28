@@ -38,6 +38,11 @@ public class FallAssetsTest {
     private static final File VK_WATER_FS = new File("src/main/shaders/fallvk_water.frag");
 
     private static final File VK_LEAF_FS = new File("src/main/shaders/fallvk_leaf.frag");
+
+    private static final File GLOW_BLUR_GLES =
+            new File("src/main/assets/fall/shaders/GLES/glow_blur_fs.glsl");
+
+    private static final File GLOW_BLUR_VK = new File("src/main/shaders/fallvk_glow_blur.frag");
     /** 只为了核对 {@code STAR_WRAP_MS} —— 它与着色器的 STAR_WRAP_S 是一对。 */
     private static final File FALL_GL =
             new File("src/main/java/com/reandroid/wallpaper/fall/FallGL.java");
@@ -203,6 +208,24 @@ public class FallAssetsTest {
                     file.getName() + " 的 ALGAE_ 常量与 GLES 水面那套对不上：" + "叶子上的光会和水里那圈错位",
                     reference.toString(),
                     algaeConstants(file).toString());
+        }
+    }
+
+    /**
+     * 辉光模糊的五个权重在两个引擎里必须一致。
+     *
+     * <p>这套权重是固定值，抄错一个数不会有任何报错，只是光晕的观感和 GLES 那边不一样了。
+     * 抽头位置（±1.38 / ±3.23）一起钉住：权重和抽头是一套，改了哪个都得两边一起改。
+     */
+    @Test
+    public void glowBlurWeightsMatchBetweenTheEngines() throws IOException {
+        String gles = read(GLOW_BLUR_GLES);
+        String vk = read(GLOW_BLUR_VK);
+        for (String weight : new String[] {
+            "0.2270270270", "0.3162162162", "0.0702702703", "1.3846153846", "3.2307692308"
+        }) {
+            assertTrue(GLOW_BLUR_GLES.getName() + " 缺少 " + weight, gles.contains(weight));
+            assertTrue(GLOW_BLUR_VK.getName() + " 缺少 " + weight, vk.contains(weight));
         }
     }
 

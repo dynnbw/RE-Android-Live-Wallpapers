@@ -32,6 +32,8 @@ final class FallVKNative {
             long handle,
             float[] lighting,
             float[] algaeParams,
+            float[] glowParams,
+            boolean glowEnabled,
             float[] projectionMatrix,
             float[] viewMatrix,
             float[] leavesData,

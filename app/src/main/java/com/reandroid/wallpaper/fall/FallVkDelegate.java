@@ -9,6 +9,7 @@ import android.view.Surface;
 
 import com.reandroid.plugin.VkRendererDelegate;
 import com.reandroid.settings.WallpaperSettings;
+import com.reandroid.utils.MathUtils;
 
 /**
  * Fall 的 VK 渲染器 —— 壁纸与预览共用这一份。
@@ -21,6 +22,8 @@ final class FallVkDelegate implements VkRendererDelegate {
     private static final long SETTINGS_SYNC_INTERVAL_MS = 1000L;
     /** {@link #buildAlgaeParams} 的长度，与 fallvk_jni.cpp 里的偏移一一对应。 */
     private static final int ALGAE_PARAM_COUNT = 22;
+    /** {@link #buildGlowParams} 的长度，同样与 native 的开发参数数组对应。 */
+    private static final int GLOW_PARAM_COUNT = 12;
 
     private final Context mContext;
     private final SharedPreferences mPrefs;
@@ -44,6 +47,8 @@ final class FallVkDelegate implements VkRendererDelegate {
     private final FallTouchTracker mTouchTracker = new FallTouchTracker();
     /** 每帧复用的蓝藻参数，见 {@link #buildAlgaeParams}。 */
     private final float[] mAlgaeParams = new float[ALGAE_PARAM_COUNT];
+    /** 每帧复用的辉光参数，见 {@link #buildGlowParams}。 */
+    private final float[] mGlowParams = new float[GLOW_PARAM_COUNT];
 
     FallVkDelegate(Context context, SharedPreferences prefs) {
         mContext = context.getApplicationContext();
@@ -164,6 +169,8 @@ final class FallVkDelegate implements VkRendererDelegate {
                 mRendererHandle,
                 lighting,
                 buildAlgaeParams(data),
+                buildGlowParams(),
+                mScene.isGlowEnabled(),
                 data.getProjectionMatrix(),
                 data.getViewMatrix(),
                 leafData,
@@ -223,6 +230,38 @@ final class FallVkDelegate implements VkRendererDelegate {
         out[19] = meshScaleY / halfH;
         out[20] = (data.getXOffset() * 2.0f + 1.0f) * meshScaleX;
         out[21] = meshScaleY;
+        return out;
+    }
+
+    /**
+     * 辉光的每帧参数，顺序与 fallvk_jni.cpp 一一对应：
+     * {@code [0..3]} 阈值 / 过渡宽度 / 模糊半径 / 叠加强度（前两个随蓝藻权重混），
+     * {@code [4]} 发光体增益（辉光关掉时给 0 —— 不画而不是画暗一点），
+     * {@code [5..8]} 发光体位置与两轴半宽，{@code [9..11]} 颜色。
+     *
+     * <p>纵向半宽按屏幕长宽比折算：UV 是逐轴归一化的，不折算竖屏上画出来是竖椭圆。
+     * 与 {@code FallGL.drawWaterQuad} 里那条算式同一份。
+     */
+    private float[] buildGlowParams() {
+        float[] out = mGlowParams;
+        float algae = mScene.getAlgaeAmount();
+        out[0] = MathUtils.mix(FallScene.GLOW_THRESHOLD, FallScene.GLOW_THRESHOLD_ALGAE, algae);
+        out[1] = FallScene.GLOW_SOFT_KNEE;
+        out[2] = FallScene.GLOW_RADIUS;
+        out[3] = MathUtils.mix(FallScene.GLOW_STRENGTH, FallScene.GLOW_STRENGTH_ALGAE, algae);
+        out[4] = mScene.isGlowEnabled() ? mScene.getEmitterWeight() * FallScene.EMITTER_GAIN : 0f;
+        out[5] = FallScene.EMITTER_X;
+        out[6] = FallScene.EMITTER_Y;
+        out[7] = FallScene.EMITTER_HALF_W;
+        out[8] = mSurfaceHeight > 0
+                ? FallScene.EMITTER_HALF_W
+                        * FallScene.EMITTER_ASPECT
+                        * mSurfaceWidth
+                        / (float) mSurfaceHeight
+                : FallScene.EMITTER_HALF_W * FallScene.EMITTER_ASPECT;
+        out[9] = FallScene.EMITTER_COLOR[0];
+        out[10] = FallScene.EMITTER_COLOR[1];
+        out[11] = FallScene.EMITTER_COLOR[2];
         return out;
     }
 

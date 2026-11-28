@@ -46,67 +46,6 @@ public class FallGL extends GLESScene {
     private static final String TAG = "FallGL";
     private static final long PERF_SYNC_INTERVAL_MS = 1000L;
 
-    // ---- HDR + 辉光 ----
-    //
-    // ⚠ 阈值是**取舍**，不是硬约束。这套合成是 `场景 + 辉光`，加法、没有色调映射，
-    // 屏幕在 1.0 截断。而白日天空最亮的一端本身就有约 0.93 —— 阈值只要低到
-    // 能收到发光体，就必然也收到天空最亮的那一段。两者不可能干净分开。
-    //
-    // 曾经把阈值抬到 1.0 来求"辉光只来自发光体"，代价是发光体必须亮过 1，
-    // 于是核心被压成一片平白、边界是一道圆弧硬边、颜色也读不出来。**那个取舍不划算。**
-    // 现在两边一起降：阈值 0.80、发光体峰值压到 1 附近不再截断 ——
-    // 颜色留得住，代价是天空最亮的那一小段也会带一点晕（参考图本来也有这层雾）。
-    //
-    // 取值是上机调下来的，观感不对就调这里。
-
-    /** 亮度阈值。低于它的不发辉光。 */
-    private static final float GLOW_THRESHOLD = 0.80f;
-    /**
-     * 蓝藻亮起来时用的阈值。**低得多。**
-     *
-     * <p>蓝藻的光进不了亮部，原因有两层：一是它本来就不该把场景本身推到过曝
-     * （那就变成一块死白），二是**蓝色是低明度色** ——
-     * {@code lum = 0.299R + 0.587G + 0.114B}，一个蓝色通道已经满格的像素，
-     * 明度也只有约 0.5，够不到 0.80。
-     *
-     * <p>所以解法是**把"选中谁"和"有多亮"分开**：阈值降下来负责选中，
-     * 选出来的那部分再由 {@link #GLOW_STRENGTH_ALGAE} 放大到过曝 ——
-     * 源头自己始终不过曝，但仍然有很强的辉光。
-     *
-     * <p>白天不能这么干：白日天空最亮端有 0.93，阈值一降整片都会进辉光。
-     * 蓝藻只在夜里出现，所以这一档跟着蓝藻权重走，白天自动回到
-     * {@link #GLOW_THRESHOLD}。
-     */
-    private static final float GLOW_THRESHOLD_ALGAE = 0.30f;
-    /** 阈值之上的过渡宽度。硬阈值会在光晕边缘留下可见的台阶。 */
-    private static final float GLOW_SOFT_KNEE = 0.25f;
-    /**
-     * 模糊半径（像素，半分辨率下）。光晕发硬/发窄先调它，不是加遍数。
-     *
-     * <p><b>想让它更黄就调这里，不是把发光体做大。</b> 亮的核在心里必定是白的
-     * （要进辉光就得亮过阈值，亮过 1.0 就被截断成白），
-     * 能读出颜色的只有核心外面那圈晕 —— 而这圈有多宽、多暖，全看模糊铺多开。
-     * 把发光体做大只会把白色区域一起做大。
-     *
-     * <p><b>但这条有个上限，别贪。</b> 模糊是 5 抽头近似，抽头落在
-     * ±1.38·半径 与 ±3.23·半径 处 —— 半径给到 18 时那是屏幕上 ±50px 与 ±116px，
-     * 等于把同一张图在四个方向各叠了一份。**树冠的遮罩边缘对比度最高**，
-     * 重影全部显在那里，树会被打成一片白色星芒，完全看不出是树。
-     * 上机实测 18 就是这样，退回 9（与 grass 同档）后干净。
-     * 真需要更宽的光晕，得给 GlowRenderer 加模糊遍数，而不是继续抬这个值。
-     */
-    private static final float GLOW_RADIUS = 9.0f;
-    /** 辉光叠加强度。 */
-    private static final float GLOW_STRENGTH = 0.70f;
-    /**
-     * 蓝藻亮起来时的叠加强度。**比白天高一档。**
-     *
-     * <p>配合 {@link #GLOW_THRESHOLD_ALGAE}：降阈值只是把蓝藻**选进**亮部，
-     * 选进来的东西本身还是暗的，得在这里放大才有"发光"的样子。
-     * 这就是"亮部单独加亮到过曝、而源头不过曝"的那一半。
-     */
-    private static final float GLOW_STRENGTH_ALGAE = 0.85f;
-
     /**
      * 星星闪烁时间的回绕周期。**必须与着色器里的 {@code STAR_WRAP_S} 一致。**
      *
@@ -126,52 +65,6 @@ public class FallGL extends GLESScene {
     /** 叶片局部坐标的旋转方向，见 drawLeafQuad 里的说明。 */
     private static final float LEAF_AXIS_ROTATION_SIGN = 1.0f;
 
-    // ---- 天空里的发光体 ----
-
-    /**
-     * 屏幕 UV 上的位置（0,0 = 左下）。
-     *
-     * <p>放在上方是因为色场的浅色端在屏幕顶部 —— 见 {@code pond_sky_fields.txt}
-     * 里每条色带的走向。摆低会和天空的明暗对不上，读起来像"光在水里"。
-     */
-    private static final float EMITTER_X = 0.45f;
-    /** 竖直位置（0 = 屏幕底、1 = 屏幕顶）。**上机调下来的，不是推导出来的。** */
-    private static final float EMITTER_Y = 0.6f;
-    /**
-     * 横向半轴，占**屏幕宽度**的比例。
-     *
-     * <p>纵向半轴不在这里 —— 它由这一个乘上 {@link #EMITTER_ASPECT} 再按屏幕长宽比折算，
-     * 见 {@code drawWaterQuad}。**不能直接把这个值也当纵向的 UV 半径**：
-     * UV 是逐轴归一化的，竖屏上 x 的 0.36 只有 389px，y 的 0.22 却有 528px，
-     * 于是"横向的 UV 值更大"画出来反而是个**竖**椭圆 —— 上机就是这么栽的。
-     */
-    private static final float EMITTER_HALF_W = 0.55f;
-    /**
-     * 纵向半轴 ÷ 横向半轴，**在屏幕上量**（&lt; 1 才是横扁的）。
-     *
-     * <p>参考图里这一团是横向跨开、扁的。
-     */
-    private static final float EMITTER_ASPECT = 0.60f;
-    /**
-     * 黄白。**偏黄要够狠**：中心那一块必定被截断成纯白，
-     * 能读出"黄"的只有它周围那一圈 —— 颜色本身不黄，整团就是白的。
-     */
-    private static final float[] EMITTER_COLOR = {1.00f, 0.74f, 0.30f};
-    /**
-     * 峰值亮度。
-     *
-     * <p><b>与 {@link #GLOW_THRESHOLD} 是一对，改一个必须同时看另一个：</b>
-     * 峰值在阈值之下 → 完全不发辉光；远在阈值之上 → 那一大片被屏幕截断成同一个白，
-     * 平、没有颜色、边界是一道圆弧硬边。
-     *
-     * <p>上机实测过 6.0 与 3.5，两次都是后面那种。原因不是"太亮"那么简单：
-     * 发光体中心那片天空本身已经有约 0.66，峰值一高，
-     * "天空 + 发光体 > 1"的范围就覆盖整个 blob，颜色（黄）全部丢在截断里。
-     *
-     * <p>辉光关掉时**不画**（增益给 0）。不画而不是画暗一点：一个很亮的高斯斑
-     * 没有辉光来收尾，看着就是一块糊在天空上的白渍，比不做还难看。
-     */
-    private static final float EMITTER_GAIN = 1.5f;
     /** assets/fall/drawable/ 下 leaves_N.png 的文件数（绿叶全开时用满）。 */
     private static final int LEAF_TEXTURE_FILES = 20;
 
@@ -550,14 +443,14 @@ public class FallGL extends GLESScene {
             /*
              * 阈值与强度都跟着蓝藻权重走：夜里（蓝藻亮着）降到 0.30 并把辉光放大，
              * 白天回到原来的 0.80 —— 否则白日天空最亮的那一段会整片进辉光。
-             * 两个值必须一起动，见 GLOW_THRESHOLD_ALGAE 的说明。
+             * 两个值必须一起动，见 FallScene.GLOW_THRESHOLD_ALGAE 的说明。
              */
             float algae = mScene.getAlgaeAmount();
             mGlowRenderer.endScene(
-                    MathUtils.mix(GLOW_THRESHOLD, GLOW_THRESHOLD_ALGAE, algae),
-                    GLOW_SOFT_KNEE,
-                    GLOW_RADIUS,
-                    MathUtils.mix(GLOW_STRENGTH, GLOW_STRENGTH_ALGAE, algae));
+                    MathUtils.mix(FallScene.GLOW_THRESHOLD, FallScene.GLOW_THRESHOLD_ALGAE, algae),
+                    FallScene.GLOW_SOFT_KNEE,
+                    FallScene.GLOW_RADIUS,
+                    MathUtils.mix(FallScene.GLOW_STRENGTH, FallScene.GLOW_STRENGTH_ALGAE, algae));
         }
 
         /*
@@ -731,15 +624,19 @@ public class FallGL extends GLESScene {
         /*
          * 天空里的发光体。位置固定，亮度 = 日夜权重 × 峰值；辉光关着时整团不画。
          */
-        GLES30.glUniform2f(mWEmitterPosHandle, EMITTER_X, EMITTER_Y);
-        // 纵向半轴按屏幕长宽比折算成 UV。不折的话竖屏上画出来是竖椭圆，见 EMITTER_HALF_W。
-        float emitterRadiusY = EMITTER_HALF_W * EMITTER_ASPECT * mWidth / (float) mHeight;
-        GLES30.glUniform2f(mWEmitterRadiusHandle, EMITTER_HALF_W, emitterRadiusY);
+        GLES30.glUniform2f(mWEmitterPosHandle, FallScene.EMITTER_X, FallScene.EMITTER_Y);
+        // 纵向半轴按屏幕长宽比折算成 UV。不折的话竖屏上画出来是竖椭圆，见 FallScene.EMITTER_HALF_W。
+        float emitterRadiusY =
+                FallScene.EMITTER_HALF_W * FallScene.EMITTER_ASPECT * mWidth / (float) mHeight;
+        GLES30.glUniform2f(mWEmitterRadiusHandle, FallScene.EMITTER_HALF_W, emitterRadiusY);
         GLES30.glUniform3f(
-                mWEmitterColorHandle, EMITTER_COLOR[0], EMITTER_COLOR[1], EMITTER_COLOR[2]);
+                mWEmitterColorHandle,
+                FallScene.EMITTER_COLOR[0],
+                FallScene.EMITTER_COLOR[1],
+                FallScene.EMITTER_COLOR[2]);
         GLES30.glUniform1f(
                 mWEmitterGainHandle,
-                isGlowActive() ? mScene.getEmitterWeight() * EMITTER_GAIN : 0.0f);
+                isGlowActive() ? mScene.getEmitterWeight() * FallScene.EMITTER_GAIN : 0.0f);
 
         /*
          * 夜空星星的时间。
